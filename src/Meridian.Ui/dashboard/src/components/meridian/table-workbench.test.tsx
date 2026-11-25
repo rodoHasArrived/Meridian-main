@@ -4,10 +4,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useState } from "react";
 import { TABLE_SEARCH_MIN_ROWS, TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { getJson, postJson } from "@/lib/api";
+import { ApiError } from "@/lib/api-errors";
 import { downloadCsv } from "@/lib/csv";
 
 vi.mock("@/lib/api", () => ({ getJson: vi.fn(), postJson: vi.fn() }));
 vi.mock("@/lib/csv", async importOriginal => ({ ...await importOriginal<typeof import("@/lib/csv")>(), downloadCsv: vi.fn(() => true) }));
+const { xlsxToFile, writeXlsxFile } = vi.hoisted(() => {
+  const toFile = vi.fn(async (_name: string) => undefined);
+  return { xlsxToFile: toFile, writeXlsxFile: vi.fn((_sheets: unknown) => ({ toFile })) };
+});
+vi.mock("write-excel-file/browser", () => ({ default: writeXlsxFile }));
 interface Row { id: string; amount: number; }
 const columns: TableWorkbenchColumn<Row>[] = [
   { id: "id", label: "Record", render: row => row.id, exportValue: row => row.id },
@@ -16,6 +22,48 @@ const columns: TableWorkbenchColumn<Row>[] = [
 beforeEach(() => { vi.clearAllMocks(); vi.mocked(getJson).mockResolvedValue([]); });
 
 const longRows: Row[] = "abcdefghijkl".split("").map((id, index) => ({ id, amount: index + 1 }));
+
+describe("TableWorkbench export as shown", () => {
+  const shownColumns: TableWorkbenchColumn<Row>[] = [
+    { id: "id", label: "Record", render: row => row.id, exportValue: row => row.id },
+    { id: "amount", label: "Amount", render: row => row.amount.toFixed(2), exportValue: row => row.amount, exportDisplay: row => row.amount.toFixed(2), exportNumberFormat: "#,##0.00" },
+    { id: "note", label: "Note", render: row => `Note ${row.id}`, exportDisplay: row => `Note ${row.id}` }
+  ];
+  const rows: Row[] = [{ id: "a", amount: 1 }, { id: "b", amount: 2.5 }];
+
+  it("exports the visible columns in order with the shown text and the totals row, as CSV and XLSX", async () => {
+    const user = userEvent.setup();
+    render(<TableWorkbench workbenchId="shown" columns={shownColumns} rows={rows} getRowId={row => row.id}
+      completePopulation sourceDescription="Complete snapshot" emptyText="None" ariaLabel="Records"
+      footerLabel="Totals" footerCells={{ amount: "3.50" }} footerExport={{ amount: { value: 3.5, display: "3.50" } }} />);
+    await act(async () => { await Promise.resolve(); });
+    // Hiding a column leaves it out of the export.
+    await user.click(screen.getByRole("checkbox", { name: "Note" }));
+    await user.click(screen.getByRole("button", { name: "Export as shown · CSV" }));
+    const [fileName, csv] = vi.mocked(downloadCsv).mock.calls.at(-1)!;
+    expect(fileName).toMatch(/^shown-.*-as-shown\.csv$/);
+    expect(csv.split("\n")[0]).toMatch(/^Record,Amount,Context · Source/);
+    expect(csv).toContain("b,2.50,");
+    expect(csv).toContain("Totals,3.50,");
+    expect(csv).not.toContain("Note a");
+    await user.click(screen.getByRole("button", { name: "Export as shown · XLSX" }));
+    await waitFor(() => expect(xlsxToFile).toHaveBeenCalledWith(expect.stringMatching(/^shown-.*\.xlsx$/)));
+    const sheets = writeXlsxFile.mock.calls.at(-1)![0] as Array<{ sheet: string; data: unknown[][] }>;
+    expect(sheets[0]!.data[0]).toEqual([{ value: "Record", type: String, fontWeight: "bold" }, { value: "Amount", type: String, fontWeight: "bold" }]);
+    expect(sheets[0]!.data[2]).toEqual([{ value: "b", type: String }, { value: 2.5, type: Number, format: "#,##0.00" }]);
+    expect(sheets[0]!.data[3]![1]).toMatchObject({ value: 3.5, fontWeight: "bold" });
+    expect(sheets[1]!.sheet).toBe("About");
+    expect(await screen.findByText("Exported 2 rows as shown with totals (XLSX).")).toBeInTheDocument();
+  });
+
+  it("is unavailable for a table the server pages", async () => {
+    render(<TableWorkbench workbenchId="paged" columns={shownColumns} rows={rows} getRowId={row => row.id}
+      onExportAll={vi.fn(async () => undefined)} sourceDescription="Server page" emptyText="None" ariaLabel="Records" />);
+    await act(async () => { await Promise.resolve(); });
+    expect(screen.getByRole("button", { name: "Export as shown · CSV" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Export as shown · XLSX" })).toBeDisabled();
+  });
+});
 
 describe("TableWorkbench", () => {
   it("keeps compact queries visible while table options retain columns, export and saving, with density from the global setting", async () => {
@@ -104,6 +152,25 @@ describe("TableWorkbench", () => {
       width.mockRestore();
       content.mockRestore();
     }
+  });
+
+  it("says once that a column has no values instead of a placeholder on every row", async () => {
+    interface DueRow { id: string; due: string | null }
+    const dueColumns: TableWorkbenchColumn<DueRow>[] = [
+      { id: "id", label: "Record", render: row => row.id },
+      { id: "due", label: "Due", hideWhenEmpty: row => !row.due, emptyNote: "Due: no item has a due time", render: row => row.due ?? "No due time" }
+    ];
+    const { rerender } = render(<TableWorkbench workbenchId="due-empty" columns={dueColumns}
+      rows={[{ id: "a", due: null }, { id: "b", due: null }]} getRowId={row => row.id} emptyText="None" ariaLabel="Due records" sourceDescription="Test rows" completePopulation />);
+    await act(async () => { await Promise.resolve(); });
+    expect(screen.queryByRole("columnheader", { name: "Due" })).not.toBeInTheDocument();
+    expect(screen.queryByText("No due time")).not.toBeInTheDocument();
+    expect(screen.getByText("Due: no item has a due time")).toBeInTheDocument();
+    rerender(<TableWorkbench workbenchId="due-empty" columns={dueColumns}
+      rows={[{ id: "a", due: null }, { id: "b", due: "Jul 14" }]} getRowId={row => row.id} emptyText="None" ariaLabel="Due records" sourceDescription="Test rows" completePopulation />);
+    expect(screen.getByRole("columnheader", { name: "Due" })).toBeInTheDocument();
+    expect(screen.getByText("No due time")).toBeInTheDocument();
+    expect(screen.queryByText("Due: no item has a due time")).not.toBeInTheDocument();
   });
 
   it("shows a selection bar only while rows are selected", async () => {
@@ -268,6 +335,61 @@ describe("TableWorkbench", () => {
     await user.click(screen.getByRole("button", { name: "Export CSV" }));
     const csv = vi.mocked(downloadCsv).mock.calls[0][1];
     expect(csv.indexOf("b,2,")).toBeLessThan(csv.indexOf("a,10,"));
+  });
+
+  function renderSavedViewTable() {
+    render(<TableWorkbench workbenchId="test" columns={columns} rows={[{ id: "a", amount: 1 }]} getRowId={row => row.id}
+      getSearchText={row => row.id} completePopulation sourceDescription="Complete snapshot" emptyText="No matches" ariaLabel="Records" />);
+  }
+
+  it("says which saved columns were skipped when restoring a view whose columns partly no longer exist", async () => {
+    const user = userEvent.setup();
+    vi.mocked(getJson).mockResolvedValue([{ viewId: "older", label: "Older view", searchText: "",
+      columnIds: ["amount", "retired-a", "retired-b"], density: "compact" }]);
+    renderSavedViewTable();
+    await user.click(screen.getByLabelText("Records more table actions"));
+    await screen.findByRole("option", { name: "Older view" });
+    await user.selectOptions(screen.getByLabelText("Saved views"), "older");
+    expect(within(screen.getByRole("table", { name: "Records" })).getAllByRole("columnheader").map(header => header.textContent)).toEqual(["Amount"]);
+    expect(screen.getByRole("status")).toHaveTextContent("Restored Older view. 2 saved columns no longer exist and were skipped.");
+  });
+
+  it("refuses to apply a view none of whose columns exist, and leaves the current view in place", async () => {
+    const user = userEvent.setup();
+    vi.mocked(getJson).mockResolvedValue([{ viewId: "gone", label: "Gone view", searchText: "zzz",
+      columnIds: ["retired"], density: "compact" }]);
+    renderSavedViewTable();
+    await user.click(screen.getByLabelText("Records more table actions"));
+    await screen.findByRole("option", { name: "Gone view" });
+    await user.selectOptions(screen.getByLabelText("Saved views"), "gone");
+    expect(screen.getByLabelText("Saved views")).toHaveValue("");
+    expect(within(screen.getByRole("table", { name: "Records" })).getAllByRole("columnheader").map(header => header.textContent)).toEqual(["Record", "Amount"]);
+    expect(screen.getByRole("status")).toHaveTextContent("Gone view couldn't be applied: its columns were removed");
+    expect(screen.queryByText(/Restored Gone view/)).not.toBeInTheDocument();
+  });
+
+  it("offers to replace a personal view of the same name and keeps one entry after saving", async () => {
+    const user = userEvent.setup();
+    vi.mocked(getJson).mockResolvedValue([{ viewId: "breaks", label: "Open breaks", searchText: "", columnIds: ["id"], density: "compact" }]);
+    vi.mocked(postJson).mockResolvedValue({ viewId: "breaks", label: "open breaks", searchText: "", columnIds: ["id", "amount"], density: "compact" });
+    renderSavedViewTable();
+    await user.click(screen.getByLabelText("Records more table actions"));
+    await screen.findByRole("option", { name: "Open breaks" });
+    await user.type(screen.getByLabelText("View name"), "open breaks");
+    await user.click(screen.getByRole("button", { name: "Replace “Open breaks”" }));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Updated open breaks in your account."));
+    expect(within(screen.getByLabelText("Saved views")).getAllByRole("option").map(option => option.textContent)).toEqual(["Current view", "open breaks"]);
+  });
+
+  it("disables saved views with the reason when the host refuses them for this table", async () => {
+    const user = userEvent.setup();
+    vi.mocked(getJson).mockRejectedValue(new ApiError({ path: "/api/workstation/tables/test/views", status: 403 }));
+    renderSavedViewTable();
+    await user.click(screen.getByLabelText("Records more table actions"));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Save to my account" })).toBeDisabled());
+    expect(screen.getByLabelText("Saved views")).toBeDisabled();
+    expect(screen.getAllByText("Saved views aren't available for this table with your current permissions.").length).toBeGreaterThan(0);
+    expect(postJson).not.toHaveBeenCalled();
   });
 
   it("restores a legacy view then saves an explicit personal copy without claiming an owner", async () => {

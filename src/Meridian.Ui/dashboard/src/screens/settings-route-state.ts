@@ -54,7 +54,7 @@ export const SETTINGS_ROUTE_VIEW_COPY: Readonly<Record<SettingsRouteViewId, { ti
   },
   preferences: {
     title: "Workstation preferences",
-    description: "Set how the workstation looks in this browser."
+    description: "Set how the workstation looks. Your choices follow you to other browsers and the desktop app."
   },
   access: {
     title: "Access and authority",
@@ -151,7 +151,7 @@ export function resolveLegacySettingsHash(hash: string): SettingsRouteState | nu
   if (normalizedHash === "runtime-feature-capabilities" || normalizedHash === "backend-capability-coverage") {
     return routeState("diagnostics-advanced", null, true);
   }
-  if (normalizedHash === "settings-appearance") {
+  if (normalizedHash === "settings-appearance" || normalizedHash === "settings-notifications") {
     return routeState("preferences", null, true);
   }
   if (normalizedHash === "settings-overview" || normalizedHash === "profile-authentication" || normalizedHash === "scoped-access-control") {

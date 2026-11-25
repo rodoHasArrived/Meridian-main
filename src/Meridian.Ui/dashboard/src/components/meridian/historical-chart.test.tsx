@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import {
@@ -139,7 +139,7 @@ describe("HistoricalChartCard", () => {
     render(<HistoricalChartCard symbol="AAPL" />);
 
     await waitFor(() => {
-      expect(screen.getByText("Open")).toBeInTheDocument();
+      expect(screen.getByRole("rowheader", { name: "Open" })).toBeInTheDocument();
     });
 
     // Last close is 101.70 which should appear as a price somewhere in the card.
@@ -168,36 +168,35 @@ describe("HistoricalChartCard", () => {
     });
   });
 
-  it("reveals the OHLC hover panel when the candlestick chart receives keyboard focus and arrow navigation", async () => {
+  it("synchronizes candlestick pointer and keyboard inspection with values and proof", async () => {
     const user = userEvent.setup();
     getBarsSpy.mockResolvedValueOnce(response([
-      bar("2024-06-03T14:30:00Z", 100, 101, 99.5, 100.5, 1000),
+      { ...bar("2024-06-03T14:30:00Z", 100, 101, 99.5, 100.5, 1000), source: "Polygon", isAdjusted: false },
       bar("2024-06-03T14:35:00Z", 100.5, 102, 100.4, 101.7, 800)
     ]));
 
     render(<HistoricalChartCard symbol="AAPL" />);
 
-    await waitFor(() => {
-      expect(screen.getByText("Open")).toBeInTheDocument();
-    });
+    const chart = await screen.findByRole("group", { name: /AAPL 1D candlestick chart/i });
+    const [first, second] = within(chart).getAllByRole("button", { name: /AAPL historical bar/ });
+    const table = screen.getByRole("table", { name: /AAPL 1D candlestick chart.*chart data/ });
+    const proof = screen.getByRole("link", { name: "Open stored bars for this date" });
+    expect(proof).toHaveAttribute("href", expect.stringContaining("from=2024-06-03&to=2024-06-03"));
 
-    // Hover panel should not be visible yet — placeholder hint is shown instead.
-    expect(screen.queryByTestId("historical-chart-hover-panel")).toBeNull();
-    expect(screen.getByText(/Hover, tap, or focus the chart/)).toBeInTheDocument();
+    await user.hover(first);
+    const hovered = table.textContent;
+    expect(within(table).getByRole("row", { name: /Close 100.5/ })).toBeInTheDocument();
+    expect(screen.getByText(/Polygon. Unadjusted prices/)).toBeInTheDocument();
 
-    const chart = screen.getByLabelText(/AAPL 1D candlestick chart/i);
-    chart.focus();
-    await user.keyboard("{ArrowRight}");
-
-    const panel = await screen.findByTestId("historical-chart-hover-panel");
-    expect(panel).toBeInTheDocument();
-    // Crosshair line should be drawn on the hovered bar.
+    await user.click(second);
+    expect(within(table).getByRole("row", { name: /Close 101.7/ })).toBeInTheDocument();
+    await user.keyboard("{ArrowLeft}");
+    expect(first).toHaveFocus();
+    expect(table.textContent).toBe(hovered);
     expect(screen.getByTestId("historical-chart-crosshair")).toBeInTheDocument();
 
-    // Escape clears hover; the hint should come back.
-    await user.keyboard("{Escape}");
-    expect(screen.queryByTestId("historical-chart-hover-panel")).toBeNull();
-    expect(screen.queryByTestId("historical-chart-crosshair")).toBeNull();
+    await user.keyboard("{End}");
+    expect(within(table).getByRole("row", { name: /Window low 99.5/ })).toBeInTheDocument();
   });
 
   it("renders an SMA legend entry when enough bars are loaded", async () => {
@@ -216,11 +215,18 @@ describe("HistoricalChartCard", () => {
     render(<HistoricalChartCard symbol="AAPL" />);
 
     await waitFor(() => {
-      expect(screen.getByText("Open")).toBeInTheDocument();
+      expect(screen.getByRole("rowheader", { name: "Open" })).toBeInTheDocument();
     });
 
-    expect(screen.getByText("SMA 20")).toBeInTheDocument();
+    expect(within(screen.getByRole("list", { name: "Indicator overlays" })).getByText("SMA 20")).toBeInTheDocument();
     expect(screen.getByTestId("historical-chart-sma-20")).toBeInTheDocument();
+    const inspector = screen.getByRole("region", { name: /AAPL 1D candlestick chart.*inspector/ });
+    expect(within(inspector).getByRole("row", { name: /SMA 20 112.5 .*Mean of the last 20 bar closes/ })).toBeInTheDocument();
+    expect(within(inspector).getByRole("link", { name: "Open indicator input bars" })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: /Toggle simple moving average overlays/ }));
+    expect(within(inspector).queryByRole("rowheader", { name: "SMA 20" })).toBeNull();
+    expect(within(inspector).getByRole("link", { name: "Open stored bars for this date" })).toBeInTheDocument();
   });
 
   it("discloses failed sources and withholds partial prices until a complete retry", async () => {
@@ -239,7 +245,7 @@ describe("HistoricalChartCard", () => {
     expect(screen.queryByText("Open")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /Retry loading/ }));
-    expect(await screen.findByText("Open")).toBeVisible();
+    expect(await screen.findByRole("rowheader", { name: "Open" })).toBeVisible();
     expect(screen.queryByText("Historical query incomplete")).not.toBeInTheDocument();
   });
 
@@ -259,7 +265,7 @@ describe("HistoricalChartCard", () => {
     } : response(bars));
     const user = userEvent.setup();
     render(<HistoricalChartCard symbol="AAPL" />);
-    await screen.findByText("Open");
+    await screen.findByRole("rowheader", { name: "Open" });
     await user.type(screen.getByPlaceholderText(/Compare with/i), "MSFT{Enter}");
     expect(await screen.findByText("Historical comparison incomplete")).toBeVisible();
     expect(screen.getByRole("alert")).toHaveTextContent("MSFT/trades.jsonl.gz");

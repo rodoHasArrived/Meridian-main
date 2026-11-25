@@ -127,7 +127,17 @@ internal sealed class BrokerOrderSweep(
     /// report when the cancellation did not take. Goes straight to the gateway because there is no
     /// tracked <see cref="OrderState"/> for the ordinary cancel path to update.
     /// </summary>
-    internal async Task<KillSwitchSweepFailure?> CancelResidualOrderAsync(BrokerOrder order, CancellationToken ct)
+    internal async Task<KillSwitchSweepFailure?> CancelResidualOrderAsync(
+        BrokerOrder order,
+        CancellationToken ct,
+        OrderSubmissionAuthority? authority = null) =>
+        (await CancelResidualOrderWithEvidenceAsync(order, ct, authority).ConfigureAwait(false)).Failure;
+
+    internal async Task<BrokerOrderCancellationEvidence> CancelResidualOrderWithEvidenceAsync(
+        BrokerOrder order,
+        CancellationToken ct,
+        OrderSubmissionAuthority? authority = null,
+        string? cancelAllIncidentId = null)
     {
         KillSwitchSweepFailure? failure;
         ExecutionReport? report = null;
@@ -163,7 +173,9 @@ internal sealed class BrokerOrderSweep(
                 message: failure is null
                     ? "Cancel-all cancelled a broker-side order the in-memory book did not track."
                     : failure.Value.Reason,
-                ct: ct).ConfigureAwait(false);
+                ct: ct,
+                authority: authority,
+                cancelAllIncidentId: cancelAllIncidentId).ConfigureAwait(false);
         }
         catch (Exception auditException)
         {
@@ -173,7 +185,7 @@ internal sealed class BrokerOrderSweep(
                 LogSanitizer.Sanitize(order.OrderId));
         }
 
-        return failure;
+        return new(failure, report);
     }
 
     internal async Task<(IReadOnlyList<BrokerOrder> WorkingOrders, string? EnumerationError)>
@@ -214,3 +226,5 @@ internal sealed class BrokerOrderSweep(
             ? explicitCancellationGateway.CancelOrderAsync(identifier, ct)
             : _gateway.CancelOrderAsync(identifier.Value, ct);
 }
+
+internal sealed record BrokerOrderCancellationEvidence(KillSwitchSweepFailure? Failure, ExecutionReport? Report);

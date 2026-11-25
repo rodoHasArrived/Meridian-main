@@ -27,10 +27,22 @@ preset alone does not activate it.
 incomplete responses and throttling for explicit provider lookups. A successful empty search is
 represented by its result rather than a failure category.
 `AppConfig.ProviderQuotas` contains restart-required account quota declarations, without secrets.
+`AppConfig.DataQuality.CrossProvider` (`CrossProviderTolerancePolicy`) holds bounded cross-provider
+tolerances (price/quote/close 0-5%, volume 0-50%, volume `Alert`/`Informational`/`Off`, backfill bars
+to compare, per-asset-class overrides) plus before/after audit; defaults reproduce the historical
+hard-coded thresholds. `FailoverRuleReferences` rejects failover rules naming unconfigured source IDs.
+`ProviderValidationProfile` resolves a canonical provider override first, then a legacy alias, then
+the deployment default. Profile audit entries retain before/after values and identify resets that
+remove an override.
 Twelve Data separates per-minute/daily credits, explicit fundamentals entitlement and explicit
 `NoDailyLimit`; Alpha Vantage declares per-minute/daily request capacity and `NoDailyLimit`.
 The explicit boolean survives configuration and desktop DTO round trips; an omitted nullable cap
 would otherwise be indistinguishable from its default. Infrastructure owns vendor charging and resets.
+The quota editor uses the shared Basic/Grow and Free/Premium 75 tier presets. Paid presets require
+a finite Meridian daily cap up to the minute ceiling multiplied by 1,440. The editor saves physical
+request pacing with the quota and preserves existing entitlements. The shared request budget adopts
+both limits at host startup. Legacy config can still declare custom quotas and `NoDailyLimit`.
+Use `ProviderQuotas.AlphaVantage` for the daily request cap. FRED's adapter owns its pacing.
 
 `Meridian.Core.Currency.CurrencyMinorUnits.GetPrecision` delegates to `Meridian.Contracts.Ledger.CurrencyMinorUnits`, so the ISO 4217 minor-unit table is maintained in one place.
 

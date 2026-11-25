@@ -3,6 +3,7 @@ using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Ledger;
 using Meridian.Storage.Export;
+using Meridian.Storage.Ledger;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Serialization;
 using Microsoft.AspNetCore.Builder;
@@ -25,6 +26,19 @@ public static partial class WorkstationEndpoints
             (string runId, string symbol, DateTimeOffset? from, DateTimeOffset? to, int? offset, int? limit, HttpContext context) =>
                 ReadRunLedgerEntriesAsync(runId, from, to, symbol, offset, limit, context)))
             .WithName("GetRunSymbolLedger");
+
+        // Re-verifies the run's append-only, hash-chained journal from its genesis record. 404 means
+        // the run never wrote one (it predates durable journals, or ran without a journal store).
+        AddLedgerRead(group.MapGet(WorkstationSubroute(UiApiRoutes.RunsLedgerIntegrity), async (string runId, HttpContext context) =>
+        {
+            var journals = context.RequestServices.GetService<ILedgerJournalLogFactory>();
+            if (journals is null)
+                return Results.Problem("Ledger journal store is not registered.", statusCode: 501);
+            var verification = await journals.VerifyAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            return verification is null
+                ? Results.NotFound()
+                : Results.Json(verification, RunLedgerQueryJsonContext.Default.LedgerJournalChainVerification);
+        })).WithName("GetRunLedgerIntegrity");
 
         AddLedgerRead(group.MapGet(WorkstationSubroute(UiApiRoutes.RunsLedgerAccounts),
             (string runId, DateTimeOffset? asOf, string? financialAccountId, HttpContext context) =>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { KPI_REGISTRY, kpiAttributes, parseKpiMoney, resolveKpi, workspaceKpiIds, type KpiReadModels } from "@/lib/kpi-registry";
+import { KPI_DEFINITIONS, KPI_REGISTRY, kpiAttributes, parseKpiMoney, resolveKpi, workspaceKpiIds, type KpiReadModels } from "@/lib/kpi-registry";
 import type { FinancialRecordExplorerDto, PortfolioWorkspaceResponse, TradingPosition } from "@/types";
 
 function portfolio(positions: Partial<TradingPosition>[], metrics: PortfolioWorkspaceResponse["metrics"] = []): PortfolioWorkspaceResponse {
@@ -108,8 +108,8 @@ describe("KPI registry ownership and financial meaning", () => {
     expect(resolveKpi("portfolio.open-positions", models, { run: "run-42" }).status).toBe("unavailable");
   });
 
-  it("selects only registered IDs and keeps total runs separate from active runs", () => {
-    expect(workspaceKpiIds("strategy", [{ id: "runs" }, { id: "active-runs" }, { id: "queued" }, { id: "unknown" }])).toEqual(["strategy.runs", "strategy.active-runs", "strategy.queued"]);
+  it("selects only registered IDs and never shows a legacy total-runs card the server does not send", () => {
+    expect(workspaceKpiIds("strategy", [{ id: "runs" }, { id: "active-runs" }, { id: "queued" }, { id: "unknown" }])).toEqual(["strategy.active-runs", "strategy.queued"]);
     expect(workspaceKpiIds("data", [{ id: "providers" }, { id: "providers-healthy" }, { id: "kernel-critical-jumps" }])).toEqual(["data.providers-healthy", "data.kernel-critical-jumps"]);
   });
 
@@ -126,6 +126,25 @@ describe("KPI registry ownership and financial meaning", () => {
     expect(resolveKpi("portfolio.total-exposure", models).status).toBe("unavailable");
   });
 
+  it("carries the producer's open-break history only when it ends on the count shown", () => {
+    const history = [{ date: "2026-11-16", value: 3 }, { date: "2026-11-17", value: 2 }];
+    const models = (openBreaks: number) => ({
+      accounting: { workspace: { openBreaks }, breakQueue: [], metrics: [{ id: "open-breaks", value: String(openBreaks), label: "Open breaks", tone: "warning", delta: "", history, historyBasis: "Rebuilt from break times." }] }
+    }) as unknown as KpiReadModels;
+    expect(resolveKpi("accounting.open-breaks", models(2))).toMatchObject({ value: "2", history, historyBasis: "Rebuilt from break times." });
+    // A count from a source the series does not end on gets no sparkline rather than a contradicting one.
+    expect(resolveKpi("accounting.open-breaks", models(5)).history).toBeUndefined();
+  });
+
+  it("carries the timing-drift history with the producer's own figure", () => {
+    const history = [{ date: "2026-11-15", value: null }, { date: "2026-11-16", value: 0 }, { date: "2026-11-17", value: 1 }];
+    const models = {
+      accounting: { metrics: [{ id: "timing-drift", value: "1", label: "Timing Drift", tone: "warning", delta: "0%", history, historyBasis: "Rebuilt from reconciliation history." }] }
+    } as unknown as KpiReadModels;
+    // The figure is the producer's metric itself, and the producer ends the series on that figure.
+    expect(resolveKpi("accounting.timing-drift", models)).toMatchObject({ value: "1", history, historyBasis: "Rebuilt from reconciliation history." });
+  });
+
   it("uses shared cross-screen definitions for providers, open orders and open breaks", () => {
     const models = {
       crossScreenCounts: { asOf: "2026-11-14T12:00:00Z", providers: { healthy: 3, total: 4, definition: "Healthy status" }, openOrders: { count: 7, definition: "Open order manager rows" }, openBreaks: { count: 2, definition: "Unresolved breaks" } },
@@ -133,7 +152,12 @@ describe("KPI registry ownership and financial meaning", () => {
       accounting: { workspace: { openBreaks: 10 }, breakQueue: [], metrics: [{ id: "breaks", value: "10", label: "Open breaks", tone: "warning", delta: "2 new since your last visit" }] }
     } as unknown as KpiReadModels;
     expect(resolveKpi("system.providers-online", models).value).toBe("3 of 4 providers");
-    expect(resolveKpi("data.providers-healthy", models).value).toBe("1 of 1 provider");
+    // Data shows the same shared figure as Today and Settings, with the same population.
+    expect(resolveKpi("data.providers-healthy", models).value).toBe("3 of 4 providers");
+    expect(resolveKpi("data.providers-healthy", models).population).toBe(resolveKpi("system.providers-online", models).population);
+    // Without the shared count (no provider permission), the loaded rows are counted and say so.
+    const withheld = { ...models, crossScreenCounts: { ...models.crossScreenCounts, providers: null } } as unknown as KpiReadModels;
+    expect(resolveKpi("data.providers-healthy", withheld)).toMatchObject({ value: "1 of 1 provider", population: "Providers visible to you" });
     expect(resolveKpi("trading.open-orders", models).value).toBe("1");
     expect(resolveKpi("accounting.open-breaks", models)).toMatchObject({ value: "10", delta: "2 new since your last visit" });
   });
@@ -146,7 +170,10 @@ describe("KPI registry ownership and financial meaning", () => {
 
   it("publishes canonical observations from the exact rendered resolution", () => {
     const result = resolveKpi("portfolio.total-exposure", { portfolio: portfolio([{ exposure: "$37,699" }]) });
-    expect(kpiAttributes(result)).toEqual({ "data-kpi-id": result.id, "data-kpi-scope": result.scope, "data-kpi-value": result.canonicalValue, "data-kpi-display": "$37,699" });
+    expect(kpiAttributes(result)).toEqual({ "data-kpi-id": result.id, "data-kpi-scope": result.scope, "data-kpi-value": result.canonicalValue, "data-kpi-display": "$37,699", "data-kpi-population": "Live holdings · all accounts" });
     expect(Object.values(KPI_REGISTRY).every((definition) => definition.owner && definition.computation && definition.scopeDimensions.length && definition.currencyRule)).toBe(true);
+    // Every registered figure states what it counts; none is left to the page.
+    expect(Object.keys(KPI_DEFINITIONS).sort()).toEqual(Object.keys(KPI_REGISTRY).sort());
+    expect(Object.values(KPI_DEFINITIONS).every((definition) => definition.population.trim().length > 0)).toBe(true);
   });
 });

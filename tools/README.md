@@ -1,6 +1,6 @@
 # Tools Directory Guide
 
-**Last Updated:** 2026-05-23
+**Last Updated:** 2026-11-18
 
 This folder contains small utility scripts used to keep Meridian documentation consistent and machine-checkable.
 
@@ -8,7 +8,7 @@ If you are new to the project, start here instead of opening individual Python f
 
 ## Automation ownership
 
-Choose an entrypoint by its contract rather than its filename. The three automation roots
+Choose an entrypoint by its contract rather than its filename. The automation roots below
 remain active; similarly named commands can validate different inputs or produce different outputs.
 
 | Location | Responsibility | Entry points and outputs |
@@ -19,6 +19,12 @@ remain active; similarly named commands can validate different inputs or produce
 | `tools/roadmap/` | Roadmap fixture and evidence contracts | Supports standalone fixture validation and delegates canonical registry validation for repository data. |
 | `tools/source_docs/` | Source-documentation contract fixtures and deterministic views | Maintains its fixture checks and `docs/generated/source/` outputs; it does not replace the canonical source-registry renderer. |
 | `tools/source_reference/`, `tools/schema_control/` | Specialist extraction and schema-control implementations | Public reference and schema commands under `build/scripts/` use these modules. |
+| `tools/codex/` | Codex-host PowerShell quality scans | Architecture, MVVM, component-inventory and resource scans invoked by `.codex/skills/`; reports go to `artifacts/codex/`. |
+| `build/scripts/ci/` | CI ratchets and lane helpers | God-file, raw-evidence, duplicate-helper and similar ratchets with baselines in `build/config/`; called from `scripts/ci.sh`. |
+| `make/` | Optional GNU Make wrappers | `*.mk` fragments included by the root `Makefile`; each target delegates to `scripts/ci.sh`, `buildctl.py` or a direct `dotnet`/`npm` command. |
+
+`plugins/` is not automation: it holds vendored Copilot plugin snapshots (see
+[plugins/README.md](../plugins/README.md)).
 
 Add shared logic to the owning implementation and keep command wrappers thin. Consolidate
 implementations only after their contract tests establish equivalent behavior; preserve distinct

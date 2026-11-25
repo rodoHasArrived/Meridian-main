@@ -6,10 +6,28 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-14
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Application
+
+Corporate-action ingest forwards specialized source terms and the provider's original JSON
+record into durable source proposals. Exact raw-text digests are checked before recording; source
+versions remain idempotent across JSON formatting changes without replacing the first retained
+payload. Amendments retain earlier versions. Providers can preserve unknown upstream currency,
+and fetch outcomes retain explicit endpoint/type coverage. These observations remain review-only;
+source agreement does not accept a canonical event or authorize accounting.
+
+`SecurityMaster/Valuation/AssetPositionMarketValuationService` adapts an owned book's exact dated
+instrument-position projection to registered valuation models. It resolves retained-only dated
+Security Master terms, validates their economic window, checks position/state identity and all
+book/policy/account/currency boundaries, and replays the exact golden-copy receipt for quoted
+prices. Stale or mismatched evidence blocks amounts. Supported long holder share/unit conventions
+and original-face DCF delegate to existing kernels; multiplier/notional and ambiguous signed
+conventions require dedicated adapters. DCF dirty values withhold P/L without a compatible
+carrying/accrual basis. The comparison is market value less retained carrying amount, separate
+from posted ledger, realized, tax-cost or total-return P/L. `KnownAt` is refused because projection
+history does not certify historical transaction visibility. Tests: `AssetPositionMarketValuationServiceTests`.
 
 Native intercompany legal rules validate structured declarations without turning them into accrual
 or settlement calculations. The shared preview reuses schedule/day-count/calendar kernels for
@@ -19,6 +37,20 @@ revisions and principal; it reads no ledger and authorizes no journal. An explic
 record external legal review while ordinary independent review remains available; legal lifecycle
 revisions retain the same separate audit facts. See
 [terms and review boundaries](../../docs/domain/intercompany-agreements.md).
+
+`IntercompanyFeeAccrualPreviewService` is the pure calculator for fixed management fees under rule
+`intercompany-fee-v1`: per-period fees prorate by covered days, per-annum fees by the declared day count.
+See [governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
+`IntercompanyAccrualPreviewService` computes floating slices under rule `intercompany-accrual-v2` from
+the approved fixing of each period plus the spread, and refuses a window with a missing fixing.
+`IntercompanyRateFixingRules` and `IntercompanyRateFixingService` own maker-checker fixing history;
+`IntercompanyEntityServiceRegistration` composes its PostgreSQL or file store. See
+[floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
+`IntercompanyAccrualPreviewService` compounds at each schedule period start on posted accrued interest under
+rule `intercompany-accrual-v3`, refusing uncovered earlier days and multi-period windows. See
+[periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
 
 Structured decimal normalization preserves representable declarations when canonical formatting
 uses an exponent. Retrying an externally reviewed lifecycle append repairs an interrupted local
@@ -31,7 +63,21 @@ The current runtime cannot rebuild providers in process, so pending provider rec
 `RequiresRestart=true`; clients must not imply that a connection retry applies new provider options.
 Later live saves retain outstanding restart/reconnect changes; reverting a field to its host baseline
 clears that field's pending state. The journal stores value hashes rather than configuration values.
+After a durable save, `ConfigStore` offers the changed paths to `IConfigurationRuntimeApplier`s attached
+to that file (`ConfigurationRuntimeAppliers`, process-wide because desktop mode hosts the UI server and
+collector in separate containers). Applied paths stop being pending; deferred paths stay
+`RestartHost` with a reason in `ConfigurationChangeStatus.LastApply`; applier failures never fail
+the save. `ProviderConfigReconciler` (attached by `CollectorModeRunner` when streaming failover runs)
+applies failover rule thresholds, backup order among providers with a live client, the health-check
+interval and source enable/disable live, and reports settings the runtime does not read as
+`NoRuntimeEffect`. `CrossProviderPolicyApplier` applies `DataQuality.CrossProvider` tolerances to the
+running `CrossProviderComparisonService`. The collector also publishes its coordinator to
+`StreamingFailoverRegistry.Process` and honours `Sources[*].Enabled = false` at startup.
 `SaveAsync` now also refuses to overwrite a malformed existing authoritative document.
+Feature-capability override saves record their setting changes after the document is durably saved.
+The effective configuration projection reads declared fields and reports activation impact and
+source. It summarizes dictionaries, leaves additional sections out of the response, and masks
+credentials and free-form text.
 
 Provider routing rejects disabled connections and policy-gated fallbacks consistently across direct
 and scored selection. Catalog metadata placeholders yield to the first concrete capability factory.
@@ -110,6 +156,13 @@ book-control, atomic proposal and consolidation commit boundaries; local file co
 scope and explicit unavailable capabilities. Generic posting delegates validated consolidation to
 its specialized authority instead of reacquiring the same fences. See
 [the staged implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
+`IntercompanyEntityServiceRegistration` also composes the advisory `IntercompanyBalanceConfirmationService` over a
+PostgreSQL store (ledger migration `073`) when a ledger database is configured, otherwise an atomic
+file store. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
+`IntercompanyEntityServiceRegistration` also composes the accrual-schedule store: PostgreSQL (ledger
+migration `074`) with a ledger database, otherwise an atomic file store. See [opt-in accrual schedules](../../docs/domain/intercompany-agreements.md#opt-in-accrual-schedules).
 
 `DirectLendingJournalLines.ForEvent` owns the loan journal templates consumed by both
 `LoanAccountingProjector` and `DirectLendingOutboxDispatcher`. Their trading cash and loan-specific
@@ -253,7 +306,8 @@ Its banking schema follows `BankingStartup.SchemaVariable`; funding requires ret
 in the same database as the ledger for atomic source validation. Business workflows remain owned
 by Financial Operations and shared workstation services, rather than this composition layer.
 With a ledger connection string, storage composition also selects `PostgresOnboardingWorkspaceStore`
-for onboarding and shadow-mode workspaces, replacing the workstation's file fallback.
+for onboarding and shadow-mode workspaces, and `PostgresRecurringJournalStore` for recurring journal
+definitions and occurrence claims, replacing the workstation's file fallbacks.
 
 Bond cash-flow context receipts now use `bond-cash-flow-context-v5`, retaining fixed-rate interest-principal segments alongside existing declared/floating evidence. Replay dispatches v1–v4 through their original row contracts and arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
 
@@ -457,6 +511,15 @@ StructuredCredit proposal, and returns ready proposals (the exact stamped terms 
 path would persist) ahead of blocked ones (the terms carried over plus the blockers). Records whose
 stored terms cannot be mapped are counted as unreadable and logged, never guessed. The service
 writes nothing; applying a proposal is a governed amendment.
+
+`SecurityMasterClassificationDriftReportService` lists active securities whose latest retained
+event recorded an asset class or family that the current F# `AssetClassRegistry` taxonomy now derives
+differently, grouped by class and stored labels (`POST /api/security-master/classification-drift/report`,
+`AdminMaintenance`). Classification is derived on read, so current projections already carry the
+current labels; retained events are append-only and keep theirs. The report is the evidence of a
+taxonomy revision and writes nothing. `SecurityClassificationTaxonomy` holds the comparison; the
+workstation change history also uses it to label such a change "Taxonomy revision" rather than
+"Classification".
 
 `SecurityMasterProfilePromotionService` builds the CustomAsset promotion report for one
 reclassifying profile. For each active `CustomAsset` pinned to it, it runs the main checks an
@@ -734,14 +797,23 @@ requires per-loan tenant authority before those workers can be enabled.
 Bond cash-flow context overloads resolve retained terms once, honor forward-curve recorded cutoffs, and retain content-addressed calculation receipts under `bonds/calculations`. The passive `GetProjectionBlockerAsync` capability read uses the same current calculation rules on selected terms and cutoffs, retains no receipt, and returns only a typed refusal. Replay reloads immutable inputs and checks calendar hashes rather than substituting current terms. Storage composition shares the durable bond-cutover policy with calculation and accounting orchestration; the ledger composition preserves independent approval and replay. See [bond expansion](../../docs/engineering/plans/bond-capability-expansion.md).
 
 Provider routing previews accept a restricted, read-only proposed configuration: tenant-owned binding
-priority/enabled changes or host backfill provider priority/enabled changes. The host backfill preview
-constructs adapters with the authoritative prepared credential resolver, then disposes them without
-fetching data or changing saved configuration. Daily symbol/date queries disclose that vendor coverage,
+priority/enabled changes or host backfill provider priority/enabled changes. The effective backfill
+preview reads the active routing snapshot. A proposed preview constructs adapters with the prepared
+credential resolver and disposes them after projecting the order. Daily symbol/date queries disclose that vendor coverage,
 network health and current quota remain unverified; fabricated Synthetic selections and enabled but
 unavailable vendors are explicit. Composite and quota-rotation ordering hold fabricated adapters behind
 observed vendors regardless of numeric priority, retaining explicit Source stamps when real-vendor failure
 requires a synthetic fallback. `BackfillRoutingLint` adds fabricated-fallback warnings to the unified
 configuration pipeline after credential resolution. Focused invariant coverage is in `RoutingPreviewTests`.
+
+The host builds backfill adapters at startup using the active credentials, pacing, and feed settings.
+Provider enablement and priority apply to jobs that start after the operator saves the edit. Each running
+job keeps its chosen route through retries. Scheduled jobs read their ordered provider preferences when
+they begin. Set `Backfill.Jobs.Scheduling.Enabled` to enable the schedule worker on a collector or workstation host.
+
+Workstation backfills and gap repair load the saved daily staleness tolerance when the job starts.
+`HistoricalBackfillService` uses the shared provider profile resolver for both validation and
+per-candidate daily fallback. Deployment-scheduled backfills use the profiles loaded at host startup.
 
 ## Purpose
 
@@ -1051,6 +1123,11 @@ Core workstation host. Do not introduce a second listener or independent monitor
 - `Backfill/` - historical backfill request orchestration and execution coordination. Shared run
   results and per-symbol validation signals live in `Meridian.Contracts.Backfill`, while durable
   last-run status, checkpoints, and bar-count sidecars live in `Meridian.Storage.Backfill`.
+  `WorkstationBackfillQueue` retains tenant-scoped, one-off submissions in execution history and
+  uses the shared coordinator for due jobs. `BackfillQuotaPlanner` combines the partition plan,
+  historical adapter diagnostics, and host policy. The submission estimate anchors the receipt's
+  request and duration variance. The [operator workflow](../../docs/operators/provider-backfill-operations.md#workstation-quota-and-receipts)
+  describes scheduling, policy configuration, and restart handling.
   Automatic gap-analyzer remediation batches same-provider, same-window symbol gaps into one
   deterministic request and retained execution-history entry; data-quality and quality-alert
   remediation paths remain single-symbol signals. A remediation is retained as completed only after
@@ -1779,6 +1856,15 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | --- | --- | --- | --- |
 | `TODO-SRC-APP-001` | Complete W6 backtesting evidence loop linkage to strategy lineage | done | medium |
 <!-- source-todos:end -->
+
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+`AddIntercompanyEntityServices` registers `PostgresManualJournalEntryDraftStore` (ledger migration 077) and
+`PostgresIntercompanyConfirmationClosePolicyStore` (ledger migration 078) when `MERIDIAN_LEDGER_CONNECTION_STRING`
+is configured, and the file close-policy store otherwise; hosts without a ledger database keep the workstation's
+file draft store. It also registers `IntercompanyConfirmationClosePolicyService` and `IIntercompanyConfirmationCloseGate`.
+The gate is composed whenever the policy store exists, so an active policy fails closed on a host that cannot read
+confirmation status. See [ADR-032](../../docs/adr/032-intercompany-confirmation-close-policy.md).
 
 ## Validation
 

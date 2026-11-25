@@ -27,7 +27,7 @@ public sealed class LedgerApiClient
         ValidateSegment(runId, nameof(runId));
         if (maxResponseCharacters is <= 0 or > MaximumResponseCharacters)
             throw new ArgumentOutOfRangeException(nameof(maxResponseCharacters), "The response limit must be positive and cannot exceed the trial-balance tool's limit.");
-        if (view is not ("entries" or "accounts" or "trial-balance" or "trial-balance/as-of" or "running-balance") && !view.StartsWith("symbols/", StringComparison.Ordinal))
+        if (view is not ("entries" or "accounts" or "trial-balance" or "trial-balance/as-of" or "running-balance" or "integrity") && !view.StartsWith("symbols/", StringComparison.Ordinal))
             throw new ArgumentException("Unsupported ledger view.", nameof(view));
         var path = $"api/workstation/runs/{Uri.EscapeDataString(runId)}/ledger/{view}";
         if (query is not null)

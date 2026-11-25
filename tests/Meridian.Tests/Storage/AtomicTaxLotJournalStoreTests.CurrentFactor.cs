@@ -107,7 +107,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             SubjectId = lot.TaxLotRecordId.ToString("D"),
             EffectiveDate = lot.AcquiredDate
         };
-        var authority = await database.SeedLotReferenceAuthorityAsync(lot.LedgerBookId, lot.SecurityId, lot.BookPositionId);
+        var authority = await database.SeedLotReferenceAuthorityAsync(lot.LedgerBookId, lot.SecurityId, lot.BookPositionId, assetClass: "Bond");
         command = (command with
         {
             ReferenceVersions = authority.Versions,

@@ -1,0 +1,94 @@
+<UserControl x:Class="Meridian.Wpf.Views.IntercompanyBalanceConfirmationControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.Name="Reciprocal balance confirmation">
+    <UserControl.Resources>
+        <Style TargetType="TextBox" BasedOn="{StaticResource FormTextBoxStyle}">
+            <Setter Property="Margin" Value="0,3,12,10" />
+            <Setter Property="MinWidth" Value="160" />
+            <Setter Property="Padding" Value="6" />
+        </Style>
+        <Style TargetType="Button" BasedOn="{StaticResource ConsoleButtonStyle}">
+            <Setter Property="Margin" Value="0,4,8,4" />
+            <Setter Property="Padding" Value="10,5" />
+        </Style>
+        <Style TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="CanUserDeleteRows" Value="False" />
+            <Setter Property="Margin" Value="0,8,0,12" />
+        </Style>
+    </UserControl.Resources>
+    <UserControl.Style>
+        <Style TargetType="UserControl">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsBusy}" Value="True"><Setter Property="IsEnabled" Value="False" /></DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Style>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16">
+            <TextBlock Text="Reciprocal balance confirmation" FontSize="20" FontWeight="SemiBold" />
+            <TextBlock Text="Each side confirms the due-to/due-from balance the other side holds, from posted journals only. No amount is entered here. Confirmation status is advisory: it appears in close readiness and never blocks close or posting. Records and permissions are shared with the browser workstation."
+                       Margin="0,5,0,12" TextWrapping="Wrap" />
+            <WrapPanel>
+                <StackPanel><TextBlock Text="Ledger book ID" /><TextBox Text="{Binding LedgerBook, UpdateSourceTrigger=PropertyChanged}" Width="300" AutomationProperties.Name="Confirmation ledger book" /></StackPanel>
+                <StackPanel><TextBlock Text="Confirmation as of (yyyy-MM-dd)" /><TextBox Text="{Binding AsOf, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Confirmation as-of date" /></StackPanel>
+                <Button Content="Load confirmations" Command="{Binding LoadCommand}" VerticalAlignment="Center" />
+            </WrapPanel>
+            <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" AutomationProperties.Name="Balance confirmation status" AutomationProperties.LiveSetting="Polite" />
+            <TextBlock Text="{Binding PermissionNote}" TextWrapping="Wrap" Margin="0,4,0,0" AutomationProperties.Name="Balance confirmation permission" />
+            <TextBlock Text="{Binding SummaryText}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,10,0,0" AutomationProperties.Name="Balance confirmation summary" AutomationProperties.LiveSetting="Polite" />
+            <ItemsControl ItemsSource="{Binding Findings}" AutomationProperties.Name="Balance confirmation findings">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate><TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,2,0,0" /></DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <DataGrid ItemsSource="{Binding Confirmations}" SelectedItem="{Binding SelectedConfirmation}" MaxHeight="240" AutomationProperties.Name="Reciprocal balance confirmations">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Accounting profile" Binding="{Binding Profile}" Width="300" />
+                    <DataGridTextColumn Header="Status" Binding="{Binding StatusText}" Width="240" />
+                    <DataGridTextColumn Header="Party one balance" Binding="{Binding PartyOne}" Width="260" />
+                    <DataGridTextColumn Header="Party two balance" Binding="{Binding PartyTwo}" Width="260" />
+                    <DataGridTextColumn Header="Net" Binding="{Binding Net}" Width="160" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <Expander Header="Selected confirmation history">
+                <TextBox Text="{Binding SelectedConfirmation.History, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" AutomationProperties.Name="Balance confirmation history" />
+            </Expander>
+            <TextBlock Text="This book's side" FontWeight="SemiBold" Margin="0,10,0,0" />
+            <WrapPanel>
+                <StackPanel><TextBlock Text="Dispute or resolution reason" /><TextBox Text="{Binding Reason, UpdateSourceTrigger=PropertyChanged}" Width="420" AutomationProperties.Name="Balance confirmation reason" /></StackPanel>
+                <Button Content="Confirm this book's balance" Command="{Binding ConfirmCommand}" VerticalAlignment="Center" />
+                <Button Content="Dispute" Command="{Binding DisputeCommand}" VerticalAlignment="Center" />
+                <Button Content="Resolve dispute" Command="{Binding ResolveCommand}" VerticalAlignment="Center" />
+            </WrapPanel>
+            <TextBlock Text="Pin current balances for confirmation" FontWeight="SemiBold" Margin="0,10,0,0" />
+            <WrapPanel>
+                <StackPanel><TextBlock Text="Approved accounting profile mapping this book" />
+                    <ComboBox ItemsSource="{Binding Profiles}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding SelectedProfile}"
+                              Style="{StaticResource FormComboBoxStyle}" Width="420" Margin="0,3,12,10" AutomationProperties.Name="Confirmation accounting profile" /></StackPanel>
+                <Button Content="Pin current balances" Command="{Binding ProposeCommand}" VerticalAlignment="Center" />
+            </WrapPanel>
+            <TextBlock Text="Confirmation close policy" FontWeight="SemiBold" Margin="0,10,0,0" />
+            <TextBlock Text="{Binding ClosePolicyText}" TextWrapping="Wrap" AutomationProperties.Name="Confirmation close policy status" AutomationProperties.LiveSetting="Polite" />
+            <TextBlock Text="Findings that block close (proposal)" Margin="0,6,0,0" />
+            <ItemsControl ItemsSource="{Binding BlockingCodeChoices}" AutomationProperties.Name="Close policy blocking findings">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <CheckBox Content="{Binding Label}" IsChecked="{Binding IsSelected}" Margin="0,2,0,2" AutomationProperties.Name="{Binding Label}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <WrapPanel>
+                <StackPanel><TextBlock Text="Close policy reason" /><TextBox Text="{Binding ClosePolicyReason, UpdateSourceTrigger=PropertyChanged}" Width="420" AutomationProperties.Name="Close policy reason" /></StackPanel>
+                <Button Content="Propose close policy" Command="{Binding ProposeClosePolicyCommand}" VerticalAlignment="Center" />
+                <Button Content="Approve close policy" Command="{Binding ApproveClosePolicyCommand}" VerticalAlignment="Center" />
+                <Button Content="Reject close policy" Command="{Binding RejectClosePolicyCommand}" VerticalAlignment="Center" />
+                <Button Content="Disable close policy" Command="{Binding DisableClosePolicyCommand}" VerticalAlignment="Center" />
+            </WrapPanel>
+            <TextBlock Text="The person who proposed a policy cannot approve it; the server enforces this." TextWrapping="Wrap" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

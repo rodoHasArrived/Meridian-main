@@ -46,6 +46,29 @@ public sealed partial class IntercompanyAgreementWorkspaceTests
         Assert.Null(terms.StructuredTerms!.FixedAnnualRate);
         Assert.Equal("Declared SOFR", terms.StructuredTerms.FloatingIndexReference);
         Assert.Equal(123.456789m, terms.StructuredTerms.SpreadBps);
+        Assert.Null(terms.StructuredTerms.FixingLagBusinessDays);
+    }
+
+    [Fact]
+    public async Task FloatingLoanSendsTheDeclaredFixingLag_AndAFixedLoanNeverDoes()
+    {
+        var client = new Client();
+        var view = await DraftAsync(client);
+        view.UseStructuredTerms = true;
+        view.ScheduleStart = "2026-01-01";
+        view.ScheduleEnd = "2027-01-01";
+        view.CalendarId = "WEEKENDS";
+        view.RateBasis = IntercompanyRateBasisDto.Floating;
+        view.FloatingIndexReference = "SOFR";
+        view.SpreadBps = "125";
+        view.FixingLagBusinessDays = "2";
+        await view.SaveCommand.ExecuteAsync(null);
+        Assert.Equal(2, Assert.Single(client.Commands).Draft!.Terms!.StructuredTerms!.FixingLagBusinessDays);
+
+        view.RateBasis = IntercompanyRateBasisDto.Fixed;
+        view.FixedAnnualRate = "0.05";
+        await view.SaveCommand.ExecuteAsync(null);
+        Assert.Null(client.Commands[^1].Draft!.Terms!.StructuredTerms!.FixingLagBusinessDays);
     }
 
     [Fact]
@@ -100,6 +123,29 @@ public sealed partial class IntercompanyAgreementWorkspaceTests
         Assert.Equal("retained-document", command.ExternalReview.Evidence.ArtifactId);
         view.UseExternalReview = false;
         Assert.False(view.ApproveCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public async Task AFixedManagementFeeSendsItsDeclaredBasis_AndOnlyAPerAnnumFeeCarriesADayCount()
+    {
+        var client = new Client();
+        var view = await DraftAsync(client);
+        view.AgreementType = IntercompanyAgreementTypeDto.ManagementFee;
+        view.UseStructuredTerms = true;
+        view.ScheduleStart = "2026-01-01";
+        view.ScheduleEnd = "2027-01-01";
+        view.CalendarId = "WEEKENDS";
+        view.FixedFeeAmount = "30000";
+        view.FixedFeeBasis = "PerPeriod";
+        view.DayCount = IntercompanyDayCountDto.Actual360;
+        await view.SaveCommand.ExecuteAsync(null);
+        var perPeriod = client.Commands[^1].Draft!.Terms!.StructuredTerms!;
+        Assert.Equal((IntercompanyFixedFeeBasisDto.PerPeriod, (IntercompanyDayCountDto?)null), (perPeriod.FixedFeeBasis!.Value, perPeriod.DayCount));
+
+        view.FixedFeeBasis = "PerAnnum";
+        await view.SaveCommand.ExecuteAsync(null);
+        var perAnnum = client.Commands[^1].Draft!.Terms!.StructuredTerms!;
+        Assert.Equal((IntercompanyFixedFeeBasisDto.PerAnnum, IntercompanyDayCountDto.Actual360), (perAnnum.FixedFeeBasis!.Value, perAnnum.DayCount!.Value));
     }
 
     [Fact]

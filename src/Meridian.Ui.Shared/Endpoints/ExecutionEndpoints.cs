@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Interfaces;
@@ -32,6 +33,17 @@ public static partial class ExecutionEndpoints
         group.AddEndpointFilter(async (invocation, next) =>
         {
             var context = invocation.HttpContext;
+            if (PaperSessionPersistenceService.IsStrategyRunSessionId(context.Request.RouteValues["sessionId"] as string))
+                return Results.NotFound();
+
+            if (context.RequestServices.GetService<IOrderManager>() is Meridian.Execution.OrderManagementSystem { ScopedPaperBook: { } paper })
+            {
+                var permission = HttpMethods.IsGet(context.Request.Method)
+                    ? UserPermission.ViewTrades : UserPermission.ManageOrders;
+                if (!await CanAccessScopedPaperBookAsync(context, paper, permission).ConfigureAwait(false))
+                    return EndpointHelpers.Forbidden();
+            }
+
             if (HttpMethods.IsGet(context.Request.Method)
                 && context.RequestServices.GetService<IPortfolioState>() is BrokeragePortfolioState brokerage)
             {
@@ -117,26 +129,35 @@ public static partial class ExecutionEndpoints
 
         // --- Orders ---
 
-        group.MapGet("/orders", (HttpContext context) =>
+        group.MapGet("/orders", async (HttpContext context) =>
         {
             var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
             var orders = oms.GetOpenOrders();
-            return Results.Json(orders, jsonOptions);
+            var scopedAccounts = orders.Where(static order => order.IntentId.HasValue && order.FundAccountId.HasValue)
+                .Select(static order => order.FundAccountId!.Value).Distinct().ToArray();
+            var allowed = await EndpointAuthorization.AuthorizeScopedManyAsync(context, UserPermission.ViewTrades,
+                AccessScopeKindDto.Account, scopedAccounts, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(orders.Where(order => !order.IntentId.HasValue ||
+                (order.FundAccountId is { } account && allowed.Contains(account))).ToArray(), jsonOptions);
         })
         .WithName("GetOpenOrders").RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<OrderState>>(200)
         .Produces(503);
 
-        group.MapGet("/orders/{orderId}", (string orderId, HttpContext context) =>
+        group.MapGet("/orders/{orderId}", async (string orderId, HttpContext context) =>
         {
             var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
             var order = oms.GetOrder(orderId);
+            if (order is { IntentId: not null } && (order.FundAccountId is not { } accountId ||
+                !await EndpointAuthorization.HasScopedPermissionAsync(context, UserPermission.ViewTrades,
+                    AccessScopeKindDto.Account, accountId, context.RequestAborted).ConfigureAwait(false)))
+                return Results.NotFound();
             return order is null
                 ? Results.NotFound()
                 : Results.Json(order, jsonOptions);
@@ -146,7 +167,7 @@ public static partial class ExecutionEndpoints
         .Produces(404)
         .Produces(503);
 
-        group.MapPost("/orders/submit", async (OrderRequest request, HttpContext context) =>
+        group.MapPost("/orders/submit", async (OrderRequest request, string? paperSessionId, HttpContext context) =>
         {
             if (!HasExecutionTradingPermission(context, UserPermission.ManageOrders))
             {
@@ -182,30 +203,75 @@ public static partial class ExecutionEndpoints
                 return brokerAccountFailure;
             }
 
-            if (request.FundAccountId is { } fundAccountId
-                && await RequireExecutionFundAccountAccessAsync(
-                    fundAccountId,
-                    UserPermission.ManageOrders,
-                    context,
-                    jsonOptions).ConfigureAwait(false) is { } accountScopeFailure)
+            if (PaperSessionPersistenceService.IsStrategyRunSessionId(paperSessionId?.Trim()))
+                return EndpointHelpers.Forbidden();
+
+            if (request.IntentId is { } intentId)
+            {
+                if (!string.IsNullOrWhiteSpace(paperSessionId))
+                    return Results.BadRequest(new { error = "Scoped manual paper intents use the account's default session." });
+                return await SubmitPaperIntentAsync(request, intentId, actor, oms, context, jsonOptions).ConfigureAwait(false);
+            }
+
+            if (request.FundAccountId is not { } ticketAccount || ticketAccount == Guid.Empty)
+                return Results.BadRequest(new OrderResult
+                {
+                    Success = false,
+                    OrderId = request.ClientOrderId ?? "blocked",
+                    ErrorMessage = "Select a fund account before submitting a Paper ticket."
+                });
+
+            if (await RequireExecutionFundAccountAccessAsync(
+                ticketAccount, UserPermission.ManageOrders, context, jsonOptions).ConfigureAwait(false) is { } accountScopeFailure)
             {
                 return accountScopeFailure;
             }
 
-            string? correlationId = null;
-            request.Metadata?.TryGetValue("correlationId", out correlationId);
+            string? approvedPaperSessionId = null;
+            if (!string.IsNullOrWhiteSpace(paperSessionId))
+            {
+                if (!string.Equals(activeGatewayId, "paper", StringComparison.OrdinalIgnoreCase))
+                    return EndpointHelpers.Forbidden();
+
+                var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
+                if (persistence is null)
+                    return ExecutionPreDispatchUnavailable("Paper session management is not available.");
+
+                await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
+                var selection = paperSessionId.Trim();
+                var expectedAccount = ticketAccount.ToString("D");
+                if (!string.Equals(persistence.GetSessionAccountId(selection), expectedAccount, StringComparison.OrdinalIgnoreCase))
+                    return EndpointHelpers.Forbidden();
+
+                approvedPaperSessionId = selection;
+            }
+
+            // The correlation id is minted here: it identifies the order in the authority, journal,
+            // audit and any escalation, so a client must not choose it (for example one shaped like
+            // a governed release's "risk-escalation-<id>"). A client's own trace id is kept, under
+            // its own key.
+            string? clientCorrelationId = null;
+            request.Metadata?.TryGetValue("correlationId", out clientCorrelationId);
+            var ticketCorrelationId = GenerateActionId();
             var normalizedRequest = request with
             {
                 Metadata = MergeMetadata(
                     request.Metadata,
                     ("actor", actor),
-                    ("correlationId", string.IsNullOrWhiteSpace(correlationId) ? GenerateActionId() : correlationId))
+                    ("correlationId", ticketCorrelationId),
+                    ("sessionId", approvedPaperSessionId),
+                    ("clientCorrelationId", string.IsNullOrWhiteSpace(clientCorrelationId) ? null : clientCorrelationId.Trim()))
             };
+
+            // The account check above verified this operator for the named account, which is the
+            // grant the typed authority carries into the OMS.
+            var ticketAuthority = OrderSubmissionAuthority.ForOperatorTicket(
+                actor, HttpPrincipalAccountGrant(ticketAccount, actor), ticketCorrelationId, approvedPaperSessionId);
 
             OrderResult result;
             try
             {
-                result = await oms.PlaceOrderAsync(normalizedRequest, context.RequestAborted).ConfigureAwait(false);
+                result = await SubmitOperatorOrderAsync(oms, normalizedRequest, ticketAuthority, context.RequestAborted).ConfigureAwait(false);
             }
             catch (InvalidOperationException ex) when (OrderSubmissionRefusal.IsBeforeDispatch(ex))
             {
@@ -235,6 +301,7 @@ public static partial class ExecutionEndpoints
         .Produces<OrderResult>(202)
         .Produces<OrderResult>(400)
         .Produces<OrderResult>(403)
+        .Produces<OrderResult>(409)
         .Produces(429)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces<OrderResult>(502)
@@ -312,7 +379,12 @@ public static partial class ExecutionEndpoints
             var actionId = GenerateActionId();
             var openCount = oms.GetOpenOrders().Count;
 
-            var sweep = await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false)
+            // The sweep runs under kill-switch authority, recorded on every cancellation it makes.
+            // A missing identity is recorded as such rather than refusing the kill switch.
+            var killSwitch = OrderSubmissionAuthority.ForKillSwitch(
+                TryResolveActor(context, out var sweepActor) ? sweepActor : UnidentifiedKillSwitchActor,
+                actionId);
+            var sweep = await oms.CancelAllAsync(new OrderCancelAllCommand(killSwitch), context.RequestAborted).ConfigureAwait(false)
                 ?? KillSwitchSweepResult.Unestablished(openCount);
 
             logger.LogInformation(
@@ -335,7 +407,10 @@ public static partial class ExecutionEndpoints
                 StillWorking: sweep.StillWorking,
                 // Distinct from Status: a Completed sweep over an unenumerable broker book has
                 // emptied only the in-memory view, and the caller must be able to see that.
-                BrokerViewUnavailable: sweep.BrokerViewUnavailable ? true : null);
+                BrokerViewUnavailable: sweep.BrokerViewUnavailable ? true : null,
+                IncidentId: sweep.IncidentId,
+                EvidenceRetained: sweep.EvidenceRetained,
+                EvidenceError: sweep.EvidenceError);
 
             return Results.Json(actionResult, jsonOptions);
         })
@@ -381,6 +456,7 @@ public static partial class ExecutionEndpoints
         .Produces(503);
 
         MapExecutionAuditEndpoints(group, jsonOptions);
+        MapExecutionCancelIncidentEndpoints(group, jsonOptions);
 
         group.MapGet("/controls", (HttpContext context) =>
         {
@@ -433,7 +509,10 @@ public static partial class ExecutionEndpoints
                     // A null sweep is an order manager that established nothing about the book.
                     // Fail closed on it rather than dereferencing: the kill switch reporting
                     // "object reference not set" tells an operator nothing about their orders.
-                    var sweep = await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false)
+                    var killSwitch = OrderSubmissionAuthority.ForKillSwitch(
+                        actor,
+                        string.IsNullOrWhiteSpace(request.CorrelationId) ? GenerateActionId() : request.CorrelationId);
+                    var sweep = await oms.CancelAllAsync(new OrderCancelAllCommand(killSwitch), context.RequestAborted).ConfigureAwait(false)
                         ?? KillSwitchSweepResult.Unestablished(openCount);
                     sweepOutcome = sweep;
 
@@ -665,6 +744,7 @@ public static partial class ExecutionEndpoints
         // --- Session management ---
 
         MapPaperSessionEndpoints(group, jsonOptions);
+        MapPaperSessionReconciliationEndpoints(group, jsonOptions);
 
         // --- Multi-account endpoints ---
 
@@ -1016,7 +1096,7 @@ public static partial class ExecutionEndpoints
           .CreateLogger("Meridian.Ui.Shared.Endpoints.ExecutionEndpoints");
 
 
-    private static async Task<IResult?> RequireExecutionFundAccountAccessAsync(
+    internal static async Task<IResult?> RequireExecutionFundAccountAccessAsync(
         Guid fundAccountId,
         UserPermission requiredPermission,
         HttpContext context,
@@ -1026,6 +1106,11 @@ public static partial class ExecutionEndpoints
         {
             return Results.Unauthorized();
         }
+
+        if (context.RequestServices.GetService<IOrderManager>() is Meridian.Execution.OrderManagementSystem { ScopedPaperBook: { } paper } &&
+            (fundAccountId != paper.FundAccountId ||
+             !await CanAccessScopedPaperBookAsync(context, paper, requiredPermission).ConfigureAwait(false)))
+            return ExecutionFundAccountForbidden(jsonOptions);
 
         var scopedAuthorization = context.RequestServices.GetService<IScopedAuthorizationService>();
         if (scopedAuthorization is null)
@@ -1073,6 +1158,9 @@ public static partial class ExecutionEndpoints
 
     private static bool TryResolveActor(HttpContext context, out string actor)
         => EndpointAuthorization.TryResolveActor(context, out actor);
+
+    /// <summary>Recorded as the kill-switch actor when the request carries no resolvable identity.</summary>
+    private const string UnidentifiedKillSwitchActor = "unidentified-operator";
 
     private static bool HasExecutionControlMutationPermission(HttpContext context) =>
         HasExecutionTradingPermission(context, UserPermission.ManageOrders);

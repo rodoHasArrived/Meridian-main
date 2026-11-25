@@ -15,8 +15,12 @@ public sealed class PostedPeriodComparisonService(
         Guid bookId, Guid currentPeriodId, Guid? baselinePeriodId, DateTimeOffset asOf,
         LedgerDimensionSetDto? dimensions,
         Func<IReadOnlyList<LedgerJournalEntryRecord>, IReadOnlyList<LedgerJournalEntryDto>> project,
-        CancellationToken ct = default, AccountingBasisKindDto? accountingBasis = null)
+        CancellationToken ct = default, AccountingBasisKindDto? accountingBasis = null,
+        PostedComparisonMeasureDto measure = PostedComparisonMeasureDto.Movements)
     {
+        if (!Enum.IsDefined(measure))
+            throw new ArgumentException("The comparison measure is unsupported.");
+        var closingBalances = measure == PostedComparisonMeasureDto.ClosingBalances;
         if (string.IsNullOrWhiteSpace(tenantId) || string.IsNullOrWhiteSpace(companyId))
             throw new UnauthorizedAccessException("An exact tenant and company are required.");
         if (asOf > DateTimeOffset.UtcNow.AddSeconds(1))
@@ -55,20 +59,30 @@ public sealed class PostedPeriodComparisonService(
             return Result("Unavailable", "No completed prior period is available for this ledger book.", null);
         if (!IsCompleted(baseline) || baseline.EndDate >= current.StartDate)
             return Result("Incompatible", "The baseline must be a completed prior fiscal period in the same ledger book.", null);
-        var windows = SelectWindows(current, baseline, asOf);
+        // Balances are point-in-time: the baseline is the prior period's full close, never an
+        // "equivalent elapsed" slice, which only makes sense for activity.
+        var windows = closingBalances ? SelectClosingWindows(current, baseline, asOf) : SelectWindows(current, baseline, asOf);
         if (windows.Reason is not null)
             return Result("Unavailable", windows.Reason, windows.Baseline);
         var currentWindow = windows.Current;
         var baselineWindow = windows.Baseline!;
         // Bracket both populations. A concurrent append cannot yield a silently mixed comparison.
-        var first = await ReadPairAsync().ConfigureAwait(false);
-        var second = await ReadPairAsync().ConfigureAwait(false);
-        if (Fingerprint(first.Current, first.Baseline) != Fingerprint(second.Current, second.Baseline))
+        (IReadOnlyList<LedgerJournalEntryRecord> Current, IReadOnlyList<LedgerJournalEntryRecord> Baseline) first, second;
+        try
         {
-            first = second;
+            first = await ReadPairAsync().ConfigureAwait(false);
             second = await ReadPairAsync().ConfigureAwait(false);
             if (Fingerprint(first.Current, first.Baseline) != Fingerprint(second.Current, second.Baseline))
-                return Result("Unavailable", "The posted journal population is changing. Refresh to compare one stable source population.", baselineWindow);
+            {
+                first = second;
+                second = await ReadPairAsync().ConfigureAwait(false);
+                if (Fingerprint(first.Current, first.Baseline) != Fingerprint(second.Current, second.Baseline))
+                    return Result("Unavailable", "The posted journal population is changing. Refresh to compare one stable source population.", baselineWindow);
+            }
+        }
+        catch (ClosingBalanceUnavailableException exception)
+        {
+            return Result("Unavailable", exception.Message, baselineWindow);
         }
         var afterCurrent = await journals.GetPeriodAsync(current.PeriodId, ct).ConfigureAwait(false);
         var afterBaseline = await journals.GetPeriodAsync(baseline.PeriodId, ct).ConfigureAwait(false);
@@ -99,7 +113,7 @@ public sealed class PostedPeriodComparisonService(
         var priorIds = baselineProjected.Select(entry => entry.JournalEntryId).Order().ToArray();
         var hash = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
         {
-            Version = "posted-period-comparison-v1",
+            Version = closingBalances ? "posted-period-closing-balance-comparison-v1" : "posted-period-comparison-v1",
             Book = book,
             AsOf = asOf,
             Current = currentWindow,
@@ -112,28 +126,63 @@ public sealed class PostedPeriodComparisonService(
         }));
         return new("Ready", null, DateTimeOffset.UtcNow, asOf, bookId, book.FundProfileId, book.DisplayName,
             selectedBasis, book.BaseCurrency, book.AccountingPolicyId, book.AccountingPolicyVersion,
-            currentWindow, baselineWindow, lines, currentIds, priorIds, hash, dimensions);
+            currentWindow, baselineWindow, lines, currentIds, priorIds, hash, dimensions, measure);
 
         PostedPeriodComparisonDto Result(string status, string reason, PostedPeriodComparisonRangeDto? range)
             => new(status, reason, DateTimeOffset.UtcNow, asOf, bookId, book.FundProfileId, book.DisplayName,
                 selectedBasis, book.BaseCurrency, book.AccountingPolicyId, book.AccountingPolicyVersion,
-                CurrentRange(current, asOf), range, [], [], [], null, dimensions);
+                CurrentRange(current, asOf), range, [], [], [], null, dimensions, measure);
 
         async Task<(IReadOnlyList<LedgerJournalEntryRecord> Current, IReadOnlyList<LedgerJournalEntryRecord> Baseline)> ReadPairAsync()
             => (await ReadWindowAsync(currentWindow).ConfigureAwait(false), await ReadWindowAsync(baselineWindow).ConfigureAwait(false));
 
         async Task<IReadOnlyList<LedgerJournalEntryRecord>> ReadWindowAsync(PostedPeriodComparisonRangeDto range)
         {
+            if (closingBalances)
+                return await ReadCumulativeAsync(range).ConfigureAwait(false);
             var population = await journals.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: bookId,
                 PeriodId: range.PeriodId, EffectiveFrom: range.RangeStart, EffectiveTo: range.RangeEnd), ct).ConfigureAwait(false);
             if (population.Any(record => record.PeriodId != range.PeriodId)
                 || population.Select(record => record.Entry.JournalEntryId).Distinct().Count() != population.Count)
                 throw new InvalidDataException("The retained journal population contains foreign or duplicate source identities.");
             return population.Where(record => record.CreatedAt <= asOf)
-                .Where(record => (record.Entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(record.Entry.Timestamp.UtcDateTime)) >= range.RangeStart
-                    && (record.Entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(record.Entry.Timestamp.UtcDateTime)) <= range.RangeEnd)
+                .Where(record => EffectiveDate(record) >= range.RangeStart && EffectiveDate(record) <= range.RangeEnd)
                 .OrderBy(record => record.GlobalSequence).ToArray();
         }
+
+        // A closing balance is every posting in the book's earlier periods plus this period's postings
+        // to the range end. Membership is by posting period, the unit that close locks, not by date.
+        async Task<IReadOnlyList<LedgerJournalEntryRecord>> ReadCumulativeAsync(PostedPeriodComparisonRangeDto range)
+        {
+            var population = await journals.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: bookId), ct).ConfigureAwait(false);
+            var bookPeriods = periods.Where(period => period.LedgerBookId == bookId).ToDictionary(period => period.PeriodId);
+            if (population.Any(record => !bookPeriods.ContainsKey(record.PeriodId)))
+                throw new ClosingBalanceUnavailableException("Some postings are not assigned to an accounting period of this ledger book, so closing balances cannot be established.");
+            if (population.Select(record => record.Entry.JournalEntryId).Distinct().Count() != population.Count)
+                throw new InvalidDataException("The retained journal population contains duplicate source identities.");
+            return population.Where(record => record.CreatedAt <= asOf)
+                .Where(record => record.PeriodId == range.PeriodId
+                    ? EffectiveDate(record) <= range.RangeEnd
+                    : bookPeriods[record.PeriodId].EndDate < range.PeriodStart)
+                .OrderBy(record => record.GlobalSequence).ToArray();
+        }
+
+        static DateOnly EffectiveDate(LedgerJournalEntryRecord record)
+            => record.Entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(record.Entry.Timestamp.UtcDateTime);
+    }
+
+    /// <summary>
+    /// Closing-balance windows: the current period to the cutoff (partial while open), against the
+    /// baseline period's full close.
+    /// </summary>
+    public static (PostedPeriodComparisonRangeDto Current, PostedPeriodComparisonRangeDto? Baseline, string? Reason)
+        SelectClosingWindows(LedgerAccountingPeriod current, LedgerAccountingPeriod baseline, DateTimeOffset asOf)
+    {
+        var range = CurrentRange(current, asOf);
+        if (current.StartDate > current.EndDate || baseline.StartDate > baseline.EndDate || range.RangeEnd < range.RangeStart)
+            return (range, null, "The closing-balance date is unavailable for this cutoff.");
+        return (range, new(baseline.PeriodId, baseline.Label, baseline.StartDate, baseline.EndDate,
+            baseline.StartDate, baseline.EndDate, false, baseline.Status), null);
     }
 
     public static (PostedPeriodComparisonRangeDto Current, PostedPeriodComparisonRangeDto? Baseline, string? Reason)
@@ -199,8 +248,11 @@ public sealed class PostedPeriodComparisonService(
             return new PostedPeriodComparisonLineDto(Sha256Digest.ComputeUtf8(group.Key), identity.AccountName,
                 identity.AccountType, identity.Symbol, identity.FinancialAccountId, currentDebit, currentCredit,
                 currentBalance, priorDebit, priorCredit, priorBalance, change,
-                priorBalance == 0 ? null : change / Math.Abs(priorBalance) * 100m, identity.Dimensions);
+                Meridian.Contracts.Workstation.PeriodChange.Percent(currentBalance, priorBalance), identity.Dimensions);
         }).OrderBy(line => line.AccountType, StringComparer.Ordinal)
             .ThenBy(line => line.AccountName, StringComparer.Ordinal).ThenBy(line => line.AccountKey, StringComparer.Ordinal).ToArray();
     }
 }
+
+/// <summary>The retained population cannot establish closing balances; reported as Unavailable, never thrown to the caller.</summary>
+internal sealed class ClosingBalanceUnavailableException(string message) : Exception(message);

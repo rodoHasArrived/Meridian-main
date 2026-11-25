@@ -1,13 +1,18 @@
 using System.Globalization;
+using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Collectors;
 using Meridian.Execution.Models;
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
 using Meridian.Risk;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+
+using Meridian.Identity.Auth;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -65,6 +70,13 @@ public static partial class WorkstationEndpoints
             // The workstation still needs its account-selection/recovery panel. Hide the
             // host's singleton broker book until its owning account is explicitly selected
             // and authorized, including when a different authorized account was selected.
+            portfolio = null;
+            oms = null;
+        }
+        if (oms is Meridian.Execution.OrderManagementSystem { ScopedPaperBook: { } paperBook } &&
+            (fundAccountId != paperBook.FundAccountId ||
+             !await ExecutionEndpoints.CanAccessScopedPaperBookAsync(context, paperBook, UserPermission.ViewTrades).ConfigureAwait(false)))
+        {
             portfolio = null;
             oms = null;
         }
@@ -129,7 +141,11 @@ public static partial class WorkstationEndpoints
                     MarkPrice: hasMark ? effectiveMark.ToString("F2", CultureInfo.InvariantCulture) : "—",
                     DayPnl: "—",
                     UnrealizedPnl: FormatCurrency(hasMark ? liveUnrealized : pos.UnrealizedPnl),
-                    Exposure: hasMark ? FormatCurrency(liveExposure) : "—");
+                    Exposure: hasMark ? FormatCurrency(liveExposure) : "—",
+                    AveragePriceExact: pos.AverageCostBasis.ToString(CultureInfo.InvariantCulture),
+                    MarkPriceExact: hasMark ? effectiveMark.ToString(CultureInfo.InvariantCulture) : null,
+                    UnrealizedPnlExact: (hasMark ? liveUnrealized : pos.UnrealizedPnl).ToString(CultureInfo.InvariantCulture),
+                    ExposureExact: hasMark ? liveExposure.ToString(CultureInfo.InvariantCulture) : null);
             }).ToArray();
         }
         else
@@ -151,7 +167,8 @@ public static partial class WorkstationEndpoints
                 Quantity: order.Quantity.ToString(CultureInfo.InvariantCulture),
                 LimitPrice: order.LimitPrice.HasValue ? order.LimitPrice.Value.ToString("F2", CultureInfo.InvariantCulture) : "—",
                 Status: order.Status.ToString(),
-                SubmittedAt: order.CreatedAt.ToString("HH:mm:ss", CultureInfo.InvariantCulture) + " UTC")).ToArray();
+                SubmittedAt: order.CreatedAt.ToString("HH:mm:ss", CultureInfo.InvariantCulture) + " UTC",
+                Origin: order.Origin?.ToString())).ToArray();
         }
         else
         {
@@ -234,7 +251,7 @@ public static partial class WorkstationEndpoints
         if (oms is not null)
         {
             fills = oms.GetCompletedOrders(20)
-                .Where(order => brokerPortfolio is null || order.FundAccountId == fundAccountId)
+                .Where(order => (brokerPortfolio is null && !order.IntentId.HasValue) || order.FundAccountId == fundAccountId)
                 .Select(static order => new WorkstationTradingFillRow(
                 FillId: order.OrderId.ToString(),
                 OrderId: order.OrderId.ToString(),
@@ -253,6 +270,7 @@ public static partial class WorkstationEndpoints
         }
 
         var readiness = await GetTradingOperatorReadinessAsync(fundAccountId, context).ConfigureAwait(false);
+        var intentKey = await ResolvePaperIntentStorageKeyAsync(oms, context).ConfigureAwait(false);
 
         // PR-03: return typed DTO
         return new WorkstationTradingPayload(
@@ -287,7 +305,42 @@ public static partial class WorkstationEndpoints
                 Notes: [BuildTradingBrokerageNotes(run, portfolio is not null, brokerageConfiguration)]),
             Readiness: readiness,
             Comparisons: run is null ? Array.Empty<WorkstationModeComparisonGroup>() : BuildModeComparisons([run]),
-            DrillIn: run is null ? null : BuildRunDrillInLinks(run));
+            DrillIn: run is null ? null : BuildRunDrillInLinks(run),
+            ManualOrderEntry: oms is null
+                ? null
+                : ResolveManualOrderEntry(context.RequestServices.GetService<IExecutionGateway>(), brokerageConfiguration),
+            ScopedPaperOrderIntentKey: intentKey);
     }
 
+    /// <summary>
+    /// Mirrors the OMS's routing mode for the active gateway: manual orders are refused live
+    /// (<c>MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED</c>) and admitted in paper.
+    /// </summary>
+    public static WorkstationManualOrderEntry? ResolveManualOrderEntry(
+        IExecutionGateway? gateway,
+        BrokerageConfiguration? configuration)
+    {
+        if (gateway is null)
+            return null;
+
+        var mode = gateway is IExecutionGatewayModeProvider modeProvider
+            ? modeProvider.ExecutionMode
+            : BrokerageOrderPlacementGate.ResolveExecutionMode(configuration, gateway.GatewayId);
+        return mode == Meridian.Execution.Sdk.ExecutionMode.Live
+            ? new WorkstationManualOrderEntry(
+                Available: false,
+                ReasonCode: OrderAuthorityReasonCodes.ManualLiveIntentContractNotReviewed,
+                Reason: "Manual live orders are not available: they need a reviewed manual-intent authority contract, which is not yet defined. Live orders route only from promoted strategy runs.")
+            : new WorkstationManualOrderEntry(Available: true, ReasonCode: null, Reason: null);
+    }
+
+    private static async Task<string?> ResolvePaperIntentStorageKeyAsync(IOrderManager? oms, HttpContext context)
+    {
+        if (oms is not Meridian.Execution.OrderManagementSystem { SupportsScopedPaperIntents: true, ScopedPaperBook: { } book } ||
+            !EndpointAuthorization.TryResolveActor(context, out var actor) ||
+            !await ExecutionEndpoints.CanAccessScopedPaperBookAsync(context, book, UserPermission.ManageOrders).ConfigureAwait(false))
+            return null;
+
+        return Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new { book.TenantId, book.CompanyId, book.FundAccountId, Actor = actor }));
+    }
 }

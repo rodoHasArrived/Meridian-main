@@ -3,6 +3,7 @@ import { buildAppShellViewState, type AppShellWorkspacePayload } from "@/app-she
 import {
   buildDailyControlTowerModel,
   buildTodayQueueRows,
+  describeTodayQueueRank,
   buildWorkspaceAttentionCounts,
   dailyControlTowerProofPassportLabels,
   selectDailyControlTowerQueueItems,
@@ -111,33 +112,10 @@ describe("daily control tower model", () => {
     expect(model.leadingRow?.item.label).toBe("Brokerage sync failed");
     expect(model.ownerLabel).toBe(model.leadingRow?.item.workspaceLabel);
     expect(model.nextActionHref).toBe(model.leadingRow?.item.route);
-    expect(model.driverItems).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        id: "continuity",
-        label: "Continuity source",
-        value: "Daily Control Tower",
-        detail: expect.stringContaining("Source route: /."),
-        badgeVariant: "danger"
-      }),
-      expect.objectContaining({
-        id: "queue",
-        label: "Finance queue",
-        value: "1 blocked / 2 review",
-        badgeVariant: "danger"
-      }),
-      expect.objectContaining({
-        id: "trust",
-        label: "Trust status",
-        value: "3 need attention",
-        badgeVariant: "warning"
-      }),
-      expect.objectContaining({
-        id: "proof",
-        label: "Evidence events",
-        value: "3 retained",
-        badgeVariant: "success"
-      })
-    ]));
+    // Phase 1 (B7): the model carries only what Today renders.
+    expect(model).not.toHaveProperty("driverItems");
+    expect(model).not.toHaveProperty("linkedContextItems");
+    expect(model).not.toHaveProperty("evidenceTimelineItems");
     expect(model.queueRows.map((row) => row.item.label)).toEqual([
       "Report pack approval waiting",
       "Alpaca provider warning",
@@ -272,6 +250,27 @@ describe("buildTodayQueueRows", () => {
     ]);
     expect(rows.find((row) => row.id === "in-info")).toMatchObject({ source: "inbox", sourceLabel: "Shared inbox", workspaceLabel: "Unspecified" });
     expect(rows.find((row) => row.id === "ws-blocked")).toMatchObject({ source: "workspace", sourceLabel: "Workspace signal", observedAt: "2026-05-14T20:00:00Z" });
+  });
+
+  it("says why each row is ranked where it is, by the same keys the queue sorts on", () => {
+    const rows = buildTodayQueueRows(
+      [focus("ws-review-undated", "review", null), focus("ws-blocked", "blocked", "2026-05-14T20:00:00Z"), focus("ws-review-old", "review", "2026-05-14T10:00:00Z")],
+      [inbox("in-warning", "Warning", "2026-05-14T12:00:00Z"), inbox("in-critical", "Critical", "2026-05-14T21:00:00Z"), inbox("in-tie", "Warning", "2026-05-14T10:00:00Z")]
+    );
+    expect(describeTodayQueueRank(rows, "workspace:ws-blocked")).toBe("Ranked 1 of 6. Sorted by severity (blocked), then oldest first: the oldest of 2 blocked items.");
+    expect(describeTodayQueueRank(rows, "inbox:in-critical")).toBe("Ranked 2 of 6. Sorted by severity (blocked), then oldest first: 2nd oldest of 2 blocked items.");
+    expect(describeTodayQueueRank(rows, "workspace:ws-review-undated")).toBe("Ranked 6 of 6. Sorted by severity (needs action), then oldest first: no observed time, so it follows timed items in its source's order.");
+    expect(describeTodayQueueRank(rows, "inbox:missing")).toBeNull();
+  });
+
+  it("ranks overdue items first, then severity and age within each group (frozen clock)", () => {
+    const now = Date.parse("2026-05-20T12:00:00Z");
+    const overdueInfo = { ...inbox("in-info-late", "Info", "2026-05-14T09:00:00Z"), dueAt: "2026-05-17" };
+    const dueLater = { ...inbox("in-critical-later", "Critical", "2026-05-14T08:00:00Z"), dueAt: "2026-05-28" };
+    const rows = buildTodayQueueRows([focus("ws-blocked", "blocked", "2026-05-14T20:00:00Z")], [overdueInfo, dueLater], undefined, now);
+    expect(rows.map((row) => row.key)).toEqual(["inbox:in-info-late", "inbox:in-critical-later", "workspace:ws-blocked"]);
+    expect(describeTodayQueueRank(rows, "inbox:in-info-late", now)).toBe("Ranked 1 of 3. Overdue 3 days; overdue items rank first, then by severity (informational), then oldest first: the only informational item.");
+    expect(describeTodayQueueRank(rows, "workspace:ws-blocked", now)).toBe("Ranked 3 of 3. After the overdue items, sorted by severity (blocked), then oldest first: 2nd oldest of 2 blocked items.");
   });
 
   it("writes the selected item's summary as a sentence, not comma-joined labels", () => {

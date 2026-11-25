@@ -1,0 +1,13 @@
+{
+  "description": "Files with unimplemented surfaces (honest 501 / not-executed refusals) that no roadmap row yet owns. Each entry is a known gap awaiting a roadmap row; check-unimplemented-surfaces.py fails if an entry stops matching or becomes roadmap-tracked.",
+  "entries": [
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs",
+      "reason": "No Lean engine integration: data sync, sync status and backtest lifecycle routes answer 501. Results ingest for externally run Lean backtests is real. Needs a roadmap row before the engine integration is scheduled."
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs",
+      "reason": "Timed replay playback controls (start/pause/speed) answer 501; file preview and event-count scans are real. Needs a roadmap row before playback is scheduled."
+    }
+  ]
+}

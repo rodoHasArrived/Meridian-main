@@ -1532,7 +1532,7 @@
   }
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1279px) {
   .data-management-frame,
   .workspace-table-inspector-layout {
     grid-template-columns: minmax(0, 1fr);
@@ -1547,7 +1547,7 @@
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 640px) {
   .workspace-metric-strip {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -1848,8 +1848,9 @@
     @apply rounded-lg border border-border/70 bg-[hsl(var(--panel-soft)/0.92)];
   }
 
+  /* Light caps in the sans face: monospace is for numbers, IDs and code, not labels. */
   .eyebrow-label {
-    @apply font-mono text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground;
+    @apply font-sans text-xs font-medium uppercase tracking-[0.04em] text-muted-foreground;
   }
 
   /* Three-tier type scale: page title (the workspace header's h1), section (CardTitle and region
@@ -1879,10 +1880,11 @@
   }
 
   /* Caps keep the label tier's 11px: the contract test holds metadata at or above it. */
+  /* Short labels keep light caps but stay in the body face; monospace is for figures and IDs. */
   .type-label--caps {
-    font-family: var(--font-data);
+    font-family: var(--font-body);
     text-transform: uppercase;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.04em;
   }
 
   .eyebrow-label.eyebrow-label--sentence {
@@ -1992,7 +1994,8 @@
     border-radius: var(--radius-sm);
     background: var(--ws-surface-subtle);
     color: var(--fg);
-    font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+    /* A chip's label is text; its figure keeps the data face through its own font-mono class. */
+    font-family: var(--font-body, ui-sans-serif, system-ui, sans-serif);
     font-size: 0.75rem;
     white-space: nowrap;
   }
@@ -2204,3 +2207,46 @@
   cursor: progress;
   opacity: 0.85;
 }
+
+/*
+ * One disclosure style (UX Phase C). A native <details> summary shows the browser's ▸ marker while
+ * TechnicalDetails shows a chevron; the two sat side by side on the same pages. Every summary that
+ * does not draw its own icon gets the same chevron here, leading the label, turning down when open.
+ * Summaries with their own icon (an <svg>) or menu glyph keep theirs.
+ */
+details > summary:not(:has(svg)):not(.table-workbench-more) {
+  list-style: none;
+  cursor: pointer;
+}
+details > summary:not(:has(svg)):not(.table-workbench-more)::-webkit-details-marker {
+  display: none;
+}
+details > summary:not(:has(svg)):not(.table-workbench-more)::before {
+  content: "";
+  display: inline-block;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-right: 0.5rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  opacity: 0.7;
+  transform: translateY(-0.1rem) rotate(-45deg);
+  transition: transform 150ms ease;
+  vertical-align: middle;
+}
+details[open] > summary:not(:has(svg)):not(.table-workbench-more)::before {
+  transform: translateY(-0.2rem) rotate(45deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  details > summary:not(:has(svg)):not(.table-workbench-more)::before { transition: none; }
+}
+
+/*
+ * Breakpoint tiers (UX Phase C). Every media query uses one of these widths, so layouts change at
+ * the same points across the workstation; styles/breakpoints.test.ts enforces it.
+ *   narrow  ≤ 640px   phone-width browser windows and very narrow panes
+ *   tablet  ≤ 980px   the shell stacks; the page scrolls instead of the work area
+ *   compact ≤ 1279px  detail inspectors stack under their tables
+ *   wide    ≤ 1599px  the masthead's compact column set only
+ * The matching min-width forms are 641px, 981px, 1280px and 1600px.
+ */

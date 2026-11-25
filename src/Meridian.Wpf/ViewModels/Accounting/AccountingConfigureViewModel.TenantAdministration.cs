@@ -305,7 +305,7 @@ public sealed partial class AccountingConfigureViewModel
         TenantAdministrationEvidenceText = string.Join(Environment.NewLine, profile.EvidenceReferences);
         TenantAdministrationProfileScopeText = $"Tenant {profile.TenantId}; company {profile.CompanyId}.";
         TenantAdministrationProfileUpdatedText =
-            $"Last retained by {profile.UpdatedBy} at {UtcFormat.FormatUtcTimestamp(profile.UpdatedAtUtc)}.";
+            $"Last retained by {profile.UpdatedBy} at {UtcFormat.FormatDisplayTimestamp(profile.UpdatedAtUtc)}.";
         TenantAdministrationProfileStatusText = statusText;
         ImplementationSandboxProofStatusText = ImplementationSandboxConfigured
             ? "Implementation sandbox proof retained with fixture and ledger-book validation evidence."

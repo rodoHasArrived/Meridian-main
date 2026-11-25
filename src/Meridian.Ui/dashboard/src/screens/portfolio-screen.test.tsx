@@ -693,7 +693,7 @@ describe("PortfolioScreen", () => {
     expect(within(strip).getByText("+$120")).not.toHaveClass("text-success");
     // The totals cover every workspace position, so that is the scope they state.
     expect(strip.parentElement).toHaveTextContent(
-      "Stale figures · Source: Portfolio workspace · As of Jan 2, 2026, 14:00 UTC · Scope: All workspace positions"
+      "Stale figures · Covers: Live holdings · all accounts · Source: Portfolio workspace · As of Jan 2, 2026, 14:00 UTC · Scope: All workspace positions"
     );
   });
 
@@ -727,7 +727,7 @@ describe("PortfolioScreen", () => {
     const strip = screen.getByLabelText("Portfolio headline metrics");
     expect(within(strip).getByText("+$120")).not.toHaveClass("text-success");
     expect(strip.parentElement).toHaveTextContent(
-      `Stale figures · Source: Portfolio workspace · As of ${formatUtcTimestamp(new Date(lastComplete))} · Scope: All workspace positions`
+      `Stale figures · Covers: Live holdings · all accounts · Source: Portfolio workspace · As of ${formatUtcTimestamp(new Date(lastComplete))} · Scope: All workspace positions`
     );
     expect(screen.getByLabelText("Portfolio data confidence")).toHaveTextContent(
       "The latest refresh did not complete; the last loaded figures are shown."
@@ -765,7 +765,7 @@ describe("PortfolioScreen", () => {
     const strip = screen.getByLabelText("Portfolio headline metrics");
     expect(within(strip).getByText("+$120")).not.toHaveClass("text-success");
     expect(strip.parentElement).toHaveTextContent(
-      "Stale figures · Source: Portfolio workspace · As of Jan 2, 2026, 14:00 UTC · Scope: All workspace positions"
+      "Stale figures · Covers: Live holdings · all accounts · Source: Portfolio workspace · As of Jan 2, 2026, 14:00 UTC · Scope: All workspace positions"
     );
   });
 
@@ -1101,6 +1101,24 @@ describe("PortfolioScreen", () => {
     expect(updatedFacts).not.toHaveTextContent("Unrealized P&L");
     expect(msftRow).toHaveAttribute("aria-selected", "true");
     expect(msftRow).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("loads the linked brokerage account and opens the requested position", async () => {
+    const loadPortfolio = vi.spyOn(api, "getBrokerageHouseholdPortfolio").mockResolvedValue({
+      ...brokeragePortfolio,
+      accounts: brokeragePortfolio.accounts.filter((account) => account.fundAccountId === "fund-taxable"),
+      positions: brokeragePortfolio.positions.filter((position) => position.fundAccountId === "fund-taxable")
+    });
+    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting}
+      brokerageConnection={brokerageConnection} brokeragePortfolio={brokeragePortfolio} />, {
+      initialEntries: ["/portfolio/brokerage-sync?positionProvider=alpaca&fundAccountId=fund-taxable&brokeragePosition=fund-taxable-MSFT-pos-msft"]
+    });
+
+    expect(await screen.findByRole("region", { name: /msft brokerage position detail/i })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /aapl brokerage position detail/i })).not.toBeInTheDocument();
+    expect(loadPortfolio).toHaveBeenCalledWith("alpaca", {
+      fundAccountId: "fund-taxable", signal: expect.any(AbortSignal), allowDevelopmentFallback: false
+    });
   });
 
   it("keeps the raw multi-asset coverage endpoint behind technical disclosure", async () => {
@@ -1551,7 +1569,7 @@ describe("PortfolioScreen", () => {
     // crosshair slider is exposed beside (not inside) the image.
     const equityTable = screen.getByRole("table", { name: "Equity and drawdown by date for Mean Reversion" });
     expect(within(equityTable).getByRole("row", { name: "2026-05-03 100,390 -0.80%" })).toBeDefined();
-    expect(equityChart.contains(screen.getByRole("slider"))).toBe(false);
+    expect(equityChart.contains(within(screen.getByRole("region", { name: "Run equity and drawdown inspector" })).getByRole("slider"))).toBe(false);
 
     // The daily-return distribution reuses the same fetched points — no extra request — and
     // surfaces the signed histogram with mean, best, worst, and positive-day readouts. Scope the
@@ -1559,7 +1577,9 @@ describe("PortfolioScreen", () => {
     // card's max-drawdown readout) cannot satisfy them.
     const distribution = await screen.findByRole("img", { name: "Daily return distribution for Mean Reversion" });
     expect(distribution).toHaveAccessibleDescription(/daily returns\. Mean \+0\.38%, best \+2\.00%, worst -0\.80%/);
-    const distributionCard = distribution.closest("div")!.parentElement!;
+    // The card is the nearest ancestor that carries the card title; chart markup depth may change.
+    let distributionCard = distribution.parentElement!;
+    while (!within(distributionCard).queryByText("Daily return distribution")) distributionCard = distributionCard.parentElement!;
     expect(within(distributionCard).getByText("Daily return distribution")).toBeDefined();
     expect(within(distributionCard).getByText("+0.38%")).toBeDefined();
     expect(within(distributionCard).getByText("+2.00%")).toBeDefined();

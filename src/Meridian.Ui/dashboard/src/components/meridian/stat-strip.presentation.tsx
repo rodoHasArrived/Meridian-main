@@ -1,4 +1,7 @@
 import { Clock3 } from "lucide-react";
+import { Sparkline } from "@/components/charts/Sparkline";
+import { describeMetricHistory, trailingKnownRun } from "@/lib/metric-history";
+import type { MetricHistoryPoint } from "@/types";
 import { cn } from "@/lib/utils";
 import { normalizeFinancialLabel } from "@/lib/format";
 import {
@@ -20,6 +23,10 @@ import { usesTrackedCaps } from "@/design-system/label-case";
 import { hasMetricBasisDetail, metricBasisLabel, metricBasisValue, presentMetricChange } from "@/lib/metric-context";
 import { useId } from "react";
 import { MetricPassport } from "@/components/meridian/metric-passport";
+
+function metricPopulation(metric: MetricSnapshot): string | null {
+  return "population" in metric && typeof metric.population === "string" && metric.population ? metric.population : null;
+}
 
 const statToneClass: Record<MetricSnapshot["tone"], string> = {
   default: "text-foreground",
@@ -126,8 +133,14 @@ export function StatStripPresentation({
   // differ); otherwise the strip's own scope is printed once, so no strip leaves the operator
   // guessing what it counts.
   const provenanceStatesScope = Boolean(provenanceLine) && metrics.some((metric) => Boolean(metric.provenance?.scope?.trim()));
+  // Registry figures state what they count. One population shared by the strip is stated once;
+  // mixed populations are stated under each figure, so "1 of 4" never reads as the same group as
+  // "0 of 3" on another screen.
+  const populations = metrics.map(metricPopulation);
+  const sharedPopulation = populations.every((population) => population && population === populations[0]) ? populations[0] : null;
   const footnote = [
     stripFreshness === "fresh" ? null : degradedStripLabel[stripFreshness],
+    sharedPopulation ? `Covers: ${sharedPopulation}` : null,
     provenanceLine,
     !provenanceStatesScope && stripScope ? `Scope: ${stripScope}` : null
   ].filter(Boolean).join(" · ");
@@ -154,8 +167,14 @@ export function StatStripPresentation({
               title={trust.title ?? undefined}
               data-freshness={trust.freshness}
             >
-              <dt className={cn("whitespace-nowrap text-xs font-medium text-muted-foreground", usesTrackedCaps(metricLabel) && "uppercase tracking-[0.08em]")}>
+              <dt
+                className={cn("whitespace-nowrap text-xs font-medium text-muted-foreground", usesTrackedCaps(metricLabel) && "uppercase tracking-[0.08em]")}
+                title={metricPopulation(metric) ?? undefined}
+              >
                 {metricLabel}
+                {!sharedPopulation && metricPopulation(metric) ? (
+                  <span className="block font-normal normal-case tracking-normal" data-kpi-population-label>{metricPopulation(metric)}</span>
+                ) : null}
               </dt>
               <dd className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5" aria-describedby={sharedBasisDescription}>
                 <span
@@ -171,6 +190,7 @@ export function StatStripPresentation({
                   {metric.value}
                 </span>
                 <MetricPassport metric={metric} />
+                <MetricSparkline label={metricLabel} history={metric.history} basis={metric.historyBasis} />
                 {!basesAgree && hasMetricBasisDetail(metric) ? <span className="text-xs text-muted-foreground">{metricBasisLabel(metric)}</span> : null}
                 {trust.freshnessDetail ? <span className="sr-only">{trust.freshnessDetail}</span> : null}
                 {delta ? (
@@ -190,5 +210,21 @@ export function StatStripPresentation({
         </p>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * A sparkline from the producer's own history, never computed here. It draws only the latest run
+ * of established days; with fewer than two there is nothing to draw.
+ */
+function MetricSparkline({ label, history, basis }: { label: string; history?: MetricHistoryPoint[] | null; basis?: string | null }) {
+  const run = trailingKnownRun(history);
+  if (!run) return null;
+  const description = describeMetricHistory(label, run, history!.length);
+  return (
+    <span className="inline-flex self-center" title={basis ? `${description} ${basis}` : description} data-metric-sparkline>
+      <Sparkline points={run.map((point) => point.value)} width={56} height={16} />
+      <span className="sr-only">{description}</span>
+    </span>
   );
 }

@@ -32,6 +32,7 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
     private bool _includeVolume = true;
     private string _selectedExportFormatKey = "Csv";
     private bool _isRunning;
+    private bool _isAlignmentServiceUnavailable;
     private string _statusText = "Add at least two symbols and a date range to run alignment.";
     private bool _hasResults;
     private string _resultRowsText = "--";
@@ -39,6 +40,10 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
     private string _resultGapsText = "--";
     private string _resultFormatText = "--";
     private string _resultOutputPathText = string.Empty;
+
+    internal const string AlignmentUnavailableTitle = "Alignment not available on this host";
+    internal const string AlignmentUnavailableDetail =
+        "The connected host has no time-series alignment service. No job was created and no output was written.";
 
     public TimeSeriesAlignmentViewModel()
         : this(
@@ -338,13 +343,27 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
         private set => SetProperty(ref _resultOutputPathText, value);
     }
 
-    public bool CanRunAlignment => !IsRunning && BuildValidationMessages().Count == 0;
+    /// <summary>
+    /// Set once the host reports that it has no alignment execution service (HTTP 501).
+    /// Further runs cannot succeed, so the run action is disabled and the readiness card says so.
+    /// </summary>
+    public bool IsAlignmentServiceUnavailable
+    {
+        get => _isAlignmentServiceUnavailable;
+        private set => SetProperty(ref _isAlignmentServiceUnavailable, value);
+    }
+
+    public bool CanRunAlignment => !IsRunning && !IsAlignmentServiceUnavailable && BuildValidationMessages().Count == 0;
     public bool IsRecentAlignmentsEmpty => RecentAlignments.Count == 0;
     public string SelectedSymbolsCountText => SelectedSymbols.Count == 1 ? "1 symbol selected" : $"{SelectedSymbols.Count} symbols selected";
     public string SelectedFieldsText => BuildSelectedFieldsText();
     public string DateScopeText => FormatDateScope();
-    public string AlignmentReadinessTitle => CanRunAlignment ? "Alignment ready" : "Alignment setup incomplete";
-    public string AlignmentReadinessDetail => CanRunAlignment
+    public string AlignmentReadinessTitle => IsAlignmentServiceUnavailable
+        ? AlignmentUnavailableTitle
+        : CanRunAlignment ? "Alignment ready" : "Alignment setup incomplete";
+    public string AlignmentReadinessDetail => IsAlignmentServiceUnavailable
+        ? AlignmentUnavailableDetail
+        : CanRunAlignment
         ? $"{SelectedSymbolsCountText} across {DateScopeText.ToLowerInvariant()} using {FormatChoice(FrequencyOptions, SelectedFrequencyKey)} and {FormatChoice(GapStrategyOptions, SelectedGapStrategyKey).ToLowerInvariant()}."
         : string.Join(" ", BuildValidationMessages());
 
@@ -405,6 +424,13 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
 
             if (!result.Success)
             {
+                if (result.IsServiceUnavailable)
+                {
+                    IsAlignmentServiceUnavailable = true;
+                    StatusText = AlignmentUnavailableDetail;
+                    return;
+                }
+
                 StatusText = $"Alignment failed: {result.Error ?? "No detail returned."}";
                 return;
             }

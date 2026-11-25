@@ -1,4 +1,4 @@
-import { formatNumber, pluralizeCount, formatTimestamp } from "@/lib/format";
+import { formatNumber, pluralizeCount, formatTimestamp, formatUtcDate } from "@/lib/format";
 
 export function formatCount(count: number, singular: string): string {
   return pluralizeCount(count, singular);
@@ -32,6 +32,26 @@ export function formatDateTimeLabel(value: string | null | undefined): string {
   }
 
   return formatTimestamp(date);
+}
+
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+const MIDNIGHT_UTC = /^\d{4}-\d{2}-\d{2}T00:00(?::00(?:\.0+)?)?(?:Z|\+00:00)$/;
+
+/**
+ * An accounting date as a date. Effective, posting and period dates arrive date-only or as UTC
+ * midnight; printing those with "00:00 UTC" invents a time nobody recorded. Anything carrying a
+ * real time keeps the timestamp format.
+ */
+export function formatAccountingDate(value: string | null | undefined): string {
+  if (!value) {
+    return "Not recorded";
+  }
+  const trimmed = value.trim();
+  if (DATE_ONLY.test(trimmed) || MIDNIGHT_UTC.test(trimmed)) {
+    const date = new Date(`${trimmed.slice(0, 10)}T00:00:00Z`);
+    return Number.isNaN(date.getTime()) ? value : formatUtcDate(date);
+  }
+  return formatDateTimeLabel(value);
 }
 
 export function formatDateOnly(value: string): string {

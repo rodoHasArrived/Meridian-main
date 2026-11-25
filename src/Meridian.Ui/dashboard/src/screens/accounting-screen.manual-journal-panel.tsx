@@ -1,13 +1,18 @@
+import { JournalLifecycleControls } from "./journal-lifecycle-controls";
 // Manual journal entry workbench panel, extracted from accounting-screen.tsx.
 import { AssetAccountingWorkflowPanel } from "./accounting-screen.asset-workflow-panel";
 import { Copy, Paperclip, RefreshCcw, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AccrualScheduleWorkbench } from "@/components/accounting/accrual-schedule-workbench";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Combobox } from "@/components/ui/combobox";
+import { ErrorNotice } from "@/components/ui/error-notice";
+import { combineLoadFailures, type PanelLoadStatus } from "@/lib/combined-load-state";
+import { useScopeStructure } from "@/lib/operating-scope/use-scope-structure";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { SectionDescription } from "@/components/ui/section-description";
@@ -633,19 +638,66 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
   const recurringScopeKey = JSON.stringify([recurringFund, recurringBook, search]);
   const recurringEntity = recurringEntitySelection?.scopeKey === recurringScopeKey
     ? recurringEntitySelection.entityId : scopeQuery.get("entityId") || view.draft.entityId || "";
-  const recurringQueue = <div className="space-y-2">
-    <label className="block text-xs font-semibold">Recurring journal entity scope
-      <Input value={recurringEntity} placeholder="Select an entity ID" className="mt-1"
-        onChange={(event) => setRecurringEntitySelection({ scopeKey: recurringScopeKey, entityId: event.target.value })} />
-    </label>
-    <AccrualScheduleWorkbench
-      scope={recurringFund && recurringBook && recurringEntity.trim()
-        ? { fundProfileId: recurringFund, ledgerBookId: recurringBook, entityId: recurringEntity.trim() }
-        : null}
-      availableDraftIds={view.drafts.map((draft) => draft.journalEntryId)}
-      onSelectDraft={view.selectDraft}
-      onDraftsGenerated={view.refresh}
-    />
+  // Journal automation (accrual schedules and recurring occurrences) reads one backend. Its panels
+  // report their load status here so a failure shows one notice with one Retry, below the editor.
+  const [automation, setAutomation] = useState<Record<string, PanelLoadStatus>>({});
+  const reportAccruals = useCallback((status: PanelLoadStatus) => setAutomation((current) => ({ ...current, accruals: status })), []);
+  const reportQueue = useCallback((status: PanelLoadStatus) => setAutomation((current) => ({ ...current, queue: status })), []);
+  const automationFailure = combineLoadFailures(automation);
+  const { structure } = useScopeStructure(true);
+  const entityOptions = structure.status === "ready" ? structure.entities.map((entity) => ({ value: entity.id, label: entity.label })) : [];
+  if (recurringEntity && entityOptions.length > 0 && !entityOptions.some((option) => option.value === recurringEntity)) {
+    entityOptions.unshift({ value: recurringEntity, label: recurringEntity });
+  }
+  const selectRecurringEntity = (entityId: string) => setRecurringEntitySelection({ scopeKey: recurringScopeKey, entityId });
+  const automationSummary = !recurringEntity.trim()
+    ? "choose an entity"
+    : automationFailure
+      ? "unavailable"
+      : [
+          automation.accruals?.count != null ? `${automation.accruals.count} ${automation.accruals.count === 1 ? "schedule" : "schedules"}` : null,
+          automation.queue?.count != null ? `${automation.queue.count} ${automation.queue.count === 1 ? "occurrence" : "occurrences"}` : null
+        ].filter(Boolean).join(" · ") || "loading";
+  const recurringQueue = <div className="space-y-2" data-testid="journal-automation">
+    {automationFailure ? (
+      <ErrorNotice
+        error={automationFailure.error}
+        title="Journal automation unavailable"
+        fallback="Accrual schedules and recurring journals could not be read. Manual journal editing above is unaffected."
+        onRetry={automationFailure.retry}
+        alwaysOfferRetry
+        retryLabel="Retry journal automation"
+      />
+    ) : null}
+    <details className="rounded-[var(--radius-card)] border border-border bg-secondary/15">
+      <summary className="flex min-h-9 cursor-pointer items-center px-3 py-2 text-sm font-medium">
+        Journal automation · {automationSummary}
+      </summary>
+      <div className="space-y-2 border-t border-border/70 px-3 py-3">
+        {entityOptions.length > 0 ? (
+          <Combobox label="Recurring journal entity" options={entityOptions} value={recurringEntity} onChange={selectRecurringEntity} placeholder="Search entities…" />
+        ) : (
+          <div>
+            <label className="block text-xs font-semibold">Recurring journal entity scope
+              <Input value={recurringEntity} placeholder="Select an entity ID" className="mt-1"
+                onChange={(event) => selectRecurringEntity(event.target.value)} />
+            </label>
+            <p className="mt-1 text-xs text-muted-foreground">Entity names are unavailable; enter the entity ID.</p>
+          </div>
+        )}
+        <AccrualScheduleWorkbench
+          scope={recurringFund && recurringBook && recurringEntity.trim()
+            ? { fundProfileId: recurringFund, ledgerBookId: recurringBook, entityId: recurringEntity.trim() }
+            : null}
+          availableDraftIds={view.drafts.map((draft) => draft.journalEntryId)}
+          onSelectDraft={view.selectDraft}
+          onDraftsGenerated={view.refresh}
+          quietFailure
+          onLoadStatus={reportAccruals}
+          onQueueLoadStatus={reportQueue}
+        />
+      </div>
+    </details>
   </div>;
   // While an amount input holds unparseable text, its raw string is kept here (keyed
   // `${lineId}:${side}`) and mirrored back as the controlled value. Mirroring what the DOM
@@ -755,7 +807,6 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
         </div>
       ) : null}
 
-      {recurringQueue}
       {view.draft.assetAccountingDraft ? <p role="status" className="rounded border border-warning/30 bg-warning/10 p-3 text-sm">{view.assetWorkflow?.capability ? "This asset accounting draft is immutable. Available approval and posting decisions use the authenticated asset workflow below. Corrections remain unavailable here." : "This is an immutable asset accounting review draft. Validate and submit it for review here. Approval, posting and corrections require retained approval evidence through the asset workflow and remain unavailable until supported workflow capabilities are loaded."}</p> : null}
       <ManualJournalHealthBar view={view} hasInvalidAmountEdits={hasInvalidAmountEdits} invalidAmountReason={invalidAmountReason} />
 
@@ -914,7 +965,7 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
                             aria-describedby="manual-je-keyboard-hint"
                             className="text-right font-mono"
                             type="number"
-                            value={amountDrafts[`${line.lineId}:Debit`] ?? (isDebit ? line.amount : 0)}
+                            value={amountDrafts[`${line.lineId}:Debit`] ?? (isDebit ? line.amount : "")}
                             aria-invalid={`${line.lineId}:Debit` in amountDrafts || undefined}
                             onChange={(event) => handleAmountChange(line.lineId, "Debit", event.target)}
                             onBlur={(event) => handleAmountBlur(line.lineId, "Debit", event.target)}
@@ -932,7 +983,7 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
                             aria-describedby={`${line.lineId}:Credit` in amountDrafts ? `manual-je-keyboard-hint manual-je-credit-error-${line.lineId}` : "manual-je-keyboard-hint"}
                             className="text-right font-mono"
                             type="number"
-                            value={amountDrafts[`${line.lineId}:Credit`] ?? (isDebit ? 0 : line.amount)}
+                            value={amountDrafts[`${line.lineId}:Credit`] ?? (isDebit ? "" : line.amount)}
                             aria-invalid={`${line.lineId}:Credit` in amountDrafts || undefined}
                             onChange={(event) => handleAmountChange(line.lineId, "Credit", event.target)}
                             onBlur={(event) => handleAmountBlur(line.lineId, "Credit", event.target)}
@@ -950,7 +1001,7 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
                             onClick={() => view.selectLine(line.lineId)}
                           >
                             <span className="block truncate font-semibold text-foreground">{line.securityDisplayName || (view.draft.assetAccountingDraft ? "Inspect line attribution" : "Choose security")}</span>
-                            <span className="block truncate font-mono text-xs text-muted-foreground">{line.securityId || "No Security Master reference"}</span>
+                            <span className={cn("block truncate text-xs text-muted-foreground", line.securityId && "font-mono")}>{line.securityId || "No Security Master reference"}</span>
                           </button>
                           <input disabled={Boolean(view.draft.assetAccountingDraft)}
                             id={`manual-je-description-${line.lineId}`}
@@ -1168,21 +1219,7 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
               </Badge>
             </div>
             {view.draft.assetAccountingDraft && view.assetWorkflow ? <AssetAccountingWorkflowPanel view={view.assetWorkflow} /> : null}
-            <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-              {view.lifecycleCommands.map((command) => (
-                <Button
-                  key={command.action}
-                  size="sm"
-                  variant="outline"
-                  busy={command.busy}
-                  disabled={command.disabledReason !== null}
-                  disabledReason={command.disabledReason}
-                  onClick={() => void view.applyLifecycleAction(command.action)}
-                >
-                  {command.label}
-                </Button>
-              ))}
-            </div>
+            <JournalLifecycleControls view={view} />
             <div className="mt-3 rounded-md border border-border/70 bg-background/50 px-3 py-3" aria-label="Manual journal lifecycle checklist">
               <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Lifecycle checklist</div>
               <div role="list" className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
@@ -1252,6 +1289,7 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
           </div>
         </div>
       </div>
+      {recurringQueue}
     </section>
   );
 }

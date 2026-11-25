@@ -38,6 +38,8 @@ public sealed class PaperTradingGateway :
     private readonly bool _allowScaffoldMarketFills;
     private readonly Interfaces.ILiveFeedAdapter? _liveFeed;
     private readonly PaperTradingCostModel _costModel;
+    private readonly Meridian.Contracts.FixedIncome.IBondAnalyticsService? _bondAnalytics;
+    private readonly bool _requireBondAccruedInterest;
     private readonly PaperSymbolEvaluationPump _evaluationPump;
     private readonly System.Threading.Channels.Channel<ExecutionReport> _restingReports;
     private readonly CancellationTokenSource _disposeCts = new();
@@ -103,9 +105,12 @@ public sealed class PaperTradingGateway :
         Adapters.PaperTradingGatewayOptions? options = null,
         Interfaces.ILiveFeedAdapter? liveFeed = null,
         PaperTradingCostOptions? costOptions = null,
-        ISecurityIdentityQueryService? securityIdentity = null)
+        ISecurityIdentityQueryService? securityIdentity = null,
+        Meridian.Contracts.FixedIncome.IBondAnalyticsService? bondAnalytics = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _bondAnalytics = bondAnalytics;
+        _requireBondAccruedInterest = options?.RequireBondAccruedInterest == true;
         _tradingParameters = new Adapters.PaperTradingGatewayTradingParameters(
             _logger,
             securityMaster,
@@ -577,16 +582,77 @@ public sealed class PaperTradingGateway :
                 LotMultiplier = convention.Multiplier,
                 UsesFaceValuePercentageOfPar = convention.UnitKind == SecurityLotUnitKind.FaceValue
             };
+            if (convention.UnitKind == SecurityLotUnitKind.FaceValue)
+                report = await StampAccruedInterestAsync(report, convention.SecurityId, fillPrice, ct).ConfigureAwait(false);
         }
         else if (request.OptionContract is not null)
         {
             report = report with { LotUnitKind = SecurityLotUnitKind.Contracts };
         }
 
+        if (_requireBondAccruedInterest
+            && (report.UsesFaceValuePercentageOfPar || UsesFaceValuePercentageOfPar(request))
+            && (report.AccruedInterestPer100 is null || report.SettlementDate is null))
+        {
+            // A terminal rejection goes through the same immediate/resting report path as a
+            // fill. No portfolio, cash or accounting event may observe a clean-only fill in
+            // this explicitly supported mode. Historical reports remain replayable unchanged.
+            return BuildReport(request, orderId, gatewayOrderId, ExecutionReportType.Rejected,
+                OrderStatus.Rejected, filledQuantity: 0m, fillPrice: null, costs: null,
+                "Bond settlement unavailable: required accrued interest could not be verified for the security and settlement date. "
+                + "Review the bond terms and analytics before resubmitting (PaperTrading:Gateway:RequireBondAccruedInterest).");
+        }
+
         _logger.LogInformation(
             "Paper fill: {Symbol} {Side} {Quantity} @ {Price} (commission {Commission}, fees {Fees}, slippage {Slippage})",
             LogSanitizer.Sanitize(request.Symbol), request.Side, request.Quantity, report.FillPrice,
             costs.Commission, costs.Fees, costs.SlippageCost);
+
+        return report;
+    }
+
+    /// <summary>
+    /// Prices the accrued interest a face-value bond fill settles with, through the shared bond
+    /// analytics kernel at the fill's clean price and its contractual settlement date. When no
+    /// analytics service is composed, or the kernel refuses the bond (unsupported coupon
+    /// structure, undeclared schedule, settlement outside its life), the fill keeps its clean
+    /// settlement and the refusal is logged rather than guessed at. The opt-in required-accrual
+    /// mode rejects that unstamped outcome before it can become an economic fill.
+    /// </summary>
+    private async Task<ExecutionReport> StampAccruedInterestAsync(
+        ExecutionReport report, Guid securityId, decimal cleanPricePer100, CancellationToken ct)
+    {
+        if (_bondAnalytics is null || securityId == Guid.Empty)
+            return report;
+
+        var tradeTime = report.Timestamp.ToUniversalTime();
+        var settlement = PaperBondSettlement.SettlementDate(DateOnly.FromDateTime(tradeTime.UtcDateTime));
+        try
+        {
+            var result = await _bondAnalytics.CalculateAsync(
+                new Meridian.Contracts.FixedIncome.BondAnalyticsRequest(
+                    securityId,
+                    new Meridian.Contracts.FixedIncome.BondCalculationContext(tradeTime, settlement),
+                    CleanPrice: cleanPricePer100),
+                ct).ConfigureAwait(false);
+            if (result is { IsBlocked: false, AccruedInterest: { } accruedPer100 } && accruedPer100 >= 0m
+                && (!_requireBondAccruedInterest ||
+                    (result.SecurityId == securityId && result.Context.AsOf == tradeTime
+                     && result.Context.SettlementDate == settlement && result.CleanPrice == cleanPricePer100
+                     && result.DirtyPrice == cleanPricePer100 + accruedPer100)))
+                return report with { AccruedInterestPer100 = accruedPer100, SettlementDate = settlement };
+
+            _logger.LogWarning(
+                "Paper bond settlement {Symbol}: accrued interest unavailable ({Blockers}); required-accrual mode {Required}",
+                LogSanitizer.Sanitize(report.Symbol),
+                result is null ? "SecurityUnknown" : string.Join(",", result.Blockers.Select(static b => b.Code)),
+                _requireBondAccruedInterest);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "Paper bond settlement {Symbol}: accrued interest calculation failed; required-accrual mode {Required}",
+                LogSanitizer.Sanitize(report.Symbol), _requireBondAccruedInterest);
+        }
 
         return report;
     }

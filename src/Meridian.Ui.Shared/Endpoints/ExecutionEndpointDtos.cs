@@ -37,7 +37,10 @@ public sealed record CreatePaperSessionRequest(
     string StrategyId,
     string? StrategyName,
     decimal InitialCash = 100_000m,
-    IReadOnlyList<string>? Symbols = null);
+    IReadOnlyList<string>? Symbols = null)
+{
+    public Guid? FundAccountId { get; init; }
+}
 
 /// <summary>
 /// Structured result returned by every Trading write action (cancel, close, pause, etc.).
@@ -93,7 +96,10 @@ public sealed record TradingActionResult(
     /// so the broker book must be verified by hand even when <c>Status</c> reads Completed.
     /// Null on actions that carry no sweep, and omitted when the broker view was established.
     /// </summary>
-    bool? BrokerViewUnavailable = null);
+    bool? BrokerViewUnavailable = null,
+    string? IncidentId = null,
+    bool? EvidenceRetained = null,
+    string? EvidenceError = null);
 
 /// <summary>Request to update the global execution circuit breaker.</summary>
 public sealed record UpdateExecutionCircuitBreakerRequest(

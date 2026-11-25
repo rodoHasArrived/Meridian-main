@@ -1,3 +1,4 @@
+import { buildCloseBoard } from "@/lib/close-board";
 import { accountingCloseReadinessBlockReason, accountingCloseScopeKey } from "./accounting-screen.close-scope";
 import type { CloseWorkflowQuery } from "./accounting-screen.close-sources";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -1584,6 +1585,7 @@ function buildAccountingCloseReportPackageViewState({
       }
     ],
     closeCalendar,
+    closeBoard: buildCloseBoard(closePlan, new Date().toISOString().slice(0, 10)),
     tasks,
     dependencyGraphRows,
     signOffMatrixRows,
@@ -1978,6 +1980,8 @@ function buildCloseCalendarMilestoneRow(milestone: CloseCalendarMilestone): Acco
     displayName: milestone.displayName,
     ownerLabel: milestone.owner || "Unassigned",
     dueDateLabel: formatDateOnly(milestone.dueDate),
+    dueDate: milestone.dueDate ?? null,
+    dueDone: milestone.isSatisfied,
     statusLabel: formatCloseTaskStatus(milestone.status),
     statusTone: milestone.isBlocked ? "danger" : milestone.isSatisfied ? "success" : statusTone,
     dependencyLabel: milestone.dependencyCount > 0

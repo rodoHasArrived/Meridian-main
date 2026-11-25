@@ -1,15 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
+import { CaseInspector } from "./case-inspector";
+import { ReportReviewPanel } from "@/screens/report-review-panel";
+import { DueChip } from "@/components/meridian/due-chip";
+import { describeDue, sortByUrgency } from "@/lib/due-urgency";
+import { MonthCalendar, type MonthCalendarItem } from "@/components/meridian/month-calendar";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { DesignSystemStatus } from "@/design-system/status";
 import { EntityLink } from "@/components/meridian/entity-inspector";
-import { LedgerAmountProofDrawer } from "@/components/meridian/proof-drawer";
+import { AmountPassportTrigger } from "@/components/meridian/amount-passport";
 import {
   nextDenseSort,
   sortRowsByValue,
   type DenseDataTableSortState
 } from "@/components/meridian/ui-kit-primitives";
-import type { LedgerAmountSelection } from "@/types/ledger-amount-proof";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { formatCurrency, formatMoney, formatUtcDate, formatUtcMonthYear } from "@/lib/format";
 import { formatNumber, pluralizeCount } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
@@ -23,15 +27,18 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
-import { getOperationsCloseCalendar, getRunTrialBalance } from "@/lib/api";
+import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
+import { ledgerAccountIdentity, LedgerFundIdentity } from "@/screens/ledger-record-identity";
+import { getOperationsCloseCalendar, getReconciliationBreakQueue, getRunTrialBalance } from "@/lib/api";
 import { narrowRowsWithFundScopeContext, useFundScopeNarrowingContext } from "@/lib/operating-scope/fund-scope-context";
 import {
   normalizeReportingWorkspace,
   type ReportingWorkspacePayload
 } from "@/lib/reporting-workspace";
-import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { financeBreakLabel } from "@/screens/accounting-screen.reconciliation.view-model";
-import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
+import { isAwaitingApprovalDecision } from "@/screens/accounting-screen.approvals";
+import { formatAccountingDate, formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { ReportRunGovernanceScreen } from "@/screens/report-run-governance-screen";
 import { TrialBalanceScreen } from "@/screens/trial-balance-screen";
 import { useAccountingPostedLedgerViewModel, type PostedLedgerJournalLine } from "@/screens/accounting-screen.posted-ledger.view-model";
@@ -52,7 +59,8 @@ import type {
   AccountingWorkspaceResponse,
   LedgerTrialBalanceLine,
   OperationsCloseCalendar,
-  OperationsCloseCalendarItem
+  OperationsCloseCalendarItem,
+  ReconciliationBreakQueueItem
 } from "@/types";
 
 interface FinanceStandardScreenProps {
@@ -90,23 +98,32 @@ const reportParameterFields = [
 ];
 
 export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenProps) {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const reportingData = normalizeReportingWorkspace(data);
   const reporting = asRecord(reportingData);
   const requestedRunId = searchParams.get("runId") ?? "";
   const runs = readRecordArray(reporting, "recentRuns");
   const run = requestedRunId
     ? runs.find((candidate) => readString(candidate, "runId", "") === requestedRunId) ?? null
-    : runs[0] ?? null;
+    : null;
   const templates = buildTemplateRows(reportingData?.templates ?? []);
+  const runChoices = runs.map((candidate, index) => {
+    const id = readString(candidate, "runId", "");
+    const candidateTemplateId = readString(candidate, "templateId", "");
+    const template = templates.find((row) => row.templateName === candidateTemplateId || row.id === candidateTemplateId);
+    const name = readString(candidate, "reportName", template?.name ?? `Report run ${index + 1}`);
+    const asOfDate = readString(candidate, "asOfDate", "");
+    const status = readString(candidate, "status", "");
+    return { id, label: [name, asOfDate && presentReportingAsOfDate(asOfDate), status && presentReportingStatusLabel(status)].filter(Boolean).join(" · ") };
+  });
+  const runLabelCounts = new Map<string, number>();
+  for (const choice of runChoices) runLabelCounts.set(choice.label, (runLabelCounts.get(choice.label) ?? 0) + 1);
   const runTemplateId = readString(run, "templateId", "");
   const selectedTemplate = runTemplateId
     ? templates.find((candidate) => candidate.templateName === runTemplateId || candidate.id === runTemplateId) ?? null
-    : requestedRunId
-      ? null
-      : templates[0] ?? null;
+    : null;
   const hasPreviewSubject = Boolean(run || selectedTemplate);
-  const reportName = readString(run, "reportName", selectedTemplate?.name ?? (runTemplateId || "No report selected"));
+  const reportName = readString(run, "reportName", selectedTemplate?.name ?? (run ? "Report run" : "No report selected"));
   const runId = readString(run, "runId", "No run selected");
   const templateId = selectedTemplate?.id ?? "";
   const runStatus = readString(run, "status", "Draft");
@@ -142,6 +159,19 @@ export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenP
 
   return (
     <div className="space-y-4">
+      <FormRow label="Report run" labelFor="report-preview-run" hint="Choose an exact retained run to preview its evidence.">
+        <Select id="report-preview-run" value={requestedRunId} onChange={(event) => {
+          const next = new URLSearchParams(searchParams);
+          if (event.target.value) next.set("runId", event.target.value); else next.delete("runId");
+          setSearchParams(next);
+        }}>
+          <option value="">Choose a report run</option>
+          {requestedRunId && !run ? <option value={requestedRunId}>Requested run unavailable</option> : null}
+          {runChoices.map((choice, index) => <option key={choice.id} value={choice.id}>{choice.label}{(runLabelCounts.get(choice.label) ?? 0) > 1 ? ` · Retained run ${index + 1}` : ""}</option>)}
+        </Select>
+      </FormRow>
+      {requestedRunId && !run ? <StatusBanner tone="warning" title="Requested run unavailable" detail={<Link className="underline" to={workstationRouteWithQuery("reportingRunDetail", { runId: requestedRunId })}>Open the exact retained run outside the loaded register</Link>} /> : null}
+      {requestedRunId && !run ? <TechnicalDetails label="Requested run identifier"><p className="break-all font-mono text-sm">{requestedRunId}</p></TechnicalDetails> : null}
       <OperationalTrustSummary
         source={{ value: run ? "Retained report run" : selectedTemplate ? "Approved template" : "No report selected", tone: hasPreviewSubject ? "ready" : "unknown" }}
         scope={{ value: reportName, detail: run ? presentStatusLabel(runStatus) : "Template preview", tone: hasPreviewSubject ? "ready" : "unknown" }}
@@ -213,7 +243,7 @@ export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenP
           />
           <FinanceFact
             label="Validation"
-            value={validationWarnings.length > 0 ? validationWarnings.join(", ") : "No blocking issues"}
+            value={!hasPreviewSubject ? "Choose a report run" : validationWarnings.length > 0 ? validationWarnings.join(", ") : "No validation warnings returned"}
           />
           {run ? (
             <TechnicalDetails label="Run audit details" className="md:col-span-3">
@@ -224,6 +254,12 @@ export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenP
       </Card>
 
       <Tabs
+        value={["preview", "validation", "changes", "evidence", "approval", "output"].includes(searchParams.get("tab") ?? "") ? searchParams.get("tab")! : "preview"}
+        onValueChange={(tab) => {
+          const next = new URLSearchParams(searchParams);
+          next.set("tab", tab);
+          setSearchParams(next);
+        }}
         tabs={[
           { id: "preview", label: "Preview" },
           { id: "validation", label: "Validation Issues" },
@@ -253,13 +289,7 @@ export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenP
           />
         </TabPanel>
         <TabPanel>
-          <FinanceList
-            title="Changes since prior run"
-            items={[
-              "Parameter changes, retained dataset revisions, and report-writer grid changes are reviewed here.",
-              "Use Report Run Detail to compare the run audit trail and generated files."
-            ]}
-          />
+          {run ? <ReportReviewPanel runId={runId} /> : <StatusBanner tone="warning" title="Choose a report run" detail="A comparison requires an exact retained run identity." />}
         </TabPanel>
         <TabPanel>
           <FinanceList
@@ -300,6 +330,10 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
   const [searchParams] = useSearchParams();
   const accountId = searchParams.get("accountId") ?? "";
   const requestedRunId = searchParams.get("runId") ?? data?.reconciliationQueue?.[0]?.runId ?? "";
+  return <AccountDetailPanel key={requestedRunId} accountId={accountId} requestedRunId={requestedRunId} />;
+}
+
+function AccountDetailPanel({ accountId, requestedRunId }: { accountId: string; requestedRunId: string }) {
   const [trialRows, setTrialRows] = useState<LedgerTrialBalanceLine[]>([]);
   const [loading, setLoading] = useState(Boolean(requestedRunId));
   const [errorText, setErrorText] = useState<string | null>(null);
@@ -347,6 +381,11 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
   ].some((value) => value?.toLowerCase() === normalizedAccountId)) ?? (!accountId ? trialRows[0] ?? null : null);
   const accountName = account?.accountName ?? (accountId ? "Account not found" : "No account selected");
   const hasAccountingBasis = Boolean(account?.accountingBasis?.trim());
+  const accountRecord = account ? ledgerAccountIdentity(account, { runId: requestedRunId }) : null;
+  const recordContext = useRecordWorkspaceContext(accountRecord, {
+    accountId: accountId || accountRecord?.id,
+    runId: requestedRunId
+  });
 
   return (
     <div className="space-y-3">
@@ -394,6 +433,7 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
           ) : null}
           {account ? (
             <>
+              {accountRecord ? <RecordIdentitySpine record={accountRecord} context={recordContext} /> : null}
               <div className="grid gap-3 md:grid-cols-3">
                 <FinanceFact label="Account" value={account.accountName} />
                 <FinanceFact label="Account type" value={account.accountType} />
@@ -509,7 +549,6 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
 
 /** The Ledger tab's own body, so its requests belong to the tab that renders them. */
 function PostedLedgerJournalTab({ active }: { active: boolean }) {
-  const [selectedAmount, setSelectedAmount] = useState<LedgerAmountSelection | null>(null);
   // Search and sort live in the link (C4), so Copy link, saved views and saved layouts carry them.
   const [tabSearchParams, setTabSearchParams] = useSearchParams();
   const searchText = tabSearchParams.get(LEDGER_SEARCH_PARAM) ?? "";
@@ -550,18 +589,6 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
   const sourceLedgerContextHref = workstationRouteWithQuery("accountingLedger", {
     ...Object.fromEntries(tabSearchParams), ledgerBookId: selectedBookId, periodId: postedLedger.selectedPeriodId
   });
-  const currentAmount = selectedAmount && active && !loading && !postedLedger.journalErrorText &&
-    (!selectedAmount.ledgerBookId || selectedAmount.ledgerBookId === selectedBookId) &&
-    (!selectedAmount.periodId || selectedAmount.periodId === postedLedger.selectedPeriodId) &&
-    selectedAmount.fundProfileId === selectedFundId && journalLines.some((entry) => entry.postedLines?.some((line) =>
-      selectedAmount.subjectId === `${entry.journalEntryId}:${line.entryId}:debit` ||
-      selectedAmount.subjectId === `${entry.journalEntryId}:${line.entryId}:credit`)) ? selectedAmount : null;
-  // Discard invalid selections as well as hiding their drawer. This tab stays mounted while
-  // inactive, and retaining the selection would reopen its proof when the old scope loads again.
-  if (selectedAmount && !currentAmount) {
-    setSelectedAmount(null);
-  }
-
   // The trial balance on the sibling tab is labelled in the book's base currency; these are the
   // same governed debits and credits, so they carry it too rather than defaulting to dollars.
   const postedMoney = (value: number) => baseCurrency
@@ -598,12 +625,32 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
     { id: `journal:${journal.journalEntryId}`, journal, posting: null as PostedLine | null },
     ...(journal.postedLines ?? []).map((posting) => ({ id: `posting:${journal.journalEntryId}:${posting.entryId}`, journal, posting }))
   ]);
+  // Totals over the posting lines shown, in exact cents so a balanced ledger reads exactly 0.
+  const ledgerTotals = useMemo(() => {
+    const postings = sortedRows.flatMap((journal) => journal.postedLines ?? []);
+    if (postings.length === 0) return null;
+    const cents = (value: number) => Math.round(value * 100);
+    const debitCents = postings.reduce((sum, posting) => sum + cents(posting.debit), 0);
+    const creditCents = postings.reduce((sum, posting) => sum + cents(posting.credit), 0);
+    return { debit: debitCents / 100, credit: creditCents / 100, balanced: debitCents === creditCents };
+  }, [sortedRows]);
   function postingAmountCell(row: (typeof ledgerRows)[number], side: "debit" | "credit") {
     const posting = row.posting;
     const value = posting ? posting[side] : side === "debit" ? row.journal.totalDebits : row.journal.totalCredits;
-    return posting && value !== 0 ? <button type="button" className="text-foreground underline decoration-dotted underline-offset-4 hover:decoration-solid focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-      aria-label={`Inspect ${side} ${postedMoney(value)} for ${posting.accountName} in journal ${row.journal.journalEntryId}`}
-      onClick={() => setSelectedAmount({ subjectId: `${row.journal.journalEntryId}:${posting.entryId}:${side}`, ledgerBookId: row.journal.ledgerBookId ?? "", periodId: row.journal.periodId ?? "", fundProfileId: selectedFundId, amount: value, currency: baseCurrency ?? "", label: `${posting.accountName} ${side} ${postedMoney(value)}` })}>{postedMoney(value)}</button> : postedMoney(value);
+    const reference = posting && value !== 0 ? posting.amountPassport : null;
+    const displayValue = reference?.currency
+      ? formatMoney(value, { context: "accounting", currency: reference.currency })
+      : postedMoney(value);
+    return <AmountPassportTrigger
+      ariaLabel={posting && value !== 0 ? `Inspect ${side} ${displayValue} for ${posting.accountName} in journal ${row.journal.journalEntryId}` : undefined}
+      className="ledger-proof-button"
+      selection={{
+        label: posting ? `${posting.accountName} ${side}` : `Journal total ${side}`, displayValue, reference,
+        currency: baseCurrency, unit: "currency", zero: value === 0, origin: posting ? "unavailable" : "calculated",
+        asOf: posting?.timestamp ?? row.journal.timestamp, basis: postedLedger.selectedBook?.accountingBasis,
+        unavailableReason: !posting ? "The journal subtotal has no retained amount address."
+          : value === 0 ? "This side has zero and carries no posting amount." : "The posted line did not supply its complete retained scope and revision."
+      }}>{displayValue}</AmountPassportTrigger>;
   }
 
   if (!active) {
@@ -612,6 +659,13 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
 
   return (
     <div className="space-y-3">
+      {postedLedger.selectedBook ? (
+        <LedgerFundIdentity
+          book={postedLedger.selectedBook}
+          period={postedLedger.selectedPeriod}
+          periodError={Boolean(postedLedger.view.periodSelector.errorText)}
+        />
+      ) : null}
       <Card className="panel-surface">
         <CardHeader className="sr-only">
           <CardTitle>Ledger Explorer</CardTitle>
@@ -657,7 +711,7 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
                 ? "Loading the posted journal."
                 : postedLedger.journalErrorText
                   ? postedLedger.journalErrorText
-                  : `${filteredRows.length} posted entry(ies)${postedLedger.selectedPeriodLabel ? ` for ${postedLedger.selectedPeriodLabel}` : ""}.${filteredRows.length > 0 ? " Select a posting amount to open its proof." : ""}`}
+                  : `${pluralizeCount(filteredRows.length, "posted entry", { plural: "posted entries" })}${postedLedger.selectedPeriodLabel ? ` for ${postedLedger.selectedPeriodLabel}` : ""}.${filteredRows.length > 0 ? " Select a posting amount to open its proof." : ""}`}
             </p>
             <Badge variant={filteredRows.length > 0 ? "success" : "outline"}>{filteredRows.length}</Badge>
             <SectionDescription descriptionKey="accounting:ledger-explorer" label="About Ledger Explorer">
@@ -697,14 +751,32 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
                 setTabSearchParams(next, { replace: true });
               }}
               ariaLabel="Ledger Explorer results" rows={ledgerRows} getRowId={(row) => row.id}
+              getRowClassName={(row) => row.posting ? "ledger-row--posting" : "ledger-row--journal"}
+              footerLabel="Ledger totals"
+              footerExport={ledgerTotals ? {
+                date: "Totals",
+                debit: { value: ledgerTotals.debit, display: postedMoney(ledgerTotals.debit) },
+                credit: { value: ledgerTotals.credit, display: postedMoney(ledgerTotals.credit) },
+                source: ledgerTotals.balanced ? "Balanced" : `Difference ${postedMoney(ledgerTotals.debit - ledgerTotals.credit)}`
+              } : undefined}
+              footerCells={ledgerTotals ? {
+                date: "Totals",
+                debit: postedMoney(ledgerTotals.debit),
+                credit: postedMoney(ledgerTotals.credit),
+                source: ledgerTotals.balanced ? "Balanced" : `Difference ${postedMoney(ledgerTotals.debit - ledgerTotals.credit)}`
+              } : undefined}
               emptyText={postedLedger.view.periodSelector.options.length === 0 ? postedLedger.view.periodSelector.errorText ?? postedLedger.view.periodSelector.loadingText ?? postedLedger.view.periodSelector.emptyText ?? "No ledger periods are available for this accounting scope." : "No posted entries match the current search."}
               columns={[
-                { id: "date", label: "Date", className: "whitespace-nowrap", render: (row) => row.posting ? "Posting amount" : formatDateTimeLabel(row.journal.timestamp), exportValue: (row) => row.journal.timestamp },
-                { id: "journalEntryId", label: "Journal ID", sortable: true, render: (row) => row.posting ? null : <EntityLink ariaLabel={`Open journal ${row.journal.journalEntryId}`} record={{ kind: "journal", id: row.journal.journalEntryId, label: row.journal.journalEntryId, workspaceHref: workstationRouteWithQuery("accountingJournalEntryDetail", { journalEntryId: row.journal.journalEntryId, periodId: postedLedger.selectedPeriodId }), summary: [{ label: "Status", value: "Posted" }, { label: "Date", value: formatDateTimeLabel(row.journal.timestamp) }, { label: "Description", value: row.journal.description || "Ledger posting" }] }}>{row.journal.journalEntryId}</EntityLink>, exportValue: (row) => row.journal.journalEntryId },
-                { id: "account", label: "Account", render: (row) => row.posting ? `${row.posting.accountName}${row.posting.symbol ? ` - ${row.posting.symbol}` : ""}` : row.journal.accountScopeId ? <EntityLink record={{ kind: "account", id: row.journal.accountScopeId, label: row.journal.accountScopeDisplayName ?? "Account name unavailable", workspaceHref: sourceLedgerContextHref, summary: [{ label: "Source", value: "Posted ledger dimensions" }, { label: "Workspace destination", value: "Source Ledger context · selected book and period" }] }} /> : row.journal.accountScopeDisplayName ?? "Multiple accounts", exportValue: (row) => row.posting?.accountName ?? row.journal.accountScopeDisplayName },
-                { id: "debit", label: "Debit", align: "right", className: "tabular-nums", render: (row) => postingAmountCell(row, "debit"), exportValue: (row) => row.posting?.debit ?? row.journal.totalDebits },
-                { id: "credit", label: "Credit", align: "right", className: "tabular-nums", render: (row) => postingAmountCell(row, "credit"), exportValue: (row) => row.posting?.credit ?? row.journal.totalCredits },
-                { id: "entity", label: "Entity", render: (row) => { const entityId = row.posting ? row.posting.dimensions?.entityId : row.journal.entityScopeId; return entityId ? <EntityLink record={{ kind: "entity", id: entityId, label: row.journal.entityScopeDisplayName && row.journal.entityScopeDisplayName !== entityId && row.journal.entityScopeId === entityId ? row.journal.entityScopeDisplayName : "Entity name unavailable", workspaceHref: sourceLedgerContextHref, summary: [{ label: "Source", value: "Posted ledger dimensions" }, { label: "Workspace destination", value: "Source Ledger context · selected book and period" }] }} /> : "Not scoped to one entity"; }, exportValue: (row) => row.posting ? row.posting.dimensions?.entityId : row.journal.entityScopeId },
+                { id: "date", label: "Date", className: "whitespace-nowrap", render: (row) => row.posting ? null : formatAccountingDate(row.journal.timestamp), exportValue: (row) => row.journal.timestamp, exportDisplay: (row) => row.posting ? "" : formatAccountingDate(row.journal.timestamp) },
+                { id: "journalEntryId", label: "Journal ID", sortable: true, render: (row) => row.posting ? null : <EntityLink ariaLabel={`Open journal ${row.journal.journalEntryId}`} record={{ kind: "journal", id: row.journal.journalEntryId, label: row.journal.journalEntryId, workspaceHref: workstationRouteWithQuery("accountingJournalEntryDetail", { journalEntryId: row.journal.journalEntryId, periodId: postedLedger.selectedPeriodId }), summary: [{ label: "Status", value: "Posted" }, { label: "Date", value: formatAccountingDate(row.journal.timestamp) }, { label: "Description", value: row.journal.description || "Ledger posting" }] }}>{row.journal.journalEntryId}</EntityLink>, exportValue: (row) => row.journal.journalEntryId },
+                { id: "account", label: "Account", className: "ledger-cell--account", render: (row) => row.posting ? `${row.posting.accountName}${row.posting.symbol ? ` - ${row.posting.symbol}` : ""}` : row.journal.accountScopeId ? <EntityLink record={{ kind: "account", id: row.journal.accountScopeId, label: row.journal.accountScopeDisplayName ?? "Account name unavailable", workspaceHref: sourceLedgerContextHref, summary: [{ label: "Source", value: "Posted ledger dimensions" }, { label: "Workspace destination", value: "Source Ledger context · selected book and period" }] }} /> : row.journal.accountScopeDisplayName ?? "Multiple accounts", exportValue: (row) => row.posting?.accountName ?? row.journal.accountScopeDisplayName },
+                { id: "debit", label: "Debit", align: "right", className: "tabular-nums", render: (row) => postingAmountCell(row, "debit"), exportValue: (row) => row.posting?.debit ?? row.journal.totalDebits, exportDisplay: (row) => postedMoney(row.posting?.debit ?? row.journal.totalDebits), exportNumberFormat: "#,##0.00;(#,##0.00)" },
+                { id: "credit", label: "Credit", align: "right", className: "tabular-nums", render: (row) => postingAmountCell(row, "credit"), exportValue: (row) => row.posting?.credit ?? row.journal.totalCredits, exportDisplay: (row) => postedMoney(row.posting?.credit ?? row.journal.totalCredits), exportNumberFormat: "#,##0.00;(#,##0.00)" },
+                { id: "entity", label: "Entity",
+                  // When no row's entity has a display name, say so once instead of on every row.
+                  hideWhenEmpty: (row) => { const entityId = row.posting ? row.posting.dimensions?.entityId : row.journal.entityScopeId; return !entityId || !(row.journal.entityScopeDisplayName && row.journal.entityScopeDisplayName !== entityId && row.journal.entityScopeId === entityId); },
+                  emptyNote: "Entity: no posting has an entity name; entity IDs are in each journal's detail and in exports",
+                  render: (row) => { const entityId = row.posting ? row.posting.dimensions?.entityId : row.journal.entityScopeId; return entityId ? <EntityLink record={{ kind: "entity", id: entityId, label: row.journal.entityScopeDisplayName && row.journal.entityScopeDisplayName !== entityId && row.journal.entityScopeId === entityId ? row.journal.entityScopeDisplayName : "Entity name unavailable", workspaceHref: sourceLedgerContextHref, summary: [{ label: "Source", value: "Posted ledger dimensions" }, { label: "Workspace destination", value: "Source Ledger context · selected book and period" }] }} /> : "Not scoped to one entity"; }, exportValue: (row) => row.posting ? row.posting.dimensions?.entityId : row.journal.entityScopeId },
                 { id: "source", label: "Source", render: (row) => row.posting?.description || row.journal.description || "Ledger posting", exportValue: (row) => row.posting?.description || row.journal.description },
                 { id: "status", label: "Status", render: (row) => row.posting ? null : <DesignSystemStatus status="posted">Posted</DesignSystemStatus>, exportValue: (row) => row.posting ? "Posting line" : "Posted journal summary" }
               ]}
@@ -722,7 +794,6 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
         </CardContent>
       </Card>
       <AccountingPeriodComparison bookId={selectedBookId} periodId={postedLedger.selectedPeriodId} expectedBasis={postedLedger.selectedBook?.accountingBasis} enabled={postedLedger.periodsSettled} periodOptions={postedLedger.view.periodSelector.options} />
-      <LedgerAmountProofDrawer selection={currentAmount} onClose={() => setSelectedAmount(null)} />
       <nav className="flex flex-wrap gap-3 text-sm" aria-label="Related accounting workflows">
         <Link className="text-foreground underline underline-offset-4" to={scopedAccountingWorkflowPath(WORKSTATION_ROUTE_CATALOG.accountingFactorPaydown, tabSearchParams)}>Prepare factor paydown</Link>
         <Link className="text-foreground underline underline-offset-4" to={scopedAccountingWorkflowPath(WORKSTATION_ROUTE_CATALOG.accountingConsolidation, tabSearchParams)}>Open consolidation</Link>
@@ -797,57 +868,121 @@ export function ConsolidationWorkflowScreen() {
 }
 
 export function ReconciliationMatchWorkbenchScreen({ data }: FinanceStandardScreenProps) {
-  const breaks = data?.breakQueue ?? [];
-  const selectedBreak = breaks[0] ?? null;
-  const breakLabel = selectedBreak ? financeBreakLabel(selectedBreak.category) : "No open break selected";
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { key: navigationKey } = useLocation();
+  const fundScope = useFundScopeNarrowingContext();
+  const fundAccountId = searchParams.get("fundAccountId")?.trim() || searchParams.get("accountId")?.trim() || undefined;
+  const caseId = searchParams.get("caseId")?.trim().toLowerCase();
+  const runId = searchParams.get("runId")?.trim().toLowerCase();
+  const breakId = searchParams.get("reconciliationBreak")?.trim().toLowerCase()
+    || searchParams.get("breakId")?.trim().toLowerCase()
+    || (caseId?.startsWith("case:") ? caseId.slice("case:".length).trim() : null);
+  const hasCaseAddress = searchParams.has("reconciliationBreak") || searchParams.has("caseId") || searchParams.has("breakId");
+  const hasAddress = hasCaseAddress || searchParams.has("runId");
+  const canResolveAddress = (!hasCaseAddress || Boolean(breakId)) && (!searchParams.has("runId") || Boolean(runId));
+  const scopeBreaks = (rows: ReconciliationBreakQueueItem[]) => {
+    const accountRows = fundAccountId
+      ? rows.filter((row) => row.fundAccountId?.toLowerCase() === fundAccountId.toLowerCase())
+      : rows;
+    return narrowRowsWithFundScopeContext(fundScope, accountRows, (row) => row.fundAccountId, "breaks").rows;
+  };
+  const selectBreak = (rows: ReconciliationBreakQueueItem[]) => {
+    if (!canResolveAddress) return null;
+    const matchesRun = (row: ReconciliationBreakQueueItem) => !runId
+      || row.runId.toLowerCase() === runId
+      || row.sourceImportId?.toLowerCase() === runId;
+    if (!breakId) return rows.find(matchesRun) ?? null;
+    // Import links identify source records, and the governed queue gives those records its own IDs.
+    return rows.find((row) => row.breakId.toLowerCase() === breakId && matchesRun(row))
+      ?? rows.find((row) => row.sourceBreakId?.toLowerCase() === breakId && matchesRun(row))
+      ?? null;
+  };
+  const workspaceBreaks = scopeBreaks(data?.breakQueue ?? []);
+  const workspaceSelection = selectBreak(workspaceBreaks);
+  // An import can publish cases after the shell's Accounting snapshot was loaded.
+  const needsQueueRead = hasAddress && canResolveAddress && workspaceSelection === null;
+  const [queueRead, setQueueRead] = useState<{
+    navigationKey: string;
+    rows: ReconciliationBreakQueueItem[] | null;
+  } | null>(null);
+  useEffect(() => {
+    if (!needsQueueRead) return;
+    const controller = new AbortController();
+    void getReconciliationBreakQueue(undefined, fundAccountId, { signal: controller.signal, allowDevelopmentFallback: false })
+      .then((rows) => {
+        if (!controller.signal.aborted) setQueueRead({ navigationKey, rows });
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setQueueRead({ navigationKey, rows: null });
+      });
+    return () => controller.abort();
+  }, [needsQueueRead, fundAccountId, navigationKey]);
+
+  const currentRead = needsQueueRead && queueRead?.navigationKey === navigationKey ? queueRead : null;
+  const breaks = currentRead?.rows ? scopeBreaks(currentRead.rows) : workspaceBreaks;
+  const selectedBreak = currentRead?.rows ? selectBreak(breaks) : workspaceSelection;
+  const caseChoices = breaks.map((item, index) => {
+    const primaryLabel = item.reason || item.strategyName || `Reconciliation case ${index + 1}`;
+    return { id: item.breakId, label: [primaryLabel, item.strategyName !== primaryLabel ? item.strategyName : "",
+      item.detectedAt && formatAccountingDate(item.detectedAt)].filter(Boolean).join(" · ") };
+  });
+  const caseLabelCounts = new Map<string, number>();
+  for (const choice of caseChoices) caseLabelCounts.set(choice.label, (caseLabelCounts.get(choice.label) ?? 0) + 1);
   const freshness = buildFinanceFreshness(selectedBreak?.lastUpdatedAt);
+  const caseworkPath = workstationRouteWithQuery("accountingReconciliation", {
+    reconciliationBreak: selectedBreak?.breakId,
+    entityId: searchParams.get("entityId"),
+    fundId: searchParams.get("fundId"),
+    fundAccountId
+  });
+  const emptyState = needsQueueRead && !currentRead
+    ? { title: "Loading reconciliation breaks" }
+    : currentRead?.rows === null
+      ? { title: "Reconciliation breaks could not be loaded", detail: "Reload the page to try again or open reconciliation casework." }
+      : hasAddress
+        ? { title: "Requested reconciliation break unavailable", detail: "Check the link or open reconciliation casework to see breaks in the current scope." }
+        : { title: "No reconciliation case selected", detail: "Open a break from Accounting Reconciliation to retain its case scope here." };
 
   return (
     <div className="space-y-3">
       <OperationalTrustSummary
-        source={{ value: "Reconciliation queue", tone: data ? "ready" : "unknown" }}
+        source={{ value: "Reconciliation queue", tone: data || currentRead?.rows ? "ready" : "unknown" }}
         scope={{ value: selectedBreak ? "Selected case" : "No case selected", detail: selectedBreak?.strategyName, tone: selectedBreak ? "ready" : "unknown" }}
         freshness={freshness}
         completeness={{ value: selectedBreak ? "Case loaded" : "No case data", tone: selectedBreak ? "review" : "unknown" }}
-        blocker={selectedBreak ? { value: "Open cash variance", detail: selectedBreak.reason, tone: "review" } : undefined}
       />
       <div className="flex flex-wrap gap-2">
-        <Button asChild size="sm"><Link to={WORKSTATION_ROUTE_CATALOG.accountingReconciliation}>Open reconciliation casework</Link></Button>
-        {selectedBreak ? (
-          <Button asChild size="sm" variant="outline"><Link to={evidenceWorkbenchPath("reconciliation-break", selectedBreak.breakId)}>Review retained evidence</Link></Button>
-        ) : null}
-        <Button type="button" size="sm" variant="outline" disabled disabledReason="Match decisions are recorded from the reconciliation casework route.">Record match decision</Button>
+        <Button asChild size="sm"><Link to={caseworkPath}>Open reconciliation casework</Link></Button>
       </div>
       <Card className="panel-surface">
         <CardHeader>
           <CardTitle>Reconciliation Match Workbench</CardTitle>
-          <CardDescription>Clear breaks by matching source records to ledger records with suggested adjustments.</CardDescription>
+          {selectedBreak ? <CardDescription>{financeBreakLabel(selectedBreak.category)}</CardDescription> : null}
         </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-3">
-          <FinanceFact label="Open breaks" value={String(breaks.length)} />
-          <FinanceFact label="Selected break" value={breakLabel} />
-          <FinanceFact label="Status" value={selectedBreak ? presentStatusLabel(selectedBreak.status) : "No case"} />
-          <FinanceFact label="Variance" value={selectedBreak ? formatCurrency(selectedBreak.variance) : "Not supplied"} mono />
-          <FinanceFact label="Owner" value={selectedBreak?.assigneeDisplayName ?? selectedBreak?.assignedTo ?? "Unassigned"} />
-          <FinanceFact label="Next action" value={selectedBreak?.recommendedAction ?? "Review the case before taking action."} />
+        <CardContent className="space-y-4">
+          <FormRow label="Case" labelFor="match-selected-case">
+            <Select id="match-selected-case" value={selectedBreak?.breakId ?? ""} onChange={(event) => {
+              const next = new URLSearchParams(searchParams);
+              const chosen = breaks.find((item) => item.breakId === event.target.value);
+              if (chosen) {
+                next.set("reconciliationBreak", chosen.breakId);
+                next.delete("caseId");
+                next.delete("breakId");
+                if (next.has("runId")) next.set("runId", chosen.sourceImportId ?? chosen.runId);
+              } else next.delete("reconciliationBreak");
+              setSearchParams(next);
+            }}>
+              {!selectedBreak ? <option value="">Select a case</option> : null}
+              {caseChoices.map((choice, index) => <option key={choice.id} value={choice.id}>{choice.label}{(caseLabelCounts.get(choice.label) ?? 0) > 1 ? ` · Retained case ${index + 1}` : ""}</option>)}
+            </Select>
+          </FormRow>
+          {selectedBreak ? (
+            <CaseInspector key={selectedBreak.breakId} caseId={selectedBreak.breakId} initialCase={selectedBreak} relatedCases={breaks} />
+          ) : (
+            <StatusBanner role="status" tone="info" title={emptyState.title} detail={emptyState.detail} />
+          )}
         </CardContent>
       </Card>
-      {selectedBreak ? (
-        <TechnicalDetails label="Audit details">
-          <dl className="grid gap-2 md:grid-cols-2">
-            <FinanceFact label="Case ID" value={selectedBreak.breakId} mono />
-            <FinanceFact label="Run ID" value={selectedBreak.runId} mono />
-            <FinanceFact label="Raw category" value={selectedBreak.category} mono />
-            <FinanceFact label="Source system" value={selectedBreak.sourceSystem ?? "Not supplied"} mono />
-            <FinanceFact label="Source reference" value={selectedBreak.sourceReference ?? "Not supplied"} mono />
-            <FinanceFact label="Tolerance profile" value={selectedBreak.toleranceProfileId ?? "Not supplied"} mono />
-            <FinanceFact label="SLA policy" value={selectedBreak.slaPolicyId ?? "Not supplied"} mono />
-          </dl>
-        </TechnicalDetails>
-      ) : (
-        <StatusBanner role="status" tone="info" title="No reconciliation case selected" detail="Open a break from Accounting Reconciliation to retain its case scope here." />
-      )}
-
     </div>
   );
 }
@@ -896,7 +1031,8 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
     "close workflows"
   );
   const items = fundScope.rows;
-  const closeRows = items.map((item) => {
+  // Overdue workflows first (UX Phase E); a workflow ready to close is never overdue.
+  const closeRows = sortByUrgency(items, (item) => describeDue(item.nextDueDate, Date.now(), { done: item.isReadyToClose })).map((item) => {
     const nextTask = item.nextDueLabel ?? "No next task retained";
     const owner = item.nextDueOwner ?? "Unassigned";
     const due = item.nextDueDate ? presentFinanceDate(item.nextDueDate) : "No due date";
@@ -904,6 +1040,23 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
     return { item, summary };
   });
   const calendarFreshness = buildFinanceFreshness(calendar?.generatedAtUtc);
+  // The month grid (UX Phase D): each workflow on the day its next task is due, opening on the
+  // month with the earliest upcoming due date. Workflows with no due date are listed once below.
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const calendarItems: MonthCalendarItem[] = items
+    .filter((item) => item.nextDueDate)
+    .map((item) => ({
+      id: item.workflowId,
+      date: item.nextDueDate!.slice(0, 10),
+      label: `${presentFinancePeriod(item.periodId)}: ${item.nextDueLabel ?? "Next task"}`,
+      detail: [item.nextDueOwner ? `Owner ${item.nextDueOwner}` : "Unassigned", item.blockerCount > 0 ? pluralizeCount(item.blockerCount, "blocker") : null, `${item.completedApprovalCount}/${item.requiredApprovalCount} approvals`].filter(Boolean).join(" · "),
+      status: item.isReadyToClose ? "Ready" : item.blockerCount > 0 ? "Blocked" : presentStatusLabel(item.status),
+      href: resolveCloseWorkflowHref(item)
+    }));
+  const dueDates = calendarItems.map((item) => item.date).sort();
+  const firstMonth = (dueDates.find((date) => date >= todayIso) ?? dueDates[0] ?? todayIso).slice(0, 7);
+  const undatedWorkflows = items.filter((item) => !item.nextDueDate);
+  const readyWorkflowIds = new Set(items.filter((item) => item.isReadyToClose).map((item) => item.workflowId));
 
   return (
     <div className="space-y-3">
@@ -939,9 +1092,25 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
             <CardTitle className="text-base">Close workflow queue</CardTitle>
             <SectionDescription descriptionKey="close-calendar:queue" label="About the close workflow queue">Open a period to acknowledge tasks, submit approvals, or close from the close workflow.</SectionDescription>
           </CardHeader>
-          <CardContent className="p-3">
+          <CardContent className="space-y-4 p-3">
+            {calendarItems.length > 0 ? (
+              <MonthCalendar
+                key={firstMonth}
+                items={calendarItems}
+                initialMonth={firstMonth}
+                today={todayIso}
+                ariaLabel="Close calendar"
+                isDone={(item) => readyWorkflowIds.has(item.id)}
+              />
+            ) : null}
+            {undatedWorkflows.length > 0 && calendarItems.length > 0 ? (
+              <p className="text-xs text-muted-foreground" data-testid="close-calendar-undated">
+                No due date: {undatedWorkflows.map((item) => presentFinancePeriod(item.periodId)).join(", ")}
+              </p>
+            ) : null}
+            {calendarItems.length > 0 ? <h3 className="text-sm font-semibold">List view</h3> : null}
             {closeRows.length > 0 ? (
-              <ul className="space-y-2" aria-label="Close workflow queue">
+              <ul className="space-y-2" aria-label="Close workflow queue" data-chart-table="close-calendar">
                 {closeRows.map(({ item, summary }) => (
                   <li
                     key={item.workflowId}
@@ -950,6 +1119,7 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
                     <div className="min-w-0 space-y-2">
                       <div className="text-sm text-foreground">{summary}</div>
                       <div className="flex flex-wrap gap-2">
+                        <DueChip dueAt={item.nextDueDate} done={item.isReadyToClose} fallback={null} />
                         <Badge variant={item.blockerCount > 0 ? "warning" : "outline"}>
                           {item.blockerCount} blocker{item.blockerCount === 1 ? "" : "s"}
                         </Badge>
@@ -993,16 +1163,37 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
 }
 
 export function ApprovalInboxScreen({ data }: FinanceStandardScreenProps) {
-  const closePlan = firstRecord(asRecord(data), "closePlans");
-  const approvals = readRecordArray(closePlan, "approvals");
-  const approvalRows = approvals.map((approval, index) => {
-    const approvalId = readString(approval, "approvalId", "");
-    return {
-      approvalId,
-      label: readString(approval, "label", approvalId || `Approval ${index + 1}`),
-      status: readString(approval, "status", "Pending")
-    };
-  });
+  const workspace = asRecord(data);
+  const closePlans = Array.isArray(workspace?.closePlans) ? workspace.closePlans : null;
+  const hasMalformedPlanFeed = workspace?.closePlans != null && closePlans === null;
+  const missingPlanFeedCount = closePlans?.filter((plan) => !Array.isArray(asRecord(plan)?.approvals)).length ?? 0;
+  const hasApprovalFeed = closePlans !== null && (closePlans.length === 0 || missingPlanFeedCount < closePlans.length);
+  const approvalRows = closePlans?.flatMap((entry, planIndex) => {
+    const plan = asRecord(entry);
+    const approvals = Array.isArray(plan?.approvals) ? plan.approvals : [];
+    return approvals.map((entry, index) => {
+      const approval = asRecord(entry);
+      const approvalId = readString(approval, "approvalId", "");
+      const workflowId = readString(approval, "workflowId", readString(plan, "workflowId", ""));
+      return {
+        key: `${workflowId}:${approvalId || `${planIndex}:${index}`}`,
+        approvalId,
+        workflowId,
+        label: readString(approval, "label", approvalId || `Approval ${index + 1}`),
+        status: readString(approval, "status", "")
+      };
+    });
+  }) ?? [];
+  const pendingApprovalRows = approvalRows.filter((row) => isAwaitingApprovalDecision(row.status));
+  const unknownStatusCount = approvalRows.filter((row) => !isAwaitingApprovalDecision(row.status)
+    && row.status !== "Pending" && row.status !== "Approved" && row.status !== "Rejected").length;
+  const pendingApprovalCount = hasMalformedPlanFeed
+    ? "Unavailable"
+    : !hasApprovalFeed
+      ? "Not supplied"
+      : unknownStatusCount > 0 || missingPlanFeedCount > 0
+        ? `${pendingApprovalRows.length} confirmed`
+        : String(pendingApprovalRows.length);
 
   return (
     <div className="space-y-4">
@@ -1012,22 +1203,40 @@ export function ApprovalInboxScreen({ data }: FinanceStandardScreenProps) {
           <CardDescription>Approvals show what is being approved, why it is ready, what changed, supporting evidence, downstream effects, and risk.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-3">
-          <FinanceFact label="Pending approvals" value={String(approvalRows.length)} />
-          <FinanceFact label="Queue source" value={approvals.length > 0 ? "Accounting workspace" : "No approval feed supplied"} />
+          <FinanceFact label="Pending approvals" value={pendingApprovalCount} />
+          <FinanceFact label="Queue source" value={hasMalformedPlanFeed ? "Accounting workspace (unavailable)" : hasApprovalFeed ? missingPlanFeedCount > 0 ? "Accounting workspace (partial)" : "Accounting workspace" : "No approval feed supplied"} />
           <FinanceFact label="Decision authority" value="Approval workflow" />
         </CardContent>
       </Card>
-      {approvalRows.length > 0 ? (
+      {hasMalformedPlanFeed || missingPlanFeedCount > 0 ? (
+        <StatusBanner
+          role="status"
+          tone="warning"
+          title="Approval queue incomplete"
+          detail={hasMalformedPlanFeed
+            ? "The close-plan approval feed is malformed, so a pending count cannot be confirmed. Open approvals to inspect the authoritative queue."
+            : `Approval feeds are missing or malformed for ${missingPlanFeedCount} of ${closePlans!.length} close plans. The confirmed count includes only supplied approvals. Open approvals to inspect the authoritative queue.`}
+        />
+      ) : null}
+      {unknownStatusCount > 0 ? (
+        <StatusBanner
+          role="status"
+          tone="warning"
+          title="Approval statuses need review"
+          detail={`${pluralizeCount(unknownStatusCount, "approval")} with an unavailable or unrecognized status ${unknownStatusCount === 1 ? "is" : "are"} excluded from the pending count. Open approvals to inspect the authoritative queue.`}
+        />
+      ) : null}
+      {pendingApprovalRows.length > 0 ? (
         <Card className="panel-surface">
           <CardHeader>
             <CardTitle className="text-base">Approval queue</CardTitle>
-            <CardDescription>Open a pending approval to review its evidence and record the decision in the approval workflow.</CardDescription>
+            <CardDescription>Submitted approvals awaiting a reviewer decision across all supplied close plans. Open an approval to review its evidence and record the decision in the approval workflow.</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2" aria-label="Pending approvals">
-              {approvalRows.map((row) => (
+              {pendingApprovalRows.map((row) => (
                 <li
-                  key={row.approvalId || row.label}
+                  key={row.key}
                   className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/70 bg-secondary/15 px-3 py-2"
                 >
                   <div className="min-w-0">
@@ -1038,12 +1247,12 @@ export function ApprovalInboxScreen({ data }: FinanceStandardScreenProps) {
                     <Badge variant={approvalStatusVariant(row.status)}>{presentStatusLabel(row.status)}</Badge>
                     <Button asChild size="sm" variant="outline">
                       <Link
-                        to={row.approvalId
-                          ? workstationRouteWithQuery("accountingApprovals", { approvalId: row.approvalId })
-                          : WORKSTATION_ROUTE_CATALOG.accountingApprovals}
-                        aria-label={`Review and decide ${row.label}`}
+                        to={workstationRouteWithQuery("accountingApprovals", {
+                          approvalId: row.approvalId || undefined, workflowId: row.workflowId || undefined
+                        })}
+                        aria-label={row.approvalId ? `Review and decide ${row.label}` : `Open approvals for ${row.label}`}
                       >
-                        Review &amp; decide
+                        {row.approvalId ? "Review & decide" : "Open approvals"}
                       </Link>
                     </Button>
                   </div>
@@ -1052,14 +1261,16 @@ export function ApprovalInboxScreen({ data }: FinanceStandardScreenProps) {
             </ul>
           </CardContent>
         </Card>
-      ) : (
+      ) : unknownStatusCount === 0 && missingPlanFeedCount === 0 && !hasMalformedPlanFeed ? (
         <StatusBanner
           role="status"
           tone="info"
-          title="No approvals in the supplied accounting scope"
-          detail="Open approvals to inspect the authoritative queue, or review the close calendar to resolve prerequisites that create approval work."
+          title={hasApprovalFeed ? "No pending approvals in the supplied accounting scope" : "Approval queue not supplied"}
+          detail={hasApprovalFeed
+            ? "No submitted approvals are awaiting a reviewer decision. Open approvals to inspect the authoritative queue, or review the close calendar to resolve prerequisites that create approval work."
+            : "This accounting workspace does not include an approval feed. Open approvals to inspect the authoritative queue."}
         />
-      )}
+      ) : null}
       <FinanceList title="Reviewer checklist" items={[
         "What am I approving?",
         "Why is it ready?",
@@ -1226,7 +1437,7 @@ function buildReportOutputItems(references: string[], fallback: string): string[
   });
 }
 
-function FinanceFact({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+function FinanceFact({ label, value, mono = false }: { label: string; value: ReactNode; mono?: boolean }) {
   return (
     <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
       <div className="text-xs font-medium text-muted-foreground">{label}</div>
@@ -1261,10 +1472,6 @@ function asRecord(value: unknown): UnknownRecord | null {
 function readRecordArray(record: UnknownRecord | null, key: string): UnknownRecord[] {
   const value = record?.[key];
   return Array.isArray(value) ? value.map(asRecord).filter((item): item is UnknownRecord => item !== null) : [];
-}
-
-function firstRecord(record: UnknownRecord | null, key: string): UnknownRecord | null {
-  return readRecordArray(record, key)[0] ?? null;
 }
 
 function readString(record: UnknownRecord | null, key: string, fallback: string): string {

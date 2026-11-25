@@ -265,6 +265,7 @@ public sealed class UiServer : IAsyncDisposable
                 if (!string.IsNullOrWhiteSpace(
                         Environment.GetEnvironmentVariable(LifecycleSupervisorBridgeHostedService.PipeEnvironmentVariable)))
                 {
+                    builder.Services.AddSingleton<RuntimeSupervisorConnection>();
                     builder.Services.AddHostedService<LifecycleSupervisorBridgeHostedService>();
                 }
 
@@ -323,6 +324,12 @@ public sealed class UiServer : IAsyncDisposable
                         ? Path.Combine(resolvedDataRoot, "execution", "sessions")
                         : paperSessionBaseDirectory,
                     sp.GetRequiredService<ILogger<JsonlFilePaperSessionStore>>()));
+            builder.Services.AddSingleton<ResolvePaperAccountCurrency>(sp => async (accountId, ct) =>
+            {
+                var source = sp.GetService<Meridian.PortfolioRecords.Accounts.IAccountQueryService>();
+                var account = source is null ? null : await source.GetAccountAsync(accountId, ct).ConfigureAwait(false);
+                return account is { IsActive: true } ? account.BaseCurrency : null;
+            });
             builder.Services.AddSingleton<PaperSessionPersistenceService>();
             // Daily variation-margin settlement of paper futures; off unless
             // "PaperTrading:FuturesSettlement:Enabled" is true and a mark price source is registered.
@@ -370,6 +377,7 @@ public sealed class UiServer : IAsyncDisposable
                 CancelAllMaxConcurrency = configuredOrderManagement.CancelAllMaxConcurrency,
                 CancelAllInFlightSettleTimeout = configuredOrderManagement.CancelAllInFlightSettleTimeout,
                 ExecutionSubscriberDrainTimeout = configuredOrderManagement.ExecutionSubscriberDrainTimeout,
+                PaperIntentScope = configuredOrderManagement.PaperIntentScope,
                 RequireProductionSafetyDependencies =
                     ProductionServiceRegistrationPolicy.IsProductionComposition(builder.Services)
             });
@@ -419,38 +427,11 @@ public sealed class UiServer : IAsyncDisposable
                 builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<BrokeragePortfolioState>());
                 builder.Services.AddSingleton<IPositionTracker>(sp => sp.GetRequiredService<BrokeragePortfolioState>());
             }
+            // Order routing is fail-closed: the hosted composition requires the pre-trade risk gate and
+            // authoritative portfolio state (live compositions read broker observations; scoped
+            // risk/readiness controls refuse routing while that synchronization is unavailable).
             builder.Services.AddSingleton<IOrderManager>(sp =>
-            {
-                var gateway = sp.GetRequiredService<IExecutionGateway>();
-                var logger = sp.GetRequiredService<ILogger<OrderManagementSystem>>();
-                // Order routing is fail-closed: an OMS without the mandatory pre-trade risk gate is
-                // not a valid host composition in any supported production posture.
-                var risk = sp.GetRequiredService<IRiskValidator>();
-                // Live compositions read broker observations; scoped risk/readiness controls
-                // refuse routing while the corresponding synchronization is unavailable.
-                var portfolio = sp.GetRequiredService<IPortfolioState>();
-                return new OrderManagementSystem(
-                    gateway,
-                    logger,
-                    riskValidator: risk,
-                    securityMasterGate: sp.GetService<ISecurityMasterGate>(),
-                    operatorControls: sp.GetService<ExecutionOperatorControlService>(),
-                    auditTrail: sp.GetService<ExecutionAuditTrailService>(),
-                    portfolioState: portfolio,
-                    sessionPersistence: sp.GetService<PaperSessionPersistenceService>(),
-                    brokerageConfiguration: sp.GetRequiredService<BrokerageConfiguration>(),
-                    liveOrderReadinessGate: sp.GetService<ILiveOrderReadinessGate>(),
-                    options: sp.GetRequiredService<OrderManagementSystemOptions>(),
-                    tradeEventPublisher: sp.GetService<ITradeEventPublisher>(),
-                    tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>(),
-                    escalationQueue: sp.GetService<RiskEscalationQueueService>(),
-                    recoveryStore: gateway is IBrokerageGateway
-                        ? sp.GetRequiredService<FileBrokerageOrderRecoveryStore>() : null,
-                    sessionPolicy: sp.GetService<IOrderSessionPolicy>(),
-                    journal: sp.GetService<ExecutionJournal>(),
-                    marketReferences: sp.GetService<IOrderMarketReferenceSource>(),
-                    instrumentCoverage: sp.GetService<IOrderInstrumentCoverageSource>());
-            });
+                OrderManagementSystemFactory.Create(sp, OrderManagementSystemComposition.HostedWorkstation));
             if (usesPaperGateway)
             {
                 builder.Services.AddSingleton<IExecutionGateway>(sp =>
@@ -459,7 +440,9 @@ public sealed class UiServer : IAsyncDisposable
                         sp.GetService<ISecurityMasterQueryService>(),
                         sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>(),
                         sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>(),
-                        sp.GetRequiredService<Meridian.Execution.PaperMatching.PaperTradingCostOptions>()));
+                        sp.GetRequiredService<Meridian.Execution.PaperMatching.PaperTradingCostOptions>(),
+                        sp.GetService<ISecurityMasterQueryService>(),
+                        sp.GetService<Meridian.Contracts.FixedIncome.IBondAnalyticsService>()));
                 // Resting limit/stop orders re-evaluate when the market event tap records
                 // fresh data for their symbol (W9-PAPER-003 matching loop).
                 builder.Services.AddSingleton<Meridian.Execution.Interfaces.IPaperFillEvaluationTrigger>(sp =>

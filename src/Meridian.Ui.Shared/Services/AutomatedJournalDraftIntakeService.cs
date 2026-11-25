@@ -457,7 +457,7 @@ public sealed class AutomatedJournalDraftIntakeService
                     AccountPath: chartLookup.ResolvePath(line.account),
                     SecurityId: line.account.Symbol is not null ? line.dimensions?.InstrumentId ?? draft.Event.SecurityId : null,
                     SecurityDisplayName: line.account.Symbol,
-                    Description: line.account.ToString(),
+                    Description: draft.LineMemos?.GetValueOrDefault(index) ?? line.account.ToString(),
                     EvidenceLink: firstEvidenceLink,
                     Dimensions: LedgerDimensionMapper.ToDto(line.dimensions),
                     LedgerAccountSymbol: line.account.Symbol,

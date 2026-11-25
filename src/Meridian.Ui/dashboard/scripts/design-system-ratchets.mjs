@@ -25,6 +25,9 @@
 // `design-system-ratchets.test.ts` fails when a file exceeds its baseline, when a file not in
 // the baseline gains an occurrence, or when a file drops below its baseline (lock the progress
 // in by rerunning with --write). Usage:
+//   - rawSelects: a hand-styled native `<select>` instead of `Select` from
+//     `@/components/ui/select`, which owns the border, chevron, focus ring and error state.
+//
 //   node scripts/design-system-ratchets.mjs            # report
 //   node scripts/design-system-ratchets.mjs --write    # record reductions only; never allow growth
 import fs from "node:fs";
@@ -88,6 +91,8 @@ export function isAdHocBadgeClass(value) {
     && /\bpx-/.test(value);
 }
 
+const RAW_SELECT = /<select\b/g;
+
 export const RATCHETS = {
   adHocStatusBadges: {
     description: "hand-styled status chips in screens/ (use StatusBadge from @/design-system/status)",
@@ -133,6 +138,25 @@ export const RATCHETS = {
   isoTimestampsInJsx: {
     description: "raw ISO timestamps rendered in screens/ (use formatTimestamp or <TimeText> from @/lib/format)",
     count: countIsoTimestampsInJsx
+  },
+  monospaceCapsLabels: {
+    description: "class strings that set a label in uppercase monospace in screens/ (labels use the body face; font-mono is for figures, IDs and code)",
+    count(source) {
+      let total = 0;
+      for (const match of source.matchAll(STRING_LITERAL)) {
+        const value = match[1] ?? match[2] ?? match[3] ?? "";
+        if (/\bfont-mono\b/.test(value) && /\buppercase\b/.test(value)) {
+          total += 1;
+        }
+      }
+      return total;
+    }
+  },
+  rawSelects: {
+    description: "hand-styled native <select> elements in screens/ (use Select from @/components/ui/select)",
+    count(source) {
+      return [...source.matchAll(RAW_SELECT)].length;
+    }
   }
 };
 

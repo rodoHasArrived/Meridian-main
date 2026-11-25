@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import { COMPANION_PANES } from "@/lib/companion-pane/pane-window";
 import { readOpenCompanionPaneIds } from "@/lib/companion-pane/open-registry";
-import { DEFAULT_DENSITY, readStoredDensity, type Density } from "@/lib/density";
+import { DEFAULT_DENSITY, readEffectiveDensity, type Density } from "@/lib/density";
 import {
   MAX_LAYOUT_DESCRIPTION_LENGTH,
   MAX_LAYOUT_NAME_LENGTH,
@@ -55,7 +55,7 @@ export function LayoutSwitcher({
   operatingScope,
   onRestore,
   storage,
-  readDensity = () => readStoredDensity(undefined, storage),
+  readDensity = () => readEffectiveDensity(storage),
   readPanes = () => readOpenCompanionPaneIds(storage),
   generateId = generateLayoutId
 }: LayoutSwitcherProps) {

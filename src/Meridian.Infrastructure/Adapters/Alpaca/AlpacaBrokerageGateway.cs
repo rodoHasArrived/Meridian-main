@@ -41,7 +41,7 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
-public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway, IExplicitOrderModificationGateway, IBrokerageConnectionState, IBrokerageAccountIdentity, IBrokerageOrderRecoveryGateway, IBrokerageOrderAmendmentRecoveryGateway
+public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway, IExplicitOrderModificationGateway, IGuardedOrderModificationGateway, IBrokerageConnectionState, IBrokerageAccountIdentity, IBrokerageOrderRecoveryGateway, IBrokerageOrderAmendmentRecoveryGateway
 {
     /// <inheritdoc />
     public bool UsesFaceValuePercentageOfPar(OrderRequest request)
@@ -767,6 +767,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                         (leavesQuantity is { } leaves ? cumulativeQuantity + leaves : cumulativeQuantity),
                     FilledQuantity = cumulativeQuantity,
                     LastFillQuantity = executedQuantity,
+                    BrokerActivityId = activityId,
                     AssetClass = order?.AssetClass,
                     FillPrice = fillPrice,
                     OrderStatus = status,
@@ -1514,6 +1515,14 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         var quantity = ParseNullableDecimal(activity.Qty);
         if (!quantity.HasValue)
             return null;
+
+        // Corporate-action removals and other non-trade movements report signed quantities
+        // without a buy/sell side. Taking their absolute value would turn a merger removal
+        // into an allocation and prevent reconciliation against the announced exchange ratio.
+        var providerCode = activity.ActivityType?.Trim().ToUpperInvariant() ?? "UNKNOWN";
+        var (category, _) = MapActivityType(providerCode, activity.Description);
+        if (category != BrokerageActivityCategory.Trade)
+            return quantity;
 
         return string.Equals(activity.Side, "sell", StringComparison.OrdinalIgnoreCase)
             ? -Math.Abs(quantity.Value)

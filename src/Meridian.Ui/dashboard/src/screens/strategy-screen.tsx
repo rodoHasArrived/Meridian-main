@@ -1,8 +1,11 @@
+import { ChartEvidenceMark, ChartEvidenceView, type ChartEvidence } from "@/components/charts/chart-evidence";
 import { PageHeading } from "@/components/ui/page-heading";
+import { RunComparisonOverlayCharts, RunCompareTray } from "@/screens/strategy-screen.comparison";
 import { Histogram } from "@/components/charts";
 import { CompareToggle } from "@/components/charts/SelectionCompare";
 import { Sparkline } from "@/components/charts/Sparkline";
 import { StrategyRunParityPanel } from "./strategy-screen.parity";
+import { StrategyReplayProvenance } from "./strategy-screen.replay-provenance";
 import { BiasDisclosurePanel } from "@/components/meridian/bias-disclosure-panel";
 import { DetailFields } from "@/components/meridian/detail-pane";
 import { DetailRail } from "@/components/meridian/detail-rail";
@@ -590,6 +593,7 @@ function StrategyScreenContent({ data, fundAccountId }: StrategyScreenProps) {
         <CardContent className="space-y-4">
           {showRuns ? (
           <>
+          <RunCompareTray selectedRuns={vm.selectedRuns} notice={vm.selectionNotice} onRemove={vm.toggleRun} onClear={vm.clearRunSelection} />
           <div className="flex flex-col gap-3 rounded-lg border border-border/70 bg-secondary/25 px-4 py-3 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="eyebrow-label">Selection</div>
@@ -905,6 +909,7 @@ function StrategyScreenContent({ data, fundAccountId }: StrategyScreenProps) {
             <CardDescription>Shared comparison evidence returned by the workstation API.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <RunComparisonOverlayCharts overlay={vm.comparisonOverlay} loading={vm.comparisonCurvesLoading} />
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
               <TableWorkbench workbenchId="strategy-comparison"
                 columns={tableColumnsWithExport(comparisonColumns, { strategy: row => row.strategyName, mode: row => row.modeText, status: row => row.statusText, "net-pnl": row => row.netPnlText, return: row => row.totalReturnText, drawdown: row => row.maxDrawdownText, sharpe: row => row.sharpeRatioText, fills: row => row.fillCountText })}
@@ -1147,6 +1152,11 @@ function StrategyScreenContent({ data, fundAccountId }: StrategyScreenProps) {
             </section>
 
             <StrategyRunParityPanel accountId={fundAccountId} runId={vm.selectedRunDetail.runId} />
+
+            {vm.selectedRunDetail.modeBadgeVariant === "research" ? (
+              <StrategyReplayProvenance evidence={vm.selectedRunDetail.replayProvenance}
+                receipt={vm.selectedRunProvenance} loading={vm.selectedRunDetail.replayEvidenceLoading} />
+            ) : null}
 
             <section className="mt-4 rounded-md border border-border/70 bg-secondary/20 px-4 py-3">
               <div className={eyebrowClassName(vm.selectedRunDetail.acceptanceCriteriaLabel)}>{vm.selectedRunDetail.acceptanceCriteriaLabel}</div>
@@ -1479,11 +1489,7 @@ function PlotToolWorkspacePanel({
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="plottool-chart-shell">
-              <PlotToolScatterChart
-                chart={vm.scatterChart}
-              />
-            </div>
+            <PlotToolScatterChart chart={vm.scatterChart} trendLabel={vm.legendItems.find((item) => item.id === "trend")?.detail} />
             {vm.scatterChart.points.length > 0 ? (
               <details className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
                 <summary className="cursor-pointer text-sm font-semibold text-foreground">
@@ -1657,25 +1663,9 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
               <div className="font-mono uppercase tracking-[0.14em] text-foreground">Residual distribution</div>
               <p className="mt-2 leading-5">{vm.distributionSummary}</p>
             </div>
-            <div className="h-[180px] w-full">
-              <Histogram
-                ariaLabel={vm.distributionChart.ariaLabel}
-                bins={vm.distributionChart.bars.map((bar, index) => ({
-                  x0: index,
-                  x1: index + 1,
-                  count: bar.heightPercent
-                }))}
-                signed={false}
-                showMean={false}
-                valueFmt={(value) => String(Math.round(value))}
-                countFmt={(count) => `${Math.round(count)}%`}
-              />
-            </div>
-            <ul className="sr-only">
-              {vm.distributionChart.bars.map((bar) => (
-                <li key={bar.id}>{bar.ariaLabel}</li>
-              ))}
-            </ul>
+            {vm.distributionChart.bars.length > 0 ? (
+              <PlotToolDistributionChart chart={vm.distributionChart} />
+            ) : <p className="text-xs text-muted-foreground">Distribution values unavailable.</p>}
             <p className="text-xs leading-5 text-muted-foreground">{vm.distributionFootnote}</p>
           </CardContent>
         </Card>
@@ -1745,10 +1735,41 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
   );
 }
 
+function PlotToolDistributionChart({ chart }: { chart: StrategyPlotStatisticsState["distributionChart"] }) {
+  const evidence: ChartEvidence[] = chart.bars.map((bar, index) => ({
+    id: bar.id,
+    label: `Illustrative bucket ${index + 1}`,
+    values: [{ series: "Residual distribution", value: bar.heightPercent, unit: "%", basis: "Preview bucket height with a 4% display floor." }],
+    sourceDetail: "Retained residual observations and timestamps are unavailable."
+  }));
+  return (
+    <>
+      <p className="text-xs text-warning">Illustrative chart · retained residual proof unavailable</p>
+      <ChartEvidenceView label={chart.ariaLabel} evidence={evidence}>
+        {(inspection) => (
+          <div className="h-[180px] w-full">
+            <Histogram
+              bins={chart.bars.map((bar, index) => ({ x0: index, x1: index + 1, count: bar.heightPercent }))}
+              signed={false}
+              showMean={false}
+              valueFmt={(value) => String(Math.round(value))}
+              countFmt={(count) => `${Math.round(count)}%`}
+              ariaLabel={chart.ariaLabel}
+              inspection={inspection}
+            />
+          </div>
+        )}
+      </ChartEvidenceView>
+    </>
+  );
+}
+
 function PlotToolScatterChart({
-  chart
+  chart,
+  trendLabel
 }: {
   chart: StrategyPlotScatterChartState;
+  trendLabel?: string;
 }) {
   const hasObservations = chart.points.length > 0;
 
@@ -1773,111 +1794,156 @@ function PlotToolScatterChart({
     );
   }
 
+  const basis = "Illustrative plot position supplied by the PlotTool preview.";
+  const observations: ChartEvidence[] = chart.points.map((point, index) => ({
+    id: point.id,
+    label: `Illustrative observation ${index + 1}`,
+    values: [
+      { series: "Horizontal position", value: point.x, unit: "SVG units", basis },
+      { series: "Vertical position", value: point.y, unit: "SVG units", basis }
+    ],
+    sourceDetail: "Retained observation values and timestamps are unavailable."
+  }));
+  observations.push({
+    id: "plottool-marker",
+    label: "Current marker",
+    values: [{ series: "Marker label", value: chart.marker.labelText, unit: null, basis: "Values supplied for the illustrative marker label." }],
+    sourceDetail: "Retained observation values and timestamps are unavailable."
+  });
+  if (trendLabel) {
+    observations.push({
+      id: "plottool-fit",
+      label: "Illustrative OLS overlay",
+      values: [{ series: "OLS overlay", value: trendLabel, unit: null, basis: "Preset illustration supplied with the preview." }]
+    });
+  }
+
   return (
-    <svg
-      viewBox={chart.viewBox}
-      className="h-[320px] w-full"
-      role="img"
-      aria-labelledby={chart.titleId}
-      aria-describedby={chart.descriptionId}
-    >
-      <title id={chart.titleId}>{chart.title}</title>
-      <desc id={chart.descriptionId}>{chart.description}</desc>
-      <g>
-        {chart.gridLines.map((line) => (
-          <line
-            key={line.id}
-            x1={line.x1}
-            y1={line.y1}
-            x2={line.x2}
-            y2={line.y2}
-            stroke={line.stroke}
-            strokeWidth={line.strokeWidth}
-            strokeDasharray={line.strokeDasharray}
-            opacity={line.opacity}
-          />
-        ))}
-      </g>
-      <g fill="var(--fg-muted)" fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)" fontSize="10">
-        {chart.yTicks.map((tick) => (
-          <text key={`y-${tick.value}`} x="44" y={tick.value} textAnchor="end">
-            {tick.label}
-          </text>
-        ))}
-        {chart.xTicks.map((tick) => (
-          <text key={`x-${tick.value}`} x={tick.value + 20} y="304" textAnchor="middle">
-            {tick.label}
-          </text>
-        ))}
-        <text x="330" y="318" textAnchor="middle">{chart.xAxisLabel}</text>
-        <text x="16" y="170" textAnchor="middle" transform="rotate(-90 16 170)">{chart.yAxisLabel}</text>
-      </g>
-      {hasObservations ? (
-        <>
-          <polyline
-            fill="none"
-            stroke={chart.trendLine.stroke}
-            strokeWidth={chart.trendLine.strokeWidth}
-            strokeDasharray={chart.trendLine.strokeDasharray}
-            points={chart.trendLine.points}
-          />
-          <line
-            x1={chart.marker.verticalGuide.x1}
-            y1={chart.marker.verticalGuide.y1}
-            x2={chart.marker.verticalGuide.x2}
-            y2={chart.marker.verticalGuide.y2}
-            stroke={chart.marker.verticalGuide.stroke}
-            strokeWidth={chart.marker.verticalGuide.strokeWidth}
-            strokeDasharray={chart.marker.verticalGuide.strokeDasharray}
-            opacity={chart.marker.verticalGuide.opacity}
-          />
-          <line
-            x1={chart.marker.horizontalGuide.x1}
-            y1={chart.marker.horizontalGuide.y1}
-            x2={chart.marker.horizontalGuide.x2}
-            y2={chart.marker.horizontalGuide.y2}
-            stroke={chart.marker.horizontalGuide.stroke}
-            strokeWidth={chart.marker.horizontalGuide.strokeWidth}
-            strokeDasharray={chart.marker.horizontalGuide.strokeDasharray}
-            opacity={chart.marker.horizontalGuide.opacity}
-          />
-        </>
-      ) : null}
-      {chart.points.map((point) => (
-        <circle
-          key={point.id}
-          cx={point.x}
-          cy={point.y}
-          r={point.radius}
-          fill={point.fill}
-          fillOpacity={point.fillOpacity}
-        />
-      ))}
-      {hasObservations ? (
-        <>
-          <circle
-            cx={chart.marker.x}
-            cy={chart.marker.y}
-            r={chart.marker.radius}
-            fill={chart.marker.fill}
-            stroke={chart.marker.stroke}
-            strokeWidth={chart.marker.strokeWidth}
-          />
-          <rect
-            x={chart.marker.labelX}
-            y={chart.marker.labelY}
-            width={chart.marker.labelWidth}
-            height={chart.marker.labelHeight}
-            rx={chart.marker.labelRadius}
-            fill={chart.marker.labelFill}
-            stroke={chart.marker.labelStroke}
-          />
-          <text x={chart.marker.labelTextX} y={chart.marker.labelTextY} fill={chart.marker.labelStroke} fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)" fontSize="10">
-            {chart.marker.labelText}
-          </text>
-        </>
-      ) : null}
-    </svg>
+    <>
+      <p className="text-xs text-warning">Illustrative chart · retained market observation proof unavailable</p>
+      <ChartEvidenceView label="PlotTool scatter observations" evidence={observations} initialIndex={chart.points.length}>
+        {(inspection) => (
+          <div className="plottool-chart-shell">
+            <svg
+              viewBox={chart.viewBox}
+              className="h-[320px] w-full"
+              role="group"
+              aria-labelledby={chart.titleId}
+              aria-describedby={`${chart.descriptionId} ${inspection.hintId}`}
+            >
+              <title id={chart.titleId}>{chart.title}</title>
+              <desc id={chart.descriptionId}>{chart.description}</desc>
+              <g>
+                {chart.gridLines.map((line) => (
+                  <line
+                    key={line.id}
+                    x1={line.x1}
+                    y1={line.y1}
+                    x2={line.x2}
+                    y2={line.y2}
+                    stroke={line.stroke}
+                    strokeWidth={line.strokeWidth}
+                    strokeDasharray={line.strokeDasharray}
+                    opacity={line.opacity}
+                  />
+                ))}
+              </g>
+              <g fill="var(--fg-muted)" fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)" fontSize="10">
+                {chart.yTicks.map((tick) => (
+                  <text key={`y-${tick.value}`} x="44" y={tick.value} textAnchor="end">
+                    {tick.label}
+                  </text>
+                ))}
+                {chart.xTicks.map((tick) => (
+                  <text key={`x-${tick.value}`} x={tick.value + 20} y="304" textAnchor="middle">
+                    {tick.label}
+                  </text>
+                ))}
+                <text x="330" y="318" textAnchor="middle">{chart.xAxisLabel}</text>
+                <text x="16" y="170" textAnchor="middle" transform="rotate(-90 16 170)">{chart.yAxisLabel}</text>
+              </g>
+              {hasObservations ? (
+                <>
+                  <polyline
+                    fill="none"
+                    stroke={chart.trendLine.stroke}
+                    strokeWidth={chart.trendLine.strokeWidth}
+                    strokeDasharray={chart.trendLine.strokeDasharray}
+                    points={chart.trendLine.points}
+                  />
+                  <line
+                    x1={chart.marker.verticalGuide.x1}
+                    y1={chart.marker.verticalGuide.y1}
+                    x2={chart.marker.verticalGuide.x2}
+                    y2={chart.marker.verticalGuide.y2}
+                    stroke={chart.marker.verticalGuide.stroke}
+                    strokeWidth={chart.marker.verticalGuide.strokeWidth}
+                    strokeDasharray={chart.marker.verticalGuide.strokeDasharray}
+                    opacity={chart.marker.verticalGuide.opacity}
+                  />
+                  <line
+                    x1={chart.marker.horizontalGuide.x1}
+                    y1={chart.marker.horizontalGuide.y1}
+                    x2={chart.marker.horizontalGuide.x2}
+                    y2={chart.marker.horizontalGuide.y2}
+                    stroke={chart.marker.horizontalGuide.stroke}
+                    strokeWidth={chart.marker.horizontalGuide.strokeWidth}
+                    strokeDasharray={chart.marker.horizontalGuide.strokeDasharray}
+                    opacity={chart.marker.horizontalGuide.opacity}
+                  />
+                </>
+              ) : null}
+              {chart.points.map((point) => (
+                <circle
+                  key={point.id}
+                  cx={point.x}
+                  cy={point.y}
+                  r={point.radius}
+                  fill={point.fill}
+                  fillOpacity={point.fillOpacity}
+                />
+              ))}
+              {hasObservations ? (
+                <>
+                  <circle
+                    cx={chart.marker.x}
+                    cy={chart.marker.y}
+                    r={chart.marker.radius}
+                    fill={chart.marker.fill}
+                    stroke={chart.marker.stroke}
+                    strokeWidth={chart.marker.strokeWidth}
+                  />
+                  <rect
+                    x={chart.marker.labelX}
+                    y={chart.marker.labelY}
+                    width={chart.marker.labelWidth}
+                    height={chart.marker.labelHeight}
+                    rx={chart.marker.labelRadius}
+                    fill={chart.marker.labelFill}
+                    stroke={chart.marker.labelStroke}
+                  />
+                  <text x={chart.marker.labelTextX} y={chart.marker.labelTextY} fill={chart.marker.labelStroke} fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)" fontSize="10">
+                    {chart.marker.labelText}
+                  </text>
+                </>
+              ) : null}
+              {chart.points.map((point, index) => (
+                <ChartEvidenceMark key={point.id} inspection={inspection} index={index} geometry={{ x: point.x, y: point.y }} />
+              ))}
+              <ChartEvidenceMark
+                inspection={inspection}
+                index={chart.points.length}
+                geometry={{ x: chart.marker.labelX, y: chart.marker.labelY, width: chart.marker.labelWidth, height: chart.marker.labelHeight }}
+                point={chart.marker}
+              />
+              {trendLabel ? (
+                <ChartEvidenceMark inspection={inspection} index={chart.points.length + 1} geometry={{ x: 564, y: 54 }} />
+              ) : null}
+            </svg>
+          </div>
+        )}
+      </ChartEvidenceView>
+    </>
   );
 }
 
@@ -1886,7 +1952,7 @@ function PlotToolLegendItem({ item }: { item: StrategyPlotLegendItem }) {
     <div className="plottool-legend-card">
       <div className="flex items-center gap-2 text-xs text-foreground">
         <span className={cn("h-2.5 w-2.5 rounded-full", plotLegendToneClass[item.tone])} aria-hidden="true" />
-        <span className={cn("", usesTrackedCaps(item.label) && "font-mono uppercase tracking-[0.14em]")}>{item.label}</span>
+        <span className={cn("", usesTrackedCaps(item.label) && "type-label--caps")}>{item.label}</span>
       </div>
       <div className="mt-1 text-xs text-muted-foreground">{item.detail}</div>
     </div>

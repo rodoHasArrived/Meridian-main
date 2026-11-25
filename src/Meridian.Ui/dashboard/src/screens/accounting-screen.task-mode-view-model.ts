@@ -14,6 +14,7 @@ export type AccountingWorkstream =
 export type GovernanceWorkstream = AccountingWorkstream;
 
 export type AccountingTaskModeId =
+  | "period-operations"
   | "close-cockpit"
   | "reconciliation-casework"
   | "external-gl-reconciliation"
@@ -59,12 +60,17 @@ export interface AccountingSectionVisibilityViewModel {
 type AccountingTaskModeDefinition = Omit<AccountingTaskModeViewModel, "workstream" | "ariaLabel">;
 
 const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTaskModeDefinition> = {
+  "period-operations": {
+    id: "period-operations", label: "Valuation and period operations", title: "Valuation and period operations",
+    description: "Configure and run governed daily valuation schedules, inspect retained batches and prepare period operations.",
+    routeLabel: "Valuation and period operations", href: "/accounting/workflow"
+  },
   "close-cockpit": {
     id: "close-cockpit",
-    label: "Close Cockpit",
-    title: "Close Cockpit",
-    description: "See what is blocking the close, who owns it, and the next action.",
-    routeLabel: "Close Cockpit",
+    label: "Accounting today",
+    title: "Accounting today",
+    description: "Work accounting cases in the current scope, prepare the next period, or open Close to review its governed blockers and approvals.",
+    routeLabel: "Accounting today",
     href: WORKSTATION_ROUTE_CATALOG.accounting
   },
   "reconciliation-casework": {
@@ -93,10 +99,10 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
   },
   "journal-entry": {
     id: "journal-entry",
-    label: "Journal Entry",
-    title: "Journal Entry",
-    description: "Draft a manual journal, attach its support, and submit it for approval.",
-    routeLabel: "Journal Entry",
+    label: "Journal entries",
+    title: "Journal entries",
+    description: "Manual journal drafting, validation, evidence attachment, and approval submission stay in one governed task mode.",
+    routeLabel: "Journal entries",
     href: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries
   },
   "capital-accounts": {
@@ -205,7 +211,7 @@ export function resolveAccountingWorkstream(pathname: string): AccountingWorkstr
 export function buildAccountingTaskMode(pathname: string): AccountingTaskModeViewModel {
   const normalizedPath = normalizeAccountingTaskModePath(pathname);
   const workstream = resolveAccountingWorkstream(normalizedPath);
-  const taskModeId = normalizedPath === WORKSTATION_ROUTE_CATALOG.accounting || normalizedPath === "/governance"
+  const taskModeId = normalizedPath === "/accounting/workflow" ? "period-operations" : normalizedPath === WORKSTATION_ROUTE_CATALOG.accounting || normalizedPath === "/governance"
     ? "close-cockpit"
     : accountingWorkstreamTaskModes[workstream];
 
@@ -219,7 +225,7 @@ export function buildAccountingSectionVisibility(
   const isCloseCockpitLanding = taskMode.id === "close-cockpit" && taskMode.workstream === "ledger";
   const visibility: AccountingSectionVisibilityViewModel = {
     showCloseCockpitLanding: isCloseCockpitLanding,
-    showWorkflowDetails: false,
+    showWorkflowDetails: taskMode.id === "period-operations",
     showMultiAssetCoverage: false,
     showExternalGl: taskMode.workstream === "external-gl",
     showConfiguration: taskMode.workstream === "configure",
@@ -229,7 +235,7 @@ export function buildAccountingSectionVisibility(
     showExceptionWorkbench: taskMode.workstream === "exceptions",
     showPosture: false,
     showReconciliation: taskMode.workstream === "reconciliation",
-    showLedgerExplorer: taskMode.workstream === "ledger" && !isCloseCockpitLanding,
+    showLedgerExplorer: taskMode.workstream === "ledger" && !isCloseCockpitLanding && taskMode.id !== "period-operations",
     showSecurityMaster: taskMode.workstream === "security-master",
     showReconciliationActions: taskMode.workstream === "reconciliation" || taskMode.workstream === "exceptions",
     showReporting: taskMode.workstream === "reporting"

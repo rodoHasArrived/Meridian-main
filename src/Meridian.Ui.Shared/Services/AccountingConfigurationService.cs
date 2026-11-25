@@ -297,14 +297,35 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
         ArgumentNullException.ThrowIfNull(request);
         var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false);
         var beforeHash = Hash(workspace);
-        RequireText(request.Node.NodeId, nameof(request.Node.NodeId));
+        var nodeId = RequireText(request.Node.NodeId, nameof(request.Node.NodeId));
         RequireText(request.Node.Path, nameof(request.Node.Path));
         RequireText(request.Node.AccountName, nameof(request.Node.AccountName));
         RequireText(request.Node.AccountType, nameof(request.Node.AccountType));
 
-        var nodes = workspace.ChartOfAccounts
-            .Where(item => !string.Equals(item.NodeId, request.Node.NodeId, StringComparison.OrdinalIgnoreCase))
-            .Append(request.Node)
+        var existing = workspace.ChartOfAccounts.FirstOrDefault(item => string.Equals(item.NodeId, nodeId, StringComparison.OrdinalIgnoreCase));
+        var accountCode = NormalizeOptional(request.Node.AccountCode);
+        if (existing?.AccountCode is { } retainedCode)
+        {
+            if (accountCode is not null && !string.Equals(retainedCode, accountCode, StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentException("An assigned account code is immutable. Use the existing code for this node.", nameof(request));
+            accountCode = retainedCode;
+        }
+
+        var otherNodes = workspace.ChartOfAccounts
+            .Where(item => !string.Equals(item.NodeId, nodeId, StringComparison.OrdinalIgnoreCase));
+        if (accountCode is not null && otherNodes.Any(item =>
+                string.Equals(item.AccountCode?.Trim(), accountCode, StringComparison.OrdinalIgnoreCase)))
+            throw new ArgumentException("Account code is already assigned in this chart of accounts.", nameof(request));
+
+        var path = request.Node.Path.Trim();
+        if (otherNodes.Any(item =>
+                string.Equals(item.AccountCode?.Trim(), path, StringComparison.OrdinalIgnoreCase) ||
+                accountCode is not null && string.Equals(item.Path.Trim(), accountCode, StringComparison.OrdinalIgnoreCase)))
+            throw new ArgumentException("An account code cannot overlap a different node's account path.", nameof(request));
+
+        var node = request.Node with { NodeId = existing?.NodeId ?? nodeId, AccountCode = accountCode };
+        var nodes = otherNodes
+            .Append(node)
             .OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
@@ -842,7 +863,7 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
         {
             LedgerBookId = request.LedgerBookId ?? workspace.LedgerBookId,
             Status = AccountingConfigurationStatusDto.Active,
-            ConfigurationVersion = $"v{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
+            ConfigurationVersion = $"v{DateTimeOffset.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid():N}",
             ValidationIssues = issues,
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
@@ -935,7 +956,18 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
                     .ConfigureAwait(false);
             }
 
-            await _store.SaveAsync(finalWorkspace, ct).ConfigureAwait(false);
+            try
+            {
+                await _store.SaveAsync(finalWorkspace, ct).ConfigureAwait(false);
+            }
+            catch (LedgerChartCodeConflictException)
+            {
+                // The store refused the replacement before committing. This declared mutation can
+                // never be recovered as a successful save, even when the request has cancelled.
+                if (_pendingAuditMarkers is not null)
+                    await _pendingAuditMarkers.ClearAsync(auditEvent.AuditEventId, CancellationToken.None).ConfigureAwait(false);
+                throw;
+            }
 
             // The save returned, so retained state exists from here on and its later absence is a
             // loss rather than a mutation that never happened. Recorded before the append, because

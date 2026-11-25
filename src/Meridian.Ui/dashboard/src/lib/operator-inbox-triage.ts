@@ -1,5 +1,5 @@
 import { apiGetJson, apiPostJson, type ApiRequestOptions } from "@/lib/api";
-import { routeForOperatorWorkItem } from "@/app-shell.workflow-routing";
+import { routeForOperatorWorkItem, withOperatorWorkItemScope } from "@/app-shell.workflow-routing";
 import { normalizeLocalWorkstationRoute } from "@/lib/workspace";
 import type { OperatorWorkItem } from "@/types";
 import { isApiError } from "@/lib/api-errors";
@@ -70,14 +70,20 @@ export interface OperatorTriageCommandResult {
   replayed: boolean;
 }
 
-export interface OperatorTriageBulkAssignment {
+/** One reviewed action applied to up to 100 items; each item is authorized and retained separately. */
+export interface OperatorTriageBulkCommand {
   commandId: string;
-  action: "Assign";
+  action: "Assign" | "Acknowledge" | "Snooze";
   reason: string;
-  assigneeId: string;
+  /** Required for Assign; omitted otherwise. */
+  assigneeId?: string | null;
+  /** Required for Snooze (UTC, within the single-item snooze window); omitted otherwise. */
+  snoozedUntil?: string | null;
   items: { workItemId: string; expectedVersion: number; expectedSourceVersion?: number | null }[];
   fundAccountId?: string | null;
 }
+/** @deprecated Use OperatorTriageBulkCommand; kept for callers that only assign. */
+export type OperatorTriageBulkAssignment = OperatorTriageBulkCommand;
 
 export const OPERATOR_TRIAGE_ENDPOINT = "/api/workstation/operator/triage";
 
@@ -121,7 +127,8 @@ export async function commandOperatorTriage(workItemId: string, command: Operato
   }
 }
 
-export function bulkAssignOperatorTriage(command: OperatorTriageBulkAssignment, options: ApiRequestOptions = {}) {
+/** Posts a bulk assign, acknowledge or snooze; the name predates the other two actions. */
+export function bulkAssignOperatorTriage(command: OperatorTriageBulkCommand, options: ApiRequestOptions = {}) {
   return apiPostJson<{ results: OperatorTriageCommandResult[] }>(`${OPERATOR_TRIAGE_ENDPOINT}/bulk`, command,
     { ...options, allowDevelopmentFallback: false });
 }
@@ -135,7 +142,10 @@ export function safeTriageRoute(route: string | null | undefined): string | null
 }
 
 export function routeForTriageItem(item: OperatorTriageItem): string | null {
-  if (!item.kind) return safeTriageRoute(item.targetRoute);
+  if (!item.kind) {
+    const route = safeTriageRoute(item.targetRoute);
+    return route ? withOperatorWorkItemScope(route, { fundAccountId: item.fundAccountId ?? null }) : null;
+  }
   return safeTriageRoute(routeForOperatorWorkItem({ ...item, kind: item.kind,
     runId: item.runId ?? null, fundAccountId: item.fundAccountId ?? null, auditReference: null }));
 }

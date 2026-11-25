@@ -72,10 +72,14 @@ For migration context and replacement mappings, see:
 | `manual-accounting` | Accounting, ledger, notifications, and reference data flow | Included in the generated user manual |
 
 The `Desktop Screenshot Capture` GitHub workflow runs the `screenshot-catalog` workflow for catalog
-captures and can commit refreshed PNGs under `docs/screenshots/desktop/`. Each hosted run also
+captures. It captures into `artifacts/desktop-screenshot-capture/captures/`, validates that set, and
+only then replaces the PNGs under `docs/screenshots/desktop/` and opens a refresh pull request
+(dispatch input `create_pr`, default on; it also runs every Monday). The web workflow follows the same
+pattern. Both open their pull request with the `SCREENSHOT_PR_TOKEN` secret when it is set, so the
+required checks run on it; without the secret the pull request opens with no checks. Each hosted run also
 prepares a `desktop-screenshots-complete-<run-number>` artifact under
 `artifacts/desktop-screenshot-capture/all-screenshots/` that mirrors every captured PNG from both
-the requested catalog output and the timestamped `artifacts/desktop-workflows/` run bundles, plus a
+the validated catalog captures and the timestamped `artifacts/desktop-workflows/` run bundles, plus a
 `screenshot-artifact-manifest.json` index of those files. The web capture set is planned from
 `scripts/dev/web-screenshot-routes.json`, so screenshot additions should be made in the definition
 files rather than by editing the workflow matrix directly. The web capture script and workflow tests
@@ -225,7 +229,7 @@ Supported step fields:
 
 - `title`: human-readable step name used in logs and manuals
 - `pageTag`: WPF navigation tag forwarded as `--page=<PageTag>`; normal top-level workflow landings should use canonical shell tags such as `StrategyShell`, `TradingShell`, `DataShell`, or `AccountingShell`; compatibility aliases remain accepted for existing workflows
-- `blueprintChecklistIds`: optional stable IDs from `docs/plans/desktop-workstation-screen-blueprint.checklist.json`; use this when a capture step proves a desktop workstation blueprint screen or support lane
+- `blueprintChecklistIds`: optional stable IDs from `docs/engineering/plans/desktop-workstation-screen-blueprint.checklist.json`; use this when a capture step proves a desktop workstation blueprint screen or support lane
 - `launchArgs`: optional raw argument array for non-page actions
 - `keys`: optional `System.Windows.Forms.SendKeys` sequence after navigation
 - `capture`: set to `false` when a step should act without saving a screenshot

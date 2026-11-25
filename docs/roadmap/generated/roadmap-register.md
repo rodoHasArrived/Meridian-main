@@ -58,6 +58,80 @@ W1-DATA-001: done; health green; evidence complete. Provider trust evidence is b
 - `SRC-CONTRACTS`
 - `SRC-INFRASTRUCTURE`
 
+## W1-DATA-ALIGN-001 - Time-series alignment execution service
+| Field | Value |
+| --- | --- |
+| Wave | W1 |
+| Status | planned |
+| Health | yellow |
+| Priority | low |
+| Owner lane | Data Confidence and Validation |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-11-19 |
+
+### Current Summary
+
+W1-DATA-ALIGN-001: planned; health yellow; evidence planned_evidence. No alignment execution or preview service is wired into the host. Both routes answer 501 and create nothing; the WPF Time Series Alignment page disables its run action and says alignment is unavailable once the host reports the 501. The browser workstation has no alignment screen.
+
+### Status References
+
+- Decisions: none recorded
+- PR references (not inferred acceptance): none recorded
+- Evidence: [src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs](../../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs)
+- Evidence: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs](../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs)
+- Evidence: [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs](../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs)
+- Evidence: [tests/Meridian.Wpf.Tests/ViewModels/TimeSeriesAlignmentViewModelTests.cs](../../../tests/Meridian.Wpf.Tests/ViewModels/TimeSeriesAlignmentViewModelTests.cs)
+
+
+### Exit Criteria
+
+- The alignment create and preview routes run against stored data and never answer 501 on a host that advertises them.
+- Alignment output records the gap strategy used and marks filled values, so an aligned dataset can be told apart from source data.
+- Preview estimates are computed from the stored data, not fabricated.
+- Browser and WPF surfaces consume the same alignment routes, or the browser gap is sequenced under W8-WPF-PARITY-001.
+
+### Source Modules
+
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-WPF`
+
+## W1-DATA-DEDUP-001 - Archive deduplication maintenance task
+| Field | Value |
+| --- | --- |
+| Wave | W1 |
+| Status | planned |
+| Health | yellow |
+| Priority | low |
+| Owner lane | Data Confidence and Validation |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-11-19 |
+
+### Current Summary
+
+W1-DATA-DEDUP-001: planned; health yellow; evidence planned_evidence. The desktop scheduled-maintenance service defines a Deduplication task type, but the server archive-maintenance API has no deduplication task, so the task always reports that nothing was executed. No operator surface currently schedules it.
+
+### Status References
+
+- Decisions: none recorded
+- PR references (not inferred acceptance): none recorded
+- Evidence: [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs](../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs)
+- Evidence: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs](../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs)
+- Evidence: [tests/Meridian.Ui.Tests/Services/ScheduledMaintenanceServiceTests.cs](../../../tests/Meridian.Ui.Tests/Services/ScheduledMaintenanceServiceTests.cs)
+
+
+### Exit Criteria
+
+- The archive maintenance API exposes a deduplication task that removes duplicate stored events through the existing WAL and atomic-write paths.
+- A dry run reports the duplicates it would remove without changing storage.
+- The scheduled Deduplication task runs through that API and reports genuine counts, or the task type is removed before any operator surface can schedule it.
+
+### Source Modules
+
+- `SRC-STORAGE`
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+
 ## W2-PROMO-001 - Paper promotion evidence and operator acceptance
 | Field | Value |
 | --- | --- |
@@ -792,6 +866,8 @@ W8-WPF-PARITY-001: in_progress; health on_track; evidence in_progress. WPF remai
 - Evidence: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs](../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs)
 - Evidence: [tests/Meridian.Ui.Tests/Services/IntercompanyCounterpartQueueWorkspaceTests.cs](../../../tests/Meridian.Ui.Tests/Services/IntercompanyCounterpartQueueWorkspaceTests.cs)
 - Evidence: [tests/Meridian.Wpf.Tests/Views/IntercompanyNativeControlSmokeTests.CounterpartProposals.cs](../../../tests/Meridian.Wpf.Tests/Views/IntercompanyNativeControlSmokeTests.CounterpartProposals.cs)
+- Evidence: [src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs](../../../src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs)
+- Evidence: [tests/Meridian.Tests/Ui/WorkstationKpiDefinitionsTests.cs](../../../tests/Meridian.Tests/Ui/WorkstationKpiDefinitionsTests.cs)
 
 
 ### Exit Criteria
@@ -1656,7 +1732,7 @@ W10-RECON-002: planned; health green; evidence planned_evidence. Activate existi
 
 ### Current Summary
 
-W10-JRNL-001: in_progress; health green; evidence in_progress. Recurring journals create governed drafts only; no submit/approve/post authority. Acceptance remains open; occurrence-store support is processes sharing one filesystem root.
+W10-JRNL-001: in_progress; health green; evidence in_progress. Recurring journals create governed drafts only; no submit/approve/post authority. Acceptance remains open; hosts with a ledger database share one PostgreSQL occurrence store across processes and hosts, and hosts without one share one filesystem root.
 
 ### Status References
 
@@ -1666,6 +1742,7 @@ W10-JRNL-001: in_progress; health green; evidence in_progress. Recurring journal
 - Evidence: [docs/domain/recurring-journal.md](../../domain/recurring-journal.md)
 - Evidence: [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs](../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs)
 - Evidence: [src/Meridian.FinancialOperations/FundAdministration/FileRecurringJournalStore.cs](../../../src/Meridian.FinancialOperations/FundAdministration/FileRecurringJournalStore.cs)
+- Evidence: [src/Meridian.FinancialOperations/FundAdministration/PostgresRecurringJournalStore.cs](../../../src/Meridian.FinancialOperations/FundAdministration/PostgresRecurringJournalStore.cs)
 - Evidence: [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduledWorker.cs](../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduledWorker.cs)
 - Evidence: [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs](../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs)
 - Evidence: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs](../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs)
@@ -2644,21 +2721,23 @@ W12-FINRPT-001: planned; health green; evidence planned_evidence. Bind existing 
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
-| Status | in_progress |
-| Health | yellow |
+| Status | ready_for_acceptance |
+| Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | in_progress |
-| Last reviewed | 2026-11-17 |
+| Evidence posture | complete |
+| Last reviewed | 2026-11-19 |
 
 ### Current Summary
 
-W12-ICACCRUAL-001: in_progress; health yellow; evidence in_progress. Fixed-rate interest from approved terms becomes a reviewed source draft with a proposed counterpart. Browser and WPF surfaces exist; since 2026-11-17 the PostgreSQL post-and-deliver run uses durable legal, profile, lifecycle and draft stores. Awaits owner acceptance and a Windows WPF run; fees and floating rates open.
+W12-ICACCRUAL-001: ready_for_acceptance; health green; evidence complete. Ready for owner acceptance: development verification on PR 3674 (hosted .NET, browser, workflow and PostgreSQL integration lanes; Windows WPF run 44431011339) including post-and-deliver over PostgreSQL drafts. Synthetic evidence only; acceptance is the owner's decision.
 
 ### Status References
 
 - Decisions: DEC-IC-ACCRUAL-001
-- PR references (not inferred acceptance): none recorded
+- PR references (not inferred acceptance): [#3674](https://github.com/rodoHasArrived/Meridian-main/pull/3674)
+- [Retained implementation detail and boundaries](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
+- Evidence: [docs/roadmap/snapshots/2026-11-19-w12-ic-acceptance-pack.md](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
 - Evidence: [docs/adr/028-governed-intercompany-interest-accrual.md](../../adr/028-governed-intercompany-interest-accrual.md)
 - Evidence: [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs](../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs)
 - Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs)
@@ -2737,6 +2816,210 @@ W12-ICAGREE-001: accepted; health green; evidence complete. Accepted by the repo
 - `SRC-DESIGN-FINANCIAL-OPERATIONS`
 - `SRC-STORAGE`
 - `SRC-UI-SHARED`
+
+## W12-ICCOMPOUND-001 - Periodic compounding of governed intercompany interest on posted accruals
+| Field | Value |
+| --- | --- |
+| Wave | W12 |
+| Status | ready_for_acceptance |
+| Health | green |
+| Priority | medium |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | complete |
+| Last reviewed | 2026-11-19 |
+
+### Current Summary
+
+W12-ICCOMPOUND-001: ready_for_acceptance; health green; evidence complete. Ready for owner acceptance: periodic compounding on posted accrued interest verified on PR 3674 (hosted .NET, browser, workflow and PostgreSQL integration lanes; Windows WPF run 44431011339). Synthetic evidence only; daily compounding stays out of scope.
+
+### Status References
+
+- Decisions: DEC-IC-COMPOUND-001
+- PR references (not inferred acceptance): [#3674](https://github.com/rodoHasArrived/Meridian-main/pull/3674)
+- [Retained implementation detail and boundaries](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
+- Evidence: [docs/roadmap/snapshots/2026-11-19-w12-ic-acceptance-pack.md](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
+- Evidence: [docs/roadmap/snapshots/2026-11-19-w12-ic-acceptance-pack.md](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
+- Evidence: [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs](../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs)
+- Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs)
+- Evidence: [tests/Meridian.FundStructure.Tests/IntercompanyCompoundingAccrualPreviewTests.cs](../../../tests/Meridian.FundStructure.Tests/IntercompanyCompoundingAccrualPreviewTests.cs)
+- Evidence: [tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyCompoundingSourceTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyCompoundingSourceTests.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyAccrualDraftServiceTests.Compounding.cs](../../../tests/Meridian.Tests/Ui/IntercompanyAccrualDraftServiceTests.Compounding.cs)
+
+
+### Exit Criteria
+
+- A loan compounding at its schedule frequency accrues each period on posted principal plus the accrued interest posted on its loan-interest profile at the period start, net of settlements and reversals.
+- A window is refused unless posted, unreversed accruals cover every earlier day, and one request stays inside one period.
+- The accrued-interest balance, posted windows and first principal date are retained as evidence and re-read before review or posting.
+- Simple loans still compute under intercompany-accrual-v1 with unchanged evidence and draft identity.
+- Browser and WPF accrual previews show each slice's compounded interest as exact decimal strings.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-APP`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-WPF`
+- `SRC-UI-DASHBOARD`
+
+## W12-ICCONFIRM-001 - Reciprocal intercompany balance confirmation, advisory
+| Field | Value |
+| --- | --- |
+| Wave | W12 |
+| Status | ready_for_acceptance |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | complete |
+| Last reviewed | 2026-11-19 |
+
+### Current Summary
+
+W12-ICCONFIRM-001: ready_for_acceptance; health green; evidence complete. Ready for owner acceptance: advisory confirmation verified on PR 3674 (hosted lanes; Windows WPF run 44431011339). Opt-in close blocking exists behind a reviewed per-book policy (ADR-032); its decision DEC-IC-CONFIRM-002 awaits owner acceptance. Synthetic evidence only.
+
+### Status References
+
+- Decisions: DEC-IC-CONFIRM-001, DEC-IC-CONFIRM-002
+- PR references (not inferred acceptance): [#3674](https://github.com/rodoHasArrived/Meridian-main/pull/3674)
+- [Retained implementation detail and boundaries](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
+- Evidence: [docs/roadmap/snapshots/2026-11-19-w12-ic-acceptance-pack.md](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
+- Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs)
+- Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs)
+- Evidence: [src/Meridian.Storage/Ledger/Migrations/V_ledger_073__intercompany_balance_confirmations.sql](../../../src/Meridian.Storage/Ledger/Migrations/V_ledger_073__intercompany_balance_confirmations.sql)
+- Evidence: [src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs](../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs)
+- Evidence: [tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRulesTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRulesTests.cs)
+- Evidence: [tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyBalanceConfirmationServiceTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyBalanceConfirmationServiceTests.cs)
+- Evidence: [tests/Meridian.Tests/Storage/IntercompanyBalanceConfirmationStoreTests.cs](../../../tests/Meridian.Tests/Storage/IntercompanyBalanceConfirmationStoreTests.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyBalanceConfirmationEndpointTests.cs](../../../tests/Meridian.Tests/Ui/IntercompanyBalanceConfirmationEndpointTests.cs)
+- Evidence: [src/Meridian.Ui/dashboard/src/screens/accounting-screen.entity-confirmations.tsx](../../../src/Meridian.Ui/dashboard/src/screens/accounting-screen.entity-confirmations.tsx)
+- Evidence: [src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml](../../../src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml)
+- Evidence: [tests/Meridian.Ui.Tests/Services/IntercompanyBalanceConfirmationWorkspaceTests.cs](../../../tests/Meridian.Ui.Tests/Services/IntercompanyBalanceConfirmationWorkspaceTests.cs)
+
+
+### Exit Criteria
+
+- For one approved accounting profile and as-of date, both sides' due-to/due-from balances are pinned from each book's posted balance schedule; no amount is entered by an operator.
+- Each side is confirmed or disputed only by a caller whose tenant and company scope holds that side's book; the same person cannot confirm both sides; a pair that does not net to zero cannot be confirmed.
+- A dispute needs a reason and is resolved only by someone other than the disputer, with a reason; balances that move after pinning void earlier sign-offs and require a fresh proposal.
+- Every step pins the exact version and balance digest it acted on, is retained append-only on durable storage, and an identical retry returns the retained step.
+- Confirmation status contributes advisory findings to close readiness and never changes close eligibility; an unreadable status is reported, not treated as confirmed.
+- Browser and WPF surfaces load, pin, confirm, dispute and resolve over the same routes and render exact decimal strings.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-STORAGE`
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-WPF`
+- `SRC-UI-DASHBOARD`
+
+## W12-ICFEE-001 - Governed fixed intercompany management fees from declared terms
+| Field | Value |
+| --- | --- |
+| Wave | W12 |
+| Status | ready_for_acceptance |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | complete |
+| Last reviewed | 2026-11-19 |
+
+### Current Summary
+
+W12-ICFEE-001: ready_for_acceptance; health green; evidence complete. Ready for owner acceptance: fixed management fees verified on PR 3674 (hosted .NET, browser, workflow and PostgreSQL integration lanes; Windows WPF run 44431011339). Synthetic evidence only; percentage and loan commitment or utilisation fees stay out of scope.
+
+### Status References
+
+- Decisions: DEC-IC-FEE-001
+- PR references (not inferred acceptance): [#3674](https://github.com/rodoHasArrived/Meridian-main/pull/3674)
+- [Retained implementation detail and boundaries](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
+- Evidence: [docs/roadmap/snapshots/2026-11-19-w12-ic-acceptance-pack.md](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
+- Evidence: [src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs](../../../src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs)
+- Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs)
+- Evidence: [src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs](../../../src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs)
+- Evidence: [tests/Meridian.FundStructure.Tests/IntercompanyFeeAccrualPreviewServiceTests.cs](../../../tests/Meridian.FundStructure.Tests/IntercompanyFeeAccrualPreviewServiceTests.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyFeeAccrualDraftServiceTests.cs](../../../tests/Meridian.Tests/Ui/IntercompanyFeeAccrualDraftServiceTests.cs)
+- Evidence: [tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilderTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilderTests.cs)
+- Evidence: [src/Meridian.Wpf/Views/IntercompanyManagementFeeControl.xaml](../../../src/Meridian.Wpf/Views/IntercompanyManagementFeeControl.xaml)
+- Evidence: [tests/Meridian.Ui.Tests/Services/IntercompanyManagementFeeWorkspaceTests.cs](../../../tests/Meridian.Ui.Tests/Services/IntercompanyManagementFeeWorkspaceTests.cs)
+
+
+### Exit Criteria
+
+- Fixed management-fee terms declare a per-period or per-annum basis (per annum with a day count); retained revisions without one keep their review hashes and calculate no fee.
+- Each day is charged under the approved ManagementFee profile revision applicable on that day; per-period fees prorate by covered days, per-annum fees by the declared day count, rounded once.
+- The service provider books receivable against fee revenue and the recipient fee expense against payable, from the declared roles; the operator never chooses a direction.
+- Fee evidence is pinned on the draft and posted journal; edited lines, overlapping posted fees and a retired or re-pinned revision stop the draft before review or posting.
+- The counterpart is delivered by the existing proposal pipeline after the source posts; nothing posts automatically.
+- Browser and WPF surfaces declare the basis, preview and draft a fee over the same routes and show exact decimal strings.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-APP`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-WPF`
+- `SRC-UI-DASHBOARD`
+
+## W12-ICFLOAT-001 - Floating-rate intercompany loan interest from reviewed fixings
+| Field | Value |
+| --- | --- |
+| Wave | W12 |
+| Status | ready_for_acceptance |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | complete |
+| Last reviewed | 2026-11-19 |
+
+### Current Summary
+
+W12-ICFLOAT-001: ready_for_acceptance; health green; evidence complete. Ready for owner acceptance: floating-rate accrual over reviewed fixings verified on PR 3674 (hosted .NET, browser, workflow and PostgreSQL integration lanes; Windows WPF run 44431011339). Synthetic evidence only; in-arrears or averaged rates, floors and caps stay out of scope.
+
+### Status References
+
+- Decisions: DEC-IC-FLOAT-001
+- PR references (not inferred acceptance): [#3674](https://github.com/rodoHasArrived/Meridian-main/pull/3674)
+- [Retained implementation detail and boundaries](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
+- Evidence: [docs/roadmap/snapshots/2026-11-19-w12-ic-acceptance-pack.md](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
+- Evidence: [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs](../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs)
+- Evidence: [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs](../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs)
+- Evidence: [src/Meridian.Storage/FundStructure/Migrations/009_intercompany_rate_fixings.sql](../../../src/Meridian.Storage/FundStructure/Migrations/009_intercompany_rate_fixings.sql)
+- Evidence: [src/Meridian.Ui.Shared/Endpoints/IntercompanyRateFixingEndpoints.cs](../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyRateFixingEndpoints.cs)
+- Evidence: [tests/Meridian.FundStructure.Tests/IntercompanyFloatingAccrualPreviewTests.cs](../../../tests/Meridian.FundStructure.Tests/IntercompanyFloatingAccrualPreviewTests.cs)
+- Evidence: [tests/Meridian.FundStructure.Tests/IntercompanyRateFixingServiceTests.cs](../../../tests/Meridian.FundStructure.Tests/IntercompanyRateFixingServiceTests.cs)
+- Evidence: [tests/Meridian.Tests/Storage/FundStructure/IntercompanyRateFixingStoreTests.cs](../../../tests/Meridian.Tests/Storage/FundStructure/IntercompanyRateFixingStoreTests.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyAccrualDraftServiceTests.Floating.cs](../../../tests/Meridian.Tests/Ui/IntercompanyAccrualDraftServiceTests.Floating.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyRateFixingEndpointTests.cs](../../../tests/Meridian.Tests/Ui/IntercompanyRateFixingEndpointTests.cs)
+- Evidence: [src/Meridian.Wpf/Views/IntercompanyRateFixingsControl.xaml](../../../src/Meridian.Wpf/Views/IntercompanyRateFixingsControl.xaml)
+- Evidence: [tests/Meridian.Ui.Tests/Services/IntercompanyRateFixingWorkspaceTests.cs](../../../tests/Meridian.Ui.Tests/Services/IntercompanyRateFixingWorkspaceTests.cs)
+
+
+### Exit Criteria
+
+- Floating loan terms declare an index, spread and fixing lag; retained revisions without a lag keep their exact review hashes and cannot accrue floating days.
+- Each schedule period uses exactly the approved fixing of its index on the date the declared lag gives on the schedule calendar; a missing fixing refuses the whole window and no nearby or latest value is used.
+- A fixing sets rates only after someone other than its proposer approves it; corrections and rejections are retained append-only and tenant-scoped on durable storage.
+- Each floating slice pins its fixing identity, rate, spread and value digest in the accrual evidence; a fixing changed after drafting stops the draft before review or posting.
+- Fixed-rate windows still compute under intercompany-accrual-v1 with unchanged evidence and draft identity.
+- Browser and WPF surfaces declare the lag, list, propose, approve and reject fixings, and show each slice's fixing as exact decimal strings.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-APP`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-STORAGE`
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-WPF`
+- `SRC-UI-DASHBOARD`
 
 ## W12-ICINCOME-001 - Policy-governed intercompany revenue and expense elimination
 | Field | Value |
@@ -2832,20 +3115,67 @@ W12-ICPAIR-001: accepted; health green; evidence complete. Accepted by the repos
 - `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`
 
+## W12-ICSCHEDULE-001 - Opt-in, reviewed intercompany accrual schedules
+| Field | Value |
+| --- | --- |
+| Wave | W12 |
+| Status | ready_for_acceptance |
+| Health | green |
+| Priority | medium |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | complete |
+| Last reviewed | 2026-11-17 |
+
+### Current Summary
+
+W12-ICSCHEDULE-001: ready_for_acceptance; health green; evidence complete. Ready for owner acceptance: maker-checker accrual schedules, runner and run-now verified on PR 3674 (hosted .NET, browser, workflow and PostgreSQL integration lanes; Windows WPF run 44431011339). Synthetic evidence only; management-fee schedules stay out of scope.
+
+### Status References
+
+- Decisions: DEC-IC-SCHEDULE-001
+- PR references (not inferred acceptance): [#3674](https://github.com/rodoHasArrived/Meridian-main/pull/3674)
+- [Retained implementation detail and boundaries](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
+- Evidence: [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs](../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs)
+- Evidence: [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleRunner.cs](../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleRunner.cs)
+- Evidence: [src/Meridian.Storage/Ledger/Migrations/V_ledger_076__intercompany_accrual_schedules.sql](../../../src/Meridian.Storage/Ledger/Migrations/V_ledger_076__intercompany_accrual_schedules.sql)
+- Evidence: [tests/Meridian.Tests/Storage/IntercompanyAccrualScheduleStoreTests.cs](../../../tests/Meridian.Tests/Storage/IntercompanyAccrualScheduleStoreTests.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyAccrualScheduleServiceTests.cs](../../../tests/Meridian.Tests/Ui/IntercompanyAccrualScheduleServiceTests.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyAccrualScheduleEndpointTests.cs](../../../tests/Meridian.Tests/Ui/IntercompanyAccrualScheduleEndpointTests.cs)
+
+
+### Exit Criteria
+
+- A schedule names one book, one approved loan-interest profile and its principal profile, and becomes active only when someone other than its proposer approves it; it can be rejected or disabled with a reason.
+- Schedule versions are retained append-only and tenant-scoped on durable storage; at most one proposed or active schedule exists per book and profile.
+- A run drafts each completed period ending on or after approval through the operator's preview-then-draft path, records the schedule as preparer, and never posts.
+- A period with an existing draft is skipped, never recomputed; a refused period is reported with its reason and retried on the next run.
+- Browser and WPF surfaces propose, review, preview due periods and run active schedules over the same routes.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-APP`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-STORAGE`
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-WPF`
+- `SRC-UI-DASHBOARD`
+
 ## W12-YEND-001 - Fiscal year-end close and opening-balance roll-forward
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-10-17 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-18 |
 
 ### Current Summary
 
-W12-YEND-001: planned; health green; evidence planned_evidence. Activate the existing year-end projector through governed close readiness and retained acceptance requirements.
+W12-YEND-001: in_progress; health green; evidence in_progress. A read-only fiscal-year close plan derives readiness, pre/post-closing trial balances, closing transfers and next-year openings from retained hard-close snapshots. Year-end posting, the retained close receipt, late-correction successors and workstation screens remain open.
 
 ### Status References
 
@@ -2853,6 +3183,10 @@ W12-YEND-001: planned; health green; evidence planned_evidence. Activate the exi
 - PR references (not inferred acceptance): none recorded
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W12-YEND-001.md)
 - Evidence: [docs/product/meridian-design-document.md](../../product/meridian-design-document.md)
+- Evidence: [docs/domain/fiscal-year-close.md](../../domain/fiscal-year-close.md)
+- Evidence: [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs](../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs)
+- Evidence: [tests/Meridian.Tests/Ledger/FiscalYearClosePlanBuilderTests.cs](../../../tests/Meridian.Tests/Ledger/FiscalYearClosePlanBuilderTests.cs)
+- Evidence: [tests/Meridian.Tests/Storage/FiscalYearClosePlanPostgresTests.cs](../../../tests/Meridian.Tests/Storage/FiscalYearClosePlanPostgresTests.cs)
 
 
 ### Exit Criteria
@@ -2900,6 +3234,9 @@ W13-OMS-001: planned; health green; evidence planned_evidence. Planned unranked 
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W13-OMS-001.md)
 - Evidence: [docs/product/meridian-design-document.md](../../product/meridian-design-document.md)
 - Evidence: [docs/product/implementation-todo-list.md](../../product/implementation-todo-list.md)
+- Evidence: [docs/domain/strategy-order-execution.md](../../domain/strategy-order-execution.md)
+- Evidence: [tests/Meridian.Tests/Execution/OrderAuthorityPaperRehearsalTests.cs](../../../tests/Meridian.Tests/Execution/OrderAuthorityPaperRehearsalTests.cs)
+- Evidence: [tests/Meridian.Tests/Strategies/LiveTradingEngineTests.GovernedRehearsal.cs](../../../tests/Meridian.Tests/Strategies/LiveTradingEngineTests.GovernedRehearsal.cs)
 
 
 ### Exit Criteria
@@ -2949,6 +3286,9 @@ W13-STRAT-001: planned; health green; evidence planned_evidence. Planned unranke
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W13-STRAT-001.md)
 - Evidence: [docs/product/meridian-design-document.md](../../product/meridian-design-document.md)
 - Evidence: [docs/development/policies/promotion-policy-matrix.md](../../development/policies/promotion-policy-matrix.md)
+- Evidence: [src/Meridian.Strategies/Artifacts/StrategyArtifactRegistry.cs](../../../src/Meridian.Strategies/Artifacts/StrategyArtifactRegistry.cs)
+- Evidence: [src/Meridian.Strategies/Services/StrategyLiveAuthorizationService.cs](../../../src/Meridian.Strategies/Services/StrategyLiveAuthorizationService.cs)
+- Evidence: [tests/Meridian.Tests/Strategies/LiveTradingEngineTests.GovernedRehearsal.cs](../../../tests/Meridian.Tests/Strategies/LiveTradingEngineTests.GovernedRehearsal.cs)
 
 
 ### Exit Criteria

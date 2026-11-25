@@ -55,6 +55,8 @@ export interface WorkspaceNavItemViewModel {
   attentionTitle: string | null;
   subItems: WorkspaceNavSubItemViewModel[];
   subItemGroups: WorkspaceNavSubItemGroupViewModel[];
+  /** What the rail shows: the pages, or for Accounting one row per group (UX Phase D). */
+  railSubItems: WorkspaceNavSubItemViewModel[];
   attentionSeverity: "blocked" | "review" | "info" | null;
 }
 
@@ -120,7 +122,7 @@ export function buildWorkspaceNavViewModel(
 ): WorkspaceNavViewModel {
   const attentionItems: readonly AppShellOperatorFocusItem[] = Array.isArray(attention) ? attention : suppliedAttentionItems;
   const attentionCounts = attention && !Array.isArray(attention) ? attention as WorkspaceAttentionCounts : null;
-  const isHome = pathname === "/";
+  const isHome = pathname === "/" || pathname === "/today";
   const visibleWorkspaces = canonicalizeWorkspaceSummaries(workspaces);
   const currentWorkspace =
     visibleWorkspaces.find((workspace) => isWorkspacePathActive(pathname, workspace.key)) ?? visibleWorkspaces[0];
@@ -154,7 +156,7 @@ export function buildWorkspaceNavViewModel(
     ): WorkspaceNavSubItemViewModel => {
       const subActive = workspace.key === "accounting"
         ? isAccountingNavigationItemActive(pathname, sub as AccountingNavigationItemDefinition)
-        : isSubRouteActive(pathname, sub.route, sub.match);
+        : isSubRouteActiveForView(pathname, search, sub.route, sub.match, visibleWorkspaceSubroutes(workspace.key));
       const subRoute = buildWorkspaceNavigationRoute(workspace.key, sub.route, operatingScope, search);
       const subScopeSummary = summarizeOperatingScopeForRoute(sub.route, operatingScope);
       return {
@@ -176,6 +178,24 @@ export function buildWorkspaceNavViewModel(
     const subItems = subItemGroups.length > 0
       ? subItemGroups.flatMap((group) => group.items)
       : visibleWorkspaceSubroutes(workspace.key).map(buildSubItem);
+    // Accounting's 17 pages would push the other workspaces off the rail, so the rail lists its
+    // groups (one row each, opening the group's first page) and each page carries its group's own
+    // menu (`buildAccountingSectionNav`). Other workspaces list their pages in the rail directly.
+    const railSubItems = subItemGroups.length > 0
+      ? subItemGroups.map((group): WorkspaceNavSubItemViewModel => {
+        const groupActive = group.items.some((page) => page.active);
+        const first = group.items[0]!;
+        return {
+          label: group.label,
+          route: first.route,
+          active: groupActive,
+          ariaCurrent: undefined,
+          ariaLabel: groupActive
+            ? `${group.label}, current section: ${group.items.length} pages`
+            : `Open ${group.label}: ${group.items.length} pages, starting at ${first.label}`
+        };
+      })
+      : subItems;
 
     return {
       key: workspace.key,
@@ -198,6 +218,7 @@ export function buildWorkspaceNavViewModel(
         : null,
       subItems,
       subItemGroups,
+      railSubItems,
       attentionSeverity
     };
   });
@@ -276,7 +297,7 @@ function buildContextItems(
   return visibleWorkspaceSubroutes(workspaceKey).map((sub) => {
     const active = workspaceKey === "accounting"
       ? isAccountingNavigationItemActive(pathname, sub as AccountingNavigationItemDefinition)
-      : isSubRouteActive(pathname, sub.route, sub.match);
+      : isSubRouteActiveForView(pathname, search, sub.route, sub.match, visibleWorkspaceSubroutes(workspaceKey));
     const route = buildWorkspaceNavigationRoute(workspaceKey, sub.route, operatingScope, search);
     const scopeSummary = summarizeOperatingScopeForRoute(sub.route, operatingScope);
     return {
@@ -345,6 +366,37 @@ function workspaceContextDescription(workspaceKey: WorkspaceKey): string {
   }
 }
 
+/**
+ * Some destinations are one route with a `view` query (Data > Market data is `/data/quotes`,
+ * Data > Options screening is `/data/quotes?view=options`). The one whose view matches the page
+ * is active; the bare route is active only when no sibling claims the page's view.
+ */
+function isSubRouteActiveForView(
+  pathname: string,
+  search: string,
+  route: string,
+  match: "exact" | "prefix" | undefined,
+  siblings: readonly WorkspaceSubrouteDefinition[]
+): boolean {
+  const routeView = routeQueryView(route);
+  const pageView = new URLSearchParams(search).get("view");
+  if (!isSubRouteActive(pathname, route.split(/[?#]/)[0] ?? route, match)) {
+    return false;
+  }
+  if (routeView !== null) {
+    return routeView === pageView;
+  }
+  const routePath = route.split(/[?#]/)[0];
+  return !siblings.some((sibling) => sibling.route.split(/[?#]/)[0] === routePath
+    && routeQueryView(sibling.route) !== null
+    && routeQueryView(sibling.route) === pageView);
+}
+
+function routeQueryView(route: string): string | null {
+  const queryIndex = route.indexOf("?");
+  return queryIndex < 0 ? null : new URLSearchParams(route.slice(queryIndex).split("#")[0]).get("view");
+}
+
 function isSubRouteActive(pathname: string, route: string, match: "exact" | "prefix" = "prefix"): boolean {
   if (match === "exact") {
     return isExactRouteActive(pathname, route);
@@ -378,4 +430,41 @@ function formatPreservedScopeAriaSuffix(scopeSummary: string | null): string {
 
 function formatAttentionAriaSuffix(count: number): string {
   return count > 0 ? `, ${count} ${count === 1 ? "item needs" : "items need"} attention` : "";
+}
+
+
+export interface WorkspaceSectionNavViewModel {
+  groupId: string;
+  groupLabel: string;
+  items: WorkspaceNavSubItemViewModel[];
+}
+
+/**
+ * The menu an Accounting page shows for its own section: every page in the active group, with
+ * the current one marked and the operating scope and accounting context carried on each link.
+ * Null outside Accounting or when no group owns the route.
+ */
+export function buildAccountingSectionNav(
+  pathname: string,
+  search = "",
+  operatingContextScope: AppShellOperatingScopeInput | null = null
+): WorkspaceSectionNavViewModel | null {
+  if (!isWorkspacePathActive(pathname, "accounting")) return null;
+  const operatingScope = buildOperatingScopeFromSearch(search, operatingContextScope);
+  for (const group of visibleWorkspaceSubrouteGroups("accounting")) {
+    const items = group.items.map((page): WorkspaceNavSubItemViewModel => {
+      const active = isAccountingNavigationItemActive(pathname, page);
+      return {
+        label: page.label,
+        route: buildWorkspaceNavigationRoute("accounting", page.route, operatingScope, search),
+        active,
+        ariaCurrent: active ? "page" : undefined,
+        ariaLabel: active ? `${page.label}, current page` : `Open ${page.label}`
+      };
+    });
+    if (items.some((item) => item.active)) {
+      return { groupId: group.id, groupLabel: group.label, items };
+    }
+  }
+  return null;
 }

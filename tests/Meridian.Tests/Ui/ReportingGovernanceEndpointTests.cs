@@ -28,10 +28,10 @@ public sealed class ReportingGovernanceEndpointTests
     };
 
     [Fact]
-    public void MutationContracts_ContainNoCallerControlledAuthorityOrEvidenceFields()
+    public void MutationContracts_ContainOnlyCommandInputsAndRetainedReviewIdentity()
     {
         AssertOnlyProperties<ReportingGovernanceVersionRequestDto>("ExpectedVersion");
-        AssertOnlyProperties<ReportingGovernanceApprovalRequestDto>("ExpectedVersion", "DecisionNote");
+        AssertOnlyProperties<ReportingGovernanceApprovalRequestDto>("ExpectedVersion", "DecisionNote", "ReviewEvidenceId");
         AssertOnlyProperties<ReportingGovernanceRestatementRequestDto>("ExpectedVersion", "Reason");
         AssertOnlyProperties<ReportingGovernanceRestatementApprovalRequestDto>("ExpectedVersion");
     }

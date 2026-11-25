@@ -127,7 +127,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         book = book with { FundStructureNodeKind = FundStructureNodeKindDto.Account };
         await database.JournalStore.SaveLedgerBookAsync(book);
         var owner = book.FundStructureNodeId;
-        var references = await database.SeedLotReferenceAuthorityAsync(seed.LedgerBookId, TestSecurityId, TestBookPositionId);
+        var references = await database.SeedLotReferenceAuthorityAsync(seed.LedgerBookId, TestSecurityId, TestBookPositionId, assetClass: "Bond");
         var command = BuildAcquisitionCommand(seed.LedgerBookId, seed.Journal.PeriodId, seed.ExpectedPeriodVersion);
         var lot = command.AcquisitionLot!;
         lot = lot with

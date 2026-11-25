@@ -6,6 +6,96 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ILifecycleControlClient
+
+Qualified name: <code>Meridian.Wpf.Services.ILifecycleControlClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Wpf/Services/LifecycleControlClient.cs:13](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L13).
+
+Defines startup and authenticated lifecycle queries and governed shutdown requests for the desktop workstation.
+
+```csharp
+public interface ILifecycleControlClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;RuntimeLifecycleSnapshotDto?&gt; GetStartupSnapshotAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:15](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L15) |  |
+| <code>Task&lt;bool&gt; AuthenticateAsync(string username, string password, CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:17](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L17) |  |
+| <code>Task&lt;RuntimeLifecycleSnapshotDto?&gt; GetSnapshotAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:22](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L22) |  |
+| <code>Task&lt;LifecycleShutdownReceiptDto?&gt; GetLatestReceiptAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:24](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L24) |  |
+| <code>Task&lt;LifecycleShutdownAcceptedDto?&gt; RequestShutdownAsync(LifecycleShutdownRequestDto request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:26](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L26) |  |
+
+## InfoBarNotificationEventArgs
+
+Qualified name: <code>Meridian.Wpf.Services.InfoBarNotificationEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/InfoBarService.cs:150](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L150).
+
+Carries notification severity, title, message, display duration, and open state.
+
+```csharp
+public sealed class InfoBarNotificationEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public InfoBarSeverity Severity { get; init; }</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:152](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L152) |  |
+| <code>public string Title { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:153](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L153) |  |
+| <code>public string Message { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:154](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L154) |  |
+| <code>public int DurationMs { get; init; }</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:155](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L155) |  |
+| <code>public bool IsOpen { get; init; }</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:156](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L156) |  |
+
+## InfoBarService
+
+Qualified name: <code>Meridian.Wpf.Services.InfoBarService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/InfoBarService.cs:25](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L25).
+
+Service for managing notification bar display with appropriate durations based on severity. In WPF, this uses an event-based approach. Delegates shared logic to InfoBarConstants and ErrorDetailsModel in Ui.Services.
+
+```csharp
+public sealed class InfoBarService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static InfoBarService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:28](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L28) |  |
+| <code>public event EventHandler&lt;InfoBarNotificationEventArgs&gt;? NotificationRequested;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:48](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L48) | Event raised when a notification should be shown. Pages can subscribe to this to display notifications in their status area. |
+| <code>public async Task ShowAsync(InfoBarSeverity severity, string title, string message, CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:50](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L50) |  |
+| <code>public async Task ShowAsync(InfoBarSeverity severity, string title, string message, int durationMs, CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:81](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L81) |  |
+| <code>public async Task ShowErrorAsync(string title, string message, string? context = null, string? remedy = null, CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:112](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L112) |  |
+| <code>public static ErrorDetails CreateErrorDetails(Exception ex, string operation);</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:128](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L128) |  |
+| <code>public static int GetDurationForSeverity(InfoBarSeverity severity);</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:141](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L141) |  |
+
+## Durations
+
+Qualified name: <code>Meridian.Wpf.Services.InfoBarService.Durations</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/InfoBarService.cs:35](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L35).
+
+Defines default notification display durations by severity, including persistent critical alerts.
+
+```csharp
+public static class Durations
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int Info = InfoBarConstants.InfoDurationMs;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:37](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L37) |  |
+| <code>public const int Success = InfoBarConstants.SuccessDurationMs;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:38](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L38) |  |
+| <code>public const int Warning = InfoBarConstants.WarningDurationMs;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:39](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L39) |  |
+| <code>public const int Error = InfoBarConstants.ErrorDurationMs;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:40](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L40) |  |
+| <code>public const int Critical = InfoBarConstants.CriticalDurationMs;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:41](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L41) |  |
+
 ## InfoBarSeverity
 
 Qualified name: <code>Meridian.Wpf.Services.InfoBarSeverity</code>. Kind: `enum`.
@@ -612,30 +702,33 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static KeyboardShortcutService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:40](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L40) | Gets the singleton instance of the KeyboardShortcutService. |
 | <code>public void AttachPreferenceStore(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; persistedOverrides, Action&lt;IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt;&gt; saveOverrides);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:62](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L62) | Loads the operator&#x27;s persisted shortcut overrides, applies them, and saves every later UpdateShortcut, SetShortcutEnabled, and ResetToDefaults change through saveOverrides. |
-| <code>public IReadOnlyList&lt;string&gt; ApplyOverrides(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:81](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L81) | Restores every default shortcut to its default binding, then applies the valid entries of overrides. An entry is skipped when its action is not a default shortcut, its key or modifiers do not parse, it would leave a modifier-required action without Ctrl or Alt, or it collides with another shortcut&#x27;s binding. |
-| <code>public IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; GetOverrides();</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:102](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L102) | Gets the current differences from the default bindings, in the form persisted to the operator&#x27;s desktop preferences. |
-| <code>public void ResetToDefaults();</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:132](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L132) | Restores every default shortcut&#x27;s binding and enabled state and clears the persisted overrides. |
-| <code>public static bool IsBindingAllowed(string actionId, Key key, ModifierKeys modifiers);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:142](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L142) | True when an operator may bind actionId to this chord: actions that start or stop collection, drop the connection, or delete data must keep Ctrl or Alt. |
-| <code>public bool IsEnabled { get; set; }</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:219](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L219) | Gets or sets whether keyboard shortcuts are enabled. |
-| <code>public IReadOnlyDictionary&lt;string, ShortcutAction&gt; Shortcuts =&gt; …;</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:228](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L228) | Gets all registered shortcuts. |
-| <code>public event EventHandler&lt;ShortcutInvokedEventArgs&gt;? ShortcutInvoked;</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:233](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L233) | Event raised when a shortcut is invoked. |
-| <code>public void Initialize(FrameworkElement element);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:239](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L239) | Initializes the keyboard shortcut service with the root element. |
-| <code>public void HandleKeyDown(KeyEventArgs e);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:254](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L254) | Handles a key down event and triggers the appropriate shortcut. |
-| <code>public void RegisterShortcut(string actionId, Key key, ModifierKeys modifiers, string description, ShortcutCategory category = ShortcutCategory.General);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:479](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L479) | Registers a keyboard shortcut. |
-| <code>public void UpdateShortcut(string actionId, Key key, ModifierKeys modifiers);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:505](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L505) | Updates an existing shortcut&#x27;s key binding. |
-| <code>public void SetShortcutEnabled(string actionId, bool enabled);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:520](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L520) | Enables or disables a specific shortcut. |
-| <code>public void UnregisterShortcut(string actionId);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:533](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L533) | Removes a shortcut registration. |
-| <code>public static string FormatShortcut(Key key, ModifierKeys modifiers);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:554](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L554) | Gets a formatted shortcut string (e.g., &quot;Ctrl+S&quot;). |
-| <code>public Dictionary&lt;ShortcutCategory, List&lt;ShortcutAction&gt;&gt; GetShortcutsByCategory();</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:618](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L618) | Gets all shortcuts grouped by category. |
-| <code>public ShortcutAction? GetShortcut(string actionId);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:639](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L639) | Gets a shortcut by action ID. |
-| <code>public bool HasConflict(Key key, ModifierKeys modifiers, string? excludeActionId = null);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:651](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L651) | Checks if a shortcut with the given key combination is already registered. |
-| <code>public void Detach();</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:667](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L667) | Detaches the keyboard event handler. |
+| <code>public IReadOnlyList&lt;string&gt; ApplyOverrides(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:88](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L88) | Restores every default shortcut to its default binding, then applies the valid entries of overrides. An entry is skipped when its action is not a default shortcut, its key or modifiers do not parse, it would leave a modifier-required action without Ctrl or Alt, or it collides with another shortcut&#x27;s binding. |
+| <code>public IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; GetOverrides();</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:153](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L153) | Gets the current differences from the default bindings, in the form persisted to the operator&#x27;s desktop preferences. |
+| <code>public void ResetToDefaults();</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:183](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L183) | Restores every default shortcut&#x27;s binding and enabled state and clears the persisted overrides. |
+| <code>public (Key Key, ModifierKeys Modifiers, bool IsEnabled)? GetDefaultBinding(string actionId) =&gt; …;</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:193](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L193) | Gets the default chord and enabled state of a built-in shortcut, or null when actionId is not a default shortcut. |
+| <code>public bool TryResetShortcut(string actionId, out string? conflictingActionId);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:208](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L208) | Restores one shortcut&#x27;s default binding and enabled state and saves the change. The reset is refused when another shortcut has since been rebound onto that default chord; default chords that two built-in shortcuts already share stay shared. |
+| <code>public static bool IsBindingAllowed(string actionId, Key key, ModifierKeys modifiers);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:247](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L247) | True when an operator may bind actionId to this chord: actions that start or stop collection, drop the connection, or delete data must keep Ctrl or Alt. |
+| <code>public bool IsEnabled { get; set; }</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:363](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L363) | Gets or sets whether keyboard shortcuts are enabled. |
+| <code>public IReadOnlyDictionary&lt;string, ShortcutAction&gt; Shortcuts =&gt; …;</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:372](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L372) | Gets all registered shortcuts. |
+| <code>public event EventHandler&lt;ShortcutInvokedEventArgs&gt;? ShortcutInvoked;</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:377](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L377) | Event raised when a shortcut is invoked. |
+| <code>public void Initialize(FrameworkElement element);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:383](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L383) | Initializes the keyboard shortcut service with the root element. |
+| <code>public void HandleKeyDown(KeyEventArgs e);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:398](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L398) | Handles a key down event and triggers the appropriate shortcut. |
+| <code>public void RegisterShortcut(string actionId, Key key, ModifierKeys modifiers, string description, ShortcutCategory category = ShortcutCategory.General);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:623](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L623) | Registers a keyboard shortcut. |
+| <code>public void UpdateShortcut(string actionId, Key key, ModifierKeys modifiers);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:649](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L649) | Updates an existing shortcut&#x27;s key binding. |
+| <code>public void SetShortcutEnabled(string actionId, bool enabled);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:664](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L664) | Enables or disables a specific shortcut. |
+| <code>public void UnregisterShortcut(string actionId);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:677](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L677) | Removes a shortcut registration. |
+| <code>public static string FormatShortcut(Key key, ModifierKeys modifiers);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:698](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L698) | Gets a formatted shortcut string (e.g., &quot;Ctrl+S&quot;). |
+| <code>public Dictionary&lt;ShortcutCategory, List&lt;ShortcutAction&gt;&gt; GetShortcutsByCategory();</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:762](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L762) | Gets all shortcuts grouped by category. |
+| <code>public ShortcutAction? GetShortcut(string actionId);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:783](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L783) | Gets a shortcut by action ID. |
+| <code>public bool HasConflict(Key key, ModifierKeys modifiers, string? excludeActionId = null) =&gt; …;</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:795](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L795) | Checks if a shortcut with the given key combination is already registered. |
+| <code>public ShortcutAction? FindConflictingShortcut(Key key, ModifierKeys modifiers, string? excludeActionId = null);</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:806](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L806) | Gets the shortcut already registered on this key combination, so a rejected rebinding can name what holds the chord. |
+| <code>public void Detach();</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:822](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L822) | Detaches the keyboard event handler. |
 
 ## LedgerReportsApiClient
 
 Qualified name: <code>Meridian.Wpf.Services.LedgerReportsApiClient</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:60](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L60).
+Source: [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:67](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L67).
 
 Loads shared ledger books, periods, reports, journal entries, and amount-proof details for desktop accounting views.
 
@@ -647,15 +740,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public LedgerReportsApiClient(ApiClientService apiClient);</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:64](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L64) |  |
-| <code>public Task&lt;ApiResponse&lt;List&lt;LedgerBookDto&gt;&gt;&gt; GetBooksAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:69](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L69) |  |
-| <code>public Task&lt;ApiResponse&lt;List&lt;LedgerPeriodDto&gt;&gt;&gt; GetPeriodsAsync(Guid? ledgerBookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:72](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L72) |  |
-| <code>public Task&lt;ApiResponse&lt;List&lt;LedgerPeriodTrialBalanceLineDto&gt;&gt;&gt; GetTrialBalanceAsync(Guid periodId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:81](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L81) |  |
-| <code>public Task&lt;ApiResponse&lt;LedgerPeriodPnlSummaryDto&gt;&gt; GetPnlSummaryAsync(Guid periodId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:88](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L88) |  |
-| <code>public Task&lt;ApiResponse&lt;List&lt;LedgerJournalEntryDto&gt;&gt;&gt; GetJournalEntriesAsync(Guid periodId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:95](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L95) |  |
-| <code>public Task&lt;ApiResponse&lt;EvidencePacketDto&gt;&gt; GetAmountProofAsync(string subjectId, Guid ledgerBookId, Guid periodId, string fundProfileId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:99](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L99) |  |
-| <code>public Task&lt;ApiResponse&lt;LedgerAccountRunningBalanceDto&gt;&gt; GetAccountRunningBalanceAsync(Guid periodId, string accountName, string? symbol, string? financialAccountId, LedgerDimensionSetDto? dimensions, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:104](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L104) |  |
-| <code>public Task&lt;ApiResponse&lt;JsonDocument&gt;&gt; GetRetainedManifestAsync(string route, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:131](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L131) |  |
+| <code>public LedgerReportsApiClient(ApiClientService apiClient);</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:71](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L71) |  |
+| <code>public Task&lt;ApiResponse&lt;List&lt;LedgerBookDto&gt;&gt;&gt; GetBooksAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:76](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L76) |  |
+| <code>public Task&lt;ApiResponse&lt;BookFxSettlementSetDto&gt;&gt; GetBookFxSettlementSetAsync(Guid setId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:79](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L79) |  |
+| <code>public Task&lt;ApiResponse&lt;PrivateCapitalUnitRegisterPreviewDto&gt;&gt; PreviewUnitRegisterAsync(Guid bookId, PreviewPrivateCapitalUnitRegisterRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:83](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L83) |  |
+| <code>public Task&lt;ApiResponse&lt;List&lt;LedgerPeriodDto&gt;&gt;&gt; GetPeriodsAsync(Guid? ledgerBookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:88](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L88) |  |
+| <code>public Task&lt;ApiResponse&lt;List&lt;LedgerPeriodTrialBalanceLineDto&gt;&gt;&gt; GetTrialBalanceAsync(Guid periodId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:97](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L97) |  |
+| <code>public Task&lt;ApiResponse&lt;LedgerPeriodPnlSummaryDto&gt;&gt; GetPnlSummaryAsync(Guid periodId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:104](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L104) |  |
+| <code>public Task&lt;ApiResponse&lt;List&lt;LedgerJournalEntryDto&gt;&gt;&gt; GetJournalEntriesAsync(Guid periodId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:111](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L111) |  |
+| <code>public Task&lt;ApiResponse&lt;EvidencePacketDto&gt;&gt; GetAmountProofAsync(string subjectId, Guid ledgerBookId, Guid periodId, string fundProfileId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:115](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L115) |  |
+| <code>public Task&lt;ApiResponse&lt;LedgerAccountRunningBalanceDto&gt;&gt; GetAccountRunningBalanceAsync(Guid periodId, string accountName, string? symbol, string? financialAccountId, LedgerDimensionSetDto? dimensions, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:120](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L120) |  |
+| <code>public Task&lt;ApiResponse&lt;JsonDocument&gt;&gt; GetRetainedManifestAsync(string route, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:147](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L147) |  |
 
 ## LifecycleControlClient
 
@@ -982,91 +1077,3 @@ Declared public members:
 | <code>public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:40](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L40) | Gets or sets when the operation was created. |
 | <code>public int RetryCount { get; set; }</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:45](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L45) | Gets or sets the number of retry attempts. |
 | <code>public int MaxRetries { get; set; } = 3;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:50](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L50) | Gets or sets the maximum number of retries before discarding. |
-
-## PendingOperationQuarantineRecord
-
-Qualified name: <code>Meridian.Wpf.Services.PendingOperationQuarantineRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:82](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L82).
-
-Payload-free audit record for a pending operation that cannot safely be replayed. The original payload is intentionally omitted because retired reconciliation mutations may contain operator notes or other sensitive casework data.
-
-```csharp
-public sealed record PendingOperationQuarantineRecord(string OperationId, string OperationType, DateTime CreatedAt, int RetryCount, int MaxRetries, DateTimeOffset QuarantinedAtUtc, int SourceEnvelopeVersion, string ReasonCode, string Reason);
-```
-
-## PendingOperationsQueueService
-
-Qualified name: <code>Meridian.Wpf.Services.PendingOperationsQueueService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:100](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L100).
-
-Service for managing a durable queue of pending operations: mutations that failed while the backend was unreachable are enqueued here, persisted to local storage via AtomicFileWriter so they survive shutdown and crashes, and replayed through their registered handlers on startup and on reconnect. Implements singleton pattern for application-wide operation queue management.
-
-```csharp
-public sealed class PendingOperationsQueueService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static PendingOperationsQueueService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:130](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L130) | Gets the singleton instance of the PendingOperationsQueueService. |
-| <code>public bool IsInitialized =&gt; …;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:135](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L135) | Gets whether the service has been initialized. |
-| <code>public int PendingCount =&gt; …;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:140](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L140) | Gets the number of pending operations in the queue. |
-| <code>public int QuarantinedCount =&gt; …;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:146](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L146) | Gets the number of payload-free quarantine records retained for operations that cannot be replayed safely. |
-| <code>public static string GetDefaultFilePath();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:156](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L156) | Resolves the durable queue file below the shared Meridian local-application-data root. |
-| <code>public async Task InitializeAsync();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:177](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L177) | Initializes the pending operations queue service, restoring any operations that were persisted by a previous session (clean shutdown or crash). |
-| <code>public async Task ShutdownAsync();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:202](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L202) | Shuts down the pending operations queue service, persisting any still-pending operations to disk so they can be replayed by the next session before releasing the in-memory queue. Later persistence attempts (for example an enqueue-scheduled snapshot that loses the race with shutdown) are suppressed so they cannot overwrite the final snapshot with the cleared queue. |
-| <code>public void RegisterHandler(string operationType, Func&lt;object?, Task&gt; handler);</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:225](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L225) | Registers a handler for a specific operation type. |
-| <code>public void UnregisterHandler(string operationType);</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:236](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L236) | Removes a handler for a specific operation type. |
-| <code>public void Enqueue(PendingOperation operation);</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:246](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L246) | Enqueues an operation for processing and schedules a snapshot of the queue to durable storage, so an enqueued operation survives a crash before the next clean shutdown. |
-| <code>public void Enqueue(string operationType, object? payload = null);</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:258](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L258) | Enqueues an operation for processing. |
-| <code>public PendingOperation? Dequeue();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:271](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L271) | Dequeues the next operation for processing. |
-| <code>public PendingOperation? Peek();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:280](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L280) | Peeks at the next operation without removing it. |
-| <code>public IReadOnlyList&lt;PendingOperation&gt; GetAll();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:293](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L293) | Gets a snapshot of all pending operations. |
-| <code>public IReadOnlyList&lt;PendingOperationQuarantineRecord&gt; GetQuarantinedOperations();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:302](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L302) | Gets a stable audit snapshot of operations moved out of the replay queue. Quarantine records contain metadata only and never expose the original operation payload. |
-| <code>public async Task ProcessAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:320](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L320) | Processes all pending operations by dequeuing and executing their registered handlers. Operations that fail and have retries remaining are re-enqueued. Operations with no registered handler are kept in the queue so a handler registered later (or by the next session) can still process them. Explicitly retired authentication-sensitive operation types are moved to payload-free quarantine before handler lookup. The surviving queue and quarantine audit are persisted afterwards. |
-| <code>public async Task PersistAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:370](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L370) | Writes the current queue contents to durable storage using an atomic replace, so a crash mid-write can never corrupt the previously persisted queue. |
-
-## PortfolioWorkspaceShellStateProvider
-
-Qualified name: <code>Meridian.Wpf.Services.PortfolioWorkspaceShellStateProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:129](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L129).
-
-Supplies the portfolio workspace definition and shell state.
-
-```csharp
-public sealed class PortfolioWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PortfolioWorkspaceShellStateProvider(FundContextService fundContextService, WorkstationOperatingContextService? operatingContextService) : base(operatingContextService);</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:133](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L133) |  |
-| <code>public override WorkspaceShellDefinition Definition =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:141](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L141) |  |
-
-## QuantScriptExecutionHistoryService
-
-Qualified name: <code>Meridian.Wpf.Services.QuantScriptExecutionHistoryService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:27](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L27).
-
-Records QuantScript executions in strategy-run history and exports retained execution records.
-
-```csharp
-public sealed class QuantScriptExecutionHistoryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public QuantScriptExecutionHistoryService(ConfigService configService, StrategyRunWorkspaceService strategyRunWorkspaceService, ILogger&lt;QuantScriptExecutionHistoryService&gt; logger);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:33](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L33) |  |
-| <code>public static string BuildQuantScriptStrategyId(string documentTitle) =&gt; …;</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:43](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L43) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;QuantScriptExecutionRecord&gt;&gt; GetHistoryAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:46](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L46) |  |
-| <code>public async Task&lt;QuantScriptExecutionRecord&gt; RecordExecutionAsync(QuantScriptExecutionRecordRequest request, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:79](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L79) |  |
-| <code>public async Task&lt;string&gt; ExportExecutionRecordAsync(QuantScriptExecutionRecord record, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:136](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L136) |  |
-| <code>public static string ConvertValueToString(object? value);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:161](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L161) |  |

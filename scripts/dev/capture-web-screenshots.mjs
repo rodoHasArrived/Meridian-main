@@ -509,7 +509,30 @@ function assertCaptureRouteStateIdentity(captures) {
   }
 }
 
-async function findMissingCaptureRoutePaths(captures, routeCatalogPath, appShellPath) {
+/** A retained concrete capture covers a route pattern only at exact segment boundaries. */
+export function screenshotRouteMatches(pattern, capturePath) {
+  const expected = screenshotCoveragePath(pattern);
+  const actual = screenshotCoveragePath(capturePath);
+  if (!expected || !actual) return false;
+  const expectedUrl = new URL(expected, "http://meridian.local");
+  const actualUrl = new URL(actual, "http://meridian.local");
+  if (expectedUrl.hash !== actualUrl.hash) return false;
+  const expectedSegments = expectedUrl.pathname.split("/");
+  const actualSegments = actualUrl.pathname.split("/");
+  if (expectedSegments.length !== actualSegments.length) return false;
+  return expectedSegments.every((segment, index) => {
+    const value = actualSegments[index];
+    if (!/^:[A-Za-z_][A-Za-z0-9_]*$/.test(segment)) return segment === value;
+    if (!value) return false;
+    try {
+      const decoded = decodeURIComponent(value);
+      return decoded.length > 0 && !decoded.startsWith(":") && !/[\/\\]/.test(decoded)
+        && !/%(?:2f|5c)/i.test(decoded);
+    } catch { return false; }
+  });
+}
+
+export async function findMissingCaptureRoutePaths(captures, routeCatalogPath, appShellPath) {
   const capturedPaths = new Set(
     captures
       .map((capture) => screenshotCoveragePath(capture.path))
@@ -526,7 +549,7 @@ async function findMissingCaptureRoutePaths(captures, routeCatalogPath, appShell
       .filter((routePath) => routePath.length > 0)
   );
   return [...expectedPaths]
-    .filter((routePath) => !capturedPaths.has(routePath))
+    .filter((routePath) => ![...capturedPaths].some((capturedPath) => screenshotRouteMatches(routePath, capturedPath)))
     .sort();
 }
 
@@ -613,8 +636,22 @@ export const CAPTURE_CONTENT_ISSUE_KINDS = [
   "unavailable-placeholder",
   "disabled-primary-without-reason",
   "status-contradiction",
-  "truncated-badge"
+  "truncated-badge",
+  "position-source-missing",
+  "primary-task-below-fold",
+  "repeated-unavailable",
+  "single-failure-notice",
+  "detail-value-wraps",
+  "table-overflow-without-cue",
+  "monospace-prose",
+  "nav-row-budget",
+  "chart-without-table",
+  "detail-rail-clipped",
+  "chart-label-overlap"
 ];
+
+/** How often the same "… unavailable" line may repeat in a route's main content. */
+export const MAX_REPEATED_UNAVAILABLE_LINES = 2;
 
 /**
  * True for a hyphenated token that is a record identifier rather than an English compound. Tuned
@@ -661,9 +698,39 @@ export function isSlugIdentifier(token) {
  *     its freshness needs review or is blocked. Also read from the DOM by the caller.
  *   - truncated-badge: a visible status badge whose text is clipped ("OPE" for "Open"). Badges
  *     never truncate; a long one wraps. Read from the DOM by the caller.
+ *   - position-source-missing: a positions table that does not name where its rows come from
+ *     (paper session, live holdings or a retained run). Read from the DOM by the caller.
+ *   - primary-task-below-fold: the route declares `primaryTask: { selector, maxTop }` and that
+ *     element starts lower than `maxTop` pixels. The main task sits under the page heading.
+ *     Measured by the caller.
+ *   - repeated-unavailable: the same line containing "unavailable" appears more than
+ *     MAX_REPEATED_UNAVAILABLE_LINES times. A value missing on every row is said once (a column
+ *     note), not repeated per row.
+ *   - single-failure-notice: the route declares `maxAlerts` and shows more alerts or Retry
+ *     buttons than that. One backend failure shows one notice with one Retry. Counted by the caller.
+ *   - detail-value-wraps: a date or figure value (`[data-detail-value="date"|"number"]`) that
+ *     wraps onto more than one line. Dates and amounts read on one line. Measured by the caller.
+ *   - table-overflow-without-cue: a table that overflows sideways without a cue: neither inside a
+ *     table-workbench frame nor marked `data-overflow-right` (the edge shadow). Measured by the caller.
+ *   - monospace-prose: on routes that declare `monospaceProse: true`, visible text set in a
+ *     monospace face that is more than three words with no digits. The data face is for
+ *     figures, IDs and code; labels and sentences use the body face. Measured by the caller.
+ *   - nav-row-budget: the route declares `maxSidebarSubRows` and the sidebar shows more visible
+ *     sub-rows than that. An expanded workspace adds a handful of rows (Accounting adds one per
+ *     group); the rest of the workspaces stay on screen. Counted by the caller.
+ *   - chart-without-table: on routes that declare `chartTables: true`, a visible chart graphic
+ *     (`[role="img"]` at least 200px wide) whose section holds neither a table nor a
+ *     `[data-chart-table]` alternative. Every chart has a table a screen reader or a copy-paste can
+ *     use. Read from the DOM by the caller.
+ *   - detail-rail-clipped: a detail panel (the workbench inspector, an aside or a dense-row detail
+ *     panel), or a box inside one, that hides content below its visible area with no way to see it:
+ *     it neither scrolls nor shows the `data-more-below` cue. Hidden fields look absent. Measured by
+ *     the caller.
+ *   - chart-label-overlap: two text labels in the same chart whose boxes overlap, such as the last
+ *     two x-axis dates. Measured by the caller.
  * Returns one entry per distinct offending excerpt.
  */
-export function findCaptureContentIssues(text, { unexplainedDisabledActions = [], statusContradictions = [], truncatedBadges = [] } = {}) {
+export function findCaptureContentIssues(text, { unexplainedDisabledActions = [], statusContradictions = [], truncatedBadges = [], unsourcedPositionTables = [], primaryTaskIssues = [], failureNoticeIssues = [], wrappedDetailValues = [], uncuedOverflowTables = [], monospaceProse = [], navRowIssues = [], chartsWithoutTables = [], clippedDetailPanels = [], overlappingChartLabels = [] } = {}) {
   const issues = [];
   const seen = new Set();
   const record = (kind, excerpt) => {
@@ -715,6 +782,39 @@ export function findCaptureContentIssues(text, { unexplainedDisabledActions = []
   }
   for (const badge of truncatedBadges) {
     record("truncated-badge", String(badge || "(unlabelled badge)"));
+  }
+  for (const table of unsourcedPositionTables) {
+    record("position-source-missing", String(table || "(unlabelled positions table)"));
+  }
+  for (const issue of primaryTaskIssues) {
+    record("primary-task-below-fold", String(issue));
+  }
+  for (const issue of failureNoticeIssues) {
+    record("single-failure-notice", String(issue));
+  }
+  for (const value of wrappedDetailValues) {
+    record("detail-value-wraps", String(value));
+  }
+  for (const table of uncuedOverflowTables) {
+    record("table-overflow-without-cue", String(table || "(unlabelled table)"));
+  }
+  for (const text of monospaceProse) {
+    record("monospace-prose", String(text));
+  }
+  for (const issue of navRowIssues) {
+    record("nav-row-budget", String(issue));
+  }
+  for (const chart of chartsWithoutTables) {
+    record("chart-without-table", String(chart || "(unlabelled chart)"));
+  }
+  for (const panel of clippedDetailPanels) {
+    record("detail-rail-clipped", String(panel || "(unlabelled detail panel)"));
+  }
+  for (const pair of overlappingChartLabels) {
+    record("chart-label-overlap", String(pair));
+  }
+  for (const line of findRepeatedUnavailableLines(content)) {
+    record("repeated-unavailable", line);
   }
 
   return issues;
@@ -857,6 +957,124 @@ function canonicalJson(value) {
   return value;
 }
 
+/** Lines containing "unavailable" that appear more than the allowed number of times, as "line ×n". */
+export function findRepeatedUnavailableLines(text, limit = MAX_REPEATED_UNAVAILABLE_LINES) {
+  const counts = new Map();
+  for (const raw of String(text ?? "").split(/\r?\n/)) {
+    const line = raw.replace(/\s+/g, " ").trim();
+    if (!/\bunavailable\b/i.test(line)) continue;
+    counts.set(line, (counts.get(line) ?? 0) + 1);
+  }
+  return [...counts].filter(([, count]) => count > limit).map(([line, count]) => `${line} ×${count}`);
+}
+
+/** A declared primary task that is missing or starts below `maxTop`, as an issue line, or null. */
+export function describePrimaryTaskPosition(primaryTask, measuredTop) {
+  if (!primaryTask?.selector) return null;
+  const maxTop = Number.isFinite(primaryTask.maxTop) ? primaryTask.maxTop : 600;
+  if (measuredTop === null || measuredTop === undefined) return `${primaryTask.selector} not found`;
+  return measuredTop > maxTop ? `${primaryTask.selector} starts at ${Math.round(measuredTop)}px (limit ${maxTop}px)` : null;
+}
+
+/** More alerts or Retry buttons than the route allows, as issue lines. */
+/** The sidebar row budget: one issue when more sub-rows are visible than the route allows. */
+export function describeNavRowBudget(maxSidebarSubRows, visibleSubRows) {
+  if (!Number.isInteger(maxSidebarSubRows) || !Number.isInteger(visibleSubRows)) return [];
+  return visibleSubRows > maxSidebarSubRows ? [`${visibleSubRows} sidebar sub-rows (limit ${maxSidebarSubRows})`] : [];
+}
+
+export function describeFailureNotices(maxAlerts, counts) {
+  if (!Number.isInteger(maxAlerts)) return [];
+  return [
+    counts.alerts > maxAlerts ? `${counts.alerts} alerts (limit ${maxAlerts})` : null,
+    counts.retries > maxAlerts ? `${counts.retries} Retry buttons (limit ${maxAlerts})` : null
+  ].filter(Boolean);
+}
+
+/**
+ * A positions table is one whose accessible name says "positions" (the same test the capture
+ * probe applies in the page). "Position contributions" or an accounts table is not a position book.
+ */
+export function isPositionsTableLabel(label) {
+  return /\bpositions\b/i.test(String(label ?? ""));
+}
+
+/**
+ * The status bar may say "up to date" only when neither the page's freshness fact nor the masthead
+ * pill's source items (provenance, provider health) need review.
+ */
+export function findStatusContradictions(probe) {
+  if (!/up to date/i.test(probe?.statusBar ?? "")) return [];
+  return [
+    probe?.pageFreshness ? `status bar "${probe.statusBar}" vs page "${probe.pageFreshness}"` : null,
+    probe?.shellFreshness ? `status bar "${probe.statusBar}" vs masthead "${probe.shellFreshness}"` : null
+  ].filter(Boolean);
+}
+
+/**
+ * Different registered figures that share a label and a population are the same figure to an
+ * operator ("Providers healthy · Providers in use" on Today and on Data). Within one dataset they
+ * must show the same value, whichever id or payload supplied them. Groups come from the shared
+ * KPI definitions fixture; a figure whose rendered population differs (e.g. "Providers visible to
+ * you") is a different group.
+ */
+export function checkKpiLabelConsistency(captures, definitions) {
+  const groupOf = new Map();
+  for (const definition of definitions ?? []) {
+    groupOf.set(definition.id, `${definition.label}\u0000${definition.population}`);
+  }
+  const observed = new Map();
+  const conflicts = [];
+  for (const capture of captures) {
+    if (capture.status !== "passed") continue;
+    for (const kpi of capture.kpis ?? []) {
+      const group = groupOf.get(kpi.id);
+      if (!group) continue;
+      const key = JSON.stringify([capture.scenario ?? null, group, kpi.population ?? null]);
+      const current = { id: kpi.id, value: kpi.value, display: kpi.display, route: capture.route };
+      const previous = observed.get(key);
+      if (!previous) {
+        observed.set(key, current);
+      } else if (previous.id !== current.id && previous.value !== current.value) {
+        conflicts.push({ group: group.replace("\u0000", " · "), previous, current });
+      }
+    }
+  }
+  return { conflicts };
+}
+
+/** Visible status badges on a route: their label and the severity (colour) they render with. */
+export async function collectSeverityBadges(page) {
+  const badges = await page.evaluate(() =>
+    Array.from(document.querySelectorAll("main .mds-sev[data-severity], main [data-severity].mds-badge"))
+      .filter((badge) => badge.getClientRects().length > 0)
+      .map((badge) => ({ label: (badge.textContent ?? "").replace(/\s+/g, " ").trim(), severity: badge.getAttribute("data-severity") }))
+      .filter((badge) => badge.label && badge.severity));
+  return Array.isArray(badges) ? badges : [];
+}
+
+/**
+ * One status label has one colour: within a dataset, the same badge text (case-insensitive) must
+ * render with the same severity on every route.
+ */
+export function checkSeverityLabelConsistency(captures) {
+  const observed = new Map();
+  const conflicts = [];
+  for (const capture of captures) {
+    if (capture.status !== "passed") continue;
+    for (const badge of capture.severityBadges ?? []) {
+      const key = JSON.stringify([capture.scenario ?? null, badge.label.toLowerCase()]);
+      const current = { severity: badge.severity, route: capture.route };
+      const previous = observed.get(key);
+      if (!previous) observed.set(key, current);
+      else if (previous.severity !== current.severity && !conflicts.some((conflict) => conflict.key === key)) {
+        conflicts.push({ key, label: badge.label, previous, current });
+      }
+    }
+  }
+  return { conflicts };
+}
+
 /** Compare observations only within the same dataset, operating scope and read revision. */
 export function checkKpiConsistency(captures) {
   const observed = new Map();
@@ -896,6 +1114,16 @@ function decimalToScaled(text, scale) {
  * "Total exposure" headline figure. A table narrowed by a filter (fewer rows shown than loaded) is
  * not a complete population and is skipped.
  */
+/** The shared headline-figure catalog (tests/fixtures/kpi-definitions), or none when it is absent. */
+export async function loadKpiDefinitions(repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..")) {
+  try {
+    const raw = await fs.readFile(path.join(repoRoot, "tests", "fixtures", "kpi-definitions", "kpi-definitions.json"), "utf8");
+    return JSON.parse(raw).definitions ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export function checkHoldingsTotals(captures) {
   const conflicts = [];
   let checkedCount = 0;
@@ -967,7 +1195,8 @@ export async function collectKpiSnapshots(page) {
       value: element.getAttribute("data-kpi-value"),
       display: element.getAttribute("data-kpi-display"),
       renderedDisplay: element.querySelector("[data-kpi-rendered-value]")?.textContent?.trim() ?? null,
-      revision: element.getAttribute("data-kpi-revision")
+      revision: element.getAttribute("data-kpi-revision"),
+      population: element.getAttribute("data-kpi-population")
     })));
   for (const snapshot of snapshots) {
     if (!snapshot.id || !snapshot.scope || snapshot.value === null || snapshot.display === null) {
@@ -1172,19 +1401,36 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
   const unexplainedDisabledActions = Array.isArray(disabledActionProbe) ? disabledActionProbe : [];
   // The status bar and the page's posture strip answer the same freshness question; the bar may
   // not say "up to date" while a strip on the page says its freshness needs review or is blocked.
+  // The masthead pill's provenance and provider items are the shell's freshness: the bar may not
+  // say "up to date" while either of them needs review either.
   const statusProbe = await page.evaluate(() => {
+    const text = (element) => (element?.textContent ?? "").replace(/\s+/g, " ").trim();
     const staleFact = Array.from(document.querySelectorAll(
       "main [data-trust-fact='freshness'][data-trust-tone='review'], main [data-trust-fact='freshness'][data-trust-tone='blocked']"
     )).find((element) => element.getClientRects().length > 0);
+    const staleShellItem = Array.from(document.querySelectorAll(
+      "[data-trust-strip-item='source'], [data-trust-strip-item='providers']"
+    )).find((element) => ["review", "blocked"].includes(element.getAttribute("data-trust-strip-tone") ?? ""));
     const footer = document.querySelector("footer.workstation-statusbar");
     return {
-      pageFreshness: staleFact ? (staleFact.textContent ?? "").replace(/\s+/g, " ").trim() : null,
-      statusBar: footer ? (footer.textContent ?? "").replace(/\s+/g, " ").trim() : ""
+      pageFreshness: staleFact ? text(staleFact) : null,
+      shellFreshness: staleShellItem ? text(staleShellItem) : null,
+      statusBar: footer ? text(footer) : ""
     };
   });
-  const statusContradictions = statusProbe?.pageFreshness && /up to date/i.test(statusProbe.statusBar ?? "")
-    ? [`status bar "${statusProbe.statusBar}" vs page "${statusProbe.pageFreshness}"`]
-    : [];
+  const statusContradictions = findStatusContradictions(statusProbe);
+  // Every positions table names its source (paper session, live holdings, a brokerage household,
+  // the execution gateway or a retained run). A positions table is one whose own accessible name
+  // says "positions"; captions describe interaction and per-position breakdowns ("position
+  // contributions") are not position books.
+  const positionSourceProbe = await page.evaluate(() =>
+    Array.from((document.querySelector("main") ?? document.body).querySelectorAll("table[aria-label]"))
+      .filter((table) => table.getClientRects().length > 0)
+      .filter((table) => /\bpositions\b/i.test(table.getAttribute("aria-label") ?? ""))
+      .filter((table) => !table.closest("[data-position-source]"))
+      .map((table) => (table.getAttribute("aria-label") ?? "").replace(/\s+/g, " ").trim())
+  );
+  const unsourcedPositionTables = Array.isArray(positionSourceProbe) ? positionSourceProbe : [];
   // A clipped status badge ("OPE") reads as a different status. Badges are measured, not read:
   // the text is all there in innerText even when the box cuts it off.
   const truncatedBadgeProbe = await page.evaluate(() =>
@@ -1194,11 +1440,129 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
       .map((badge) => (badge.textContent ?? "").replace(/\s+/g, " ").trim())
   );
   const truncatedBadges = Array.isArray(truncatedBadgeProbe) ? truncatedBadgeProbe : [];
+  // A detail panel that cuts its content off silently makes hidden fields look absent (UX Phase F).
+  // Flag the panel, or a tall box inside it, that overflows downward while neither scrolling nor
+  // showing the "More below" cue.
+  const clippedDetailProbe = await page.evaluate(() => {
+    const main = document.querySelector("main") ?? document.body;
+    const panels = Array.from(main.querySelectorAll("[data-workbench-slot='inspector'], aside, [role='complementary'], [data-dense-row-detail-panel]"))
+      .filter((panel) => panel.getClientRects().length > 0);
+    const name = (element) => (element.getAttribute("aria-label") || element.querySelector("h2, h3, h4")?.textContent || element.className || element.tagName)
+      .toString().replace(/\s+/g, " ").trim().slice(0, 80);
+    const clipped = new Set();
+    for (const panel of panels) {
+      for (const element of [panel, ...panel.querySelectorAll("*")]) {
+        if (element.getClientRects().length === 0 || element.clientHeight < 120) continue;
+        if (element.scrollHeight - element.clientHeight - element.scrollTop <= 4) continue;
+        const overflowY = getComputedStyle(element).overflowY;
+        const scrolls = overflowY === "auto" || overflowY === "scroll";
+        if (overflowY === "visible" || (scrolls && element.closest("[data-more-below]"))) continue;
+        if (scrolls && element === panel && element.hasAttribute("data-more-below")) continue;
+        if (scrolls && element !== panel) continue;
+        clipped.add(name(panel === element ? panel : element));
+      }
+    }
+    return Array.from(clipped);
+  });
+  const clippedDetailPanels = Array.isArray(clippedDetailProbe) ? clippedDetailProbe : [];
+  // Overlapping chart text (crowded x-axis dates) is unreadable: compare label boxes per chart.
+  const chartLabelOverlapProbe = await page.evaluate(() => {
+    const main = document.querySelector("main") ?? document.body;
+    const charts = Array.from(main.querySelectorAll("svg, [data-chart-label-layer]")).filter((chart) => chart.getClientRects().length > 0);
+    const overlaps = [];
+    for (const chart of charts) {
+      const labels = Array.from(chart.querySelectorAll(chart.tagName.toLowerCase() === "svg" ? "text" : "span"))
+        .filter((label) => (label.textContent ?? "").trim() && label.getClientRects().length > 0)
+        .map((label) => ({ text: (label.textContent ?? "").trim(), box: label.getBoundingClientRect() }));
+      for (let i = 0; i < labels.length; i += 1) {
+        for (let j = i + 1; j < labels.length; j += 1) {
+          const a = labels[i].box;
+          const b = labels[j].box;
+          const width = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+          const height = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+          if (width > 1 && height > 1) overlaps.push(`"${labels[i].text}" overlaps "${labels[j].text}"`);
+        }
+      }
+    }
+    return overlaps;
+  });
+  const overlappingChartLabels = Array.isArray(chartLabelOverlapProbe) ? chartLabelOverlapProbe : [];
   if (textDir) {
     await fs.mkdir(textDir, { recursive: true });
     await fs.writeFile(path.join(textDir, `${capture.name}.txt`), `${mainText}\n`);
   }
-  const contentIssues = partitionCaptureContentIssues(mainText, capture, { unexplainedDisabledActions, statusContradictions, truncatedBadges });
+  // The route's primary task sits under its heading: measured from the top of the page.
+  const primaryTaskTop = capture.primaryTask?.selector
+    ? await page.evaluate((selector) => {
+      const element = Array.from(document.querySelectorAll(selector)).find((candidate) => candidate.getClientRects().length > 0);
+      return element ? element.getBoundingClientRect().top + window.scrollY : null;
+    }, capture.primaryTask.selector)
+    : null;
+  const primaryTaskIssue = describePrimaryTaskPosition(capture.primaryTask, primaryTaskTop);
+  const primaryTaskIssues = primaryTaskIssue ? [primaryTaskIssue] : [];
+  // One backend failure, one notice: visible alerts and Retry buttons in the main content.
+  const failureNoticeCounts = Number.isInteger(capture.maxAlerts)
+    ? await page.evaluate(() => {
+      const main = document.querySelector("main") ?? document.body;
+      const visible = (element) => element.getClientRects().length > 0;
+      return {
+        alerts: Array.from(main.querySelectorAll("[role='alert']")).filter(visible).length,
+        retries: Array.from(main.querySelectorAll("button")).filter(visible)
+          .filter((button) => /^retry\b/i.test((button.textContent ?? "").trim())).length
+      };
+    })
+    : { alerts: 0, retries: 0 };
+  const failureNoticeIssues = describeFailureNotices(capture.maxAlerts, failureNoticeCounts);
+  // Dates and figures read on one line: a wrapped value box is taller than one line of its text.
+  const wrappedDetailValuesProbe = await page.evaluate(() =>
+    Array.from(document.querySelectorAll("main [data-detail-value='date'], main [data-detail-value='number']"))
+      .filter((element) => element.getClientRects().length > 0)
+      .filter((element) => {
+        const lineHeight = parseFloat(getComputedStyle(element).lineHeight) || parseFloat(getComputedStyle(element).fontSize) * 1.4;
+        return element.getBoundingClientRect().height > lineHeight * 1.5;
+      })
+      .map((element) => (element.textContent ?? "").replace(/\s+/g, " ").trim())
+  );
+  // A table that scrolls sideways shows a cue; the table-workbench frame draws it.
+  const uncuedOverflowTablesProbe = await page.evaluate(() =>
+    Array.from(document.querySelectorAll("main .dense-data-table-wrap"))
+      .filter((wrap) => wrap.getClientRects().length > 0 && wrap.scrollWidth > wrap.clientWidth + 1)
+      .filter((wrap) => !wrap.closest(".table-workbench-frame") && wrap.getAttribute("data-overflow-right") !== "true")
+      .map((wrap) => wrap.querySelector("table")?.getAttribute("aria-label") ?? "")
+  );
+  const wrappedDetailValues = Array.isArray(wrappedDetailValuesProbe) ? wrappedDetailValuesProbe : [];
+  const uncuedOverflowTables = Array.isArray(uncuedOverflowTablesProbe) ? uncuedOverflowTablesProbe : [];
+  // Labels and sentences in the data face, on routes that opt in.
+  const monospaceProseProbe = capture.monospaceProse
+    ? await page.evaluate(() => {
+      const found = new Set();
+      for (const element of document.querySelectorAll("main *")) {
+        if (element.getClientRects().length === 0 || !/mono/i.test(getComputedStyle(element).fontFamily)) continue;
+        const own = Array.from(element.childNodes).filter((node) => node.nodeType === 3).map((node) => node.textContent ?? "").join(" ").replace(/\s+/g, " ").trim();
+        if (own && !/\d/.test(own) && own.split(" ").length > 3) found.add(own);
+      }
+      return [...found];
+    })
+    : [];
+  const monospaceProse = Array.isArray(monospaceProseProbe) ? monospaceProseProbe : [];
+  // An expanded workspace keeps the others on screen: visible sidebar sub-rows, on routes that opt in.
+  const visibleSubRows = Number.isInteger(capture.maxSidebarSubRows)
+    ? await page.evaluate(() => Array.from(document.querySelectorAll(".operator-nav-subitem")).filter((row) => row.getClientRects().length > 0).length)
+    : null;
+  const navRowIssues = describeNavRowBudget(capture.maxSidebarSubRows, Number.isInteger(visibleSubRows) ? visibleSubRows : null);
+  // Every chart has a table alternative in its section, on routes that opt in.
+  const chartsWithoutTablesProbe = capture.chartTables
+    ? await page.evaluate(() =>
+      Array.from(document.querySelectorAll("main [role='img']"))
+        .filter((chart) => chart.getClientRects().length > 0 && chart.getBoundingClientRect().width >= 200)
+        .filter((chart) => {
+          const scope = chart.closest("section, [data-chart-card]") ?? chart.parentElement;
+          return !(scope?.querySelector("table, [data-chart-table]") || chart.closest("[data-chart-table]"));
+        })
+        .map((chart) => chart.getAttribute("aria-label") ?? ""))
+    : [];
+  const chartsWithoutTables = Array.isArray(chartsWithoutTablesProbe) ? chartsWithoutTablesProbe : [];
+  const contentIssues = partitionCaptureContentIssues(mainText, capture, { unexplainedDisabledActions, statusContradictions, truncatedBadges, unsourcedPositionTables, primaryTaskIssues, failureNoticeIssues, wrappedDetailValues, uncuedOverflowTables, monospaceProse, navRowIssues, chartsWithoutTables, clippedDetailPanels, overlappingChartLabels });
   if (contentIssues.blocking.length > 0) {
     throw new Error(describeCaptureContentIssues(capture.name, contentIssues.blocking));
   }
@@ -1219,7 +1583,22 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     throw new Error(`Capture ${capture.name} ended on '${actualPath}', expected '${expectedPath}'.`);
   }
 
+  // A redirect capture may bind a complete retained view. Prove its declared
+  // query and anchor survived rather than accepting the destination page alone.
+  if (typeof capture.expectedRedirectPath === "string") {
+    const expectedRedirect = new URL(toRouteUrl(baseUrl, capture.expectedRedirectPath.trim()));
+    const actualRedirect = new URL(actualUrl);
+    if (expectedRedirect.search) {
+      const expectedQuery = new URLSearchParams(expectedRedirect.search);
+      const actualQuery = new URLSearchParams(actualRedirect.search);
+      expectedQuery.sort(); actualQuery.sort();
+      if (expectedQuery.toString() !== actualQuery.toString()) throw new Error(`Capture ${capture.name} lost its retained redirect query.`);
+    }
+    if (expectedRedirect.hash && expectedRedirect.hash !== actualRedirect.hash) throw new Error(`Capture ${capture.name} lost its retained redirect anchor.`);
+  }
+
   const kpis = await collectKpiSnapshots(page);
+  const severityBadges = await collectSeverityBadges(page);
   const holdingsTables = await collectHoldingsTables(page);
 
   await fs.mkdir(outputDir, { recursive: true });
@@ -1246,7 +1625,9 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     bytes: buffer.length,
     textLength,
     kpis,
+    severityBadges,
     holdingsTables,
+    ...(capture.primaryTask?.selector ? { primaryTaskTop } : {}),
     // Exceptions the route catalog grants this capture, kept visible in the manifest.
     ...(contentIssues.allowed.length > 0 ? { allowedContentIssues: contentIssues.allowed } : {}),
     durationSeconds: Number(((Date.now() - started) / 1000).toFixed(2)),
@@ -1618,6 +1999,17 @@ async function main() {
       problems.push(`KPI '${conflict.id}' disagrees for scope ${conflict.scope}: `
         + `${conflict.previous.route} shows '${conflict.previous.display}' (${conflict.previous.value}), `
         + `${conflict.current.route} shows '${conflict.current.display}' (${conflict.current.value}).`);
+    }
+    manifest.severityConsistency = checkSeverityLabelConsistency(results);
+    for (const conflict of manifest.severityConsistency.conflicts) {
+      problems.push(`Status '${conflict.label}' renders as ${conflict.previous.severity} on ${conflict.previous.route} `
+        + `and ${conflict.current.severity} on ${conflict.current.route}; one label has one colour.`);
+    }
+    manifest.kpiLabelConsistency = checkKpiLabelConsistency(results, await loadKpiDefinitions());
+    for (const conflict of manifest.kpiLabelConsistency.conflicts) {
+      problems.push(`'${conflict.group}' disagrees across figures: ${conflict.previous.route} shows `
+        + `'${conflict.previous.display}' (${conflict.previous.id}), ${conflict.current.route} shows `
+        + `'${conflict.current.display}' (${conflict.current.id}).`);
     }
     manifest.holdingsTotals = checkHoldingsTotals(results);
     for (const conflict of manifest.holdingsTotals.conflicts) {

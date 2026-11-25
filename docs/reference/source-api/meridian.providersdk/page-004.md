@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderInstrument
+
+Qualified name: <code>Meridian.ProviderSdk.ProviderInstrument</code>. Kind: `record`.
+
+Source: [src/Meridian.ProviderSdk/IProviderInstrumentDiscoveryService.cs:13](../../../../src/Meridian.ProviderSdk/IProviderInstrumentDiscoveryService.cs#L13).
+
+Provider-neutral instrument identity returned by discovery.
+
+```csharp
+public sealed record ProviderInstrument(string Symbol, string Name, string AssetClass, string? Exchange, string? Currency, string? ProviderInstrumentId, ProviderDataProvenance Provenance);
+```
+
+## ProviderInstrumentDiscoveryRequest
+
+Qualified name: <code>Meridian.ProviderSdk.ProviderInstrumentDiscoveryRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.ProviderSdk/IProviderInstrumentDiscoveryService.cs:6](../../../../src/Meridian.ProviderSdk/IProviderInstrumentDiscoveryService.cs#L6).
+
+Provider-neutral request for discoverable instruments and contracts.
+
+```csharp
+public sealed record ProviderInstrumentDiscoveryRequest(string Query, string? AssetClass = null, string? Market = null, int? Limit = null);
+```
+
+## ProviderInstrumentDiscoveryResult
+
+Qualified name: <code>Meridian.ProviderSdk.ProviderInstrumentDiscoveryResult</code>. Kind: `record`.
+
+Source: [src/Meridian.ProviderSdk/IProviderDataReadService.cs:253](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L253).
+
+Presentation-safe instrument discovery result supplied by providers that support search.
+
+```csharp
+public sealed record ProviderInstrumentDiscoveryResult(string InstrumentId, string Symbol, string DisplayName, string? Exchange, string? AssetClass, ProviderDataProvenance Provenance)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderInstrumentDiscoveryResult(string instrumentId, string symbol, string displayName, string? exchange = null, string? assetClass = null) : this(instrumentId, symbol, displayName, exchange, assetClass, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow));</code> | [src/Meridian.ProviderSdk/IProviderDataReadService.cs:261](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L261) |  |
+
 ## ProviderMarketRule
 
 Qualified name: <code>Meridian.ProviderSdk.ProviderMarketRule</code>. Kind: `record`.
@@ -160,12 +202,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string QuotaUnit { get; init; } = &quot;requests&quot;;</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:30](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L30) | Legacy request-named counters contain this unit (requests or weighted credits). |
-| <code>public int? DailyUnitsUsed { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:31](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L31) |  |
-| <code>public int? DailyMaximum { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:32](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L32) |  |
-| <code>public DateTimeOffset? DailyResetsAt { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:33](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L33) |  |
-| <code>public string? DailyResetPolicy { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:34](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L34) |  |
-| <code>public int RemainingRequests =&gt; …;</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:36](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L36) |  |
+| <code>public bool QuotaKnown { get; init; } = true;</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:30](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L30) | True when the window represents a usable provider quota. Local safeguards may have their own limits. |
+| <code>public string QuotaUnit { get; init; } = &quot;requests&quot;;</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:33](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L33) | Legacy request-named counters contain this unit (requests or weighted credits). |
+| <code>public int? DailyUnitsUsed { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:34](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L34) |  |
+| <code>public int? DailyMaximum { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:35](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L35) |  |
+| <code>public DateTimeOffset? DailyResetsAt { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:36](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L36) |  |
+| <code>public string? DailyResetPolicy { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:37](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L37) |  |
+| <code>public int RemainingRequests =&gt; …;</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:39](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L39) |  |
 
 ## ProviderRateLimitSurfaces
 

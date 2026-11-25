@@ -4,6 +4,8 @@
 // is per browser and persisted in localStorage; storage that is blocked or holds an unknown zone
 // leaves the default in place. No React: `<TimeText>` subscribes through `subscribeDisplayTimeZone`.
 
+import { notifyOperatorPreferenceChanged } from "@/lib/operator-preference-events";
+
 export const DISPLAY_TIME_ZONE_STORAGE_KEY = "meridian.workstation.display-time-zone.v1";
 export const DEFAULT_DISPLAY_TIME_ZONE = "UTC";
 
@@ -97,7 +99,7 @@ export function getDisplayTimeZone(): string {
  * Pick the display zone and persist it for this browser. Returns false, changing nothing, when the
  * zone is not a known IANA zone. Choosing "UTC" removes the stored preference.
  */
-export function setDisplayTimeZone(zone: string): boolean {
+export function setDisplayTimeZone(zone: string, announce = true): boolean {
   const next = canonicalTimeZone(zone);
   if (next === null) {
     return false;
@@ -114,6 +116,9 @@ export function setDisplayTimeZone(zone: string): boolean {
   if (next !== getDisplayTimeZone()) {
     currentTimeZone = next;
     notify();
+  }
+  if (announce) {
+    notifyOperatorPreferenceChanged();
   }
   return true;
 }

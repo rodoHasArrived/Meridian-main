@@ -184,7 +184,14 @@ public sealed record ProviderDiscrepancy(
     string Value2,
     double Difference,
     DiscrepancySeverity Severity
-);
+)
+{
+    /// <summary>
+    /// True when the tolerance policy reports this kind of difference for information only
+    /// (for example volume in <c>Informational</c> mode). Informational discrepancies are not alerts.
+    /// </summary>
+    public bool IsInformational { get; init; }
+}
 
 /// <summary>
 /// Discrepancy severity.

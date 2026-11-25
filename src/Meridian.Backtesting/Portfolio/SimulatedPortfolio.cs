@@ -12,7 +12,7 @@ namespace Meridian.Backtesting.Portfolio;
 internal sealed partial class SimulatedPortfolio
 {
     private readonly BacktestLedger? _ledger;
-    private readonly IChartOfAccounts _chart = StandardChartOfAccounts.Instance;
+    private readonly IChartOfAccounts _chart;
     private readonly IReadOnlyDictionary<string, (SecurityLotUnitKind UnitKind, decimal Multiplier)> _lotConventions;
     private readonly string _defaultBrokerageAccountId;
     private readonly Dictionary<string, AccountState> _accounts;
@@ -23,6 +23,8 @@ internal sealed partial class SimulatedPortfolio
 
     public bool FailOnLedgerIntegrityBreak { get; init; }
     public IReadOnlyList<LedgerIntegrityBreak> LedgerIntegrityBreaks => _ledgerIntegrityBreaks.AsReadOnly();
+
+    internal Func<string, DateTimeOffset, IReadOnlyList<JournalEvidenceReference>>? MarketDataEvidence { get; set; }
 
     // Rebuilding the aggregate views walks every account, every position, and every lot. The
     // engine reads them through IBacktestContext.PortfolioValue / .Positions, so a strategy that
@@ -71,13 +73,15 @@ internal sealed partial class SimulatedPortfolio
         ArgumentException.ThrowIfNullOrWhiteSpace(defaultBrokerageAccountId);
 
         _ledger = ledger;
+        _chart = ledger?.Policy?.Chart ?? StandardChartOfAccounts.Instance;
         _lotConventions = lotConventions is null
             ? new Dictionary<string, (SecurityLotUnitKind UnitKind, decimal Multiplier)>(StringComparer.OrdinalIgnoreCase)
             : new Dictionary<string, (SecurityLotUnitKind UnitKind, decimal Multiplier)>(lotConventions, StringComparer.OrdinalIgnoreCase);
         foreach (var convention in _lotConventions.Values)
         {
-            if (convention.UnitKind is not (SecurityLotUnitKind.Shares or SecurityLotUnitKind.Units) || convention.Multiplier != 1m)
-                throw new NotSupportedException("The simulated portfolio requires share or fund-unit pricing with multiplier 1.");
+            if (convention.UnitKind is not (SecurityLotUnitKind.Shares or SecurityLotUnitKind.Units or SecurityLotUnitKind.FaceValue)
+                || convention.Multiplier != 1m)
+                throw new NotSupportedException("The simulated portfolio requires share, fund-unit, or face-value pricing with multiplier 1.");
         }
         _defaultBrokerageAccountId = defaultBrokerageAccountId.Trim();
         _accounts = accounts
@@ -112,6 +116,22 @@ internal sealed partial class SimulatedPortfolio
         }
     }
 
+    // ── Quote conventions ────────────────────────────────────────────────────
+
+    // Face-value symbols (bonds) carry quantity as face and quote prices as a clean percentage of
+    // par, matching PaperTradingPortfolio. Prices stay in quote convention everywhere they are
+    // stored (fills, lots, last prices, average cost) because OpenLot/ClosedLot already value
+    // FaceValue lots through LotQuantity's percent-of-par conversion. Every bare quantity × price
+    // money computation divides by this once: 100,000 face at 101.25 moves $101,250.
+    private decimal QuoteDivisor(string symbol)
+        => _lotConventions.TryGetValue(symbol, out var convention) ? QuoteDivisor(convention.UnitKind) : 1m;
+
+    private static decimal QuoteDivisor(SecurityLotUnitKind unitKind)
+        => unitKind == SecurityLotUnitKind.FaceValue ? 100m : 1m;
+
+    private decimal Money(string symbol, decimal quantity, decimal price)
+        => quantity * price / QuoteDivisor(symbol);
+
     // ── Price updates ────────────────────────────────────────────────────────
 
     public void UpdateLastPrice(string symbol, decimal price)
@@ -137,7 +157,7 @@ internal sealed partial class SimulatedPortfolio
 
         account.Positions.TryGetValue(symbol, out var existingQty);
 
-        if (_canonicalActions is not null && (existingQty + qty < 0 || account.Cash - qty * price - commission < 0m))
+        if (_canonicalActions is not null && (existingQty + qty < 0 || account.Cash - Money(symbol, qty, price) - commission < 0m))
             throw new FillRejectedException("Canonical raw-price replay permits long positions and fully funded fills only.");
 
         // Any sell that leaves the position net short opens short exposure, including a sell
@@ -145,7 +165,7 @@ internal sealed partial class SimulatedPortfolio
         if (qty < 0 && existingQty + qty < 0 && !account.Rules.AllowShortSelling)
             throw new FillRejectedException($"Account '{accountId}' does not permit short selling.");
 
-        var cashImpact = -(qty * price) - commission;
+        var cashImpact = -Money(symbol, qty, price) - commission;
         var projectedCash = account.Cash + cashImpact;
         if (projectedCash < 0m && !account.Rules.AllowMargin)
             throw new FillRejectedException($"Account '{accountId}' does not permit margin borrowing.");
@@ -188,7 +208,7 @@ internal sealed partial class SimulatedPortfolio
             realised = RealiseLots(account, symbol, closeQty, price, fill.FilledAt, fill.FillId, fill.TargetLotId,
                 commission * closeQty / -qty);
             account.RealizedPnl[symbol] = account.RealizedPnl.GetValueOrDefault(symbol) + realised.Value;
-            costBasisRemoved = closeQty * price - realised.Value;
+            costBasisRemoved = Money(symbol, closeQty, price) - realised.Value;
         }
 
         if (qty < 0)
@@ -241,7 +261,7 @@ internal sealed partial class SimulatedPortfolio
             account.AvgCost[symbol] = ComputeAvgCost(account, symbol);
         }
 
-        _cashFlows.Add(new TradeCashFlow(fill.FilledAt, -(qty * price), symbol, qty, price, accountId));
+        _cashFlows.Add(new TradeCashFlow(fill.FilledAt, -Money(symbol, qty, price), symbol, qty, price, accountId));
 
         if (commission > 0)
             _cashFlows.Add(new CommissionCashFlow(fill.FilledAt, -commission, symbol, fill.OrderId, accountId));
@@ -265,9 +285,9 @@ internal sealed partial class SimulatedPortfolio
         if (assetEvent.HasPositionTransformation && assetEvent.PositionFactor <= 0m)
             throw new InvalidOperationException($"Asset event factor must be positive for {symbol}.");
 
-        var authoritativeReferencePrice = assetEvent.HasPositionTransformation
+        var (authoritativeReferencePrice, referencePriceSymbol) = assetEvent.HasPositionTransformation
             ? ResolveMarketReferencePrice(assetEvent)
-            : null;
+            : (null, null);
         // Freeze every impacted account and its cash-in-lieu reference before mutating any
         // position or global mark. This prevents account iteration order from changing a later
         // account's economics; an account-specific average-cost fallback remains account-specific.
@@ -334,7 +354,8 @@ internal sealed partial class SimulatedPortfolio
                     assetEvent,
                     existingQty,
                     targetSymbol,
-                    impacted.ReferencePrice);
+                    impacted.ReferencePrice,
+                    referencePriceSymbol);
                 totalCashImpact += transformation.CashInLieu;
             }
 
@@ -435,7 +456,7 @@ internal sealed partial class SimulatedPortfolio
                 if (lastPrice <= 0)
                     continue;
 
-                var shortNotional = Math.Abs(qty) * lastPrice;
+                var shortNotional = Money(symbol, Math.Abs(qty), lastPrice);
                 var rebate = shortNotional * (decimal)(account.Rules.AnnualShortRebateRate / 365.0);
                 account.Cash += rebate;
                 _cashFlows.Add(new ShortRebateCashFlow(ts, rebate, symbol, Math.Abs(qty), account.Rules.AnnualShortRebateRate, account.Account.AccountId));
@@ -447,7 +468,11 @@ internal sealed partial class SimulatedPortfolio
                         (_chart.Resolve(LedgerAccountRole.Cash, account.Account.AccountId), Math.Max(rebate, 0m), Math.Max(-rebate, 0m)),
                         (_chart.Resolve(LedgerAccountRole.ShortRebateIncome, account.Account.AccountId), Math.Max(-rebate, 0m), Math.Max(rebate, 0m)),
                     ],
-                    BuildAccountMetadata(account, "short_rebate", symbol));
+                    BuildAccountMetadata(account, "short_rebate", symbol) with
+                    {
+                        EvidenceReferences = MarketDataEvidence?.Invoke(symbol,
+                            new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero)) ?? []
+                    });
             }
 
             // Rebates and borrow fees move cash after the margin-interest gate above, so the
@@ -563,7 +588,7 @@ internal sealed partial class SimulatedPortfolio
                 }).ToArray();
                 var remainingBasis = adjusted.Sum(static component => component.AllocatedBasis);
                 basisRelieved += lot.CostBasis() - remainingBasis;
-                node.Value = lot with { EntryPrice = remainingBasis / lot.Quantity, BasisComponents = adjusted };
+                node.Value = lot with { EntryPrice = remainingBasis / lot.Quantity * QuoteDivisor(lot.UnitKind), BasisComponents = adjusted };
             }
         }
 
@@ -575,16 +600,18 @@ internal sealed partial class SimulatedPortfolio
         {
             var accountId = account.Account.AccountId;
             var lines = new List<(LedgerAccount account, decimal debit, decimal credit)>();
+            var cashAccount = _chart.Resolve(LedgerAccountRole.Cash, accountId);
+            var securitiesAccount = _chart.Resolve(LedgerAccountRole.Securities, accountId, assetEvent.Symbol);
             if (amount > 0m)
-                lines.Add((LedgerAccounts.CashAccount(accountId), amount, 0m));
+                lines.Add((cashAccount, amount, 0m));
             else
-                lines.Add((LedgerAccounts.CashAccount(accountId), 0m, -amount));
+                lines.Add((cashAccount, 0m, -amount));
             if (basisRelieved > 0m)
-                lines.Add((LedgerAccounts.Securities(assetEvent.Symbol, accountId), 0m, basisRelieved));
+                lines.Add((securitiesAccount, 0m, basisRelieved));
             else if (basisRelieved < 0m)
-                lines.Add((LedgerAccounts.Securities(assetEvent.Symbol, accountId), -basisRelieved, 0m));
+                lines.Add((securitiesAccount, -basisRelieved, 0m));
             if (gain > 0m)
-                lines.Add((LedgerAccounts.RealizedGainFor(accountId), 0m, gain));
+                lines.Add((_chart.Resolve(LedgerAccountRole.RealizedGain, accountId), 0m, gain));
             PostInvestingLedgerLines(assetEvent.EffectiveAt, string.IsNullOrWhiteSpace(assetEvent.Description)
                     ? $"Return of capital – {assetEvent.Symbol}" : assetEvent.Description,
                 lines, BuildAssetEventMetadata(account, assetEvent, assetEvent.Symbol, null, quantity, amount, null));
@@ -597,7 +624,8 @@ internal sealed partial class SimulatedPortfolio
         AssetEvent assetEvent,
         long existingQty,
         string targetSymbol,
-        decimal? referencePriceOverride)
+        decimal? referencePriceOverride,
+        string? referencePriceSymbol)
     {
         var factor = assetEvent.PositionFactor;
         if (factor <= 0m)
@@ -668,7 +696,8 @@ internal sealed partial class SimulatedPortfolio
             retainedBasis,
             fractionalBasis,
             cashInLieu,
-            fractionalRealized);
+            fractionalRealized,
+            referencePriceSymbol);
 
         return new PositionTransformationResult(
             cashInLieu,
@@ -698,26 +727,27 @@ internal sealed partial class SimulatedPortfolio
         return existingQty == 0 ? 0m : 1m;
     }
 
-    private decimal? ResolveMarketReferencePrice(AssetEvent assetEvent)
+    private (decimal? Price, string? Symbol) ResolveMarketReferencePrice(AssetEvent assetEvent)
     {
         if (assetEvent.ReferencePrice is > 0m)
-            return assetEvent.ReferencePrice;
+            return (assetEvent.ReferencePrice, null);
 
         if (!assetEvent.DestinationSymbol.Equals(assetEvent.Symbol, StringComparison.OrdinalIgnoreCase) &&
             _lastPrices.TryGetValue(assetEvent.DestinationSymbol, out var destinationPrice) &&
             destinationPrice > 0m)
         {
-            return destinationPrice;
+            return (destinationPrice, assetEvent.DestinationSymbol);
         }
 
         if (_lastPrices.TryGetValue(assetEvent.Symbol, out var sourcePrice) && sourcePrice > 0m)
         {
-            return assetEvent.PositionFactor == 0m
+            var price = assetEvent.PositionFactor == 0m
                 ? sourcePrice
                 : sourcePrice / Math.Abs(assetEvent.PositionFactor);
+            return (price, assetEvent.Symbol);
         }
 
-        return null;
+        return (null, null);
     }
 
     private void PostAssetCashLedgerEntry(
@@ -801,7 +831,8 @@ internal sealed partial class SimulatedPortfolio
 
         return BuildAccountMetadata(account, $"asset_event_{assetEvent.EventType.ToString().ToLowerInvariant()}", symbol) with
         {
-            Tags = tags
+            Tags = tags,
+            EvidenceReferences = assetEvent.EvidenceReferences ?? []
         };
     }
 
@@ -1058,7 +1089,7 @@ internal sealed partial class SimulatedPortfolio
             LotId = lotId,
             Symbol = targetSymbol,
             Quantity = quantity,
-            EntryPrice = allocatedBasis / quantity,
+            EntryPrice = allocatedBasis / quantity * QuoteDivisor(template.UnitKind),
             OpenedAt = openedAt,
             OpenFillId = openFillId,
             Notes = BuildTransformedLotNotes(template.Notes, components),
@@ -1142,7 +1173,8 @@ internal sealed partial class SimulatedPortfolio
         decimal retainedBasis,
         decimal fractionalBasis,
         decimal cashInLieu,
-        decimal fractionalRealized)
+        decimal fractionalRealized,
+        string? referencePriceSymbol)
     {
         if (_ledger is null)
             return;
@@ -1216,11 +1248,18 @@ internal sealed partial class SimulatedPortfolio
         else if (fractionalRealized < 0m)
             lines.Add((_chart.Resolve(LedgerAccountRole.RealizedLoss, accountId), Math.Abs(fractionalRealized), 0m));
 
+        var priceEvidence = referencePriceSymbol is null
+            ? []
+            : MarketDataEvidence?.Invoke(referencePriceSymbol, assetEvent.EffectiveAt) ?? [];
         PostInvestingLedgerLines(
             assetEvent.EffectiveAt,
             $"Cash in lieu {sourceSymbol} -> {targetSymbol} – {account.Account.DisplayName}",
             lines,
-            metadata with { ActivityType = $"asset_event_{assetEvent.EventType.ToString().ToLowerInvariant()}_cash_in_lieu" });
+            metadata with
+            {
+                ActivityType = $"asset_event_{assetEvent.EventType.ToString().ToLowerInvariant()}_cash_in_lieu",
+                EvidenceReferences = metadata.EvidenceReferences.Concat(priceEvidence).Distinct().ToArray()
+            });
     }
 
     private static void MergeLots(
@@ -1283,7 +1322,10 @@ internal sealed partial class SimulatedPortfolio
         var ts = fill.FilledAt;
         var symbol = fill.Symbol;
         var accountId = account.Account.AccountId;
-        var fillMetadata = BuildAccountMetadata(account, "fill", symbol, fill.OrderId, fill.FillId);
+        var fillMetadata = BuildAccountMetadata(account, "fill", symbol, fill.OrderId, fill.FillId) with
+        {
+            EvidenceReferences = MarketDataEvidence?.Invoke(symbol, ts) ?? []
+        };
 
         var longBuyQty = qty > 0
             ? (existingQty >= 0 ? qty : Math.Max(qty + existingQty, 0L))
@@ -1295,7 +1337,7 @@ internal sealed partial class SimulatedPortfolio
                 ts,
                 $"Buy {longBuyQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
                 SecurityTradePostingProjector.Project(
-                    new(SecurityTradePostingKind.OpenLong, longBuyQty, longBuyQty * price),
+                    new(SecurityTradePostingKind.OpenLong, longBuyQty, Money(symbol, longBuyQty, price)),
                     symbol, accountId, _chart),
                 fillMetadata with { ActivityType = "buy" });
         }
@@ -1306,7 +1348,7 @@ internal sealed partial class SimulatedPortfolio
                 ts,
                 $"Sell {closeQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
                 SecurityTradePostingProjector.Project(
-                    new(SecurityTradePostingKind.CloseLong, closeQty, closeQty * price, CarryingValue: costBasisRemoved),
+                    new(SecurityTradePostingKind.CloseLong, closeQty, Money(symbol, closeQty, price), CarryingValue: costBasisRemoved),
                     symbol, accountId, _chart),
                 fillMetadata with { ActivityType = "sell" });
         }
@@ -1317,7 +1359,7 @@ internal sealed partial class SimulatedPortfolio
                 ts,
                 $"Short sell {shortOpenQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
                 SecurityTradePostingProjector.Project(
-                    new(SecurityTradePostingKind.OpenShort, shortOpenQty, shortOpenQty * price),
+                    new(SecurityTradePostingKind.OpenShort, shortOpenQty, Money(symbol, shortOpenQty, price)),
                     symbol, accountId, _chart),
                 fillMetadata with { ActivityType = "short_sell" });
         }
@@ -1329,7 +1371,7 @@ internal sealed partial class SimulatedPortfolio
                 ts,
                 $"Cover short {coverQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
                 SecurityTradePostingProjector.Project(
-                    new(SecurityTradePostingKind.CoverShort, coverQty, coverQty * price, CarryingValue: shortOriginalProceeds),
+                    new(SecurityTradePostingKind.CoverShort, coverQty, Money(symbol, coverQty, price), CarryingValue: shortOriginalProceeds),
                     symbol, accountId, _chart),
                 fillMetadata with { ActivityType = "cover_short" });
         }
@@ -1351,7 +1393,11 @@ internal sealed partial class SimulatedPortfolio
             return;
         var journalId = Guid.NewGuid();
         var draft = new JournalEntry(journalId, timestamp, description, lines.Select(line =>
-            new LedgerEntry(Guid.NewGuid(), journalId, timestamp, line.account, line.debit, line.credit, description)).ToArray(), metadata);
+            new LedgerEntry(Guid.NewGuid(), journalId, timestamp, line.account, line.debit, line.credit, description,
+                currency: _ledger.Policy?.FunctionalAmount(line.debit, line.credit))
+            {
+                ChartAccount = _ledger.Policy?.Chart.GetPostingReference(line.account)
+            }).ToArray(), metadata);
         _ledger.Post(LedgerCashFlowAttribution.WithClassifiedActivity(draft, LedgerCashFlowCategory.Investing, description));
     }
 
@@ -1456,9 +1502,9 @@ internal sealed partial class SimulatedPortfolio
             {
                 var positions = BuildPositions(account);
                 var longMv = positions.Values.Where(position => position.Quantity > 0)
-                    .Sum(position => position.NotionalValue(_lastPrices.GetValueOrDefault(position.Symbol, position.AverageCostBasis)));
+                    .Sum(position => Money(position.Symbol, position.Quantity, _lastPrices.GetValueOrDefault(position.Symbol, position.AverageCostBasis)));
                 var shortMv = positions.Values.Where(position => position.Quantity < 0)
-                    .Sum(position => position.NotionalValue(_lastPrices.GetValueOrDefault(position.Symbol, position.AverageCostBasis)));
+                    .Sum(position => Money(position.Symbol, position.Quantity, _lastPrices.GetValueOrDefault(position.Symbol, position.AverageCostBasis)));
                 var receivable = account.DividendEntitlements.Values.Sum(static entitlement => entitlement.Amount);
                 var equity = account.Cash + longMv + shortMv + receivable;
                 var openLots = account.Lots.Values
@@ -1506,7 +1552,7 @@ internal sealed partial class SimulatedPortfolio
                 openLots = Array.Empty<OpenLot>();
             var unrealised = openLots.Count > 0
                 ? openLots.Sum(lot => lot.UnrealizedPnl(lastPrice))
-                : (lastPrice - avgCost) * qty;
+                : Money(symbol, qty, lastPrice - avgCost);
             result[symbol] = new Position(symbol, qty, avgCost, unrealised, realised, openLots);
         }
 
@@ -1537,7 +1583,9 @@ internal sealed partial class SimulatedPortfolio
             totalCost += lot.CostBasis();
         }
 
-        return totalQty == 0 ? 0m : totalCost / totalQty;
+        // CostBasis is money; restate the average in the lots' quote convention (percent of par
+        // for face value) so it compares directly with fill and last prices.
+        return totalQty == 0 ? 0m : totalCost / totalQty * QuoteDivisor(lots.First!.Value.UnitKind);
     }
 
     /// <summary>
@@ -1573,14 +1621,14 @@ internal sealed partial class SimulatedPortfolio
             var quantity = (long)slice.Quantity;
             var lotBasis = lot.CostBasis();
             var basisRemoved = slice.CostBasis;
-            var closedEntryPrice = basisRemoved / quantity;
+            var closedEntryPrice = basisRemoved / quantity * QuoteDivisor(lot.UnitKind);
             var entryCommission = slice.ClosesLot
                 ? lot.EntryCommission
                 : lot.EntryCommission * quantity / lot.Quantity;
             var closeCommission = AllocateCommission(ref exitCommission, quantity, remainingCloseQty);
             remainingCloseQty -= quantity;
 
-            realised += (quantity * sellPrice) - basisRemoved;
+            realised += (quantity * sellPrice / QuoteDivisor(lot.UnitKind)) - basisRemoved;
             account.ClosedLots.Add(new ClosedLot(
                 lot.LotId, symbol, quantity, closedEntryPrice, lot.OpenedAt,
                 lot.OpenFillId, sellPrice, closedAt, closeFillId, account.Account.AccountId)
@@ -1638,13 +1686,13 @@ internal sealed partial class SimulatedPortfolio
             var lotClose = (long)slice.Quantity;
             var lotBasis = lot.CostBasis();
             var lotProceeds = slice.CostBasis;
-            var closedEntryPrice = lotProceeds / lotClose;
+            var closedEntryPrice = lotProceeds / lotClose * QuoteDivisor(lot.UnitKind);
             var entryCommission = slice.ClosesLot
                 ? lot.EntryCommission
                 : lot.EntryCommission * lotClose / lot.Quantity;
             var closeCommission = AllocateCommission(ref exitCommission, lotClose, remainingCloseQty);
             remainingCloseQty -= lotClose;
-            realised += lotProceeds - lotClose * coverPrice;
+            realised += lotProceeds - lotClose * coverPrice / QuoteDivisor(lot.UnitKind);
             shortSaleProceeds += lotProceeds;
 
             account.ClosedLots.Add(new ClosedLot(
@@ -1714,7 +1762,7 @@ internal sealed partial class SimulatedPortfolio
         return lot with
         {
             Quantity = remainingQuantity,
-            EntryPrice = remainingBasis / remainingQuantity,
+            EntryPrice = remainingBasis / remainingQuantity * QuoteDivisor(lot.UnitKind),
             BasisComponents = basisComponents,
             EntryCommission = remainingCommission
         };

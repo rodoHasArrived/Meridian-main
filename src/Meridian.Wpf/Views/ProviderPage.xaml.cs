@@ -11,6 +11,7 @@ namespace Meridian.Wpf.Views;
 public partial class ProviderPage : Page
 {
     private readonly ProviderViewModel _viewModel;
+    private CancellationTokenSource? _load;
 
     public ProviderPage(ProviderViewModel viewModel)
     {
@@ -22,9 +23,10 @@ public partial class ProviderPage : Page
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
+        _load ??= new CancellationTokenSource();
         try
         {
-            await _viewModel.StartAsync(CancellationToken.None);
+            await _viewModel.StartAsync(_load.Token);
         }
         catch (System.OperationCanceledException)
         {
@@ -41,6 +43,9 @@ public partial class ProviderPage : Page
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
+        _load?.Cancel();
+        _load?.Dispose();
+        _load = null;
         _viewModel.Stop();
     }
 }

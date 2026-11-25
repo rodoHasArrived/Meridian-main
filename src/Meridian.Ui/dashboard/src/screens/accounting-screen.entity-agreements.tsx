@@ -9,6 +9,7 @@ import { entityOperationEndpoints as endpoints } from "@/lib/api/entity-operatio
 import type { AccountingArrangementHistory, AccountingArrangementRecord, EntityOperationScope, IntercompanyAccountingArrangement } from "@/types/entity-operations";
 import { AccountingArrangementEditor, canonicalAgreementPath } from "./accounting-screen.entity-agreement-editor";
 import { IntercompanyInterestAccrual } from "./accounting-screen.entity-interest-accrual";
+import { IntercompanyManagementFeeAccrual } from "./accounting-screen.entity-management-fee";
 import { effectiveUtc, EntityOperationTable, MutationFeedback, OperationError, OperationField, today, useEntityData, useEntityMutation } from "./accounting-screen.entity-operations.shared";
 
 export function EntityAccountingArrangements({ scope }: { scope: EntityOperationScope }) {
@@ -72,6 +73,7 @@ export function EntityAccountingArrangements({ scope }: { scope: EntityOperation
     <p className="text-xs text-muted-foreground">The owner may approve accounting mappings. This records no legal approval. Counterpart journals retain their independent journal review and posting controls.</p>
     <MutationFeedback state={mutation} />
     {selected.templateKind === "LoanInterest" && !editing ? <IntercompanyInterestAccrual key={selected.arrangementId} scope={scope} arrangement={selected} arrangements={arrangements.data ?? []} /> : null}
+    {selected.templateKind === "ManagementFee" && !editing ? <IntercompanyManagementFeeAccrual key={selected.arrangementId} scope={scope} arrangement={selected} /> : null}
     <TechnicalDetails label="Canonical legal authority and accounting history"><dl className="space-y-2 break-all text-xs"><div><dt>Canonical legal agreement</dt><dd>{selected.canonicalAgreementId} · version {selected.canonicalAgreementVersion}</dd></div><div><dt>Approved legal payload hash</dt><dd className="font-mono">{selected.canonicalPayloadHash}</dd></div><div><dt>Legal effective window</dt><dd>{selected.legalRevision.terms.effectiveFrom} → {selected.legalRevision.terms.effectiveTo ?? "Open"} (exclusive)</dd></div><div><dt>Canonical legal approval</dt><dd>{selected.legalRevision.approver} · {selected.legalRevision.approvedAtUtc}</dd></div></dl>
       <ul className="mt-3 space-y-2 break-all text-xs">{selected.canonicalEvidence.map((evidence, index) => <li key={index}>{evidence.reference}<p className="font-mono">{evidence.artifactId} · {evidence.contentHash}</p></li>)}</ul>
       <OperationError error={history.error} /><ol className="mt-3 space-y-2 text-xs">{history.data?.events.map((event) => <li key={event.requestId}>{event.recordedAt} · {event.action} · {event.actor} · {event.reason ?? "Initial mapping"} · mapping revision {(event.targetRevisionSnapshot ?? event.snapshot).revisionNumber}</li>)}</ol>

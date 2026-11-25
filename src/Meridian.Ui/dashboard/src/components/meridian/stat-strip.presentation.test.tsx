@@ -18,6 +18,28 @@ describe("StatStrip", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  it("draws a sparkline only from the producer's established history and describes it for screen readers", () => {
+    render(
+      <StatStrip
+        label="Accounting headline metrics"
+        metrics={[
+          metric({ id: "open-breaks", label: "Open breaks", value: "2", historyBasis: "Rebuilt from break times.", history: [
+            { date: "2026-11-14", value: 4 }, { date: "2026-11-15", value: null }, { date: "2026-11-16", value: 3 }, { date: "2026-11-17", value: 2 }
+          ] }),
+          metric({ id: "timing", label: "Timing drift", value: "0" }),
+          metric({ id: "gappy", label: "Security gaps", value: "1", history: [{ date: "2026-11-16", value: 1 }, { date: "2026-11-17", value: null }] })
+        ]}
+      />
+    );
+
+    const strip = screen.getByLabelText("Accounting headline metrics");
+    const sparklines = strip.querySelectorAll("[data-metric-sparkline]");
+    // Only Open breaks has two established trailing days; the gap before them is not bridged.
+    expect(sparklines).toHaveLength(1);
+    expect(sparklines[0]).toHaveTextContent("Open breaks over 2 days: 3 on Nov 16, 2026, 2 on Nov 17, 2026. Earlier days could not be established from the source.");
+    expect(sparklines[0]).toHaveAttribute("title", expect.stringContaining("Rebuilt from break times."));
+  });
+
   it("drops a change that states no baseline and keeps one that does", () => {
     render(
       <StatStrip

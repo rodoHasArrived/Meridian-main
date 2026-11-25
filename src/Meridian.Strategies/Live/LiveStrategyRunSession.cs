@@ -13,6 +13,8 @@ using ExecutionSdk = Meridian.Execution.Sdk;
 using OrderType = Meridian.Backtesting.Sdk.OrderType;
 using TimeInForce = Meridian.Backtesting.Sdk.TimeInForce;
 
+using Meridian.Strategies.Live.Designer;
+
 namespace Meridian.Strategies.Live;
 
 /// <summary>
@@ -38,6 +40,7 @@ internal sealed class LiveStrategyRunSession
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly ILogger _logger;
     private readonly bool _useSynchronousFillFallback;
+    private readonly PaperRunOrderContext? _paperOrders;
     private readonly Channel<ExecutionSdk.ExecutionReport> _fillReports;
     private readonly CancellationTokenSource _stopRequested = new();
     private readonly Lock _stopSync = new();
@@ -81,7 +84,8 @@ internal sealed class LiveStrategyRunSession
         ExecutionAuditTrailService? auditTrail,
         ILogger logger,
         bool useSynchronousFillFallback,
-        int fillReportQueueCapacity)
+        int fillReportQueueCapacity,
+        PaperRunOrderContext? paperOrders = null)
     {
         _run = run;
         _strategy = strategy;
@@ -92,6 +96,7 @@ internal sealed class LiveStrategyRunSession
         _auditTrail = auditTrail;
         _logger = logger;
         _useSynchronousFillFallback = useSynchronousFillFallback;
+        _paperOrders = paperOrders;
         _metrics = new LiveRunMetricsTracker(context.PortfolioValue, DateTimeOffset.UtcNow);
         _clientOrderIdPrefix = BuildClientOrderIdPrefix(run.RunId);
         _fillReports = Channel.CreateBounded<ExecutionSdk.ExecutionReport>(new BoundedChannelOptions(fillReportQueueCapacity)
@@ -575,7 +580,15 @@ internal sealed class LiveStrategyRunSession
 
             try
             {
-                var result = await _orderManager.PlaceOrderAsync(request, ct).ConfigureAwait(false);
+                var result = _paperOrders is { } paper
+                    ? await ((ExecutionSdk.IOrderIntentSubmitter)_orderManager).SubmitIntentAsync(
+                        new ExecutionSdk.OrderIntent(order.OrderId, paper.TenantId, paper.CompanyId, paper.AccountId,
+                            ActorId, request, paper.Authority), ct).ConfigureAwait(false)
+                    : await SubmitRunOrderAsync(request, ct).ConfigureAwait(false);
+                if (result.IntentStatus is ExecutionSdk.OrderIntentStatus.ReconciliationRequired or
+                        ExecutionSdk.OrderIntentStatus.Conflict)
+                    throw new InvalidOperationException(result.ErrorMessage ?? "The strategy order requires reconciliation.");
+
                 if (result.RequiresApproval)
                 {
                     // Parked for governed approval, not rejected: the order can still be
@@ -635,7 +648,7 @@ internal sealed class LiveStrategyRunSession
                 // durably accounted. This is a run failure, not an ordinary submit rejection.
                 throw;
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex) when (ex is not OperationCanceledException && _paperOrders is null)
             {
                 _logger.LogError(ex,
                     "Run {RunId} order {ClientOrderId} for {Symbol} could not be submitted.",
@@ -920,6 +933,22 @@ internal sealed class LiveStrategyRunSession
         }
     }
 
+    /// <summary>
+    /// Submits a strategy order under the run's typed authority: the run id and the run's retained
+    /// fund account, which the OMS checks against the run's live promotion. A run without a fund
+    /// account (paper only; live runs are refused one at launch) keeps the untyped path.
+    /// </summary>
+    private Task<ExecutionSdk.OrderResult> SubmitRunOrderAsync(ExecutionSdk.OrderRequest request, CancellationToken ct)
+    {
+        if (_run.FundAccountId is not { } fundAccountId || fundAccountId == Guid.Empty)
+            return _orderManager.PlaceOrderAsync(request, ct);
+
+        var grant = new ExecutionSdk.ExecutionAccountGrant(
+            fundAccountId, ActorId, ExecutionSdk.ExecutionAccountGrantSources.StrategyRun, DateTimeOffset.UtcNow);
+        var authority = ExecutionSdk.OrderSubmissionAuthority.ForStrategyRun(ActorId, grant, _run.RunId, _run.StrategyArtifactId);
+        return _orderManager.SubmitAsync(new ExecutionSdk.OrderSubmitCommand(request, authority), ct);
+    }
+
     private ExecutionSdk.OrderRequest MapOrder(Order order, string clientOrderId) => new()
     {
         Symbol = order.Symbol,
@@ -1136,6 +1165,18 @@ internal sealed class LiveStrategyRunSession
             }
         }
 
+        if (completeRun && faulted is null)
+        {
+            try
+            {
+                await ReconcilePaperSessionAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                faulted = CombineFailures(faulted, ex);
+            }
+        }
+
         BacktestResult? metrics = null;
         if (canBuildMetrics && (completeRun || faulted is not null))
         {
@@ -1206,6 +1247,8 @@ internal sealed class LiveStrategyRunSession
 
         try
         {
+            if (faulted is null)
+                await ReconcilePaperSessionAsync().ConfigureAwait(false);
             metrics = BuildMetrics();
         }
         catch (Exception ex)
@@ -1215,6 +1258,21 @@ internal sealed class LiveStrategyRunSession
 
         return await RecordTerminalRunStateAsync(faulted, metrics, _completedCleanupTransition, _suspensionEvidenceFailure).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Run '{_run.RunId}' operator completion produced no retained receipt.");
+    }
+
+    private async Task ReconcilePaperSessionAsync()
+    {
+        if (_paperOrders is not { } paper)
+            return;
+
+        if (_orderManager.GetOpenOrders().Any(order => order.RunId == paper.Authority.RunId))
+            throw new InvalidOperationException("The paper run has working orders that require reconciliation before completion.");
+
+        var sessionId = paper.Authority.PaperSessionId;
+        await paper.Sessions.CloseSessionAsync(sessionId, CancellationToken.None).ConfigureAwait(false);
+        var verification = await paper.Sessions.VerifyReplayAsync(sessionId, CancellationToken.None).ConfigureAwait(false);
+        if (verification is not { IsConsistent: true, ReplaySource: "DurableFillLog" })
+            throw new InvalidOperationException("The retained paper session could not be reconciled from its durable fills.");
     }
 
     private BacktestResult BuildMetrics() => _metrics.Build(

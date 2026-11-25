@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { AccountingPeriodComparison } from "./accounting-period-comparison";
 import type { PostedPeriodComparison } from "@/lib/posted-period-comparison-api";
@@ -71,4 +71,58 @@ it("hides previous-book comparison data immediately and ignores delayed response
   await act(async () => finish(fixture()));
   expect(screen.queryByText("9,007,199,254,740,993.12")).not.toBeInTheDocument();
   expect(screen.getByText("Current scope has no prior period.")).toBeInTheDocument();
+});
+
+function closingFixture(): PostedPeriodComparison {
+  const base = fixture();
+  return { ...base, measure: "ClosingBalances",
+    baseline: { ...base.baseline!, rangeEnd: "2026-10-31", isPartial: false },
+    lines: [{ ...base.lines[0], currentBalance: "165.00", priorBalance: "140.00", change: "25.00", percentChange: "17.857" }] };
+}
+
+it("asks for closing balances, labels them as balances and keeps its own URL state", async () => {
+  const service = vi.fn().mockResolvedValue(closingFixture());
+  render(<MemoryRouter initialEntries={["/accounting/ledger?comparison=prior"]}><AccountingPeriodComparison measure="ClosingBalances" bookId="book-a" periodId="period-a" periodOptions={options} service={service} /><Route /></MemoryRouter>);
+  // The movement comparison's open state does not open the balance comparison.
+  expect(service).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Closing balances vs prior close" }));
+  expect(screen.getByLabelText("Current route")).toHaveTextContent("comparison=closing");
+  const table = await screen.findByRole("table", { name: "Posted closing balance comparison" });
+  expect(service).toHaveBeenCalledWith(expect.objectContaining({ measure: "ClosingBalances" }), expect.anything());
+  expect(table).toHaveTextContent("Current closing balance · USD");
+  expect(table).toHaveTextContent("Prior closing balance · USD");
+  expect(table).not.toHaveTextContent("movement");
+  expect(screen.getByText(/Balances at 2026-11-11 and 2026-10-31/)).toBeInTheDocument();
+  expect(screen.getByText(/Cumulative closing balances/)).toBeInTheDocument();
+});
+
+it("never shows movements under a closing-balance heading", async () => {
+  // A host that ignores the measure answers with movements; the panel refuses rather than relabels.
+  const service = vi.fn().mockResolvedValue({ ...fixture(), measure: undefined });
+  render(<MemoryRouter initialEntries={["/accounting/trial-balance?comparison=closing"]}><AccountingPeriodComparison measure="ClosingBalances" bookId="book-a" periodId="period-a" periodOptions={options} service={service} /></MemoryRouter>);
+  await screen.findByText(/does not match the requested comparison measure/);
+  expect(screen.queryByRole("table", { name: "Posted closing balance comparison" })).not.toBeInTheDocument();
+});
+
+it("leaves movement requests unchanged for hosts that predate the measure", async () => {
+  const service = vi.fn().mockResolvedValue(fixture());
+  render(<MemoryRouter initialEntries={["/accounting/ledger?comparison=prior"]}><AccountingPeriodComparison bookId="book-a" periodId="period-a" periodOptions={options} service={service} /></MemoryRouter>);
+  await screen.findByRole("table", { name: "Posted period account comparison" });
+  expect(service.mock.calls[0][0]).not.toHaveProperty("measure");
+});
+
+it("marks variances past the Accounting materiality threshold and leaves smaller ones plain", async () => {
+  const line = fixture().lines[0]!;
+  const service = vi.fn().mockResolvedValue({ ...fixture(), lines: [
+    { ...line, accountKey: "fees", accountName: "Fees", currentBalance: "-50000.00", priorBalance: "-200000.00", change: "150000.00", percentChange: "75.00" },
+    { ...line, accountKey: "cash", accountName: "Cash", currentBalance: "1000.00", priorBalance: "900.00", change: "100.00", percentChange: "11.11" }
+  ] });
+  render(<MemoryRouter initialEntries={["/accounting/trial-balance?comparison=prior"]}><AccountingPeriodComparison bookId="book-a" periodId="period-a" periodOptions={options} service={service} /></MemoryRouter>);
+  const table = await screen.findByRole("table", { name: "Posted period account comparison" });
+  const fees = within(table).getByRole("row", { name: /Fees/ });
+  expect(fees.querySelector("[data-variance-material]")).not.toBeNull();
+  expect(within(fees).getByText("Material")).toHaveAttribute("title", expect.stringMatching(/\$100,000/));
+  expect(fees).toHaveTextContent("75.00%");
+  expect(within(table).getByRole("row", { name: /Cash/ }).querySelector("[data-variance-material]")).toBeNull();
+  expect(screen.getByText(/Variances over \$100,000 are marked Material/)).toBeInTheDocument();
 });

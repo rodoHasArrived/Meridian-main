@@ -12,7 +12,7 @@ from unittest.mock import patch
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "dev" / "desktop_screen_blueprint_checklist.py"
-CHECKLIST_PATH = REPO_ROOT / "docs" / "plans" / "desktop-workstation-screen-blueprint.checklist.json"
+CHECKLIST_PATH = REPO_ROOT / "docs" / "engineering" / "plans" / "desktop-workstation-screen-blueprint.checklist.json"
 WORKFLOWS_PATH = REPO_ROOT / "scripts" / "dev" / "desktop-workflows.json"
 
 

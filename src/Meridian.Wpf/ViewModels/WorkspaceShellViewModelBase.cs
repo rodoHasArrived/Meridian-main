@@ -119,7 +119,7 @@ public sealed class WorkspaceAttentionRibbonViewModel : BindableBase
 
     public DateTimeOffset Timestamp { get; }
 
-    public string TimestampText => FormatHelpers.FormatUtcTimestamp(Timestamp);
+    public string TimestampText => FormatHelpers.FormatDisplayTimestamp(Timestamp);
 
     public string SummaryWithTimestamp => $"{SummaryText} Updated {TimestampText}.";
 

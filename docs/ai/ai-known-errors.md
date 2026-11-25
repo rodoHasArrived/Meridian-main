@@ -58,6 +58,15 @@ label alone will update this file.
 
 ## Known issues
 
+### AI-20261118-unbound-ledger-transitional
+- **Area**: runtime/accounting/ledger
+- **Symptoms**: A new posting path accepts an invented account (for example `new LedgerAccount("Plug", Asset)`) or posts lines with no currency, and nothing fails until a report or reconciliation disagrees.
+- **Root cause**: `new Ledger()` creates an unbound ledger that accepts any account and currency-less lines for legacy fund, partnership, consolidation, lending and workbench callers.
+- **Prevention checklist**: (1) Create new posting ledgers with `new Ledger(LedgerPolicy.Trading(currency))` or another `LedgerPolicy`. (2) Resolve every account through `IChartOfAccounts.Resolve`; add a `LedgerAccountRole` instead of constructing a `LedgerAccount`. (3) When building `LedgerEntry` lines directly for a bound ledger, pass `ledger.Policy.FunctionalAmount(debit, credit)` as the currency. (4) Do not add constructor-time balance checks to `JournalEntry`: reporting builds deliberately partial journal slices.
+- **Verification commands**: `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --filter "FullyQualifiedName~LedgerPolicyStrictnessTests|FullyQualifiedName~FileLedgerJournalLogTests"`.
+- **Source issue**: Durable, strictly validated ledger work; no external issue created.
+- **Status**: mitigated
+
 ### AI-20261114-configured-loan-policy-pin
 - **Area**: runtime/accounting/direct-lending
 - **Symptoms**: Configured loan journals used a global default policy instead of the selected book's custom policy and were rejected by the authoritative book guard.

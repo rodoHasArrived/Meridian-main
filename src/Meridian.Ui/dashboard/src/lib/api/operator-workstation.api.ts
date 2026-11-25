@@ -1,6 +1,7 @@
 /**
  * Client functions for the operator-scoped workstation seams added in Phase 3: the shared
- * cross-screen counts (A3), the operator's default scope (C1) and surface visits (C3).
+ * cross-screen counts (A3), the operator's default scope (C1), surface visits (C3) and
+ * presentation preferences.
  *
  * Thin wrappers over the shared workstation API client so errors, aborts and no-host fixture
  * semantics stay aligned with the rest of the dashboard.
@@ -10,6 +11,7 @@ import { apiGetJson, apiPostJson, apiPutJson, type ApiRequestOptions } from "@/l
 import { UI_API_ROUTES } from "@/lib/ui-api-routes.generated";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
+import type { OperatorPreferences, OperatorPreferenceValues } from "@/types/operator-preferences";
 import type { OperatingScopeValues, OperatorScopePreference } from "@/types/operator-scope-preference";
 import type { OperatorSurfaceVisit } from "@/types/operator-surface-visit";
 
@@ -37,6 +39,16 @@ export function getOperatorScopePreference(options: ApiRequestOptions = {}) {
 /** Saves (or, with null, clears) the signed-in operator's default operating scope. */
 export function saveOperatorScopePreference(defaultScope: OperatingScopeValues | null, options: ApiRequestOptions = {}) {
   return apiPutJson<OperatorScopePreference>(UI_API_ROUTES.WorkstationOperatorScopePreference, { defaultScope }, options);
+}
+
+/** The signed-in operator's presentation preferences (theme, density, time zone, descriptions, shortcuts). */
+export function getOperatorPreferences(options: ApiRequestOptions = {}) {
+  return apiGetJson<OperatorPreferences>(UI_API_ROUTES.WorkstationOperatorPreferences, options);
+}
+
+/** Replaces (or, with null, clears) the signed-in operator's presentation preferences. */
+export function saveOperatorPreferences(preferences: OperatorPreferenceValues | null, options: ApiRequestOptions = {}) {
+  return apiPutJson<OperatorPreferences>(UI_API_ROUTES.WorkstationOperatorPreferences, { preferences }, options);
 }
 
 /** The signed-in operator's last visit to a surface, without recording one (C3). */

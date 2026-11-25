@@ -56,7 +56,7 @@ public sealed class ProviderRuntimeCredentialMutationGuard(ConfigStore configSto
             var binding = (before.ProviderConnections?.RuntimeCredentials ?? []).SingleOrDefault(value => SameProvider(value.ProviderId, providerId));
             if (selectHost)
             {
-                ProviderRuntimeCredentialService.RequireScope(before, providerId, selectionConnectionId!, selectionTenantId!);
+                ProviderRuntimeCredentialService.RequireHostSelectionScope(before, providerId, selectionConnectionId!, selectionTenantId!);
                 if (binding is not null && binding.TenantId != selectionTenantId)
                     throw new UnauthorizedAccessException("Runtime credential ownership belongs to another tenant.");
             }

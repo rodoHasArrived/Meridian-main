@@ -217,7 +217,9 @@ public sealed partial class IntercompanyInterestAccrualWorkspace : ObservableObj
             + $"Intercompany transaction {evidence.TransactionId}\nLegal agreement {evidence.AgreementId:D} version {evidence.PostingAgreementVersion}\n"
             + $"Posting mapping revision {evidence.PostingArrangementRevisionId:D}\n"
             + $"Opening posted principal {IntercompanyExactAmount.Text(evidence.Principal.OpeningPrincipal)} from {evidence.Principal.OpeningJournalCount} posted journal(s); {evidence.Principal.Movements.Count} movement(s) inside the window"
-            + string.Concat(computation.Calendars.Select(calendar => $"\nCalendar {calendar.CalendarId} {calendar.ContentHash}"));
+            + string.Concat(computation.Calendars.Select(calendar => $"\nCalendar {calendar.CalendarId} {calendar.ContentHash}"))
+            + string.Concat(computation.Slices.Select(slice => slice.Fixing).OfType<IntercompanyAccrualFixingPinDto>().DistinctBy(pin => pin.FixingId)
+                .Select(pin => $"\nApproved {pin.IndexReference} fixing {pin.FixingDate:yyyy-MM-dd} ({pin.FixingLagBusinessDays} business days before its period) {IntercompanyExactAmount.Text(pin.IndexRate)} · value {pin.ValueDigest}"));
         StatusText = CanManageLedger
             ? "Preview ready. Review the slices and proposed lines, then create the draft. Nothing is approved or posted from here."
             : "Preview ready. Creating the draft requires ledger management permission.";
@@ -328,7 +330,13 @@ public sealed class IntercompanyInterestAccrualSliceRow(IntercompanyAccrualSlice
 {
     public string Days => $"{slice.From:yyyy-MM-dd} up to {slice.To:yyyy-MM-dd}";
     public string Principal => IntercompanyExactAmount.Text(slice.Principal);
+    /// <summary>Posted accrued interest added at the period start (rule v3), or "Simple".</summary>
+    public string CompoundedInterest => slice.CompoundedInterest is { } compounded ? IntercompanyExactAmount.Text(compounded) : "Simple";
     public string AnnualRate => IntercompanyExactAmount.Text(slice.AnnualRate);
+    /// <summary>The approved fixing that set a floating slice's rate (rule v2), or "Fixed".</summary>
+    public string Fixing => slice.Fixing is { } pin
+        ? $"{pin.IndexReference} {pin.FixingDate:yyyy-MM-dd} · {IntercompanyExactAmount.Text(pin.IndexRate)} + {IntercompanyExactAmount.Text(pin.SpreadBps)} bps"
+        : "Fixed";
     public string DayCount => $"{slice.DayCount} · {IntercompanyExactAmount.Text(slice.YearFraction)}";
     public string UnroundedAmount => IntercompanyExactAmount.Text(slice.UnroundedAmount);
     public string Authority => $"Legal version {slice.AgreementVersion} · mapping revision {slice.AccountingArrangementRevisionId:D}";

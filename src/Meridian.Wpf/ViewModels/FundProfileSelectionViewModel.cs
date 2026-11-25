@@ -108,7 +108,7 @@ public sealed class FundProfileSelectionViewModel : BindableBase
     public string SelectedContextLastOpenedText =>
         SelectedOperatingContext?.LastOpenedAt is null
             ? "No previous session"
-            : $"Last opened {UtcFormat.FormatUtcTimestamp(SelectedOperatingContext.LastOpenedAt.Value)}";
+            : $"Last opened {UtcFormat.FormatDisplayTimestamp(SelectedOperatingContext.LastOpenedAt.Value)}";
 
     public string SelectedContextScopeText =>
         SelectedOperatingContext is null ? "-" : SelectedOperatingContext.ScopeKind.ToDisplayName();
@@ -148,7 +148,7 @@ public sealed class FundProfileSelectionViewModel : BindableBase
     public string SelectedProfileLastOpenedText =>
         SelectedProfile?.LastOpenedAt is null
             ? "No previous session"
-            : $"Last opened {UtcFormat.FormatUtcTimestamp(SelectedProfile.LastOpenedAt.Value)}";
+            : $"Last opened {UtcFormat.FormatDisplayTimestamp(SelectedProfile.LastOpenedAt.Value)}";
 
     public string NewProfileName
     {

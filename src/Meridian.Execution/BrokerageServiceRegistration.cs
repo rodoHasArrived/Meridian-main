@@ -75,42 +75,9 @@ public static class BrokerageServiceRegistration
             return new OmsGovernedBrokerageOrderGateway(adapter);
         });
 
-        // Register the OMS with the resolved gateway
+        // Register the OMS with the resolved gateway. Both hosts compose it through the factory.
         services.TryAddSingleton<IOrderManager>(sp =>
-        {
-            var gateway = sp.GetRequiredService<IExecutionGateway>();
-            var logger = sp.GetRequiredService<ILogger<OrderManagementSystem>>();
-            var riskValidator = sp.GetService<IRiskValidator>();
-            var securityMasterGate = sp.GetService<ISecurityMasterGate>();
-            var operatorControls = sp.GetService<ExecutionOperatorControlService>();
-            var auditTrail = sp.GetService<ExecutionAuditTrailService>();
-            var portfolioState = sp.GetService<Meridian.Execution.Models.IPortfolioState>();
-            var brokerageConfiguration = sp.GetRequiredService<BrokerageConfiguration>();
-            var liveOrderReadinessGate = sp.GetService<ILiveOrderReadinessGate>();
-            var orderManagementOptions = sp.GetService<OrderManagementSystemOptions>();
-
-            return new OrderManagementSystem(
-                gateway,
-                logger,
-                riskValidator,
-                securityMasterGate,
-                operatorControls,
-                auditTrail,
-                portfolioState,
-                brokerageConfiguration: brokerageConfiguration,
-                liveOrderReadinessGate: liveOrderReadinessGate,
-                options: orderManagementOptions,
-                tradeEventPublisher: sp.GetService<ITradeEventPublisher>(),
-                tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>(),
-                escalationQueue: sp.GetService<RiskEscalationQueueService>(),
-                // Every brokerage-backed OMS must retain dispatch identities before routing,
-                // including a broker's sandbox. In-process paper execution needs no broker recovery file.
-                recoveryStore: gateway is IBrokerageGateway ? sp.GetRequiredService<FileBrokerageOrderRecoveryStore>() : null,
-                sessionPolicy: sp.GetService<IOrderSessionPolicy>(),
-                journal: sp.GetService<ExecutionJournal>(),
-                marketReferences: sp.GetService<IOrderMarketReferenceSource>(),
-                instrumentCoverage: sp.GetService<IOrderInstrumentCoverageSource>());
-        });
+            OrderManagementSystemFactory.Create(sp, OrderManagementSystemComposition.BrokerageExecution));
 
         services.TryAddSingleton<BrokerageExecutionReconciliationService>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, OrderManagementHostedService>());

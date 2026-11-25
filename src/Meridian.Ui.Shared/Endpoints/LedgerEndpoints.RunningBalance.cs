@@ -219,7 +219,7 @@ public static partial class LedgerEndpoints
 
     // Same precedence the journal-entry DTOs and the period trial balance use for a line:
     // line dimensions, then line-scoped metadata tags, then the entry's own.
-    private static LedgerDimensionSetDto? ResolveLineDimensions(LedgerJournalEntryRecord record, LedgerEntry line)
+    internal static LedgerDimensionSetDto? ResolveLineDimensions(LedgerJournalEntryRecord record, LedgerEntry line)
         => BuildDimensions(line.Dimensions)
            ?? BuildDimensions(record.Entry.Metadata, line.EntryId)
            ?? BuildDimensions(record.Entry.Metadata);

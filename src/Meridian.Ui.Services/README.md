@@ -43,6 +43,10 @@ must retain the requested organization/entity/as-of or consolidation scope. Its 
 drafts through existing workbench and lifecycle routes; the authenticated host resolves actor and
 tenant authority. Refused, stale and unavailable responses never produce local success.
 
+`Services/Accounting/WorkstationFiscalYearCloseApiClient` reads the governed fiscal-year close plan
+for one book and year. It refuses a plan for another book or year, and a "ready" plan without a
+hash or with blockers; workstations present the server's sections and never recompute balances.
+
 The shared entity/consolidation API client supplies authorized organization/entity/book/period
 choices, entity timeline and consolidation preview/draft operations to WPF. Requests preserve host
 scope and server-calculated capabilities; no workstation client derives financial truth locally.
@@ -53,6 +57,21 @@ tenant-scoped registry and advisory journal-line routes. The workspace retains u
 input, server capabilities, exact approved versions, evidence and review history without duplicating
 agreement authority in the desktop client. Source-line responses verify agreement/book/date identity
 and retain exact amount strings. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
+`IntercompanyManagementFeeWorkspace` is the desktop state for fixed management fees over the client's fee
+preview and draft calls; the agreement workspace carries the fixed-fee basis. See
+[governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
+`IntercompanyRateFixingWorkspace` is the desktop state for reviewed fixings over the client's
+list, propose and decide calls; the agreement workspace carries the fixing lag and accrual slices
+name their pinned fixing. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
+`IntercompanyBalanceConfirmationWorkspace` is the desktop state for reciprocal balance confirmation
+over the client's exact-decimal confirmation reads and actions; a refused action keeps its request
+identity only for an identical retry. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
+The interest accrual workspace shows each slice's compounded interest for rule v3 previews. See
+[periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
 
 `IntercompanyCounterpartQueueWorkspace` is the desktop state for counterpart delivery records and
 booking breaks over the same `/api/ledger/intercompany/proposals` and `/breaks` routes as the
@@ -73,6 +92,16 @@ book or computation is refused. It never approves or posts. The book is chosen f
 `/api/ledger/intercompany-accounting-arrangements` read, and the principal choices are the Loan
 profiles of the same legal agreement. The lists only fill the selection; the server still
 authorizes every identifier, and a profile read for a book no longer chosen is ignored.
+
+`IntercompanyAccrualScheduleWorkspace` is the desktop state for opt-in, reviewed accrual schedules
+over `/api/ledger/intercompany/accrual-schedules*`, the routes the browser uses. Choosing a book
+lists its schedules and, for ledger managers, the LoanInterest profiles and same-agreement Loan
+principal profiles to propose one with a reason. A selected schedule is approved, rejected or
+disabled (reject and disable need a reason) against its exact version; due periods are previewed
+as of today's UTC date and an active schedule can be run now. Schedules only draft for ordinary
+review; nothing posts, and the server refuses approval by the proposer. A request identity is
+reused only for an identical retry, read-only operators get no mutation commands, and responses
+for another book, schedule, date or request are refused.
 
 `WorkstationOnboardingApiClient` and `OnboardingShadowWorkspace` bring shadow-mode onboarding
 (W11-SHADOW-001) to the desktop over the browser's onboarding routes. The panel covers:
@@ -119,10 +148,51 @@ omits (QuickBooks, Plaid, IB Flex). Verification treats a successful `NotRequire
 Removal accepts `Missing`, or `NotRequired` with an explicit `NotRequired` credential source;
 a missing or default source cannot confirm a `NotRequired` result.
 `providerWideOnly: true` reads provider-wide records only, without the tenant's connection credentials.
+`OAuthRefreshService` refreshes tokens through the host's `ICredentialService`; the shared
+`CredentialService` is a no-op test and fallback base that never yields a token. Provider ids come
+from the host's `OAuthTokenResourcePrefix` (WPF: `Meridian.OAuth.<provider>`), and `.refresh`
+companion entries are skipped. The WPF host starts the service after desktop activation and disposes
+it on exit. `TimeSeriesAlignmentService` reports an HTTP 501 as `IsServiceUnavailable` so callers can
+present alignment as unavailable rather than as a failed run.
 Provider IDs use the shared ProviderSdk identity map for request paths, mutation acknowledgements,
 status joins and catalog deduplication. Aliases resolve to one canonical status row and retain the
 service field schema; ambiguous duplicate service rows remain unavailable. Status projections retain
 verification state and timestamp so callers can distinguish configured from verified credentials.
+
+`DesktopOperatorPreferenceSync` keeps the desktop theme, density and keyboard shortcut overrides in
+step with the operator's host preferences (`/api/workstation/operator/preferences`, the set the browser workstation syncs).
+`DesktopOperatorPreferenceMapping` maps the shared vocabulary to `AppTheme` and `ShellDensityMode`:
+`default` and `spacious` both show as Standard, and a desktop Standard save keeps a stored
+`spacious`. On start the host values are applied and nothing is saved, because the desktop does not
+persist its theme and its startup theme is a default rather than a choice. An operator change on the
+desktop re-reads the host set and saves it with only appearance and density replaced, so the time
+zone, page-descriptions setting and browser shortcut overrides are kept. Desktop shortcut overrides
+travel as `DesktopKeyBindings`: a host set (an empty set included) replaces this desktop's at start;
+when the host has none yet, this desktop's own overrides are saved up to seed it; and an operator
+rebind, toggle or reset saves only that set. `ToHostShortcuts`, `ToDesktopShortcuts` and
+`SameShortcuts` map and compare the two forms. Notification choices travel as `Notifications`: a host
+set replaces the desktop's `NotificationSettings` at start (unset values take the defaults; the sound
+choice stays desktop-only), and a desktop change saves only that set (`ToNotificationSettings`,
+`ToHostNotifications`).
+
+`NotificationServiceBase` judges quiet hours with `QuietHours.IsActive` against its `TimeProvider`
+and the shared `DisplayTimeZone`, so the window is wall-clock time in the operator's display zone; a
+window ending earlier than it starts runs past midnight, the end minute is not quiet, and equal times
+never hold anything. `IsQuietHoursNow` exposes the state, `UpdateSettings` raises `SettingsChanged`,
+and `NotificationSettings.Copy()` builds a change without editing the settings in use. A host that cannot be read at
+start leaves the desktop local for the run; a failed save keeps the local change and the next change
+retries. The display time zone is resolved with this machine's zone data at start and again whenever
+the desktop saves, and applied to the shared `DisplayTimeZone` (UTC when unset or unknown here).
+`OperatorPreferencesApiClient` is the HTTP client and `IDesktopPreferenceSurface` the seam the WPF
+shell implements.
+
+`FormatHelpers.FormatDisplayTimestamp` (with `DateTime`, nullable and `FormatDisplayTimeRange`
+overloads) formats an instant in `DisplayTimeZone.Current`. In UTC the label is exactly the
+`FormatUtcTimestamp` form ("2026-07-05 12:00 UTC"); in any other zone the local time carries its
+offset for that instant ("2026-07-05 13:00 UTC+01:00"), so a zone that is at +00:00 for part of the
+year is never labelled UTC. `TryParseDisplayTimestamp` reads either form back to UTC. Display only:
+stored, audit and ledger values are unchanged. `DisplayTimestampTests` set the process-wide zone and
+run in a serial test collection.
 
 `DesktopShellPreferences` holds the desktop shell density and the operator's keyboard shortcut
 overrides (`ShortcutOverrides`, keyed by action id, with keys and modifiers stored as WPF enum
@@ -168,6 +238,12 @@ pre-cancelled and pending requests; caller cancellation is honored without waiti
 Provider health caches and history use ProviderSdk canonical family identities so accepted
 configuration and telemetry aliases address the same health row.
 
+
+`Services/Comparisons/PeriodComparisonProjection.cs` formats any `PeriodComparisonDto` for the
+desktop exactly as the browser comparison panel does: two-place amounts with negatives in
+parentheses, whole counts, the server's percent (never recomputed), "Not comparable · prior zero",
+and the Portfolio materiality threshold. `PeriodComparisonApiClient` reads the portfolio cash ladder
+comparison over `UiApiRoutes.PortfolioCashLadderComparison`.
 
 `Services/Accounting/AccountingProjectionQueryService.cs` exposes shared accounting close projections for desktop and browser surfaces: trial balance, dimension-scoped roll-forward, source-linked audit rows, and close-state evidence gates.
 
@@ -266,6 +342,15 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 <!-- source-todos:begin module=SRC-UI-SERVICES -->
 - No registry-backed TODOs are open for this module.
 <!-- source-todos:end -->
+
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+`IntercompanyCounterpartQueueWorkspace` loads `TargetJournalChoices` from the counterpart-candidate read when the
+target book changes and exposes `OpenTargetJournalCommand` through a host-supplied `JournalOpener`.
+`IntercompanyBalanceConfirmationWorkspace.ClosePolicy` shows the book's confirmation close policy and proposes,
+approves, rejects or disables it over `/api/ledger/intercompany/confirmation-close-policies`; an unreadable policy is
+reported, never shown as none. The matching `WorkstationIntercompanyAgreementApiClient` partials check that each
+response belongs to the requested proposal, book and request.
 
 ## Validation
 

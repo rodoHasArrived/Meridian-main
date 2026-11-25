@@ -7,10 +7,10 @@ const settingsTasks = [
   {
     id: "preferences",
     title: "Personalize my workstation",
-    description: "Choose theme and information density for this browser.",
+    description: "Choose theme and information density; they follow you across browsers and the desktop app.",
     href: WORKSTATION_ROUTE_CATALOG.settingsPreferences,
     actionLabel: "Open Preferences",
-    status: "Browser preferences"
+    status: "Operator preferences"
   },
   {
     id: "access",
@@ -56,13 +56,13 @@ export function SettingsTaskChooser({ viewModel }: { viewModel: SettingsScreenVi
     providers: {
       status: providerReady ? "ready" : "review", state: providerReady ? "Verified" : connections.length > 0 ? "Review connections" : "Setup needed",
       detail: connections.length > 0
-        ? `${connections.filter((row) => row.readinessLabel === "Ready").length} of ${connections.length} loaded connections ready. ${connections.find((row) => row.readinessLabel !== "Ready")?.recommendedAction ?? "Current verification evidence is available."}`
+        ? `${connections.filter((row) => row.readinessLabel === "Ready").length} of ${connections.length} provider connections pass setup checks. ${connections.find((row) => row.readinessLabel !== "Ready")?.recommendedAction ?? "Current verification evidence is available."}`
         : "No verified provider evidence is loaded. Open Provider Connections to configure or inspect a connection."
     },
     "accounting-systems": {
       status: accountingReady ? "ready" : "review", state: accountingReady ? "Verified" : "Review setup",
       detail: accounting.length > 0
-        ? `${accounting.filter((row) => row.readinessLabel === "Ready").length} of ${accounting.length} loaded accounting connections ready.`
+        ? `${accounting.filter((row) => row.readinessLabel === "Ready").length} of ${accounting.length} accounting connections pass setup checks.`
         : "Accounting connection evidence is not loaded here. Review systems and mappings if this workspace uses external accounting."
     },
     access: {

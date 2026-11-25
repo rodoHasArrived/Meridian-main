@@ -1,3 +1,5 @@
+using Meridian.Contracts.Configuration;
+
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
@@ -47,6 +49,8 @@ public sealed record UpsertProviderModuleRequest(
 /// <summary>Result from a create/update/remove operation.</summary>
 public sealed record ProviderModuleSetupResult(bool Success, string? Error = null)
 {
+    public ConfigurationChangeStatus? ChangeStatus { get; init; }
+
     public static ProviderModuleSetupResult Ok() => new(true);
     public static ProviderModuleSetupResult Fail(string error) => new(false, error);
 }

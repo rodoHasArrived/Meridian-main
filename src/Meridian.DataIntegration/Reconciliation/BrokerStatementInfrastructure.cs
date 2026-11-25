@@ -361,14 +361,18 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
     // accepted optional suffix must stay a prefix-compatible superset of what that writer emits, in
     // the same order. Widening here keeps narrower artifacts written before a column was added
     // structurally recognizable. Financial rows nevertheless require explicit currency evidence;
-    // a legacy prefix without currency is refused instead of defaulting to USD. Only the first
-    // four are carried onto CanonicalStatementRow; the remainder are artifact-level provenance that
-    // reconciliation does not consume, and are tolerated rather than mapped.
+    // a legacy prefix without currency is refused instead of defaulting to USD. Receipt linkage
+    // and explicit allocation metadata are retained on the canonical row, alongside monetary
+    // evidence. New metadata columns append to the existing suffix; absent values are omitted
+    // from serialized rows so retained legacy import hashes do not change.
     private static readonly string[] OptionalCanonicalColumns =
     [
         "settlementDate", "currency", "feesCommission", "externalTransactionId", "activityCategory",
-        "activitySubtype", "providerActivityCode", "relatedTransactionId", "orderId", "description"
+        "activitySubtype", "providerActivityCode", "relatedTransactionId", "orderId", "description",
+        "marketValue", "accruedInterest", "securityId", "receiptAllocations", "obligationKey", "projectedCashFlowId"
     ];
+    private const int MarketValueColumnIndex = 17;
+    private const int AccruedInterestColumnIndex = 18;
 
     public async Task<BrokerStatementValidationResult> ValidateAsync(BrokerStatementImportRequest request, CancellationToken ct = default)
     {
@@ -580,6 +584,18 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
                 externalTransactionId = fields[10].Trim();
             }
 
+            var marketValue = ParseOptionalAmount(fields, MarketValueColumnIndex, "marketValue", recordStartLine);
+            var accruedInterest = ParseOptionalAmount(fields, AccruedInterestColumnIndex, "accruedInterest", recordStartLine);
+            var relatedTransactionId = OptionalText(fields, 14);
+            var securityId = ParseOptionalIdentity(fields, 19, "securityId", recordStartLine);
+            var receiptAllocations = OptionalText(fields, 20);
+            var obligationKey = OptionalText(fields, 21);
+            var projectedCashFlowId = ParseOptionalIdentity(fields, 22, "projectedCashFlowId", recordStartLine);
+            if ((receiptAllocations is not null && (obligationKey is not null || projectedCashFlowId.HasValue))
+                || (obligationKey is not null && projectedCashFlowId.HasValue))
+                throw new InvalidDataException($"Statement CSV row {recordStartLine} contains ambiguous receipt allocation identities.");
+            ValidateReceiptAllocations(receiptAllocations, cashAmount, recordStartLine);
+
             rows.Add(new CanonicalStatementRow(
                 importId,
                 recordStartLine,
@@ -595,7 +611,14 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
                 Currency = currency,
                 SettlementDate = settlementDate,
                 FeesCommission = feesCommission,
-                ExternalTransactionId = externalTransactionId
+                ExternalTransactionId = externalTransactionId,
+                MarketValue = marketValue,
+                AccruedInterest = accruedInterest,
+                RelatedTransactionId = relatedTransactionId,
+                SecurityId = securityId,
+                ReceiptAllocations = receiptAllocations,
+                ObligationKey = obligationKey,
+                ProjectedCashFlowId = projectedCashFlowId
             });
         }
 
@@ -605,6 +628,80 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
         }
 
         return rows;
+    }
+
+    // A blank optional amount is absent; a nonblank malformed value is refused rather than dropped,
+    // so a bad custodian figure can never silently fall back to a derived amount.
+    private static decimal? ParseOptionalAmount(IReadOnlyList<string> fields, int index, string column, int recordStartLine)
+    {
+        if (fields.Count <= index || string.IsNullOrWhiteSpace(fields[index]))
+            return null;
+        if (!decimal.TryParse(fields[index].Trim(), DecimalStyles, CultureInfo.InvariantCulture, out var value))
+            throw new InvalidDataException($"Statement CSV row {recordStartLine} contains an invalid {column} value.");
+        return value;
+    }
+
+    private static string? OptionalText(IReadOnlyList<string> fields, int index)
+        => fields.Count <= index || string.IsNullOrWhiteSpace(fields[index]) ? null : fields[index].Trim();
+
+    private static Guid? ParseOptionalIdentity(IReadOnlyList<string> fields, int index, string column, int recordStartLine)
+    {
+        var value = OptionalText(fields, index);
+        if (value is null)
+            return null;
+        if (!Guid.TryParse(value, out var id) || id == Guid.Empty)
+            throw new InvalidDataException($"Statement CSV row {recordStartLine} contains an invalid {column} identity.");
+        return id;
+    }
+
+    private static void ValidateReceiptAllocations(string? json, decimal cashAmount, int recordStartLine)
+    {
+        if (json is null)
+            return;
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            if (document.RootElement.ValueKind != JsonValueKind.Array || document.RootElement.GetArrayLength() == 0)
+                throw new InvalidDataException("Receipt allocations require a nonempty array.");
+            var identities = new HashSet<string>(StringComparer.Ordinal);
+            var total = 0m;
+            foreach (var leg in document.RootElement.EnumerateArray())
+            {
+                if (leg.ValueKind != JsonValueKind.Object)
+                    throw new InvalidDataException("Receipt allocation legs require objects.");
+                var properties = leg.EnumerateObject().ToArray();
+                if (properties.Select(static property => property.Name).Distinct(StringComparer.Ordinal).Count() != properties.Length
+                    || properties.Any(static property => property.Name is not ("obligationKey" or "projectedCashFlowId" or "amount")))
+                    throw new InvalidDataException("Receipt allocation properties are duplicated or unsupported.");
+                var hasKey = leg.TryGetProperty("obligationKey", out var key);
+                var hasFlow = leg.TryGetProperty("projectedCashFlowId", out var flow);
+                if (hasKey == hasFlow || !leg.TryGetProperty("amount", out var amount)
+                    || amount.ValueKind != JsonValueKind.Number || !amount.TryGetDecimal(out var value) || value <= 0m)
+                    throw new InvalidDataException("Receipt allocation requires one identity and a positive exact amount.");
+                string identity;
+                if (hasKey)
+                {
+                    if (key.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(key.GetString()))
+                        throw new InvalidDataException("Receipt obligation identity is invalid.");
+                    identity = "obligation:" + key.GetString()!.Trim();
+                }
+                else
+                {
+                    if (flow.ValueKind != JsonValueKind.String || !Guid.TryParse(flow.GetString(), out var id) || id == Guid.Empty)
+                        throw new InvalidDataException("Receipt projected flow identity is invalid.");
+                    identity = "flow:" + id.ToString("D");
+                }
+                if (!identities.Add(identity))
+                    throw new InvalidDataException("Receipt allocation identity is duplicated.");
+                total += value;
+            }
+            if (total != Math.Abs(cashAmount))
+                throw new InvalidDataException("Receipt allocations must conserve the entire source payment.");
+        }
+        catch (Exception exception) when (exception is JsonException or InvalidDataException or OverflowException)
+        {
+            throw new InvalidDataException($"Statement CSV row {recordStartLine} contains invalid receipt allocation evidence.", exception);
+        }
     }
 
     private static async Task<CsvRecord?> ReadCsvRecordAsync(StreamReader reader, CancellationToken ct)

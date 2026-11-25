@@ -242,9 +242,9 @@ Declared public members:
 | <code>public const string LocalShutdownTokenHeader = &quot;X-Meridian-Shutdown-Token&quot;;</code> | [src/Meridian/UiServer.cs:61](../../../../src/Meridian/UiServer.cs#L61) |  |
 | <code>public const string ExecutionBrokerageSectionKey = &quot;Execution:Brokerage&quot;;</code> | [src/Meridian/UiServer.cs:65](../../../../src/Meridian/UiServer.cs#L65) | Configuration section that binds BrokerageConfiguration for the host. |
 | <code>public UiServer(string configPath, int port = 8080, IApplicationLifecycleCoordinator? lifecycle = null, ApiHostOptions? apiHostOptions = null) : this(configPath, port, lifecycle?? ApplicationLifecycleCoordinator.Create(Serilog.Log.Logger), ownsLifecycle : lifecycle is null, apiHostOptions : apiHostOptions);</code> | [src/Meridian/UiServer.cs:93](../../../../src/Meridian/UiServer.cs#L93) | Creates a new UiServer using the centralized ServiceCompositionRoot. |
-| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian/UiServer.cs:1246](../../../../src/Meridian/UiServer.cs#L1246) |  |
-| <code>public async Task StopAsync(CancellationToken ct = default);</code> | [src/Meridian/UiServer.cs:1387](../../../../src/Meridian/UiServer.cs#L1387) |  |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian/UiServer.cs:1405](../../../../src/Meridian/UiServer.cs#L1405) |  |
+| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian/UiServer.cs:1229](../../../../src/Meridian/UiServer.cs#L1229) |  |
+| <code>public async Task StopAsync(CancellationToken ct = default);</code> | [src/Meridian/UiServer.cs:1370](../../../../src/Meridian/UiServer.cs#L1370) |  |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian/UiServer.cs:1388](../../../../src/Meridian/UiServer.cs#L1388) |  |
 
 ## WorkstationAssetTree
 
@@ -252,7 +252,7 @@ Qualified name: <code>Meridian.WorkstationAssetTree</code>. Kind: `class`.
 
 Source: [src/Meridian/WorkstationAssetTree.cs:10](../../../../src/Meridian/WorkstationAssetTree.cs#L10).
 
-Resolves the browser-workstation asset tree the host serves (PRD-018). The canonical tree is the tracked bundle at src/Meridian.Ui/wwwroot/workstation — the same tree the dashboard build writes, the publish/install lanes copy, and the docs name — so the repo-launch, published, and installed lanes all serve one verified bundle instead of resolving whatever happens to sit under the launch directory.
+Resolves the browser-workstation asset tree the host serves (PRD-018). The canonical tree is the built bundle at src/Meridian.Ui/wwwroot/workstation (a gitignored build output) — the same tree the dashboard build writes, the publish/install lanes copy, and the docs name — so the repo-launch, published, and installed lanes all serve one verified bundle instead of resolving whatever happens to sit under the launch directory.
 
 ```csharp
 public static class WorkstationAssetTree

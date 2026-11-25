@@ -119,6 +119,12 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   vendor aliases. Securitized instruments belong in `StructuredCredit`, bank loans in `DirectLoan`.
   Custom profile metadata naming securitized products must resolve through a registered
   StructuredCredit profile. Generic custom profiles cannot save this classification.
+- `AssetClassRegistry` is the classification table every kind resolves through. Derivatives use
+  `ListedDerivative` (exchange-traded, booked in contracts) or `OtcDerivative` (Swap, Cfd, FX
+  forwards, NDFs, CDS, swaptions, caps/floors); FxSpot is `CashEquivalent` / `ForeignExchange`;
+  InvestmentFund is `Fund` / `PooledFund`. Every class except OtherSecurity declares a family.
+  Classification is derived on read, so a revision of this table changes current projections
+  without rewriting retained events (ADR-022 amendment 2026-11-18).
 - `SecurityMasterLegacyUpgrade.proposeStructuredCreditReclassification` builds the report-first
   StructuredCredit proposal for a legacy securitised row (ADR-022): a Bond in a securitised
   subclass, a CustomAsset whose `category` names a securitised product, or an envelope-less legacy

@@ -585,7 +585,7 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
                     JobId = job.JobId,
                     Provider = job.Provider,
                     Status = job.Status.ToString(),
-                    CreatedAt = FormatHelpers.FormatUtcTimestamp(job.CreatedAt),
+                    CreatedAt = FormatHelpers.FormatDisplayTimestamp(job.CreatedAt),
                     SymbolsSummary = $"{job.CompletedCount}/{job.SymbolCheckpoints.Count} symbols done, {pendingSymbols.Length} remaining",
                     PendingCount = pendingSymbols.Length,
                     TotalBarsDownloaded = job.TotalBarsDownloaded,
@@ -678,7 +678,7 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
         IsBackfillActive = response.IsActive;
         OverallProgressPercent = Math.Clamp(snapshot.OverallPercentComplete, 0d, 100d);
         OverallProgressText = $"Overall: {snapshot.CompletedSymbols:N0} / {snapshot.TotalSymbols:N0} symbols complete · {OverallProgressPercent:N1}%";
-        ProviderProgressObservedText = $"Observed {FormatHelpers.FormatUtcTimestamp(snapshot.Timestamp)} · {snapshot.DroppedProviderNotifications:N0} provider notification(s) dropped";
+        ProviderProgressObservedText = $"Observed {FormatHelpers.FormatDisplayTimestamp(snapshot.Timestamp)} · {snapshot.DroppedProviderNotifications:N0} provider notification(s) dropped";
 
         if (response.IsActive)
         {
@@ -729,8 +729,8 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
             ? string.Join(", ", status.Symbols)
             : "N/A";
         LastRunBarsWrittenText = status.BarsWritten.ToString("N0");
-        LastRunStartedText = FormatHelpers.FormatUtcTimestamp(status.StartedUtc, "Unknown");
-        LastRunCompletedText = FormatHelpers.FormatUtcTimestamp(status.CompletedUtc, "N/A");
+        LastRunStartedText = FormatHelpers.FormatDisplayTimestamp(status.StartedUtc, "Unknown");
+        LastRunCompletedText = FormatHelpers.FormatDisplayTimestamp(status.CompletedUtc, "N/A");
         ApplyBackfillStats(BuildBackfillStats(status));
     }
 
@@ -768,13 +768,13 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
 
         var runWindowText = (status.StartedUtc, status.CompletedUtc) switch
         {
-            ({ } started, { } completed) => $"{FormatHelpers.FormatUtcTimestamp(started)} to {FormatHelpers.FormatUtcTimestamp(completed)}",
-            ({ } started, null) => $"Started {FormatHelpers.FormatUtcTimestamp(started)}",
+            ({ } started, { } completed) => $"{FormatHelpers.FormatDisplayTimestamp(started)} to {FormatHelpers.FormatDisplayTimestamp(completed)}",
+            ({ } started, null) => $"Started {FormatHelpers.FormatDisplayTimestamp(started)}",
             _ => "Window unavailable"
         };
 
         var lastSuccessfulRunText = status.Success
-            ? FormatHelpers.FormatUtcTimestamp(status.CompletedUtc, "Completed; timestamp unavailable")
+            ? FormatHelpers.FormatDisplayTimestamp(status.CompletedUtc, "Completed; timestamp unavailable")
             : "Latest run failed";
 
         return new BackfillStatsPresentation(
@@ -802,6 +802,14 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
             .Where(symbol => !string.IsNullOrWhiteSpace(symbol))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Count() ?? 0;
+    }
+
+    private bool _resumeFromRetainedCoverage;
+
+    public bool ResumeFromRetainedCoverage
+    {
+        get => _resumeFromRetainedCoverage;
+        set => SetProperty(ref _resumeFromRetainedCoverage, value);
     }
 
     public async Task StartBackfillAsync(
@@ -856,7 +864,9 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
                 provider,
                 fromDate,
                 toDate,
-                granularity);
+                granularity,
+                ResumeFromRetainedCoverage,
+                ct: ct);
         }
         catch (OperationCanceledException)
         {

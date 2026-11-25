@@ -38,6 +38,7 @@ export interface UpsertProviderModuleRequest {
 export interface ProviderModuleSetupResult {
   success: boolean;
   error?: string | null;
+  changeStatus?: { requiresRestart: boolean } | null;
 }
 
 export interface ProviderModuleTestResult {

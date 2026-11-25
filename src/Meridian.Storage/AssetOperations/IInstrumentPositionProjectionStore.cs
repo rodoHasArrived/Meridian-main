@@ -25,6 +25,10 @@ public sealed record InstrumentPositionProjectionSnapshot(
 /// </summary>
 public interface IInstrumentPositionProjectionStore
 {
+    /// <summary>Retained book holdings begun by the date, including expired holdings with unpaid obligations.</summary>
+    Task<IReadOnlyList<InstrumentPositionProjectionSnapshot>> GetBookAsync(
+        Guid ledgerBookId, DateOnly asOfDate, CancellationToken ct = default);
+
     Task<InstrumentPositionProjectionSnapshot> GetSecurityAsync(
         Guid securityId,
         CancellationToken ct = default);
@@ -51,6 +55,39 @@ public interface IInstrumentPositionProjectionStore
 internal static class InstrumentPositionProjectionRules
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+
+    internal static InstrumentPositionProjectionSnapshot FilterBookHistoryAsOf(
+        InstrumentPositionProjectionSnapshot snapshot, DateOnly asOfDate)
+    {
+        var roles = snapshot.InstrumentRoles.Where(row => row.EffectiveFrom <= asOfDate).ToArray();
+        var roleIds = roles.Select(static row => row.RoleId).ToHashSet();
+        var positions = snapshot.BookPositions.Where(row => row.EffectiveFrom <= asOfDate && roleIds.Contains(row.RoleId)).ToArray();
+        var positionIds = positions.Select(static row => row.PositionId).ToHashSet();
+        var states = snapshot.PositionEconomicStates.Where(row => positionIds.Contains(row.PositionId) && row.AsOfDate <= asOfDate).ToArray();
+        var lineages = snapshot.ProjectionLineages.Where(row => row.ProjectionAsOfDate <= asOfDate &&
+            positionIds.Contains(row.BookPositionId ?? row.TriggerEvent.BookPositionId ?? Guid.Empty)).ToArray();
+        return snapshot with
+        {
+            AsOfDate = asOfDate,
+            InstrumentRoles = roles.Where(row => positions.Any(position => position.RoleId == row.RoleId)).ToArray(),
+            BookPositions = positions.Select(position =>
+            {
+                var state = states.Where(row => row.PositionId == position.PositionId)
+                    .OrderByDescending(static row => row.AsOfDate).ThenByDescending(static row => row.Version)
+                    .ThenByDescending(static row => row.EconomicStateId).FirstOrDefault();
+                return position with
+                {
+                    CurrentEconomicState = state,
+                    ProjectionLineage = state?.ProjectionLineage ?? lineages
+                        .Where(row => (row.BookPositionId ?? row.TriggerEvent.BookPositionId) == position.PositionId)
+                        .OrderByDescending(static row => row.ProjectionAsOfDate).ThenByDescending(static row => row.GeneratedAtUtc)
+                        .ThenByDescending(static row => row.ProjectionRunId).FirstOrDefault()
+                };
+            }).ToArray(),
+            PositionEconomicStates = states,
+            ProjectionLineages = lineages
+        };
+    }
 
     public static (BookPositionDto Position, PositionEconomicStateDto? EconomicState) NormalizeWrite(
         BookPositionDto position,

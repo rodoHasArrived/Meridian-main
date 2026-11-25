@@ -17,9 +17,12 @@ public sealed partial class ManualJournalEntryWorkbenchService
     private IManualJournalMutationSession? _mutationSession;
 
     internal static IManualJournalMutationRecoveryStore DefaultMutationRecoveryFor(IManualJournalEntryDraftStore store)
-        => store is FileManualJournalEntryDraftStore fileStore
-            ? new FileManualJournalMutationRecoveryStore(fileStore.MutationRecoveryDirectory)
-            : EphemeralRecoveryStores.GetValue(store, static _ => new InMemoryManualJournalMutationRecoveryStore());
+        => store switch
+        {
+            FileManualJournalEntryDraftStore fileStore => new FileManualJournalMutationRecoveryStore(fileStore.MutationRecoveryDirectory),
+            PostgresManualJournalEntryDraftStore postgresStore => new PostgresManualJournalMutationRecoveryStore(postgresStore.Options),
+            _ => EphemeralRecoveryStores.GetValue(store, static _ => new InMemoryManualJournalMutationRecoveryStore())
+        };
 
     private sealed record MutationCommand(string Key, string RequestHash, string ScopeKey, Guid JournalEntryId, bool OperationIsLifecycle);
 

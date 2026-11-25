@@ -64,17 +64,32 @@
 - **Problem:** A quant sets Europe/London and compact density at the office; at home everything is back to UTC.
 - **Fit:** Copy the `IOperatorScopePreferenceStore`/`FileOperatorScopePreferenceStore` pattern: sealed record DTO in `Meridian.Contracts.Workstation`, source-generated JSON context, atomic file writes, `context.RequestAborted` passed through, keyed by `ResolveOperatorPreferenceKey`. Browser hydrates on session start; if the server has no value, keep the local one and push it up.
 - **Effort:** Medium. **Impact:** High.
+- *Update 2026-11-17: implemented as `GET/PUT /api/workstation/operator/preferences` (appearance,
+  density, display time zone, page descriptions, browser shortcut overrides) with
+  `FileOperatorPreferenceStore`, and browser hydrate-then-write-through sync in
+  `lib/operator-preferences-sync.ts`. WPF does not read it yet; that is Idea 2. The default-layout
+  id is not included.*
 
 ### Idea 2: One preferences contract for browser and WPF
 - **What:** Grow `DesktopShellPreferences` into a shared `OperatorPreferences` contract: one density vocabulary (WPF maps Spacious → Standard), one theme enum merging `AppTheme` and browser `Appearance`, time zone honoured by WPF formatters.
 - **Problem:** WPF on one monitor and the browser on another show timestamps in two zones.
 - **Fit:** Builds on Idea 1. Migrate legacy `IsCompactMode` payloads as the existing loader already does.
+- *Update 2026-11-17: implemented for theme and density. `OperatorPreferenceVocabulary` (Contracts)
+  is the one vocabulary; `DesktopOperatorPreferenceSync` makes WPF read and save the host set, with
+  `spacious` shown as Standard and kept on desktop saves. WPF timestamps now honour the display time
+  zone through `FormatHelpers.FormatDisplayTimestamp`, and WPF shortcut overrides sync through the
+  host preferences as `DesktopKeyBindings`, kept apart from the browser's shortcut overrides.*
 - **Effort:** Medium. **Impact:** High for the parity lane.
 
 ### Idea 3: Notifications & quiet-hours panel
 - **What:** "Notifications" card under Settings > Preferences: per-type toggles (connection, errors, backfill complete, data gaps, storage), quiet hours in the operator's display time zone, a "test notification" button.
 - **Problem:** Overnight backfill-complete toasts can only be silenced by editing `appsettings.json` and restarting.
 - **Fit:** Fields already exist on the `NotificationServiceBase` settings. Store per operator through Idea 1, not as host config. Takes effect immediately, so the impact banner shows `Live`.
+- *Update 2026-11-17: implemented. Settings > Preferences > Notifications (browser) and the WPF
+  Settings Notifications card edit one operator set (`OperatorNotificationPreferencesDto`) synced
+  through the host preferences. WPF applies it to its toasts; the browser holds price-alert system
+  pop-ups with the switch and quiet hours. Quiet hours are `HH:mm` in the display time zone. The WPF
+  sound choice is still not applied.*
 - **Effort:** Low–Medium. **Impact:** Medium–High.
 
 ### Idea 4: Rebindable, saved shortcuts
@@ -82,6 +97,11 @@
 - **Problem:** `Ctrl+Shift+Q` "Stop collector" can clash with OS or remote-desktop shortcuts and can't be changed.
 - **Guardrail:** High-consequence actions (`StartCollector`, `StopCollector`, `DeleteSelected` — currently bare `Delete` with no modifier — and anything that submits orders) must require a modifier and keep their confirmation dialogs.
 - **Effort:** Medium. **Impact:** Medium.
+- *Update 2026-11-17: implemented in both clients. WPF `KeyboardShortcutsPage` rebinds, disables
+  and resets shortcuts with conflict and modifier checks, and the changes persist. The browser
+  keyboard help sheet rebinds and resets the global shortcuts (`Mod+K`, `?`) with conflict,
+  reserved-key and bare-letter checks, persisted per browser. The two clients keep separate
+  overrides; a shared preference store is Idea 1/2.*
 
 ### Idea 5: Export/import "My workstation" bundle
 - **What:** Schema-versioned JSON bundle of preferences, user layouts, table views, pinned quote symbols and price alerts. Import offers "merge" or "replace" and shows a diff first.
@@ -121,4 +141,6 @@
 **Quick win (one day):** persist WPF shortcut overrides. *Update 2026-11-17: implemented —
 overrides now persist with the desktop shell preferences and reapply at startup, with the
 modifier guardrail from Idea 4 and a "Reset to defaults" button. Implementation found no in-app
-rebinding editor, so rebinding itself still needs one (see Idea 4).* Add an overrides dictionary to the `DesktopShellPreferences` record, save it through the existing `PersistDesktopShellPreferencesCore` (`SettingsConfigurationService.cs:557`), which already migrates legacy payloads, and add "Reset to defaults" on `KeyboardShortcutsPage`. No new endpoint needed.
+rebinding editor, so rebinding itself still needs one (see Idea 4). Update 2026-11-17 (later):
+the in-app rebinding editor on `KeyboardShortcutsPage` now captures chords, toggles and resets
+individual shortcuts, and refuses guarded or conflicting chords inline.* Add an overrides dictionary to the `DesktopShellPreferences` record, save it through the existing `PersistDesktopShellPreferencesCore` (`SettingsConfigurationService.cs:557`), which already migrates legacy payloads, and add "Reset to defaults" on `KeyboardShortcutsPage`. No new endpoint needed.

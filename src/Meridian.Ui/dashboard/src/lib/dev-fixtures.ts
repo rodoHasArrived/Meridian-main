@@ -1,3 +1,4 @@
+import fixtureManualJournalWorkbench from "../test/fixtures/manual-journal-workbench.json";
 import { accountingPayload as fixtureAccountingWorkspace } from "../scenarios/accounting-payload";
 import {
   capHealthyOnStaleEvidence,
@@ -167,10 +168,10 @@ const fixtureSystemOverview: SystemOverviewResponse = {
 
 const fixtureStrategyWorkspace: StrategyWorkspaceResponse = {
   metrics: [
-    { id: "runs", label: "Runs", value: "24", delta: "+8%", tone: "success" },
-    { id: "queued", label: "Queued", value: "3", delta: "0%", tone: "default" },
-    { id: "review", label: "Needs Review", value: "2", delta: "-1%", tone: "warning" },
-    { id: "promotions", label: "Promotions", value: "5", delta: "+2", tone: "default" }
+    { id: "active-runs", label: "Active Runs", value: "1", delta: "+1", tone: "success" },
+    { id: "queued-runs", label: "Queued Promotions", value: "0", delta: "0%", tone: "default" },
+    { id: "review-runs", label: "Needs Review", value: "0", delta: "0%", tone: "warning" },
+    { id: "winning-runs", label: "Positive P&L", value: "2", delta: "+2", tone: "default" }
   ],
   runs: [
     {
@@ -6076,6 +6077,14 @@ const financialRecordExplorerFixtureBase = WORKSTATION_API_ENDPOINTS.financialRe
 const dynamicFixturePatterns: DynamicFixturePattern[] = [
   ...workstationSurfaceFixturePatterns,
   {
+    pattern: apiRoutePattern(RECONCILIATION_API_ENDPOINTS.breakQueue, "/[^/]+"),
+    resolve: (cleanPath) => fixtureAccountingWorkspace.breakQueue.find((item) => item.breakId === readDecodedPathSegment(cleanPath))
+  },
+  {
+    pattern: apiRoutePattern(RECONCILIATION_API_ENDPOINTS.breakQueue, "/[^/]+/audit"),
+    resolve: () => []
+  },
+  {
     pattern: apiRoutePattern(financialRecordExplorerFixtureBase, "/[^/]+"),
     resolve: (cleanPath) => buildFixtureFinancialRecordExplorer(readDecodedPathSegment(cleanPath))
   },
@@ -6200,6 +6209,7 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
 ];
 
 export function resolveDevFixture<T>(path: string): T | undefined {
+  if (path.split("?")[0] === WORKSTATION_API_ENDPOINTS.manualJournalEntryWorkbench) return fixtureManualJournalWorkbench as T;
   return resolveFixtureFromMaps<T>(path, fixtures, dynamicFixturePatterns);
 }
 

@@ -2,6 +2,7 @@ import { TimeText } from "@/components/ui/time-text";
 import { EntityLink } from "@/components/meridian/entity-inspector";
 import { GeneralLedgerExportPanel } from "./reporting-screen.general-ledger-export";
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useScreenPaletteActions } from "@/components/meridian/command-palette.actions";
 import { FileText, Landmark, Network, PencilLine, XCircle } from "lucide-react";
 import { NewCustomReportBar } from "@/screens/reporting-screen.new-custom-report";
 import { useLocation } from "react-router-dom";
@@ -138,7 +139,6 @@ import type {
 import {
   buildReportAccessPolicy,
   buildReportWriterGridDefinition,
-  buildReportWriterPreviewRows,
   normalizeDraftText,
   normalizeIdentifierToken,
   parseReportTemplateVersion
@@ -298,7 +298,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     writerPreviewStatus,
     savingWriterDraftId,
     previewingWriterDraftId,
-    writerPreviewByGridId,
+    getWriterPreview,
     writerPreviousPreviewByGridId,
     writerCustomDatasetText,
     getWriterZoneTokens,
@@ -318,6 +318,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     updateWriterFormatRule,
     handleWriterTokenDragStart,
     handleWriterZoneDrop,
+    placeWriterToken,
     removeWriterZoneToken,
     moveWriterZoneToken,
     resetWriterGrid,
@@ -491,6 +492,16 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       });
     }
   }
+
+  useScreenPaletteActions("reporting", [{
+    id: "reporting.refresh-live-portfolio-views",
+    verbLabel: "Refresh live portfolio views",
+    description: "Reloads the live portfolio views used by reporting.",
+    keywords: ["reporting", "refresh", "portfolio"],
+    disabled: !onRefreshLivePortfolioViews,
+    disabledReason: onRefreshLivePortfolioViews ? null : "Live portfolio refresh is not available here.",
+    run: () => handleRefreshLivePortfolioViews("manual")
+  }]);
 
   async function handleRefreshLivePortfolioViews(trigger: "manual" | "auto" = "manual") {
     if (!onRefreshLivePortfolioViews || livePortfolioRefreshInFlight.current) {
@@ -1179,8 +1190,10 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                       <ReportingCutMetric label="Realized" value={formatReportingMoney(slice.realizedPnl, slice.currency)} />
                       <ReportingCutMetric label="Unrealized" value={formatReportingMoney(slice.unrealizedPnl, slice.currency)} />
                       <ReportingCutMetric label="P&L" value={formatReportingMoney(slice.totalPnl, slice.currency)} />
-                      <ReportingCutMetric label="Prior" value={formatReportingMoney(slice.priorTotalPnl, slice.currency)} />
-                      <ReportingCutMetric label="Change" value={formatReportingMoney(slice.pnlChange, slice.currency)} />
+                      {/* With no prior published period the server sends 0 and tags the slice "no-prior";
+                          a dash says there is nothing to compare with, not a prior of $0. */}
+                      <ReportingCutMetric label="Prior" value={slice.tags?.includes("no-prior") ? "—" : formatReportingMoney(slice.priorTotalPnl, slice.currency)} />
+                      <ReportingCutMetric label="Change" value={slice.tags?.includes("no-prior") ? "—" : formatReportingMoney(slice.pnlChange, slice.currency)} />
                       <ReportingCutMetric label="Sources" value={formatCount(slice.sourceCount)} />
                     </dl>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{slice.readinessSummary}</p>
@@ -1517,7 +1530,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       ) : null}
 
       {isReportBuilderTaskMode ? (
-        <NewCustomReportBar templates={vm.templateRows} datasetSources={reportWriterDatasetSources} grids={newCustomWriterGrids} onGridsChange={setNewCustomWriterGrids} />
+              <NewCustomReportBar templates={vm.templateRows} grids={newCustomWriterGrids} onGridsChange={setNewCustomWriterGrids} />
       ) : null}
 
       {isReportBuilderTaskMode && writerGrids.length > 0 ? (
@@ -1533,11 +1546,12 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
               datasetSources={reportWriterDatasetSources}
               isSaving={savingWriterDraftId === grid.id}
               isPreviewing={previewingWriterDraftId === grid.id}
-              preview={writerPreviewByGridId[grid.id] ?? null}
+              preview={getWriterPreview(grid)}
               previousPreview={writerPreviousPreviewByGridId[grid.id] ?? null}
               getZoneTokens={getWriterZoneTokens}
               onTokenDragStart={handleWriterTokenDragStart}
               onZoneDrop={handleWriterZoneDrop}
+              onFieldAdd={placeWriterToken}
               onTokenRemove={removeWriterZoneToken}
               onTokenMove={moveWriterZoneToken}
               onReset={resetWriterGrid}
@@ -2890,7 +2904,7 @@ function buildRenderReportTemplateRequest(
   grid: ReportingWriterGridRow,
   zones: Record<ReportWriterDropZone, ReportingWriterToken[]>,
   settings: ReportWriterDraftSettings,
-  customDatasetRows: Record<string, string>[] | null = null,
+  datasetRows: Record<string, string>[],
   chartDraft?: ReportWriterChartDraft | null,
   formatRules?: ReportWriterFormatRuleDraft[] | null
 ): RenderReportTemplateRequest {
@@ -2907,7 +2921,7 @@ function buildRenderReportTemplateRequest(
       preview: "browser-report-writer",
       previewDataset: settings.previewDataset
     },
-    datasetRows: customDatasetRows ?? buildReportWriterPreviewRows(gridDefinition, settings.previewDataset),
+    datasetRows,
     grids: [gridDefinition]
   };
 }

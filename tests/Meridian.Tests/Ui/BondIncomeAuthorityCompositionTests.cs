@@ -27,6 +27,7 @@ public sealed class BondIncomeAuthorityCompositionTests
 
         provider.GetService<IBondIncomeService>().Should().BeNull();
         provider.GetService<BondIncomePreparationService>().Should().BeNull();
+        provider.GetService<IBondIncomePreparationService>().Should().BeNull();
         provider.GetService<IBondCouponRecognitionService>().Should().BeNull();
         provider.GetRequiredService<IBondPerformanceService>().Should().BeOfType<BondPerformanceService>();
     }
@@ -38,8 +39,24 @@ public sealed class BondIncomeAuthorityCompositionTests
 
         provider.GetRequiredService<IBondIncomeService>().Should().BeOfType<BondIncomeService>();
         provider.GetRequiredService<BondIncomePreparationService>().Should().NotBeNull();
+        // The recurring-journal coupon calculation consumes the preparation authority through its interface.
+        provider.GetRequiredService<IBondIncomePreparationService>()
+            .Should().BeSameAs(provider.GetRequiredService<BondIncomePreparationService>());
         provider.GetRequiredService<IBondCouponRecognitionService>().Should().BeOfType<BondCouponRecognitionService>();
         provider.GetRequiredService<IBondPerformanceService>().Should().BeOfType<BondPerformanceService>();
+    }
+
+    [Fact]
+    public void WorkstationComposition_RegistersRecurringBondCouponIncomeCalculation()
+    {
+        var workstation = new ServiceCollection();
+        workstation.AddWorkstationSharedServices();
+
+        workstation.Should().Contain(descriptor => descriptor.ServiceType == typeof(IRecurringJournalCalculation)
+            && descriptor.ImplementationFactory != null
+            && descriptor.ImplementationFactory.Method.ReturnType.IsAssignableFrom(typeof(BondCouponIncomeCalculation))
+            || descriptor.ServiceType == typeof(IRecurringJournalCalculation) && descriptor.ImplementationType == typeof(BondCouponIncomeCalculation),
+            "the recurring-journal runner must be able to schedule governed bond coupon income");
     }
 
     private static ServiceProvider BuildBondServices(string? missing)
@@ -69,7 +86,7 @@ public sealed class BondIncomeAuthorityCompositionTests
         workstation.AddWorkstationSharedServices();
         var bondServices = new[]
         {
-            typeof(IBondIncomeService), typeof(BondIncomePreparationService),
+            typeof(IBondIncomeService), typeof(BondIncomePreparationService), typeof(IBondIncomePreparationService),
             typeof(IBondCouponRecognitionService), typeof(IBondPerformanceService)
         };
         foreach (var descriptor in workstation.Where(descriptor => bondServices.Contains(descriptor.ServiceType)))

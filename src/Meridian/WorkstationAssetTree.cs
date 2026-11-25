@@ -2,8 +2,8 @@ namespace Meridian;
 
 /// <summary>
 /// Resolves the browser-workstation asset tree the host serves (PRD-018). The canonical tree is
-/// the tracked bundle at <c>src/Meridian.Ui/wwwroot/workstation</c> — the same tree the dashboard
-/// build writes, the publish/install lanes copy, and the docs name — so the repo-launch,
+/// the built bundle at <c>src/Meridian.Ui/wwwroot/workstation</c> (a gitignored build output) — the
+/// same tree the dashboard build writes, the publish/install lanes copy, and the docs name — so the repo-launch,
 /// published, and installed lanes all serve one verified bundle instead of resolving whatever
 /// happens to sit under the launch directory.
 /// </summary>

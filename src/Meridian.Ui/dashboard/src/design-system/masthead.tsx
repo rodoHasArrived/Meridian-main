@@ -59,6 +59,7 @@ export function DesignSystemMasthead({
       className="workstation-masthead mds-masthead ws-masthead"
       data-design-system-component="Masthead"
       data-provenance={provenance}
+      data-environment={trustStrip.environment.variant}
     >
       <div className="workstation-brand-group mds-masthead__brand-group ws-brand">
         <button

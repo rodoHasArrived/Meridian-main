@@ -41,7 +41,10 @@ public static partial class LedgerEndpoints
         app.MapLedgerBondWorkflowEndpoints();
         MapPrivateCapitalEndpoints(app, jsonOptions);
         MapPostedPeriodComparisonEndpoints(app, jsonOptions);
+        MapExecutionJournalLineageEndpoint(app, jsonOptions);
         MapCloseSnapshotEndpoints(app);
+        MapFiscalYearCloseEndpoints(app, jsonOptions);
+        MapBookFxSettlementEndpoints(app, jsonOptions);
         app.MapGet(UiApiRoutes.LedgerBooks, async (
             string? fundProfileId,
             Guid? fundStructureNodeId,
@@ -323,7 +326,12 @@ public static partial class LedgerEndpoints
                         LineDimensions: ToLineDimensionSet(dimensionFilter)),
                     context.RequestAborted)
                 .ConfigureAwait(false);
-            var result = BuildJournalEntryDtos(entries, _ => bookId, dimensionFilter);
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var book = tenant.HasTenantScope && !string.IsNullOrWhiteSpace(tenant.CompanyId) && tenant.Actor is not null
+                ? await journalStore.GetLedgerBookAsync(bookId, context.RequestAborted).ConfigureAwait(false) : null;
+            var passportScope = book is null ? null
+                : new LedgerAmountScopeDto(tenant.TenantId!, tenant.CompanyId!, book.FundProfileId, bookId, periodId);
+            var result = BuildJournalEntryDtos(entries, _ => bookId, dimensionFilter, passportScope, book?.BaseCurrency);
             return Results.Json(result, jsonOptions);
         })
         .WithName("GetLedgerPeriodJournalEntries").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
@@ -401,6 +409,11 @@ public static partial class LedgerEndpoints
 
             var dimensionFilter = BuildDimensionReportFilter(context.Request.Query);
             var summary = await service.GetPeriodSummaryAsync(periodId, context.RequestAborted).ConfigureAwait(false);
+            if (summary is not null && context.RequestServices.GetService<TrialBalanceAmountProvenanceService>() is { } provenance)
+            {
+                var actorScope = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                summary = summary with { TrialBalance = await provenance.BindAsync(summary, actorScope.TenantId, actorScope.CompanyId, context.RequestAborted).ConfigureAwait(false) };
+            }
             return summary is null
                 ? Results.NotFound(new { error = $"Ledger period '{periodId}' has no closed-period summary." })
                 : Results.Json(ApplyDimensionFilter(summary, dimensionFilter).TrialBalance, jsonOptions);

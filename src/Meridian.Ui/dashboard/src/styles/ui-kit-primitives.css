@@ -31,10 +31,11 @@
   border-radius: var(--radius-sm);
   background: var(--ws-surface-subtle);
   color: var(--fg-muted);
-  font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
+  /* Labels read in the body face and sentence case; the data face is for figures and IDs (UX Phase C). */
+  font-family: var(--font-body, ui-sans-serif, system-ui, sans-serif);
   font-size: 0.75rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  text-transform: none;
   white-space: nowrap;
 }
 
@@ -71,6 +72,20 @@
   border: 1px solid var(--ws-border);
   border-radius: var(--radius-lg);
   background: var(--ws-surface);
+}
+
+/* Scroll cue: while columns remain clipped on the right, fade the viewport's right edge. A mask
+   (not a background gradient) is used because opaque cell and selected-row backgrounds paint
+   over any gradient behind them. The fade stops short of transparent so clipped text stays legible. */
+.dense-data-table-wrap[data-overflow-end="true"] {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 3rem), rgb(0 0 0 / 0.35));
+  mask-image: linear-gradient(to right, #000 calc(100% - 3rem), rgb(0 0 0 / 0.35));
+}
+
+/* Today's queue is the page's primary task: it grows with the page instead of scrolling inside
+   its card, so more items are visible without a nested scrollbar. */
+.today-queue .dense-data-table-wrap {
+  max-height: none;
 }
 
 .dense-data-table {
@@ -122,14 +137,21 @@
   background: var(--ws-surface-subtle);
 }
 
+.dense-data-table-footer td {
+  border-top: 1px solid var(--ws-border-strong);
+  background: var(--ws-surface-subtle);
+  font-weight: 600;
+}
+
 .dense-data-table th {
   padding: var(--dense-head-py) var(--dense-cell-px);
   color: var(--fg-muted);
-  font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
+  /* Column headers are labels: body face, sentence case (UX Phase C). */
+  font-family: var(--font-body, ui-sans-serif, system-ui, sans-serif);
   font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
   white-space: nowrap;
 }
 
@@ -573,4 +595,48 @@
 .dense-data-table-wrap:focus-visible {
   outline: var(--focus-ring, 2px solid var(--focus, #2D6FB3));
   outline-offset: -2px;
+}
+
+/* Totals row: stays visible at the bottom of the scroll area and reads as a total, not a row. */
+.dense-data-table-footer td {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  border-top: 2px solid hsl(var(--border));
+  background: hsl(var(--card));
+  font-weight: 600;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* General-ledger grouping: a journal header row, then its posting lines indented beneath it. */
+.dense-data-table tr.ledger-row--journal td {
+  border-top: 1px solid hsl(var(--border));
+  font-weight: 500;
+}
+.dense-data-table tr.ledger-row--posting td {
+  color: hsl(var(--muted-foreground));
+}
+.dense-data-table tr.ledger-row--posting td.ledger-cell--account {
+  padding-left: 1.75rem;
+}
+/* The proof control sits beside a plain amount and shows on row hover or keyboard focus. */
+.ledger-proof-button {
+  opacity: 0;
+}
+.dense-data-table tr:hover .ledger-proof-button,
+.dense-data-table tr:focus-within .ledger-proof-button,
+.ledger-proof-button:focus-visible {
+  opacity: 1;
+}
+
+/* More columns to the side: an inset edge shadow on the side that scrolls (UX Phase C). */
+.dense-data-table-wrap[data-overflow-right="true"] {
+  box-shadow: inset -14px 0 12px -12px hsl(var(--foreground) / 0.28);
+}
+.dense-data-table-wrap[data-overflow-left="true"] {
+  box-shadow: inset 14px 0 12px -12px hsl(var(--foreground) / 0.28);
+}
+.dense-data-table-wrap[data-overflow-left="true"][data-overflow-right="true"] {
+  box-shadow: inset 14px 0 12px -12px hsl(var(--foreground) / 0.28), inset -14px 0 12px -12px hsl(var(--foreground) / 0.28);
 }

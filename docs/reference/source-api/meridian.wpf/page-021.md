@@ -6,6 +6,358 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataQualitySummaryModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.DataQualitySummaryModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:375](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L375).
+
+Carries a data-quality heading, explanatory detail, and supporting facts.
+
+```csharp
+public sealed class DataQualitySummaryModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Title { get; init; } = &quot;Data quality&quot;;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:377](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L377) |  |
+| <code>public string Detail { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:379](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L379) |  |
+| <code>public IReadOnlyList&lt;KeyValueFactModel&gt; Facts { get; init; } = Array.Empty&lt;KeyValueFactModel&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:381](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L381) |  |
+
+## DiagnosticsChecklistItemModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.DiagnosticsChecklistItemModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:348](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L348).
+
+```csharp
+public sealed record DiagnosticsChecklistItemModel(string Label, string StatusText, string Detail, string Tone = WorkspaceTone.Neutral);
+```
+
+## DiagnosticsChecklistModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.DiagnosticsChecklistModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:339](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L339).
+
+Carries a diagnostics heading, explanatory detail, and checklist items.
+
+```csharp
+public sealed class DiagnosticsChecklistModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Title { get; init; } = &quot;Diagnostics&quot;;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:341](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L341) |  |
+| <code>public string Detail { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:343](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L343) |  |
+| <code>public IReadOnlyList&lt;DiagnosticsChecklistItemModel&gt; Items { get; init; } = Array.Empty&lt;DiagnosticsChecklistItemModel&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:345](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L345) |  |
+
+## EvidenceLineageRowModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceLineageRowModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:59](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L59).
+
+```csharp
+public sealed record EvidenceLineageRowModel(string EdgeId, string FromId, string RelationshipText, string ToId, string Reason);
+```
+
+## EvidenceNodeRowModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceNodeRowModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:46](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L46).
+
+```csharp
+public sealed record EvidenceNodeRowModel(string EvidenceId, string KindText, string StatusText, WorkstationReadinessTone ReadinessTone, string Tone, string SourceSystem, string FreshnessText, WorkstationReadinessTone FreshnessTone, string Summary, string ArtifactCountText, string WorkItemCountText);
+```
+
+## EvidencePacketActionRowModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidencePacketActionRowModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:81](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L81).
+
+```csharp
+public sealed record EvidencePacketActionRowModel(string ActionId, string Label, string Detail, string TargetPageTag, string TargetText);
+```
+
+## EvidenceProofChainLayerRowModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceProofChainLayerRowModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:35](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L35).
+
+```csharp
+public sealed record EvidenceProofChainLayerRowModel(string LayerId, string Label, string StatusText, WorkstationReadinessTone ReadinessTone, string Tone, string CoverageText, string CountsText, string KindsText, string Summary);
+```
+
+## EvidenceRequestListRowModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceRequestListRowModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:66](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L66).
+
+```csharp
+public sealed record EvidenceRequestListRowModel(string RequestListId, string KindText, string TargetText, string SeverityText, WorkstationReadinessTone SeverityTone, string Tone, string StatusText, string OpenRequestCountText, string EvidenceKindsText, string BlockedOutputsText, string Summary, string VaultText, string RetainedText);
+```
+
+## EvidenceVaultDocumentQueuePresentationModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceVaultDocumentQueuePresentationModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:6](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L6).
+
+```csharp
+public sealed record EvidenceVaultDocumentQueuePresentationModel(string SummaryText, string ReadinessText, string ManifestSnapshotText, WorkstationReadinessTone ReadinessTone, string Tone, IReadOnlyList<EvidenceVaultDocumentRowModel> Documents, EvidenceVaultManifestSnapshotModel? ManifestSnapshot)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool HasFrozenManifestSnapshot =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:15](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L15) |  |
+
+## EvidenceVaultDocumentRowModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceVaultDocumentRowModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:18](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L18).
+
+```csharp
+public sealed record EvidenceVaultDocumentRowModel(string DocumentId, string FileName, string ClassificationText, string ExtractionText, string ReviewText, string SourceHashText, string SourceText, string ActorText, string TenantScopeText, string ObjectLinksText, string OpenRequestCountText, string ManifestRoute, WorkstationReadinessTone ReadinessTone, string Tone, IReadOnlyList<WorkstationEvidenceLinkModel> EvidenceLinks);
+```
+
+## EvidenceVaultManifestSnapshotModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceVaultManifestSnapshotModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:35](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L35).
+
+```csharp
+public sealed record EvidenceVaultManifestSnapshotModel(string ManifestId, string PackageText, string FrozenText, string ContentHashText, string DocumentCountText, string RequestCountText, string ObjectLinkCountText, WorkstationReadinessTone ReadinessTone, string Tone);
+```
+
+## EvidenceVaultPresentationMapper
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceVaultPresentationMapper</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:49](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L49).
+
+Projects evidence-vault documents and manifest snapshots into desktop queue and readiness presentation.
+
+```csharp
+public static class EvidenceVaultPresentationMapper
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static EvidenceVaultDocumentQueuePresentationModel BuildDocumentQueue(IReadOnlyList&lt;EvidenceVaultDocumentEntryDto&gt; entries, EvidenceManifestDto? manifestSnapshot);</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:51](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L51) |  |
+| <code>public static EvidenceVaultManifestSnapshotModel ToManifestSnapshot(EvidenceManifestDto manifest);</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:74](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L74) |  |
+
+## EvidenceWorkbenchPacketPresentationModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceWorkbenchPacketPresentationModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:88](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L88).
+
+```csharp
+public sealed record EvidenceWorkbenchPacketPresentationModel(string ScoreText, string StatusText, WorkstationReadinessTone ReadinessTone, string Tone, string GeneratedText, string ProofChainSummaryText, string ProofChainCoverageText, IReadOnlyList<EvidenceProofChainLayerRowModel> ProofChainLayers, IReadOnlyList<EvidenceNodeRowModel> Nodes, IReadOnlyList<EvidenceLineageRowModel> LineageRows, IReadOnlyList<string> MissingEvidenceIds, IReadOnlyList<string> StaleEvidenceIds, IReadOnlyList<string> OrphanEvidenceIds, IReadOnlyList<string> SlaBreachMessages, IReadOnlyList<string> Warnings, IReadOnlyList<EvidencePacketActionRowModel> Actions)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool HasProofChainLayers =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:106](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L106) |  |
+
+## EvidenceWorkbenchPresentationMapper
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceWorkbenchPresentationMapper</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:112](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L112).
+
+Projects evidence subjects, packets, and request lists into desktop rows and readiness presentation.
+
+```csharp
+public static class EvidenceWorkbenchPresentationMapper
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;EvidenceWorkbenchSubjectRowModel&gt; BuildSubjectRows(IReadOnlyList&lt;EvidenceSubjectDto&gt; subjects);</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:114](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L114) |  |
+| <code>public static EvidenceWorkbenchPacketPresentationModel BuildPacket(EvidencePacketDto packet, EvidenceCompletenessDto? validation = null);</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:127](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L127) | Projects a shared evidence packet into desktop rows. When validation is provided (a fresh server-side validate result) it replaces the packet&#x27;s retained completeness snapshot, matching the browser workbench behaviour. |
+| <code>public static IReadOnlyList&lt;EvidenceRequestListRowModel&gt; BuildRequestListRows(IReadOnlyList&lt;EvidenceVaultRequestListEntryDto&gt; entries);</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:163](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L163) |  |
+| <code>public static WorkstationReadinessTone ToReadinessTone(EvidenceStatusDto status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:171](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L171) |  |
+| <code>public static string FormatKindText(string? value);</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:181](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L181) |  |
+
+## EvidenceWorkbenchSubjectRowModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceWorkbenchSubjectRowModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:8](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L8).
+
+```csharp
+public sealed record EvidenceWorkbenchSubjectRowModel(string SubjectKind, string SubjectId, string Label, string Workspace, string SubjectKey, Guid? LedgerBookId = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static EvidenceWorkbenchSubjectRowModel FromDto(EvidenceSubjectDto subject);</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:16](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L16) |  |
+
+## EvidenceWorkbenchSummaryFactModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceWorkbenchSummaryFactModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:30](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L30).
+
+```csharp
+public sealed record EvidenceWorkbenchSummaryFactModel(string Label, string Value, string Detail);
+```
+
+## InspectorPanelModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.InspectorPanelModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:317](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L317).
+
+Carries selected-record title, supporting detail, badge, and facts for a workstation inspector.
+
+```csharp
+public sealed class InspectorPanelModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Title { get; init; } = &quot;No selection&quot;;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:319](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L319) |  |
+| <code>public string Subtitle { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:321](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L321) |  |
+| <code>public string Detail { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:323](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L323) |  |
+| <code>public WorkstationBadgeModel? Badge { get; init; }</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:325](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L325) |  |
+| <code>public IReadOnlyList&lt;KeyValueFactModel&gt; Facts { get; init; } = Array.Empty&lt;KeyValueFactModel&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:327](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L327) |  |
+
+## KeyValueFactModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.KeyValueFactModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:330](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L330).
+
+```csharp
+public sealed record KeyValueFactModel(string Label, string Value, string Detail = "", string Tone = WorkspaceTone.Neutral);
+```
+
+## OperationsContinuityCloseBlockerPresentation
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityCloseBlockerPresentation</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:122](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L122).
+
+```csharp
+public sealed record OperationsContinuityCloseBlockerPresentation(CloseReadinessBlockerDto Blocker)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string OwnerLabel =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:124](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L124) |  |
+| <code>public string RepairInstruction =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:126](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L126) |  |
+
+## OperationsContinuityClosePresentation
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityClosePresentation</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:6](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L6).
+
+Displays the selected shared close decision; legacy gate totals cannot establish close readiness.
+
+```csharp
+public sealed record OperationsContinuityClosePresentation(bool IsReady, string Label, string Detail)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;CloseReadinessBlockerDto&gt; Blockers { get; init; } = [];</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:8](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L8) |  |
+| <code>public IReadOnlyList&lt;OperationsContinuityCloseBlockerPresentation&gt; BlockerRows =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:9](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L9) |  |
+| <code>public static OperationsContinuityClosePresentation Build(OperationsContinuityWorkflowDto? workflow, FinancialOperationsCommandCenterDto? commandCenter, CloseReadinessScopeDto? selectedScope);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:12](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L12) |  |
+
+## OperationsContinuityMapper
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityMapper</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:51](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L51).
+
+Projects the server-owned operations continuity contracts into desktop rows using the same derivations as the browser continuity screen: workflow/gate/severity/checklist/break status tone maps, the gate-priority next-action pick, and the open-item operator queue (an item is open when its tone is not ready). All gate and severity truth stays server-side.
+
+```csharp
+public static class OperationsContinuityMapper
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static WorkstationReadinessTone ToTone(OperationsWorkflowStatusDto status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:53](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L53) |  |
+| <code>public static WorkstationReadinessTone ToTone(OperationsGateStatusDto status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:68](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L68) |  |
+| <code>public static WorkstationReadinessTone SeverityTone(string? severity) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:78](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L78) |  |
+| <code>public static WorkstationReadinessTone ChecklistTone(string? status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:86](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L86) |  |
+| <code>public static WorkstationReadinessTone BreakTone(string? status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:95](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L95) |  |
+| <code>public static WorkstationReadinessTone LaneTone(OperationsReconciliationLaneStatusDto status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:104](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L104) |  |
+| <code>public static IReadOnlyList&lt;OperationsContinuityWorkflowRowModel&gt; BuildWorkflowRows(IReadOnlyList&lt;OperationsContinuityWorkflowSummaryDto&gt; workflows);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:114](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L114) |  |
+| <code>public static IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; BuildGateRows(OperationsContinuityWorkflowDto detail);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:142](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L142) |  |
+| <code>public static IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; BuildBlockerRows(OperationsContinuityWorkflowDto detail);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:162](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L162) |  |
+| <code>public static IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; BuildChecklistRows(OperationsContinuityWorkflowDto detail);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:182](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L182) |  |
+| <code>public static IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; BuildQueueRows(OperationsContinuityWorkflowDto? detail, IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; closeCalendarRows);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:212](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L212) | The unified operator queue: breaks, reconciliation lanes, blockers, checklist tasks, and close-calendar rows, keeping only open items (tone is not ready) like the browser queue. |
+| <code>public static OperationsContinuityQueueRollupModel BuildQueueRollup(bool isLoading, IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; queueRows);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:258](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L258) |  |
+| <code>public static OperationsContinuityNextActionModel ResolveNextAction(OperationsContinuityWorkflowDto? detail, bool isLoading, string? detailError, OperationsContinuityClosePresentation? closeReadiness = null);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:286](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L286) | Picks the server-recommended next action: all workflow and gate next actions ordered by the owning gate&#x27;s status priority (blocked outranks review outranks in-progress), first entry with a non-blank label — the browser console&#x27;s exact rule. |
+| <code>public static IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; BuildCloseCalendarRows(OperationsCloseCalendarDto? calendar);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:361](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L361) |  |
+| <code>public static bool IsChecklistTaskReady(OperationsCloseChecklistTaskDto task);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:390](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L390) |  |
+| <code>public static bool IsChecklistTaskBlocked(OperationsCloseChecklistTaskDto task);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:397](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L397) |  |
+| <code>public static string FormatTimestamp(DateTimeOffset value) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:404](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L404) |  |
+
+## OperationsContinuityNextActionModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityNextActionModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:30](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L30).
+
+```csharp
+public sealed record OperationsContinuityNextActionModel(string Label, string StatusText, string RouteText, string? DisabledReason, WorkstationReadinessTone ReadinessTone, string Tone);
+```
+
+## OperationsContinuityPanelRowModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityPanelRowModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:21](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L21).
+
+```csharp
+public sealed record OperationsContinuityPanelRowModel(string Id, string Label, string Value, string Detail, string Meta, WorkstationReadinessTone ReadinessTone, string Tone);
+```
+
+## OperationsContinuityQueueRollupModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityQueueRollupModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:38](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L38).
+
+```csharp
+public sealed record OperationsContinuityQueueRollupModel(string StatusLabel, int BlockedCount, int ReviewCount, WorkstationReadinessTone ReadinessTone, string Tone);
+```
+
 ## OperationsContinuityWorkflowRowModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityWorkflowRowModel</code>. Kind: `record`.
@@ -391,396 +743,3 @@ Declared public members:
 | <code>public static WorkstationStateModel Error(string title, string detail, string actionText = &quot;&quot;, string targetText = &quot;&quot;, string evidenceText = &quot;&quot;, string glyph = &quot;\uE783&quot;) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:100](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L100) |  |
 | <code>public static WorkstationStateModel Blocked(string title, string detail, WorkstationActionPostureModel actionPosture, IReadOnlyList&lt;WorkstationEvidenceLinkModel&gt;? evidenceLinks = null, IReadOnlyList&lt;WorkstationRecoveryActionModel&gt;? recoveryActions = null, WorkstationSignoffRequirementModel? signoffRequirement = null, string evidenceText = &quot;&quot;, string glyph = &quot;\uE783&quot;) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:109](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L109) |  |
 | <code>public static WorkstationStateModel Recovery(string title, string detail, WorkstationActionPostureModel actionPosture, IReadOnlyList&lt;WorkstationEvidenceLinkModel&gt;? evidenceLinks = null, IReadOnlyList&lt;WorkstationRecoveryActionModel&gt;? recoveryActions = null, WorkstationSignoffRequirementModel? signoffRequirement = null, string evidenceText = &quot;&quot;, string glyph = &quot;\uE930&quot;) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:133](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L133) |  |
-
-## WorkstationTableColumnModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationTableColumnModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:252](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L252).
-
-```csharp
-public sealed record WorkstationTableColumnModel(string Header, string BindingPath, double Width = 120, string StringFormat = "");
-```
-
-## WorkstationTableModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationTableModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:261](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L261).
-
-Carries table column definitions, rows, title, and empty-state copy for workstation grids.
-
-```csharp
-public class WorkstationTableModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Title { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:263](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L263) |  |
-| <code>public string EmptyTitle { get; init; } = &quot;No rows&quot;;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:265](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L265) |  |
-| <code>public string EmptyDetail { get; init; } = &quot;No records are available.&quot;;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:267](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L267) |  |
-| <code>public IReadOnlyList&lt;WorkstationTableColumnModel&gt; Columns { get; init; } = Array.Empty&lt;WorkstationTableColumnModel&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:269](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L269) |  |
-| <code>public IEnumerable Rows { get; init; } = Array.Empty&lt;object&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:271](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L271) |  |
-
-## WorkstationTableModel (generic arity 1)
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationTableModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:277](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L277).
-
-Adds strongly typed row enumeration to the workstation table presentation model.
-
-```csharp
-public sealed class WorkstationTableModel<TRecord>: WorkstationTableModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public new IEnumerable&lt;TRecord&gt; Rows { get; init; } = Array.Empty&lt;TRecord&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:279](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L279) |  |
-| <code>public WorkstationTableModel();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:281](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L281) |  |
-| <code>public WorkstationTableModel(IEnumerable&lt;TRecord&gt; rows, IReadOnlyList&lt;WorkstationTableColumnModel&gt; columns, string title = &quot;&quot;, string emptyTitle = &quot;No rows&quot;, string emptyDetail = &quot;No records are available.&quot;);</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:286](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L286) |  |
-
-## ConnectionStatusIndicatorControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Primitives.ConnectionStatusIndicatorControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:110](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L110).
-
-Provides a content surface for connection-status presentation.
-
-```csharp
-public sealed class ConnectionStatusIndicatorControl : ContentControl
-```
-
-## EmptyStatePanelControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Primitives.EmptyStatePanelControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:124](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L124).
-
-Provides a content surface for an empty-state explanation and action.
-
-```csharp
-public sealed class EmptyStatePanelControl : ContentControl
-```
-
-## ErrorStatePanelControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Primitives.ErrorStatePanelControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:131](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L131).
-
-Provides a content surface for an error explanation and recovery action.
-
-```csharp
-public sealed class ErrorStatePanelControl : ContentControl
-```
-
-## HealthBadgeControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Primitives.HealthBadgeControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:96](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L96).
-
-Provides a styled content surface for health-status presentation.
-
-```csharp
-public sealed class HealthBadgeControl : ContentControl
-```
-
-## LoadingOverlayControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Primitives.LoadingOverlayControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:117](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L117).
-
-Provides a content surface for loading overlays.
-
-```csharp
-public sealed class LoadingOverlayControl : ContentControl
-```
-
-## MetricTileControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Primitives.MetricTileControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:89](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L89).
-
-Provides a styled content surface for metric values.
-
-```csharp
-public sealed class MetricTileControl : ContentControl
-```
-
-## StatusRibbonControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Primitives.StatusRibbonControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:82](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L82).
-
-Provides an items-control surface for workstation status indicators.
-
-```csharp
-public sealed class StatusRibbonControl : ItemsControl
-```
-
-## TrustBadgeControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Primitives.TrustBadgeControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:103](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L103).
-
-Provides a content surface for trust-status presentation.
-
-```csharp
-public sealed class TrustBadgeControl : ContentControl
-```
-
-## WorkspaceHostControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Primitives.WorkspaceHostControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:42](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L42).
-
-Hosts workspace content with separate context, toolbar, and detail content slots.
-
-```csharp
-public sealed class WorkspaceHostControl : ContentControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty ContextContentProperty = DependencyProperty.Register(nameof(ContextContent), typeof(object), typeof(WorkspaceHostControl));</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:44](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L44) |  |
-| <code>public static readonly DependencyProperty ToolbarContentProperty = DependencyProperty.Register(nameof(ToolbarContent), typeof(object), typeof(WorkspaceHostControl));</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:47](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L47) |  |
-| <code>public static readonly DependencyProperty DetailContentProperty = DependencyProperty.Register(nameof(DetailContent), typeof(object), typeof(WorkspaceHostControl));</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:50](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L50) |  |
-| <code>public object? ContextContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:53](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L53) |  |
-| <code>public object? ToolbarContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:59](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L59) |  |
-| <code>public object? DetailContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:65](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L65) |  |
-
-## WorkspaceToolbarControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Primitives.WorkspaceToolbarControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:75](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L75).
-
-Provides an items-control surface for workspace toolbar actions.
-
-```csharp
-public sealed class WorkspaceToolbarControl : ItemsControl
-```
-
-## WorkstationShellControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Primitives.WorkstationShellControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:9](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L9).
-
-Hosts workstation content with separate navigation, header, and status content slots.
-
-```csharp
-public sealed class WorkstationShellControl : ContentControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty NavigationContentProperty = DependencyProperty.Register(nameof(NavigationContent), typeof(object), typeof(WorkstationShellControl));</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:11](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L11) |  |
-| <code>public static readonly DependencyProperty HeaderContentProperty = DependencyProperty.Register(nameof(HeaderContent), typeof(object), typeof(WorkstationShellControl));</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:14](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L14) |  |
-| <code>public static readonly DependencyProperty StatusContentProperty = DependencyProperty.Register(nameof(StatusContent), typeof(object), typeof(WorkstationShellControl));</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:17](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L17) |  |
-| <code>public object? NavigationContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:20](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L20) |  |
-| <code>public object? HeaderContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:26](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L26) |  |
-| <code>public object? StatusContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:32](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L32) |  |
-
-## WorkstationRegionState
-
-Qualified name: <code>Meridian.Wpf.Workstation.State.WorkstationRegionState</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:17](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L17).
-
-Provides observable region status, explanatory text, and optional recovery action identity.
-
-```csharp
-public sealed class WorkstationRegionState : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkstationRegionStatus Status { get; set; }</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:25](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L25) |  |
-| <code>public string Title { get; set; }</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:31](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L31) |  |
-| <code>public string Detail { get; set; }</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:37](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L37) |  |
-| <code>public string ActionId { get; set; }</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:43](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L43) |  |
-| <code>public string ActionLabel { get; set; }</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:49](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L49) |  |
-| <code>public static WorkstationRegionState Loading(string title, string detail) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:55](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L55) |  |
-| <code>public static WorkstationRegionState Empty(string title, string detail) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:63](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L63) |  |
-| <code>public static WorkstationRegionState Error(string title, string detail, string actionId = &quot;&quot;, string actionLabel = &quot;&quot;);</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:71](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L71) |  |
-| <code>public static WorkstationRegionState Success(string title, string detail) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:90](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L90) |  |
-| <code>public static WorkstationRegionState Warning(string title, string detail) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:98](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L98) |  |
-
-## WorkstationRegionStatus
-
-Qualified name: <code>Meridian.Wpf.Workstation.State.WorkstationRegionStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:5](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L5).
-
-```csharp
-public enum WorkstationRegionStatus
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Loading</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:7](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L7) |  |
-| <code>Empty</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:8](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L8) |  |
-| <code>Error</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:9](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L9) |  |
-| <code>Success</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:10](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L10) |  |
-| <code>Warning</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:11](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L11) |  |
-
-## ActivityLogGridControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Tables.ActivityLogGridControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:49](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L49).
-
-Displays read-only activity-log rows using row and column virtualization.
-
-```csharp
-public sealed class ActivityLogGridControl : DataGrid
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ActivityLogGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:51](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L51) |  |
-
-## DenseDataGridControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Tables.DenseDataGridControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:8](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L8).
-
-Displays read-only rows with explicit columns and row and column virtualization.
-
-```csharp
-public sealed class DenseDataGridControl : DataGrid
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DenseDataGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:10](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L10) |  |
-
-## KeyValueFactGridControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Tables.KeyValueFactGridControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:37](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L37).
-
-Displays read-only key-value facts using virtualized rows and columns.
-
-```csharp
-public sealed class KeyValueFactGridControl : DataGrid
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public KeyValueFactGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:39](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L39) |  |
-
-## SearchFilterBarControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Tables.SearchFilterBarControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:30](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L30).
-
-Provides a content surface for table search and filter controls.
-
-```csharp
-public sealed class SearchFilterBarControl : ContentControl
-```
-
-## AuditTimelineEntry
-
-Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.AuditTimelineEntry</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:8](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L8).
-
-Carries an audit event&#x27;s timestamp, actor, and message.
-
-```csharp
-public sealed class AuditTimelineEntry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DateTimeOffset Timestamp { get; init; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:10](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L10) |  |
-| <code>public string Actor { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L11) |  |
-| <code>public string Message { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:12](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L12) |  |
-
-## AuditTimelineViewModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.AuditTimelineViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:18](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L18).
-
-Exposes an observable collection of timestamped audit entries for desktop binding.
-
-```csharp
-public sealed class AuditTimelineViewModel : Meridian.Wpf.ViewModels.BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ObservableCollection&lt;AuditTimelineEntry&gt; Entries { get; } = [];</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:20](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L20) |  |
-
-## BatchedObservableCollection (generic arity 1)
-
-Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.BatchedObservableCollection</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/BatchedObservableCollection.cs:10](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/BatchedObservableCollection.cs#L10).
-
-Replaces collection contents while batching notifications into a single reset.
-
-```csharp
-public sealed class BatchedObservableCollection<T>: ObservableCollection<T>
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public void ReplaceAll(IEnumerable&lt;T&gt; items);</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/BatchedObservableCollection.cs:14](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/BatchedObservableCollection.cs#L14) |  |
-
-## DataQualityViewModelBase
-
-Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.DataQualityViewModelBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs:6](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs#L6).
-
-Adds an observable quality summary to workspace view models.
-
-```csharp
-public abstract class DataQualityViewModelBase : WorkspaceViewModelBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string QualitySummary { get; protected set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs:10](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs#L10) |  |

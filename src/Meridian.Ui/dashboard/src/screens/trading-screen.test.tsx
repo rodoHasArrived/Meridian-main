@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import userEvent from "@testing-library/user-event";
@@ -167,6 +168,7 @@ vi.mock("@/lib/api", async () => {
     evaluatePromotion: vi.fn().mockResolvedValue({ runId: "run-1", strategyId: "strat-1", strategyName: "S1", sourceMode: "backtest", targetMode: "paper", isEligible: true, sharpeRatio: 1.2, maxDrawdownPercent: 5, totalReturn: 10, reason: "Eligible", found: true, ready: true }),
     approvePromotion: vi.fn().mockResolvedValue({ success: true, promotionId: "promo-1", newRunId: "paper-1", reason: "approved", auditReference: "audit-promo-1", approvedBy: "operator-7" }),
     rejectPromotion: vi.fn().mockResolvedValue({ success: true, promotionId: "promo-reject-1", newRunId: null, reason: "Promotion rejected: Run breached risk gate.", auditReference: "audit-reject-1", approvedBy: "operator-7" }),
+    revokeLiveAuthorization: vi.fn(),
     getPromotionHistory: vi.fn().mockResolvedValue([{
       promotionId: "promo-1",
       strategyId: "strat-1",
@@ -372,6 +374,38 @@ async function openStrategyControls(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("TradingScreen", () => {
+  it("reopens a closed tool on a second explicit visit to the same task link and preserves its draft", async () => {
+    const user = userEvent.setup();
+    const route = "/trading#promotion-gate-panel";
+    renderWithRouter(<WithHeaderRefresh>
+      <Link to={route}>Follow promotion task</Link>
+      <TradingScreen data={data} />
+    </WithHeaderRefresh>, { initialEntries: [route] });
+    const gate = await screen.findByRole("dialog", { name: /backtest.*paper promotion gate/i });
+    await user.type(within(gate).getByLabelText("Approval reason"), "Retained review draft");
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog", { name: /backtest.*paper promotion gate/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    await waitForAsyncEffects();
+    expect(screen.queryByRole("dialog", { name: /backtest.*paper promotion gate/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("link", { name: "Follow promotion task" }));
+    const reopened = await screen.findByRole("dialog", { name: /backtest.*paper promotion gate/i });
+    expect(within(reopened).getByLabelText("Approval reason")).toHaveValue("Retained review draft");
+    expect(api.approvePromotion).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["#session-replay-panel", /session replay controls/i],
+    ["#promotion-gate-panel", /backtest.*paper promotion gate/i]
+  ])("opens the requested tool from an attention deep link %s", async (hash, name) => {
+    await renderTradingScreen(data, `/trading?fundAccountId=account-b${hash}`);
+    expect(await screen.findByRole("dialog", { name })).toBeVisible();
+    expect(api.approvePromotion).not.toHaveBeenCalled();
+    expect(api.startReplay).not.toHaveBeenCalled();
+  });
+
   it("retains source order and fill prices and identifies their unavailable currency", async () => {
     const user = userEvent.setup();
     await renderTradingScreen(data, "/trading/orders");
@@ -409,7 +443,8 @@ describe("TradingScreen", () => {
     const history = screen.getByRole("region", { name: "Paper session history and execution evidence" });
     // One layout: title, headline figures, the main lists, then secondary sections.
     expect([heading, headline, positions, orders, posture, history].every((element, index, all) => index === 0 || follows(all[index - 1], element))).toBe(true);
-    expect(within(positions).getByText("Live positions")).toBeInTheDocument();
+    expect(within(positions).getByTestId("trading-position-source")).toHaveTextContent(/^Source: (Paper|Live) session/);
+    expect(within(positions).getByRole("link", { name: "Compare with Portfolio holdings" })).toHaveAttribute("href", "/portfolio#compare-sources");
     expect(within(orders).getByRole("heading", { name: "Open orders" })).toBeInTheDocument();
     // Secondary sections are collapsed by default, and no section is a heading with no content.
     expect(posture.querySelector("details")).not.toHaveAttribute("open");
@@ -430,7 +465,7 @@ describe("TradingScreen", () => {
 
   it("renders the position book with wiring state on the positions route", async () => {
     await renderTradingScreen(data, "/trading/positions");
-    expect(screen.getByText("Live positions")).toBeInTheDocument();
+    expect(screen.getByTestId("trading-position-source")).toHaveTextContent(/^Source: (Paper|Live) session/);
     expect(screen.queryByLabelText("Trading headline metrics")).not.toBeInTheDocument();
     expect(screen.queryByText("Open orders")).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Workflow control strip" })).not.toBeInTheDocument();
@@ -987,6 +1022,42 @@ describe("TradingScreen", () => {
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(2));
   });
 
+  it("requires a reason to revoke a live grant and displays its retained outcome", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.getPromotionHistory).mockResolvedValueOnce([{
+      promotionId: "live-grant-1",
+      strategyId: "buy-and-hold",
+      strategyName: "Buy and Hold",
+      sourceRunType: "Paper",
+      targetRunType: "Live",
+      qualifyingSharpe: 1.2,
+      qualifyingMaxDrawdownPercent: 5,
+      qualifyingTotalReturn: 10,
+      promotedAt: "2026-01-01",
+      liveAuthorizationStatus: { state: "Active" },
+      liveAuthorization: {
+        fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749", allowedSymbols: ["AAPL"],
+        maxOrderNotional: 1200, currency: "USD", expiresAt: "2026-01-02T00:00:00Z"
+      }
+    }]);
+    vi.mocked(api.revokeLiveAuthorization).mockResolvedValueOnce({
+      authorizationId: "live-grant-1", actor: "operator-7",
+      reason: "Account mandate ended", revokedAt: "2026-01-01T12:00:00Z"
+    });
+
+    await renderTradingScreen();
+    const promotion = within(await openPromotionGate(user));
+    await user.click(await promotion.findByText("Revoke live authorization"));
+    const confirm = promotion.getByRole("button", { name: "Confirm revocation" });
+    expect(confirm).toBeDisabled();
+    await user.type(promotion.getByLabelText("Revocation reason"), "Account mandate ended");
+    await user.click(confirm);
+
+    expect(api.revokeLiveAuthorization).toHaveBeenCalledWith("live-grant-1", "Account mandate ended");
+    expect(await promotion.findByText(/Live authorization Revoked.*Account mandate ended/)).toBeVisible();
+    expect(promotion.queryByText("Revoke live authorization")).not.toBeInTheDocument();
+  });
+
   it("passes valid operating fund account scope when submitting an order", async () => {
     const user = userEvent.setup();
     const fundAccountId = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
@@ -1021,7 +1092,7 @@ describe("TradingScreen", () => {
 
   it("rejects direct order-ticket submits until the preview is acknowledged", async () => {
     const user = userEvent.setup();
-    await renderTradingScreen(data, "/trading/orders");
+    await renderTradingScreen(data, "/trading/orders", "53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
 
     await user.click(screen.getByRole("button", { name: /new order/i }));
     await user.type(screen.getByPlaceholderText("AAPL"), "AAPL");

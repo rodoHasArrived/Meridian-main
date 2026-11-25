@@ -6,6 +6,95 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MainWindow
+
+Qualified name: <code>Meridian.Wpf.MainWindow</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/MainWindow.xaml.cs:34](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L34).
+
+Main application window containing the navigation frame. Handles global keyboard shortcuts, command palette, and window state persistence.
+
+```csharp
+public partial class MainWindow : Window
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MainWindow(MainWindowViewModel viewModel, WpfServices.NavigationService navigationService, WpfServices.KeyboardShortcutService keyboardShortcutService, WpfServices.NotificationService notificationService, WpfServices.FundContextService fundContextService, WpfServices.WorkstationOperatingContextService operatingContextService, DesktopShellCoordinator shellCoordinator, DesktopShellSessionService sessionService, DesktopLaunchRouter launchRouter, FileDropRouter fileDropRouter, IWindowStateStore windowStateStore);</code> | [src/Meridian.Wpf/MainWindow.xaml.cs:59](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L59) |  |
+| <code>public void ForceStartupWindowRecovery();</code> | [src/Meridian.Wpf/MainWindow.xaml.cs:996](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L996) |  |
+
+## AccountingSubarea
+
+Qualified name: <code>Meridian.Wpf.Models.AccountingSubarea</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:49](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L49).
+
+Explicit accounting and operational-control subareas surfaced inside the Accounting workspace.
+
+```csharp
+public enum AccountingSubarea : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Operations</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:51](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L51) |  |
+| <code>Accounting</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:52](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L52) |  |
+| <code>Reconciliation</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:53](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L53) |  |
+| <code>Reporting</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:54](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L54) |  |
+| <code>Audit</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:55](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L55) |  |
+
+## ActionEntry
+
+Qualified name: <code>Meridian.Wpf.Models.ActionEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/ActionEntry.cs:8](../../../../src/Meridian.Wpf/Models/ActionEntry.cs#L8).
+
+Represents a single action (button) in the PageActionBar.
+
+```csharp
+public sealed record ActionEntry(string Label, ICommand Command, string? Icon = null, string? Tooltip = null, bool IsPrimary = false);
+```
+
+## ActiveRunContext
+
+Qualified name: <code>Meridian.Wpf.Models.ActiveRunContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:31](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L31).
+
+Active run context shared by the workstation shell pages.
+
+```csharp
+public sealed class ActiveRunContext
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string RunId { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:33](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L33) |  |
+| <code>public string StrategyName { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:34](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L34) |  |
+| <code>public string ModeLabel { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:35](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L35) |  |
+| <code>public string StatusLabel { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:36](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L36) |  |
+| <code>public string FundScopeLabel { get; set; } = &quot;Global scope&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:37](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L37) |  |
+| <code>public string? ParentRunId { get; set; }</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:38](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L38) |  |
+| <code>public string PortfolioPreview { get; set; } = &quot;Portfolio preview unavailable.&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:39](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L39) |  |
+| <code>public string LedgerPreview { get; set; } = &quot;Ledger preview unavailable.&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:40](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L40) |  |
+| <code>public string RiskSummary { get; set; } = &quot;Risk summary unavailable.&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:41](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L41) |  |
+| <code>public TradingWorkspaceStatusItem PromotionStatus { get; set; } = new ();</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:42](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L42) |  |
+| <code>public TradingWorkspaceStatusItem AuditStatus { get; set; } = new ();</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:43](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L43) |  |
+| <code>public TradingWorkspaceStatusItem ValidationStatus { get; set; } = new ();</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:44](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L44) |  |
+| <code>public string PromotionStatusLabel =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:45](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L45) |  |
+| <code>public string PromotionStatusDetail =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:46](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L46) |  |
+| <code>public string AuditStatusLabel =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:47](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L47) |  |
+| <code>public string AuditStatusDetail =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:48](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L48) |  |
+| <code>public string ValidationStatusLabel =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:49](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L49) |  |
+| <code>public string ValidationStatusDetail =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:50](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L50) |  |
+| <code>public bool CanPromoteToPaper { get; set; }</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:51](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L51) |  |
+
 ## AlertModel
 
 Qualified name: <code>Meridian.Wpf.Models.AlertModel</code>. Kind: `class`.
@@ -849,64 +938,3 @@ Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:198](../..
 ```csharp
 public sealed record FundReconciliationCheckDetailRow(string RowKey, string CheckLabel, string CategoryLabel, string StatusLabel, string StatusIcon, string SourceLabel, string ExpectedAmountText, string ActualAmountText, string VarianceText, string Reason, string ExpectedAsOfText, string ActualAsOfText, bool IsHighlighted = false);
 ```
-
-## FundReconciliationDetailModel
-
-Qualified name: <code>Meridian.Wpf.Models.FundReconciliationDetailModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:173](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L173).
-
-```csharp
-public sealed record FundReconciliationDetailModel(FundReconciliationSourceType SourceType, string DetailKey, string Title, string Subtitle, string StatusLabel, string CoverageSummary, string LastUpdatedText, Guid? AccountId, Guid ReconciliationRunId, string? RunId, string? FocusBreakId, bool SupportsBreakActions, int TotalChecks, int TotalMatched, int TotalBreaks, decimal BreakAmountTotal, int SecurityIssueCount, string EmptyExceptionsText, string EmptySecurityCoverageText, IReadOnlyList<FundReconciliationCheckDetailRow> ExceptionRows, IReadOnlyList<FundReconciliationCheckDetailRow> AllCheckRows, IReadOnlyList<FundReconciliationSecurityCoverageRow> SecurityCoverageRows, IReadOnlyList<FundReconciliationAuditTrailRow> AuditRows);
-```
-
-## FundReconciliationQueueView
-
-Qualified name: <code>Meridian.Wpf.Models.FundReconciliationQueueView</code>. Kind: `enum`.
-
-Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:5](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L5).
-
-```csharp
-public enum FundReconciliationQueueView : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>BreakQueue = 0</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:7](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L7) |  |
-| <code>Runs = 1</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:8](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L8) |  |
-
-## FundReconciliationReadAvailability
-
-Qualified name: <code>Meridian.Wpf.Models.FundReconciliationReadAvailability</code>. Kind: `enum`.
-
-Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:31](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L31).
-
-```csharp
-public enum FundReconciliationReadAvailability : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Available = 0</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:33](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L33) |  |
-| <code>Degraded = 1</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:34](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L34) |  |
-| <code>Unavailable = 2</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:35](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L35) |  |
-
-## FundReconciliationReadResult
-
-Qualified name: <code>Meridian.Wpf.Models.FundReconciliationReadResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:38](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L38).
-
-```csharp
-public sealed record FundReconciliationReadResult(ReconciliationSummary Summary, int KnownRunCount, int MissingRunCount, int UnavailableRunCount)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FundReconciliationReadAvailability Availability =&gt; …;</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:44](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L44) |  |

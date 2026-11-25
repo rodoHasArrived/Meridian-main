@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildTrustStripState, resolveDataSourceTone } from "@/app-shell.trust-strip";
+import { buildTrustStripState, resolveDataSourceTone, resolveShellFreshness } from "@/app-shell.trust-strip";
 import type { DataWorkspaceResponse, SessionInfo } from "@/types";
 
 function session(environment: SessionInfo["environment"]): SessionInfo {
@@ -114,5 +114,23 @@ describe("shell trust evidence", () => {
     const data = { providers: [{ status: "Unrecognized" }] } as unknown as DataWorkspaceResponse;
     const item = buildTrustStripState({ ...options, data, dataProvenance: "real" }).items.find((row) => row.id === "providers");
     expect(item).toMatchObject({ value: "1 unverified", tone: "review", href: "/data/providers" });
+  });
+});
+
+describe("resolveShellFreshness", () => {
+  const item = (id: string, tone: "ready" | "review" | "blocked" | "pending", value = "x") =>
+    ({ id, label: id === "providers" ? "Providers" : "Provenance", value, detail: "", tone, ariaLabel: "", href: null, actionLabel: null });
+
+  it("takes the worst of provenance and provider health, as the masthead pill judges them", () => {
+    expect(resolveShellFreshness({ items: [item("build", "blocked"), item("source", "ready"), item("providers", "review", "1 of 4 healthy")] }))
+      .toEqual({ tone: "review", value: "Providers 1 of 4 healthy" });
+    expect(resolveShellFreshness({ items: [item("source", "blocked", "SEEDED"), item("providers", "review")] }))
+      .toEqual({ tone: "blocked", value: "Provenance SEEDED" });
+    expect(resolveShellFreshness({ items: [item("source", "ready"), item("providers", "ready")] })).toEqual({ tone: "ready", value: null });
+  });
+
+  it("is unknown while loading or when the pill has no source items", () => {
+    expect(resolveShellFreshness({ items: [item("source", "pending"), item("providers", "pending")] }).tone).toBe("unknown");
+    expect(resolveShellFreshness({ items: [] }).tone).toBe("unknown");
   });
 });

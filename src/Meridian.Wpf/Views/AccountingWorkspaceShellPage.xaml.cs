@@ -183,7 +183,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
                 WorkspaceSubtitle = WorkspaceCopyCatalog.Accounting.ShellSubtitleFund,
                 PrimaryScopeLabel = "Accounting Scope",
                 PrimaryScopeValue = operatingContext?.DisplayName ?? $"{profile.DisplayName} · {profile.BaseCurrency}",
-                AsOfValue = FormatHelpers.FormatUtcTimestamp(ledger?.AsOf, "Awaiting ledger snapshot"),
+                AsOfValue = FormatHelpers.FormatDisplayTimestamp(ledger?.AsOf, "Awaiting ledger snapshot"),
                 FreshnessValue = ledger is null ? "Fund data not loaded" : $"Ledger {ledger.JournalEntryCount} journals · {ledger.TrialBalance.Count} lines",
                 ReviewStateLabel = "Approval",
                 ReviewStateValue = reconciliation.OpenBreakCount > 0 ? $"{reconciliation.OpenBreakCount} break(s) require review" : "Unlocked",

@@ -303,6 +303,23 @@ public interface IAssetOperationsQueryService
     Task<AssetOperationsDetailDto?> GetOperationsAsync(Guid securityId, CancellationToken ct = default);
 
     Task<AssetOperationsReadinessDto?> GetReadinessAsync(Guid securityId, CancellationToken ct = default);
+
+    /// <summary>
+    /// True when <see cref="GetOperationsAsOfAsync"/> projects from the terms recorded as of the
+    /// context's cutoff. False means it falls back to the current projection.
+    /// </summary>
+    bool SupportsTermsAsOf => false;
+
+    /// <summary>
+    /// The operations projected at <paramref name="context"/>'s cutoff, from the terms recorded by its
+    /// <c>KnownAt</c>. The default implementation returns the current projection; check
+    /// <see cref="SupportsTermsAsOf"/> before relying on historical terms.
+    /// </summary>
+    Task<AssetOperationsDetailDto?> GetOperationsAsOfAsync(
+        Guid securityId,
+        Meridian.Contracts.FixedIncome.BondCalculationContext context,
+        CancellationToken ct = default) =>
+        GetOperationsAsync(securityId, ct);
 }
 
 /// <summary>

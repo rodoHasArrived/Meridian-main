@@ -24,6 +24,8 @@ Snapshot date: 2026-11-12
 | ID | Title | Status | Health | Priority | Owner lane |
 | --- | --- | --- | --- | --- | --- |
 | W1-DATA-001 | Provider trust gate and data confidence baseline | done | green | critical | Data Confidence and Validation |
+| W1-DATA-ALIGN-001 | Time-series alignment execution service | planned | yellow | low | Data Confidence and Validation |
+| W1-DATA-DEDUP-001 | Archive deduplication maintenance task | planned | yellow | low | Data Confidence and Validation |
 | W2-PROMO-001 | Paper promotion evidence and operator acceptance | done | green | high | Execution and Fund Accounts |
 | W2-TRD-001 | Paper trading cockpit reliability | done | green | critical | Execution and Fund Accounts |
 | W3-CONT-001 | Research to paper continuity | done | green | high | Strategy Analytics |
@@ -77,11 +79,16 @@ Snapshot date: 2026-11-12
 | W12-CREDIT-001 | DirectLoan operations and evidence reconciliation | planned | green | medium | Accounting and Ledger |
 | W12-ENTITY-001 | Effective entity lifecycle and audited book-control migration | accepted | green | high | Accounting and Ledger |
 | W12-FINRPT-001 | Ledger-backed financial statement control pack | planned | green | medium | Accounting and Ledger |
-| W12-ICACCRUAL-001 | Governed intercompany loan-interest accrual from structured terms | in_progress | yellow | high | Accounting and Ledger |
+| W12-ICACCRUAL-001 | Governed intercompany loan-interest accrual from structured terms | ready_for_acceptance | green | high | Accounting and Ledger |
 | W12-ICAGREE-001 | Intercompany accounting profiles and legacy attribution | accepted | green | high | Accounting and Ledger |
+| W12-ICCOMPOUND-001 | Periodic compounding of governed intercompany interest on posted accruals | ready_for_acceptance | green | medium | Accounting and Ledger |
+| W12-ICCONFIRM-001 | Reciprocal intercompany balance confirmation, advisory | ready_for_acceptance | green | high | Accounting and Ledger |
+| W12-ICFEE-001 | Governed fixed intercompany management fees from declared terms | ready_for_acceptance | green | high | Accounting and Ledger |
+| W12-ICFLOAT-001 | Floating-rate intercompany loan interest from reviewed fixings | ready_for_acceptance | green | high | Accounting and Ledger |
 | W12-ICINCOME-001 | Policy-governed intercompany revenue and expense elimination | accepted | green | medium | Accounting and Ledger |
 | W12-ICPAIR-001 | Durable reviewed counterpart proposals and aged intercompany breaks | accepted | green | high | Accounting and Ledger |
-| W12-YEND-001 | Fiscal year-end close and opening-balance roll-forward | planned | green | medium | Accounting and Ledger |
+| W12-ICSCHEDULE-001 | Opt-in, reviewed intercompany accrual schedules | ready_for_acceptance | green | medium | Accounting and Ledger |
+| W12-YEND-001 | Fiscal year-end close and opening-balance roll-forward | in_progress | green | medium | Accounting and Ledger |
 | W13-OMS-001 | Governed order management and broker execution workbench | planned | green | medium | Execution and Fund Accounts |
 | W13-STRAT-001 | Governed strategy formulation and execution lifecycle | planned | green | medium | Strategy Analytics |
 | W14-ATTEST-001 | Single-principal attestation for governed approvals in the single-operator envelope | in_progress | yellow | medium | Platform Security and Governance |

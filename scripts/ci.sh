@@ -309,6 +309,9 @@ verify_docs() {
   run_step "Validate status doc staleness" \
     "$python_cmd" scripts/check_status_doc_staleness.py
 
+  run_step "Enforce no-new-raw-evidence ratchet" \
+    "$python_cmd" build/scripts/ci/check-evidence-footprint.py
+
   # The agent validator needs PyYAML. Check for it here and name the install command
   # rather than pip-installing: this script runs against a developer's own interpreter,
   # and silently mutating it is worse than a failure that says what to do. The hosted
@@ -417,6 +420,11 @@ verify_workflows() {
   # owner, a category, and a review date that expires.
   run_step "Validate test skip register" \
     "$python_cmd" build/scripts/ci/check-test-skip-register.py --summary
+
+  # A route or task that honestly refuses because nothing implements it (501, "not executed")
+  # must be owned by a roadmap row or a reasoned baseline entry, so the gap cannot go stale.
+  run_step "Validate unimplemented surfaces are roadmap-tracked" \
+    "$python_cmd" build/scripts/ci/check-unimplemented-surfaces.py --summary
 
   # Audit finding P9: ~65 of 75 tests/scripts suites were wired to no CI lane and several
   # had rotted unnoticed. The runner gates every suite except the tracked quarantine list

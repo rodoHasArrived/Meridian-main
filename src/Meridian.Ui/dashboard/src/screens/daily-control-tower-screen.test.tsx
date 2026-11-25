@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { screen, waitFor, within } from "@testing-library/react";
+import { useLocation } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { buildAppShellViewState, type AppShellWorkspacePayload } from "@/app-shell.view-model";
@@ -9,6 +10,7 @@ import { renderWithRouter } from "@/test/render";
 import type { DataWorkspaceResponse, TradingWorkspaceResponse } from "@/types";
 import { commandOperatorTriage, getOperatorTriageInbox, type OperatorTriageInbox, type OperatorTriageItem } from "@/lib/operator-inbox-triage";
 
+import { resetSinceLastVisitCache, type SurfaceVisitServices } from "@/lib/since-last-visit";
 vi.mock("@/lib/operator-inbox-triage", async (load) => ({ ...await load<typeof import("@/lib/operator-inbox-triage")>(), getOperatorTriageInbox: vi.fn(), commandOperatorTriage: vi.fn(), bulkAssignOperatorTriage: vi.fn() }));
 vi.mock("@/lib/table-workbench", async (load) => ({ ...await load<typeof import("@/lib/table-workbench")>(), loadTableViews: vi.fn(async () => []), saveTableView: vi.fn() }));
 
@@ -100,10 +102,12 @@ const payload: AppShellWorkspacePayload = {
 
 function renderScreen({
   refreshing = false,
-  search = "?symbol=MSFT"
+  search = "?symbol=MSFT",
+  visitServices
 }: {
   refreshing?: boolean;
   search?: string;
+  visitServices?: Partial<SurfaceVisitServices>;
 } = {}) {
   const shell = buildAppShellViewState({
     pathname: "/",
@@ -119,6 +123,7 @@ function renderScreen({
       trustStrip={shell.trustStrip}
       attention={shell.attention}
       refreshing={refreshing}
+      visitServices={visitServices}
     />
   );
 }
@@ -133,6 +138,34 @@ async function renderLoaded(options: Parameters<typeof renderScreen>[0] = {}) {
   await screen.findByRole("row", { name: "Cash break triage" });
   return result;
 }
+
+describe("DailyControlTowerScreen new since you last looked", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetSinceLastVisitCache();
+    window.sessionStorage.clear();
+  });
+
+  it("marks inbox items created or changed after the viewer's previous visit", async () => {
+    vi.mocked(getOperatorTriageInbox).mockResolvedValue({
+      ...inboxResponse,
+      items: [
+        { ...inboxBlocker, activity: [{ commandId: "c-1", action: "Acknowledge", actorId: "operator-2", reason: "Looking", occurredAt: "2026-05-14T19:30:00Z" }] },
+        { ...inboxInfo, createdAt: "2026-05-14T20:30:00Z" }
+      ]
+    } as OperatorTriageInbox);
+    const visit = { surface: "today-queue", visitedAt: "2026-05-14T21:30:00Z", previousVisitAt: "2026-05-14T19:00:00Z" };
+    const record = vi.fn(async () => visit);
+    renderScreen({ search: "?symbol=MSFT", visitServices: { record, read: record } });
+    await screen.findByRole("row", { name: "Cash break triage" });
+    expect(record).toHaveBeenCalledWith("today-queue");
+    expect(await screen.findByTestId("today-since-last-visit")).toHaveTextContent(/2 new and 1 updated since your last visit \(May 14, 2026, 19:00 UTC\)/);
+    const blockerRow = screen.getByRole("row", { name: "Cash break triage" });
+    expect(blockerRow.querySelector("[data-since-last-visit='updated']")).not.toBeNull();
+    // The workspace signal observed at 20:00 is new as well; one observed earlier is not marked.
+    expect(document.querySelectorAll("[data-since-last-visit='new']").length).toBe(2);
+  });
+});
 
 describe("DailyControlTowerScreen", () => {
   beforeEach(() => {
@@ -160,11 +193,22 @@ describe("DailyControlTowerScreen", () => {
     // informational inbox note is not counted.
     expect(screen.getByTestId("today-attention-count")).toHaveTextContent("4 need attention · blocked + action, excluding snoozed");
     expect(confidence).not.toHaveTextContent(/workspace signals? in the queue/);
-    expect(confidence).toHaveTextContent("Stale update");
-    expect(confidence).toHaveTextContent("May 14, 2026");
+    // No stray evidence line above the queue; the selected item says why it is ranked where it is.
+    expect(confidence).not.toHaveTextContent("Selected evidence");
+    expect(screen.getByTestId("today-rank-reason")).toHaveTextContent("Ranked 2 of 4. Sorted by severity (blocked), then oldest first: 2nd oldest of 2 blocked items.");
     expect(screen.queryByLabelText("Daily control tower decision drivers")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Daily control tower trust posture")).not.toBeInTheDocument();
     expect(screen.getByText("More evidence").closest("details")).not.toHaveAttribute("open");
+  });
+
+  it("offers Assigned to me on every source and says why workspace signals leave the list", async () => {
+    await renderLoaded();
+    const user = userEvent.setup();
+    // "Assigned to me" is the Owner switch's own-items choice.
+    await user.selectOptions(screen.getByRole("combobox", { name: "Owner" }), "mine");
+    const grid = screen.getByRole("treegrid", { name: "Today queue" });
+    expect(grid.querySelectorAll('tbody tr[data-dense-row-id^="workspace:"]')).toHaveLength(0);
+    expect(screen.getByText("Workspace signals have no owner, so Assigned to me hides them.")).toBeInTheDocument();
   });
 
   it("keeps the seeded read-only inbox notice out of the normal view while its actions stay disabled", async () => {
@@ -205,7 +249,9 @@ describe("DailyControlTowerScreen", () => {
     expect(within(grid).getByRole("columnheader", { name: "Source" })).toBeInTheDocument();
     expect(screen.getByRole("row", { name: "Brokerage sync failed" })).toHaveTextContent("Workspace signal");
     expect(screen.getByRole("row", { name: "Cash break triage" })).toHaveTextContent("Shared inbox");
-    expect(screen.getByRole("row", { name: "Cash break triage" })).toHaveTextContent("Unassigned");
+    // No row has an owner, so the Owner column says so once instead of on every row.
+    expect(within(grid).queryByRole("columnheader", { name: "Owner" })).not.toBeInTheDocument();
+    expect(screen.getByText("Owner: no item is assigned")).toBeInTheDocument();
 
     // Severity first (both blockers lead), then age (the older inbox blocker first), then source rank.
     const keys = gridRowKeys();
@@ -287,7 +333,7 @@ describe("DailyControlTowerScreen", () => {
     const user = userEvent.setup();
     await renderLoaded();
     expect(within(screen.getByRole("row", { name: "Brokerage sync failed" })).queryByRole("checkbox")).not.toBeInTheDocument();
-    await user.click(screen.getByRole("checkbox", { name: "Select Cash break triage for assignment" }));
+    await user.click(screen.getByRole("checkbox", { name: "Select Cash break triage for bulk actions" }));
     await user.click(screen.getByRole("button", { name: "Assign 1 selected" }));
     expect(screen.getByRole("dialog")).toHaveAccessibleName("Assign 1 selected items");
   });
@@ -469,5 +515,29 @@ describe("DailyControlTowerScreen", () => {
     const { container } = renderScreen();
     const results = await axe(container);
     expect(results.violations).toEqual([]);
+  });
+});
+
+
+function TodayLocationProbe() {
+  const location = useLocation();
+  return <output data-testid="today-location">{location.search}{location.hash}</output>;
+}
+
+describe("Today source URL state", () => {
+  it("restores the unified Source filter and preserves operating scope and anchor when changing it", async () => {
+    const user = userEvent.setup();
+    vi.mocked(getOperatorTriageInbox).mockResolvedValue(inboxResponse);
+    const shell = buildAppShellViewState({ pathname: "/today", search: "?symbol=MSFT", loading: false, error: null, workspaceErrors: {}, payload });
+    renderWithRouter(<><DailyControlTowerScreen viewModel={shell.workflowContinuity} trustStrip={shell.trustStrip} attention={shell.attention} /><TodayLocationProbe /></>, { initialEntries: ["/today?symbol=MSFT&source=inbox#evidence"] });
+    const source = screen.getByRole("tablist", { name: "Queue source" });
+    expect(within(source).getByRole("tab", { name: /Shared inbox/ })).toHaveAttribute("aria-selected", "true");
+    expect(await screen.findByRole("row", { name: "Cash break triage" })).toBeInTheDocument();
+    expect(screen.queryByRole("row", { name: "Report pack approval waiting" })).not.toBeInTheDocument();
+    await user.click(within(source).getByRole("tab", { name: /Workspace signals/ }));
+    expect(screen.getByTestId("today-location")).toHaveTextContent("?symbol=MSFT&source=workspace#evidence");
+    expect(screen.queryByRole("row", { name: "Cash break triage" })).not.toBeInTheDocument();
+    await user.click(within(source).getByRole("tab", { name: /^All/ }));
+    expect(screen.getByTestId("today-location")).toHaveTextContent("?symbol=MSFT#evidence");
   });
 });

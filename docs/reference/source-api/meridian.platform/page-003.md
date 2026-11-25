@@ -180,7 +180,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Platform.Runtime.IssueSeverity</code>. Kind: `enum`.
 
-Source: [src/Meridian.Platform/Runtime/StartupSummary.cs:429](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L429).
+Source: [src/Meridian.Platform/Runtime/StartupSummary.cs:420](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L420).
 
 Severity level for quick check issues.
 
@@ -192,9 +192,9 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Info</code> | [src/Meridian.Platform/Runtime/StartupSummary.cs:431](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L431) |  |
-| <code>Warning</code> | [src/Meridian.Platform/Runtime/StartupSummary.cs:432](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L432) |  |
-| <code>Error</code> | [src/Meridian.Platform/Runtime/StartupSummary.cs:433](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L433) |  |
+| <code>Info</code> | [src/Meridian.Platform/Runtime/StartupSummary.cs:422](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L422) |  |
+| <code>Warning</code> | [src/Meridian.Platform/Runtime/StartupSummary.cs:423](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L423) |  |
+| <code>Error</code> | [src/Meridian.Platform/Runtime/StartupSummary.cs:424](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L424) |  |
 
 ## OperationProgress
 
@@ -254,7 +254,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Platform.Runtime.QuickCheckIssue</code>. Kind: `record`.
 
-Source: [src/Meridian.Platform/Runtime/StartupSummary.cs:420](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L420).
+Source: [src/Meridian.Platform/Runtime/StartupSummary.cs:411](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L411).
 
 An issue found during quick check.
 
@@ -266,7 +266,7 @@ public sealed record QuickCheckIssue(IssueSeverity Severity, string Component, s
 
 Qualified name: <code>Meridian.Platform.Runtime.QuickCheckResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Platform/Runtime/StartupSummary.cs:411](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L411).
+Source: [src/Meridian.Platform/Runtime/StartupSummary.cs:402](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L402).
 
 Result of a quick configuration check.
 
@@ -292,9 +292,28 @@ Declared public members:
 | --- | --- | --- |
 | <code>public StartupSummary(TextWriter? output = null);</code> | [src/Meridian.Platform/Runtime/StartupSummary.cs:19](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L19) |  |
 | <code>public void Display(AppConfig config, string configPath, string[] args);</code> | [src/Meridian.Platform/Runtime/StartupSummary.cs:27](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L27) | Displays a comprehensive startup summary. |
-| <code>public void DisplayCompact(AppConfig config);</code> | [src/Meridian.Platform/Runtime/StartupSummary.cs:254](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L254) | Displays a compact one-line status. |
-| <code>public QuickCheckResult PerformQuickCheck(AppConfig config);</code> | [src/Meridian.Platform/Runtime/StartupSummary.cs:265](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L265) | Displays a quick status check. |
-| <code>public void DisplayQuickCheck(QuickCheckResult result);</code> | [src/Meridian.Platform/Runtime/StartupSummary.cs:342](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L342) | Displays the quick check results. |
+| <code>public void DisplayCompact(AppConfig config);</code> | [src/Meridian.Platform/Runtime/StartupSummary.cs:245](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L245) | Displays a compact one-line status. |
+| <code>public QuickCheckResult PerformQuickCheck(AppConfig config);</code> | [src/Meridian.Platform/Runtime/StartupSummary.cs:256](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L256) | Displays a quick status check. |
+| <code>public void DisplayQuickCheck(QuickCheckResult result);</code> | [src/Meridian.Platform/Runtime/StartupSummary.cs:333](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L333) | Displays the quick check results. |
+
+## HistoricalSessionScheduleResolver
+
+Qualified name: <code>Meridian.Platform.Scheduling.HistoricalSessionScheduleResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs:10](../../../../src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs#L10).
+
+Resolves session expectations only after positively identifying a supported listing.
+
+```csharp
+public sealed class HistoricalSessionScheduleResolver(ISecurityIdentityQueryService? identities, IOperationalTradingCalendar? calendar = null, DateTimeOffset? identityAsOfUtc = null, IReadOnlyDictionary<string, SecurityDetailDto?>? resolvedIdentities = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;HistoricalSessionSchedule?&gt; ResolveAsync(string symbol, DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs:18](../../../../src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs#L18) |  |
+| <code>public HistoricalSessionSchedule UsSessions(DateOnly from, DateOnly to);</code> | [src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs:64](../../../../src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs#L64) |  |
 
 ## MarketHoliday
 

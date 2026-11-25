@@ -6,6 +6,96 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TickerStripService
+
+Qualified name: <code>Meridian.Wpf.Services.TickerStripService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/TickerStripService.cs:12](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L12).
+
+Manages the single always-on-top TickerStripWindow instance. Call Toggle to open/close the strip from any part of the shell.
+
+```csharp
+public static class TickerStripService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void Toggle();</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:17](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L17) | Opens the strip if it is closed; closes it if it is open. |
+| <code>public static void Open();</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:26](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L26) | Opens and shows the ticker strip (no-op if already visible). |
+| <code>public static void Close();</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:41](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L41) | Closes the ticker strip (no-op if already closed). |
+| <code>public static bool IsOpen =&gt; …;</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:48](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L48) | Returns true while the strip window is open. |
+
+## TickerUpdateMessage
+
+Qualified name: <code>Meridian.Wpf.Services.TickerUpdateMessage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/MessagingService.cs:294](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L294).
+
+Message payload for a live price tick, published by any component that receives quote/trade data. Subscribers (e.g. TickerStripViewModel) can consume this instead of polling the HTTP API.
+
+```csharp
+public sealed class TickerUpdateMessage
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Services/MessagingService.cs:296](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L296) |  |
+| <code>public decimal Bid { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:297](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L297) |  |
+| <code>public decimal Ask { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:298](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L298) |  |
+| <code>public decimal Last { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:299](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L299) |  |
+| <code>public bool Uptick { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:300](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L300) |  |
+
+## ToastNotificationService
+
+Qualified name: <code>Meridian.Wpf.Services.ToastNotificationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/ToastNotificationService.cs:21](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L21).
+
+Delivers Windows balloon-tip notifications via NotifyIcon. The project targets net9.0-windows (no explicit Windows version suffix), so the WinRT Windows.UI.Notifications API is unavailable without adding Microsoft.Windows.SDK.Contracts or bumping the TFM to net9.0-windows10.0.17763.0. This service provides a functionally equivalent experience through the system-tray balloon-tip channel. Limitation: Balloon tips do NOT persist in the Windows Action Center; they appear for ≈5 s and are then silently dismissed. For true Action Center persistence, change TargetFramework to net9.0-windows10.0.17763.0 and use Windows.UI.Notifications.ToastNotificationManager.
+
+```csharp
+public sealed class ToastNotificationService : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ToastNotificationService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:39](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L39) | Gets the singleton instance. |
+| <code>public static void SetAppUserModelId() =&gt; …;</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:58](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L58) | Registers the AppUserModelID with Windows so that toast activations, JumpList entries, and taskbar pins all share the same identity. Must be called before any window is shown. |
+| <code>public void ShowBackfillComplete(int symbolCount, long barsWritten, TimeSpan duration);</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:67](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L67) | Shows a &quot;Backfill Complete&quot; balloon notification. |
+| <code>public void ShowProviderDisconnected(string providerName);</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:81](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L81) | Shows a &quot;Provider Disconnected&quot; balloon notification. |
+| <code>public void ShowDataQualityAlert(string symbol, double score);</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:96](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L96) | Shows a &quot;Data Quality Alert&quot; balloon notification when a quality score drops below the warning threshold. |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:153](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L153) |  |
+
+## TooltipService
+
+Qualified name: <code>Meridian.Wpf.Services.TooltipService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/TooltipService.cs:14](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L14).
+
+Service for managing contextual tooltips, onboarding tips, and feature discovery. Tracks which tips have been shown to avoid repetition. Uses file-based storage for dismissed tips persistence. Delegates content to the shared TooltipContent in Ui.Services.
+
+```csharp
+public sealed class TooltipService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static TooltipService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:22](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L22) |  |
+| <code>public FeatureHelp GetFeatureHelp(string featureKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:29](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L29) |  |
+| <code>public bool ShouldShowTip(string tipKey);</code> | [src/Meridian.Wpf/Services/TooltipService.cs:31](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L31) |  |
+| <code>public void DismissTip(string tipKey);</code> | [src/Meridian.Wpf/Services/TooltipService.cs:41](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L41) |  |
+| <code>public void ResetAllTips();</code> | [src/Meridian.Wpf/Services/TooltipService.cs:47](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L47) |  |
+| <code>public IReadOnlyList&lt;OnboardingTip&gt; GetOnboardingTips(string pageKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:54](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L54) |  |
+| <code>public string GetTooltipContent(string featureKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:60](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L60) | Gets formatted tooltip text for a feature (title + description + tips). Can be used to populate WPF ToolTip content on controls. |
+
 ## TradingSafetyCommandService
 
 Qualified name: <code>Meridian.Wpf.Services.TradingSafetyCommandService</code>. Kind: `class`.
@@ -338,20 +428,20 @@ Declared public members:
 | <code>public string? GetPageFilterState(string pageTag, string filterKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:853](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L853) | Retrieves a previously saved filter value for a page from the active session. Returns null when no value has been stored. |
 | <code>public Task&lt;string&gt; ExportWorkspaceAsync(string workspaceId) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:865](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L865) |  |
 | <code>public Task&lt;WorkspaceTemplate?&gt; ImportWorkspaceAsync(string json, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:877](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L877) |  |
-| <code>public event EventHandler&lt;WorkspaceEventArgs&gt;? WorkspaceCreated;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1694](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1694) |  |
-| <code>public event EventHandler&lt;WorkspaceEventArgs&gt;? WorkspaceUpdated;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1695](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1695) |  |
-| <code>public event EventHandler&lt;WorkspaceEventArgs&gt;? WorkspaceDeleted;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1696](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1696) |  |
-| <code>public event EventHandler&lt;WorkspaceEventArgs&gt;? WorkspaceActivated;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1697](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1697) |  |
-| <code>public Task SaveDockLayoutAsync(string workspaceId, string layoutXml, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1705](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1705) | Persists the AvalonDock layout XML string for a named workspace shell (e.g., &quot;trading&quot; or &quot;strategy&quot;) to the local application settings file. |
-| <code>public Task&lt;string?&gt; GetDockLayoutAsync(string workspaceId, string? fundProfileId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1719](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1719) | Retrieves the previously persisted AvalonDock layout XML for a workspace shell. Returns null if no layout has been saved yet. |
-| <code>public Task SaveWorkspaceLayoutStateAsync(string workspaceId, WorkstationLayoutState layoutState, string? fundProfileId = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1749](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1749) |  |
-| <code>public Task SaveWorkspaceLayoutStateForContextAsync(string workspaceId, WorkstationLayoutState layoutState, string? operatingContextKey = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1784](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1784) |  |
-| <code>public Task&lt;WorkstationLayoutState?&gt; GetWorkspaceLayoutStateAsync(string workspaceId, string? fundProfileId = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1791](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1791) |  |
-| <code>public Task&lt;WorkstationLayoutState?&gt; GetWorkspaceLayoutStateForContextAsync(string workspaceId, string? operatingContextKey = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1818](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1818) |  |
-| <code>public WorkspaceSummaryStats GetSummaryStatsForActiveWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1833](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1833) | Returns a live WorkspaceSummaryStats for the currently active workspace derived from LastSession. Falls back to an empty instance when no session is present. This is a fast, synchronous read that does not hit any remote service. |
-| <code>public WorkspaceSummaryStats? GetCachedSummaryStats() =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1840](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1840) | Returns the cached WorkspaceSummaryStats from the last persisted session without recomputing it. Useful for cold-start display before the first full load. |
-| <code>public Task SaveQuickActionsAsync(string workspaceId, IEnumerable&lt;WorkspaceQuickAction&gt; actions, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1847](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1847) | Updates the quick-action list on the active workspace template and persists the change. Replaces the existing list; pass an empty collection to clear all quick actions. |
-| <code>public IReadOnlyList&lt;WorkspaceQuickAction&gt; GetQuickActionsForWorkspace(string workspaceId) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1876](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1876) | Returns the quick-action list for the specified workspace, or an empty list when the workspace does not exist or has no actions configured. |
+| <code>public event EventHandler&lt;WorkspaceEventArgs&gt;? WorkspaceCreated;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1696](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1696) |  |
+| <code>public event EventHandler&lt;WorkspaceEventArgs&gt;? WorkspaceUpdated;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1697](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1697) |  |
+| <code>public event EventHandler&lt;WorkspaceEventArgs&gt;? WorkspaceDeleted;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1698](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1698) |  |
+| <code>public event EventHandler&lt;WorkspaceEventArgs&gt;? WorkspaceActivated;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1699](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1699) |  |
+| <code>public Task SaveDockLayoutAsync(string workspaceId, string layoutXml, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1707](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1707) | Persists the AvalonDock layout XML string for a named workspace shell (e.g., &quot;trading&quot; or &quot;strategy&quot;) to the local application settings file. |
+| <code>public Task&lt;string?&gt; GetDockLayoutAsync(string workspaceId, string? fundProfileId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1721](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1721) | Retrieves the previously persisted AvalonDock layout XML for a workspace shell. Returns null if no layout has been saved yet. |
+| <code>public Task SaveWorkspaceLayoutStateAsync(string workspaceId, WorkstationLayoutState layoutState, string? fundProfileId = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1751](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1751) |  |
+| <code>public Task SaveWorkspaceLayoutStateForContextAsync(string workspaceId, WorkstationLayoutState layoutState, string? operatingContextKey = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1786](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1786) |  |
+| <code>public Task&lt;WorkstationLayoutState?&gt; GetWorkspaceLayoutStateAsync(string workspaceId, string? fundProfileId = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1793](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1793) |  |
+| <code>public Task&lt;WorkstationLayoutState?&gt; GetWorkspaceLayoutStateForContextAsync(string workspaceId, string? operatingContextKey = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1820](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1820) |  |
+| <code>public WorkspaceSummaryStats GetSummaryStatsForActiveWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1835](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1835) | Returns a live WorkspaceSummaryStats for the currently active workspace derived from LastSession. Falls back to an empty instance when no session is present. This is a fast, synchronous read that does not hit any remote service. |
+| <code>public WorkspaceSummaryStats? GetCachedSummaryStats() =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1842](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1842) | Returns the cached WorkspaceSummaryStats from the last persisted session without recomputing it. Useful for cold-start display before the first full load. |
+| <code>public Task SaveQuickActionsAsync(string workspaceId, IEnumerable&lt;WorkspaceQuickAction&gt; actions, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1849](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1849) | Updates the quick-action list on the active workspace template and persists the change. Replaces the existing list; pass an empty collection to clear all quick actions. |
+| <code>public IReadOnlyList&lt;WorkspaceQuickAction&gt; GetQuickActionsForWorkspace(string workspaceId) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1878](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1878) | Returns the quick-action list for the specified workspace, or an empty list when the workspace does not exist or has no actions configured. |
 
 ## WorkspaceShellContextService
 
@@ -823,6 +913,36 @@ Declared public members:
 | <code>public WorkstationStrategyBriefingApiClient(ApiClientService apiClient);</code> | [src/Meridian.Wpf/Services/WorkstationStrategyBriefingService.cs:24](../../../../src/Meridian.Wpf/Services/WorkstationStrategyBriefingService.cs#L24) |  |
 | <code>public async Task&lt;StrategyBriefingDto?&gt; GetBriefingAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationStrategyBriefingService.cs:29](../../../../src/Meridian.Wpf/Services/WorkstationStrategyBriefingService.cs#L29) |  |
 
+## WpfDesktopPreferenceSurface
+
+Qualified name: <code>Meridian.Wpf.Services.WpfDesktopPreferenceSurface</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:15](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L15).
+
+The desktop shell&#x27;s theme, density, keyboard shortcut overrides and notification settings as DesktopOperatorPreferenceSync reads and writes them. Theme and shortcut changes touch UI state, so values applied from the host are marshalled onto the UI thread; the sync may call in from a background continuation. Host shortcut overrides are also written to the local desktop preferences, which stay the cache used when the host cannot be reached.
+
+```csharp
+public sealed class WpfDesktopPreferenceSurface : IDesktopPreferenceSurface, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WpfDesktopPreferenceSurface(ThemeService themeService, SettingsConfigurationService settings, KeyboardShortcutService shortcuts, NotificationServiceBase notifications);</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:24](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L24) |  |
+| <code>public AppTheme Theme =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:41](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L41) |  |
+| <code>public ShellDensityMode Density =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:43](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L43) |  |
+| <code>public event EventHandler? PreferenceChanged;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:45](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L45) |  |
+| <code>public IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ShortcutOverrides =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:47](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L47) |  |
+| <code>public event EventHandler? ShortcutOverridesChanged;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:49](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L49) |  |
+| <code>public NotificationSettings Notifications =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:51](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L51) |  |
+| <code>public event EventHandler? NotificationsChanged;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:53](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L53) |  |
+| <code>public void ApplyNotifications(NotificationSettings settings);</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:57](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L57) |  |
+| <code>public void ApplyTheme(AppTheme theme) =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:65](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L65) |  |
+| <code>public void ApplyDensity(ShellDensityMode density) =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:67](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L67) |  |
+| <code>public void ApplyShortcutOverrides(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:71](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L71) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:114](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L114) |  |
+
 ## WpfRemoteWorkstationClient
 
 Qualified name: <code>Meridian.Wpf.Services.WpfRemoteWorkstationClient</code>. Kind: `class`.
@@ -1040,115 +1160,3 @@ Declared public members:
 | <code>IReadOnlyList&lt;PaneContentState&gt; GetVisiblePaneContentStates(PaneHostViewModel paneHost);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:28](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L28) |  |
 | <code>FrameworkElement CreatePaneContent(PaneContentState state);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:30](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L30) |  |
 | <code>void InitializeNavigationFrame(Frame frame);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:32](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L32) |  |
-
-## IShellPageRegistry
-
-Qualified name: <code>Meridian.Wpf.Shell.Services.IShellPageRegistry</code>. Kind: `interface`.
-
-Source: [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:8](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L8).
-
-Exposes the registered desktop pages, workspace capabilities, and shell definitions.
-
-```csharp
-public interface IShellPageRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IReadOnlyList&lt;ShellPageDescriptor&gt; Pages { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:10](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L10) |  |
-| <code>IReadOnlyList&lt;WorkspaceCapabilityDescriptor&gt; WorkspaceCapabilities { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:12](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L12) |  |
-| <code>IReadOnlyList&lt;WorkspaceShellDefinition&gt; WorkspaceShells { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:14](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L14) |  |
-
-## IShellRouteRegistry
-
-Qualified name: <code>Meridian.Wpf.Shell.Services.IShellRouteRegistry</code>. Kind: `interface`.
-
-Source: [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:8](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L8).
-
-Resolves canonical page tags, page types, aliases, and workspace membership for desktop routes.
-
-```csharp
-public interface IShellRouteRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IReadOnlyList&lt;ShellRoute&gt; Routes { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:10](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L10) |  |
-| <code>ShellRoute? GetRoute(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:12](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L12) |  |
-| <code>bool IsRegistered(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:14](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L14) |  |
-| <code>Type? GetPageType(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:16](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L16) |  |
-| <code>string GetCanonicalPageTag(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:18](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L18) |  |
-| <code>string? InferWorkspaceIdForPageTag(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:20](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L20) |  |
-| <code>IReadOnlyList&lt;ShellRoute&gt; GetRoutesForWorkspace(string workspaceId);</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:22](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L22) |  |
-
-## PageContentFactory
-
-Qualified name: <code>Meridian.Wpf.Shell.Services.PageContentFactory</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Shell/Services/PageContentFactory.cs:10](../../../../src/Meridian.Wpf/Shell/Services/PageContentFactory.cs#L10).
-
-Resolves desktop page types, creates their content, and applies navigation parameters and presentation mode.
-
-```csharp
-public sealed class PageContentFactory : IPageContentFactory
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PageContentFactory(NavigationService navigationService);</code> | [src/Meridian.Wpf/Shell/Services/PageContentFactory.cs:14](../../../../src/Meridian.Wpf/Shell/Services/PageContentFactory.cs#L14) |  |
-| <code>public FrameworkElement CreateContent(string pageTag, object? parameter = null, WorkspaceChromePresentationMode presentationMode = WorkspaceChromePresentationMode.Docked) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/PageContentFactory.cs:19](../../../../src/Meridian.Wpf/Shell/Services/PageContentFactory.cs#L19) |  |
-
-## ShellNavigationCoordinator
-
-Qualified name: <code>Meridian.Wpf.Shell.Services.ShellNavigationCoordinator</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:13](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L13).
-
-Resolves navigation routes and coordinates page creation and pane drop behavior.
-
-```csharp
-public sealed class ShellNavigationCoordinator : IShellNavigationCoordinator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ShellNavigationCoordinator(INavigationService navigationService, IShellRouteRegistry routeRegistry, IPageContentFactory pageContentFactory);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:18](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L18) |  |
-| <code>public IShellRouteRegistry RouteRegistry { get; }</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:28](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L28) |  |
-| <code>public ShellRoute? ResolveRoute(string? pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:30](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L30) |  |
-| <code>public bool IsRouteRegistered(string? pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:32](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L32) |  |
-| <code>public bool NavigateToRoute(string pageTag, object? parameter = null);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:34](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L34) |  |
-| <code>public PaneDropResult ApplyPaneDrop(PaneHostViewModel paneHost, string? pageTag, int targetPaneIndex, PaneDropAction action = PaneDropAction.Replace);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:40](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L40) |  |
-| <code>public IReadOnlyList&lt;PaneContentState&gt; GetVisiblePaneContentStates(PaneHostViewModel paneHost);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:66](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L66) |  |
-| <code>public FrameworkElement CreatePaneContent(PaneContentState state);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:72](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L72) |  |
-| <code>public void InitializeNavigationFrame(Frame frame);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:78](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L78) |  |
-
-## ShellPageRegistryBuilder
-
-Qualified name: <code>Meridian.Wpf.Shell.Services.ShellPageRegistryBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:10](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L10).
-
-Combines feature-module page and workspace declarations into a desktop shell registry.
-
-```csharp
-public sealed class ShellPageRegistryBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ShellPageRegistryBuilder Contribute(IEnumerable&lt;ShellPageDescriptor&gt; pages);</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:15](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L15) |  |
-| <code>public ShellPageRegistryBuilder ContributeCapability(WorkspaceCapabilityDescriptor capability);</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:23](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L23) |  |
-| <code>public IShellPageRegistry Build();</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:31](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L31) |  |
-| <code>public static IShellPageRegistry BuildDefault();</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:87](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L87) |  |
-| <code>public static ShellPageDescriptor Page&lt;TPage&gt;(string pageTag, string title, string subtitle, string workspaceId, string sectionLabel, string glyph, int order, ShellNavigationVisibilityTier visibilityTier, IReadOnlyList&lt;string&gt;? searchKeywords = null, IReadOnlyList&lt;string&gt;? relatedPageTags = null, IReadOnlyList&lt;string&gt;? aliases = null, bool hideFromDefaultPalette = false) where TPage : class;</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:115](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L115) |  |
-| <code>public static WorkspacePaneDefinition Pane(string pageTag, PaneDropAction action, WorkspacePaneParameterBinding parameterBinding = WorkspacePaneParameterBinding.None, bool openWithoutBoundParameter = false, string? fallbackPageTag = null, PaneDropAction? fallbackAction = null) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:146](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L146) |  |

@@ -6,7 +6,7 @@ import { PanelReload } from "@/components/ui/panel-reload";
 import { FormGrid } from "@/components/ui/form";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { entityOperationEndpoints as endpoints } from "@/lib/api/entity-operations.api";
-import type { EntityOperationScope, IntercompanyBreak, IntercompanyProposal } from "@/types/entity-operations";
+import type { EntityOperationScope, IntercompanyBreak, IntercompanyCounterpartCandidate, IntercompanyProposal } from "@/types/entity-operations";
 import { EntityOperationTable, MutationFeedback, OperationError, OperationField, useEntityData, useEntityMutation } from "./accounting-screen.entity-operations.shared";
 import { CounterpartRepricing } from "./accounting-screen.entity-counterpart-repricing";
 
@@ -28,6 +28,9 @@ export function EntityCounterpartProposals({ scope }: { scope: EntityOperationSc
   const mutation = useEntityMutation();
   const selected = proposals.data?.find((item) => item.source.proposalId === selectedId);
   const selectedResolved = selected ? hasResolution(selected) : false;
+  // The server lists only posted journals its link check would accept; linking still re-checks the choice.
+  const candidates = useEntityData<IntercompanyCounterpartCandidate[]>(
+    selected && !selectedResolved && targetBookId ? endpoints.counterpartCandidates(selected.source.proposalId, targetBookId) : null);
   async function deliver() {
     if (!selected || selectedResolved) return;
     if (!retryReason.trim()) return;
@@ -75,10 +78,14 @@ export function EntityCounterpartProposals({ scope }: { scope: EntityOperationSc
       {!selectedResolved && selected.status === "Drafted" && selected.targetJournalId ? <CounterpartRepricing key={selected.source.proposalId} proposal={selected} canManage={scope.capabilities.canManageLedger} onApplied={() => { setNotice("Counterpart repricing retained. Its previous review was cleared; obtain fresh independent journal approval before posting."); proposals.refresh(); breaks.refresh(); }} /> : null}
       {!selectedResolved && selected.status === "Drafted" ? <p className="text-xs text-muted-foreground">To resolve a rejected generated draft with an existing posted counterpart, retain the generated draft's rejection first. Linking verifies that rejection and the posted journal's exact reciprocal economics.</p> : null}
       {!selectedResolved ? <form className="space-y-3" onSubmit={(event) => void link(event)}><fieldset disabled={!scope.capabilities.canManageLedger || mutation.busy} className="space-y-3"><FormGrid columns={3}>
-        <OperationField label="Existing counterpart book" value={targetBookId} onChange={setTargetBookId} required><option value="">Select target book</option>{scope.books.filter((book) => book.fundStructureNodeId === selected.source.counterpartyEntityId).map((book) => <option key={book.ledgerBookId} value={book.ledgerBookId}>{book.displayName}</option>)}</OperationField>
-        <OperationField label="Existing counterpart journal ID" value={targetJournalId} onChange={setTargetJournalId} required />
+        <OperationField label="Existing counterpart book" value={targetBookId} onChange={(value) => { setTargetBookId(value); setTargetJournalId(""); }} required><option value="">Select target book</option>{scope.books.filter((book) => book.fundStructureNodeId === selected.source.counterpartyEntityId).map((book) => <option key={book.ledgerBookId} value={book.ledgerBookId}>{book.displayName}</option>)}</OperationField>
+        <OperationField label="Existing counterpart journal" value={targetJournalId} onChange={setTargetJournalId} required disabled={!targetBookId || candidates.loading}
+          hint={!targetBookId ? "Select the counterpart book first." : candidates.loading ? "Loading matching posted journals…" : candidates.data?.length === 0 ? "No posted journal in this book reciprocates this source transaction." : undefined}>
+          <option value="">Select posted journal</option>
+          {(candidates.data ?? []).map((candidate) => <option key={candidate.journalEntryId} value={candidate.journalEntryId}>{candidate.effectiveDate} · {candidate.description} · {candidate.amount} {candidate.currency}</option>)}
+        </OperationField>
         <OperationField label="Counterpart linking reason" value={reason} onChange={setReason} required />
-      </FormGrid><Button type="submit" variant="outline">Validate and link existing counterpart</Button></fieldset></form> : null}
+      </FormGrid><OperationError error={candidates.error} /><Button type="submit" variant="outline">Validate and link existing counterpart</Button></fieldset></form> : null}
       {!scope.capabilities.canManageLedger ? <p className="text-xs text-muted-foreground">Ledger management permission is required to deliver or link a counterpart. Target-book authorization is checked separately.</p> : null}
     </section> : null}
     <MutationFeedback state={mutation} />
