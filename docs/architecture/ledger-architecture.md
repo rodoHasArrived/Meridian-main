@@ -103,6 +103,28 @@ therefore keeps one account history.
   account to its SecurityId through the canonical resolver and lists ambiguous and unregistered
   tickers. `ProposeReclass` builds a balanced reclass proposal. It is submitted through the
   governed adjustment path for approval and never posts by itself.
+- **Tax-lot re-key.** A legacy account that carries open tax lots moves through
+  `LedgerSecurityKeyRekeyService` instead. `PlanAsync` builds the mapping report and returns one
+  proposal per lot-carrying legacy account. Accounts without lots (for example a dividend
+  receivable) are listed as balance-only, and accounts it cannot move are listed with a reason.
+  `ExecuteAsync` takes an approved adjustment and posts one atomic `AccountRekey` batch
+  (`V_ledger_084__tax_lot_account_rekey`). The batch appends the two-line reclass and re-keys
+  every open lot of the legacy account in place.
+  - The store refuses the batch unless all of these hold:
+    - the target is the legacy account keyed by SecurityId (`IsRetainedEquivalent`);
+    - every listed lot is still open on the legacy account at its reviewed version, quantity and
+      basis;
+    - each lot's instrument is the target SecurityId, and all lots share one book position;
+    - the listed lots are every open lot on the legacy account;
+    - the reclass amount equals the legacy balance and the lots' open basis;
+    - the posting is an approved adjustment with retained mapping evidence.
+  - Lots keep their record id, label, acquisition date, basis, acquisition facts, lineage and
+    wash-sale links. Relief-policy history is copied to the target key with the same effective
+    dates.
+  - As-of lot reads rebuild from the current row and its dated quantity mutations, so after the
+    re-key a lot's whole history reads under the SecurityId account and nothing reads under the
+    legacy key.
+  - The `protect_tax_lot_account_key` trigger allows a lot's account key to change only this way.
 - **Persistence.** Postgres stores the key in `account_security_id`
   (`V_ledger_083__security_id_account_keys`) on journal legs, tax lots, tax-lot policies, balance
   checkpoint rows and wash-sale deferrals. Account-identity predicates and indexes use

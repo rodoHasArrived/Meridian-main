@@ -1441,6 +1441,15 @@
       "sha256": "c466e6203ca4bceeeb1a2f74c3b88c701d69be18d7c7859d8a3e673f27189dc7"
     },
     {
+      "filename": "V_ledger_084__tax_lot_account_rekey.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_084__tax_lot_account_rekey.sql",
+      "schema": "ledger",
+      "sha256": "efdc7f3e2f1cd5de5c29e1ba2e8dbad63e193617bf233a733374eaa5bad08738"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",

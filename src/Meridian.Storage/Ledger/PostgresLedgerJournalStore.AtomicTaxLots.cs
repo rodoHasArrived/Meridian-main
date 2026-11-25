@@ -115,7 +115,8 @@ public sealed partial class PostgresLedgerJournalStore
             // Historical receipts may predate canonical acquisition facts. Exact replay above must
             // retain that shape, but a new lot cannot create another legacy-backfill exception.
             if (command.Direction == OpenLotDirection.Short
-                && command.MutationKind is not (AtomicTaxLotMutationKind.Acquisition or AtomicTaxLotMutationKind.Disposal))
+                && command.MutationKind is not (AtomicTaxLotMutationKind.Acquisition or AtomicTaxLotMutationKind.Disposal
+                    or AtomicTaxLotMutationKind.AccountRekey))
                 throw new LedgerValidationException("Short lots currently support governed opening and cover only.");
             if (command.MutationKind == AtomicTaxLotMutationKind.Acquisition && command.AcquisitionLot!.Acquisition is null)
                 throw new LedgerValidationException("New atomic acquisitions require complete canonical acquisition facts.");
@@ -183,6 +184,9 @@ public sealed partial class PostgresLedgerJournalStore
             IReadOnlyList<LedgerTaxLotRecord>? factorPaydownLots = null;
             if (command.MutationKind == AtomicTaxLotMutationKind.FactorPaydown)
                 factorPaydownLots = await LockFactorPaydownAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
+            IReadOnlyList<LedgerTaxLotRecord>? rekeyLots = null;
+            if (command.MutationKind == AtomicTaxLotMutationKind.AccountRekey)
+                rekeyLots = await LockAccountRekeyAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
             // LockAmortizationAuthorityAsync has already checked the immutable original receipt,
             // exact inverse lines and current reference hash before this private exception is set.
             await AppendJournalWithinTransactionAsync(connection, transaction, command.Journal, ct,
@@ -224,6 +228,13 @@ public sealed partial class PostgresLedgerJournalStore
             else if (command.MutationKind == AtomicTaxLotMutationKind.CorporateAction)
             {
                 var mutations = await ApplyCorporateActionAsync(connection, transaction, command, corporateActionLot!, recordedAt, ct)
+                    .ConfigureAwait(false);
+                foreach (var mutation in mutations)
+                    await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
+            }
+            else if (command.MutationKind == AtomicTaxLotMutationKind.AccountRekey)
+            {
+                var mutations = await ApplyAccountRekeyAsync(connection, transaction, command, rekeyLots!, recordedAt, ct)
                     .ConfigureAwait(false);
                 foreach (var mutation in mutations)
                     await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
@@ -467,6 +478,10 @@ public sealed partial class PostgresLedgerJournalStore
         {
             ValidateAtomicFactorPaydown(normalizedCommand);
         }
+        else if (command.MutationKind == AtomicTaxLotMutationKind.AccountRekey)
+        {
+            LedgerAccountRekeyRules.Validate(normalizedCommand);
+        }
         else
         {
             throw new LedgerValidationException(
@@ -481,6 +496,10 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException("Only capital-return batches may retain capital-return inputs.");
         if (command.MutationKind != AtomicTaxLotMutationKind.FactorPaydown && command.FactorPaydown is not null)
             throw new LedgerValidationException("Only factor-paydown batches may retain factor-paydown inputs.");
+        if (command.MutationKind != AtomicTaxLotMutationKind.AccountRekey
+            && (command.AccountRekey is not null
+                || normalizedJournal.Entry.Metadata.Tags?.ContainsKey(LedgerAccountRekeyRules.JournalTag) == true))
+            throw new LedgerValidationException("Only account re-key batches may retain re-key inputs or tag a re-key journal.");
         return normalizedCommand with
         {
             DisposalSelections = disposalSelections
@@ -709,7 +728,8 @@ public sealed partial class PostgresLedgerJournalStore
                    book_position_id,
                    corporate_action_instruction::text,
                    capital_return_instruction::text,
-                   factor_paydown_instruction::text
+                   factor_paydown_instruction::text,
+                   account_rekey_instruction::text
             from {Qualified("atomic_tax_lot_posting_batches")}
             where mutation_batch_id = @mutation_batch_id
                or journal_entry_id = @journal_entry_id
@@ -1100,7 +1120,8 @@ public sealed partial class PostgresLedgerJournalStore
                 disposal_sale_price,
                 corporate_action_instruction,
                 capital_return_instruction,
-                factor_paydown_instruction)
+                factor_paydown_instruction,
+                account_rekey_instruction)
             values (
                 @mutation_batch_id,
                 @ledger_book_id,
@@ -1122,7 +1143,8 @@ public sealed partial class PostgresLedgerJournalStore
                 @disposal_sale_price,
                 @corporate_action_instruction,
                 @capital_return_instruction,
-                @factor_paydown_instruction);
+                @factor_paydown_instruction,
+                @account_rekey_instruction);
             """;
         AddAtomicBatchIdentityParameters(insert, command);
         insert.Parameters.AddWithValue("period_id", command.Journal.PeriodId);
@@ -1150,6 +1172,8 @@ public sealed partial class PostgresLedgerJournalStore
             ? DBNull.Value : JsonSerializer.Serialize(command.CapitalReturn, JsonOptions);
         insert.Parameters.Add("factor_paydown_instruction", NpgsqlDbType.Jsonb).Value = command.FactorPaydown is null
             ? DBNull.Value : JsonSerializer.Serialize(command.FactorPaydown, JsonOptions);
+        insert.Parameters.Add("account_rekey_instruction", NpgsqlDbType.Jsonb).Value = command.AccountRekey is null
+            ? DBNull.Value : JsonSerializer.Serialize(command.AccountRekey, JsonOptions);
         await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
@@ -1714,7 +1738,8 @@ public sealed partial class PostgresLedgerJournalStore
             batch.PolicyRevision,
             batch.CorporateAction,
             batch.CapitalReturn,
-            batch.FactorPaydown);
+            batch.FactorPaydown,
+            batch.AccountRekey);
     }
 
     private async Task<StoredAtomicTaxLotBatch?> LoadAtomicTaxLotBatchAsync(
@@ -1745,7 +1770,8 @@ public sealed partial class PostgresLedgerJournalStore
                    book_position_id,
                    corporate_action_instruction::text,
                    capital_return_instruction::text,
-                   factor_paydown_instruction::text
+                   factor_paydown_instruction::text,
+                   account_rekey_instruction::text
             from {Qualified("atomic_tax_lot_posting_batches")}
             where mutation_batch_id = @mutation_batch_id;
             """;
@@ -1869,7 +1895,8 @@ public sealed partial class PostgresLedgerJournalStore
             reader.GetGuid(15),
             reader.IsDBNull(16) ? null : JsonSerializer.Deserialize<OpenLotSuccessorInstructionDto>(reader.GetString(16), JsonOptions),
             reader.IsDBNull(17) ? null : JsonSerializer.Deserialize<OpenLotCapitalReturnInstructionDto>(reader.GetString(17), JsonOptions),
-            reader.IsDBNull(18) ? null : JsonSerializer.Deserialize<OpenLotFactorPaydownInstructionDto>(reader.GetString(18), JsonOptions));
+            reader.IsDBNull(18) ? null : JsonSerializer.Deserialize<OpenLotFactorPaydownInstructionDto>(reader.GetString(18), JsonOptions),
+            reader.IsDBNull(19) ? null : JsonSerializer.Deserialize<LedgerAccountRekeyInstruction>(reader.GetString(19), JsonOptions));
 
     private static void AddAtomicBatchIdentityParameters(
         NpgsqlCommand databaseCommand,
@@ -2001,5 +2028,6 @@ public sealed partial class PostgresLedgerJournalStore
         Guid BookPositionId,
         OpenLotSuccessorInstructionDto? CorporateAction,
         OpenLotCapitalReturnInstructionDto? CapitalReturn,
-        OpenLotFactorPaydownInstructionDto? FactorPaydown);
+        OpenLotFactorPaydownInstructionDto? FactorPaydown,
+        LedgerAccountRekeyInstruction? AccountRekey);
 }

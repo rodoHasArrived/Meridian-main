@@ -133,7 +133,9 @@ public sealed class PostedLedgerAccountReconciliationSource(ILedgerJournalStore 
             if (origins.Length != 1)
                 throw new InvalidOperationException("A canonical lot lacks one retained acquisition origin in the selected book and cutoff.");
             var origin = origins[0].Entry;
-            var originLines = origin.Lines.Where(l => l.Account == lot.Account).ToArray();
+            // A lot re-keyed onto its SecurityId account (Security Master review F2) keeps its origin
+            // journal, which still carries the legacy ticker-keyed form of the same account.
+            var originLines = origin.Lines.Where(l => LedgerSecurityKeyMigration.IsRetainedEquivalent(lot.Account, l.Account)).ToArray();
             if (origin.Metadata.SecurityId != lot.SecurityId || originLines.Length == 0
                 || originLines.Any(l => l.Dimensions?.InstrumentId != lot.SecurityId || l.Dimensions?.PositionId != lot.BookPositionId)
                 || originLines.Any(l => l.Dimensions?.AccountId is { } financialAccountId
@@ -148,11 +150,16 @@ public sealed class PostedLedgerAccountReconciliationSource(ILedgerJournalStore 
         foreach (var record in records)
         {
             var entry = record.Entry;
+            // The governed re-key reclass moves the same open basis between the two keys of one
+            // holding; its lots are proved by the acquisitions it carried, not by the reclass.
+            if (entry.Metadata.Tags?.ContainsKey(LedgerAccountRekeyRules.JournalTag) == true)
+                continue;
             foreach (var component in entry.Lines.Where(l => accounts.Contains(l.Account)).GroupBy(l => l.Account))
             {
                 if (IsValidatedValuationOnly(book, symbol, entry, component.Key, lots))
                     continue;
-                var acquisitions = lots.Where(l => l.SourceJournalEntryId == entry.JournalEntryId && l.Account == component.Key).ToArray();
+                var acquisitions = lots.Where(l => l.SourceJournalEntryId == entry.JournalEntryId
+                    && LedgerSecurityKeyMigration.IsRetainedEquivalent(l.Account, component.Key)).ToArray();
                 var shortPosition = component.Key.Name == LedgerAccounts.ShortSecuritiesPayableAccountName;
                 if (acquisitions.Length == 0 || !entry.IsBalanced
                     || component.Any(l => shortPosition ? l.Debit != 0m : l.Credit != 0m)

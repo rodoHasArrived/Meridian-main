@@ -52,7 +52,8 @@ internal static class CorporateActionSuccessorAncestry
                 var legacyReceipt = await LoadAsync(cursor.LastMutationBatchId.Value).ConfigureAwait(false);
                 if (legacyReceipt.MutationKind is not (AtomicTaxLotMutationKind.Disposal
                     or AtomicTaxLotMutationKind.BasisRedistribution or AtomicTaxLotMutationKind.Amortization
-                    or AtomicTaxLotMutationKind.CapitalReturn or AtomicTaxLotMutationKind.FactorPaydown))
+                    or AtomicTaxLotMutationKind.CapitalReturn or AtomicTaxLotMutationKind.FactorPaydown
+                    or AtomicTaxLotMutationKind.AccountRekey))
                     throw Unproved();
                 var changed = legacyReceipt.Mutations.Where(item => item.TaxLotRecordId == cursor.TaxLotRecordId).ToArray();
                 if (changed.Length != 1 || changed[0].LotBefore is not { } prior || prior.Version >= cursor.Version
@@ -68,6 +69,12 @@ internal static class CorporateActionSuccessorAncestry
                     if (OpenLotSuccessors.GetSourceCorporateActionId(capitalReturn.Projection) == sourceActionId)
                         throw new LedgerValidationException("A successor cannot repeat a source corporate action retained anywhere in its immutable predecessor ancestry.");
                 }
+                // A re-key moves only the owning account key; acquisition and quantity are unchanged.
+                if (legacyReceipt.MutationKind == AtomicTaxLotMutationKind.AccountRekey
+                    && (legacyReceipt.AccountRekey is not { } rekey || legacyReceipt.CorrectsMutationBatchId is not null
+                        || !rekey.Lots.Any(lot => lot.TaxLotRecordId == cursor.TaxLotRecordId)
+                        || !SameAcquisition(cursor, prior) || prior.OpenQuantity != cursor.OpenQuantity))
+                    throw Unproved();
                 if (legacyReceipt.MutationKind == AtomicTaxLotMutationKind.FactorPaydown)
                 {
                     // A paydown restates every lot of its scope; this lot's entry must re-project

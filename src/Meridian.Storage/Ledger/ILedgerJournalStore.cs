@@ -486,8 +486,30 @@ public enum AtomicTaxLotMutationKind
     CapitalReturn = 5,
     // Every open face lot of one (security, position) scope restated to a lower paydown factor,
     // its basis relieved pro rata; a new factor of zero closes the lots.
-    FactorPaydown = 6
+    FactorPaydown = 6,
+    // Security Master review F2: every open lot of one legacy ticker-keyed per-security account moved
+    // in place onto its SecurityId-keyed account, together with the governed balance reclass.
+    AccountRekey = 7
 }
+
+/// <summary>One open lot moved by an <see cref="AtomicTaxLotMutationKind.AccountRekey"/> batch, with its reviewed state.</summary>
+public sealed record LedgerAccountRekeyLot(
+    Guid TaxLotRecordId,
+    string LotId,
+    long ExpectedVersion,
+    decimal ExpectedOpenQuantity,
+    decimal ExpectedCostBasis);
+
+/// <summary>
+/// The reviewed re-key of a legacy ticker-keyed per-security account onto its SecurityId-keyed
+/// account (Security Master review F2). <see cref="LegacyBalance"/> is the legacy account's whole
+/// balance at review, which the reclass journal moves and the listed lots' open basis must equal.
+/// </summary>
+public sealed record LedgerAccountRekeyInstruction(
+    LedgerAccount LegacyAccount,
+    LedgerAccount TargetAccount,
+    decimal LegacyBalance,
+    IReadOnlyList<LedgerAccountRekeyLot> Lots);
 
 public sealed record LedgerTaxLotDisposalSelection(
     Guid TaxLotRecordId,
@@ -531,7 +553,10 @@ public sealed record AtomicTaxLotJournalCommand(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     AtomicLotReferenceVersions? ReferenceVersions = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null)
+    Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null,
+    // Joins the fingerprint only when present, so every retained batch of another kind keeps its digest.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    LedgerAccountRekeyInstruction? AccountRekey = null)
 {
     public static AtomicTaxLotJournalCommand Create(
         Guid mutationBatchId,
@@ -553,7 +578,8 @@ public sealed record AtomicTaxLotJournalCommand(
         Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? capitalReturn = null,
         OpenLotDirection direction = OpenLotDirection.Long,
         AtomicLotReferenceVersions? referenceVersions = null,
-        Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? factorPaydown = null)
+        Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? factorPaydown = null,
+        LedgerAccountRekeyInstruction? accountRekey = null)
     {
         var command = new AtomicTaxLotJournalCommand(
             mutationBatchId,
@@ -576,7 +602,8 @@ public sealed record AtomicTaxLotJournalCommand(
             capitalReturn,
             direction,
             referenceVersions,
-            factorPaydown);
+            factorPaydown,
+            accountRekey);
         return command.WithComputedFingerprint();
     }
 
@@ -628,4 +655,6 @@ public sealed record AtomicTaxLotJournalResult(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null);
+    Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    LedgerAccountRekeyInstruction? AccountRekey = null);

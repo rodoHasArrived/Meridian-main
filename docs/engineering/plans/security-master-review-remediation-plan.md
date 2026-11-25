@@ -718,9 +718,22 @@ Implemented together, so no holding is split between a ticker key and a Security
   to SecurityId and proposes a governed reclass.
 - Backtest ledgers stay run-local and ticker-keyed (`SimulatedPortfolio.SimulationKey`).
 
+Tax-lot re-key (follow-through, 2026-11-25):
+
+- `LedgerSecurityKeyRekeyService` plans one proposal per lot-carrying legacy account from the
+  canonical mapping report and lists balance-only and blocked accounts.
+- An approved proposal posts one atomic `AccountRekey` batch: the reclass journal plus an in-place
+  re-key of every open lot. It also copies the relief-policy history to the target key.
+- Migration `V_ledger_084` adds the batch instruction column, widens the mutation-kind checks and
+  adds the `protect_tax_lot_account_key` trigger.
+- History, successor-ancestry and posted-ledger reconciliation readers accept the re-key.
+
 Known follow-ups:
 
-- Legacy tax-lot rows are not re-keyed by the balance reclass.
+- Legacy accounts whose lots span several book positions, or lack a SecurityId or position, are
+  listed as blocked by `LedgerSecurityKeyRekeyService` and are not re-keyed. A re-key whose lot
+  label already exists on the target key is rejected by the unique index.
+- `LedgerSecurityKeyRekeyService` is not registered in DI; callers construct it.
 - The UI correction flows and `LedgerPeriodTrialBalanceLineDto` do not yet carry the account
   SecurityId.
 - The generated `database/manifest/catalog.json` and `schemas/` need regeneration against live
