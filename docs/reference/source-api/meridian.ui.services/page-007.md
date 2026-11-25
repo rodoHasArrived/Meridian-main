@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Ui.Services.HealthScoreBreakdown</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:470](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L470).
+Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:452](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L452).
 
 Groups the stability, latency, completeness, and reconnection components of a health score.
 
@@ -22,10 +22,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ScoreComponent ConnectionStability { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:472](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L472) |  |
-| <code>public ScoreComponent LatencyConsistency { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:473](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L473) |  |
-| <code>public ScoreComponent DataCompleteness { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:474](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L474) |  |
-| <code>public ScoreComponent ReconnectionFrequency { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:475](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L475) |  |
+| <code>public ScoreComponent ConnectionStability { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:454](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L454) |  |
+| <code>public ScoreComponent LatencyConsistency { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:455](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L455) |  |
+| <code>public ScoreComponent DataCompleteness { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:456](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L456) |  |
+| <code>public ScoreComponent ReconnectionFrequency { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:457](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L457) |  |
 
 ## HealthSummary
 
@@ -54,7 +54,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.HealthUpdateEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:399](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L399).
+Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:380](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L380).
 
 Supplies updated provider-health snapshots to health-change subscribers.
 
@@ -66,7 +66,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public List&lt;ProviderHealthData&gt; Providers { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:401](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L401) |  |
+| <code>public List&lt;ProviderHealthData&gt; Providers { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:382](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L382) |  |
 
 ## HeatmapLevel
 
