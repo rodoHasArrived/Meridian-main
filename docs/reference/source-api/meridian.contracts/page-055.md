@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityValidationWorkflowDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationWorkflowDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L39).
+
+```csharp
+public enum SecurityValidationWorkflowDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L41) |  |
+| <code>StrategyRunPreflight = 1</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L42) |  |
+| <code>LedgerPosting = 2</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L43) |  |
+| <code>ReconciliationBreakIntake = 3</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L44) |  |
+| <code>ReportPackEvidence = 4</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L45) |  |
+| <code>OverrideApproval = 5</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L46) |  |
+
 ## SecurityValuationAccountingTreatment
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment</code>. Kind: `enum`.
@@ -789,23 +810,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task ApplyLifecycleProjectionAsync(EntityLifecycleRevisionDto revision, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:17](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L17) |  |
-
-## IEntityLifecycleService
-
-Qualified name: <code>Meridian.Contracts.Services.IEntityLifecycleService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:6](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L6).
-
-Tenant-authorized immutable entity lifecycle history.
-
-```csharp
-public interface IEntityLifecycleService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;EntityLifecycleRevisionDto?&gt; GetAsync(Guid entityId, long? revision = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:8](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L8) |  |
-| <code>Task&lt;IReadOnlyList&lt;EntityLifecycleRevisionDto&gt;&gt; GetHistoryAsync(Guid entityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:9](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L9) |  |
-| <code>Task&lt;EntityLifecycleRevisionDto&gt; TransitionAsync(AppendEntityLifecycleRevisionRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:11](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L11) |  |

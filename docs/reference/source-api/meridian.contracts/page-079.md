@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationSecurityCoverageReferencePayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoverageReferencePayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:52](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L52).
+
+```csharp
+public sealed record WorkstationSecurityCoverageReferencePayload(string Source, string Symbol, string? AccountName, string? SecurityId, string DisplayName, string? AssetClass, string? SubType, string? Currency, string? Status, string? PrimaryIdentifier, string CoverageStatus, string? CoverageReason, string? MatchedIdentifierKind, string? MatchedIdentifierValue, string? MatchedProvider);
+```
+
 ## WorkstationSecurityCoverageStatus
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus</code>. Kind: `enum`.

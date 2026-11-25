@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BrokerageCashFlowSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BrokerageCashFlowSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:145](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L145).
+
+```csharp
+public sealed record BrokerageCashFlowSummaryDto(Guid FundAccountId, string? ProviderId, string? ExternalAccountId, BrokerageAccountKindDto AccountKind, DateOnly? From, DateOnly? To, decimal TotalInflows, decimal TotalOutflows, decimal NetCashFlow, string Currency, int TransactionCount, IReadOnlyList<BrokerageCashFlowEntryDto> Entries, IReadOnlyList<string> Warnings);
+```
+
 ## BrokerageConnectionStateDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.BrokerageConnectionStateDto</code>. Kind: `enum`.
@@ -612,14 +622,4 @@ Per-sheet preview returned for one worksheet of an uploaded onboarding workbook.
 
 ```csharp
 public sealed record DataUploadWorkbookSheetPreviewDto(string SheetName, string? TemplateId, string? TemplateLabel, string? DataDomain, int ParsedRowCount, int PreviewRowCount, IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyDictionary<string, string>> PreviewRows, IReadOnlyList<DataUploadValidationIssueDto> Issues, string Status);
-```
-
-## DeltaOutlierResult
-
-Qualified name: <code>Meridian.Contracts.Workstation.DeltaOutlierResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L15).
-
-```csharp
-public sealed record DeltaOutlierResult(Guid AccountId, string MetricName, decimal PriorDayValue, decimal CurrentValue, decimal Delta, decimal DeltaRatio, bool IsOutlier, string Detail);
 ```

@@ -10,7 +10,8 @@ namespace Meridian.Ui.Services.Services.Accounting;
 
 /// <summary>
 /// Desktop state for reciprocal intercompany balance confirmation over the routes the browser uses. Balances are
-/// pinned by the server from posted journals; this book's operator confirms or disputes only this book's side.
+/// pinned by the server from posted journals; this book's operator confirms or disputes only this book's side. The other
+/// book may belong to another company of the tenant; then each company records its own resolution of a dispute.
 /// Confirmation is advisory unless the book adopts a reviewed close policy (ADR-032, see the ClosePolicy part); nothing
 /// is calculated here.
 /// </summary>
@@ -41,7 +42,7 @@ public sealed partial class IntercompanyBalanceConfirmationWorkspace : Observabl
         DisputeCommand = new AsyncRelayCommand(() => ActAsync(IntercompanyBalanceConfirmationActionDto.Dispute),
             () => Actionable && SelectedConfirmation!.CanDispute && !string.IsNullOrWhiteSpace(Reason));
         ResolveCommand = new AsyncRelayCommand(() => ActAsync(IntercompanyBalanceConfirmationActionDto.Resolve),
-            () => Actionable && SelectedConfirmation!.Status == IntercompanyBalanceConfirmationStatusDto.Disputed && !string.IsNullOrWhiteSpace(Reason));
+            () => Actionable && SelectedConfirmation!.CanResolve && !string.IsNullOrWhiteSpace(Reason));
     }
 
     public ObservableCollection<IntercompanyBalanceConfirmationRow> Confirmations { get; } = [];
@@ -126,7 +127,9 @@ public sealed partial class IntercompanyBalanceConfirmationWorkspace : Observabl
     {
         var row = SelectedConfirmation!;
         var reason = action == IntercompanyBalanceConfirmationActionDto.Confirm ? null : Reason.Trim();
-        var party = action == IntercompanyBalanceConfirmationActionDto.Resolve ? (IntercompanyBalanceConfirmationPartyDto?)null : row.ThisBookParty;
+        // Across companies each side records its own resolution; within one company a resolution settles both sides.
+        var party = action == IntercompanyBalanceConfirmationActionDto.Resolve && !row.Confirmation.IsCrossCompany
+            ? (IntercompanyBalanceConfirmationPartyDto?)null : row.ThisBookParty;
         var key = $"{row.ConfirmationId:D}|{row.Version}|{action}|{party}|{reason}";
         var request = new IntercompanyBalanceConfirmationActionRequest(Identity(key), action, party, row.Version, row.BalanceDigest, reason);
         var updated = Require(await _client.ActOnBalanceConfirmationAsync(row.ConfirmationId, request, token));
@@ -137,7 +140,9 @@ public sealed partial class IntercompanyBalanceConfirmationWorkspace : Observabl
         {
             IntercompanyBalanceConfirmationActionDto.Confirm => "This book's side confirmed the pinned balances.",
             IntercompanyBalanceConfirmationActionDto.Dispute => "Dispute retained with its reason.",
-            _ => "Dispute resolved. Pin the corrected balances for confirmation."
+            _ when party is not null && updated.Status == IntercompanyBalanceConfirmationStatusDto.Disputed
+                => "This book's resolution is retained. The dispute is resolved once the other company records its own.",
+            _ => "Dispute resolved. Draft any correction, then pin the corrected balances for confirmation."
         };
     });
 
@@ -249,6 +254,7 @@ public sealed partial class IntercompanyBalanceConfirmationWorkspace : Observabl
         ConfirmCommand?.NotifyCanExecuteChanged();
         DisputeCommand?.NotifyCanExecuteChanged();
         ResolveCommand?.NotifyCanExecuteChanged();
+        _draftAdjustment?.NotifyCanExecuteChanged();
         NotifyClosePolicyCommands();
     }
 }
@@ -277,7 +283,7 @@ public sealed class IntercompanyBalanceConfirmationRow(IntercompanyBalanceConfir
         IntercompanyBalanceConfirmationStatusDto.ConfirmedByPartyTwo => "Party two confirmed",
         IntercompanyBalanceConfirmationStatusDto.Confirmed => "Confirmed by both sides",
         IntercompanyBalanceConfirmationStatusDto.Disputed => "Disputed",
-        _ => "Dispute resolved · pin again"
+        _ => "Dispute resolved · draft any correction, then pin again"
     }} · version {Version}";
     public string PartyOne => Side(Confirmation.PartyOne);
     public string PartyTwo => Side(Confirmation.PartyTwo);
@@ -287,9 +293,22 @@ public sealed class IntercompanyBalanceConfirmationRow(IntercompanyBalanceConfir
     public bool CanConfirm => Status == IntercompanyBalanceConfirmationStatusDto.Proposed
         || (Status == IntercompanyBalanceConfirmationStatusDto.ConfirmedByPartyOne && ThisBookParty == IntercompanyBalanceConfirmationPartyDto.PartyTwo)
         || (Status == IntercompanyBalanceConfirmationStatusDto.ConfirmedByPartyTwo && ThisBookParty == IntercompanyBalanceConfirmationPartyDto.PartyOne);
+    /// <summary>Disputed, and (across companies) this book's side has not yet recorded its resolution.</summary>
+    public bool CanResolve => Status == IntercompanyBalanceConfirmationStatusDto.Disputed && !ThisSideResolved;
+    public bool ThisSideResolved
+    {
+        get
+        {
+            if (!Confirmation.IsCrossCompany)
+                return false;
+            var dispute = Confirmation.Events.ToList().FindLastIndex(step => step.Action == IntercompanyBalanceConfirmationActionDto.Dispute);
+            return Confirmation.Events.Skip(dispute + 1).Any(step => step.Action == IntercompanyBalanceConfirmationActionDto.Resolve && step.Party == ThisBookParty);
+        }
+    }
     public bool CanDispute => Status is IntercompanyBalanceConfirmationStatusDto.Proposed or IntercompanyBalanceConfirmationStatusDto.ConfirmedByPartyOne
         or IntercompanyBalanceConfirmationStatusDto.ConfirmedByPartyTwo;
 
     private string Side(IntercompanyBalanceConfirmationSideDto side)
-        => IntercompanyExactAmount.Text(side.TransactionSignedBalance, side.TransactionCurrency) + (side.LedgerBookId == book ? " (this book)" : "");
+        => IntercompanyExactAmount.Text(side.TransactionSignedBalance, side.TransactionCurrency) + (side.LedgerBookId == book ? " (this book)" : "")
+            + (Confirmation.IsCrossCompany ? $" · {(side == Confirmation.PartyOne ? Confirmation.PartyOneCompanyId : Confirmation.PartyTwoCompanyId) ?? "no company"}" : "");
 }

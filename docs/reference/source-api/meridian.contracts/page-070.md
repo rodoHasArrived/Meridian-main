@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingScheduleDeliveryTargetDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportingScheduleDeliveryTargetDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1034](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1034).
+
+```csharp
+public sealed record ReportingScheduleDeliveryTargetDto(string DistributionId, IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null, ReportPackDeliveryModeDto? DeliveryMode = null, string? Note = null, string? RecipientPrincipalId = null, ReportAccessPrincipalKindDto? RecipientPrincipalKind = null);
+```
+
 ## ReportingScheduledReleaseHandoffDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingScheduledReleaseHandoffDto</code>. Kind: `record`.
@@ -608,13 +618,3 @@ Enum declarations:
 | <code>Warning = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1503](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1503) |  |
 | <code>Danger = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1504](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1504) |  |
 | <code>Info = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1505](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1505) |  |
-
-## ReportWriterChartDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterChartDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1525](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1525).
-
-```csharp
-public sealed record ReportWriterChartDefinitionDto(ReportWriterChartTypeDto Type, string CategoryField, IReadOnlyList<string> ValueColumns, string? Title = null);
-```

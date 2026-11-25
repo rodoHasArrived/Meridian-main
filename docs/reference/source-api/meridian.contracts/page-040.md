@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReopenClosePeriodRequestDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ReopenClosePeriodRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:624](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L624).
+
+```csharp
+public sealed record ReopenClosePeriodRequestDto(Guid WorkflowId, long ExpectedWorkflowVersion, string Actor, string Role, string Rationale, string IncidentId, string Justification, string ApprovalReference, string ImpactSummary, IReadOnlyList<string>? EvidenceLinks = null, string? CorrelationId = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:638](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L638) |  |
+
 ## ReopenLedgerPeriodRequest
 
 Qualified name: <code>Meridian.Contracts.Ledger.ReopenLedgerPeriodRequest</code>. Kind: `record`.
@@ -860,24 +876,3 @@ Enum declarations:
 | <code>StoppingHost</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:18](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L18) |  |
 | <code>Stopped</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:19](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L19) |  |
 | <code>Failed</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:20](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L20) |  |
-
-## RuntimeReadinessStatus
-
-Qualified name: <code>Meridian.Contracts.Lifecycle.RuntimeReadinessStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:24](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L24).
-
-```csharp
-public enum RuntimeReadinessStatus
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Starting</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:26](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L26) |  |
-| <code>Ready</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:27](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L27) |  |
-| <code>Degraded</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:28](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L28) |  |
-| <code>NotReady</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:29](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L29) |  |
-| <code>Stopping</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:30](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L30) |  |
-| <code>Failed</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:31](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L31) |  |

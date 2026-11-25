@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 3 of 7
 
-Objects 161-240 of 502. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 503. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -574,6 +574,17 @@ classDiagram
         +IntercompanyAccrualRequestDto Accrual
         +string ExpectedEvidenceDigest
     }
+    class Meridian_Contracts_Ledger_CreateIntercompanyConfirmationAdjustmentDraftRequest["CreateIntercompanyConfirmationAdjustmentDraftRequest"] {
+        +DateOnly AccountingDate
+        +decimal AdjustmentAmount
+        +string ExpectedBalanceDigest
+        +long ExpectedVersion
+        +string? Memo
+        +string OffsetAccountNodeId
+        +IntercompanyBalanceConfirmationPartyDto Party
+        +Guid RequestId
+        +IntercompanyAccountRoleDto Role
+    }
     class Meridian_Contracts_Ledger_CreateIntercompanyFeeAccrualDraftRequest["CreateIntercompanyFeeAccrualDraftRequest"] {
         +IntercompanyFeeAccrualRequestDto Accrual
         +string ExpectedEvidenceDigest
@@ -658,14 +669,6 @@ classDiagram
         +Guid? LedgerBookId
         +string? TenantId
         +IReadOnlyList~AccountingRuleTestCaseDto~ TestCases
-    }
-    class Meridian_Contracts_Ledger_ExternalGlExportCertificationDto["ExternalGlExportCertificationDto"] {
-        +string Actor
-        +string CertificationId
-        +IReadOnlyList~string~ EvidenceLinks
-        +DateTimeOffset RecordedAtUtc
-        +AccountingCertificationStateDto State
-        +string Summary
     }
     Meridian_Contracts_Ledger_CloseDeadlineRuleDto --> Meridian_Contracts_Ledger_CloseDeadlineAdjustmentDto
     Meridian_Contracts_Ledger_CloseDeadlineRuleDto --> Meridian_Contracts_Ledger_CloseDeadlineAnchorDto

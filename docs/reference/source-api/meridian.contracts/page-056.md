@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IEntityLifecycleService
+
+Qualified name: <code>Meridian.Contracts.Services.IEntityLifecycleService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:6](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L6).
+
+Tenant-authorized immutable entity lifecycle history.
+
+```csharp
+public interface IEntityLifecycleService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;EntityLifecycleRevisionDto?&gt; GetAsync(Guid entityId, long? revision = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:8](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L8) |  |
+| <code>Task&lt;IReadOnlyList&lt;EntityLifecycleRevisionDto&gt;&gt; GetHistoryAsync(Guid entityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:9](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L9) |  |
+| <code>Task&lt;EntityLifecycleRevisionDto&gt; TransitionAsync(AppendEntityLifecycleRevisionRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:11](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L11) |  |
+
 ## IEnvironmentDesignService
 
 Qualified name: <code>Meridian.Contracts.Services.IEnvironmentDesignService</code>. Kind: `interface`.
@@ -932,21 +952,3 @@ Declared public members:
 | <code>Task&lt;FundProfileOwnership&gt; BindAsync(string fundProfileId, string tenantId, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:21](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L21) | Claims fundProfileId for the given tenant/company if it is currently unbound, then returns the effective owner. Idempotent and first-owner-wins: a fund already bound to a different tenant is left unchanged and that existing owner is returned, so the caller can compare it to detect a foreign fund. |
 | <code>Task&lt;FundProfileOwnership?&gt; ResolveAsync(string fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:28](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L28) | Resolves the owning tenant/company for a fund profile, or null when it is unbound. |
 | <code>Task&lt;bool&gt; IsAccessibleAsync(string fundProfileId, string tenantId, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:34](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L34) | True when the caller&#x27;s tenant may use the fund: it is unbound (unknown) or bound to the caller. False only when the fund is bound to a different tenant. A read-only check — it never binds. |
-
-## IFundScopeTenantAccessor
-
-Qualified name: <code>Meridian.Contracts.Tenancy.IFundScopeTenantAccessor</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:52](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L52).
-
-Resolves the caller&#x27;s server-side tenant for the current ambient scope (e.g. the active HTTP request), so storage can apply SEC-005 slice 4c-ii tenant read predicates without threading a caller-tenant argument through every read method and intermediate service. Returns null when there is no tenant in scope — a non-request/background caller, or the single-company-per-deployment runtime where the legacy tenantless admin profile has no company. A null result is the fail-open signal: reads are not tenant-scoped and every row passes, matching the deployment-boundary posture. The web layer supplies an IHttpContextAccessor-backed implementation; the storage layer depends only on this abstraction (no ASP.NET Core coupling).
-
-```csharp
-public interface IFundScopeTenantAccessor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string? ResolveCallerTenant();</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:57](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L57) | The caller&#x27;s resolved tenant id for the current scope, or null when none is in scope (fail-open). |

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InstrumentPassportReferenceDataWorkbenchSectionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.InstrumentPassportReferenceDataWorkbenchSectionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:461](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L461).
+
+```csharp
+public sealed record InstrumentPassportReferenceDataWorkbenchSectionDto(string SectionId, string Title, string Status, string Summary, int EvidenceCount, int BlockingIssueCount);
+```
+
 ## IntercompanyConfirmationCloseGateResultDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.IntercompanyConfirmationCloseGateResultDto</code>. Kind: `record`.
@@ -650,22 +660,3 @@ Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:20](../../..
 ```csharp
 public sealed record NormalizeBrokerTransactions(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
 ```
-
-## NullReportingRunNotifier
-
-Qualified name: <code>Meridian.Contracts.Workstation.NullReportingRunNotifier</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs:21](../../../../src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs#L21).
-
-No-op notifier used when no UI stream broadcaster is registered (headless hosts, tests).
-
-```csharp
-public sealed class NullReportingRunNotifier : IReportingRunNotifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly NullReportingRunNotifier Instance = new ();</code> | [src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs:23](../../../../src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs#L23) |  |
-| <code>public void NotifyRunChanged(string runId);</code> | [src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs:29](../../../../src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs#L29) |  |

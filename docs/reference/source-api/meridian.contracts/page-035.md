@@ -18,6 +18,18 @@ The digest proves the operator is drafting exactly the computation they previewe
 public sealed record CreateIntercompanyAccrualDraftRequest(IntercompanyAccrualRequestDto Accrual, string ExpectedEvidenceDigest);
 ```
 
+## CreateIntercompanyConfirmationAdjustmentDraftRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.CreateIntercompanyConfirmationAdjustmentDraftRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:106](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L106).
+
+Pre-fills an ordinary journal-workbench draft that corrects one side after a dispute was resolved. The draft is never submitted, approved or posted automatically. AdjustmentAmount is in the agreement currency: a positive amount debits the side&#x27;s intercompany account named by Role, a negative amount credits it, and OffsetAccountNodeId takes the opposite side. After the correction posts, propose again.
+
+```csharp
+public sealed record CreateIntercompanyConfirmationAdjustmentDraftRequest(Guid RequestId, IntercompanyBalanceConfirmationPartyDto Party, long ExpectedVersion, string ExpectedBalanceDigest, IntercompanyAccountRoleDto Role, decimal AdjustmentAmount, string OffsetAccountNodeId, DateOnly AccountingDate, string? Memo = null);
+```
+
 ## CreateIntercompanyFeeAccrualDraftRequest
 
 Qualified name: <code>Meridian.Contracts.Ledger.CreateIntercompanyFeeAccrualDraftRequest</code>. Kind: `record`.
@@ -664,9 +676,9 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Ledger.IIntercompanyBalanceConfirmationStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:103](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L103).
+Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:142](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L142).
 
-Durable, append-only confirmation history scoped to the caller&#x27;s tenant and company. Each append adds the next version of one confirmation; a stale expected version is refused rather than overwritten.
+Durable, append-only confirmation history scoped to the caller&#x27;s tenant and company. A cross-company confirmation is also visible to either side&#x27;s company. Each append adds the next version of one confirmation; a stale expected version is refused rather than overwritten.
 
 ```csharp
 public interface IIntercompanyBalanceConfirmationStore
@@ -676,9 +688,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IntercompanyBalanceConfirmationDto?&gt; GetAsync(Guid confirmationId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:105](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L105) |  |
-| <code>Task&lt;IntercompanyBalanceConfirmationDto?&gt; FindAsync(Guid accountingArrangementId, DateOnly asOf, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:107](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L107) | The latest version of the confirmation for one accounting profile and as-of date, if any. |
-| <code>Task&lt;IntercompanyBalanceConfirmationDto&gt; AppendAsync(IntercompanyBalanceConfirmationDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:112](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L112) | Appends next as version expectedVersion + 1. Version 1 creates the confirmation and is refused when one already exists for the same profile and date. |
+| <code>Task&lt;IntercompanyBalanceConfirmationDto?&gt; GetAsync(Guid confirmationId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:144](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L144) |  |
+| <code>Task&lt;IntercompanyBalanceConfirmationDto?&gt; FindAsync(Guid accountingArrangementId, DateOnly asOf, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:146](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L146) | The latest version of the confirmation for one accounting profile and as-of date, if any. |
+| <code>Task&lt;IntercompanyBalanceConfirmationDto&gt; AppendAsync(IntercompanyBalanceConfirmationDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:151](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L151) | Appends next as version expectedVersion + 1. Version 1 creates the confirmation and is refused when one already exists for the same profile and date. |
 
 ## IIntercompanyConfirmationClosePolicyStore
 
@@ -843,15 +855,3 @@ Declared public members:
 | <code>Task&lt;ManualJournalEntryDraftDto&gt; ValidateDraftAsync(ValidateManualJournalEntryDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1098](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1098) |  |
 | <code>Task&lt;ManualJournalEntryDraftDto&gt; SubmitApprovalAsync(SubmitManualJournalEntryApprovalRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1102](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1102) |  |
 | <code>Task&lt;ManualJournalEntryDraftDto&gt; AttachEvidenceAsync(AttachManualJournalEntryEvidenceRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1106](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1106) |  |
-
-## ImportPrivateCapitalBankObservationRequest
-
-Qualified name: <code>Meridian.Contracts.Ledger.ImportPrivateCapitalBankObservationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/PrivateCapitalBankObservationDtos.cs:19](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalBankObservationDtos.cs#L19).
-
-Select retained source bytes; no caller-supplied amount or cash authority is accepted.
-
-```csharp
-public sealed record ImportPrivateCapitalBankObservationRequest(string EvidenceLink, string DocumentId);
-```

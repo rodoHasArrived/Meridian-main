@@ -1213,7 +1213,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyBalanceConfirmationRow</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:263](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L263).
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:269](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L269).
 
 One retained confirmation as seen from the loaded book; amounts are the server&#x27;s exact decimals.
 
@@ -1225,24 +1225,45 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IntercompanyBalanceConfirmationDto Confirmation { get; } = confirmation;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:265](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L265) |  |
-| <code>public Guid ConfirmationId =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:266](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L266) |  |
-| <code>public long Version =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:267](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L267) |  |
-| <code>public string BalanceDigest =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:268](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L268) |  |
-| <code>public IntercompanyBalanceConfirmationStatusDto Status =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:269](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L269) |  |
-| <code>public IntercompanyBalanceConfirmationPartyDto ThisBookParty =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:270](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L270) |  |
-| <code>public string Profile =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:272](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L272) |  |
-| <code>public string StatusText =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:273](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L273) |  |
-| <code>public string PartyOne =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:282](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L282) |  |
-| <code>public string PartyTwo =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:283](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L283) |  |
-| <code>public string Net =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:284](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L284) |  |
-| <code>public string History =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:285](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L285) |  |
-| <code>public bool CanConfirm =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:287](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L287) |  |
-| <code>public bool CanDispute =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:290](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L290) |  |
+| <code>public IntercompanyBalanceConfirmationDto Confirmation { get; } = confirmation;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:271](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L271) |  |
+| <code>public Guid ConfirmationId =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:272](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L272) |  |
+| <code>public long Version =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:273](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L273) |  |
+| <code>public string BalanceDigest =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:274](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L274) |  |
+| <code>public IntercompanyBalanceConfirmationStatusDto Status =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:275](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L275) |  |
+| <code>public IntercompanyBalanceConfirmationPartyDto ThisBookParty =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:276](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L276) |  |
+| <code>public string Profile =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:278](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L278) |  |
+| <code>public string StatusText =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:279](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L279) |  |
+| <code>public string PartyOne =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:288](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L288) |  |
+| <code>public string PartyTwo =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:289](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L289) |  |
+| <code>public string Net =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:290](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L290) |  |
+| <code>public string History =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:291](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L291) |  |
+| <code>public bool CanConfirm =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:293](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L293) |  |
+| <code>public bool CanResolve =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:297](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L297) | Disputed, and (across companies) this book&#x27;s side has not yet recorded its resolution. |
+| <code>public bool ThisSideResolved { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:298](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L298) |  |
+| <code>public bool CanDispute =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:308](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L308) |  |
 
 ## IntercompanyBalanceConfirmationWorkspace
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyBalanceConfirmationWorkspace</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs#L11).
+
+Correction after a resolved dispute (DEC-IC-CONFIRM-003), over the browser&#x27;s route: a balanced draft on this book&#x27;s mapped intercompany account, retained in the journal workbench for ordinary review. Nothing is posted here.
+
+```csharp
+public sealed partial class IntercompanyBalanceConfirmationWorkspace
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;IntercompanyChoiceRow&gt; AdjustmentRoles { get; } = [new (nameof(IntercompanyAccountRoleDto.Receivable), &quot;Due from (receivable)&quot;), new (nameof(IntercompanyAccountRoleDto.Payable), &quot;Due to (payable)&quot;)];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs:17](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs#L17) | The choices for the intercompany account to correct. |
+| <code>public string AdjustmentRole { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs:19](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs#L19) |  |
+| <code>public string AdjustmentAmount { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs:21](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs#L21) | Agreement currency, invariant decimal. Positive debits the intercompany account, negative credits it. |
+| <code>public string AdjustmentOffsetAccount { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs:23](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs#L23) | A non-intercompany chart node of this book. |
+| <code>public string AdjustmentDate { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs:25](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs#L25) | Accounting date (yyyy-MM-dd); empty uses the confirmation date. |
+| <code>public IAsyncRelayCommand DraftAdjustmentCommand =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs:26](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs#L26) |  |
 
 Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:12](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L12).
 
@@ -1265,9 +1286,9 @@ Declared public members:
 | <code>public IAsyncRelayCommand RejectClosePolicyCommand =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:34](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L34) |  |
 | <code>public IAsyncRelayCommand DisableClosePolicyCommand =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:36](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L36) |  |
 
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:17](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L17).
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:18](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L18).
 
-Desktop state for reciprocal intercompany balance confirmation over the routes the browser uses. Balances are pinned by the server from posted journals; this book&#x27;s operator confirms or disputes only this book&#x27;s side. Confirmation is advisory unless the book adopts a reviewed close policy (ADR-032, see the ClosePolicy part); nothing is calculated here.
+Desktop state for reciprocal intercompany balance confirmation over the routes the browser uses. Balances are pinned by the server from posted journals; this book&#x27;s operator confirms or disputes only this book&#x27;s side. The other book may belong to another company of the tenant; then each company records its own resolution of a dispute. Confirmation is advisory unless the book adopts a reviewed close policy (ADR-032, see the ClosePolicy part); nothing is calculated here.
 
 ```csharp
 public sealed partial class IntercompanyBalanceConfirmationWorkspace : ObservableObject, IDisposable
@@ -1277,27 +1298,27 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IntercompanyBalanceConfirmationWorkspace(IWorkstationIntercompanyAgreementApiClient client);</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:32](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L32) |  |
-| <code>public ObservableCollection&lt;IntercompanyBalanceConfirmationRow&gt; Confirmations { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:47](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L47) |  |
-| <code>public ObservableCollection&lt;string&gt; Findings { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:48](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L48) |  |
-| <code>public ObservableCollection&lt;IntercompanyChoiceRow&gt; Profiles { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:50](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L50) | Approved accounting profiles that map the loaded book on the loaded date. |
-| <code>public IAsyncRelayCommand LoadCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:51](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L51) |  |
-| <code>public IAsyncRelayCommand ProposeCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:52](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L52) |  |
-| <code>public IAsyncRelayCommand ConfirmCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:53](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L53) |  |
-| <code>public IAsyncRelayCommand DisputeCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:54](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L54) |  |
-| <code>public IAsyncRelayCommand ResolveCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L55) |  |
-| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:56](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L56) |  |
-| <code>public bool CanManageLedger { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:57](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L57) |  |
-| <code>public string PermissionNote =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:58](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L58) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:61](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L61) |  |
-| <code>public string SummaryText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:63](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L63) | The advisory position, stated as advisory: close eligibility is unchanged. |
-| <code>public string LedgerBook { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:64](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L64) |  |
-| <code>public string AsOf { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:66](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L66) | Confirmation date (yyyy-MM-dd), normally the period end. |
-| <code>public string Reason { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:67](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L67) |  |
-| <code>public string SelectedProfile { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:68](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L68) |  |
-| <code>public IntercompanyBalanceConfirmationRow? SelectedConfirmation { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:69](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L69) |  |
-| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:211](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L211) | Clear prior-session evidence and invalidate every outstanding response on account changes. |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:224](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L224) |  |
+| <code>public IntercompanyBalanceConfirmationWorkspace(IWorkstationIntercompanyAgreementApiClient client);</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:33](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L33) |  |
+| <code>public ObservableCollection&lt;IntercompanyBalanceConfirmationRow&gt; Confirmations { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:48](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L48) |  |
+| <code>public ObservableCollection&lt;string&gt; Findings { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:49](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L49) |  |
+| <code>public ObservableCollection&lt;IntercompanyChoiceRow&gt; Profiles { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:51](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L51) | Approved accounting profiles that map the loaded book on the loaded date. |
+| <code>public IAsyncRelayCommand LoadCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:52](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L52) |  |
+| <code>public IAsyncRelayCommand ProposeCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:53](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L53) |  |
+| <code>public IAsyncRelayCommand ConfirmCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:54](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L54) |  |
+| <code>public IAsyncRelayCommand DisputeCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L55) |  |
+| <code>public IAsyncRelayCommand ResolveCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:56](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L56) |  |
+| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:57](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L57) |  |
+| <code>public bool CanManageLedger { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:58](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L58) |  |
+| <code>public string PermissionNote =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:59](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L59) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:62](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L62) |  |
+| <code>public string SummaryText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:64](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L64) | The advisory position, stated as advisory: close eligibility is unchanged. |
+| <code>public string LedgerBook { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:65](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L65) |  |
+| <code>public string AsOf { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:67](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L67) | Confirmation date (yyyy-MM-dd), normally the period end. |
+| <code>public string Reason { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:68](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L68) |  |
+| <code>public string SelectedProfile { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:69](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L69) |  |
+| <code>public IntercompanyBalanceConfirmationRow? SelectedConfirmation { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:70](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L70) |  |
+| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:216](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L216) | Clear prior-session evidence and invalidate every outstanding response on account changes. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:229](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L229) |  |
 
 ## IntercompanyChoice
 
@@ -1321,7 +1342,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyChoiceRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:257](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L257).
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:263](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L263).
 
 One selectable identifier with a readable label.
 
@@ -1333,4 +1354,4 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:259](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L259) |  |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:265](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L265) |  |

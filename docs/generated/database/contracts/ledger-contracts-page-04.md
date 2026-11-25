@@ -2,11 +2,19 @@
 
 # `ledger-contracts` data objects - page 4 of 7
 
-Objects 241-320 of 502. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 503. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_ExternalGlExportCertificationDto["ExternalGlExportCertificationDto"] {
+        +string Actor
+        +string CertificationId
+        +IReadOnlyList~string~ EvidenceLinks
+        +DateTimeOffset RecordedAtUtc
+        +AccountingCertificationStateDto State
+        +string Summary
+    }
     class Meridian_Contracts_Ledger_ExternalGlExportLineDto["ExternalGlExportLineDto"] {
         +string AccountName
         +decimal Credit
@@ -322,9 +330,9 @@ classDiagram
         +Guid IntercompanyAgreementId
         +decimal NetTransactionBalance
         +IntercompanyBalanceConfirmationSideDto PartyOne
+        +string? PartyOneCompanyId
         +IntercompanyBalanceConfirmationSideDto PartyTwo
-        +IntercompanyBalanceConfirmationStatusDto Status
-        +string TenantId
+        +string? PartyTwoCompanyId
     }
     class Meridian_Contracts_Ledger_IntercompanyBalanceConfirmationEventDto["IntercompanyBalanceConfirmationEventDto"] {
         +IntercompanyBalanceConfirmationActionDto Action
@@ -445,18 +453,7 @@ classDiagram
         +DateOnly EffectiveDate
         +Guid JournalEntryId
     }
-    class Meridian_Contracts_Ledger_IntercompanyCounterpartLinkDto["IntercompanyCounterpartLinkDto"] {
-        +string Actor
-        +Guid ProposalId
-        +string Reason
-        +DateTimeOffset RecordedAt
-        +Guid? RejectedDraftId
-        +int? RejectedDraftVersion
-        +Guid RequestId
-        +Guid TargetBookId
-        +Guid TargetJournalId
-        +string TenantId
-    }
+    Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportCertificationDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportLineDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportReconciliationSafeguardStateDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageManifestDto --> Meridian_Contracts_Ledger_ExternalGlExportLineDto

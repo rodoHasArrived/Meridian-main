@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsApprovalReassignRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalReassignRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs#L22).
+
+```csharp
+public sealed record OperationsApprovalReassignRequestDto(long ExpectedVersion, string ApprovalId, string CommandId, string Actor, string Reviewer, string Rationale);
+```
+
 ## OperationsApprovalStateDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalStateDto</code>. Kind: `enum`.
@@ -646,14 +656,4 @@ Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:730](../
 
 ```csharp
 public sealed record OperationsReopenWorkflowRequestDto(long ExpectedVersion, string Actor, string Rationale, string IncidentId, bool IsGovernedAdmin, string? Justification = null, string? ApprovalReference = null, string? ImpactSummary = null, string? CorrelationId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## OperationsReportPackReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsReportPackReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1335](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1335).
-
-```csharp
-public sealed record OperationsReportPackReadinessDto(bool IsReady, string? ReportPackId, string? BlockingReason, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
 ```

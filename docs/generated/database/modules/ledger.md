@@ -296,6 +296,8 @@ erDiagram
         date as_of
         jsonb payload
         timestamp_with_time_zone recorded_at
+        text party_one_company_id
+        text party_two_company_id
     }
     ledger_intercompany_confirmation_close_policies {
         uuid policy_id PK
@@ -913,7 +915,7 @@ erDiagram
 | `fund_profile_tenancy` | table | 4 | `fund_profile_id` | 0 | 2 | - |
 | `intercompany_account_binding_revisions` | table | 11 | `revision_id` | 1 | 3 | - |
 | `intercompany_accrual_schedules` | table | 8 | `schedule_id`, `version` | 0 | 3 | - |
-| `intercompany_balance_confirmations` | table | 8 | `confirmation_id`, `version` | 0 | 3 | - |
+| `intercompany_balance_confirmations` | table | 10 | `confirmation_id`, `version` | 0 | 6 | - |
 | `intercompany_confirmation_close_policies` | table | 8 | `policy_id`, `version` | 0 | 3 | - |
 | `intercompany_counterpart_reservations` | table | 5 | `tenant_id`, `target_book_id`, `target_journal_id` | 1 | 1 | - |
 | `intercompany_proposal_links` | table | 10 | `tenant_id`, `request_id` | 1 | 1 | - |

@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TierConfigResult
+
+Qualified name: <code>Meridian.Ui.Services.TierConfigResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:140](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L140).
+
+Result of getting tier configuration.
+
+```csharp
+public sealed class TierConfigResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:142](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L142) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:143](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L143) |  |
+| <code>public List&lt;StorageTierConfig&gt; Tiers { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:144](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L144) |  |
+| <code>public bool AutoMigrationEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:145](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L145) |  |
+| <code>public string? MigrationSchedule { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:146](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L146) |  |
+
 ## TierMigrationApiResult
 
 Qualified name: <code>Meridian.Ui.Services.TierMigrationApiResult</code>. Kind: `class`.
@@ -1065,27 +1087,3 @@ Declared public members:
 | <code>public bool IsDefault { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:78](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L78) |  |
 | <code>public double ScrollPosition { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:79](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L79) |  |
 | <code>public Dictionary&lt;string, object&gt; PageState { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:80](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L80) |  |
-
-## WorkspaceQuickAction
-
-Qualified name: <code>Meridian.Ui.Services.WorkspaceQuickAction</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:211](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L211).
-
-Named quick action attached to a workspace. Each action carries a target page tag and an optional tone so shells can render it as a contextual button or menu item without requiring a full workflow summary fetch.
-
-```csharp
-public sealed class WorkspaceQuickAction
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ActionId { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:214](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L214) | Stable identifier used for deduplication and analytics. |
-| <code>public string Label { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:217](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L217) | Human-readable action label shown in the shell tile. |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:220](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L220) | Description shown as tooltip or secondary text. |
-| <code>public string TargetPageTag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:223](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L223) | Navigation target invoked when the action is activated. |
-| <code>public string Tone { get; set; } = &quot;default&quot;;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:226](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L226) | Visual tone: default, primary, success, warning, or danger. |
-| <code>public bool IsEnabled { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:229](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L229) | When false the action is rendered but not interactive (e.g. locked behind context). |
-| <code>public int Order { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:232](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L232) | Display order within the action list (lower = earlier). |

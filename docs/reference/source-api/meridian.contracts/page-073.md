@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterScheduleSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterScheduleSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:259](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L259).
+
+```csharp
+public sealed record SecurityMasterScheduleSummaryDto(bool SupportsCashflowSchedule, bool SupportsFactorHistory, bool HasEconomicScheduleTerms, decimal? CurrentFactor, DateOnly? CurrentFactorDate, DateOnly? NextLifecycleDate, string SourceSummary, string Summary, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] SecurityMasterDeclaredExerciseOutcomeDto? DeclaredExercise = null);
+```
+
 ## SecurityMasterSchemaCompatibilityDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterSchemaCompatibilityDto</code>. Kind: `record`.
@@ -643,16 +653,4 @@ Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:230](
 
 ```csharp
 public sealed record StatementReconciliationCaseCommentThreadDto(string? ThreadId, string? Subject, IReadOnlyList<StatementReconciliationCaseCommentDto>? Comments);
-```
-
-## StatementReconciliationCaseDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationCaseDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:206](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L206).
-
-Operator case opened to investigate and close one or more statement reconciliation breaks.
-
-```csharp
-public sealed record StatementReconciliationCaseDto(string? CaseId, string? RunId, string? Status, string? Priority, string? Title, string? Summary, IReadOnlyList<string>? BreakIds, DateTimeOffset? CreatedAtUtc, DateTimeOffset? LastUpdatedAtUtc, string? LastUpdatedBy, string? Owner = null, DateTimeOffset? DueAtUtc = null, DateTimeOffset? ResolvedAtUtc = null, string? ResolutionCode = null, string? ResolutionSummary = null, string? EvidenceLink = null, string? Disposition = null, int? AgingDays = null, IReadOnlyList<StatementReconciliationCaseCommentThreadDto>? CommentThreads = null, IReadOnlyList<StatementReconciliationCaseAttachmentDto>? Attachments = null, StatementReconciliationBreakExplanationDto? BreakExplanation = null, IReadOnlyList<StatementReconciliationCaseAuditEventDto>? AuditEvents = null);
 ```

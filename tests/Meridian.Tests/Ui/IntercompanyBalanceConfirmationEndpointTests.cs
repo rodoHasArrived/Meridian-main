@@ -109,6 +109,20 @@ public sealed class IntercompanyBalanceConfirmationEndpointTests
             new ProposeIntercompanyBalanceConfirmationRequest(Guid.NewGuid(), Profile, MonthEnd), Json)).StatusCode);
     }
 
+    [Fact]
+    public async Task AdjustmentDrafts_NeedAManager_AndAreUnavailableWithoutTheComposedDrafter()
+    {
+        using var fixture = await CreateAsync();
+        var request = new CreateIntercompanyConfirmationAdjustmentDraftRequest(Guid.NewGuid(), IntercompanyBalanceConfirmationPartyDto.PartyOne,
+            1, "digest", IntercompanyAccountRoleDto.Receivable, -250m, "a-suspense", MonthEnd);
+        var path = $"{Route}/{Guid.NewGuid():D}/adjustment-drafts";
+
+        await using (var viewer = await AppAsync(fixture.Service, UserPermission.ViewLedgerReports))
+            Assert.Equal(HttpStatusCode.Forbidden, (await viewer.GetTestClient().PostAsJsonAsync(path, request, Json)).StatusCode);
+        await using var manager = await AppAsync(fixture.Service, UserPermission.ManageLedgerReports);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, (await manager.GetTestClient().PostAsJsonAsync(path, request, Json)).StatusCode);
+    }
+
     private static async Task<IntercompanyBalanceConfirmationDto> ReadAsync(HttpResponseMessage response)
     {
         Assert.True(response.IsSuccessStatusCode, await response.Content.ReadAsStringAsync());

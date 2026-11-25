@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyObligationMonitorJsonContext
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationMonitorJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:42](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L42).
+
+```csharp
+public partial class IntercompanyObligationMonitorJsonContext : JsonSerializerContext;
+```
+
 ## IntercompanyObligationMonitorRequestDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationMonitorRequestDto</code>. Kind: `record`.
@@ -715,19 +725,3 @@ Outcome of verifying the ledger-event audit chain: the verified suffix is protec
 ```csharp
 public sealed record LedgerEventAuditVerification(long ChainedEvents, long UnprotectedGenesisFacts, DateTimeOffset GenesisAtUtc);
 ```
-
-## LedgerJournalEntryDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerJournalEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:386](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L386).
-
-```csharp
-public sealed record LedgerJournalEntryDto(Guid JournalEntryId, Guid PeriodId, Guid? LedgerBookId, Guid AggregateId, Guid? CommandId, Guid? CorrelationId, long GlobalSequence, DateTimeOffset CreatedAt, DateTimeOffset Timestamp, string Description, decimal TotalDebits, decimal TotalCredits, bool IsBalanced, IReadOnlyList<LedgerJournalEntryLineDto> Lines, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", string? RuleId = null, string? RuleVersion = null, Guid? SourceEventId = null, Guid? SourceJournalEntryId = null, LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] LedgerJournalExecutionLineageDto? Execution = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;LedgerJournalEntryLineDto&gt; Lines { get; init; } = Lines??[];</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:412](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L412) |  |

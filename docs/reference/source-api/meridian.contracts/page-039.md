@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PostedPeriodComparisonRangeDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.PostedPeriodComparisonRangeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs:3](../../../../src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs#L3).
+
+```csharp
+public sealed record PostedPeriodComparisonRangeDto(Guid PeriodId, string Label, DateOnly PeriodStart, DateOnly PeriodEnd, DateOnly RangeStart, DateOnly RangeEnd, bool IsPartial, string Status);
+```
+
 ## PostedPostingRuleJournalCandidateResultDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.PostedPostingRuleJournalCandidateResultDto</code>. Kind: `record`.
@@ -657,7 +667,7 @@ public sealed record ProposeIntercompanyAccrualScheduleRequest(Guid RequestId, G
 
 Qualified name: <code>Meridian.Contracts.Ledger.ProposeIntercompanyBalanceConfirmationRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:64](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L64).
+Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:91](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L91).
 
 Pins both sides&#x27; current posted balances for the profile at the as-of date.
 
@@ -708,19 +718,3 @@ Server-captured rejection checked while holding the journal mutation authority l
 ```csharp
 public sealed record RejectedIntercompanyDraftEvidenceDto(Guid LedgerBookId, Guid JournalEntryId, int Version, Guid ProposalId, string SourceDigest);
 ```
-
-## ReopenClosePeriodRequestDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ReopenClosePeriodRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:624](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L624).
-
-```csharp
-public sealed record ReopenClosePeriodRequestDto(Guid WorkflowId, long ExpectedWorkflowVersion, string Actor, string Role, string Rationale, string IncidentId, string Justification, string ApprovalReference, string ImpactSummary, IReadOnlyList<string>? EvidenceLinks = null, string? CorrelationId = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:638](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L638) |  |

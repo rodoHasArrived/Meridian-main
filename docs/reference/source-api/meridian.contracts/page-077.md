@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkflowBlockerSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowBlockerSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L42).
+
+Primary blocker that explains why the operator cannot progress smoothly.
+
+```csharp
+public sealed record WorkflowBlockerSummary(string Code, string Label, string Detail, string Tone, bool IsBlocking);
+```
+
 ## WorkflowDefinitionDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkflowDefinitionDto</code>. Kind: `record`.
@@ -560,16 +572,4 @@ One point of a metric&#x27;s history, oldest first. Value is null when the retai
 
 ```csharp
 public sealed record WorkstationMetricHistoryPointDto(DateOnly Date, decimal? Value);
-```
-
-## WorkstationModeComparisonGroup
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationModeComparisonGroup</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:137](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L137).
-
-Per-strategy cross-mode comparison group used by strategy and trading surfaces.
-
-```csharp
-public sealed record WorkstationModeComparisonGroup(string StrategyName, IReadOnlyList<WorkstationModeComparisonRun> Modes);
 ```

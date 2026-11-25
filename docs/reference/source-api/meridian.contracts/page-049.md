@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcContractLifecycleData
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcContractLifecycleData</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L26).
+
+Version-one lifecycle data. Unknown discriminators fail deserialization rather than becoming another event.
+
+```csharp
+public abstract record OtcContractLifecycleData;
+```
+
 ## OtcContractLifecycleEventDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcContractLifecycleEventDto</code>. Kind: `record`.
@@ -814,24 +826,3 @@ Publishes the points of a curve as of an economic date. Identical content for th
 ```csharp
 public sealed record PublishSecurityCurveVersionRequest(Guid CurveId, DateOnly AsOf, IReadOnlyList<SecurityCurvePointDto> Points, string Source, DateTimeOffset? SourcedAt = null, string? PublishedBy = null);
 ```
-
-## RateUnit
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.RateUnit</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs#L4).
-
-The declared unit a stored rate value is expressed in.
-
-```csharp
-public enum RateUnit
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unrecognized = - 1</code> | [src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs#L7) | A retained declaration the node cannot interpret; calculations refuse it. |
-| <code>Fraction</code> | [src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs#L10) | A plain fraction: 0.045 is four and a half percent. |
-| <code>Percent</code> | [src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs#L13) | Percentage points: 4.5 is four and a half percent, and 0.5 is half a percent. |
-| <code>BasisPoints</code> | [src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs#L16) | Basis points: 125 is one and a quarter percent. |

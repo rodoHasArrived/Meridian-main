@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationJobControl
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationJobControl</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1079](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1079).
+
+Queue orchestration controls and replay metadata for resilient reconciliation jobs.
+
+```csharp
+public sealed record ReconciliationJobControl(string JobId, string IdempotencyKey, int Attempt, int MaxAttempts, bool DeadLettered, string? DeadLetterReason, DateTimeOffset EnqueuedAt, DateTimeOffset? LastAttemptAt, DateTimeOffset? NextAttemptAt, string BackpressureBucket);
+```
+
 ## ReconciliationLogicalBreakIdentity
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationLogicalBreakIdentity</code>. Kind: `class`.
@@ -650,14 +662,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1080]
 
 ```csharp
 public sealed record ReportingScheduleDeliveryPlanDto(string PlanId, string ScheduleId, string TemplateId, string DistributionId, string Recipient, string RecipientRole, string Channel, ReportPackDeliveryModeDto DeliveryMode, IReadOnlyList<GovernanceReportArtifactFormatDto> Formats, bool IsReady, string ReadinessSummary, string Route, DateTimeOffset DueAtUtc, DateOnly NextAsOfDate, string Owner, string? Note = null, Guid? LastDeliveryAttemptId = null, ReportPackDeliveryStateDto? LastDeliveryState = null, DateTimeOffset? LastDeliveryAtUtc = null, string? LastDeliveryPackageRoute = null, string? LastDeliverySecureLink = null, IReadOnlyList<ReportPackDeliveryAccessLinkDto>? LastDeliveryAccessLinks = null, DateTimeOffset? LastDeliveryAccessExpiresAtUtc = null, string? LastDeliveryAccessSummary = null, string? LastDeliveryChannelSummary = null, string? LastDeliveryDownloadSummary = null, int LastDeliveryNotificationCount = 0, string? LastDeliveryNotificationSummary = null, int LastDeliveryGeneratedReportWriterGridCount = 0, int LastDeliveryRenderedReportWriterGridCount = 0, string? LastDeliveryReportWriterDatasetSummary = null, string? LastDeliveryReportWriterGridSummary = null, string? VersionStamp = null, int LastDeliveryArtifactCount = 0, string? LastDeliveryIntegritySummary = null, IReadOnlyList<string>? ReadinessBlockers = null, string? BrandingThemeId = null, ReportBrandingThemeDto? BrandingTheme = null, string? LastDeliveryEntitlementScope = null);
-```
-
-## ReportingScheduleDeliveryTargetDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingScheduleDeliveryTargetDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1034](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1034).
-
-```csharp
-public sealed record ReportingScheduleDeliveryTargetDto(string DistributionId, IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null, ReportPackDeliveryModeDto? DeliveryMode = null, string? Note = null, string? RecipientPrincipalId = null, ReportAccessPrincipalKindDto? RecipientPrincipalKind = null);
 ```

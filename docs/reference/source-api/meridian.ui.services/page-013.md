@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConnectionServiceBase
+
+Qualified name: <code>Meridian.Ui.Services.Services.ConnectionServiceBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:12](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L12).
+
+Abstract base class for connection management shared across desktop applications. Provides shared state machine, monitoring orchestration, auto-reconnect logic, and event raising. Platform-specific HTTP calls and timer implementations are delegated to derived classes. Part of Phase 6C.2 service deduplication (ROADMAP item 6C.2).
+
+```csharp
+public abstract class ConnectionServiceBase : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ServiceUrl =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:33](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L33) | Gets the current service URL being used for connections. |
+| <code>public ConnectionState State =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:36](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L36) | Gets the current connection state. |
+| <code>public string CurrentProvider =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:39](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L39) | Gets the current provider name. |
+| <code>public TimeSpan? Uptime =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:42](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L42) | Gets the connection uptime. |
+| <code>public double LastLatencyMs { get; private set; }</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:45](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L45) | Gets the last measured latency in milliseconds. |
+| <code>public int TotalReconnects { get; private set; }</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:48](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L48) | Gets the total number of reconnections. |
+| <code>public bool IsMonitoring =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:51](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L51) | Gets whether monitoring is currently active. |
+| <code>public bool IsAutoReconnectPaused =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:54](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L54) | Gets whether auto-reconnect is currently paused. |
+| <code>public event EventHandler&lt;ConnectionStateChangedEventArgs&gt;? StateChanged;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:57](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L57) | Event raised when connection state changes. |
+| <code>public event EventHandler&lt;ConnectionStateEventArgs&gt;? ConnectionStateChanged;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:60](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L60) | Event raised when connection state changes (ViewModel binding). |
+| <code>public event EventHandler&lt;int&gt;? LatencyUpdated;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:63](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L63) | Event raised when latency measurement is updated. |
+| <code>public event EventHandler&lt;ReconnectEventArgs&gt;? ReconnectAttempting;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:66](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L66) | Event raised when a reconnection attempt is starting. |
+| <code>public event EventHandler? ReconnectSucceeded;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:69](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L69) | Event raised when reconnection succeeds. |
+| <code>public event EventHandler&lt;ReconnectFailedEventArgs&gt;? ReconnectFailed;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:72](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L72) | Event raised when a reconnection attempt fails. |
+| <code>public event EventHandler&lt;ConnectionHealthEventArgs&gt;? ConnectionHealthUpdated;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:75](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L75) | Event raised when connection health is updated. |
+| <code>public void UpdateSettings(ConnectionSettings settings);</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:80](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L80) | Updates connection settings and reconfigures the underlying client. |
+| <code>public void ConfigureServiceUrl(string serviceUrl, int timeoutSeconds = 30);</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:90](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L90) | Configures the service URL directly. |
+| <code>public ConnectionSettings GetSettings() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:98](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L98) | Gets current connection settings. |
+| <code>public void StartMonitoring();</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:116](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L116) | Starts the connection monitoring with periodic health checks. |
+| <code>public void StopMonitoring();</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:141](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L141) | Stops connection monitoring. |
+| <code>public async Task&lt;bool&gt; ConnectAsync(string provider, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:159](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L159) | Initiates a connection to the provider. Performs a health check first; returns false when the provider is unreachable or the request is cancelled before the check completes. |
+| <code>public Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:197](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L197) | Disconnects from the provider. |
+| <code>public void PauseAutoReconnect();</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:211](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L211) | Pauses auto-reconnection temporarily. |
+| <code>public void ResumeAutoReconnect();</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:224](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L224) | Resumes auto-reconnection. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:524](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L524) |  |
+
 ## CredentialServiceRefusedException
 
 Qualified name: <code>Meridian.Ui.Services.Services.CredentialServiceRefusedException</code>. Kind: `class`.
@@ -1118,32 +1160,3 @@ Declared public members:
 | <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:77](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L77) |  |
 | <code>public DateTime DetectedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:78](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L78) |  |
 | <code>public string AffectedPath { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:79](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L79) |  |
-
-## QualityScoreEntry
-
-Qualified name: <code>Meridian.Ui.Services.Services.QualityScoreEntry</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:41](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L41).
-
-Describes a data file&#x27;s quality grade, record defects, coverage dates, and analysis time.
-
-```csharp
-public sealed class QualityScoreEntry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:43](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L43) |  |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:44](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L44) |  |
-| <code>public string DataType { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:45](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L45) |  |
-| <code>public double Score { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:46](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L46) |  |
-| <code>public string Grade { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:47](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L47) |  |
-| <code>public int RecordCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:48](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L48) |  |
-| <code>public int MissingCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:49](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L49) |  |
-| <code>public int DuplicateCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:50](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L50) |  |
-| <code>public int AnomalyCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:51](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L51) |  |
-| <code>public DateTime DateFrom { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:52](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L52) |  |
-| <code>public DateTime DateTo { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:53](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L53) |  |
-| <code>public DateTime LastAnalyzed { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:54](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L54) |  |

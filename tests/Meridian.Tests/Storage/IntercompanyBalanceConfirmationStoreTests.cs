@@ -8,7 +8,8 @@ namespace Meridian.Tests.Storage;
 /// <summary>
 /// The append-only confirmation history behaves the same in the file store and the PostgreSQL store: one
 /// confirmation per tenant, company, profile and date; versions follow one another; a stale or competing write is
-/// refused; an exact replay is idempotent; and another company or tenant sees nothing.
+/// refused; an exact replay is idempotent; another company or tenant sees nothing, except that a pair spanning two
+/// companies is visible to each side's company.
 /// </summary>
 public abstract class IntercompanyBalanceConfirmationStoreContract
 {
@@ -54,18 +55,36 @@ public abstract class IntercompanyBalanceConfirmationStoreContract
         Assert.Equal(2, (await store.FindAsync(Arrangement, MonthEnd, Company))!.Version);
     }
 
+    protected async Task ACrossCompanyPairIsVisibleToBothSidesCompanies_AndNoOneElseCore()
+    {
+        var store = await OpenAsync();
+        var proposed = Proposal(partyTwoCompany: "company-b");
+        await store.AppendAsync(proposed, 0);
+        var confirmed = Confirm(proposed);
+        await store.AppendAsync(confirmed, 1);
+
+        Assert.Equal(2, (await store.GetAsync(proposed.ConfirmationId, "company-b"))!.Version);
+        Assert.Equal(2, (await store.FindAsync(Arrangement, MonthEnd, "company-b"))!.Version);
+        Assert.Equal(2, (await store.FindAsync(Arrangement, MonthEnd, Company))!.Version);
+        Assert.Null(await store.FindAsync(Arrangement, MonthEnd, "company-c"));
+        // The borrower's company cannot start a parallel history for the same profile and date.
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            store.AppendAsync(Proposal(proposer: "company-b", partyTwoCompany: "company-b") with { PartyOneCompanyId = Company }, 0));
+    }
+
     protected async Task AWriteForAnotherTenantIsRefusedCore()
     {
         var store = await OpenAsync();
         await Assert.ThrowsAsync<TenantScopeRejectedException>(() => store.AppendAsync(Proposal() with { TenantId = "tenant-b" }, 0));
     }
 
-    private static IntercompanyBalanceConfirmationDto Proposal()
+    private static IntercompanyBalanceConfirmationDto Proposal(string proposer = Company, string? partyTwoCompany = null)
     {
         var one = new IntercompanyBalanceConfirmationSideDto(Guid.NewGuid(), Guid.NewGuid(), "USD", 100m, "USD", 100m, "one", []);
         var two = new IntercompanyBalanceConfirmationSideDto(Guid.NewGuid(), Guid.NewGuid(), "USD", -100m, "USD", -100m, "two", []);
-        return IntercompanyBalanceConfirmationRules.Propose(null, Guid.NewGuid(), Guid.NewGuid(), Tenant, Company, Arrangement, Guid.NewGuid(),
-            MonthEnd, one, two, "accounting-operations", new DateTimeOffset(2026, 7, 2, 9, 0, 0, TimeSpan.Zero));
+        return IntercompanyBalanceConfirmationRules.Propose(null, Guid.NewGuid(), Guid.NewGuid(), Tenant, proposer, Arrangement, Guid.NewGuid(),
+            MonthEnd, one, two, "accounting-operations", new DateTimeOffset(2026, 7, 2, 9, 0, 0, TimeSpan.Zero),
+            partyTwoCompany is null ? null : Company, partyTwoCompany);
     }
 
     private static IntercompanyBalanceConfirmationDto Confirm(IntercompanyBalanceConfirmationDto current)
@@ -90,6 +109,7 @@ public sealed class FileIntercompanyBalanceConfirmationStoreTests : Intercompany
     [Fact] public Task AppendsVersionsAndReadsTheLatestInScope() => AppendsVersionsAndReadsTheLatestInScopeCore();
     [Fact] public Task AStaleOrCompetingWriteIsRefusedAndAnExactReplayIsIdempotent() => AStaleOrCompetingWriteIsRefusedAndAnExactReplayIsIdempotentCore();
     [Fact] public Task AWriteForAnotherTenantIsRefused() => AWriteForAnotherTenantIsRefusedCore();
+    [Fact] public Task ACrossCompanyPairIsVisibleToBothSidesCompanies_AndNoOneElse() => ACrossCompanyPairIsVisibleToBothSidesCompanies_AndNoOneElseCore();
 
     public void Dispose()
     {
@@ -121,6 +141,7 @@ public sealed class PostgresIntercompanyBalanceConfirmationStoreTests : Intercom
     [LedgerDatabaseFact] public Task AppendsVersionsAndReadsTheLatestInScope() => AppendsVersionsAndReadsTheLatestInScopeCore();
     [LedgerDatabaseFact] public Task AStaleOrCompetingWriteIsRefusedAndAnExactReplayIsIdempotent() => AStaleOrCompetingWriteIsRefusedAndAnExactReplayIsIdempotentCore();
     [LedgerDatabaseFact] public Task AWriteForAnotherTenantIsRefused() => AWriteForAnotherTenantIsRefusedCore();
+    [LedgerDatabaseFact] public Task ACrossCompanyPairIsVisibleToBothSidesCompanies_AndNoOneElse() => ACrossCompanyPairIsVisibleToBothSidesCompanies_AndNoOneElseCore();
 
     [LedgerDatabaseFact]
     public async Task RetainedVersionsCannotBeRewrittenInTheDatabase()

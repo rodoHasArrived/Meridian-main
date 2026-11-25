@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SubscriptionInfo
+
+Qualified name: <code>Meridian.Ui.Services.SubscriptionInfo</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/LiveDataService.cs:283](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L283).
+
+Describes a live symbol subscription&#x27;s identity, type, activity, and received-event rate.
+
+```csharp
+public sealed class SubscriptionInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:285](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L285) |  |
+| <code>public int SubscriptionId { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:286](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L286) |  |
+| <code>public string SubscriptionType { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:287](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L287) |  |
+| <code>public bool IsActive { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:288](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L288) |  |
+| <code>public DateTime SubscribedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:289](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L289) |  |
+| <code>public int EventCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:290](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L290) |  |
+| <code>public DateTime? LastEventAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:291](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L291) |  |
+| <code>public double EventsPerSecond { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:292](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L292) |  |
+
 ## SubscriptionResult
 
 Qualified name: <code>Meridian.Ui.Services.SubscriptionResult</code>. Kind: `class`.
@@ -1184,25 +1209,3 @@ Declared public members:
 | <code>public List&lt;StorageTierConfig&gt;? Tiers { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:154](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L154) |  |
 | <code>public bool AutoMigrationEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:155](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L155) |  |
 | <code>public string? MigrationSchedule { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:156](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L156) |  |
-
-## TierConfigResult
-
-Qualified name: <code>Meridian.Ui.Services.TierConfigResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:140](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L140).
-
-Result of getting tier configuration.
-
-```csharp
-public sealed class TierConfigResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:142](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L142) |  |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:143](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L143) |  |
-| <code>public List&lt;StorageTierConfig&gt; Tiers { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:144](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L144) |  |
-| <code>public bool AutoMigrationEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:145](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L145) |  |
-| <code>public string? MigrationSchedule { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:146](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L146) |  |

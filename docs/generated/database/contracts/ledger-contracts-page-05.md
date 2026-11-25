@@ -2,11 +2,23 @@
 
 # `ledger-contracts` data objects - page 5 of 7
 
-Objects 321-400 of 502. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 503. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_IntercompanyCounterpartLinkDto["IntercompanyCounterpartLinkDto"] {
+        +string Actor
+        +Guid ProposalId
+        +string Reason
+        +DateTimeOffset RecordedAt
+        +Guid? RejectedDraftId
+        +int? RejectedDraftVersion
+        +Guid RequestId
+        +Guid TargetBookId
+        +Guid TargetJournalId
+        +string TenantId
+    }
     class Meridian_Contracts_Ledger_IntercompanyFeeAccrualEvidenceDto["IntercompanyFeeAccrualEvidenceDto"] {
         +Guid AccountingArrangementId
         +Guid AgreementId
@@ -645,32 +657,16 @@ classDiagram
         +long ExpectedWorkflowVersion
         +bool PrepareClosingEntriesOnly
     }
-    class Meridian_Contracts_Ledger_ManualJournalEntryDraftDto["ManualJournalEntryDraftDto"] {
-        +AccountingBasisKindDto AccountingBasis
-        +DateOnly AccountingDate
-        +string? ApprovalId
-        +DateTimeOffset? ApprovedAtUtc
-        +string? ApprovedBy
-        +AssetAccountingApprovalReceiptDto? AssetAccountingApproval
-        +AssetAccountingPostingCandidateDto? AssetAccountingDraft
-        +PostedPostingRuleJournalCandidateResultDto? AssetAccountingPostingResult
-        +AssetAccountingPostIntentDto? AssetAccountingPostIntent
-        +AutomatedJournalEvidenceAssessmentDto? AutomationEvidenceAssessment
-        +DateTimeOffset? ClosedLockedAtUtc
-        +string? CloseLockedBy
-    }
     Meridian_Contracts_Ledger_IntercompanyFeeAccrualProposalDto --> Meridian_Contracts_Ledger_IntercompanyFeeAccrualEvidenceDto
-    Meridian_Contracts_Ledger_IntercompanyFeeAccrualProposalDto --> Meridian_Contracts_Ledger_ManualJournalEntryDraftDto
     Meridian_Contracts_Ledger_IntercompanyObligationMonitorDto --> Meridian_Contracts_Ledger_IntercompanyObligationFindingDto
     Meridian_Contracts_Ledger_IntercompanyObligationMonitorDto --> Meridian_Contracts_Ledger_IntercompanyObligationSourceVersionDto
+    Meridian_Contracts_Ledger_IntercompanyProposalDto --> Meridian_Contracts_Ledger_IntercompanyCounterpartLinkDto
     Meridian_Contracts_Ledger_IntercompanyProposalDto --> Meridian_Contracts_Ledger_IntercompanyProposalSourceDto
     Meridian_Contracts_Ledger_IntercompanyProposalDto --> Meridian_Contracts_Ledger_IntercompanyProposalStatusDto
     Meridian_Contracts_Ledger_IntercompanyProposalSourceDto --> Meridian_Contracts_Ledger_IntercompanyProposalSourceLineDto
-    Meridian_Contracts_Ledger_IntercompanyRefreshPreviewDto --> Meridian_Contracts_Ledger_ManualJournalEntryDraftDto
     Meridian_Contracts_Ledger_InvestorCapitalStatementDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_JournalEntryLifecycleActionRequestDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleActionDto
     Meridian_Contracts_Ledger_JournalEntryLifecycleActionResultDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleTransitionDto
-    Meridian_Contracts_Ledger_JournalEntryLifecycleActionResultDto --> Meridian_Contracts_Ledger_ManualJournalEntryDraftDto
     Meridian_Contracts_Ledger_JournalEntryLifecycleTransitionDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleActionDto
     Meridian_Contracts_Ledger_JournalEntryTemplateDto --> Meridian_Contracts_Ledger_JournalEntryTemplateLineDto
     Meridian_Contracts_Ledger_LedgerAccountRunningBalanceDto --> Meridian_Contracts_Ledger_LedgerAccountRunningBalancePointDto
@@ -706,8 +702,4 @@ classDiagram
     Meridian_Contracts_Ledger_LedgerTrialBalanceReportDto --> Meridian_Contracts_Ledger_LedgerPeriodTrialBalanceLineDto
     Meridian_Contracts_Ledger_LedgerTrialBalanceReportDto --> Meridian_Contracts_Ledger_LedgerReportSignatureDto
     Meridian_Contracts_Ledger_LegacyIntercompanyAttributionDto --> Meridian_Contracts_Ledger_LegacyIntercompanyReviewModeDto
-    Meridian_Contracts_Ledger_ManualJournalEntryDraftDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleTransitionDto
-    Meridian_Contracts_Ledger_ManualJournalEntryDraftDto --> Meridian_Contracts_Ledger_JournalEntryRebookDto
-    Meridian_Contracts_Ledger_ManualJournalEntryDraftDto --> Meridian_Contracts_Ledger_JournalEntryReversalDto
-    Meridian_Contracts_Ledger_ManualJournalEntryDraftDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
 ```

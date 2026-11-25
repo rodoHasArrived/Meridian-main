@@ -8,7 +8,10 @@ using NpgsqlTypes;
 
 namespace Meridian.Storage.Ledger;
 
-/// <summary>Append-only, tenant- and company-owned reciprocal balance confirmation versions.</summary>
+/// <summary>
+/// Append-only, tenant- and company-owned reciprocal balance confirmation versions. A confirmation whose books belong to
+/// two companies of the tenant is also visible to each side's company (V_ledger_079).
+/// </summary>
 public sealed class PostgresIntercompanyBalanceConfirmationStore : IIntercompanyBalanceConfirmationStore
 {
     private readonly LedgerJournalStoreOptions _options;
@@ -56,7 +59,8 @@ public sealed class PostgresIntercompanyBalanceConfirmationStore : IIntercompany
         {
             fence.Transaction = transaction;
             fence.CommandText = "select pg_advisory_xact_lock(hashtextextended(@key, 0));";
-            fence.Parameters.AddWithValue("key", $"intercompany-confirmation:{tenant}:{next.CompanyId}:{next.AccountingArrangementId:D}:{next.AsOf:yyyy-MM-dd}");
+            // Keyed without the company so a proposal by either side of a cross-company pair serializes with the other's.
+            fence.Parameters.AddWithValue("key", $"intercompany-confirmation:{tenant}:{next.AccountingArrangementId:D}:{next.AsOf:yyyy-MM-dd}");
             await fence.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
         var current = await LatestAsync(connection, transaction, "accounting_arrangement_id=@arrangement and as_of=@asOf", command =>
@@ -74,11 +78,26 @@ public sealed class PostgresIntercompanyBalanceConfirmationStore : IIntercompany
         }
         if ((current?.Version ?? 0) != expectedVersion || (current is not null && current.ConfirmationId != next.ConfirmationId))
             throw new InvalidOperationException("The confirmation changed since it was read. Reload it and act on the current version.");
+        if (next.Version == 1)
+        {
+            // Another company's identity for the same profile and date that either side could see already exists.
+            foreach (var company in new[] { next.PartyOneCompanyId, next.PartyTwoCompanyId }.Where(item => item is not null).Distinct())
+            {
+                var competing = await LatestAsync(connection, transaction, "accounting_arrangement_id=@arrangement and as_of=@asOf", command =>
+                {
+                    command.Parameters.AddWithValue("arrangement", next.AccountingArrangementId);
+                    command.Parameters.AddWithValue("asOf", next.AsOf);
+                }, tenant, company, ct).ConfigureAwait(false);
+                if (competing is not null && competing.ConfirmationId != next.ConfirmationId)
+                    throw new InvalidOperationException("The confirmation changed since it was read. Reload it and act on the current version.");
+            }
+        }
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText = $"""
-            insert into {_table} (confirmation_id,version,tenant_id,company_id,accounting_arrangement_id,as_of,payload)
-            values (@id,@version,@tenant,@company,@arrangement,@asOf,@payload);
+            insert into {_table} (confirmation_id,version,tenant_id,company_id,accounting_arrangement_id,as_of,payload,
+                party_one_company_id,party_two_company_id)
+            values (@id,@version,@tenant,@company,@arrangement,@asOf,@payload,@partyOneCompany,@partyTwoCompany);
             """;
         command.Parameters.AddWithValue("id", next.ConfirmationId);
         command.Parameters.AddWithValue("version", next.Version);
@@ -87,6 +106,8 @@ public sealed class PostgresIntercompanyBalanceConfirmationStore : IIntercompany
         command.Parameters.AddWithValue("arrangement", next.AccountingArrangementId);
         command.Parameters.AddWithValue("asOf", next.AsOf);
         command.Parameters.AddWithValue("payload", NpgsqlDbType.Jsonb, Serialize(next));
+        command.Parameters.AddWithValue("partyOneCompany", NpgsqlDbType.Text, next.IsCrossCompany ? (object?)next.PartyOneCompanyId ?? DBNull.Value : DBNull.Value);
+        command.Parameters.AddWithValue("partyTwoCompany", NpgsqlDbType.Text, next.IsCrossCompany ? (object?)next.PartyTwoCompanyId ?? DBNull.Value : DBNull.Value);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return Deserialize(Serialize(next));
@@ -110,15 +131,22 @@ public sealed class PostgresIntercompanyBalanceConfirmationStore : IIntercompany
     {
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
+        // The latest version of each matching confirmation decides who may see it: the proposing company, or either
+        // side's company when the latest version spans two companies.
         command.CommandText = $"""
-            select payload from {_table}
-            where {predicate} and tenant_id=@tenant and coalesce(company_id,'')=@company
+            select payload from (
+                select distinct on (confirmation_id) payload, version, company_id, party_one_company_id, party_two_company_id
+                from {_table}
+                where {predicate} and tenant_id=@tenant
+                order by confirmation_id, version desc) latest
+            where coalesce(company_id,'')=@company or party_one_company_id=@company or party_two_company_id=@company
             order by version desc limit 1;
             """;
         bind(command);
         command.Parameters.AddWithValue("tenant", tenant);
         command.Parameters.AddWithValue("company", company ?? "");
-        return await command.ExecuteScalarAsync(ct).ConfigureAwait(false) is string json ? Deserialize(json) : null;
+        return await command.ExecuteScalarAsync(ct).ConfigureAwait(false) is string json && Deserialize(json) is { } found
+            && found.IsVisibleTo(company) ? found : null;
     }
 
     private string RequireTenant()

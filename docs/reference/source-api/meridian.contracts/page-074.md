@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementReconciliationCaseDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationCaseDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:206](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L206).
+
+Operator case opened to investigate and close one or more statement reconciliation breaks.
+
+```csharp
+public sealed record StatementReconciliationCaseDto(string? CaseId, string? RunId, string? Status, string? Priority, string? Title, string? Summary, IReadOnlyList<string>? BreakIds, DateTimeOffset? CreatedAtUtc, DateTimeOffset? LastUpdatedAtUtc, string? LastUpdatedBy, string? Owner = null, DateTimeOffset? DueAtUtc = null, DateTimeOffset? ResolvedAtUtc = null, string? ResolutionCode = null, string? ResolutionSummary = null, string? EvidenceLink = null, string? Disposition = null, int? AgingDays = null, IReadOnlyList<StatementReconciliationCaseCommentThreadDto>? CommentThreads = null, IReadOnlyList<StatementReconciliationCaseAttachmentDto>? Attachments = null, StatementReconciliationBreakExplanationDto? BreakExplanation = null, IReadOnlyList<StatementReconciliationCaseAuditEventDto>? AuditEvents = null);
+```
+
 ## StatementReconciliationReportArtifactDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationReportArtifactDto</code>. Kind: `record`.
@@ -646,15 +658,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;string&gt; ApprovalReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:187](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L187) |  |
 | <code>public IReadOnlyList&lt;string&gt; PaperValidationReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:193](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L193) |  |
 | <code>public IReadOnlyList&lt;string&gt; GovernedReportReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:199](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L199) |  |
-
-## StrategyDesignRunBacktestResponse
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignRunBacktestResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:211](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L211).
-
-Backtest execution response returned by the Strategy Builder route. BiasDisclosure carries the engine&#x27;s honest-assumptions report for the captured run (null when the runner did not capture an engine-level result).
-
-```csharp
-public sealed record StrategyDesignRunBacktestResponse(bool Success, string? RunId, string StrategyId, string StrategyName, StrategyDesignValidationResult Validation, StrategyDesignCompiledScript Compiled, IReadOnlyList<StrategyDesignRunTraceEntry> Trace, IReadOnlyList<StrategyDesignPreviewRow> PreviewRows, IReadOnlyDictionary<string, string> Metrics, string? RuntimeError, string? PromotionCandidatePath, string? ReviewPacketPath, BiasDisclosureDto? BiasDisclosure = null);
-```

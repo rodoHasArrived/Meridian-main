@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OptionScreenResult
+
+Qualified name: <code>Meridian.Contracts.Options.OptionScreenResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:26](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L26).
+
+```csharp
+public sealed record OptionScreenResult(OptionScreenRequest Criteria, DateTimeOffset ScreenedAt, IReadOnlyList<OptionScreenCandidate> Candidates, IReadOnlyList<string> LoadedExpirations, IReadOnlyList<string> FailedExpirations, IReadOnlyList<string> OmittedExpirations, int StrikeRange, string CoverageNote, string AuthorityNote);
+```
+
 ## OptionSeriesDto
 
 Qualified name: <code>Meridian.Contracts.Options.OptionSeriesDto</code>. Kind: `record`.
@@ -726,14 +736,4 @@ Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:8](..
 
 ```csharp
 public sealed record PrivateCapitalChoices(IReadOnlyList<PrivateCapitalChoice> Entities, IReadOnlyList<PrivateCapitalChoice> Vehicles);
-```
-
-## PrivateCapitalCommitment
-
-Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalCommitment</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:11](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L11).
-
-```csharp
-public sealed record PrivateCapitalCommitment(Guid CommitmentId, Guid HolderEntityId, Guid VehicleSecurityId, string VehicleName, string Strategy, int? VintageYear, string Currency, string SourceReference, PrivateCapitalEvidence Evidence, DateTimeOffset CreatedAt, string CreatedBy, long VehicleVersion);
 ```

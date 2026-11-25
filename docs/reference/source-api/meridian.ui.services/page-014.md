@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## QualityScoreEntry
+
+Qualified name: <code>Meridian.Ui.Services.Services.QualityScoreEntry</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:41](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L41).
+
+Describes a data file&#x27;s quality grade, record defects, coverage dates, and analysis time.
+
+```csharp
+public sealed class QualityScoreEntry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:43](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L43) |  |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:44](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L44) |  |
+| <code>public string DataType { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:45](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L45) |  |
+| <code>public double Score { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:46](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L46) |  |
+| <code>public string Grade { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:47](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L47) |  |
+| <code>public int RecordCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:48](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L48) |  |
+| <code>public int MissingCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:49](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L49) |  |
+| <code>public int DuplicateCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:50](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L50) |  |
+| <code>public int AnomalyCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:51](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L51) |  |
+| <code>public DateTime DateFrom { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:52](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L52) |  |
+| <code>public DateTime DateTo { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:53](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L53) |  |
+| <code>public DateTime LastAnalyzed { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:54](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L54) |  |
+
 ## QualityTrendData
 
 Qualified name: <code>Meridian.Ui.Services.Services.QualityTrendData</code>. Kind: `class`.
@@ -1118,28 +1147,3 @@ Declared public members:
 | <code>public bool SubscribeDepth { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:302](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L302) |  |
 | <code>public bool SubscribeQuotes { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:303](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L303) |  |
 | <code>public int DepthLevels { get; set; } = 10;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:304](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L304) |  |
-
-## SubscriptionInfo
-
-Qualified name: <code>Meridian.Ui.Services.SubscriptionInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/LiveDataService.cs:283](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L283).
-
-Describes a live symbol subscription&#x27;s identity, type, activity, and received-event rate.
-
-```csharp
-public sealed class SubscriptionInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:285](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L285) |  |
-| <code>public int SubscriptionId { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:286](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L286) |  |
-| <code>public string SubscriptionType { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:287](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L287) |  |
-| <code>public bool IsActive { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:288](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L288) |  |
-| <code>public DateTime SubscribedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:289](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L289) |  |
-| <code>public int EventCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:290](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L290) |  |
-| <code>public DateTime? LastEventAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:291](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L291) |  |
-| <code>public double EventsPerSecond { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:292](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L292) |  |

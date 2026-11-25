@@ -6,6 +6,55 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityAssetClassNames
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetClassNames</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L11).
+
+Canonical Security Master asset-class names, one constant per class, in the F# AssetClassRegistry declaration order. A test holds this set equal to the F# registry, so a class added to the domain without a constant here fails the build&#x27;s test lane.
+
+```csharp
+public static class SecurityAssetClassNames
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Equity = &quot;Equity&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L13) |  |
+| <code>public const string Option = &quot;Option&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L14) |  |
+| <code>public const string Future = &quot;Future&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L15) |  |
+| <code>public const string Bond = &quot;Bond&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L16) |  |
+| <code>public const string FxSpot = &quot;FxSpot&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L17) |  |
+| <code>public const string Deposit = &quot;Deposit&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L18) |  |
+| <code>public const string MoneyMarketFund = &quot;MoneyMarketFund&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L19) |  |
+| <code>public const string CertificateOfDeposit = &quot;CertificateOfDeposit&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L20) |  |
+| <code>public const string CommercialPaper = &quot;CommercialPaper&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L21) |  |
+| <code>public const string TreasuryBill = &quot;TreasuryBill&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L22) |  |
+| <code>public const string Repo = &quot;Repo&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L23) |  |
+| <code>public const string CashSweep = &quot;CashSweep&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L24) |  |
+| <code>public const string OtherSecurity = &quot;OtherSecurity&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L25) |  |
+| <code>public const string Swap = &quot;Swap&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L26) |  |
+| <code>public const string DirectLoan = &quot;DirectLoan&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L27) |  |
+| <code>public const string StructuredCredit = &quot;StructuredCredit&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L28) |  |
+| <code>public const string PrivateFundInterest = &quot;PrivateFundInterest&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L29) |  |
+| <code>public const string PrivateCompanyEquity = &quot;PrivateCompanyEquity&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L30) |  |
+| <code>public const string RealEstateHolding = &quot;RealEstateHolding&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L31) |  |
+| <code>public const string CommitmentGuarantee = &quot;CommitmentGuarantee&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L32) |  |
+| <code>public const string Commodity = &quot;Commodity&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L33) |  |
+| <code>public const string CryptoCurrency = &quot;CryptoCurrency&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L34) |  |
+| <code>public const string Cfd = &quot;Cfd&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L35) |  |
+| <code>public const string Warrant = &quot;Warrant&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L36) |  |
+| <code>public const string FxForward = &quot;FxForward&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L37) |  |
+| <code>public const string NonDeliverableForward = &quot;NonDeliverableForward&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L38) |  |
+| <code>public const string CreditDefaultSwap = &quot;CreditDefaultSwap&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L39) |  |
+| <code>public const string Swaption = &quot;Swaption&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:40](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L40) |  |
+| <code>public const string CapFloor = &quot;CapFloor&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L41) |  |
+| <code>public const string StructuredNote = &quot;StructuredNote&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L42) |  |
+| <code>public const string InvestmentFund = &quot;InvestmentFund&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L43) |  |
+| <code>public const string CustomAsset = &quot;CustomAsset&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L44) |  |
+
 ## SecurityAssetClassRegistry
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetClassRegistry</code>. Kind: `class`.
@@ -886,16 +935,4 @@ The bindings of one asset class.
 
 ```csharp
 public sealed record SecurityClassCodecBinding(string AssetClass, bool ReadsResolvedTerms, IReadOnlyList<SecurityTermBinding> Members, bool VersionedSchedules = false, SecurityCodecInputs Inputs = SecurityCodecInputs.None, bool WritesConventionsFlag = false);
-```
-
-## SecurityClassificationDriftEntryDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityClassificationDriftEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs#L17).
-
-One group of active securities whose latest retained event recorded a classification that the current asset-class taxonomy now derives differently (for example a Swap recorded under the ListedDerivative family before the taxonomy moved it to OtcDerivative).
-
-```csharp
-public sealed record SecurityClassificationDriftEntryDto(string TypeName, string StoredAssetClass, string? StoredAssetFamily, string CurrentAssetClass, string? CurrentAssetFamily, int SecurityCount, IReadOnlyList<Guid> SecurityIds);
 ```

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FreezeOnboardingPacketRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FreezeOnboardingPacketRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L40).
+
+```csharp
+public sealed record FreezeOnboardingPacketRequestDto(int ExpectedVersion);
+```
+
 ## FundAccountBrokerageBalanceSnapshotDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundAccountBrokerageBalanceSnapshotDto</code>. Kind: `record`.
@@ -630,21 +640,3 @@ Request to build a preview of a governed report pack for one fund profile.
 ```csharp
 public sealed record FundReportPackPreviewRequestDto(string FundProfileId, GovernanceReportKindDto ReportKind = GovernanceReportKindDto.TrialBalance, DateTimeOffset? AsOf = null, string? Currency = null, string? BrandingThemeId = null, ReportBrandingThemeDto? BrandingThemeOverride = null);
 ```
-
-## FundReportPackProvenanceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackProvenanceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:562](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L562).
-
-Source lineage captured with a generated governed report pack.
-
-```csharp
-public sealed record FundReportPackProvenanceDto(IReadOnlyList<string> RelatedRunIds, int JournalEntryCount, int LedgerEntryCount, int TrialBalanceLineCount, int ReconciliationRunCount, int OpenReconciliationBreakCount, int SecurityResolvedCount, int SecurityMissingCount, IReadOnlyList<FundReportPackLineagePointerDto> LineagePointers, string SourceSnapshotHash, int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion, string? DataProvenanceToken = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;RetainedLedgerAmountDto&gt;? LedgerAmounts { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:578](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L578) | Explicit retained amount identities. Legacy label-only manifests cannot prove an amount. |

@@ -121,7 +121,16 @@ posted journals only. Load the book's confirmations for the period end, then:
 2. Confirm or dispute this book's side. The same person cannot confirm both sides, and an
    unbalanced pair cannot be confirmed.
 3. A dispute needs a reason and is resolved, with a reason, by someone other than the disputer.
-   Pin the corrected balances again afterwards.
+4. After a resolution, **Draft adjustment** pre-fills a balanced journal draft in this book: enter
+   the signed amount for this book's intercompany receivable or payable and a non-intercompany
+   offset account. It lands in the journal entry review queue linked to the dispute; nothing is
+   submitted or posted. Review and post it there, then pin the corrected balances again.
+
+The other book may belong to another company of your tenant, when the approved accounting profile
+maps it. Both companies see the confirmation, and each acts only on its own side. A dispute between
+two companies is resolved only when each side has recorded its own resolution ("Record this book's
+resolution"). `DEC-IC-CONFIRM-003` (ADR-033) records this as a proposed decision awaiting the
+repository owner's acceptance.
 
 Open findings appear in the close advisory as `intercompany.confirmation.not-proposed`,
 `awaiting-confirmation`, `disputed`, `balances-changed`, `resolved-awaiting-proposal` or

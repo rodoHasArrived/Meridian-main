@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportWriterChartDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterChartDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1525](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1525).
+
+```csharp
+public sealed record ReportWriterChartDefinitionDto(ReportWriterChartTypeDto Type, string CategoryField, IReadOnlyList<string> ValueColumns, string? Title = null);
+```
+
 ## ReportWriterChartRenderDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterChartRenderDto</code>. Kind: `record`.
@@ -593,16 +603,4 @@ Trade-level fill list for one run.
 
 ```csharp
 public sealed record RunFillSummary(string RunId, StrategyRunMode Mode, int TotalFills, decimal TotalCommissions, IReadOnlyList<RunFillEntry> Fills);
-```
-
-## RunLotSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.RunLotSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1167](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1167).
-
-Lot history for a single strategy run, optionally filtered to one symbol.
-
-```csharp
-public sealed record RunLotSummary(string RunId, int TotalOpenLots, int TotalClosedLots, decimal TotalRealizedPnl, IReadOnlyList<OpenLotSummary> OpenLots, IReadOnlyList<ClosedLotSummary> ClosedLots);
 ```

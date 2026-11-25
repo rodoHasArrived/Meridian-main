@@ -2799,15 +2799,15 @@ W12-ICCOMPOUND-001: ready_for_acceptance; health green; evidence complete. Ready
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | complete |
-| Last reviewed | 2026-11-19 |
+| Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
-W12-ICCONFIRM-001: ready_for_acceptance; health green; evidence complete. Ready for owner acceptance: advisory confirmation verified on PR 3674 (hosted lanes; Windows WPF run 44431011339). Opt-in close blocking exists behind a reviewed per-book policy (ADR-032); its decision DEC-IC-CONFIRM-002 awaits owner acceptance. Synthetic evidence only.
+W12-ICCONFIRM-001: ready_for_acceptance; health green; evidence complete. Ready for owner acceptance: advisory confirmation verified on PR 3674 (hosted lanes; Windows WPF run 44431011339). Close blocking (ADR-032) and cross-company pairs with adjustment drafts (ADR-033) are implemented; DEC-IC-CONFIRM-002 and -003 await owner acceptance. Synthetic evidence only.
 
 ### Status References
 
-- Decisions: DEC-IC-CONFIRM-001, DEC-IC-CONFIRM-002
+- Decisions: DEC-IC-CONFIRM-001, DEC-IC-CONFIRM-002, DEC-IC-CONFIRM-003
 - PR references (not inferred acceptance): [#3674](https://github.com/rodoHasArrived/Meridian-main/pull/3674)
 - [Retained implementation detail and boundaries](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
 - Evidence: [docs/roadmap/snapshots/2026-11-19-w12-ic-acceptance-pack.md](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
@@ -2821,6 +2821,11 @@ W12-ICCONFIRM-001: ready_for_acceptance; health green; evidence complete. Ready 
 - Evidence: [tests/Meridian.Tests/Ui/IntercompanyBalanceConfirmationEndpointTests.cs](../../../tests/Meridian.Tests/Ui/IntercompanyBalanceConfirmationEndpointTests.cs)
 - Evidence: [src/Meridian.Ui/dashboard/src/screens/accounting-screen.entity-confirmations.tsx](../../../src/Meridian.Ui/dashboard/src/screens/accounting-screen.entity-confirmations.tsx)
 - Evidence: [src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml](../../../src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml)
+- Evidence: [docs/adr/033-intercompany-confirmation-cross-company-and-adjustments.md](../../adr/033-intercompany-confirmation-cross-company-and-adjustments.md)
+- Evidence: [src/Meridian.Storage/Ledger/Migrations/V_ledger_079__intercompany_confirmation_party_companies.sql](../../../src/Meridian.Storage/Ledger/Migrations/V_ledger_079__intercompany_confirmation_party_companies.sql)
+- Evidence: [src/Meridian.Ui.Shared/Services/IntercompanyConfirmationAdjustmentDraftService.cs](../../../src/Meridian.Ui.Shared/Services/IntercompanyConfirmationAdjustmentDraftService.cs)
+- Evidence: [tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyBalanceConfirmationCrossCompanyTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyBalanceConfirmationCrossCompanyTests.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyConfirmationAdjustmentDraftServiceTests.cs](../../../tests/Meridian.Tests/Ui/IntercompanyConfirmationAdjustmentDraftServiceTests.cs)
 - Evidence: [tests/Meridian.Ui.Tests/Services/IntercompanyBalanceConfirmationWorkspaceTests.cs](../../../tests/Meridian.Ui.Tests/Services/IntercompanyBalanceConfirmationWorkspaceTests.cs)
 
 
@@ -2832,6 +2837,8 @@ W12-ICCONFIRM-001: ready_for_acceptance; health green; evidence complete. Ready 
 - Every step pins the exact version and balance digest it acted on, is retained append-only on durable storage, and an identical retry returns the retained step.
 - Confirmation status contributes advisory findings to close readiness and never changes close eligibility; an unreadable status is reported, not treated as confirmed.
 - Browser and WPF surfaces load, pin, confirm, dispute and resolve over the same routes and render exact decimal strings.
+- A pair whose books belong to two companies of one tenant, linked by the approved profile, is visible to both companies; each company acts only on its own side, and a cross-company dispute is resolved only when each side records its own resolution (ADR-033).
+- A resolved confirmation, at the exact version and digest shown, may pre-fill one balanced ordinary journal draft per side and resolution on that side's mapped intercompany account, linked to the dispute; nothing is submitted, approved or posted by this path (ADR-033).
 
 ### Source Modules
 

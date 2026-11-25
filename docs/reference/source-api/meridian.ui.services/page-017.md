@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceQuickAction
+
+Qualified name: <code>Meridian.Ui.Services.WorkspaceQuickAction</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:211](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L211).
+
+Named quick action attached to a workspace. Each action carries a target page tag and an optional tone so shells can render it as a contextual button or menu item without requiring a full workflow summary fetch.
+
+```csharp
+public sealed class WorkspaceQuickAction
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ActionId { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:214](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L214) | Stable identifier used for deduplication and analytics. |
+| <code>public string Label { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:217](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L217) | Human-readable action label shown in the shell tile. |
+| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:220](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L220) | Description shown as tooltip or secondary text. |
+| <code>public string TargetPageTag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:223](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L223) | Navigation target invoked when the action is activated. |
+| <code>public string Tone { get; set; } = &quot;default&quot;;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:226](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L226) | Visual tone: default, primary, success, warning, or danger. |
+| <code>public bool IsEnabled { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:229](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L229) | When false the action is rendered but not interactive (e.g. locked behind context). |
+| <code>public int Order { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:232](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L232) | Display order within the action list (lower = earlier). |
+
 ## WorkspaceSummaryStats
 
 Qualified name: <code>Meridian.Ui.Services.WorkspaceSummaryStats</code>. Kind: `class`.

@@ -321,9 +321,9 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Ledger.PostgresIntercompanyBalanceConfirmationStore</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs:12](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs#L12).
+Source: [src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs:15](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs#L15).
 
-Append-only, tenant- and company-owned reciprocal balance confirmation versions.
+Append-only, tenant- and company-owned reciprocal balance confirmation versions. A confirmation whose books belong to two companies of the tenant is also visible to each side&#x27;s company (V_ledger_079).
 
 ```csharp
 public sealed class PostgresIntercompanyBalanceConfirmationStore : IIntercompanyBalanceConfirmationStore
@@ -333,10 +333,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PostgresIntercompanyBalanceConfirmationStore(LedgerJournalStoreOptions options, IFundScopeTenantAccessor tenants);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs:18](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs#L18) |  |
-| <code>public async Task&lt;IntercompanyBalanceConfirmationDto?&gt; GetAsync(Guid confirmationId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs:27](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs#L27) |  |
-| <code>public async Task&lt;IntercompanyBalanceConfirmationDto?&gt; FindAsync(Guid accountingArrangementId, DateOnly asOf, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs:35](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs#L35) |  |
-| <code>public async Task&lt;IntercompanyBalanceConfirmationDto&gt; AppendAsync(IntercompanyBalanceConfirmationDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs:46](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs#L46) |  |
+| <code>public PostgresIntercompanyBalanceConfirmationStore(LedgerJournalStoreOptions options, IFundScopeTenantAccessor tenants);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs:21](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs#L21) |  |
+| <code>public async Task&lt;IntercompanyBalanceConfirmationDto?&gt; GetAsync(Guid confirmationId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs:30](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs#L30) |  |
+| <code>public async Task&lt;IntercompanyBalanceConfirmationDto?&gt; FindAsync(Guid accountingArrangementId, DateOnly asOf, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs:38](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs#L38) |  |
+| <code>public async Task&lt;IntercompanyBalanceConfirmationDto&gt; AppendAsync(IntercompanyBalanceConfirmationDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs:49](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs#L49) |  |
 
 ## PostgresIntercompanyConfirmationClosePolicyStore
 

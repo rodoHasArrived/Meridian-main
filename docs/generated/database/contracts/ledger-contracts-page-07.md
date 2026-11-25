@@ -2,11 +2,19 @@
 
 # `ledger-contracts` data objects - page 7 of 7
 
-Objects 481-502 of 502. References crossing pages remain available in the dependency manifest.
+Objects 481-503 of 503. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_ReportDimensionScopeDto["ReportDimensionScopeDto"] {
+        +string CertificationEvidenceToken
+        +LedgerDimensionSetDto Dimensions
+        +bool HasExplicitScope
+        +Guid? LedgerBookId
+        +IReadOnlyList~string~ ScopedDimensionKeys
+        +string ScopeHash
+    }
     class Meridian_Contracts_Ledger_ReportExportArtifactDto["ReportExportArtifactDto"] {
         +string ArtifactId
         +string ArtifactKind
@@ -235,4 +243,6 @@ classDiagram
         +bool PeriodIsLocked
         +string? TenantId
     }
+    Meridian_Contracts_Ledger_ReportExportArtifactDto --> Meridian_Contracts_Ledger_ReportDimensionScopeDto
+    Meridian_Contracts_Ledger_ReportExportArtifactManifestDto --> Meridian_Contracts_Ledger_ReportDimensionScopeDto
 ```

@@ -3477,10 +3477,11 @@ items:
     health: green
     priority: high
     evidence_posture: complete
-    status_note: "Ready for owner acceptance: advisory confirmation verified on PR 3674 (hosted lanes; Windows WPF run 44431011339). Opt-in close blocking exists behind a reviewed per-book policy (ADR-032); its decision DEC-IC-CONFIRM-002 awaits owner acceptance. Synthetic evidence only."
+    status_note: "Ready for owner acceptance: advisory confirmation verified on PR 3674 (hosted lanes; Windows WPF run 44431011339). Close blocking (ADR-032) and cross-company pairs with adjustment drafts (ADR-033) are implemented; DEC-IC-CONFIRM-002 and -003 await owner acceptance. Synthetic evidence only."
     decision_ids:
       - DEC-IC-CONFIRM-001
       - DEC-IC-CONFIRM-002
+      - DEC-IC-CONFIRM-003
     pr_references:
     - 3674
     status_detail: docs/roadmap/snapshots/2026-11-19-w12-ic-acceptance-pack.md
@@ -3491,6 +3492,8 @@ items:
       - Every step pins the exact version and balance digest it acted on, is retained append-only on durable storage, and an identical retry returns the retained step.
       - Confirmation status contributes advisory findings to close readiness and never changes close eligibility; an unreadable status is reported, not treated as confirmed.
       - Browser and WPF surfaces load, pin, confirm, dispute and resolve over the same routes and render exact decimal strings.
+      - A pair whose books belong to two companies of one tenant, linked by the approved profile, is visible to both companies; each company acts only on its own side, and a cross-company dispute is resolved only when each side records its own resolution (ADR-033).
+      - A resolved confirmation, at the exact version and digest shown, may pre-fill one balanced ordinary journal draft per side and resolution on that side's mapped intercompany account, linked to the dispute; nothing is submitted, approved or posted by this path (ADR-033).
     source_modules:
       - SRC-CONTRACTS
       - SRC-DESIGN-FINANCIAL-OPERATIONS
@@ -3524,9 +3527,19 @@ items:
         path: src/Meridian.Ui/dashboard/src/screens/accounting-screen.entity-confirmations.tsx
       - type: source
         path: src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml
+      - type: document
+        path: docs/adr/033-intercompany-confirmation-cross-company-and-adjustments.md
+      - type: source
+        path: src/Meridian.Storage/Ledger/Migrations/V_ledger_079__intercompany_confirmation_party_companies.sql
+      - type: source
+        path: src/Meridian.Ui.Shared/Services/IntercompanyConfirmationAdjustmentDraftService.cs
+      - type: test
+        path: tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyBalanceConfirmationCrossCompanyTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/IntercompanyConfirmationAdjustmentDraftServiceTests.cs
       - type: test
         path: tests/Meridian.Ui.Tests/Services/IntercompanyBalanceConfirmationWorkspaceTests.cs
-    last_reviewed: 2026-11-19
+    last_reviewed: 2026-11-25
   - id: W12-ICFLOAT-001
     title: Floating-rate intercompany loan interest from reviewed fixings
     wave: W12

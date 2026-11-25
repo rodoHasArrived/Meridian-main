@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityIncomeCashFlowProjector
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIncomeCashFlowProjector</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs#L77).
+
+Builds the declared income schedule from a security&#x27;s corporate actions. Pure: the caller loads the actions; amendments and cancellations are folded by CorporateActionEffectiveStateProjector first, so only effective terms produce flows.
+
+```csharp
+public static class SecurityIncomeCashFlowProjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SecurityIncomeCashFlowScheduleDto Build(Guid securityId, string assetClass, IReadOnlyList&lt;CorporateActionDto&gt; actions, DateTimeOffset asOf, DateOnly? paymentFrom = null, DateOnly? paymentTo = null);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs#L79) |  |
+
 ## SecurityIncomeCashFlowScheduleDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIncomeCashFlowScheduleDto</code>. Kind: `record`.
@@ -857,22 +875,3 @@ Enum declarations:
 | <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L36) |  |
 | <code>Per100Face</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L36) |  |
 | <code>CurrencyPerUnit</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L36) |  |
-
-## SecurityQuoteConvention
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityQuoteConvention</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs#L15).
-
-How a raw unit quote scales into money for a class&#x27;s lots: the declared catalog fact behind the pricing conversion, instead of an inference from the lot unit at each call site. The vocabulary is deliberately minimal pending the domain-owner ruling recorded in remediation slice 8: PercentOfPar for face-value paper quoted as a percentage of par (a 99.5 quote on 1,000,000 face is 995,000), and PerUnit for everything quoted in money per economic unit. A class that quotes differently (yield-quoted bills, per-point contracts) extends this vocabulary through that decision, not through magnitude or class-name inference.
-
-```csharp
-public enum SecurityQuoteConvention
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>PerUnit</code> | [src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs#L18) | The quote is money per economic unit (share, contract-adjusted unit, currency unit). |
-| <code>PercentOfPar</code> | [src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs#L21) | The quote is a percentage of par; monetary value divides the quote by 100. |

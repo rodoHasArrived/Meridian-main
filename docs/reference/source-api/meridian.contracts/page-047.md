@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataQualityRuleCategory
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.DataQualityRuleCategory</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L7).
+
+```csharp
+public enum DataQualityRuleCategory
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>FileMappingSufficiency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L9) |  |
+| <code>DataTypeRestriction</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L10) |  |
+| <code>MinimumAttribute</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L11) |  |
+| <code>TaxonomyCheck</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L12) |  |
+| <code>ValueConsistency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L13) |  |
+| <code>RefreshControl</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L14) |  |
+| <code>StalenessMonitor</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L15) |  |
+| <code>ExternalComparison</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L16) |  |
+
 ## DataQualityRuleSeverity
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.DataQualityRuleSeverity</code>. Kind: `enum`.
@@ -841,32 +864,3 @@ Declared public members:
 | <code>Task&lt;OtcMarginCallDto&gt; TransitionMarginCallAsync(TransitionOtcMarginCallRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:176](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L176) |  |
 | <code>Task&lt;OtcMarginCallDto?&gt; GetMarginCallAsync(Guid callId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:177](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L177) |  |
 | <code>Task&lt;IReadOnlyList&lt;OtcMarginCallDto&gt;&gt; ListMarginCallsAsync(Guid nettingSetId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:178](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L178) |  |
-
-## IOtcContractStore
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IOtcContractStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:201](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L201).
-
-Persistence for master agreements, collateral agreements, netting sets and bilateral contracts.
-
-```csharp
-public interface IOtcContractStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OtcMasterAgreementDto&gt; UpsertMasterAgreementAsync(UpsertOtcMasterAgreementRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:203](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L203) |  |
-| <code>Task&lt;OtcMasterAgreementDto?&gt; GetMasterAgreementAsync(Guid agreementId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:204](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L204) |  |
-| <code>Task&lt;IReadOnlyList&lt;OtcMasterAgreementDto&gt;&gt; ListMasterAgreementsAsync(string? counterparty = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:205](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L205) |  |
-| <code>Task&lt;OtcCollateralAgreementDto&gt; UpsertCollateralAgreementAsync(UpsertOtcCollateralAgreementRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:207](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L207) |  |
-| <code>Task&lt;OtcCollateralAgreementDto?&gt; GetCollateralAgreementAsync(Guid collateralAgreementId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:208](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L208) |  |
-| <code>Task&lt;OtcNettingSetDto&gt; UpsertNettingSetAsync(UpsertOtcNettingSetRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:210](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L210) |  |
-| <code>Task&lt;OtcNettingSetViewDto?&gt; GetNettingSetAsync(Guid nettingSetId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:211](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L211) |  |
-| <code>Task&lt;OtcContractDto&gt; UpsertContractAsync(UpsertOtcContractRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:213](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L213) |  |
-| <code>Task&lt;OtcContractDto?&gt; GetContractAsync(Guid contractId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:214](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L214) |  |
-| <code>Task&lt;IReadOnlyList&lt;OtcContractDto&gt;&gt; ListContractsForSecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:215](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L215) |  |
-| <code>Task&lt;OtcContractLifecycleEventDto&gt; AppendLifecycleEventAsync(AppendOtcContractLifecycleRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:218](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L218) | Atomically records a typed lifecycle event and its next contract version. Compatibility stores fail closed. |
-| <code>Task&lt;IReadOnlyList&lt;OtcContractLifecycleEventDto&gt;&gt; GetLifecycleEventsAsync(Guid contractId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:222](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L222) | Reads immutable lifecycle history in contract-version order; unsupported stores do not substitute an empty history. |

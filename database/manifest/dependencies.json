@@ -10192,6 +10192,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CreateIntercompanyConfirmationAdjustmentDraftRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CreateIntercompanyFeeAccrualDraftRequest"
     },
     {
@@ -28312,6 +28318,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CreateIntercompanyConfirmationAdjustmentDraftRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CreateIntercompanyFeeAccrualDraftRequest"
     },
     {
@@ -44249,6 +44261,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.CreateIntercompanyAccrualDraftRequest",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualRequestDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CreateIntercompanyConfirmationAdjustmentDraftRequest",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccountRoleDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CreateIntercompanyConfirmationAdjustmentDraftRequest",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationPartyDto"
     },
     {
       "kind": "contract-reference",
@@ -69537,7 +69561,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "99c4f8258e61caae3fc621a9bee9da58d95c27b3820caad961959616924307b5",
+  "fingerprint": "5428bbcb11046f743305d26f7ec4ab8e73bb2d8f4d6ec0576099ac7e7eb7b7d1",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -79777,6 +79801,12 @@
       "id": "contract:Meridian.Contracts.Ledger.CreateIntercompanyAccrualDraftRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.CreateIntercompanyAccrualDraftRequest"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.CreateIntercompanyConfirmationAdjustmentDraftRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.CreateIntercompanyConfirmationAdjustmentDraftRequest"
     },
     {
       "classification": "request",
@@ -102175,11 +102205,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4270,
-    "contract_set_memberships": 5612,
-    "edges": 11552,
+    "contract_references": 4272,
+    "contract_set_memberships": 5614,
+    "edges": 11556,
     "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5675
+    "nodes": 5676
   }
 }

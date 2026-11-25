@@ -17,7 +17,21 @@ export interface IntercompanyBalanceConfirmation {
   confirmationId: string; tenantId: string; companyId: string | null; accountingArrangementId: string; intercompanyAgreementId: string;
   asOf: string; version: number; status: IntercompanyConfirmationStatus; partyOne: IntercompanyConfirmationSide; partyTwo: IntercompanyConfirmationSide;
   netTransactionBalance: string; balanceDigest: string; events: IntercompanyConfirmationEvent[];
+  /** Set only when the two books belong to different companies of the tenant; each company acts on its own side. */
+  partyOneCompanyId?: string | null; partyTwoCompanyId?: string | null;
 }
+
+/**
+ * Pre-fills an ordinary journal-workbench draft correcting this book's side after a resolved dispute. The amount is an
+ * exact decimal string in the agreement currency: positive debits the intercompany account, negative credits it.
+ */
+export interface IntercompanyConfirmationAdjustmentDraftRequest {
+  requestId: string; party: IntercompanyConfirmationParty; expectedVersion: number; expectedBalanceDigest: string;
+  role: "Receivable" | "Payable"; adjustmentAmount: string; offsetAccountNodeId: string; accountingDate: string; memo?: string | null;
+}
+
+/** The retained draft as returned by the server; only what this screen shows. */
+export interface IntercompanyConfirmationAdjustmentDraft { journalEntryId: string; status: string; ledgerBookId: string | null; accountingDate: string }
 
 export interface IntercompanyConfirmationFinding { code: string; message: string; accountingArrangementId: string; confirmationId: string | null }
 

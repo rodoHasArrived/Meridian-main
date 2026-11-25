@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "6e3469c2d83b2a9a69786ff17e6ee4f1dc8bd8c5ff6f0deb8da5b32fe6716d5e",
+  "database_fingerprint": "39656c0e71952817a251134d78123d618359bf2c7faadf56d190a69ea70032eb",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -17205,6 +17205,14 @@
     {
       "fingerprint": "23ea3adae9a5b5d1302b6e519c4fe455fd512edeb54068798748811f3cadcad7",
       "object": "column:ledger.intercompany_balance_confirmations.confirmation_id"
+    },
+    {
+      "fingerprint": "00abf08ae4d1bfeeddfac2e7734d7040f566400cb8e44b6a344d7ffe9dbfa522",
+      "object": "column:ledger.intercompany_balance_confirmations.party_one_company_id"
+    },
+    {
+      "fingerprint": "c2e8e45048a98bbadbc3323b88bd1cf244b2876f802e0fe9be8ea397f3356289",
+      "object": "column:ledger.intercompany_balance_confirmations.party_two_company_id"
     },
     {
       "fingerprint": "1c1787b5d97cda2158c4f74af4e3dda466f532ad1ef4f7bfa08016e6ad02993e",
@@ -36007,6 +36015,14 @@
       "object": "index:ledger.ix_intercompany_accrual_schedule_book"
     },
     {
+      "fingerprint": "8c1b7b5c64219bf85e0c8785fe93f78d71ad8e6b467bda5e1cfca54fc810135b",
+      "object": "index:ledger.ix_intercompany_balance_confirmation_party_one_company"
+    },
+    {
+      "fingerprint": "88a9e54922fd3d41a71046cd3fe14ea6accc4ff78545ca3f8eaed542a7388c28",
+      "object": "index:ledger.ix_intercompany_balance_confirmation_party_two_company"
+    },
+    {
       "fingerprint": "ec63f997a267862be7f212c651ab85f9d769b0e8ff6030bd192d381e1a4eecd7",
       "object": "index:ledger.ix_intercompany_confirmation_close_policy_book"
     },
@@ -36449,6 +36465,10 @@
     {
       "fingerprint": "611b3a42644a9e85ac9ab1c57ac7a23ff4f873dfa97356d5990f5d0637bad0ec",
       "object": "index:ledger.ux_intercompany_accrual_schedule_identity"
+    },
+    {
+      "fingerprint": "c620f0096017f7f6ba8f59b62cb7a5961a9d1c79063914f951ab0b1262a65e37",
+      "object": "index:ledger.ux_intercompany_balance_confirmation_cross_company_identity"
     },
     {
       "fingerprint": "5db320ce400aed12dbff31cb30951c4c95fcf1ab08707fa2009e1fb66c09a5f5",
@@ -39235,7 +39255,7 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "af1c809d079c330d8ad3301c8d8406c16c5cb77e3def35383077c2d896c60543",
+      "fingerprint": "8a81d5ff9d399c14faed6ca71ae95ce36dd639b8ae55c6c22b818efe4799350e",
       "object": "schema:ledger"
     },
     {
@@ -39611,7 +39631,7 @@
       "object": "table:ledger.intercompany_accrual_schedules"
     },
     {
-      "fingerprint": "3c669d3828da08fc23250529a190d6234c24b87db6cdfb5740e07569695ad761",
+      "fingerprint": "49432b7bb60fde13f095dbee576beedd54bbeda33324f7037efc8e6d8c99c93f",
       "object": "table:ledger.intercompany_balance_confirmations"
     },
     {
@@ -88572,7 +88592,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "af1c809d079c330d8ad3301c8d8406c16c5cb77e3def35383077c2d896c60543",
+      "fingerprint": "8a81d5ff9d399c14faed6ca71ae95ce36dd639b8ae55c6c22b818efe4799350e",
       "foreign_tables": [],
       "functions": [
         {
@@ -99131,6 +99151,38 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "00abf08ae4d1bfeeddfac2e7734d7040f566400cb8e44b6a344d7ffe9dbfa522",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "party_one_company_id",
+              "nullable": true,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "c2e8e45048a98bbadbc3323b88bd1cf244b2876f802e0fe9be8ea397f3356289",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "party_two_company_id",
+              "nullable": true,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -99199,7 +99251,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "3c669d3828da08fc23250529a190d6234c24b87db6cdfb5740e07569695ad761",
+          "fingerprint": "49432b7bb60fde13f095dbee576beedd54bbeda33324f7037efc8e6d8c99c93f",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -99221,6 +99273,80 @@
               "owner": "meridian",
               "predicate": null,
               "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_intercompany_balance_confirmation_party_one_company ON ledger.intercompany_balance_confirmations USING btree (tenant_id, party_one_company_id, accounting_arrangement_id, as_of) WHERE (party_one_company_id IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "8c1b7b5c64219bf85e0c8785fe93f78d71ad8e6b467bda5e1cfca54fc810135b",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "party_one_company_id",
+                "accounting_arrangement_id",
+                "as_of"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_intercompany_balance_confirmation_party_one_company",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "party_one_company_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_intercompany_balance_confirmation_party_two_company ON ledger.intercompany_balance_confirmations USING btree (tenant_id, party_two_company_id, accounting_arrangement_id, as_of) WHERE (party_two_company_id IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "88a9e54922fd3d41a71046cd3fe14ea6accc4ff78545ca3f8eaed542a7388c28",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "party_two_company_id",
+                "accounting_arrangement_id",
+                "as_of"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_intercompany_balance_confirmation_party_two_company",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "party_two_company_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_intercompany_balance_confirmation_cross_company_identity ON ledger.intercompany_balance_confirmations USING btree (tenant_id, accounting_arrangement_id, as_of) WHERE ((version = 1) AND (party_one_company_id IS NOT NULL))",
+              "expression": null,
+              "fingerprint": "c620f0096017f7f6ba8f59b62cb7a5961a9d1c79063914f951ab0b1262a65e37",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "accounting_arrangement_id",
+                "as_of"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_intercompany_balance_confirmation_cross_company_identity",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "version = 1 AND party_one_company_id IS NOT NULL",
+              "primary": false,
               "ready": true,
               "security_labels": [],
               "unique": true,
@@ -127237,6 +127363,38 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "00abf08ae4d1bfeeddfac2e7734d7040f566400cb8e44b6a344d7ffe9dbfa522",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "party_one_company_id",
+              "nullable": true,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "c2e8e45048a98bbadbc3323b88bd1cf244b2876f802e0fe9be8ea397f3356289",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "party_two_company_id",
+              "nullable": true,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -127305,7 +127463,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "3c669d3828da08fc23250529a190d6234c24b87db6cdfb5740e07569695ad761",
+          "fingerprint": "49432b7bb60fde13f095dbee576beedd54bbeda33324f7037efc8e6d8c99c93f",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -127327,6 +127485,80 @@
               "owner": "meridian",
               "predicate": null,
               "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_intercompany_balance_confirmation_party_one_company ON ledger.intercompany_balance_confirmations USING btree (tenant_id, party_one_company_id, accounting_arrangement_id, as_of) WHERE (party_one_company_id IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "8c1b7b5c64219bf85e0c8785fe93f78d71ad8e6b467bda5e1cfca54fc810135b",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "party_one_company_id",
+                "accounting_arrangement_id",
+                "as_of"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_intercompany_balance_confirmation_party_one_company",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "party_one_company_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_intercompany_balance_confirmation_party_two_company ON ledger.intercompany_balance_confirmations USING btree (tenant_id, party_two_company_id, accounting_arrangement_id, as_of) WHERE (party_two_company_id IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "88a9e54922fd3d41a71046cd3fe14ea6accc4ff78545ca3f8eaed542a7388c28",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "party_two_company_id",
+                "accounting_arrangement_id",
+                "as_of"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_intercompany_balance_confirmation_party_two_company",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "party_two_company_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_intercompany_balance_confirmation_cross_company_identity ON ledger.intercompany_balance_confirmations USING btree (tenant_id, accounting_arrangement_id, as_of) WHERE ((version = 1) AND (party_one_company_id IS NOT NULL))",
+              "expression": null,
+              "fingerprint": "c620f0096017f7f6ba8f59b62cb7a5961a9d1c79063914f951ab0b1262a65e37",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "accounting_arrangement_id",
+                "as_of"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_intercompany_balance_confirmation_cross_company_identity",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "version = 1 AND party_one_company_id IS NOT NULL",
+              "primary": false,
               "ready": true,
               "security_labels": [],
               "unique": true,

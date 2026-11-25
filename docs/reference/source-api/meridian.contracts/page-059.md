@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DeltaOutlierResult
+
+Qualified name: <code>Meridian.Contracts.Workstation.DeltaOutlierResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L15).
+
+```csharp
+public sealed record DeltaOutlierResult(Guid AccountId, string MetricName, decimal PriorDayValue, decimal CurrentValue, decimal Delta, decimal DeltaRatio, bool IsOutlier, string Detail);
+```
+
 ## DesignateShadowBookRequestDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.DesignateShadowBookRequestDto</code>. Kind: `record`.
@@ -747,14 +757,4 @@ Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:606](../../.
 
 ```csharp
 public sealed record EvidenceSubjectLinkageDto(string? EvidenceSubject, string? RunId, string? PeriodId, string? ReportPackId, string? ReconciliationCaseId, string? AccountingRecordId = null, string? ReportPackDeliveryAttemptId = null, string? ReportPackDeliveryPackageId = null);
-```
-
-## EvidenceSupportRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceSupportRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:441](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L441).
-
-```csharp
-public sealed record EvidenceSupportRequestDto(string RequestId, string RequestKind, string EvidenceId, string? EvidenceKind, EvidenceValidationSeverityDto Severity, string Status, string Summary, string? SourceSystem, string? WorkItemId, string? BlockedOutput);
 ```

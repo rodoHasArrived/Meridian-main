@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityClassificationDriftEntryDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityClassificationDriftEntryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs#L17).
+
+One group of active securities whose latest retained event recorded a classification that the current asset-class taxonomy now derives differently (for example a Swap recorded under the ListedDerivative family before the taxonomy moved it to OtcDerivative).
+
+```csharp
+public sealed record SecurityClassificationDriftEntryDto(string TypeName, string StoredAssetClass, string? StoredAssetFamily, string CurrentAssetClass, string? CurrentAssetFamily, int SecurityCount, IReadOnlyList<Guid> SecurityIds);
+```
+
 ## SecurityClassificationDriftReportDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityClassificationDriftReportDto</code>. Kind: `record`.
@@ -842,21 +854,3 @@ Enum declarations:
 | <code>SpecialDividend</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs#L13) | Extraordinary cash dividend, tax-distinct from regular dividends. |
 | <code>FundDistribution</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs#L16) | Cash distribution from a fund class (money market, investment fund, fund interest). |
 | <code>ReturnOfCapital</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs#L19) | Capital returned to the holder; reduces cost basis and is not income. |
-
-## SecurityIncomeCashFlowProjector
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIncomeCashFlowProjector</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs#L77).
-
-Builds the declared income schedule from a security&#x27;s corporate actions. Pure: the caller loads the actions; amendments and cancellations are folded by CorporateActionEffectiveStateProjector first, so only effective terms produce flows.
-
-```csharp
-public static class SecurityIncomeCashFlowProjector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SecurityIncomeCashFlowScheduleDto Build(Guid securityId, string assetClass, IReadOnlyList&lt;CorporateActionDto&gt; actions, DateTimeOffset asOf, DateOnly? paymentFrom = null, DateOnly? paymentTo = null);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs#L79) |  |

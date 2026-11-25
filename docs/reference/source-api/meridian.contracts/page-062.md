@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundReportPackProvenanceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackProvenanceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:562](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L562).
+
+Source lineage captured with a generated governed report pack.
+
+```csharp
+public sealed record FundReportPackProvenanceDto(IReadOnlyList<string> RelatedRunIds, int JournalEntryCount, int LedgerEntryCount, int TrialBalanceLineCount, int ReconciliationRunCount, int OpenReconciliationBreakCount, int SecurityResolvedCount, int SecurityMissingCount, IReadOnlyList<FundReportPackLineagePointerDto> LineagePointers, string SourceSnapshotHash, int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion, string? DataProvenanceToken = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;RetainedLedgerAmountDto&gt;? LedgerAmounts { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:578](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L578) | Explicit retained amount identities. Legacy label-only manifests cannot prove an amount. |
+
 ## FundReportPackSnapshotDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackSnapshotDto</code>. Kind: `record`.
@@ -721,14 +739,4 @@ Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:
 
 ```csharp
 public sealed record InstrumentPassportReferenceDataWorkbenchDto(string Status, string Summary, IReadOnlyList<InstrumentPassportReferenceDataWorkbenchSectionDto> Sections, IReadOnlyList<InstrumentPassportOperationsHandoffDto> OperationsHandoffs);
-```
-
-## InstrumentPassportReferenceDataWorkbenchSectionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.InstrumentPassportReferenceDataWorkbenchSectionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:461](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L461).
-
-```csharp
-public sealed record InstrumentPassportReferenceDataWorkbenchSectionDto(string SectionId, string Title, string Status, string Summary, int EvidenceCount, int BlockingIssueCount);
 ```

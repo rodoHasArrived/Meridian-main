@@ -508,3 +508,22 @@ decisions:
     related_roadmap_items:
       - W12-ICCONFIRM-001
       - W10-SEAM-001
+  - id: DEC-IC-CONFIRM-003
+    title: "Proposed: cross-company reciprocal balance confirmation and adjustment drafts from resolved disputes (ADR-033)"
+    status: proposed
+    decided_on: 2026-11-25
+    owner_lane: Accounting and Ledger
+    summary: >-
+      Proposed and awaiting the repository owner's acceptance. Closes the two items DEC-IC-CONFIRM-001 left out of its
+      slice. A confirmation may span two companies of one tenant when the approved, tenant-scoped accounting profile
+      maps one book in each; the caller's company must hold at least one book, a book of another tenant is never
+      linked, and each side's balance is read in the scope of the company that owns it. The confirmation is visible to
+      either company, and each company confirms, disputes, resolves and adjusts only its own side; one actor still
+      cannot confirm both sides. A cross-company dispute is resolved only when each side records its own reasoned
+      resolution by someone other than the disputer. Same-company records are unchanged. For a resolved confirmation
+      at the exact version and digest shown, one side may pre-fill a balanced ordinary journal draft on its mapped
+      intercompany account with an offset on a non-intercompany account, linked to the dispute and resolution; it is
+      never submitted, approved or posted by this path. The decision weakens no review, posting or authorization
+      control and grants no release authority.
+    related_roadmap_items:
+      - W12-ICCONFIRM-001

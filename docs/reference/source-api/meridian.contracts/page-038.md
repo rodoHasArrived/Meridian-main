@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerJournalEntryDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.LedgerJournalEntryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:386](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L386).
+
+```csharp
+public sealed record LedgerJournalEntryDto(Guid JournalEntryId, Guid PeriodId, Guid? LedgerBookId, Guid AggregateId, Guid? CommandId, Guid? CorrelationId, long GlobalSequence, DateTimeOffset CreatedAt, DateTimeOffset Timestamp, string Description, decimal TotalDebits, decimal TotalCredits, bool IsBalanced, IReadOnlyList<LedgerJournalEntryLineDto> Lines, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", string? RuleId = null, string? RuleVersion = null, Guid? SourceEventId = null, Guid? SourceJournalEntryId = null, LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] LedgerJournalExecutionLineageDto? Execution = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;LedgerJournalEntryLineDto&gt; Lines { get; init; } = Lines??[];</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:412](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L412) |  |
+
 ## LedgerJournalEntryLineDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerJournalEntryLineDto</code>. Kind: `record`.
@@ -734,14 +750,4 @@ Source: [src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs:7](../../..
 
 ```csharp
 public sealed record PostedPeriodComparisonLineDto(string AccountKey, string AccountName, string AccountType, string? Symbol, string? FinancialAccountId, decimal CurrentDebit, decimal CurrentCredit, decimal CurrentBalance, decimal PriorDebit, decimal PriorCredit, decimal PriorBalance, decimal Change, decimal? PercentChange, LedgerDimensionSetDto? Dimensions);
-```
-
-## PostedPeriodComparisonRangeDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.PostedPeriodComparisonRangeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs:3](../../../../src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs#L3).
-
-```csharp
-public sealed record PostedPeriodComparisonRangeDto(Guid PeriodId, string Label, DateOnly PeriodStart, DateOnly PeriodEnd, DateOnly RangeStart, DateOnly RangeEnd, bool IsPartial, string Status);
 ```

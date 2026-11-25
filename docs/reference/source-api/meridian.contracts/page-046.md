@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionElectionCalendar
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendar</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs#L27).
+
+Reads only the versioned electionCalendar companion retained in the provider action payload. No offer expiry, ex-date, record date, or operational due date is promoted to an election cutoff. A malformed declared calendar is unavailable as a whole, preventing a partial set of deadlines from appearing complete. Empty declared calendars explicitly mean no supplied cutoffs.
+
+```csharp
+public static partial class CorporateActionElectionCalendar
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static CorporateActionElectionCalendarDto Read(JsonElement? payload);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs#L29) |  |
+
 ## CorporateActionElectionCalendarDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendarDto</code>. Kind: `record`.
@@ -903,26 +921,3 @@ Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:5](../../../.
 ```csharp
 public sealed record CreateSecurityRequest(Guid SecurityId, string AssetClass, JsonElement CommonTerms, JsonElement AssetSpecificTerms, IReadOnlyList<SecurityIdentifierDto> Identifiers, DateTimeOffset EffectiveFrom, string SourceSystem, string UpdatedBy, string? SourceRecordId, string? Reason);
 ```
-
-## DataQualityRuleCategory
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DataQualityRuleCategory</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L7).
-
-```csharp
-public enum DataQualityRuleCategory
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>FileMappingSufficiency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L9) |  |
-| <code>DataTypeRestriction</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L10) |  |
-| <code>MinimumAttribute</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L11) |  |
-| <code>TaxonomyCheck</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L12) |  |
-| <code>ValueConsistency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L13) |  |
-| <code>RefreshControl</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L14) |  |
-| <code>StalenessMonitor</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L15) |  |
-| <code>ExternalComparison</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L16) |  |

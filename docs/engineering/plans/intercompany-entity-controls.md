@@ -211,8 +211,8 @@ row `W12-ICCONFIRM-001` carries its status. Semantics are in the
 | Browser | "Balance confirmation" tab in Accounting's entity operations (`accounting-screen.entity-confirmations.tsx`). | `accounting-screen.entity-confirmations.test.tsx` |
 | Desktop | Balance confirmation tab on the Fund Ledger page (`IntercompanyBalanceConfirmationControl.xaml` over `IntercompanyBalanceConfirmationWorkspace`). The ledger book is a typed ID, as on the other desktop intercompany tabs; profiles are chosen from a list. | `IntercompanyBalanceConfirmationWorkspaceTests`, `WorkstationIntercompanyAgreementApiClientTests` (Linux); `IntercompanyNativeControlSmokeTests.BalanceConfirmationControl_*` runs only on Windows |
 
-Not in this slice: pairs spanning two companies of one tenant, and posting adjustments from a dispute.
-Opt-in close blocking was added on 2026-11-18; see the next section.
+Not in this first slice: pairs spanning two companies of one tenant, and adjustments from a dispute.
+Opt-in close blocking was added on 2026-11-18, and both of those on 2026-11-25; see the next sections.
 
 ### Opt-in confirmation close policy (2026-11-18)
 
@@ -226,6 +226,21 @@ adopt a reviewed confirmation close policy. Books without one keep advisory-only
 | Routes | `/api/ledger/intercompany/confirmation-close-policies`: list, propose and decide, scoped to a book the caller's tenant and company own. | `IntercompanyConfirmationClosePolicyEndpointTests` |
 | Browser | Close-policy panel on the balance-confirmation screen (`accounting-screen.entity-confirmation-close-policy.tsx`). | `accounting-screen.entity-confirmations.test.tsx` |
 | Desktop | Close-policy section on the Balance confirmation tab (`IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs`). | `IntercompanyBalanceConfirmationWorkspaceTests` (Linux); `IntercompanyNativeControlSmokeTests.BalanceConfirmationControl_*` builds on Linux and runs only on Windows |
+
+### Cross-company pairs and adjustment drafts (2026-11-25)
+
+[ADR-033](../../adr/033-intercompany-confirmation-cross-company-and-adjustments.md) and the proposed decision
+`DEC-IC-CONFIRM-003` (awaiting owner acceptance) close the two remaining confirmation gaps. Same-company
+confirmations are unchanged.
+
+| Piece | What exists | Verification |
+| --- | --- | --- |
+| Cross-company scope | The approved, tenant-scoped profile links a book in each of two companies. Each side is read in its owning company's scope; the confirmation records both companies and is visible to either; each company acts only on its own side, and a cross-company dispute needs a resolution from each side. `V_ledger_079__intercompany_confirmation_party_companies.sql` adds nullable party company columns and indexes; the advisory lock is keyed without the company. | `IntercompanyBalanceConfirmationCrossCompanyTests`, `IntercompanyBalanceConfirmationStoreContract` (file and PostgreSQL) |
+| Adjustment drafts | `IntercompanyConfirmationAdjustmentDraftService` pre-fills one balanced ordinary draft per side and resolution for a `Resolved` confirmation: the side's mapped intercompany account with the approved profile's posting identities, and a non-intercompany offset. It never submits or posts. `POST /api/ledger/intercompany/confirmations/{id}/adjustment-drafts` reads exact decimal strings. | `IntercompanyConfirmationAdjustmentDraftServiceTests`, `IntercompanyBalanceConfirmationEndpointTests` |
+| Browser | Company labels, "Record this book's resolution" for cross-company pairs, and the correction fields on `accounting-screen.entity-confirmations.tsx`. | `accounting-screen.entity-confirmations.test.tsx` |
+| Desktop | The same on the Balance confirmation tab (`IntercompanyBalanceConfirmationWorkspace.Adjustments.cs`). | `IntercompanyBalanceConfirmationWorkspaceTests`, `WorkstationIntercompanyAgreementApiClientTests` (Linux); the XAML compiles only on Windows CI |
+
+Not in this slice: cross-currency adjustments (prepared in the journal workbench) and multilateral pairs.
 
 ### Periodic compounding extension (2026-11-17)
 

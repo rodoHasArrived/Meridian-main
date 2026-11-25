@@ -34,7 +34,8 @@ public static class IntercompanyBalanceConfirmationRules
     /// </summary>
     public static IntercompanyBalanceConfirmationDto Propose(IntercompanyBalanceConfirmationDto? current, Guid confirmationId, Guid requestId,
         string tenantId, string? companyId, Guid arrangementId, Guid agreementId, DateOnly asOf,
-        IntercompanyBalanceConfirmationSideDto one, IntercompanyBalanceConfirmationSideDto two, string actor, DateTimeOffset at)
+        IntercompanyBalanceConfirmationSideDto one, IntercompanyBalanceConfirmationSideDto two, string actor, DateTimeOffset at,
+        string? partyOneCompanyId = null, string? partyTwoCompanyId = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(actor);
         if (one.TransactionCurrency != two.TransactionCurrency)
@@ -48,9 +49,14 @@ public static class IntercompanyBalanceConfirmationRules
                 throw new InvalidOperationException("These posted balances are already proposed for this date; confirm or dispute the retained proposal.");
         }
         var proposal = new IntercompanyBalanceConfirmationEventDto(Guid.NewGuid(), requestId, IntercompanyBalanceConfirmationActionDto.Propose, null, actor, at, digest, null);
-        return new(current?.ConfirmationId ?? confirmationId, tenantId, companyId, arrangementId, agreementId, asOf, (current?.Version ?? 0) + 1,
-            IntercompanyBalanceConfirmationStatusDto.Proposed, one, two, one.TransactionSignedBalance + two.TransactionSignedBalance, digest,
-            [.. current?.Events ?? [], proposal]);
+        // The proposing company owns the record for its lifetime; a later proposal by the other side's company keeps it.
+        return new(current?.ConfirmationId ?? confirmationId, tenantId, current is null ? companyId : current.CompanyId, arrangementId,
+            agreementId, asOf, (current?.Version ?? 0) + 1, IntercompanyBalanceConfirmationStatusDto.Proposed, one, two,
+            one.TransactionSignedBalance + two.TransactionSignedBalance, digest, [.. current?.Events ?? [], proposal])
+        {
+            PartyOneCompanyId = partyOneCompanyId,
+            PartyTwoCompanyId = partyTwoCompanyId
+        };
     }
 
     /// <summary>Applies a confirmation, dispute or resolution to the exact retained version.</summary>
@@ -67,11 +73,11 @@ public static class IntercompanyBalanceConfirmationRules
         {
             IntercompanyBalanceConfirmationActionDto.Confirm => Confirm(current, request.Party, actor),
             IntercompanyBalanceConfirmationActionDto.Dispute => Dispute(current, request.Party, reason),
-            IntercompanyBalanceConfirmationActionDto.Resolve => Resolve(current, actor, reason),
+            IntercompanyBalanceConfirmationActionDto.Resolve => Resolve(current, request.Party, actor, reason),
             _ => throw new InvalidOperationException("Proposals are made from the posted balances, not applied to a retained version.")
         };
         var recorded = new IntercompanyBalanceConfirmationEventDto(Guid.NewGuid(), request.RequestId, request.Action,
-            request.Action == IntercompanyBalanceConfirmationActionDto.Resolve ? null : request.Party, actor, at, current.BalanceDigest,
+            RecordedParty(current, request), actor, at, current.BalanceDigest,
             string.IsNullOrEmpty(reason) ? null : reason);
         return current with { Version = current.Version + 1, Status = step, Events = [.. current.Events, recorded] };
     }
@@ -115,16 +121,46 @@ public static class IntercompanyBalanceConfirmationRules
             : throw new InvalidOperationException($"A {current.Status} confirmation cannot be disputed. Propose the current balances again.");
     }
 
-    private static IntercompanyBalanceConfirmationStatusDto Resolve(IntercompanyBalanceConfirmationDto current, string actor, string? reason)
+    /// <summary>
+    /// The party a step is recorded against. A same-company resolution settles both sides at once and names none; a
+    /// cross-company resolution is recorded per side, because neither company may settle the other's position.
+    /// </summary>
+    public static IntercompanyBalanceConfirmationPartyDto? RecordedParty(IntercompanyBalanceConfirmationDto current,
+        IntercompanyBalanceConfirmationActionRequest request)
+        => request.Action == IntercompanyBalanceConfirmationActionDto.Resolve && !current.IsCrossCompany ? null : request.Party;
+
+    private static IntercompanyBalanceConfirmationStatusDto Resolve(IntercompanyBalanceConfirmationDto current,
+        IntercompanyBalanceConfirmationPartyDto? party, string actor, string? reason)
     {
         if (current.Status != IntercompanyBalanceConfirmationStatusDto.Disputed)
             throw new InvalidOperationException("Only a disputed confirmation can be resolved.");
         if (string.IsNullOrEmpty(reason))
             throw new InvalidOperationException("A resolution needs a reason that records how the dispute was settled.");
-        var dispute = current.Events.Last(item => item.Action == IntercompanyBalanceConfirmationActionDto.Dispute);
+        var disputeIndex = current.Events.ToList().FindLastIndex(item => item.Action == IntercompanyBalanceConfirmationActionDto.Dispute);
+        var dispute = current.Events[disputeIndex];
         if (string.Equals(dispute.Actor, actor, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("The person who raised the dispute cannot also resolve it.");
-        return IntercompanyBalanceConfirmationStatusDto.Resolved;
+        if (!current.IsCrossCompany)
+            return IntercompanyBalanceConfirmationStatusDto.Resolved;
+        // Across companies each side records its own resolution; the dispute stands until both have.
+        if (party is not { } side)
+            throw new InvalidOperationException("State which side is recording its resolution of a cross-company dispute.");
+        var resolved = current.Events.Skip(disputeIndex + 1)
+            .Where(item => item.Action == IntercompanyBalanceConfirmationActionDto.Resolve).Select(item => item.Party).ToHashSet();
+        if (resolved.Contains(side))
+            throw new InvalidOperationException("This side has already recorded its resolution of the dispute.");
+        return resolved.Count == 0 ? IntercompanyBalanceConfirmationStatusDto.Disputed : IntercompanyBalanceConfirmationStatusDto.Resolved;
+    }
+
+    /// <summary>The sides that have recorded a resolution of the current cross-company dispute.</summary>
+    public static IReadOnlyList<IntercompanyBalanceConfirmationPartyDto> PartiesThatResolved(IntercompanyBalanceConfirmationDto current)
+    {
+        if (current.Status != IntercompanyBalanceConfirmationStatusDto.Disputed || !current.IsCrossCompany)
+            return [];
+        var disputeIndex = current.Events.ToList().FindLastIndex(item => item.Action == IntercompanyBalanceConfirmationActionDto.Dispute);
+        return current.Events.Skip(disputeIndex + 1)
+            .Where(item => item.Action == IntercompanyBalanceConfirmationActionDto.Resolve && item.Party is not null)
+            .Select(item => item.Party!.Value).Distinct().ToArray();
     }
 
     private static IEnumerable<IntercompanyBalanceConfirmationEventDto> SinceProposal(IntercompanyBalanceConfirmationDto current)
@@ -147,7 +183,9 @@ public static class IntercompanyBalanceConfirmationRules
         return current.Status switch
         {
             IntercompanyBalanceConfirmationStatusDto.Confirmed => null,
-            IntercompanyBalanceConfirmationStatusDto.Disputed => new("Disputed", "A side disputes the pinned balances.", arrangementId, current.ConfirmationId),
+            IntercompanyBalanceConfirmationStatusDto.Disputed => new("Disputed", PartiesThatResolved(current) is [var resolvedBy]
+                ? $"A side disputes the pinned balances; {(resolvedBy == IntercompanyBalanceConfirmationPartyDto.PartyOne ? "party one" : "party two")} recorded its resolution and the other side has not."
+                : "A side disputes the pinned balances.", arrangementId, current.ConfirmationId),
             IntercompanyBalanceConfirmationStatusDto.Resolved => new("ResolvedAwaitingProposal",
                 "The dispute was resolved; propose the corrected balances for confirmation.", arrangementId, current.ConfirmationId),
             _ => new("AwaitingConfirmation", current.Status switch

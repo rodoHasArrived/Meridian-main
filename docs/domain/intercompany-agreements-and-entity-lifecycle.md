@@ -174,8 +174,14 @@ A book may adopt one reviewed **confirmation close policy** (ADR-032, proposed d
 `disputed`, `balances-changed` or `resolved-awaiting-proposal`. One person proposes it and someone else
 approves it; it can be rejected or disabled with a reason. While it is active, a listed finding at the
 close period end adds an `intercompany-confirmation` close-readiness blocker, and confirmation that
-cannot be read makes the close decision incomplete. Pairs that span two companies of one tenant are not
-implemented.
+cannot be read makes the close decision incomplete.
+
+A pair may span **two companies of one tenant** (ADR-033, proposed decision `DEC-IC-CONFIRM-003`) when the
+approved, tenant-scoped accounting profile maps one book in each. Each side is read in the scope of the
+company that owns it; both companies see the confirmation and each acts only on its own side. A
+cross-company dispute is resolved only when each side records its own reasoned resolution. After a
+resolution, one side may pre-fill an ordinary journal draft correcting its own intercompany account,
+linked to the dispute; it is reviewed and posted through the journal workbench, never by the confirmation.
 
 ## Reporting perimeter and implementation owners
 

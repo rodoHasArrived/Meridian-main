@@ -26,6 +26,18 @@ Declared public members:
 | <code>public string Label { get; } = label;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:115](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L115) |  |
 | <code>public bool IsSelected { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:116](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L116) |  |
 
+## IntercompanyConfirmationAdjustmentDraftResult
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyConfirmationAdjustmentDraftResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ConfirmationAdjustments.cs:8](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ConfirmationAdjustments.cs#L8).
+
+The retained adjustment draft as the desktop shows it: its identity, review status and book.
+
+```csharp
+public sealed record IntercompanyConfirmationAdjustmentDraftResult(Guid JournalEntryId, string Status, Guid? LedgerBookId, DateOnly AccountingDate);
+```
+
 ## IntercompanyCounterpartBreakRow
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyCounterpartBreakRow</code>. Kind: `class`.
@@ -543,6 +555,18 @@ Declared public members:
 | <code>Task&lt;ApiResponse&lt;IntercompanyConfirmationClosePolicyDto&gt;&gt; ProposeConfirmationClosePolicyAsync(ProposeIntercompanyConfirmationClosePolicyRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ClosePolicies.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ClosePolicies.cs#L11) |  |
 | <code>Task&lt;ApiResponse&lt;IntercompanyConfirmationClosePolicyDto&gt;&gt; DecideConfirmationClosePolicyAsync(Guid policyId, Guid ledgerBookId, DecideIntercompanyConfirmationClosePolicyRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ClosePolicies.cs:13](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ClosePolicies.cs#L13) |  |
 
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ConfirmationAdjustments.cs:10](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ConfirmationAdjustments.cs#L10).
+
+```csharp
+public partial interface IWorkstationIntercompanyAgreementApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;IntercompanyConfirmationAdjustmentDraftResult&gt;&gt; CreateConfirmationAdjustmentDraftAsync(Guid confirmationId, CreateIntercompanyConfirmationAdjustmentDraftRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ConfirmationAdjustments.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ConfirmationAdjustments.cs#L16) | Pre-fills an ordinary journal-workbench draft correcting one side after a resolved dispute (DEC-IC-CONFIRM-003). Nothing is submitted or posted. |
+
 Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs:8](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs#L8).
 
 ```csharp
@@ -967,6 +991,18 @@ Declared public members:
 | <code>public async Task&lt;ApiResponse&lt;IntercompanyConfirmationClosePolicyDto[]&gt;&gt; GetConfirmationClosePoliciesAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ClosePolicies.cs:22](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ClosePolicies.cs#L22) |  |
 | <code>public async Task&lt;ApiResponse&lt;IntercompanyConfirmationClosePolicyDto&gt;&gt; ProposeConfirmationClosePolicyAsync(ProposeIntercompanyConfirmationClosePolicyRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ClosePolicies.cs:30](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ClosePolicies.cs#L30) |  |
 | <code>public async Task&lt;ApiResponse&lt;IntercompanyConfirmationClosePolicyDto&gt;&gt; DecideConfirmationClosePolicyAsync(Guid policyId, Guid ledgerBookId, DecideIntercompanyConfirmationClosePolicyRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ClosePolicies.cs:34](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ClosePolicies.cs#L34) |  |
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ConfirmationAdjustments.cs:21](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ConfirmationAdjustments.cs#L21).
+
+```csharp
+public sealed partial class WorkstationIntercompanyAgreementApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ApiResponse&lt;IntercompanyConfirmationAdjustmentDraftResult&gt;&gt; CreateConfirmationAdjustmentDraftAsync(Guid confirmationId, CreateIntercompanyConfirmationAdjustmentDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ConfirmationAdjustments.cs:23](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.ConfirmationAdjustments.cs#L23) |  |
 
 Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs:21](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs#L21).
 
@@ -1522,45 +1558,3 @@ Declared public members:
 | <code>public string[] Warnings { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:21](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L21) |  |
 | <code>public static ConfigValidationResultDetail Success() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:23](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L23) |  |
 | <code>public static ConfigValidationResultDetail Failure(params string[] errors) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:24](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L24) |  |
-
-## ConnectionServiceBase
-
-Qualified name: <code>Meridian.Ui.Services.Services.ConnectionServiceBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:12](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L12).
-
-Abstract base class for connection management shared across desktop applications. Provides shared state machine, monitoring orchestration, auto-reconnect logic, and event raising. Platform-specific HTTP calls and timer implementations are delegated to derived classes. Part of Phase 6C.2 service deduplication (ROADMAP item 6C.2).
-
-```csharp
-public abstract class ConnectionServiceBase : IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ServiceUrl =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:33](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L33) | Gets the current service URL being used for connections. |
-| <code>public ConnectionState State =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:36](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L36) | Gets the current connection state. |
-| <code>public string CurrentProvider =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:39](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L39) | Gets the current provider name. |
-| <code>public TimeSpan? Uptime =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:42](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L42) | Gets the connection uptime. |
-| <code>public double LastLatencyMs { get; private set; }</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:45](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L45) | Gets the last measured latency in milliseconds. |
-| <code>public int TotalReconnects { get; private set; }</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:48](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L48) | Gets the total number of reconnections. |
-| <code>public bool IsMonitoring =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:51](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L51) | Gets whether monitoring is currently active. |
-| <code>public bool IsAutoReconnectPaused =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:54](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L54) | Gets whether auto-reconnect is currently paused. |
-| <code>public event EventHandler&lt;ConnectionStateChangedEventArgs&gt;? StateChanged;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:57](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L57) | Event raised when connection state changes. |
-| <code>public event EventHandler&lt;ConnectionStateEventArgs&gt;? ConnectionStateChanged;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:60](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L60) | Event raised when connection state changes (ViewModel binding). |
-| <code>public event EventHandler&lt;int&gt;? LatencyUpdated;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:63](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L63) | Event raised when latency measurement is updated. |
-| <code>public event EventHandler&lt;ReconnectEventArgs&gt;? ReconnectAttempting;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:66](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L66) | Event raised when a reconnection attempt is starting. |
-| <code>public event EventHandler? ReconnectSucceeded;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:69](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L69) | Event raised when reconnection succeeds. |
-| <code>public event EventHandler&lt;ReconnectFailedEventArgs&gt;? ReconnectFailed;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:72](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L72) | Event raised when a reconnection attempt fails. |
-| <code>public event EventHandler&lt;ConnectionHealthEventArgs&gt;? ConnectionHealthUpdated;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:75](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L75) | Event raised when connection health is updated. |
-| <code>public void UpdateSettings(ConnectionSettings settings);</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:80](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L80) | Updates connection settings and reconfigures the underlying client. |
-| <code>public void ConfigureServiceUrl(string serviceUrl, int timeoutSeconds = 30);</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:90](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L90) | Configures the service URL directly. |
-| <code>public ConnectionSettings GetSettings() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:98](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L98) | Gets current connection settings. |
-| <code>public void StartMonitoring();</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:116](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L116) | Starts the connection monitoring with periodic health checks. |
-| <code>public void StopMonitoring();</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:141](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L141) | Stops connection monitoring. |
-| <code>public async Task&lt;bool&gt; ConnectAsync(string provider, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:159](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L159) | Initiates a connection to the provider. Performs a health check first; returns false when the provider is unreachable or the request is cancelled before the check completes. |
-| <code>public Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:197](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L197) | Disconnects from the provider. |
-| <code>public void PauseAutoReconnect();</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:211](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L211) | Pauses auto-reconnection temporarily. |
-| <code>public void ResumeAutoReconnect();</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:224](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L224) | Resumes auto-reconnection. |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:524](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L524) |  |

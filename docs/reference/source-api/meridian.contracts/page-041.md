@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RuntimeReadinessStatus
+
+Qualified name: <code>Meridian.Contracts.Lifecycle.RuntimeReadinessStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:24](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L24).
+
+```csharp
+public enum RuntimeReadinessStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Starting</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:26](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L26) |  |
+| <code>Ready</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:27](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L27) |  |
+| <code>Degraded</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:28](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L28) |  |
+| <code>NotReady</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:29](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L29) |  |
+| <code>Stopping</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:30](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L30) |  |
+| <code>Failed</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:31](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L31) |  |
+
 ## DataManifest
 
 Qualified name: <code>Meridian.Contracts.Manifest.DataManifest</code>. Kind: `class`.
@@ -929,14 +950,4 @@ Neutral single-contract criteria. Passing these criteria is not trading permissi
 
 ```csharp
 public sealed record OptionScreenRequest(string UnderlyingSymbol, int MinDte = 0, int MaxDte = 365, decimal MinDelta = - 1m, decimal MaxDelta = 1m, string Right = "Both", long MinOpenInterest = 0, long MinVolume = 0, decimal? MaxSpreadFraction = null, decimal? MinPremium = null, string PremiumBasis = "Bid", int StrikeRange = 20);
-```
-
-## OptionScreenResult
-
-Qualified name: <code>Meridian.Contracts.Options.OptionScreenResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:26](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L26).
-
-```csharp
-public sealed record OptionScreenResult(OptionScreenRequest Criteria, DateTimeOffset ScreenedAt, IReadOnlyList<OptionScreenCandidate> Candidates, IReadOnlyList<string> LoadedExpirations, IReadOnlyList<string> FailedExpirations, IReadOnlyList<string> OmittedExpirations, int StrikeRange, string CoverageNote, string AuthorityNote);
 ```
