@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-13T09:16:45Z",
+  "generatedAt": "2026-11-25T11:14:04Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -567,6 +567,7 @@
         "Meridian.Backtesting.Sdk",
         "Meridian.Contracts",
         "Meridian.Instruments",
+        "Meridian.Platform",
         "Meridian.Storage",
         "Meridian.Strategies"
       ],
@@ -2427,322 +2428,322 @@
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-13T09:12:02Z",
-      "lastCommit": "c24129bb68",
-      "lastSummary": "Review inherited documentation drift and clarify execution validation ownership",
-      "touches": 88
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 25
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-13T09:12:02Z",
-      "lastCommit": "c24129bb68",
-      "lastSummary": "Review inherited documentation drift and clarify execution validation ownership",
-      "touches": 83
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 18
     },
     {
-      "path": "src/Meridian.Execution/README.md",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-13T09:12:02Z",
-      "lastCommit": "c24129bb68",
-      "lastSummary": "Review inherited documentation drift and clarify execution validation ownership",
-      "touches": 35
+      "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 13
     },
     {
-      "path": "src/Meridian.Backtesting/README.md",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-11-13T09:12:02Z",
-      "lastCommit": "c24129bb68",
-      "lastSummary": "Review inherited documentation drift and clarify execution validation ownership",
-      "touches": 12
+      "path": "src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 8
     },
     {
-      "path": "src/Meridian.Execution.Sdk/README.md",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-13T09:12:02Z",
-      "lastCommit": "c24129bb68",
-      "lastSummary": "Review inherited documentation drift and clarify execution validation ownership",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Risk/README.md",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-13T09:12:02Z",
-      "lastCommit": "c24129bb68",
-      "lastSummary": "Review inherited documentation drift and clarify execution validation ownership",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Strategies/Live/BacktestStrategyLiveAdapter.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-13T09:12:02Z",
-      "lastCommit": "c24129bb68",
-      "lastSummary": "Review inherited documentation drift and clarify execution validation ownership",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Infrastructure/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-13T08:49:29Z",
-      "lastCommit": "e28650fd27",
-      "lastSummary": "fix(providers): exclude long quota waits from HTTP deadlines",
-      "touches": 26
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-13T08:49:29Z",
-      "lastCommit": "e28650fd27",
-      "lastSummary": "fix(providers): exclude long quota waits from HTTP deadlines",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-13T08:49:29Z",
-      "lastCommit": "e28650fd27",
-      "lastSummary": "fix(providers): exclude long quota waits from HTTP deadlines",
-      "touches": 3
+      "path": "src/Meridian.Ui/dashboard/src/screens/trading-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 8
     },
     {
       "path": "src/Meridian.Strategies/README.md",
       "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-13T02:44:01Z",
-      "lastCommit": "cf2f0e0735",
-      "lastSummary": "Preserve retained-run validation and align accrual contract tests",
-      "touches": 8
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 7
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-13T02:44:01Z",
-      "lastCommit": "cf2f0e0735",
-      "lastSummary": "Preserve retained-run validation and align accrual contract tests",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Strategies/Storage/StrategyRunStore.cs",
+      "path": "src/Meridian.Execution/README.md",
       "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-13T02:44:01Z",
-      "lastCommit": "cf2f0e0735",
-      "lastSummary": "Preserve retained-run validation and align accrual contract tests",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-13T01:51:21Z",
-      "lastCommit": "ad80338ec2",
-      "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
-      "touches": 62
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/design-system-contract.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-13T01:51:21Z",
-      "lastCommit": "ad80338ec2",
-      "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-13T01:51:21Z",
-      "lastCommit": "ad80338ec2",
-      "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.DataIntegration/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-13T01:51:21Z",
-      "lastCommit": "ad80338ec2",
-      "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
       "touches": 6
     },
     {
-      "path": "src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-13T01:51:21Z",
-      "lastCommit": "ad80338ec2",
-      "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-13T01:51:21Z",
-      "lastCommit": "ad80338ec2",
-      "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Reconciliation/IbFlexStatementService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-13T01:51:21Z",
-      "lastCommit": "ad80338ec2",
-      "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityCashFlowScheduleRowCodec.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-13T01:11:48Z",
-      "lastCommit": "e658268173",
-      "lastSummary": "Format pool accrual codec and refresh reviewed source fingerprint",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Storage/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-13T00:53:23Z",
-      "lastCommit": "47054e6b41",
-      "lastSummary": "Resolve storage path authority and financial lifecycle trust boundaries",
-      "touches": 35
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs",
+      "path": "src/Meridian.Ui/dashboard/src/types.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-13T00:53:23Z",
-      "lastCommit": "47054e6b41",
-      "lastSummary": "Resolve storage path authority and financial lifecycle trust boundaries",
-      "touches": 10
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 6
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs",
+      "path": "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-13T00:53:23Z",
-      "lastCommit": "47054e6b41",
-      "lastSummary": "Resolve storage path authority and financial lifecycle trust boundaries",
-      "touches": 2
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 5
     },
     {
-      "path": "src/Meridian.Storage/Services/TierMigrationService.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-13T00:53:23Z",
-      "lastCommit": "47054e6b41",
-      "lastSummary": "Resolve storage path authority and financial lifecycle trust boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Archival/AtomicFileWriter.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-13T00:11:14Z",
-      "lastCommit": "7798dc2b18",
-      "lastSummary": "Persist backup access descriptor before Windows publication",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-12T23:09:28Z",
-      "lastCommit": "e2ce37f3cc",
-      "lastSummary": "refactor(operations): extract workflow read-model composition",
-      "touches": 22
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-12T23:09:28Z",
-      "lastCommit": "e2ce37f3cc",
-      "lastSummary": "refactor(operations): extract workflow read-model composition",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.ChecklistControls.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-12T23:09:28Z",
-      "lastCommit": "e2ce37f3cc",
-      "lastSummary": "refactor(operations): extract workflow read-model composition",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowReadModelBuilder.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-12T23:09:28Z",
-      "lastCommit": "e2ce37f3cc",
-      "lastSummary": "refactor(operations): extract workflow read-model composition",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.QuantScript/Api/QuantDataContext.cs",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-11-12T23:09:28Z",
-      "lastCommit": "a96b31b03c",
-      "lastSummary": "refactor(quantscript): depend on shared contracts without Application",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.QuantScript/Meridian.QuantScript.csproj",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-11-12T23:09:28Z",
-      "lastCommit": "a96b31b03c",
-      "lastSummary": "refactor(quantscript): depend on shared contracts without Application",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.QuantScript/README.md",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-11-12T23:09:28Z",
-      "lastCommit": "a96b31b03c",
-      "lastSummary": "refactor(quantscript): depend on shared contracts without Application",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.intercompany-agreements.test.tsx",
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.TableViews.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-12T23:05:56Z",
-      "lastCommit": "acc807325b",
-      "lastSummary": "perf: speed up web screenshot capture",
-      "touches": 2
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 5
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.intercompany-agreements.tsx",
+      "path": "src/Meridian.Ui/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-12T23:05:56Z",
-      "lastCommit": "acc807325b",
-      "lastSummary": "perf: speed up web screenshot capture",
-      "touches": 2
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 5
     },
     {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T22:58:20Z",
-      "lastCommit": "c3e4f76b55",
-      "lastSummary": "Refresh current public API references for typed pool accrual",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Application/GlobalUsings.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T22:56:27Z",
-      "lastCommit": "a8f11418cd",
-      "lastSummary": "Isolate demo smoke tests and reuse CLI build outputs",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian/GlobalUsings.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T22:56:27Z",
-      "lastCommit": "a8f11418cd",
-      "lastSummary": "Isolate demo smoke tests and reuse CLI build outputs",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ledger/README.md",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-12T22:42:19Z",
-      "lastCommit": "76e53dc95a",
-      "lastSummary": "Unify retained trade posting economics and lending templates",
-      "touches": 20
-    },
-    {
-      "path": "src/Meridian.Execution/Services/PaperTradingPortfolio.cs",
+      "path": "src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs",
       "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-12T22:42:19Z",
-      "lastCommit": "76e53dc95a",
-      "lastSummary": "Unify retained trade posting economics and lending templates",
-      "touches": 15
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Strategies/Live/LiveTradingEngine.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Execution/OrderManagementSystem.RiskOutcomes.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Execution/Serialization/ExecutionJsonContext.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Audit.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Execution.Sdk/OrderIntent.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Execution.Sdk/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Execution/OrderManagement/BrokerOrderSweep.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Execution/OrderManagement/OrderExecutionAudit.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Execution/OrderManagement/OrderIntentJournal.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Execution/OrderManagementSystem.Cancellation.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Execution/OrderManagementSystem.OrderIntents.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Execution/Services/ExecutionAuditTrailService.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Strategies/Artifacts/StrategyArtifact.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Strategies/Live/Designer/DesignerPaperExecution.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/trading-screen.audit-trail.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Execution.Sdk/CancelAllIncident.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Execution/OrderManagement/CancelAllIncidentRecorder.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Execution/OrderManagementSystem.CancelIncidents.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Execution/Services/ExecutionAuditTrailService.CancelIncidents.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.CancelIncidents.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ExecutionAuditPublicProjection.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T03:02:09-07:00",
+      "lastCommit": "cb5d7320",
+      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
+      "touches": 1
     }
   ],
   "recentChangesWindowDays": 14,

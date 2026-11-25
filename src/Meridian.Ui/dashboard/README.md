@@ -1317,6 +1317,11 @@ The stable test runner retains eight files per batch, two Vitest workers and pro
 Fresh JSON test evidence is written under `artifacts/test-results/browser/` at repository root.
 Missing results, zero passing discovery or missing selected files fail the run. Counts, skips,
 durations and stable test identity digests support the manual CI concurrency benchmark.
+`npm run test -- --shard K/N` runs a deterministic share of the test files; hosted CI uses it
+for its `browser-shard` jobs. `scripts/vitest-files.mjs` is the single definition of the
+test-file roster and of how files are dealt to shards, and `scripts/merge-vitest-shards.mjs`
+is the lane's verdict: it rejects a run unless the shards together ran every test file in the
+checkout exactly once with no failure.
 
 `AmountPassportTrigger` opens the shared Amount passport rail from Ledger Explorer, posted journal
 detail, retained brokerage positions, and retained trial-balance amounts in governed reports. Each

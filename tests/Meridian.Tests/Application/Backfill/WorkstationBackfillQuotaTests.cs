@@ -13,6 +13,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Stooq;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.Http;
+using Meridian.Storage.Archival;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
@@ -119,8 +120,16 @@ public sealed class WorkstationBackfillQuotaTests : IDisposable
         receipt.ActualRequests.Should().Be(3);
         receipt.RequestVariance.Should().Be(1);
         receipt.DurationVarianceSeconds.Should().Be(receipt.ActualDurationSeconds - submitted.Quota.EstimatedDurationSeconds);
-        receipt.ThrottlingEvents.Should().Contain(e => e.Reason == "provider-rate-limit" && e.WaitSeconds >= 1);
+        receipt.ThrottlingEvents.Should().ContainSingle(e => e.Reason == "provider-rate-limit")
+            .Which.WaitSeconds.Should().Be(1);
         receipt.ThrottlingEvents.Should().Contain(e => e.Reason == "quota-admission" && e.WaitSeconds == window.TotalSeconds);
+        var healthHistory = ProviderRateLimitHistory.ForDataRoot(store.GetDataRoot(), new AtomicFileWriterAdapter());
+        var healthEvent = healthHistory.Read("quota-test", 1).Should()
+            .ContainSingle(entry => entry.EventType == "rate-limited").Which;
+        healthEvent.HttpStatus.Should().Be(429);
+        healthEvent.RequestsUsed.Should().Be(1);
+        healthHistory.TryReadDailyRollups("quota-test", out var rollups).Should().BeTrue();
+        rollups.Should().ContainSingle().Which.ThrottleCount.Should().Be(1);
         var dispatches = responses.Dispatched.ToArray();
         dispatches.Should().HaveCount(3);
         Stopwatch.GetElapsedTime(dispatches[0], dispatches[1]).Should().BeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(950));
