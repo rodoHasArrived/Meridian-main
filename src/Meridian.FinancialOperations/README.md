@@ -17,6 +17,11 @@ seen, actor, evidence and source fingerprint under case-sequence/hash concurrenc
 finding never resolves a case. Approved guarantee caps remain separate from unavailable measured
 exposure. See [agreement lifecycle casework](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#agreement-lifecycle-work-queue).
 
+External-GL reconciliation projects each row's external trial-balance currency and resolved ledger
+book currency separately. Unknown or absent source currencies remain null rather than inheriting
+the legacy display fallback. This additive metadata lets the workstation preserve conflicting units;
+the reconciliation calculations, statuses and retained snapshot hash inputs are unchanged.
+
 Mapped CSV intake preserves the `coupon`, `interest` and `principal` classifications and explicit
 receipt metadata through `StatementCanonicalRecord` into the canonical artifact. Reversal references
 retain the original provider payment ID; splits name an obligation or projected flow rather than

@@ -11,6 +11,15 @@ last_reviewed: 2026-11-23
 
 # src/Meridian.Contracts
 
+`AccountingSystemReconciliationRowDto` and `AccountingSystemReconciliationSummaryDto` retain their
+numeric fields and add read-only invariant `*Exact` string companions for debit, credit, variance
+and summary totals. Browser consumers can preserve all retained decimal digits without parsing
+localized labels or passing the source amounts through JavaScript numbers. Companions derive from
+the authoritative decimal fields; supplied companion text cannot alter the deserialized values.
+Rows also carry separate `ExternalCurrency` and `MeridianCurrency` metadata. These fields explicitly
+serialize null for an unknown or absent side, so consumers do not infer a currency from the legacy
+combined `Currency` field when source metadata is unavailable.
+
 `CorporateActionDto.SourceEvidence` optionally retains the provider event type, wire schema,
 original JSON text and its exact SHA-256 digest outside economic terms. The existing source-proposal
 JSON storage preserves this companion without a schema migration; absent evidence is omitted from

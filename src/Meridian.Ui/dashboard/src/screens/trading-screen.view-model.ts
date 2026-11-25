@@ -205,12 +205,23 @@ const tradingRouteCopy: Record<TradingRouteWorkstream, { title: string; descript
 
 export function useTradingScreenShellViewModel({
   pathname,
-  data
+  data,
+  hash = "",
+  navigationKey = ""
 }: {
   pathname: string;
   data: TradingWorkspaceResponse | null;
+  hash?: string;
+  navigationKey?: string;
 }): TradingScreenShellViewModel {
-  const [activeWorkflowPanel, setActiveWorkflowPanel] = useState<TradingWorkflowPanelId | null>(null);
+  const [activeWorkflowPanel, setActiveWorkflowPanel] = useState<TradingWorkflowPanelId | null>(() => workflowPanelFromHash(hash));
+
+  // A task link opens its existing sheet without remounting it or resetting drafted inputs.
+  // Closing stays respected on refreshes/rerenders; following the same task link again reopens it.
+  useEffect(() => {
+    const panel = workflowPanelFromHash(hash);
+    if (panel) setActiveWorkflowPanel(panel);
+  }, [hash, navigationKey]);
 
   const openWorkflowPanel = useCallback((panel: TradingWorkflowPanelId) => {
     setActiveWorkflowPanel(panel);
@@ -241,6 +252,15 @@ export function useTradingScreenShellViewModel({
     }),
     [activeWorkflowPanel, closeWorkflowPanel, data, openWorkflowPanel, pathname, setWorkflowPanelOpen]
   );
+}
+
+function workflowPanelFromHash(hash: string): TradingWorkflowPanelId | null {
+  switch (hash) {
+    case "#strategy-lifecycle-panel": return "strategy";
+    case "#session-replay-panel": return "replay";
+    case "#promotion-gate-panel": return "promotion";
+    default: return null;
+  }
 }
 
 /** The broker link in operator words; an unknown state says the status is unavailable. */
