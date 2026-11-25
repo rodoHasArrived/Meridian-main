@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { afterEach, expect, it, vi } from "vitest";
 import { getBondAnalytics } from "./bond-analytics.api";
 import { bondDecimalText } from "../bond-decimal-format";

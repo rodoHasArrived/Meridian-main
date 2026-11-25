@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { resolveProviderIntegrationIdentity as resolveFromBarrel } from "@/lib/api";
 import { resolveProviderIntegrationIdentity } from "./provider-integration-identity.api";

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { buildGettingStartedViewModel } from "./getting-started.view-model";
 import type { ActivationOutcome, FirstRunStatus } from "./types";

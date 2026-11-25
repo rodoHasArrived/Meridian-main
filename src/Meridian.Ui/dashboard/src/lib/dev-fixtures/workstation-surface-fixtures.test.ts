@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { resolveDevFixture } from "@/lib/dev-fixtures";
 import { accountingPayload } from "@/scenarios/accounting-payload";
