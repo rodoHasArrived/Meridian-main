@@ -1937,6 +1937,16 @@ typed blocked audit receipt with empty resolved terms and no cash events. It rec
 calculation evidence, never an inferred format or zero-flow economic result. See
 [recurring journals](../../docs/domain/recurring-journal.md#declared-certificateofdeposit-accrual-profile).
 
+## Vanilla interest-rate swap preview (2026-11-25)
+
+`ContractualCashFlowPreviewService` routes a security preview that names
+`calculationProfile = vanilla-irs-v1` through `SecurityVanillaSwapProfile`; it refuses contract
+overrides and loan subjects for that profile and reports unsupported shapes as
+`VanillaIrsProfileUnsupported`. Asset-pack admission requires a swap that declares leg conventions
+to satisfy the complete profile before it persists. The ordinary cash-flow capability check points a
+blocked swap with declared leg conventions at the preview route. The route is analytical and never
+posts. See [contractual projections](../../docs/domain/contractual-cash-flow-projection.md).
+
 ## Roadmap traceability
 
 <!-- source-roadmap-traceability:begin module=SRC-APP -->
