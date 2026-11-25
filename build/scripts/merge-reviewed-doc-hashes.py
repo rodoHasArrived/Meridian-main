@@ -15,7 +15,8 @@ import subprocess
 import sys
 from pathlib import Path, PurePosixPath
 
-MANIFEST = "docs/source/generated/source-hash-manifest.json"
+# One reviewed fingerprint file per module plus a shared header file.
+MANIFEST = "docs/source/generated/source-hashes"
 REGISTRY = "docs/source/data/source-modules.yml"
 SCHEMA = {"id": "meridian.source-doc-hashes", "version": "1.0.0"}
 GENERATOR = {"name": "build/scripts/docs/validate-doc-hashes.py", "version": "1.1.0"}
@@ -52,11 +53,16 @@ def safe_path(value):
     return value
 
 
-def parse_manifest(content: bytes | None, label: str) -> dict | None:
-    if content is None:
+def strict_json(content: bytes):
+    return json.loads(content, object_pairs_hook=unique_object)
+
+
+def parse_manifest(files: dict[str, bytes] | None, label: str) -> dict | None:
+    """Assemble and validate the per-module files from one revision."""
+    if files is None:
         return None
     try:
-        manifest = json.loads(content, object_pairs_hook=unique_object)
+        manifest = load_validator().assemble_manifest(files, strict_json)
         if not isinstance(manifest, dict) or set(manifest) != {"schema", "generator", "contract", "modules"}:
             raise ValueError("Expected schema, generator, contract and modules only")
         load_validator().manifest_version(manifest)
@@ -64,7 +70,7 @@ def parse_manifest(content: bytes | None, label: str) -> dict | None:
             raise ValueError("Missing hash contract")
         module_map(manifest)
         return manifest
-    except (ValueError, TypeError, KeyError, UnicodeError) as exc:
+    except (ValueError, TypeError, KeyError, AttributeError, UnicodeError) as exc:
         raise ValueError(f"Invalid {label} reviewed manifest: {exc}") from exc
 
 
@@ -181,11 +187,22 @@ def git(root: Path, *args: str) -> bytes:
 
 
 def manifest_at(root: Path, revision: str) -> dict | None:
-    # ls-tree distinguishes a deliberately absent manifest from invalid refs or
+    # ls-tree distinguishes a deliberately absent baseline from invalid refs or
     # inaccessible Git objects; never turn a Git failure into a deletion.
-    if not git(root, "ls-tree", "-z", revision, "--", MANIFEST):
+    listing = git(root, "ls-tree", "-z", f"{revision}:{MANIFEST}") if git(root, "ls-tree", "-z", revision, "--", MANIFEST) else None
+    if listing is None:
         return None
-    return parse_manifest(git(root, "show", f"{revision}:{MANIFEST}"), revision)
+    files = {}
+    for record in listing.split(b"\0"):
+        if not record:
+            continue
+        metadata, name = record.split(b"\t", 1)
+        mode, kind, _ = metadata.split()
+        name = name.decode("utf-8")
+        if kind != b"blob" or mode != b"100644" or "/" in name:
+            raise ValueError(f"Invalid {revision} reviewed fingerprint entry: {name}")
+        files[name] = git(root, "show", f"{revision}:{MANIFEST}/{name}")
+    return parse_manifest(files, revision)
 
 
 def merge_checkout(root: Path, ancestor: str, head: str, base: str, *, apply: bool = False) -> dict:
@@ -202,10 +219,14 @@ def merge_checkout(root: Path, ancestor: str, head: str, base: str, *, apply: bo
     if report["successful"] and apply:
         path = contained_path(root, MANIFEST)
         if merged is None:
-            path.unlink(missing_ok=True)
+            if path.exists():
+                for child in path.iterdir():
+                    if child.is_symlink() or not child.is_file():
+                        raise ValueError(f"Unexpected reviewed fingerprint entry: {child.name}")
+                    child.unlink()
+                path.rmdir()
         else:
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(json.dumps(merged, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            load_validator().write_manifest_directory(path, merged)
         if path.exists() or git(root, "ls-files", "--", MANIFEST):
             git(root, "add", "-A", "--", MANIFEST)
     return report
