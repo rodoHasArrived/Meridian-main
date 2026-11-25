@@ -3574,17 +3574,18 @@ items:
     workspace:
       - Accounting
     owner_lane: Accounting and Ledger
-    status: ready_for_acceptance
+    status: accepted
     health: green
     priority: high
     evidence_posture: complete
-    status_note: "Ready for owner acceptance: advisory confirmation verified on PR 3674 (hosted lanes; Windows WPF run 44431011339). Close blocking (ADR-032) and cross-company pairs with adjustment drafts (ADR-033) are implemented; DEC-IC-CONFIRM-002 and -003 are accepted. Synthetic evidence only."
+    status_note: "Accepted by the repository owner on 2026-11-25 on the development verification of PR 3674 (hosted lanes; Windows WPF run 44431011339) and PR 3765 (cross-company pairs and adjustment drafts). DEC-IC-CONFIRM-001, -002 and -003 are accepted; close blocking stays opt-in per book. Synthetic evidence only."
     decision_ids:
       - DEC-IC-CONFIRM-001
       - DEC-IC-CONFIRM-002
       - DEC-IC-CONFIRM-003
     pr_references:
     - 3674
+    - 3765
     status_detail: docs/roadmap/snapshots/2026-11-19-w12-ic-acceptance-pack.md
     exit_criteria:
       - For one approved accounting profile and as-of date, both sides' due-to/due-from balances are pinned from each book's posted balance schedule; no amount is entered by an operator.

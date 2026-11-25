@@ -2988,7 +2988,7 @@ W12-ICCOMPOUND-001: ready_for_acceptance; health green; evidence complete. Ready
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
-| Status | ready_for_acceptance |
+| Status | accepted |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
@@ -2997,12 +2997,12 @@ W12-ICCOMPOUND-001: ready_for_acceptance; health green; evidence complete. Ready
 
 ### Current Summary
 
-W12-ICCONFIRM-001: ready_for_acceptance; health green; evidence complete. Ready for owner acceptance: advisory confirmation verified on PR 3674 (hosted lanes; Windows WPF run 44431011339). Close blocking (ADR-032) and cross-company pairs with adjustment drafts (ADR-033) are implemented; DEC-IC-CONFIRM-002 and -003 are accepted. Synthetic evidence only.
+W12-ICCONFIRM-001: accepted; health green; evidence complete. Accepted by the repository owner on 2026-11-25 on the development verification of PR 3674 (hosted lanes; Windows WPF run 44431011339) and PR 3765 (cross-company pairs and adjustment drafts). DEC-IC-CONFIRM-001, -002 and -003 are accepted; close blocking stays opt-in per book. Synthetic evidence only.
 
 ### Status References
 
 - Decisions: DEC-IC-CONFIRM-001, DEC-IC-CONFIRM-002, DEC-IC-CONFIRM-003
-- PR references (not inferred acceptance): [#3674](https://github.com/rodoHasArrived/Meridian-main/pull/3674)
+- PR references (not inferred acceptance): [#3674](https://github.com/rodoHasArrived/Meridian-main/pull/3674), [#3765](https://github.com/rodoHasArrived/Meridian-main/pull/3765)
 - [Retained implementation detail and boundaries](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
 - Evidence: [docs/roadmap/snapshots/2026-11-19-w12-ic-acceptance-pack.md](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
 - Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs)
