@@ -89,7 +89,7 @@ preserves earlier versions; this index links only to current files.
 ## Retired in the September 2026 Review
 
 - The unreferenced accounting productization checklist moved to the
-  [historical summary archive](../../archive/docs/summaries/accounting-productization-checklist.md).
+  [historical summary archive](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/summaries/accounting-productization-checklist.md).
   Use the canonical readiness tracker and roadmap registry for current work.
 - Removed `metrics-dashboard.md`: the April snapshot reported 0% from zero measured runs, and
   the current generator still contains placeholder collectors. Its output contract remains in the

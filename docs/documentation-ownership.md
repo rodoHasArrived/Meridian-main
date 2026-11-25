@@ -87,7 +87,7 @@ Before adding or moving docs:
 
 Keep large dated review records and loose run/audit JSON snapshots under `archive/docs/`,
 with a brief pointer from the active owner when needed. Current design, remediation plans and
-registry status stay in their canonical lanes. The [archive index](../archive/docs/README.md)
+registry status stay in their canonical lanes. The [archive index](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/README.md)
 records retained review and measurement history; archival does not resolve a finding.
 
 Move related snapshot inputs, diagnostic policies and compressed reports together, preserve

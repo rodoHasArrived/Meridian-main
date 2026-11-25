@@ -10,7 +10,7 @@
 - code-ready blueprints in [`docs/engineering/blueprints/`](../engineering/blueprints/README.md),
 - engineering working plans in [`docs/engineering/plans/`](../engineering/plans/README.md),
 - product delivery plans and prioritization inputs in [`docs/product/plans/`](../product/plans/README.md),
-- finished or superseded plans in [`archive/docs/plans/`](../../archive/docs/plans/README.md).
+- finished or superseded plans in [`archive/docs/plans/`](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/README.md).
 
 Durable roadmap truth belongs in `docs/roadmap/data/*.yml` and generated roadmap views, never in a
 plan.

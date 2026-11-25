@@ -10,7 +10,7 @@ Use this skill when the task is to retire stale material without losing useful h
 Read these in order:
 1. `../_shared/project-context.md`
 2. `../_shared/codex-execution-contract.md`
-3. `../../../archive/docs/README.md`
+3. [pinned `archive/docs/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/README.md) (the `archive/` folder was removed on 2026-11-25; it is recreated only when new material is archived)
 4. [`references/archive-placement-guide.md`](references/archive-placement-guide.md)
 5. [`references/evaluation-harness.md`](references/evaluation-harness.md) before finalizing a broad archive sweep or changing this skill
 
