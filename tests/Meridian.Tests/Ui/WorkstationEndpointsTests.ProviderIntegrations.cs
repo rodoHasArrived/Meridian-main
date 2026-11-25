@@ -254,7 +254,7 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_ProviderIntegrationSetupSave_ReturnsValidationProblemWithFieldErrors()
+    public async Task MapWorkstationEndpoints_ProviderIntegrationSetupSave_ReturnsValidationProblemWithFieldErrors_AndIgnoresClientSavedBy()
     {
         var testRoot = CreateProviderIntegrationTestRoot();
         try
@@ -280,7 +280,8 @@ public sealed partial class WorkstationEndpointsTests
             problem.RootElement.GetProperty("title").GetString().Should()
                 .Be("Provider integration setup draft failed validation.");
             var errors = problem.RootElement.GetProperty("errors");
-            errors.TryGetProperty("savedBy", out _).Should().BeTrue();
+            // A blank client savedBy is not an error: the server records the authenticated operator instead.
+            errors.TryGetProperty("savedBy", out _).Should().BeFalse();
             errors.TryGetProperty("connection.credentialSecretRef", out _).Should().BeTrue();
             (await DefaultProviderIntegrationTenantStore(store).GetManifestAsync(request.Manifest.ManifestId)).Should().BeNull();
         }
@@ -1474,6 +1475,8 @@ public sealed partial class WorkstationEndpointsTests
             (await tenantStore.GetConnectionAsync(connection.ConnectionId))!.ApprovalEvidenceId.Should().Be("approval-evidence-endpoint-1");
             var activeManifest = (await tenantStore.GetManifestAsync(manifest.ManifestId))!;
             activeManifest.ManifestVersion.Should().Be(manifest.ManifestVersion + 1);
+            activeManifest.ApprovedBy.Should().Be("ops-user",
+                "the approver is the authenticated operator, not the approvedBy the client sent (approver@example.com)");
             result.ManifestReference.Should().Be(ProviderIntegrationManifestIdentity.Create(activeManifest));
             (await tenantStore.GetManifestVersionAsync(manifest.ManifestId, manifest.ManifestVersion))
                 .Should().BeEquivalentTo(manifest);

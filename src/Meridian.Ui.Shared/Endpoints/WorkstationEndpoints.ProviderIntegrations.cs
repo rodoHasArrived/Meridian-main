@@ -93,6 +93,15 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // The recorded ImportedBy is the authenticated operator, never a client-supplied name (the
+            // browser used to send the session's desk label here).
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            request = request with { ImportedBy = actor };
+
             var service = context.RequestServices.GetService<ProviderIntegrationOpenApiImportService>();
             if (service is null)
             {
@@ -144,6 +153,15 @@ public static partial class WorkstationEndpoints
             {
                 return EndpointHelpers.Forbidden();
             }
+
+            // The recorded SavedBy is the authenticated operator, never a client-supplied name (the
+            // browser used to send the session's desk label here).
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            request = request with { SavedBy = actor };
 
             var service = context.RequestServices.GetService<ProviderIntegrationSetupService>();
             if (service is null)
@@ -268,6 +286,15 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // The recorded RequestedBy is the authenticated operator, never a client-supplied name (the
+            // browser used to send the session's desk label here).
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            request = request with { RequestedBy = actor };
+
             var service = context.RequestServices.GetService<ProviderIntegrationDryRunService>();
             if (service is null)
             {
@@ -321,6 +348,15 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // The recorded RequestedBy is the authenticated operator, never a client-supplied name (the
+            // browser used to send the session's desk label here).
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            request = request with { RequestedBy = actor };
+
             var service = context.RequestServices.GetService<ProviderIntegrationRestDryRunService>();
             if (service is null)
             {
@@ -373,6 +409,15 @@ public static partial class WorkstationEndpoints
             {
                 return EndpointHelpers.Forbidden();
             }
+
+            // The recorded ApprovedBy is the authenticated operator, never a client-supplied name (the
+            // browser used to send the session's desk label here).
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            request = request with { ApprovedBy = actor };
 
             var service = context.RequestServices.GetService<ProviderIntegrationActivationService>();
             if (service is null)
@@ -598,6 +643,15 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // The recorded RequestedBy is the authenticated operator, never a client-supplied name (the
+            // browser used to send the session's desk label here).
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            request = request with { RequestedBy = actor };
+
             if (!StringComparer.Ordinal.Equals(connectionId, request.ConnectionId))
             {
                 return Results.BadRequest(new { error = "The route connection id must match the request connection id." });
@@ -655,6 +709,15 @@ public static partial class WorkstationEndpoints
             {
                 return EndpointHelpers.Forbidden();
             }
+
+            // The recorded CheckedBy is the authenticated operator, never a client-supplied name (the
+            // browser used to send the session's desk label here).
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            request = request with { CheckedBy = actor };
 
             var service = context.RequestServices.GetService<ProviderIntegrationSchemaDriftService>();
             if (service is null)
@@ -962,6 +1025,15 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // The recorded RequestedBy is the authenticated operator, never a client-supplied name (the
+            // browser used to send the session's desk label here).
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            request = request with { RequestedBy = actor };
+
             var service = context.RequestServices.GetService<ProviderIntegrationReconciliationHandoffService>();
             if (service is null)
             {
@@ -1070,6 +1142,15 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // The recorded ReviewedBy is the authenticated operator, never a client-supplied name (the
+            // browser used to send the session's desk label here).
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            request = request with { ReviewedBy = actor };
+
             var service = context.RequestServices.GetService<ProviderIntegrationQuarantineReviewService>();
             if (service is null)
             {
@@ -1122,6 +1203,15 @@ public static partial class WorkstationEndpoints
             {
                 return EndpointHelpers.Forbidden();
             }
+
+            // The recorded RequestedBy is the authenticated operator, never a client-supplied name (the
+            // browser used to send the session's desk label here).
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            request = request with { RequestedBy = actor };
 
             var service = context.RequestServices.GetService<ProviderIntegrationQuarantineReplayService>();
             if (service is null)
