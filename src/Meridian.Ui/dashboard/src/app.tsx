@@ -5,6 +5,7 @@ import {
   LoaderCircle
 } from "lucide-react";
 import { Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { useSignedInUsername } from "@/hooks/use-signed-in-username";
 import "@/styles/app-shell.css";
 import { meridianBrandAssets } from "@/design-system/assets";
 import {
@@ -513,7 +514,10 @@ function AppShell({
   // Presentation preferences follow the operator: once the session is known, load them from the
   // host (host values win; values it lacks are taken from this browser and saved back), then save
   // each later change. Fixture sessions have no host to read from, so they stay browser-only.
-  const preferenceOperatorKey = session ? `${session.environment}:${session.displayName}:${session.role}` : null;
+  // Keyed on the person: the session displayName is a desk label that changes with the latest strategy
+  // run. Without a named session (local development) the desk label keeps sync working as before.
+  const signedInUsername = useSignedInUsername();
+  const preferenceOperatorKey = session ? `${session.environment}:${signedInUsername ?? session.displayName}:${session.role}` : null;
   useEffect(() => {
     if (!preferenceOperatorKey || usingDevelopmentFixtures) return undefined;
     return startOperatorPreferenceSync({ operatorKey: preferenceOperatorKey });
@@ -1031,6 +1035,7 @@ function AppShell({
         decisionBrief={shell.workflowContinuity.decisionBrief}
         attention={shell.attention}
         session={session}
+        signedInUsername={signedInUsername}
         actions={(
           <>
             <ActivationHeaderProgress status={firstRunStatus} />

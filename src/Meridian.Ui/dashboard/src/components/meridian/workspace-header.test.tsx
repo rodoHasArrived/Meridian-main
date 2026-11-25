@@ -1,6 +1,8 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import * as authApi from "@/lib/api/auth.api";
+import { resetSignedInUsernameCache } from "@/hooks/use-signed-in-username";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { workspaceForKey } from "@/lib/workspace";
 import type { SessionInfo } from "@/types";
@@ -14,6 +16,24 @@ const session: SessionInfo = {
 };
 
 describe("WorkspaceHeader", () => {
+  beforeEach(() => {
+    resetSignedInUsernameCache();
+    vi.spyOn(authApi, "getSignedInUsername").mockResolvedValue(null);
+  });
+
+  it("names the signed-in operator separately from the desk label", async () => {
+    vi.spyOn(authApi, "getSignedInUsername").mockResolvedValue("ops.lead");
+    render(
+      <WorkspaceHeader
+        breadcrumbItems={[{ label: "Orders", current: true }]}
+        workspace={workspaceForKey("trading")}
+        session={session}
+      />
+    );
+
+    await waitFor(() => expect(screen.getByLabelText("Signed in as ops.lead, role Operator, desk Ops Desk")).toBeInTheDocument());
+  });
+
   it("renders the breadcrumb ending in the page heading and the loading refresh state", () => {
     render(
       <WorkspaceHeader
@@ -39,7 +59,8 @@ describe("WorkspaceHeader", () => {
     // Product maturity is not a page badge: it lives in the About section of the overflow menu.
     expect(screen.queryByLabelText("Trading product maturity Available")).not.toBeInTheDocument();
     expect(within(screen.getByLabelText("About Trading")).getByText("Product maturity: Available.")).toBeInTheDocument();
-    expect(screen.getByLabelText("Session Ops Desk, role Operator")).toHaveTextContent("Ops Desk");
+    // No named session yet: the label names the desk, not a person.
+    expect(screen.getByLabelText("Desk Ops Desk, role Operator")).toHaveTextContent("Ops Desk");
     const refreshButton = screen.getByRole("button", { name: "Refreshing Trading workspace data" });
     expect(refreshButton).toBeDisabled();
     expect(refreshButton).toHaveAttribute("title", "Trading workspace data is refreshing.");

@@ -1,7 +1,7 @@
 import { formatProviderHealth, selectSharedProviderHealth } from "@/lib/cross-screen-counts";
 import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { pluralizeCount, withIndefiniteArticle } from "@/lib/format";
+import { pluralizeCount } from "@/lib/format";
 import { resolveKpi } from "@/lib/kpi-registry";
 import {
   connectAlpacaConnection,
@@ -1144,6 +1144,11 @@ export interface SettingsScreenViewModel {
 
 export interface SettingsScreenPayload {
   session: SessionInfo | null;
+  /**
+   * The signed-in operator's username (`/api/auth/me`). The session's `displayName` is a desk label
+   * ("Meridian Operator", "<strategy> Desk"), so copy that names the person uses this instead.
+   */
+  signedInUsername?: string | null;
   overview: SystemOverviewResponse | null;
   /** The shell's cross-screen counts (A3): Settings shows the same provider health as Data. */
   crossScreenCounts?: WorkstationCrossScreenCounts | null;
@@ -1900,8 +1905,12 @@ function buildProfileAuthenticationPanel(
   session: SessionInfo | null,
   connection: BrokerageConnectionStatus | null,
   diagnosticStatusVariant: SettingsScreenViewModel["diagnosticStatusVariant"],
-  evaluatedAt: Date
+  evaluatedAt: Date,
+  signedInUsername: string | null = null
 ): SettingsProfileAuthenticationPanel {
+  // The person is the signed-in username; the session displayName is only the desk label.
+  const operator = signedInUsername?.trim() || null;
+  const who = operator ?? "The signed-in operator";
   const isLiveSession = session?.environment === "live";
   const isConnected = connection?.isConnected === true;
   const isConfigured = connection?.isConfigured === true;
@@ -1960,12 +1969,12 @@ function buildProfileAuthenticationPanel(
   const summary = !session
     ? "Operator identity has not loaded, so authorization-sensitive workflows should stay blocked until session data returns."
     : isLiveSession
-      ? `${session.displayName} is operating in LIVE mode as ${session.role}. Confirm account authority and diagnostics before live workflows.`
+      ? `${who} is working in LIVE mode as ${session.role}. Confirm account authority and diagnostics before live workflows.`
       : hasCurrentBrokerageAuthority
-        ? `${session.displayName} has ${withIndefiniteArticle(session.role)} session with verified brokerage authority for ${workspaceLabel}.`
+        ? `${who} is signed in as ${session.role} with verified brokerage authority for ${workspaceLabel}.`
         : brokerageEvidenceNeedsRefresh
-          ? `${session.displayName} has ${withIndefiniteArticle(session.role)} session for ${workspaceLabel}, but brokerage evidence is ${verificationFreshness.status === "unavailable" ? "not current" : verificationFreshness.status} and needs re-verification before readiness review.`
-          : `${session.displayName} has ${withIndefiniteArticle(session.role)} session in ${environmentLabel}; brokerage authority still needs verification.`;
+          ? `${who} is signed in as ${session.role} for ${workspaceLabel}, but brokerage evidence is ${verificationFreshness.status === "unavailable" ? "not current" : verificationFreshness.status} and needs re-verification before readiness review.`
+          : `${who} is signed in as ${session.role} in ${environmentLabel}; brokerage authority still needs verification.`;
   const notice = !session
     ? {
         title: "Authentication context unavailable",
@@ -2003,8 +2012,8 @@ function buildProfileAuthenticationPanel(
     statusLabel,
     statusTone,
     badgeVariant: statusTone === "default" ? "outline" : statusTone,
-    avatarInitials: buildOperatorInitials(session?.displayName),
-    operatorName: session?.displayName ?? "Session unavailable",
+    avatarInitials: buildOperatorInitials(operator),
+    operatorName: operator ?? (session ? "Operator not identified" : "Session unavailable"),
     roleLabel: session?.role ?? "Role unavailable",
     environmentLabel,
     workspaceLabel,
@@ -2016,7 +2025,7 @@ function buildProfileAuthenticationPanel(
       {
         id: "operator",
         label: "Operator",
-        value: session?.displayName ?? "Unavailable",
+        value: operator ?? (session ? "Not identified" : "Unavailable"),
         tone: session ? "default" : "danger"
       },
       {
@@ -2057,7 +2066,11 @@ function buildProfileAuthenticationPanel(
         id: "operator-session",
         label: "Operator session",
         statusLabel: session ? "Loaded" : "Missing",
-        detail: session ? `${session.displayName} is recognized as ${session.role}.` : "Session data has not loaded from Meridian.",
+        detail: !session
+          ? "Session data has not loaded from Meridian."
+          : operator
+            ? `${operator} is signed in as ${session.role}.`
+            : `Signed in as ${session.role}; the operator's username has not loaded.`,
         tone: session ? "success" : "danger",
         badgeVariant: session ? "success" : "danger",
         actionLabel: null,
@@ -2827,7 +2840,10 @@ export function buildSettingsScreenViewModel(
   const systemFreshness = buildSettingsFreshnessViewModel(overview?.lastHeartbeatUtc, evaluatedAt);
   const sessionItems: SettingsSessionItem[] = session
     ? [
-        { label: "Display name", value: session.displayName, tone: "default" },
+        ...(payload.signedInUsername?.trim()
+          ? [{ label: "Signed in as", value: payload.signedInUsername.trim(), tone: "default" as const }]
+          : []),
+        { label: "Desk", value: session.displayName, tone: "default" },
         { label: "Role", value: session.role, tone: "default" },
         { label: "Environment", value: session.environment, tone: session.environment === "live" ? "warning" : "default" },
         { label: "Active workspace", value: session.activeWorkspace, tone: "muted" },
@@ -2891,7 +2907,8 @@ export function buildSettingsScreenViewModel(
       session,
       payload.brokerageConnection ?? null,
       diagnosticSection.diagnosticStatusVariant,
-      evaluatedAt
+      evaluatedAt,
+      payload.signedInUsername ?? null
     ),
     systemTitle: "System status",
     systemSummary: sysSummary,

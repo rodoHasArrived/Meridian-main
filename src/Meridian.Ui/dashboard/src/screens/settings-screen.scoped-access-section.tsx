@@ -1,4 +1,5 @@
 // Scoped access section of the Settings screen: its private state/handlers hook and presentational component.
+import { useSignedInUsername } from "@/hooks/use-signed-in-username";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -105,7 +106,9 @@ interface UseSettingsScopedAccessSectionStateParams {
   setScopedAccessAssignments: React.Dispatch<React.SetStateAction<UserAccessAssignment[]>>;
 }
 
-export function useSettingsScopedAccessSectionState({ onRefresh, rolePermissionCatalog, scopedAccess, scopedAccessAssignments, session, setMutationConfirmation, setScopedAccess, setScopedAccessAssignments }: UseSettingsScopedAccessSectionStateParams) {
+export function useSettingsScopedAccessSectionState({ onRefresh, rolePermissionCatalog, scopedAccess, scopedAccessAssignments, setMutationConfirmation, setScopedAccess, setScopedAccessAssignments }: UseSettingsScopedAccessSectionStateParams) {
+  // A request hint only: the server takes the actor from the signed-in profile.
+  const signedInUsername = useSignedInUsername();
   const scopedAccessActiveCount = scopedAccessAssignments.filter((assignment) => !assignment.revokedAtUtc).length;
   const scopedAccessRevokedCount = scopedAccessAssignments.length - scopedAccessActiveCount;
   const selectScopedAccessRole = (role: string) => {
@@ -198,7 +201,7 @@ export function useSettingsScopedAccessSectionState({ onRefresh, rolePermissionC
         permissionNames: scopedAccess.permissionNames,
         effectiveFrom: toScopedAccessDateTime(scopedAccess.effectiveFrom),
         effectiveTo: toScopedAccessDateTime(scopedAccess.effectiveTo),
-        requestedBy: session?.displayName ?? "settings-screen",
+        requestedBy: signedInUsername ?? "settings-screen",
         rationale,
         approvalLimitAmount,
         approvalLimitCurrency: approvalLimitAmount === null ? null : approvalLimitCurrency,
@@ -253,7 +256,7 @@ export function useSettingsScopedAccessSectionState({ onRefresh, rolePermissionC
       const result = await revokeScopedAccessAssignment({
         assignmentId: assignment.assignmentId,
         expectedVersion: assignment.version,
-        requestedBy: session?.displayName ?? "settings-screen",
+        requestedBy: signedInUsername ?? "settings-screen",
         rationale: `Revoke scoped authority for ${assignment.principalId}.`,
         correlationId: `settings-scoped-access-revoke-${Date.now()}`
       });

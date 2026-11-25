@@ -3,6 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api-errors";
 import { SettingsScreen } from "@/screens/settings-screen";
+import * as authApi from "@/lib/api/auth.api";
+import { resetSignedInUsernameCache } from "@/hooks/use-signed-in-username";
 import { renderWithRouter } from "@/test/render";
 import { useState, type ReactNode } from "react";
 import { GlobalRefreshProvider } from "@/lib/global-refresh";
@@ -532,6 +534,9 @@ function HeaderRefresh({ children }: { children: ReactNode }) {
 
 describe("SettingsScreen", () => {
   beforeEach(() => {
+    // The signed-in operator, distinct from the session displayName (a desk label in these fixtures).
+    resetSignedInUsernameCache();
+    vi.spyOn(authApi, "getSignedInUsername").mockResolvedValue("fm.operator");
     apiMocks.approveSecurityAssetProfile.mockReset();
     apiMocks.connectAlpacaConnection.mockReset();
     apiMocks.createSecurityMasterEntry.mockReset();
@@ -716,7 +721,7 @@ describe("SettingsScreen", () => {
     expect(screen.getByText("Open positions").parentElement).not.toHaveTextContent("5");
   });
 
-  it("renders profile authentication posture with authority handoffs", () => {
+  it("renders profile authentication posture with authority handoffs", async () => {
     // The profile/system row is scoped to the Access view.
     renderWithRouter(
       <SettingsScreen
@@ -730,7 +735,9 @@ describe("SettingsScreen", () => {
     const profileRegion = screen.getByRole("region", { name: "Profile and authentication status" });
     expect(profileRegion).toHaveTextContent("Profile and access status");
     expect(profileRegion).toHaveTextContent("Access ready");
-    expect(profileRegion).toHaveTextContent("Andrew Rowden");
+    // The person is the signed-in username, not the session's desk label.
+    await waitFor(() => expect(profileRegion).toHaveTextContent("fm.operator"));
+    expect(profileRegion).not.toHaveTextContent("Andrew Rowden");
     expect(profileRegion).toHaveTextContent("Fund Manager");
     expect(profileRegion).toHaveTextContent("42 commands issued");
     expect(profileRegion).toHaveTextContent("Brokerage verified");
@@ -983,7 +990,7 @@ describe("SettingsScreen", () => {
 
     expect(apiMocks.createSecurityMasterEntry).toHaveBeenCalledWith(expect.objectContaining({
       assetClass: "CustomAsset",
-      updatedBy: "Ops Lead",
+      updatedBy: "fm.operator",
       sourceRecordId: "asset-profile:private-fund-interest:v1",
       assetSpecificTerms: expect.objectContaining({
         schemaVersion: 3,
@@ -1161,7 +1168,7 @@ describe("SettingsScreen", () => {
     expect(apiMocks.assignLedgerMapping).toHaveBeenCalledWith(expect.objectContaining({
       accountId: "account-2",
       ledgerGroupId: "direct-lending",
-      requestedBy: "Ops Lead",
+      requestedBy: "fm.operator",
       rationale: "Reviewed by fund operations"
     }));
     expect(onRefresh).toHaveBeenCalledOnce();
@@ -1226,7 +1233,7 @@ describe("SettingsScreen", () => {
       displayName: "Close Reviewer",
       baseRole: "Accounting",
       permissionNames: ["ViewTrades", "ManageDirectLending"],
-      requestedBy: "Ops Lead",
+      requestedBy: "fm.operator",
       rationale: "Scoped close reviewer"
     }));
     expect(onRefresh).toHaveBeenCalledOnce();
@@ -1373,7 +1380,7 @@ describe("SettingsScreen", () => {
       role: "Accounting",
       roleProfileName: null,
       permissionNames: ["ViewTrades", "ManageDirectLending"],
-      requestedBy: "Ops Lead",
+      requestedBy: "fm.operator",
       rationale: "Grant fund close authority",
       approvalLimitAmount: 250000,
       approvalLimitCurrency: "USD",
@@ -1390,7 +1397,7 @@ describe("SettingsScreen", () => {
     expect(apiMocks.revokeScopedAccessAssignment).toHaveBeenCalledWith(expect.objectContaining({
       assignmentId: "access-assignment-1",
       expectedVersion: 3,
-      requestedBy: "Ops Lead",
+      requestedBy: "fm.operator",
       rationale: "Revoke scoped authority for fund-controller."
     }));
     expect(await within(form).findByText("Scoped access revoked for fund-controller.")).toBeInTheDocument();
@@ -1452,7 +1459,7 @@ describe("SettingsScreen", () => {
       reviewerRole: "Controller",
       requiredDistinctApprovals: 3,
       evidenceRequirement: "Controller packet and checklist control evidence.",
-      requestedBy: "Ops Lead",
+      requestedBy: "fm.operator",
       rationale: "Tighten close approval accounting"
     }));
     expect(onRefresh).toHaveBeenCalledOnce();
@@ -1536,7 +1543,7 @@ describe("SettingsScreen", () => {
       taskId: "task-1",
       dueDate: "2026-06-03",
       owner: "Controller",
-      requestedBy: "Ops Lead",
+      requestedBy: "fm.operator",
       rationale: "Move close task to controller queue"
     }));
     expect(onRefresh).toHaveBeenCalledOnce();
@@ -2041,7 +2048,7 @@ describe("SettingsScreen", () => {
         environment: "paper",
         authType: "OAuth2",
         capabilities: ["Positions"],
-        importedBy: "Andrew Rowden",
+        importedBy: "fm.operator",
         importedAt: expect.any(String),
         changeReason: "Imported from the Settings Provider Connection Center."
       }));
@@ -2065,7 +2072,7 @@ describe("SettingsScreen", () => {
       expect(apiMocks.createProviderIntegrationReconciliationHandoff).toHaveBeenCalledWith(expect.objectContaining({
         connectionId: "provider-reference",
         stagingRecordIds: ["stage-position-1"],
-        requestedBy: "Andrew Rowden",
+        requestedBy: "fm.operator",
         requestedAt: expect.any(String),
         approvalEvidenceId: expect.stringMatching(/^settings-provider-handoff-provider-reference-/),
         note: "Approved from the Settings Provider Connection Center promotion readiness panel.",
@@ -2084,7 +2091,7 @@ describe("SettingsScreen", () => {
         syncRunId: "sync-positions-2",
         quarantineRecordId: "quarantine-position-1",
         action: "ReviewOnly",
-        reviewedBy: "Andrew Rowden",
+        reviewedBy: "fm.operator",
         reviewedAt: expect.any(String),
         note: "Reviewed from the Settings Provider Connection Center runtime evidence panel."
       }));
@@ -2118,7 +2125,7 @@ describe("SettingsScreen", () => {
         connectionId: "provider-reference",
         capability: "Positions",
         quarantineRecordIds: ["quarantine-position-2", "quarantine-position-3"],
-        requestedBy: "Andrew Rowden",
+        requestedBy: "fm.operator",
         requestedAt: expect.any(String),
         replaySyncRunId: expect.stringMatching(/^provider-replay-provider-reference-/)
       }));
@@ -2135,7 +2142,7 @@ describe("SettingsScreen", () => {
         syncRunId: "sync-positions-2",
         quarantineRecordId: "quarantine-position-2",
         action: "ReplayAfterMappingChange",
-        reviewedBy: "Andrew Rowden",
+        reviewedBy: "fm.operator",
         reviewedAt: expect.any(String),
         note: "Marked from the Settings Provider Connection Center for replay after mapping changes."
       }));
@@ -2156,7 +2163,7 @@ describe("SettingsScreen", () => {
         syncRunId: "sync-positions-2",
         quarantineRecordId: "quarantine-position-3",
         action: "IgnoreProviderRecord",
-        reviewedBy: "Andrew Rowden",
+        reviewedBy: "fm.operator",
         reviewedAt: expect.any(String),
         note: "Ignored from the Settings Provider Connection Center after operator review."
       }));
@@ -2170,7 +2177,7 @@ describe("SettingsScreen", () => {
     await waitFor(() => {
       expect(apiMocks.runDueProviderIntegrationSync).toHaveBeenCalledWith("provider-reference", expect.objectContaining({
         connectionId: "provider-reference",
-        requestedBy: "Andrew Rowden",
+        requestedBy: "fm.operator",
         requestedAt: expect.any(String),
         maxPages: 2,
         pathParametersByCapability: {},
@@ -2341,7 +2348,7 @@ describe("SettingsScreen", () => {
       expect(apiMocks.saveProviderIntegrationSetup).toHaveBeenCalledWith(expect.objectContaining({
         manifest: expect.objectContaining({ manifestId: manifest.manifestId }),
         connection: expect.objectContaining({ connectionId: "provider-reference", credentialSecretRef: expect.stringContaining("provider-credential:polygon") }),
-        savedBy: "Andrew Rowden",
+        savedBy: "fm.operator",
         savedAt: expect.any(String)
       }));
     });
@@ -2368,7 +2375,7 @@ describe("SettingsScreen", () => {
         manifestId: manifest.manifestId,
         connectionId: "provider-reference",
         capability: "Positions",
-        requestedBy: "Andrew Rowden"
+        requestedBy: "fm.operator"
       }));
     });
     expect(await within(workbench).findByText("CSV dry-run completed: 1 accepted / 0 quarantined.")).toBeInTheDocument();
@@ -2391,7 +2398,7 @@ describe("SettingsScreen", () => {
         connectionId: "provider-reference",
         endpointKey: "positions",
         rawPayloadId: "raw-rest-1",
-        checkedBy: "Andrew Rowden"
+        checkedBy: "fm.operator"
       }));
     });
     expect(await within(workbench).findByText("Schema drift check passed.")).toBeInTheDocument();
@@ -2403,7 +2410,7 @@ describe("SettingsScreen", () => {
       expect(apiMocks.activateProviderIntegration).toHaveBeenCalledWith(expect.objectContaining({
         manifestId: manifest.manifestId,
         connectionId: "provider-reference",
-        approvedBy: "Andrew Rowden",
+        approvedBy: "fm.operator",
         expectedManifestReference: savedReference,
         approvalEvidenceId: expect.stringMatching(/^settings-provider-activation-provider-reference-/)
       }));

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useSignedInUsername } from "@/hooks/use-signed-in-username";
 import { AlertTriangle, ChevronRight, RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { BreadcrumbItem } from "@/components/ui/breadcrumb";
@@ -71,9 +72,11 @@ export function WorkspaceHeader({
 }: WorkspaceHeaderProps) {
   const currentCrumb = breadcrumbItems.at(-1);
   const ancestors = breadcrumbItems.slice(0, -1);
+  const signedInUsername = useSignedInUsername();
   const viewModel = buildWorkspaceHeaderViewModel({
     workspace,
     session,
+    signedInUsername,
     canRefresh: Boolean(onRefresh),
     refreshing,
     pageTitle: typeof currentCrumb?.label === "string" ? currentCrumb.label : undefined,

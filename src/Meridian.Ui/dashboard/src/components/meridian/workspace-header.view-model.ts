@@ -65,6 +65,8 @@ export interface WorkspaceHeaderViewModel {
 interface BuildWorkspaceHeaderViewModelOptions {
   workspace: WorkspaceSummary;
   session: SessionInfo | null;
+  /** The signed-in operator; the session displayName is only the desk label. */
+  signedInUsername?: string | null;
   canRefresh: boolean;
   refreshing?: boolean;
   /** The page name that ends the breadcrumb and is the header's heading. Defaults to the workspace. */
@@ -75,6 +77,7 @@ interface BuildWorkspaceHeaderViewModelOptions {
 export function buildWorkspaceHeaderViewModel({
   workspace,
   session,
+  signedInUsername = null,
   canRefresh,
   refreshing = false,
   pageTitle,
@@ -100,7 +103,9 @@ export function buildWorkspaceHeaderViewModel({
     sessionLabel: session?.displayName ?? "Loading session",
     sessionRoleLabel: session?.role ?? null,
     sessionPillAriaLabel: session
-      ? `Session ${session.displayName}, role ${session.role}`
+      ? signedInUsername?.trim()
+        ? `Signed in as ${signedInUsername.trim()}, role ${session.role}, desk ${session.displayName}`
+        : `Desk ${session.displayName}, role ${session.role}`
       : "Session context loading",
     refreshAction: canRefresh
       ? {

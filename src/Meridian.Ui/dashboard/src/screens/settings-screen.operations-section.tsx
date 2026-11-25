@@ -1,4 +1,5 @@
 // Fund operations control center section of the Settings screen: its private state/handlers hook and
+import { useSignedInUsername } from "@/hooks/use-signed-in-username";
 // presentational component.
 import { SeverityBadge } from "@/components/operations";
 import { Badge } from "@/components/ui/badge";
@@ -38,7 +39,9 @@ interface UseSettingsOperationsSectionStateParams {
   setRolePermissionProfile: React.Dispatch<React.SetStateAction<RolePermissionProfileState>>;
 }
 
-export function useSettingsOperationsSectionState({ approvalPolicyDraft, approvalPolicyRule, closeCalendarDraft, closeCalendarItem, ledgerMappingAssignment, onRefresh, rolePermissionProfile, roleProfileDraft, session, setApprovalPolicyRule, setCloseCalendarItem, setLedgerMappingAssignment, setRolePermissionProfile }: UseSettingsOperationsSectionStateParams) {
+export function useSettingsOperationsSectionState({ approvalPolicyDraft, approvalPolicyRule, closeCalendarDraft, closeCalendarItem, ledgerMappingAssignment, onRefresh, rolePermissionProfile, roleProfileDraft, setApprovalPolicyRule, setCloseCalendarItem, setLedgerMappingAssignment, setRolePermissionProfile }: UseSettingsOperationsSectionStateParams) {
+  // A request hint only: the server records the authenticated operator as the actor.
+  const signedInUsername = useSignedInUsername();
   const submitLedgerMappingAssignment = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!ledgerMappingAssignment.accountId || !ledgerMappingAssignment.ledgerGroupId) {
@@ -63,7 +66,7 @@ export function useSettingsOperationsSectionState({ approvalPolicyDraft, approva
       const result = await assignLedgerMapping({
         accountId: ledgerMappingAssignment.accountId,
         ledgerGroupId: ledgerMappingAssignment.ledgerGroupId,
-        requestedBy: session?.displayName ?? "settings-screen",
+        requestedBy: signedInUsername ?? "settings-screen",
         rationale: ledgerMappingAssignment.rationale,
         correlationId: `settings-ledger-map-${Date.now()}`
       });
@@ -129,7 +132,7 @@ export function useSettingsOperationsSectionState({ approvalPolicyDraft, approva
         description: rolePermissionProfile.description.trim() || null,
         baseRole: rolePermissionProfile.baseRole,
         permissionNames: rolePermissionProfile.permissionNames,
-        requestedBy: session?.displayName ?? "settings-screen",
+        requestedBy: signedInUsername ?? "settings-screen",
         rationale: rolePermissionProfile.rationale,
         correlationId: `settings-role-profile-${Date.now()}`
       });
@@ -221,7 +224,7 @@ export function useSettingsOperationsSectionState({ approvalPolicyDraft, approva
         requiresChecklistControlApprovals: approvalPolicyRule.requiresChecklistControlApprovals,
         evidenceRequirement: approvalPolicyRule.evidenceRequirement,
         severity: approvalPolicyRule.severity,
-        requestedBy: session?.displayName ?? "settings-screen",
+        requestedBy: signedInUsername ?? "settings-screen",
         rationale: approvalPolicyRule.rationale,
         correlationId: `settings-approval-policy-${Date.now()}`
       });
@@ -301,7 +304,7 @@ export function useSettingsOperationsSectionState({ approvalPolicyDraft, approva
         taskId: closeCalendarItem.taskId,
         dueDate: closeCalendarItem.dueDate,
         owner: closeCalendarItem.owner,
-        requestedBy: session?.displayName ?? "settings-screen",
+        requestedBy: signedInUsername ?? "settings-screen",
         rationale: closeCalendarItem.rationale,
         correlationId: `settings-close-calendar-${Date.now()}`
       });
