@@ -26,7 +26,7 @@ public sealed class UiServerDiagnosticsWiringTests : IDisposable
     public void Dispose() => _artifacts.Dispose();
 
     [Fact]
-    public async Task TheHost_ServesDetailedHealthWithADiskCheck_RecentErrors_AndDiskSpaceMetrics()
+    public async Task TheHost_ServesDetailedHealth_RecentErrors_Backpressure_ProviderLatency_AndDiskSpaceMetrics()
     {
         var dataRoot = Path.Combine(_artifacts.RootPath, "data");
         Directory.CreateDirectory(dataRoot);
@@ -54,6 +54,14 @@ public sealed class UiServerDiagnosticsWiringTests : IDisposable
         report.Checks.Should().Contain(check => check.Name == "pipeline_queue");
 
         handlers.GetErrors().Message.Should().NotBe("Error buffer not configured");
+
+        var (latency, latencyError) = handlers.GetProviderLatency();
+        latencyError.Should().BeNull("provider latency is tracked from sampled live ingress");
+        latency.Should().NotBeNull();
+
+        var backpressure = handlers.GetBackpressure();
+        backpressure.Message.Should().NotStartWith("Queue: ",
+            "the BackpressureAlertService status is served, not the raw pipeline fallback");
 
         var exposition = await handlers.GetPrometheusMetricsAsync();
         exposition.Should().Contain($"mdc_disk_free_bytes{{path=\"{dataRoot}\"}}",

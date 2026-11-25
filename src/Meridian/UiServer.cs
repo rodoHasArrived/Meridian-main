@@ -296,6 +296,15 @@ public sealed class UiServer : IAsyncDisposable
             });
             // Recent Error/Fatal log events for /api/errors.
             builder.Services.AddSingleton(_ => new ErrorLogRecorder(new Meridian.Platform.Diagnostics.ErrorRingBuffer()));
+            // Queue-utilization backpressure for /api/backpressure. It samples the pipeline on its
+            // own timer and logs warning/critical transitions; no webhook is configured here.
+            builder.Services.AddSingleton(sp =>
+            {
+                var backpressure = new Meridian.Platform.Monitoring.BackpressureAlertService(
+                    logger: sp.GetService<ILogger<Meridian.Platform.Monitoring.BackpressureAlertService>>());
+                backpressure.RegisterPipelineProvider(sp.GetRequiredService<EventPipeline>().GetStatistics);
+                return backpressure;
+            });
 
             builder.Services.AddSingleton<StatusEndpointHandlers>(sp =>
             {
@@ -304,6 +313,8 @@ public sealed class UiServer : IAsyncDisposable
                 var errors = sp.GetRequiredService<ErrorLogRecorder>();
                 var detailed = sp.GetRequiredService<DetailedHealthCheck>();
                 var systemHealth = sp.GetRequiredService<Meridian.Platform.Diagnostics.SystemHealthChecker>();
+                var backpressure = sp.GetRequiredService<Meridian.Platform.Monitoring.BackpressureAlertService>();
+                var latency = sp.GetRequiredService<Meridian.DataIntegration.Monitoring.ProviderLatencyService>();
 
                 var handlers = new StatusEndpointHandlers(
                     Metrics.GetSnapshot,
@@ -313,6 +324,8 @@ public sealed class UiServer : IAsyncDisposable
                     degradedModeProvider: () => EvaluateDegradedMode(sp));
                 handlers.RegisterExtendedProviders(
                     detailedHealth: () => detailed.GetDetailedHealthAsync(),
+                    backpressure: backpressure.GetStatus,
+                    providerLatency: latency.GetSummary,
                     diskSpace: () => systemHealth.GetSnapshot().DiskInfo);
                 return handlers;
             });
@@ -604,6 +617,7 @@ public sealed class UiServer : IAsyncDisposable
             // that happens to resolve them, so /api/errors and mdc_disk_free_bytes cover startup.
             _app.Services.GetRequiredService<ErrorLogRecorder>();
             _app.Services.GetRequiredService<Meridian.Platform.Diagnostics.SystemHealthChecker>();
+            _app.Services.GetRequiredService<Meridian.Platform.Monitoring.BackpressureAlertService>();
             _logger.LogInformation(
                 "UiServer service graph built (ServiceRegistrationMs={ServiceRegistrationMs}, AppBuildMs={AppBuildMs})",
                 serviceRegistrationStopwatch.ElapsedMilliseconds,

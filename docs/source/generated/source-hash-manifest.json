@@ -9,8 +9,8 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "f27e79ab948418682763fa4c3a0b4552bff73d8ba93d42d3397d6827ace2b97b",
-      "source_hash": "f3ffe77fa7ac42bb699f479204c48450fb501f36bf591eed8454cd74be703fab"
+      "readme_hash": "8f694c597ebd8a68f90e7a919feefaf2b130fee97491170ca9ff888746f63e5c",
+      "source_hash": "0af94cd36e0184b14fcdfd7cfb329faf7c6125b56147c3b404b4287983607e7c"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -177,8 +177,8 @@
       "id": "SRC-HOST",
       "path": "src/Meridian",
       "readme": "src/Meridian/README.md",
-      "readme_hash": "f3346cea2dff4990471465b281cfdba3469380bcab605377c4d7245686ef6959",
-      "source_hash": "791edd1fead6b2964614d219c9845cb77b62978b83988652b04e0948307afb4a"
+      "readme_hash": "3006ba110c30e74b51f0ad63ae02040697336e83e3154807c67a4386ec3ea2dd",
+      "source_hash": "b30c8b9ff8a1b617bc7b602fb8920fa392ca1dda667ec648dcf259708f2a4c2e"
     },
     {
       "id": "SRC-IBAPI-SMOKESTUB",

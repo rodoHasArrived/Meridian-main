@@ -1390,7 +1390,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
   also exports, on the scrape, pipeline backlog and consumer health (`mdc_pipeline_*`), backfill
   run outcomes (`mdc_backfill_*`; each run counts into its own `RunScopedEventMetrics`) and
   data-root disk space (`mdc_disk_*`); `ErrorLogRecorder` feeds `/api/errors` from Error/Fatal
-  log events. Shared pipeline
+  log events. `QualityMonitoringPublisher` also feeds the composition's `ProviderLatencyService`
+  from one in sixteen timed trade/quote samples, on its consumer task rather than the publish
+  path. Shared pipeline
   composition records live price/order-book ingress in `DataFreshnessSlaMonitor`, independent of
   storage acceptance and the bounded quality-sample queue. Configured enabled symbols start with
   one freshness threshold of grace; missing first events then violate the SLA. Subscription
