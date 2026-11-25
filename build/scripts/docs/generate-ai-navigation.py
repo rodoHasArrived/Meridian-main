@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-GENERATOR_VERSION = "1.0"
+GENERATOR_VERSION = "1.1"
 EXCLUDED_PARTS = {"bin", "obj", "node_modules", ".git", ".vs", "__pycache__", ".pytest_cache", "TestResults", "artifacts"}
 DEFAULT_RECENT_CHANGES_DAYS = 14
 DEFAULT_RECENT_CHANGES_LIMIT = 40
@@ -836,6 +836,68 @@ def discover_projects(root: Path) -> list[dict[str, Any]]:
     return projects
 
 
+def _project_files(root: Path, area: str) -> list[Path]:
+    files = sorted(root.glob(f"{area}/*/*.csproj")) + sorted(root.glob(f"{area}/*/*.fsproj"))
+    return sorted(
+        (path for path in files if not EXCLUDED_PARTS.intersection(path.relative_to(root).parts)),
+        key=lambda path: path.stem,
+    )
+
+
+def discover_project_index(root: Path) -> list[dict[str, Any]]:
+    """List every src/ and tests/ project, catalogued or not.
+
+    ``discover_projects`` keeps only projects with a hand-written seed, so a new project is
+    invisible to routing until someone seeds it. This index never drops a project: unseeded
+    ones carry ``catalogued: False`` and ``subsystem: None`` so the gap stays visible.
+    """
+    source_files = _project_files(root, "src")
+    source_names = {path.stem for path in source_files} | set(NON_PROJECT_SEED_PATHS)
+    index: list[dict[str, Any]] = []
+
+    for path in source_files:
+        seed = PROJECT_SEEDS.get(path.stem)
+        index.append(
+            {
+                "name": path.stem,
+                "path": repo_relative(root, path.parent),
+                "area": "source",
+                "catalogued": seed is not None,
+                "subsystem": seed.subsystem if seed else None,
+                "projectReferences": parse_project_references(path),
+            }
+        )
+
+    for name, relative_path in NON_PROJECT_SEED_PATHS.items():
+        seed = PROJECT_SEEDS.get(name)
+        if any(item["name"] == name for item in index) or not (root / relative_path).exists():
+            continue
+        index.append(
+            {
+                "name": name,
+                "path": relative_path,
+                "area": "source",
+                "catalogued": seed is not None,
+                "subsystem": seed.subsystem if seed else None,
+                "projectReferences": [],
+            }
+        )
+
+    for path in _project_files(root, "tests"):
+        references = parse_project_references(path)
+        index.append(
+            {
+                "name": path.stem,
+                "path": repo_relative(root, path.parent),
+                "area": "test",
+                "projectReferences": references,
+                "covers": [name for name in references if name in source_names],
+            }
+        )
+
+    return index
+
+
 def discover_documents(root: Path) -> list[dict[str, Any]]:
     docs: list[dict[str, Any]] = []
     for item in DOC_CATALOG:
@@ -1043,6 +1105,7 @@ def collect_recent_source_changes(
 
 def build_dataset(root: Path, *, recent_days: int = DEFAULT_RECENT_CHANGES_DAYS, recent_limit: int = DEFAULT_RECENT_CHANGES_LIMIT) -> dict[str, Any]:
     projects = discover_projects(root)
+    project_index = discover_project_index(root)
     docs = discover_documents(root)
     symbols = discover_symbols(root)
     subsystems = build_subsystems(projects, docs)
@@ -1061,6 +1124,7 @@ def build_dataset(root: Path, *, recent_days: int = DEFAULT_RECENT_CHANGES_DAYS,
         "repositoryRoot": root.name,
         "subsystems": subsystems,
         "projects": projects,
+        "projectIndex": project_index,
         "documents": docs,
         "symbols": symbols,
         "taskRoutes": routes,
@@ -1070,8 +1134,53 @@ def build_dataset(root: Path, *, recent_days: int = DEFAULT_RECENT_CHANGES_DAYS,
         "notes": {
             "purpose": "Orientation-first navigation dataset for assistants working inside Meridian.",
             "scope": "High-signal subsystems, contracts, docs, and task routes rather than exhaustive symbol search.",
+            "projectIndex": "Every src/ and tests/ project. 'projects' and 'subsystems' cover only seeded (catalogued) projects.",
         },
     }
+
+
+def render_project_index(index: list[dict[str, Any]]) -> list[str]:
+    source = [item for item in index if item["area"] == "source"]
+    tests = [item for item in index if item["area"] == "test"]
+    uncatalogued = [item["name"] for item in source if not item["catalogued"]]
+
+    lines = [
+        "## Project Index",
+        "",
+        f"Every project under `src/` ({len(source)}) and `tests/` ({len(tests)}). "
+        "Subsystem routing above covers only catalogued projects.",
+        "",
+    ]
+    if uncatalogued:
+        lines.extend([
+            f"{len(uncatalogued)} source project(s) are uncatalogued: they have no `PROJECT_SEEDS` entry in "
+            "`build/scripts/docs/generate-ai-navigation.py`, so no subsystem or task route points at them yet.",
+            "",
+        ])
+
+    lines.extend([
+        "### Source projects",
+        "",
+        "| Project | Path | Subsystem |",
+        "|---|---|---|",
+    ])
+    for item in source:
+        subsystem = f"`{item['subsystem']}`" if item["subsystem"] else "_uncatalogued_"
+        lines.append(f"| `{item['name']}` | `{item['path']}` | {subsystem} |")
+
+    lines.extend([
+        "",
+        "### Test projects",
+        "",
+        "| Project | Path | Covers |",
+        "|---|---|---|",
+    ])
+    for item in tests:
+        covers = ", ".join(f"`{name}`" for name in item.get("covers", [])) or "—"
+        lines.append(f"| `{item['name']}` | `{item['path']}` | {covers} |")
+
+    lines.append("")
+    return lines
 
 
 def render_markdown(dataset: dict[str, Any]) -> str:
@@ -1110,6 +1219,8 @@ def render_markdown(dataset: dict[str, Any]) -> str:
         lines.append(f"- Common tasks: {', '.join(subsystem['commonTasks'])}")
         lines.append(f"- Related docs: {', '.join(f'`{path}`' for path in subsystem['relatedDocs'][:4])}")
         lines.append("")
+
+    lines.extend(render_project_index(dataset.get("projectIndex", [])))
 
     lines.extend([
         "## High-Signal Symbols",

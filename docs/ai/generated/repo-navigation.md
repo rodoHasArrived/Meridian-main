@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-25T11:14:04Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-25T19:42:06Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -87,6 +87,86 @@ MCP hosts, tools, prompts, and resources that expose Meridian capabilities to LL
 - Common tasks: mcp work, new mcp tool, resource routing
 - Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`
 
+## Project Index
+
+Every project under `src/` (45) and `tests/` (19). Subsystem routing above covers only catalogued projects.
+
+17 source project(s) are uncatalogued: they have no `PROJECT_SEEDS` entry in `build/scripts/docs/generate-ai-navigation.py`, so no subsystem or task route points at them yet.
+
+### Source projects
+
+| Project | Path | Subsystem |
+|---|---|---|
+| `Meridian` | `src/Meridian` | `host-shell` |
+| `Meridian.Application` | `src/Meridian.Application` | `host-shell` |
+| `Meridian.Audit` | `src/Meridian.Audit` | _uncatalogued_ |
+| `Meridian.Backtesting` | `src/Meridian.Backtesting` | `backtesting-research` |
+| `Meridian.Backtesting.Sdk` | `src/Meridian.Backtesting.Sdk` | `backtesting-research` |
+| `Meridian.Contracts` | `src/Meridian.Contracts` | `host-shell` |
+| `Meridian.Core` | `src/Meridian.Core` | `host-shell` |
+| `Meridian.DataIntegration` | `src/Meridian.DataIntegration` | _uncatalogued_ |
+| `Meridian.Documents` | `src/Meridian.Documents` | _uncatalogued_ |
+| `Meridian.Domain` | `src/Meridian.Domain` | `domain-ledger-fsharp` |
+| `Meridian.Entities` | `src/Meridian.Entities` | _uncatalogued_ |
+| `Meridian.Execution` | `src/Meridian.Execution` | `execution-risk` |
+| `Meridian.Execution.Sdk` | `src/Meridian.Execution.Sdk` | `execution-risk` |
+| `Meridian.FSharp` | `src/Meridian.FSharp` | `domain-ledger-fsharp` |
+| `Meridian.FSharp.DirectLending.Aggregates` | `src/Meridian.FSharp.DirectLending.Aggregates` | `domain-ledger-fsharp` |
+| `Meridian.FSharp.Ledger` | `src/Meridian.FSharp.Ledger` | `domain-ledger-fsharp` |
+| `Meridian.FSharp.Trading` | `src/Meridian.FSharp.Trading` | `domain-ledger-fsharp` |
+| `Meridian.FinancialOperations` | `src/Meridian.FinancialOperations` | _uncatalogued_ |
+| `Meridian.IbApi.SmokeStub` | `src/Meridian.IbApi.SmokeStub` | _uncatalogued_ |
+| `Meridian.Identity` | `src/Meridian.Identity` | _uncatalogued_ |
+| `Meridian.Infrastructure` | `src/Meridian.Infrastructure` | `providers-data` |
+| `Meridian.Instruments` | `src/Meridian.Instruments` | _uncatalogued_ |
+| `Meridian.Launcher` | `src/Meridian.Launcher` | `host-shell` |
+| `Meridian.Ledger` | `src/Meridian.Ledger` | `domain-ledger-fsharp` |
+| `Meridian.LifecycleSupervisor` | `src/Meridian.LifecycleSupervisor` | `host-shell` |
+| `Meridian.Mcp` | `src/Meridian.Mcp` | `mcp-integration` |
+| `Meridian.Platform` | `src/Meridian.Platform` | _uncatalogued_ |
+| `Meridian.PortfolioRecords` | `src/Meridian.PortfolioRecords` | _uncatalogued_ |
+| `Meridian.ProcessIsolation` | `src/Meridian.ProcessIsolation` | _uncatalogued_ |
+| `Meridian.ProviderSdk` | `src/Meridian.ProviderSdk` | `providers-data` |
+| `Meridian.QuantScript` | `src/Meridian.QuantScript` | `backtesting-research` |
+| `Meridian.QuantScript.Worker` | `src/Meridian.QuantScript.Worker` | _uncatalogued_ |
+| `Meridian.ReferenceData` | `src/Meridian.ReferenceData` | _uncatalogued_ |
+| `Meridian.Reporting` | `src/Meridian.Reporting` | _uncatalogued_ |
+| `Meridian.Reporting.ReadModels` | `src/Meridian.Reporting.ReadModels` | _uncatalogued_ |
+| `Meridian.Risk` | `src/Meridian.Risk` | `execution-risk` |
+| `Meridian.Setup` | `src/Meridian.Setup` | `host-shell` |
+| `Meridian.Storage` | `src/Meridian.Storage` | `providers-data` |
+| `Meridian.Storage.Accounting` | `src/Meridian.Storage.Accounting` | _uncatalogued_ |
+| `Meridian.Strategies` | `src/Meridian.Strategies` | `execution-risk` |
+| `Meridian.Ui.Services` | `src/Meridian.Ui.Services` | `workstation-ui` |
+| `Meridian.Ui.Shared` | `src/Meridian.Ui.Shared` | `workstation-ui` |
+| `Meridian.Workflow` | `src/Meridian.Workflow` | _uncatalogued_ |
+| `Meridian.Wpf` | `src/Meridian.Wpf` | `workstation-ui` |
+| `Meridian.Ui.Dashboard` | `src/Meridian.Ui/dashboard` | `workstation-ui` |
+
+### Test projects
+
+| Project | Path | Covers |
+|---|---|---|
+| `Meridian.Backtesting.Tests` | `tests/Meridian.Backtesting.Tests` | `Meridian.Backtesting`, `Meridian.Backtesting.Sdk`, `Meridian.Infrastructure` |
+| `Meridian.Contracts.UnitTests` | `tests/Meridian.Contracts.UnitTests` | `Meridian.Contracts` |
+| `Meridian.Core.UnitTests` | `tests/Meridian.Core.UnitTests` | `Meridian.Core` |
+| `Meridian.Demo.Tests` | `tests/Meridian.Demo.Tests` | `Meridian` |
+| `Meridian.DesignModules.Tests` | `tests/Meridian.DesignModules.Tests` | `Meridian.Audit`, `Meridian.DataIntegration`, `Meridian.Documents`, `Meridian.Entities`, `Meridian.FinancialOperations`, `Meridian.Identity`, `Meridian.Instruments`, `Meridian.Platform`, `Meridian.PortfolioRecords`, `Meridian.ReferenceData`, `Meridian.Reporting`, `Meridian.Workflow` |
+| `Meridian.DirectLending.Tests` | `tests/Meridian.DirectLending.Tests` | `Meridian.Application`, `Meridian.Contracts`, `Meridian.Storage`, `Meridian.Storage.Accounting` |
+| `Meridian.Execution.Tests` | `tests/Meridian.Execution.Tests` | `Meridian.Application`, `Meridian.Backtesting`, `Meridian.Core`, `Meridian.Domain`, `Meridian.Execution`, `Meridian.Execution.Sdk`, `Meridian.FinancialOperations`, `Meridian.Identity`, `Meridian.Infrastructure`, `Meridian.Ledger`, `Meridian.Reporting`, `Meridian.Risk`, `Meridian.Storage`, `Meridian.Storage.Accounting` |
+| `Meridian.FSharp.Tests` | `tests/Meridian.FSharp.Tests` | `Meridian.Backtesting.Sdk`, `Meridian.Contracts`, `Meridian.Execution.Sdk`, `Meridian.FSharp`, `Meridian.FSharp.DirectLending.Aggregates`, `Meridian.FSharp.Ledger`, `Meridian.FSharp.Trading`, `Meridian.Identity`, `Meridian.Ledger` |
+| `Meridian.FundStructure.Tests` | `tests/Meridian.FundStructure.Tests` | `Meridian.Application`, `Meridian.Contracts`, `Meridian.DataIntegration`, `Meridian.Entities`, `Meridian.Ui.Shared`, `Meridian.Workflow` |
+| `Meridian.Lifecycle.Tests` | `tests/Meridian.Lifecycle.Tests` | `Meridian.Application`, `Meridian.Contracts`, `Meridian.Storage` |
+| `Meridian.LifecycleSupervisor.Tests` | `tests/Meridian.LifecycleSupervisor.Tests` | `Meridian.Contracts`, `Meridian.Launcher`, `Meridian.LifecycleSupervisor` |
+| `Meridian.ProcessTestHelper` | `tests/Meridian.ProcessTestHelper` | `Meridian.Application`, `Meridian.Documents`, `Meridian.Storage`, `Meridian.Storage.Accounting` |
+| `Meridian.QuantScript.Tests` | `tests/Meridian.QuantScript.Tests` | `Meridian.QuantScript`, `Meridian.QuantScript.Worker` |
+| `Meridian.Setup.Tests` | `tests/Meridian.Setup.Tests` | `Meridian.Setup` |
+| `Meridian.Storage.Tests` | `tests/Meridian.Storage.Tests` | `Meridian.Core`, `Meridian.Domain`, `Meridian.Infrastructure`, `Meridian.Storage` |
+| `Meridian.TestSupport` | `tests/Meridian.TestSupport` | — |
+| `Meridian.Tests` | `tests/Meridian.Tests` | `Meridian`, `Meridian.Application`, `Meridian.Audit`, `Meridian.Backtesting`, `Meridian.Backtesting.Sdk`, `Meridian.Core`, `Meridian.DataIntegration`, `Meridian.Documents`, `Meridian.Domain`, `Meridian.Entities`, `Meridian.Execution`, `Meridian.Execution.Sdk`, `Meridian.FinancialOperations`, `Meridian.Identity`, `Meridian.Infrastructure`, `Meridian.Instruments`, `Meridian.Ledger`, `Meridian.Mcp`, `Meridian.Platform`, `Meridian.QuantScript.Worker`, `Meridian.ReferenceData`, `Meridian.Reporting`, `Meridian.Risk`, `Meridian.Storage`, `Meridian.Storage.Accounting`, `Meridian.Strategies`, `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian.Workflow` |
+| `Meridian.Ui.Tests` | `tests/Meridian.Ui.Tests` | `Meridian.Ui.Services` |
+| `Meridian.Wpf.Tests` | `tests/Meridian.Wpf.Tests` | `Meridian.Reporting`, `Meridian.Ui.Services`, `Meridian.Wpf` |
+
 ## High-Signal Symbols
 
 | Symbol | Kind | Project | Why it matters |
@@ -134,19 +214,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `cb5d7320` (2026-11-25T03:02:09-07:00) | 25 |
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `cb5d7320` (2026-11-25T03:02:09-07:00) | 18 |
-| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `cb5d7320` (2026-11-25T03:02:09-07:00) | 13 |
-| `src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.ts` | Desktop and UI Workflows | `cb5d7320` (2026-11-25T03:02:09-07:00) | 8 |
-| `src/Meridian.Ui/dashboard/src/screens/trading-screen.tsx` | Desktop and UI Workflows | `cb5d7320` (2026-11-25T03:02:09-07:00) | 8 |
-| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | `cb5d7320` (2026-11-25T03:02:09-07:00) | 7 |
-| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | `cb5d7320` (2026-11-25T03:02:09-07:00) | 6 |
-| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | `cb5d7320` (2026-11-25T03:02:09-07:00) | 6 |
-| `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` | Desktop and UI Workflows | `cb5d7320` (2026-11-25T03:02:09-07:00) | 5 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.TableViews.cs` | Desktop and UI Workflows | `cb5d7320` (2026-11-25T03:02:09-07:00) | 5 |
-| `src/Meridian.Ui/README.md` | Unmapped | `cb5d7320` (2026-11-25T03:02:09-07:00) | 5 |
-| `src/Meridian.Ui/dashboard/src/types/workstation-5.ts` | Desktop and UI Workflows | `cb5d7320` (2026-11-25T03:02:09-07:00) | 5 |
-| `src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs` | Execution, Risk, and Strategies | `cb5d7320` (2026-11-25T03:02:09-07:00) | 4 |
-| `src/Meridian.Strategies/Live/LiveTradingEngine.cs` | Execution, Risk, and Strategies | `cb5d7320` (2026-11-25T03:02:09-07:00) | 4 |
-| `src/Meridian.Execution/OrderManagementSystem.RiskOutcomes.cs` | Execution, Risk, and Strategies | `cb5d7320` (2026-11-25T03:02:09-07:00) | 3 |
+| `src/Meridian.Mcp/Resources/AdrResources.cs` | MCP Integration | `1ca2a0eb` (2026-11-25T19:34:30+00:00) | 2 |
+| `src/Meridian.Mcp/Services/RepoPathService.cs` | MCP Integration | `1ca2a0eb` (2026-11-25T19:34:30+00:00) | 2 |
+| `src/Meridian.Mcp/Tools/AdrTools.cs` | MCP Integration | `1ca2a0eb` (2026-11-25T19:34:30+00:00) | 2 |
+| `src/Meridian.Mcp/Tools/AuditTools.cs` | MCP Integration | `1ca2a0eb` (2026-11-25T19:34:30+00:00) | 2 |
+| `src/Meridian.Mcp/Tools/ProviderTools.cs` | MCP Integration | `1ca2a0eb` (2026-11-25T19:34:30+00:00) | 2 |
+| `src/Meridian.Mcp/Tools/RepoEditTools.cs` | MCP Integration | `1ca2a0eb` (2026-11-25T19:34:30+00:00) | 2 |
+| `src/Meridian.Mcp/Tools/PythonLauncher.cs` | MCP Integration | `1ca2a0eb` (2026-11-25T19:34:30+00:00) | 1 |
+| `src/Meridian.Ui.Services/README.md` | Desktop and UI Workflows | `464f53d7` (2026-11-25T12:10:16-07:00) | 4 |
+| `src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs` | Desktop and UI Workflows | `464f53d7` (2026-11-25T12:10:16-07:00) | 3 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `dc55ac89` (2026-11-25T09:31:55-07:00) | 24 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `57f8f306` (2026-11-25T07:27:41-07:00) | 15 |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | `57f8f306` (2026-11-25T07:27:41-07:00) | 10 |
+| `src/Meridian.Application/Backfill/BackfillCoordinator.cs` | Host and Composition | `57f8f306` (2026-11-25T07:27:41-07:00) | 6 |
+| `src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs` | Providers and Storage | `57f8f306` (2026-11-25T07:27:41-07:00) | 6 |
+| `src/Meridian.Infrastructure/README.md` | Providers and Storage | `57f8f306` (2026-11-25T07:27:41-07:00) | 6 |
 
