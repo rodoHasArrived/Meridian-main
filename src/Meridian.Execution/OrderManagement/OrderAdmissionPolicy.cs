@@ -207,6 +207,23 @@ internal sealed class OrderAdmissionPolicy
                 return new OrderAdmissionDecision(riskRequest, usesFaceValue, controlDecision, readiness,
                     new OrderAdmissionRefusal(securityDecision.Reason, "Security Master gate"));
             }
+
+            // Carry the admitted Security Master identity on the order so its fills post to
+            // SecurityId-keyed ledger accounts (Security Master review F2). A caller-supplied
+            // identity must agree with what the gate resolved for the ticker.
+            if (securityDecision.SecurityId is { } admittedSecurityId)
+            {
+                if (safeRequest.SecurityId is { } requested && requested != admittedSecurityId)
+                {
+                    return new OrderAdmissionDecision(riskRequest, usesFaceValue, controlDecision, readiness,
+                        new OrderAdmissionRefusal(
+                            $"Order security {requested:D} does not match the Security Master identity {admittedSecurityId:D} resolved for '{safeRequest.Symbol}'.",
+                            "Security Master gate",
+                            "SECURITY_IDENTITY_MISMATCH"));
+                }
+
+                resolved = resolved.WithSecurityId(admittedSecurityId);
+            }
         }
 
         return new OrderAdmissionDecision(riskRequest, usesFaceValue, controlDecision, readiness, null, resolved);

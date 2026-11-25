@@ -16,6 +16,13 @@ public sealed class GatewayResolvedOrder
     public OrderRequest Request => Order.Request;
     public OrderSizing Sizing { get; }
 
+    /// <summary>Returns this resolved order carrying the Security Master identity resolved at admission.</summary>
+    public GatewayResolvedOrder WithSecurityId(Guid securityId)
+    {
+        var stamped = Order.WithSecurityId(securityId);
+        return ReferenceEquals(stamped, Order) ? this : new GatewayResolvedOrder(stamped, Sizing);
+    }
+
     /// <summary>
     /// Resolves capabilities once per submission. A metadata label alone never establishes
     /// sizing authority; unsupported native notional is refused before risk can measure it.

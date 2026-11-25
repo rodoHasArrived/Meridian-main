@@ -84,8 +84,9 @@ therefore keeps one account history.
   - the Security Master posting gate (execution ledger consumer);
   - the posting authority, a pricing mark or a journal event (candidates, valuation, automated
     drafts);
-  - the fill (`ExecutionReport.SecurityId`, stamped by the paper gateway from the security
-    definition or carried on `OrderRequest.SecurityId`);
+  - the fill (`ExecutionReport.SecurityId`). OMS admission stamps the gate's SecurityId onto
+    `OrderRequest.SecurityId`, and the fill processor copies it onto reports that lack it. The
+    paper gateway also stamps it from the security definition.
   - `ISecurityResolver.ResolveCanonicalAsync`, used by portfolio openings.
 - **Canonical resolution.** The resolver is provider-less and returns a typed `Resolved`,
   `Ambiguous` or `NotFound`. An ambiguous ticker always fails closed.

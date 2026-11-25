@@ -90,6 +90,11 @@ public sealed partial class OrderManagementSystem
                 _orderFinancialAccountIds[childOrderId] = parentFinancialAccountId;
             }
 
+            if (_orderSecurityIds.TryGetValue(parentOrderId, out var parentSecurityId))
+            {
+                _orderSecurityIds[childOrderId] = parentSecurityId;
+            }
+
             if (_orderContractMultipliers.TryGetValue(parentOrderId, out var parentMultiplier))
             {
                 _orderContractMultipliers[childOrderId] = parentMultiplier;

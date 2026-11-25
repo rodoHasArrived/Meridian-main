@@ -701,7 +701,9 @@ Implemented together, so no holding is split between a ticker key and a Security
   `Resolved`/`Ambiguous`/`NotFound`. It is backed by
   `ISecurityMasterStore.FindSecurityIdsByIdentifierAsync`.
 - The pre-trade `SecurityMasterGate` now refuses an ambiguous ticker and returns the resolved
-  SecurityId.
+  SecurityId. OMS admission stamps it onto the gateway-resolved order (`OrderRequest.SecurityId`)
+  and refuses a caller-supplied SecurityId that disagrees. The fill processor stamps it onto
+  execution reports that do not echo it, including child orders.
 - Posting sites converted:
   - execution ledger consumer, automated fill accounting, posting candidates, operations posting;
   - paper trading (`ExecutionReport.SecurityId`, with a position-pinned key), block allocation
@@ -716,8 +718,6 @@ Implemented together, so no holding is split between a ticker key and a Security
 
 Known follow-ups:
 
-- OMS admission does not yet stamp the gate's SecurityId onto the dispatched order. Paper fills
-  get it from the gateway's security definition.
 - Legacy tax-lot rows are not re-keyed by the balance reclass.
 - The UI correction flows and `LedgerPeriodTrialBalanceLineDto` do not yet carry the account
   SecurityId.

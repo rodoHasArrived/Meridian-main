@@ -61,6 +61,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderIntentS
     private readonly ConcurrentDictionary<string, string> _orderFinancialAccountIds = new(StringComparer.OrdinalIgnoreCase);
     // Contract multiplier per order id, for derivative fills.
     private readonly ConcurrentDictionary<string, decimal> _orderContractMultipliers = new(StringComparer.OrdinalIgnoreCase);
+    // Security Master identity resolved at admission, stamped onto fills that do not echo it.
+    private readonly ConcurrentDictionary<string, Guid> _orderSecurityIds = new(StringComparer.OrdinalIgnoreCase);
     // Order ids the active gateway routes as face value priced as a percentage of par, so the
     // fill booking path scales the clean price exactly as the pre-trade rails valued the order.
     private readonly ConcurrentDictionary<string, bool> _orderFaceValueSizing = new(StringComparer.OrdinalIgnoreCase);
@@ -155,7 +157,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderIntentS
         _brokerOrderSweep = new BrokerOrderSweep(gateway, _brokerIdentities, _executionAudit, logger);
         _amendmentBook = new OrderAmendmentBook(_orders);
         _fillProcessor = new OrderFillProcessor(
-            new OrderFillContext(_orders, _orderFinancialAccountIds, _orderContractMultipliers, _orderFaceValueSizing,
+            new OrderFillContext(_orders, _orderFinancialAccountIds, _orderContractMultipliers, _orderFaceValueSizing, _orderSecurityIds,
                 tradeEventPublisher is IScopedTradeEventPublisher scopedPublisher && scopedPublisher.ScopeIdentity.AccountingProtocolVersion == 2,
                 gateway is PaperTradingGateway),
             portfolioState, sessionPersistence, _accountingHandoff, _executionReportHub, _executionAudit, logger, _intentJournal);
@@ -582,6 +584,15 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderIntentS
                     RestoreConsumedApprovals(consumedApprovalId, "paper journal binding was interrupted", orderId);
                     throw;
                 }
+            }
+
+            if (safeRequest.SecurityId is { } admittedSecurityId)
+            {
+                _orderSecurityIds[orderId] = admittedSecurityId;
+            }
+            else
+            {
+                _orderSecurityIds.TryRemove(orderId, out _);
             }
 
             if (orderMultiplier > 1m)

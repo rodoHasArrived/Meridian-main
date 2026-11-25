@@ -171,6 +171,14 @@ internal sealed class OrderFillProcessor(
                 fillIncrement = fillIncrement with { UsesFaceValuePercentageOfPar = true };
             }
 
+            // Stamp the Security Master identity resolved at admission when the gateway's report
+            // does not carry one, so the fill posts to SecurityId-keyed ledger accounts (Security
+            // Master review F2). A report that names a different security is not overwritten.
+            if (fillIncrement.SecurityId is null && _context.GetSecurityId(orderId) is { } admittedSecurityId)
+            {
+                fillIncrement = fillIncrement with { SecurityId = admittedSecurityId };
+            }
+
             // Likewise stamp the OMS-resolved contract multiplier when the gateway supplied none
             // (for example an option with no security-master lot convention). Session projection
             // and restart replay apply the persisted report without this context, so without the
