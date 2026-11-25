@@ -452,6 +452,14 @@ public sealed record OrderState
     public decimal ContractMultiplier { get; init; } = 1m;
 
     /// <summary>
+    /// Security Master identity resolved at order admission. Retained with the order so fills that
+    /// arrive after a restart are still stamped with it and post to SecurityId-keyed ledger accounts
+    /// (Security Master review F2). Omitted when null so orders retained before it are unchanged.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SecurityId { get; init; }
+
+    /// <summary>
     /// Derivative identity of the working order, retained so its exposure reserve and any
     /// amendment are valued the same way the pre-trade gate valued it.
     /// </summary>

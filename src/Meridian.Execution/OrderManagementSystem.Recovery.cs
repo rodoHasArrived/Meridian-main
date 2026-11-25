@@ -151,6 +151,8 @@ public sealed partial class OrderManagementSystem
             if (state.FundAccountId is { } accountId)
                 _orderFinancialAccountIds[state.OrderId] = accountId.ToString("D");
             _orderContractMultipliers[state.OrderId] = state.ContractMultiplier;
+            if (state.SecurityId is { } securityId)
+                _orderSecurityIds[state.OrderId] = securityId;
             if (state.UsesFaceValuePercentageOfPar)
                 _orderFaceValueSizing[state.OrderId] = true;
         }

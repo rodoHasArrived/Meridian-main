@@ -480,6 +480,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderIntentS
                 // identity travels too, so the reserve and any amendment are valued exactly
                 // as the pre-trade gate valued the order.
                 ContractMultiplier = orderMultiplier,
+                SecurityId = safeRequest.SecurityId,
                 OptionContract = safeRequest.OptionContract,
                 // Snapshot the legs. An in-process caller can hand in a mutable list and
                 // clear or edit it after submission returns, while the broker keeps working

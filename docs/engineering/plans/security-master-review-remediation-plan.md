@@ -703,7 +703,9 @@ Implemented together, so no holding is split between a ticker key and a Security
 - The pre-trade `SecurityMasterGate` now refuses an ambiguous ticker and returns the resolved
   SecurityId. OMS admission stamps it onto the gateway-resolved order (`OrderRequest.SecurityId`)
   and refuses a caller-supplied SecurityId that disagrees. The fill processor stamps it onto
-  execution reports that do not echo it, including child orders.
+  execution reports that do not echo it, including child orders. The identity is retained on
+  `OrderState.SecurityId` in the brokerage order recovery snapshot, so fills for orders recovered
+  after a restart are stamped too.
 - Posting sites converted:
   - execution ledger consumer, automated fill accounting, posting candidates, operations posting;
   - paper trading (`ExecutionReport.SecurityId`, with a position-pinned key), block allocation

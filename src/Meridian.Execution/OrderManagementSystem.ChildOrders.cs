@@ -65,6 +65,7 @@ public sealed partial class OrderManagementSystem
                 // fund account and derivative identity the entry was admitted under.
                 FundAccountId = parent.FundAccountId,
                 ContractMultiplier = parent.ContractMultiplier,
+                SecurityId = parent.SecurityId,
                 OptionContract = parent.OptionContract
             };
 
