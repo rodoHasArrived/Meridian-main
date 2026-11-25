@@ -46,21 +46,34 @@ public sealed class SecurityProjectionRebuildHandler : ISecurityMasterRevisionPu
             return;
         }
 
-        // Seed from the cached projection to preserve aliases; the rebuild folds the snapshot plus the
-        // tail events for this one security only.
-        var seed = _cache.Get(evt.SecurityId);
-        var rebuilt = await _rebuilder.RebuildAsync(evt.SecurityId, seed, ct).ConfigureAwait(false);
-        if (rebuilt is null)
+        async Task RefreshAsync()
         {
-            _logger.LogWarning(
-                "Published security {SecurityId} (revision {RevisionId}) could not be rebuilt into a projection; cache left unchanged.",
-                evt.SecurityId, evt.RevisionId);
-            return;
-        }
+            // Seed from the cached projection to preserve aliases; the rebuild folds the snapshot plus the
+            // tail events for this one security only.
+            var seed = _cache.Get(evt.SecurityId);
+            var rebuilt = await _rebuilder.RebuildAsync(evt.SecurityId, seed, ct).ConfigureAwait(false);
+            if (rebuilt is null)
+            {
+                _logger.LogWarning(
+                    "Published security {SecurityId} (revision {RevisionId}) could not be rebuilt into a projection; cache left unchanged.",
+                    evt.SecurityId, evt.RevisionId);
+                return;
+            }
 
-        _cache.Upsert(rebuilt);
-        _logger.LogInformation(
-            "Refreshed cached projection for published security {SecurityId} (revision {RevisionId}).",
-            evt.SecurityId, evt.RevisionId);
+            _cache.Upsert(rebuilt);
+            _logger.LogInformation(
+                "Refreshed cached projection for published security {SecurityId} (revision {RevisionId}).",
+                evt.SecurityId, evt.RevisionId);
+        }
+        if (PostgresSecurityMasterMutation.IsActiveFor(evt.SecurityId))
+            await PostgresSecurityMasterMutation.AfterCommitAsync(evt.SecurityId, async () =>
+            {
+                try
+                { await RefreshAsync().ConfigureAwait(false); }
+                catch (Exception exception) { _logger.LogWarning(exception, "Post-commit cache refresh for {SecurityId} requires retry.", evt.SecurityId); }
+            }).ConfigureAwait(false);
+        else
+            await RefreshAsync().ConfigureAwait(false);
+
     }
 }

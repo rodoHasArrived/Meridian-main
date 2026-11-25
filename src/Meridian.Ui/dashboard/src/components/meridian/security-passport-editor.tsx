@@ -40,6 +40,9 @@ import {
 } from "./security-passport-schema-fields.view-model";
 import { Select } from "@/components/ui/select";
 
+import { createSecurityImpactPreview } from "@/lib/api/security-impact-preview.api";
+import { SecurityImpactPreview } from "./security-impact-preview";
+
 /** Injectable workbench client so the editor can be unit-tested without the network. */
 export interface SecurityPassportWorkbenchService {
   updateField: typeof defaultUpdateField;
@@ -90,6 +93,7 @@ interface WorkingRevision {
   revisionId: string;
   state: SecurityMasterRevisionState;
   version: number;
+  fundProfileId: string;
 }
 
 const STATE_BADGE_VARIANT: Record<PassportStateTone, "default" | "outline" | "success" | "warning" | "danger"> = {
@@ -139,6 +143,16 @@ export function SecurityPassportEditor({
   );
 
   const [revision, setRevision] = useState<WorkingRevision | null>(null);
+  const [selectedFundProfileId, setSelectedFundProfileId] = useState(fundProfileId?.trim() ?? "");
+  const [impactReceiptId, setImpactReceiptId] = useState<string | null>(null);
+  const [inspectedReceiptId, setInspectedReceiptId] = useState<string | null>(null);
+  const [impactDate, setImpactDate] = useState(() => new Date().toISOString().slice(0, 10));
+  useEffect(() => setImpactReceiptId(null), [revision?.revisionId]);
+  useEffect(() => setInspectedReceiptId(null), [impactReceiptId]);
+  useEffect(() => {
+    if (!revision) setSelectedFundProfileId(fundProfileId?.trim() ?? "");
+  }, [fundProfileId, revision, securityId]);
+
   const [isBusy, setBusy] = useState(false);
   const [banner, setBanner] = useState<PassportBannerViewModel | null>(null);
   const [liveVersion, setLiveVersion] = useState(version);
@@ -206,7 +220,8 @@ export function SecurityPassportEditor({
     setApproval({ workflowId: "", expectedWorkflowVersion: 0, reviewer: "", reportPackId: "" });
   }, [securityId, version]);
 
-  const hasPendingEdit = fieldPath.trim().length > 0 && justification.trim().length > 0 && valueError === null;
+  const draftFundProfileId = revision?.fundProfileId ?? selectedFundProfileId.trim();
+  const hasPendingEdit = draftFundProfileId.length > 0 && fieldPath.trim().length > 0 && justification.trim().length > 0 && valueError === null;
   const stateBadge = buildPassportStateBadge(revision?.state ?? null);
   const trust = buildTrustPosture(trustPosture);
   const expectedVersion = revision?.version ?? liveVersion;
@@ -241,10 +256,11 @@ export function SecurityPassportEditor({
   );
 
   const applyEditResult = useCallback((result: SecurityMasterEditResult) => {
-    setRevision({ revisionId: result.revisionId, state: result.state, version: result.newVersion });
-  }, []);
+    setRevision({ revisionId: result.revisionId, state: result.state, version: result.newVersion, fundProfileId: draftFundProfileId });
+  }, [draftFundProfileId]);
 
   const handleSaveDraft = useCallback(() => {
+    if (!draftFundProfileId) return;
     void run(async () => {
       const result = await client.updateField(securityId, {
         expectedVersion,
@@ -254,14 +270,14 @@ export function SecurityPassportEditor({
         // DateTimeOffset parse is unambiguous and never shifts a day across the operator's timezone.
         effectiveFrom: effectiveFrom.length > 0 ? `${effectiveFrom}T00:00:00Z` : new Date().toISOString(),
         justification: justification.trim(),
-        fundProfileId: fundProfileId ?? null
+        fundProfileId: draftFundProfileId
       });
       applyEditResult(result);
     });
-  }, [run, client, securityId, expectedVersion, fieldPath, newValue, effectiveFrom, justification, fundProfileId, applyEditResult]);
+  }, [run, client, securityId, expectedVersion, fieldPath, newValue, effectiveFrom, justification, draftFundProfileId, applyEditResult]);
 
   const handleSubmit = useCallback(() => {
-    if (!revision) return;
+    if (!revision || !revision.fundProfileId) return;
     void run(async () => {
       const result = await client.submit(securityId, {
         revisionId: revision.revisionId,
@@ -269,35 +285,37 @@ export function SecurityPassportEditor({
         expectedWorkflowVersion: approval.expectedWorkflowVersion,
         reviewer: approval.reviewer.trim(),
         reportPackId: approval.reportPackId.trim() || null,
-        fundProfileId: fundProfileId ?? null
+        fundProfileId: revision.fundProfileId
       });
       applyEditResult(result);
     });
-  }, [run, client, securityId, revision, approval, fundProfileId, applyEditResult]);
+  }, [run, client, securityId, revision, approval, applyEditResult]);
 
   const handleApprove = useCallback(() => {
-    if (!revision) return;
+    if (!revision || !impactReceiptId || inspectedReceiptId !== impactReceiptId) return;
     void run(async () => {
       const result = await client.approve(securityId, {
         revisionId: revision.revisionId,
         workflowId: approval.workflowId.trim(),
         expectedWorkflowVersion: approval.expectedWorkflowVersion,
         rationale: justification.trim() || "Approved via passport workbench.",
-        reportPackId: approval.reportPackId.trim()
+        reportPackId: approval.reportPackId.trim(),
+        ...(impactReceiptId ? { impactReceiptId } : {})
       });
       applyEditResult(result);
     });
-  }, [run, client, securityId, revision, approval, justification, applyEditResult]);
+  }, [run, client, securityId, revision, approval, justification, applyEditResult, impactReceiptId, inspectedReceiptId]);
 
   const handlePublish = useCallback(() => {
-    if (!revision) return;
+    if (!revision || !impactReceiptId || inspectedReceiptId !== impactReceiptId) return;
     void run(async () => {
       const result: SecurityMasterPublishResult = await client.publish(securityId, {
-        revisionId: revision.revisionId
+        revisionId: revision.revisionId,
+        ...(impactReceiptId ? { impactReceiptId } : {})
       });
-      setRevision({ revisionId: result.revisionId, state: "Published", version: result.newVersion });
+      setRevision({ revisionId: result.revisionId, state: "Published", version: result.newVersion, fundProfileId: revision.fundProfileId });
     });
-  }, [run, client, securityId, revision]);
+  }, [run, client, securityId, revision, impactReceiptId, inspectedReceiptId]);
 
   const resolveConflict = useCallback(
     (conflictId: string, chosenWinnerSource: string, reason: string, acknowledgeDeviation: boolean) => {
@@ -376,6 +394,14 @@ export function SecurityPassportEditor({
         ) : null}
 
         <fieldset className="grid gap-3 sm:grid-cols-2" disabled={isBusy}>
+          <label className="space-y-1 text-sm sm:col-span-2">
+            <span className="text-muted-foreground">Fund profile id (required)</span>
+            <Input aria-label="Fund profile id (required)" value={draftFundProfileId} onChange={(event) => setSelectedFundProfileId(event.target.value)}
+              disabled={revision !== null} placeholder="Fund profile for the governed impact review" />
+            <span className="block text-xs text-muted-foreground">{revision
+              ? "This draft's fund scope is frozen. Start a fresh draft to choose another fund."
+              : "Choose the fund profile whose ledger books will be reviewed. Tenant and company ownership is checked by the server."}</span>
+          </label>
           {schemaGroups.length > 0 ? (
             <label className="space-y-1 text-sm sm:col-span-2">
               <span className="text-muted-foreground">{schema?.assetClass} term</span>
@@ -482,6 +508,26 @@ export function SecurityPassportEditor({
           </fieldset>
         ) : null}
 
+        {revision && revision.state !== "Published" ? <section aria-label="Edit impact preview" className="space-y-2">
+          <label>Impact economic date<Input type="date" value={impactDate} onChange={event => setImpactDate(event.target.value)} /></label>
+          <Button type="button" variant="outline" disabled={isBusy || !impactDate || revision.state === "Approved"} onClick={() => {
+            void run(async () => {
+              setInspectedReceiptId(null);
+              const receipt = await createSecurityImpactPreview(securityId, revision.revisionId, `${impactDate}T00:00:00Z`, revision.fundProfileId);
+              setImpactReceiptId(receipt.contentSha256);
+            });
+          }}>Refresh impact preview</Button>
+          {revision.state === "Approved" ? <Button type="button" variant="outline" onClick={() => {
+            setRevision(null); setApproval({ workflowId: "", expectedWorkflowVersion: 0, reviewer: "", reportPackId: "" });
+            onReloadRequested?.(null);
+          }}>Start a fresh governed draft</Button> : null}
+          {impactReceiptId ? <SecurityImpactPreview receiptId={impactReceiptId} onInspected={(receipt) => {
+            if (receipt.contentSha256 === impactReceiptId && receipt.securityId.toLowerCase() === securityId.toLowerCase()
+              && receipt.revisionId.toLowerCase() === revision.revisionId.toLowerCase() && receipt.fundProfileId === revision.fundProfileId)
+              setInspectedReceiptId(receipt.contentSha256);
+          }} /> : <p className="text-sm text-muted-foreground">Create retained impact evidence before review. Unsupported prior cash flows remain explicit.</p>}
+        </section> : null}
+
         {conflictRows.length > 0 ? (
           <section className="space-y-2" aria-label="Source conflicts">
             <h3 className="text-sm font-medium">Source conflicts</h3>
@@ -572,7 +618,8 @@ export function SecurityPassportEditor({
               key={action.action}
               type="button"
               variant={action.action === "save-draft" ? "secondary" : "default"}
-              disabled={!action.enabled}
+              disabled={!action.enabled || (action.action === "submit" && !draftFundProfileId)
+                || ((action.action === "approve" || action.action === "publish") && (!impactReceiptId || inspectedReceiptId !== impactReceiptId))}
               title={action.disabledReason ?? undefined}
               aria-label={action.disabledReason ? `${action.label} — ${action.disabledReason}` : action.label}
               onClick={actionHandlers[action.action]}
