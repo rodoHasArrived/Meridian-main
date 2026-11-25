@@ -123,12 +123,13 @@ public sealed class BackfillRoutingAdmission : IDisposable
 {
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _slots = new(StringComparer.OrdinalIgnoreCase);
     private readonly int _perProvider;
+    private readonly ProviderRateLimitHistory? _history;
 
     public BackfillRoutingAdmission(IEnumerable<IHistoricalDataProvider> providers, int perProvider, ProviderRateLimitHistory? history = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(perProvider, 1);
         _perProvider = perProvider;
-        History = history ?? ProviderRateLimitHistory.Shared;
+        _history = history;
         Tracker = new ProviderRateLimitTracker();
         var candidates = providers.ToArray();
         foreach (var provider in candidates)
@@ -137,7 +138,7 @@ public sealed class BackfillRoutingAdmission : IDisposable
     }
 
     internal ProviderRateLimitTracker Tracker { get; }
-    internal ProviderRateLimitHistory History { get; }
+    internal ProviderRateLimitHistory History => _history ?? ProviderRateLimitHistory.Current;
     internal ProviderHealthTracker Health { get; }
 
     public RateLimitStatus? GetStatus(string providerName) => Tracker.GetStatus(providerName);
@@ -151,6 +152,7 @@ public sealed class BackfillRoutingAdmission : IDisposable
         CancellationToken ct,
         BackfillProvenanceCapture? provenance = null)
     {
+        using var historyScope = History.BeginScope();
         using var slot = await AcquireAsync(provider.Name, ct).ConfigureAwait(false);
         void CheckAdmission()
         {
@@ -191,7 +193,8 @@ public sealed class BackfillRoutingAdmission : IDisposable
             if (rateLimit is not null || isHttpLimit)
             {
                 Tracker.RecordRateLimitHit(provider.Name, rateLimit?.RetryAfter);
-                History.Record(provider.Name, Tracker.GetStatus(provider.Name), httpStatus: isHttpLimit ? (int)HttpStatusCode.TooManyRequests : null);
+                History.RecordThrottle(provider.Name, error, Tracker.GetStatus(provider.Name),
+                    isHttpLimit ? (int)HttpStatusCode.TooManyRequests : null);
             }
             capture?.Invoke(new(symbol, provider.Name, rateLimit is not null || isHttpLimit ? "rate-limited" : "failed", 0, true));
             throw;
