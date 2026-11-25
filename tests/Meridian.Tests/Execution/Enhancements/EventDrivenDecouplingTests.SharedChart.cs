@@ -48,11 +48,11 @@ public sealed partial class EventDrivenDecouplingTests
             ledger.Journal.Should().HaveCount(5);
             var securitiesBalance = side == OrderSide.Buy ? 1_000m : -(1_000m - totalRealizedPnl);
             var cashBalance = side == OrderSide.Buy ? -1_002m : 998m;
-            ledger.GetBalance(chart.Resolve(LedgerAccountRole.Securities, "broker-a", "AAPL"))
+            ledger.GetBalance(chart.Resolve(LedgerAccountRole.Securities, "broker-a", LedgerSecurityKey.Unresolved("AAPL")))
                 .Should().Be(securitiesBalance);
             ledger.GetBalance(chart.Resolve(LedgerAccountRole.Cash, "broker-a")).Should().Be(cashBalance);
             ledger.GetBalance(chart.Resolve(LedgerAccountRole.CommissionExpense, "broker-a")).Should().Be(2m);
-            ledger.GetBalance(chart.Resolve(LedgerAccountRole.Securities, "broker-b", "AAPL"))
+            ledger.GetBalance(chart.Resolve(LedgerAccountRole.Securities, "broker-b", LedgerSecurityKey.Unresolved("AAPL")))
                 .Should().Be(200m);
             ledger.GetBalance(chart.Resolve(LedgerAccountRole.Cash, "broker-b")).Should().Be(-200m);
             if (totalRealizedPnl > 0)

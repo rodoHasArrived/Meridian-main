@@ -686,3 +686,40 @@ after corrections.
 Changed-file whitespace formatting passed. Maintained documentation generation converged; the
 repository inventory and test coverage report were refreshed. Hosted checks remain the merge
 authority. No migration or historical journal rewrite is introduced.
+
+## F2 — SecurityId-keyed ledger accounts (decision 2026-11-25)
+
+Review item F2 (2026-11-24) found that `LedgerAccounts.Securities(symbol, financialAccountId)` keyed
+accounts by normalized ticker, so a ticker rename split one holding's account history. On
+2026-11-25 the owner decided to key ledger security accounts by SecurityId everywhere.
+
+Implemented together, so no holding is split between a ticker key and a SecurityId key:
+
+- `LedgerAccount.SecurityId` and `LedgerSecurityKey`. Per-security factories and chart roles only
+  accept a key; the ticker is retained for display.
+- `ISecurityResolver.ResolveCanonicalAsync` is provider-less and returns typed
+  `Resolved`/`Ambiguous`/`NotFound`. It is backed by
+  `ISecurityMasterStore.FindSecurityIdsByIdentifierAsync`.
+- The pre-trade `SecurityMasterGate` now refuses an ambiguous ticker and returns the resolved
+  SecurityId.
+- Posting sites converted:
+  - execution ledger consumer, automated fill accounting, posting candidates, operations posting;
+  - paper trading (`ExecutionReport.SecurityId`, with a position-pinned key), block allocation
+    (`AllocationResult.SecurityId`, required);
+  - portfolio openings (canonical resolution), amortization bridge, fixed-income accrual, daily
+    pricing and structured notes, automated journal drafts, book FX settlement;
+  - manual journals and paper-session persistence round-trip the key.
+- Postgres migration `V_ledger_083` and SecurityId-aware account predicates.
+- Retained journals keep their keys. `LedgerSecurityKeyMigration` reports old ticker keys mapped
+  to SecurityId and proposes a governed reclass.
+- Backtest ledgers stay run-local and ticker-keyed (`SimulatedPortfolio.SimulationKey`).
+
+Known follow-ups:
+
+- OMS admission does not yet stamp the gate's SecurityId onto the dispatched order. Paper fills
+  get it from the gateway's security definition.
+- Legacy tax-lot rows are not re-keyed by the balance reclass.
+- The UI correction flows and `LedgerPeriodTrialBalanceLineDto` do not yet carry the account
+  SecurityId.
+- The generated `database/manifest/catalog.json` and `schemas/` need regeneration against live
+  PostgreSQL.

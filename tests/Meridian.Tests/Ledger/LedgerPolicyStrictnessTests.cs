@@ -23,7 +23,7 @@ public sealed class LedgerPolicyStrictnessTests
         var ledger = new LedgerBook(LedgerPolicy.Trading("usd"));
 
         ledger.PostLines(At, "Buy 100 AAPL @ 190", [
-            (_chart.Resolve(LedgerAccountRole.Securities, "broker-1", "AAPL"), 19_000m, 0m),
+            (_chart.Resolve(LedgerAccountRole.Securities, "broker-1", LedgerSecurityKey.Unresolved("AAPL")), 19_000m, 0m),
             (_chart.Resolve(LedgerAccountRole.Cash, "broker-1"), 0m, 19_000m)
         ]);
 
@@ -123,7 +123,7 @@ public sealed class LedgerPolicyStrictnessTests
         var ledger = new LedgerBook(LedgerPolicy.Trading("USD"));
 
         ledger.PostLines(At, "Buy 10 SAP in EUR", [
-            (_chart.Resolve(LedgerAccountRole.Securities, symbol: "SAP"), 2_160m, 0m, (LedgerLineDimensionSet?)null,
+            (_chart.Resolve(LedgerAccountRole.Securities, null, LedgerSecurityKey.Unresolved("SAP")), 2_160m, 0m, (LedgerLineDimensionSet?)null,
                 new LedgerEntryCurrency("EUR", "USD", 2_000m, 0m, 1.08m)),
             (_chart.Resolve(LedgerAccountRole.Cash), 0m, 2_160m, (LedgerLineDimensionSet?)null,
                 new LedgerEntryCurrency("EUR", "USD", 0m, 2_000m, 1.08m))

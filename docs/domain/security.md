@@ -19,6 +19,7 @@ A Security represents a financial instrument, investable asset, or fund interest
 
 - A Security must have stable identity separate from provider-specific symbols.
 - Provider symbols, CUSIPs, ISINs, tickers, and local IDs are identifiers for matching, not the canonical security itself.
+- Per-security ledger accounts (holdings, short payables, dividend and interest receivables) are keyed by SecurityId; the ticker is a display attribute, so a ticker rename keeps one account history (decision 2026-11-25).
 - Security type drives required attributes, valuation rules, and reporting treatment.
 - Security master changes that affect accounting or reconciliation require retained evidence and review state.
 

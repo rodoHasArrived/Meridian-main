@@ -90,8 +90,8 @@ public sealed class SharedTradePostingParityTests
         {
             IChartOfAccounts chart = StandardChartOfAccounts.Instance;
             ledger.GetBalance(chart.Resolve(LedgerAccountRole.Cash, accountId)).Should().Be(expectedCash);
-            ledger.GetBalance(chart.Resolve(LedgerAccountRole.Securities, accountId, "SPY")).Should().Be(expectedLongBasis);
-            ledger.GetBalance(chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, accountId, "SPY")).Should().Be(expectedShortProceeds);
+            ledger.GetBalance(chart.Resolve(LedgerAccountRole.Securities, accountId, LedgerSecurityKey.Unresolved("SPY"))).Should().Be(expectedLongBasis);
+            ledger.GetBalance(chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, accountId, LedgerSecurityKey.Unresolved("SPY"))).Should().Be(expectedShortProceeds);
             ledger.GetBalance(chart.Resolve(LedgerAccountRole.RealizedGain, accountId)).Should().Be(Math.Max(expectedPnl, 0m));
             ledger.GetBalance(chart.Resolve(LedgerAccountRole.RealizedLoss, accountId)).Should().Be(Math.Max(-expectedPnl, 0m));
             ledger.GetBalance(chart.Resolve(LedgerAccountRole.CommissionExpense, accountId)).Should().Be(4m);

@@ -66,6 +66,50 @@ move to bound ledgers area by area. `JournalEntry` itself does not enforce balan
 because reporting builds dimension-filtered journal slices that deliberately do not balance;
 balance is enforced when an entry is posted, and therefore before it is stored.
 
+#### Per-security account keys (SecurityId)
+
+Owner decision 2026-11-25 (Security Master review F2): per-security accounts are keyed by
+Security Master `SecurityId`. This covers `Securities`, `Short Securities Payable`,
+`Dividend Receivable`, `Accrued Interest Receivable` and `Corporate Action Distribution`.
+`LedgerAccount.SecurityId` is the identity. `LedgerAccount.Symbol` keeps the ticker as a display
+attribute and does not take part in equality while a SecurityId is present. A ticker rename
+therefore keeps one account history.
+
+- **Factories take a `LedgerSecurityKey`.** `LedgerAccounts.Securities(key, financialAccountId)`
+  and its siblings have no ticker overload, and `IChartOfAccounts.Resolve(role, account, key)`
+  resolves per-security roles. `Resolve(role, account, symbol)` throws for those roles, so a
+  ticker-only call cannot post silently.
+- **Obtaining the key.** `LedgerSecurityKey.Resolved(securityId, ticker)` is the normal case.
+  Posting paths take the SecurityId from:
+  - the Security Master posting gate (execution ledger consumer);
+  - the posting authority, a pricing mark or a journal event (candidates, valuation, automated
+    drafts);
+  - the fill (`ExecutionReport.SecurityId`, stamped by the paper gateway from the security
+    definition or carried on `OrderRequest.SecurityId`);
+  - `ISecurityResolver.ResolveCanonicalAsync`, used by portfolio openings.
+- **Canonical resolution.** The resolver is provider-less and returns a typed `Resolved`,
+  `Ambiguous` or `NotFound`. An ambiguous ticker always fails closed.
+- **Legacy ticker keys.** `LedgerSecurityKey.Unresolved(ticker)` is the pre-decision ticker key.
+  It is used only for Security Master `NotFound` holdings (for example automated drafts without a
+  resolved security) and for run-local backtest ledgers (`SimulatedPortfolio.SimulationKey`),
+  which are simulations rather than books.
+- **Paper positions.** A paper position pins its key when it opens, so a holding never splits
+  mid-life.
+- **Existing journals keep their keys.** A SecurityId-keyed account never equals a ticker-keyed
+  one. Retained-journal verification (`LedgerSecurityKeyMigration.IsRetainedEquivalent`) accepts
+  a rebuilt SecurityId line against its retained ticker-keyed form, so replays still verify.
+- **Mapping and reclass.** `LedgerSecurityKeyMigration.BuildReportAsync` maps each ticker-keyed
+  account to its SecurityId through the canonical resolver and lists ambiguous and unregistered
+  tickers. `ProposeReclass` builds a balanced reclass proposal. It is submitted through the
+  governed adjustment path for approval and never posts by itself.
+- **Persistence.** Postgres stores the key in `account_security_id`
+  (`V_ledger_083__security_id_account_keys`) on journal legs, tax lots, tax-lot policies, balance
+  checkpoint rows and wash-sale deferrals. Account-identity predicates and indexes use
+  `coalesce(account_security_id::text, symbol, '')`.
+- **Readers.** Mark-to-market carrying value reads the SecurityId account plus any legacy ticker
+  account for the same ticker until a reclass has moved it. Posted-ledger reconciliation groups
+  rows by SecurityId and labels them with the broker symbol for the same security.
+
 Book-scoped chart nodes can carry a stable account code. Resolution validates the exact node,
 book, type, and financial scope and retains the chart revision on the posting line. New postings
 can carry a line memo separately from the journal description. The posted-journal views and
