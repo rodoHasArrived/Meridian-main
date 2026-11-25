@@ -38,12 +38,12 @@ class CiBrowserResultsDirTests(unittest.TestCase):
                               capture_output=True, text=True).stdout
 
     def test_relative_artifact_root_becomes_absolute_from_the_invocation_directory(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory).resolve()
             self.assertEqual(self._resolve("artifacts", root), f"{root}/artifacts/test-results/browser")
 
     def test_absolute_artifact_root_is_kept(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             self.assertEqual(self._resolve("/tmp/meridian-ci", Path(directory)),
                              "/tmp/meridian-ci/test-results/browser")
 
