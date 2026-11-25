@@ -130,7 +130,14 @@ internal sealed class BrokerOrderSweep(
     internal async Task<KillSwitchSweepFailure?> CancelResidualOrderAsync(
         BrokerOrder order,
         CancellationToken ct,
-        OrderSubmissionAuthority? authority = null)
+        OrderSubmissionAuthority? authority = null) =>
+        (await CancelResidualOrderWithEvidenceAsync(order, ct, authority).ConfigureAwait(false)).Failure;
+
+    internal async Task<BrokerOrderCancellationEvidence> CancelResidualOrderWithEvidenceAsync(
+        BrokerOrder order,
+        CancellationToken ct,
+        OrderSubmissionAuthority? authority = null,
+        string? cancelAllIncidentId = null)
     {
         KillSwitchSweepFailure? failure;
         ExecutionReport? report = null;
@@ -167,7 +174,8 @@ internal sealed class BrokerOrderSweep(
                     ? "Cancel-all cancelled a broker-side order the in-memory book did not track."
                     : failure.Value.Reason,
                 ct: ct,
-                authority: authority).ConfigureAwait(false);
+                authority: authority,
+                cancelAllIncidentId: cancelAllIncidentId).ConfigureAwait(false);
         }
         catch (Exception auditException)
         {
@@ -177,7 +185,7 @@ internal sealed class BrokerOrderSweep(
                 LogSanitizer.Sanitize(order.OrderId));
         }
 
-        return failure;
+        return new(failure, report);
     }
 
     internal async Task<(IReadOnlyList<BrokerOrder> WorkingOrders, string? EnumerationError)>
@@ -218,3 +226,5 @@ internal sealed class BrokerOrderSweep(
             ? explicitCancellationGateway.CancelOrderAsync(identifier, ct)
             : _gateway.CancelOrderAsync(identifier.Value, ct);
 }
+
+internal sealed record BrokerOrderCancellationEvidence(KillSwitchSweepFailure? Failure, ExecutionReport? Report);

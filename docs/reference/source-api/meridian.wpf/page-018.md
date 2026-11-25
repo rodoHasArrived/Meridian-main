@@ -6,6 +6,196 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataWorkspaceShellPageBase
+
+Qualified name: <code>Meridian.Wpf.Views.DataWorkspaceShellPageBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:386](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L386).
+
+Binds derived pages to the data workspace shell definition.
+
+```csharp
+public class DataWorkspaceShellPageBase : WorkspaceShellPageBase<DataWorkspaceShellStateProvider, Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellViewModel>
+```
+
+## DiagnosticsPage
+
+Qualified name: <code>Meridian.Wpf.Views.DiagnosticsPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/DiagnosticsPage.xaml.cs:20](../../../../src/Meridian.Wpf/Views/DiagnosticsPage.xaml.cs#L20).
+
+Diagnostics page — thin code-behind. All diagnostic checks, system info, and output generation live in DiagnosticsPageViewModel. This file handles only visual concerns that require WPF resource lookups (status dot colours).
+
+```csharp
+public partial class DiagnosticsPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DiagnosticsPage(WpfServices.NavigationService navigationService, WpfServices.NotificationService notificationService, IConnectivityProbeService? connectivityProbe = null, ICoLocationProfileActivator? coLocationProfileActivator = null, ProviderLatencyService? latencyService = null);</code> | [src/Meridian.Wpf/Views/DiagnosticsPage.xaml.cs:25](../../../../src/Meridian.Wpf/Views/DiagnosticsPage.xaml.cs#L25) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:34](../../../../src/Meridian.Wpf/Views/Pages.cs#L34).
+
+```csharp
+public partial class DiagnosticsPage : Page
+```
+
+## DirectLendingPage
+
+Qualified name: <code>Meridian.Wpf.Views.DirectLendingPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/DirectLendingPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/DirectLendingPage.xaml.cs#L10).
+
+Provides the desktop page to review lending positions and configure credit workflows.
+
+```csharp
+public partial class DirectLendingPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DirectLendingPage();</code> | [src/Meridian.Wpf/Views/DirectLendingPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/DirectLendingPage.xaml.cs#L14) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:86](../../../../src/Meridian.Wpf/Views/Pages.cs#L86).
+
+```csharp
+public partial class DirectLendingPage : Page
+```
+
+## EditScheduledJobDialog
+
+Qualified name: <code>Meridian.Wpf.Views.EditScheduledJobDialog</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs:12](../../../../src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs#L12).
+
+Dialog for editing or deleting a scheduled backfill job. Replaces the former imperative EditScheduledJobDialog Window class that was embedded in BackfillPage.xaml.cs.
+
+```csharp
+public partial class EditScheduledJobDialog : Window
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string JobName =&gt; …;</code> | [src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs:15](../../../../src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs#L15) | Gets the (possibly updated) job name. |
+| <code>public string NextRunText { get; private set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs:18](../../../../src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs#L18) | Gets the computed next-run display text based on frequency and time selections. |
+| <code>public bool ShouldDelete { get; private set; }</code> | [src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs:21](../../../../src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs#L21) | Gets whether the user requested deletion of this job. |
+| <code>public EditScheduledJobDialog(ScheduledJobInfo job);</code> | [src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs:23](../../../../src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs#L23) |  |
+
+## EditWatchlistDialog
+
+Qualified name: <code>Meridian.Wpf.Views.EditWatchlistDialog</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/EditWatchlistDialog.cs:11](../../../../src/Meridian.Wpf/Views/EditWatchlistDialog.cs#L11).
+
+Dialog for editing an existing watchlist.
+
+```csharp
+public sealed class EditWatchlistDialog : Window
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string WatchlistName =&gt; …;</code> | [src/Meridian.Wpf/Views/EditWatchlistDialog.cs:17](../../../../src/Meridian.Wpf/Views/EditWatchlistDialog.cs#L17) |  |
+| <code>public string Symbols =&gt; …;</code> | [src/Meridian.Wpf/Views/EditWatchlistDialog.cs:18](../../../../src/Meridian.Wpf/Views/EditWatchlistDialog.cs#L18) |  |
+| <code>public string? SelectedColor =&gt; …;</code> | [src/Meridian.Wpf/Views/EditWatchlistDialog.cs:19](../../../../src/Meridian.Wpf/Views/EditWatchlistDialog.cs#L19) |  |
+| <code>public bool ShouldDelete { get; private set; }</code> | [src/Meridian.Wpf/Views/EditWatchlistDialog.cs:20](../../../../src/Meridian.Wpf/Views/EditWatchlistDialog.cs#L20) |  |
+| <code>public EditWatchlistDialog(Watchlist watchlist);</code> | [src/Meridian.Wpf/Views/EditWatchlistDialog.cs:34](../../../../src/Meridian.Wpf/Views/EditWatchlistDialog.cs#L34) |  |
+
+## EntityConsolidationControl
+
+Qualified name: <code>Meridian.Wpf.Views.EntityConsolidationControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/EntityConsolidationControl.xaml.cs:6](../../../../src/Meridian.Wpf/Views/EntityConsolidationControl.xaml.cs#L6).
+
+```csharp
+public partial class EntityConsolidationControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public EntityConsolidationControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/EntityConsolidationControl.xaml.cs:8](../../../../src/Meridian.Wpf/Views/EntityConsolidationControl.xaml.cs#L8) |  |
+| <code>public event RoutedEventHandler? ReviewDraftsRequested;</code> | [src/Meridian.Wpf/Views/EntityConsolidationControl.xaml.cs:9](../../../../src/Meridian.Wpf/Views/EntityConsolidationControl.xaml.cs#L9) |  |
+
+## EnvironmentDesignerPage
+
+Qualified name: <code>Meridian.Wpf.Views.EnvironmentDesignerPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L17).
+
+Coordinates environment draft and version selection, JSON editing, validation, and version comparison.
+
+```csharp
+public partial class EnvironmentDesignerPage : Page, INotifyPropertyChanged
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public EnvironmentDesignerPage(IEnvironmentDesignService designService, IEnvironmentValidationService validationService, IEnvironmentPublishService publishService);</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:32](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L32) |  |
+| <code>public event PropertyChangedEventHandler? PropertyChanged;</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:44](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L44) |  |
+| <code>public ObservableCollection&lt;EnvironmentDraftDto&gt; Drafts { get; } = [];</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:46](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L46) |  |
+| <code>public ObservableCollection&lt;PublishedEnvironmentVersionDto&gt; Versions { get; } = [];</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:48](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L48) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:50](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L50) |  |
+| <code>public string DraftJson { get; set; }</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:56](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L56) |  |
+| <code>public string DraftSummaryText { get; private set; }</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:62](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L62) |  |
+| <code>public string ValidationAndDiffText { get; private set; }</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:68](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L68) |  |
+| <code>public EnvironmentDraftDto? SelectedDraft { get; set; }</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:74](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L74) |  |
+| <code>public PublishedEnvironmentVersionDto? SelectedVersion { get; set; }</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:80](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L80) |  |
+
+## EventReplayPage
+
+Qualified name: <code>Meridian.Wpf.Views.EventReplayPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/EventReplayPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/EventReplayPage.xaml.cs#L10).
+
+Provides the desktop page to replay event streams to review sequence and signal behavior.
+
+```csharp
+public partial class EventReplayPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public EventReplayPage();</code> | [src/Meridian.Wpf/Views/EventReplayPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/EventReplayPage.xaml.cs#L14) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:43](../../../../src/Meridian.Wpf/Views/Pages.cs#L43).
+
+```csharp
+public partial class EventReplayPage : Page
+```
+
+## EvidenceWorkbenchPage
+
+Qualified name: <code>Meridian.Wpf.Views.EvidenceWorkbenchPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/EvidenceWorkbenchPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/EvidenceWorkbenchPage.xaml.cs#L12).
+
+Provides the desktop page to review evidence packets, proof chains, lineage, and retained vault documents.
+
+```csharp
+public partial class EvidenceWorkbenchPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public EvidenceWorkbenchPage() : this(new EvidenceWorkbenchViewModel(new WpfServices.EvidenceWorkbenchApiClient(ApiClientService.Instance)));</code> | [src/Meridian.Wpf/Views/EvidenceWorkbenchPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/EvidenceWorkbenchPage.xaml.cs#L16) |  |
+| <code>public EvidenceWorkbenchPage(EvidenceWorkbenchViewModel viewModel);</code> | [src/Meridian.Wpf/Views/EvidenceWorkbenchPage.xaml.cs:21](../../../../src/Meridian.Wpf/Views/EvidenceWorkbenchPage.xaml.cs#L21) |  |
+
 ## ExportPresetsPage
 
 Qualified name: <code>Meridian.Wpf.Views.ExportPresetsPage</code>. Kind: `class`.
@@ -842,184 +1032,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public PortfolioImportPage();</code> | [src/Meridian.Wpf/Views/PortfolioImportPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/PortfolioImportPage.xaml.cs#L13) |  |
-
-## PortfolioWorkspaceShellPageBase
-
-Qualified name: <code>Meridian.Wpf.Views.PortfolioWorkspaceShellPageBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:428](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L428).
-
-Binds derived pages to the portfolio workspace shell definition.
-
-```csharp
-public class PortfolioWorkspaceShellPageBase : WorkspaceShellPageBase<PortfolioWorkspaceShellStateProvider, PortfolioWorkspaceShellViewModel>
-```
-
-## PositionBlotterPage
-
-Qualified name: <code>Meridian.Wpf.Views.PositionBlotterPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:76](../../../../src/Meridian.Wpf/Views/Pages.cs#L76).
-
-```csharp
-public partial class PositionBlotterPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs#L12).
-
-Hosts position review and position-related drilldowns.
-
-```csharp
-public partial class PositionBlotterPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PositionBlotterPage() : this(TryResolveOperatingContextService());</code> | [src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs#L16) |  |
-| <code>public PositionBlotterPage(WorkstationOperatingContextService? operatingContextService);</code> | [src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs:21](../../../../src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs#L21) |  |
-
-## PostedLedgerPage
-
-Qualified name: <code>Meridian.Wpf.Views.PostedLedgerPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/PostedLedgerPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/PostedLedgerPage.xaml.cs#L11).
-
-Hosts trial-balance and profit-and-loss reporting derived from the posted journal.
-
-```csharp
-public partial class PostedLedgerPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostedLedgerPage(PostedLedgerViewModel viewModel);</code> | [src/Meridian.Wpf/Views/PostedLedgerPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/PostedLedgerPage.xaml.cs#L15) |  |
-
-## ProviderHealthPage
-
-Qualified name: <code>Meridian.Wpf.Views.ProviderHealthPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:11](../../../../src/Meridian.Wpf/Views/Pages.cs#L11).
-
-```csharp
-public partial class ProviderHealthPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/ProviderHealthPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/ProviderHealthPage.xaml.cs#L14).
-
-Provider health page — thin code-behind. All state, HTTP loading, timers, and connection-event tracking live in ProviderHealthViewModel.
-
-```csharp
-public partial class ProviderHealthPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderHealthPage(WpfServices.StatusService statusService, WpfServices.ConnectionService connectionService, WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService);</code> | [src/Meridian.Wpf/Views/ProviderHealthPage.xaml.cs:18](../../../../src/Meridian.Wpf/Views/ProviderHealthPage.xaml.cs#L18) |  |
-
-## ProviderPage
-
-Qualified name: <code>Meridian.Wpf.Views.ProviderPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:10](../../../../src/Meridian.Wpf/Views/Pages.cs#L10).
-
-```csharp
-public partial class ProviderPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/ProviderPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/ProviderPage.xaml.cs#L11).
-
-Page for viewing and managing backfill provider settings. Code-behind is thin lifecycle wiring only; all state and orchestration live in ProviderViewModel.
-
-```csharp
-public partial class ProviderPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderPage(ProviderViewModel viewModel);</code> | [src/Meridian.Wpf/Views/ProviderPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/ProviderPage.xaml.cs#L15) |  |
-
-## QualityArchivePage
-
-Qualified name: <code>Meridian.Wpf.Views.QualityArchivePage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:28](../../../../src/Meridian.Wpf/Views/Pages.cs#L28).
-
-```csharp
-public partial class QualityArchivePage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/QualityArchivePage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/QualityArchivePage.xaml.cs#L10).
-
-QualityArchivePage: WPF page for perpetual symbol quality calendar heatmap. Code-behind is thin: only initialization and constructor DI.
-
-```csharp
-public partial class QualityArchivePage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public QualityArchivePage(QualityArchiveViewModel viewModel);</code> | [src/Meridian.Wpf/Views/QualityArchivePage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/QualityArchivePage.xaml.cs#L12) |  |
-
-## QuantScriptPage
-
-Qualified name: <code>Meridian.Wpf.Views.QuantScriptPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:53](../../../../src/Meridian.Wpf/Views/Pages.cs#L53).
-
-```csharp
-public partial class QuantScriptPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/QuantScriptPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/QuantScriptPage.xaml.cs#L11).
-
-Code-behind for QuantScriptPage. Intentionally thin: DI wiring and layout persistence. ScottPlot rendering is handled by Behaviors.PlotRenderBehavior via the attached property.
-
-```csharp
-public partial class QuantScriptPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public QuantScriptPage(QuantScriptViewModel viewModel);</code> | [src/Meridian.Wpf/Views/QuantScriptPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/QuantScriptPage.xaml.cs#L15) |  |
-
-## QuoteFloatWindow
-
-Qualified name: <code>Meridian.Wpf.Views.QuoteFloatWindow</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/QuoteFloatWindow.xaml.cs:11](../../../../src/Meridian.Wpf/Views/QuoteFloatWindow.xaml.cs#L11).
-
-Floating tear-off quote panel window — thin code-behind. All live-data state lives in QuoteFloatViewModel.
-
-```csharp
-public partial class QuoteFloatWindow : Window
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public QuoteFloatWindow(QuoteFloatViewModel vm);</code> | [src/Meridian.Wpf/Views/QuoteFloatWindow.xaml.cs:15](../../../../src/Meridian.Wpf/Views/QuoteFloatWindow.xaml.cs#L15) |  |
-
-## ReportingWorkspaceShellPageBase
-
-Qualified name: <code>Meridian.Wpf.Views.ReportingWorkspaceShellPageBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:442](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L442).
-
-Binds derived pages to the reporting workspace shell definition.
-
-```csharp
-public class ReportingWorkspaceShellPageBase : WorkspaceShellPageBase<ReportingWorkspaceShellStateProvider, ReportingWorkspaceShellViewModel>
-```

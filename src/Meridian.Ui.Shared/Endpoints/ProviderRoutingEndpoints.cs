@@ -19,6 +19,7 @@ public static class ProviderRoutingEndpoints
     public static void MapProviderRoutingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         app.MapProviderCredentialOwnershipEndpoints(jsonOptions);
+        app.MapProviderConnectionTemplateEndpoints(jsonOptions);
         var group = app.MapGroup("").WithTags("Provider Routing");
         group.RequireWorkstationTenantScope();
 
@@ -99,6 +100,11 @@ public static class ProviderRoutingEndpoints
                 {
                     if (!EndpointAuthorization.HasPermission(context, UserPermission.ViewConfig | UserPermission.ManageProviders))
                         return EndpointHelpers.Forbidden();
+                    if (request.ProposedConfig is null &&
+                        context.RequestServices.GetService<Meridian.Application.Backfill.BackfillRoutingRuntime>()?.Current is { } routing)
+                    {
+                        return Results.Json(BackfillRoutingPreview.PreviewActive(routing, request, context.RequestAborted), jsonOptions);
+                    }
                     var store = context.RequestServices.GetService<Meridian.Application.UI.ConfigStore>();
                     var resolver = context.RequestServices.GetService<IProviderCredentialResolver>();
                     if (store is null || resolver is null)

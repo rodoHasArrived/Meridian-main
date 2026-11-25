@@ -2,8 +2,11 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Core.IO;
 using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Storage;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -15,6 +18,7 @@ namespace Meridian.Tests.Integration.EndpointTests;
 [Trait("Category", "Integration")]
 public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
+    private readonly EndpointTestFixture _fixture;
     private readonly HttpClient _dataSourceReadClient;
     private readonly HttpClient _providerReadClient;
     private readonly HttpClient _providerMutationClient;
@@ -23,6 +27,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
 
     public ProviderEndpointTests(EndpointTestFixture fixture)
     {
+        _fixture = fixture;
         // The data-source reads declare ViewConfig or ManageProviders. This client holds only the
         // former, so the read stays proven for a caller who can look at configuration but not change it.
         _dataSourceReadClient = fixture.CreatePermittedClient(UserPermission.ViewConfig);
@@ -114,11 +119,12 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     }
 
     [Fact]
-    public async Task GetRateLimitHistory_ReportsBoundedProcessLifetimeRetention()
+    public async Task GetRateLimitHistory_ReportsRootScopedRecentEventsAndDailyTotals()
     {
-        // The ring is process-wide. Use an isolated provider key so parallel provider tests
+        // The ring is shared by data root. Use an isolated provider key so parallel provider tests
         // cannot make this empty-history assertion depend on their quota observations.
         var provider = $"history-empty-{Guid.NewGuid():N}";
+        ProviderRateLimitHistory.Shared.Record(provider, null, httpStatus: 429);
         var response = await _providerReadClient.GetAsync($"/api/providers/{provider}/rate-limit-history?hours=12");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -129,37 +135,47 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         json["isAvailable"].GetBoolean().Should().BeTrue("an empty retained period does not mean the history service is unavailable");
         json["history"].ValueKind.Should().Be(JsonValueKind.Array);
         json["history"].GetArrayLength().Should().Be(0);
+        json["dailyRollupsAvailable"].GetBoolean().Should().BeTrue();
+        json["dailyRollups"].GetArrayLength().Should().Be(0);
         json["timestamp"].GetDateTimeOffset().Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromMinutes(1));
-        json["message"].GetString().Should().Contain("Process-lifetime")
-            .And.Contain("bounded to the latest 1024 observations across providers")
-            .And.Contain("Cleared on host restart")
-            .And.Contain("older observations may be evicted");
+        json["message"].GetString().Should().Contain("Recent events are held in memory")
+            .And.Contain("last seven UTC dates across host restarts");
     }
 
     [Fact]
     public async Task GetRateLimitHistory_ReturnsRetainedQuotaAndActualRotationEvidence()
     {
         var provider = $"history-observed-{Guid.NewGuid():N}";
-        var resetAt = DateTimeOffset.UtcNow.AddMinutes(1);
-        ProviderRateLimitHistory.Shared.Record(provider,
-            new RateLimitStatus(provider, 5, 5, TimeSpan.FromMinutes(1), true,
-                TimeSpan.FromMinutes(1), 1, DateTimeOffset.UtcNow, resetAt),
-            nextProvider: "stooq", httpStatus: 429);
+        var now = DateTimeOffset.UtcNow;
+        var resetAt = now.AddMinutes(1);
+        var status = new RateLimitStatus(provider, 5, 5, TimeSpan.FromMinutes(1), true,
+            TimeSpan.FromMinutes(1), 1, now, resetAt);
+        var history = ProviderRateLimitHistory.ForDataRoot(
+            _fixture.Services.GetRequiredService<StorageOptions>().RootPath,
+            _fixture.Services.GetRequiredService<IAtomicFileWriter>());
+        history.Record(provider, status, httpStatus: 429);
+        history.Record(provider, status, nextProvider: "stooq");
 
         var response = await _providerReadClient.GetAsync($"/api/providers/{provider}/rate-limit-history?hours=12");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(response);
         json["isAvailable"].GetBoolean().Should().BeTrue();
-        json["history"].GetArrayLength().Should().Be(1);
-        var retained = json["history"][0];
+        json["history"].GetArrayLength().Should().Be(2);
+        var retained = json["history"].EnumerateArray().Single(entry => entry.GetProperty("eventType").GetString() == "rate-limited");
         retained.GetProperty("requestsUsed").GetInt32().Should().Be(5);
         retained.GetProperty("usageRatio").GetDouble().Should().Be(1);
         retained.GetProperty("wasRateLimited").GetBoolean().Should().BeTrue();
         retained.GetProperty("resetAt").GetDateTimeOffset().Should().Be(resetAt);
-        retained.GetProperty("eventType").GetString().Should().Be("rotated");
-        retained.GetProperty("nextProvider").GetString().Should().Be("stooq");
         retained.GetProperty("httpStatus").GetInt32().Should().Be(429);
+        var rotation = json["history"].EnumerateArray().Single(entry => entry.GetProperty("eventType").GetString() == "rotated");
+        rotation.GetProperty("nextProvider").GetString().Should().Be("stooq");
+        json["dailyRollupsAvailable"].GetBoolean().Should().BeTrue();
+        var dailyTotal = json["dailyRollups"].EnumerateArray().Should().ContainSingle().Which;
+        dailyTotal.GetProperty("dateUtc").Deserialize<DateOnly>().Should().Be(
+            DateOnly.FromDateTime(retained.GetProperty("timestamp").GetDateTimeOffset().UtcDateTime));
+        dailyTotal.GetProperty("throttleCount").GetInt64().Should().Be(1);
+        dailyTotal.GetProperty("rotationCount").GetInt64().Should().Be(1);
     }
 
     #endregion

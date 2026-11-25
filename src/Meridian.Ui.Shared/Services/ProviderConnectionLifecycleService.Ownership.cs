@@ -1,11 +1,37 @@
 using Meridian.Application.ProviderRouting;
-using Meridian.DataIntegration.Credentials;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Configuration;
+using Meridian.DataIntegration.Credentials;
 
 namespace Meridian.Ui.Shared.Services;
 
 public sealed partial class ProviderConnectionLifecycleService
 {
+    public ProviderConnectionLifecycleService ForTemplateSetup(Guid setupId, string tenantId, string actor, string providerId)
+    {
+        var authority = _ownershipAuthority ??= new Meridian.Application.UI.ConfigStore(_configStore.ConfigPath);
+        var scope = ProviderConnectionTemplateService.RequireDraftScope(authority.LoadRequired(), setupId, tenantId, actor, providerId);
+        return new ProviderConnectionLifecycleService(this, scope, (setupId, actor));
+    }
+
+    public async Task<ProviderTemplateSetupTestResult> TestTemplateSetupAsync(string providerId, string actor, CancellationToken ct)
+    {
+        if (providerId is "tiingo" or "polygon" or "openfigi")
+            return await ProbeTemplateDataProviderAsync(providerId, ct).ConfigureAwait(false);
+
+        var result = await VerifyAsync(providerId, ct, actor).ConfigureAwait(false);
+        return result.VerificationState switch
+        {
+            ProviderVerificationStateDto.Verified when result.Success => new(true,
+                "The credential verifier confirmed the connection. Review the checklist for data capability and entitlement checks."),
+            ProviderVerificationStateDto.NotRequired when result.Success => new(true,
+                "The setup check passed. This provider requires no credentials. Use the checklist to verify the data feed."),
+            ProviderVerificationStateDto.NotVerified when result.LastError == ScopedVerificationUnavailable => new(true,
+                "The setup check confirmed the capability configuration and vault fields. Use the checklist to verify provider connectivity and data access."),
+            _ => new(false, "The connection test failed. Review the account, environment, and credentials, then try again.")
+        };
+    }
+
     /// <summary>Application configuration authority over the same path as the workstation store; created once per service.</summary>
     private Meridian.Application.UI.ConfigStore? _ownershipAuthority;
 
@@ -22,8 +48,11 @@ public sealed partial class ProviderConnectionLifecycleService
                 // Owned setup can save or remove credentials before a connection is enabled.
                 // Its status receipt must remain readable; secret reads and verification still
                 // require an enabled connection, as does runtime credential activation.
-                var current = ProviderRuntimeCredentialService.RequireScope(authority.LoadRequired(), providerId,
-                    _ownershipScope.ConnectionId, _ownershipScope.TenantId, requireEnabled: enforceLegacyOwnership);
+                var cfg = authority.LoadRequired();
+                var current = _templateSetup is { } draft
+                    ? ProviderConnectionTemplateService.RequireDraftScope(cfg, draft.SetupId, _ownershipScope.TenantId, draft.Actor, providerId)
+                    : ProviderRuntimeCredentialService.RequireScope(cfg, providerId, _ownershipScope.ConnectionId,
+                        _ownershipScope.TenantId, requireEnabled: enforceLegacyOwnership);
                 if (current != _ownershipScope)
                     throw new UnauthorizedAccessException("Credential ownership changed. Select the current connection again.");
             }
@@ -47,6 +76,10 @@ public sealed partial class ProviderConnectionLifecycleService
 
     private async Task<IDisposable> AcquireMutationOwnershipLeaseAsync(string providerId, CancellationToken ct)
     {
+        // Draft credentials cannot affect any running provider. The configuration lease still
+        // rechecks draft ownership and serializes vault changes with publication and discard.
+        if (_templateSetup is not null)
+            return await AcquireOwnershipLeaseAsync(providerId, true, ct).ConfigureAwait(false);
         if (_ownershipScope is null && _ownershipPolicy.ProhibitsLegacy(providerId))
             throw new UnauthorizedAccessException("Select an explicitly owned credential connection.");
         var lease = await _mutationGuard.AcquireAsync(providerId, _ownershipScope, ct).ConfigureAwait(false);

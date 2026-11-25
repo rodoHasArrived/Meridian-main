@@ -6,6 +6,143 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MaintenanceOptionsDto
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.MaintenanceOptionsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs:548](../../../../src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs#L548).
+
+```csharp
+public record MaintenanceOptionsDto(bool? ValidateChecksums = null, bool? CheckSequenceContinuity = null, bool? IdentifyCorruption = null, bool? CheckFilePermissions = null, int? ParallelOperations = null, bool? DeleteOrphans = null, bool? DeleteTemporaryFiles = null, bool? DeleteEmptyDirectories = null, int? OrphanAgeDays = null, long? MinFileSizeBytes = null, int? MaxFilesPerMerge = null, int? FileAgeDaysThreshold = null, bool? DryRun = null, bool? DeleteSourceAfterMigration = null, bool? VerifyAfterMigration = null, string? TargetCompressionCodec = null, int? CompressionLevel = null, bool? RecompressExisting = null, bool? BackupBeforeRepair = null, string? BackupPath = null, bool? TruncateCorrupted = null, int? OverrideRetentionDays = null, bool? SkipCriticalData = null);
+```
+
+## MaintenanceScheduleEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.MaintenanceScheduleEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/MaintenanceScheduleEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/MaintenanceScheduleEndpoints.cs#L14).
+
+Extension methods for registering maintenance schedule CRUD API endpoints.
+
+```csharp
+public static class MaintenanceScheduleEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapMaintenanceScheduleEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/MaintenanceScheduleEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/MaintenanceScheduleEndpoints.cs#L16) |  |
+
+## MeridianApiExceptionHandler
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.MeridianApiExceptionHandler</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiExceptionHandler.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiExceptionHandler.cs#L14).
+
+Converts unhandled endpoint exceptions into safe, stable Problem Details responses.
+
+```csharp
+public sealed class MeridianApiExceptionHandler : IExceptionHandler
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MeridianApiExceptionHandler(ILogger&lt;MeridianApiExceptionHandler&gt; logger);</code> | [src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiExceptionHandler.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiExceptionHandler.cs#L18) |  |
+| <code>public async ValueTask&lt;bool&gt; TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiExceptionHandler.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiExceptionHandler.cs#L24) |  |
+
+## MeridianApiProblemDetailsServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.MeridianApiProblemDetailsServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiProblemDetailsServiceCollectionExtensions.cs:10](../../../../src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiProblemDetailsServiceCollectionExtensions.cs#L10).
+
+Registers the shared Meridian Problem Details writer and exception handler.
+
+```csharp
+public static class MeridianApiProblemDetailsServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddMeridianApiProblemDetails(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiProblemDetailsServiceCollectionExtensions.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiProblemDetailsServiceCollectionExtensions.cs#L16) | Adds the RFC 7807 services used by the shared UI endpoint surface. Hosts should call UseExceptionHandler() after building the application. |
+
+## MessagingEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.MessagingEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs#L17).
+
+Extension methods for registering messaging and notification API endpoints. Wired to the actual DailySummaryWebhook and ConnectionStatusWebhook services.
+
+```csharp
+public static class MessagingEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapMessagingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs#L19) |  |
+
+## MoneyMarketFundEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.MoneyMarketFundEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs#L15).
+
+Minimal API endpoint group for money market fund reference data, liquidity projections, sweep profiles, fund-family views, and rebuild orchestration.
+
+```csharp
+public static class MoneyMarketFundEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapMoneyMarketFundEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs#L19) |  |
+
+## MoneyMarketFundReferenceEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.MoneyMarketFundReferenceEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs#L15).
+
+Maps money-market fund reference queries to HTTP endpoints.
+
+```csharp
+public static class MoneyMarketFundReferenceEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapMoneyMarketFundReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs#L17) |  |
+
+## MonitoringEndpointExemptions
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.MonitoringEndpointExemptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/MonitoringEndpointExemptions.cs:7](../../../../src/Meridian.Ui.Shared/Endpoints/MonitoringEndpointExemptions.cs#L7).
+
+Canonical unauthenticated lifecycle and scrape surface. Matching is exact (apart from a trailing slash) so comprehensive or nested health routes remain governed.
+
+```csharp
+public static class MonitoringEndpointExemptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsExempt(string path) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/MonitoringEndpointExemptions.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/MonitoringEndpointExemptions.cs#L15) |  |
+
 ## MutationAuthorizationGuardMiddleware
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.MutationAuthorizationGuardMiddleware</code>. Kind: `class`.
@@ -260,7 +397,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.PromotionEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs#L17).
+Source: [src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs#L18).
 
 REST endpoints for the Backtest → Paper → Live promotion workflow. Enables operators to evaluate, approve, or reject strategy promotions through the web dashboard.
 
@@ -272,7 +409,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapPromotionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs#L19) |  |
+| <code>public static void MapPromotionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs#L20) |  |
 
 ## ProviderConnectionEndpoints
 
@@ -291,6 +428,22 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapProviderConnectionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs#L18) |  |
+
+## ProviderConnectionTemplateEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderConnectionTemplateEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionTemplateEndpoints.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionTemplateEndpoints.cs#L12).
+
+```csharp
+public static class ProviderConnectionTemplateEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapProviderConnectionTemplateEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionTemplateEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionTemplateEndpoints.cs#L16) |  |
 
 ## ProviderCredentialEndpoints
 
@@ -364,13 +517,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapProviderEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:78](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs#L78) | Maps all provider and data source API endpoints. |
+| <code>public static void MapProviderEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:83](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs#L83) | Maps all provider and data source API endpoints. |
 
 ## ProviderExtendedEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderExtendedEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L22).
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:28](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L28).
 
 Extension methods for registering extended provider API endpoints (failover, rate limits, capabilities, switching).
 
@@ -382,13 +535,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapProviderExtendedEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L24) |  |
+| <code>public static void MapProviderExtendedEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:30](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L30) |  |
 
 ## ProviderModuleEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderModuleEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs#L16).
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs#L21).
 
 API endpoints for provider module setup: discovery, configuration, enable/disable, remove, test, and restart. All endpoints live under /api/providers/modules and require the workstation tenant scope.
 
@@ -400,7 +553,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapProviderModuleEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs#L18) |  |
+| <code>public static void MapProviderModuleEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs#L23) |  |
 
 ## ProviderRoutingEndpoints
 
@@ -424,7 +577,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderValidationEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L13).
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L15).
 
 Non-secret provider-boundary validation settings and before/after change evidence.
 
@@ -436,24 +589,24 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapProviderValidationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L15) |  |
-| <code>public static (AppConfig Config, ProviderValidationProfileAudit Result) ApplyProfile(AppConfig config, string provider, ProviderValidationProfileRequest request, string actor);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:70](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L70) |  |
+| <code>public static void MapProviderValidationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L19) |  |
+| <code>public static (AppConfig Config, ProviderValidationProfileAudit Result) ApplyProfile(AppConfig config, string provider, ProviderValidationProfileRequest request, string actor);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:102](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L102) |  |
 
 ## ProviderValidationProfileRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderValidationProfileRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:97](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L97).
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:202](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L202).
 
 ```csharp
-public sealed record ProviderValidationProfileRequest(ProviderValidationProfile Profile, string? Reason = null);
+public sealed record ProviderValidationProfileRequest(ProviderValidationProfile? Profile = null, string? Reason = null, bool ConfirmLoosening = false, bool ResetToDefault = false, string? ExpectedRevision = null);
 ```
 
 ## QuantDiagnosticDto
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantDiagnosticDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:359](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L359).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:384](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L384).
 
 JSON-friendly Roslyn diagnostic.
 
@@ -465,7 +618,7 @@ public sealed record QuantDiagnosticDto(string Severity, string Message, int Lin
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantLabEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:28](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L28).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:29](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L29).
 
 HTTP endpoints that expose the Meridian QuantScript engine (the &quot;Quant Lab&quot;) to the browser workstation. Endpoints are only meaningful when an IScriptRunner has been registered (gated by QuantLab:Enabled); when not registered, calls return 503 Service Unavailable.
 
@@ -477,13 +630,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapQuantLabEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:34](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L34) | Maps Quant Lab routes onto the application. Safe to call regardless of whether the QuantScript engine is registered — endpoints respond with 503 when it is missing. |
+| <code>public static void MapQuantLabEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:35](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L35) | Maps Quant Lab routes onto the application. Safe to call regardless of whether the QuantScript engine is registered — endpoints respond with 503 when it is missing. |
 
 ## QuantMetricDto
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantMetricDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:362](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L362).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:387](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L387).
 
 JSON-friendly metric entry (label/value).
 
@@ -495,7 +648,7 @@ public sealed record QuantMetricDto(string Label, string Value);
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantParameterDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:374](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L374).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:399](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L399).
 
 JSON-friendly description of a discovered script parameter.
 
@@ -507,7 +660,7 @@ public sealed record QuantParameterDto(string Name, string Label, string TypeNam
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantParametersRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:331](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L331).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:356](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L356).
 
 Body of a POST to /api/quant/parameters.
 
@@ -519,7 +672,7 @@ public sealed record QuantParametersRequest(string Source);
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantParametersResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:384](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L384).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:409](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L409).
 
 Response returned by /api/quant/parameters.
 
@@ -531,7 +684,7 @@ public sealed record QuantParametersResponse(IReadOnlyList<QuantParameterDto> Pa
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantPlotBarDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:340](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L340).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:365](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L365).
 
 OHLC bar for candlestick plots.
 
@@ -543,7 +696,7 @@ public sealed record QuantPlotBarDto(string Date, double Open, double High, doub
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantPlotDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:349](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L349).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:374](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L374).
 
 JSON-friendly representation of a single plot emitted by a script.
 
@@ -555,7 +708,7 @@ public sealed record QuantPlotDto(string Title, string Type, IReadOnlyList<Quant
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantPlotPointDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:334](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L334).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:359](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L359).
 
 Plot data point with an ISO-8601 date for safe JSON transport.
 
@@ -567,7 +720,7 @@ public sealed record QuantPlotPointDto(string Date, double Value);
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantPlotSeriesDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:337](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L337).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:362](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L362).
 
 A single named series for multi-line plots.
 
@@ -579,7 +732,7 @@ public sealed record QuantPlotSeriesDto(string Label, IReadOnlyList<QuantPlotPoi
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantRunRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:323](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L323).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:348](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L348).
 
 Body of a POST to /api/quant/run.
 
@@ -591,7 +744,7 @@ public sealed record QuantRunRequest(string Source, IReadOnlyDictionary<string, 
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantRunResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:393](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L393).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:418](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L418).
 
 Response returned by /api/quant/run.
 
@@ -603,14 +756,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static QuantRunResponse From(ScriptRunResult result) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:408](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L408) | Maps a strongly-typed ScriptRunResult into the JSON DTO. |
-| <code>public static QuantRunResponse FromError(string message) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:446](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L446) | Constructs an error response for unhandled exceptions. |
+| <code>public IReadOnlyList&lt;ProviderProvenanceReceipt&gt; ProviderProvenanceReceipts { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:432](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L432) |  |
+| <code>public static QuantRunResponse From(ScriptRunResult result) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:435](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L435) | Maps a strongly-typed ScriptRunResult into the JSON DTO. |
+| <code>public static QuantRunResponse FromError(string message) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:477](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L477) | Constructs an error response for unhandled exceptions. |
 
 ## QuantTemplateDto
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantTemplateDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:387](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L387).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:412](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L412).
 
 A pre-built starter snippet for the lab.
 
@@ -622,7 +776,7 @@ public sealed record QuantTemplateDto(string Id, string Title, string Descriptio
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantTemplatesResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:390](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L390).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:415](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L415).
 
 Response returned by /api/quant/templates.
 
@@ -634,7 +788,7 @@ public sealed record QuantTemplatesResponse(IReadOnlyList<QuantTemplateDto> Temp
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantTradeDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:365](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L365).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:390](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L390).
 
 JSON-friendly script-emitted trade row.
 
@@ -652,126 +806,4 @@ Registers or replaces one fixed asset on a fund book&#x27;s depreciation registe
 
 ```csharp
 public sealed record RegisterFixedAssetRequest(string FundProfileId, Guid LedgerBookId, FixedAssetRecord Asset, string EvidenceUri, DateOnly? RetiredOn = null);
-```
-
-## ReplayEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.ReplayEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs#L23).
-
-Extension methods for registering event replay API endpoints. Integrates with JsonlReplayer for JSONL event inspection and event-count scans. Timed playback and playback controls are not implemented by this host.
-
-```csharp
-public static class ReplayEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapReplayEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:26](../../../../src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs#L26) |  |
-
-## ReportExportRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.ReportExportRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:762](../../../../src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs#L762).
-
-Request DTO for report export.
-
-```csharp
-public record ReportExportRequest(string? Date, string? Format);
-```
-
-## ResilienceEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.ResilienceEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs#L19).
-
-Extension methods for registering resilience, cost estimation, and compliance endpoints.
-
-```csharp
-public static class ResilienceEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapResilienceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs#L21) |  |
-
-## RestoreRecurringJournalDefinitionsRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.RestoreRecurringJournalDefinitionsRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs#L17).
-
-```csharp
-public sealed record RestoreRecurringJournalDefinitionsRequest(string ScheduleId, int ScheduleVersion, int TemplateVersion, string Reason);
-```
-
-## RiskEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.RiskEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:76](../../../../src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs#L76).
-
-Exposes runtime risk rule status, operator-managed rule configuration, and the governed-approval queue for escalated orders.
-
-```csharp
-public static class RiskEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapRiskEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:78](../../../../src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs#L78) |  |
-
-## RiskEscalationApprovalResponse
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.RiskEscalationApprovalResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:70](../../../../src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs#L70).
-
-Approve response: the resolved escalation plus the release order result when resubmitted.
-
-```csharp
-public sealed record RiskEscalationApprovalResponse(RiskEscalationDto Escalation, OrderResult? ReleaseResult);
-```
-
-## RiskEscalationDto
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.RiskEscalationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs#L16).
-
-Flat projection of a parked risk escalation for API and workstation consumption.
-
-```csharp
-public sealed record RiskEscalationDto(string EscalationId, string Symbol, string Side, string Type, decimal Quantity, decimal? LimitPrice, string Reason, string? RuleName, string Status, DateTimeOffset ParkedAt, string? ResolvedBy, string? ResolutionReason, DateTimeOffset? ResolvedAt, decimal? StopPrice = null, decimal? TrailPrice = null, decimal? TrailPercent = null, string? TimeInForce = null, decimal? RoutedNotional = null, Guid? FundAccountId = null, string? StrategyId = null, string? PositionIntent = null, OptionContractIdentity? OptionContract = null, IReadOnlyList<OrderLeg>? Legs = null);
-```
-
-## RiskEscalationResolutionRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.RiskEscalationResolutionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:47](../../../../src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs#L47).
-
-Operator resolution request for a parked escalation.
-
-```csharp
-public sealed record RiskEscalationResolutionRequest(string? Reason = null, bool Release = true);
-```
-
-## RunAccrualScheduleInput
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.RunAccrualScheduleInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs#L23).
-
-```csharp
-public sealed record RunAccrualScheduleInput(string FundProfileId, Guid LedgerBookId, string EntityId, int ExpectedVersion);
 ```

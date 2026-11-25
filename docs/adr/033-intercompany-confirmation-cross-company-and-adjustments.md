@@ -34,7 +34,7 @@ Reciprocal balance confirmation (`W12-ICCONFIRM-001`) left two gaps out of its f
    company can settle the other's position. Same-company pairs keep the single resolution that needs authority over
    both books.
 4. **Same-company records are unchanged.** Records retained before this decision, and same-company pairs, leave the
-   party company fields empty and stay visible to their proposing company alone. Ledger migration `079` adds two
+   party company fields empty and stay visible to their proposing company alone. Ledger migration `083` adds two
    nullable columns and indexes and rewrites no retained version.
 5. **A resolved dispute may pre-fill an ordinary journal draft.** For a `Resolved` confirmation, at the exact version
    and balance digest shown, an operator of one side may prepare a balanced draft in that side's book: a signed amount
@@ -53,7 +53,7 @@ Reciprocal balance confirmation (`W12-ICCONFIRM-001`) left two gaps out of its f
 | --- | --- | --- |
 | Contracts | `src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs` | Party company fields, `IsCrossCompany`, `IsVisibleTo`, adjustment request |
 | Rules and service | `src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs`, `src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs` | Per-side cross-company resolution; per-side company scope |
-| Stores | `src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs`, `src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs`, `src/Meridian.Storage/Ledger/Migrations/V_ledger_079__intercompany_confirmation_party_companies.sql` | Visibility by either party company; company-less lock key |
+| Stores | `src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs`, `src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs`, `src/Meridian.Storage/Ledger/Migrations/V_ledger_083__intercompany_confirmation_party_companies.sql` | Visibility by either party company; company-less lock key |
 | Adjustment drafts | `src/Meridian.Ui.Shared/Services/IntercompanyConfirmationAdjustmentDraftService.cs`, `src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs` | `POST /api/ledger/intercompany/confirmations/{id}/adjustment-drafts` |
 | Browser | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.entity-confirmations.tsx` | Company labels, per-side resolution, adjustment fields |
 | Desktop | `src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs`, `src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml` | Same, over the shared route |

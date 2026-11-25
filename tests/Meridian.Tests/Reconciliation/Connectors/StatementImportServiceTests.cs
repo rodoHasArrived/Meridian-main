@@ -27,6 +27,107 @@ namespace Meridian.Tests.Reconciliation.Connectors;
 /// </summary>
 public sealed class StatementImportServiceTests : IDisposable
 {
+    [Fact]
+    public async Task ReviewedImport_retains_scoped_rows_exclusion_reasons_and_repeat_outcomes()
+    {
+        var request = CommitRequest(FixtureDocument("csv-mixed-kinds.csv")) with { TenantId = "tenant-review", CompanyId = "company-review" };
+        var preview = await _service.PreviewReviewAsync(request);
+        preview.ReviewId.Should().StartWith("sir-");
+        preview.Rows.Should().HaveCount(preview.RecordCount);
+        preview.Rows.Should().OnlyContain(row => row.SourceRowNumber == null && row.Record.QuantityExact != null);
+        var excluded = preview.Rows.First();
+        var commit = request with
+        {
+            ReviewId = preview.ReviewId,
+            RowDispositions = [new(excluded.RowId, "Exclude", "Retained duplicate source activity.")]
+        };
+
+        var result = await _service.CommitAsync(commit);
+        var replay = await _service.CommitAsync(commit);
+
+        result.RecordCount.Should().Be(preview.RecordCount - 1);
+        result.RowOutcomes.Should().HaveCount(preview.RecordCount);
+        result.RowOutcomes.Single(row => row.RowId == excluded.RowId).Should().Match<StatementImportRowOutcomeDto>(
+            row => row.Status == "Excluded" && row.Reason == "Retained duplicate source activity.");
+        replay.Duplicate.Should().BeTrue();
+        replay.RowOutcomes.Should().BeEquivalentTo(result.RowOutcomes);
+        (await _service.GetReviewAsync(preview.ReviewId!, "another-tenant", "company-review")).Should().BeNull();
+        var review = (await _service.GetReviewAsync(preview.ReviewId!, "tenant-review", "company-review"))!;
+        var page = await _service.GetReviewOutcomesAsync(review, 1, 1);
+        page!.TotalRows.Should().Be(preview.RecordCount);
+        page.RowOutcomes.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task ReviewedImport_refuses_changed_scope_unknown_rows_missing_reason_and_changed_decisions()
+    {
+        var request = CommitRequest(FixtureDocument("csv-mixed-kinds.csv")) with { TenantId = "tenant-review", CompanyId = "company-review" };
+        var preview = await _service.PreviewReviewAsync(request);
+        var reviewed = request with { ReviewId = preview.ReviewId };
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.ValidateReviewedCommitAsync(reviewed with { PeriodEnd = new DateOnly(2026, 7, 1) }));
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(reviewed with
+        { RowDispositions = [new("unknown", "Exclude", "Duplicate")] }));
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(reviewed with
+        { RowDispositions = [new(preview.Rows[0].RowId, "Exclude", " ")] }));
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(reviewed with
+        { RowDispositions = [new(preview.Rows[0].RowId, "AcceptAsBreak", "Investigate")] }));
+        await _service.CommitAsync(reviewed);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CommitAsync(reviewed with
+        { RowDispositions = [new(preview.Rows[0].RowId, "Exclude", "Changed after confirmation")] }));
+    }
+
+    [Fact]
+    public async Task Review_rows_remain_scoped_and_page_bounds_are_explicit()
+    {
+        var request = CommitRequest(FixtureDocument("csv-mixed-kinds.csv")) with { TenantId = "tenant-review", CompanyId = "company-review" };
+        var preview = await _service.PreviewReviewAsync(request);
+        var review = (await _service.GetReviewAsync(preview.ReviewId!, "tenant-review", "company-review"))!;
+        var page = StatementImportService.ReviewRows(review, 1, 2);
+        page.Rows.Should().HaveCount(2);
+        page.TotalRows.Should().Be(preview.RecordCount);
+        page.Rows[0].NormalizedIndex.Should().Be(1);
+        Assert.Throws<InvalidDataException>(() => StatementImportService.ReviewRows(review, -1, 100));
+        Assert.Throws<InvalidDataException>(() => StatementImportService.ReviewRows(review, 0, 201));
+    }
+
+    [Fact]
+    public async Task ReviewedImport_pages_all_outcomes_and_rejects_corrupted_row_order()
+    {
+        var csv = "account,symbol,quantity,price,cashAmount,activityType,tradeDate,currency\n"
+            + string.Join('\n', Enumerable.Range(0, 151).Select(index => $"FUND-A,STK{index},1,10,0,position,2026-06-30,USD"));
+        var request = CommitRequest(new StatementSourceDocument("many.csv", Encoding.UTF8.GetBytes(csv))) with
+        { TenantId = "tenant-review", CompanyId = "company-review" };
+        var preview = await _service.PreviewReviewAsync(request);
+        preview.TotalRows.Should().Be(151);
+        preview.Rows.Should().HaveCount(100);
+        var result = await _service.CommitAsync(request with { ReviewId = preview.ReviewId });
+        result.TotalRows.Should().Be(151);
+        result.RowOutcomes.Should().HaveCount(100);
+        var review = (await _service.GetReviewAsync(preview.ReviewId!, "tenant-review", "company-review"))!;
+        (await _service.GetReviewOutcomesAsync(review, 100, 100))!.RowOutcomes.Should().HaveCount(51);
+
+        var path = Path.Combine(_root, "reconciliation", "statement-import-reviews", preview.ReviewId + ".preview.json");
+        var corrupted = JsonNode.Parse(await File.ReadAllTextAsync(path))!;
+        corrupted["rows"]![0]!["normalizedIndex"] = 1;
+        await File.WriteAllTextAsync(path, corrupted.ToJsonString());
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.GetReviewAsync(preview.ReviewId!, "tenant-review", "company-review"));
+    }
+
+    [Fact]
+    public async Task ReviewedImport_supplementary_financial_evidence_cannot_be_excluded_without_row_mapping()
+    {
+        var request = CommitRequest(RichAlpacaDocument("USD"), externalAccountId: "PA3ALPACA01") with
+        { TenantId = "tenant-review", CompanyId = "company-review" };
+        var preview = await _service.PreviewReviewAsync(request);
+        preview.Rows.Should().NotBeEmpty();
+        preview.Rows.Should().OnlyContain(row => !row.CanExclude);
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(request with
+        {
+            ReviewId = preview.ReviewId,
+            RowDispositions = [new(preview.Rows[0].RowId, "Exclude", "Would orphan supplemental evidence")]
+        }));
+    }
+
     private readonly string _root = StatementConnectorTestData.CreateTempRoot("mdc_stmt_import_svc");
     private readonly StatementMappingProfileCatalog _catalog;
     private readonly StatementConnectorRegistry _registry;

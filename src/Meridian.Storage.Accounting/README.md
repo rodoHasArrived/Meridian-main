@@ -165,3 +165,6 @@ Preserve database transaction boundaries, migration hashes and tenant/accounting
 
 - [Storage source guide](../Meridian.Storage/README.md)
 - [Module map](../../docs/architecture/module-map.md)
+
+The external GL posting migration adds the retained package, decision, outbox and receipt
+tables. Monthly and fiscal close check confirmation in the transaction for books that opt in.

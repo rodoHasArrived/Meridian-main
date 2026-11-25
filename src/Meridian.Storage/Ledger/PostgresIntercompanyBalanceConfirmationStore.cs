@@ -10,7 +10,7 @@ namespace Meridian.Storage.Ledger;
 
 /// <summary>
 /// Append-only, tenant- and company-owned reciprocal balance confirmation versions. A confirmation whose books belong to
-/// two companies of the tenant is also visible to each side's company (V_ledger_079).
+/// two companies of the tenant is also visible to each side's company (V_ledger_083).
 /// </summary>
 public sealed class PostgresIntercompanyBalanceConfirmationStore : IIntercompanyBalanceConfirmationStore
 {

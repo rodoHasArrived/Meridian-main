@@ -43,6 +43,11 @@ For host tracing configuration or disconnected pipeline/backfill spans, start wi
 `src/Meridian.Platform/Tracing/`, shared host composition under
 `src/Meridian.Application/Composition/`, and the pipeline/backfill owners in the source registry.
 
+For workstation backfill quotas, start with [Provider Backfill Operations](../../operators/provider-backfill-operations.md#workstation-quota-and-receipts).
+`BackfillQuotaPlanner` and `WorkstationBackfillQueue` in `Meridian.Application/Backfill` own the
+estimate and admission. `BackfillExecutionContractProjection` exposes tenant-scoped execution
+receipts to the Data workstation.
+
 For Evidence Vault storage quotas, start with
 [`Meridian.Documents`](../../../src/Meridian.Documents/README.md#evidence-storage-quota-configuration):
 `EvidenceStorageQuotaCoordinator` owns admission, durable reservations, and recovery leases.

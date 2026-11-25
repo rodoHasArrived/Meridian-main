@@ -6,10 +6,63 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Execution
+
+## Retained cancel-all incidents
+
+Every OMS cancel-all sweep assigns an incident ID and retains structured evidence in the existing
+execution audit WAL: an initial header, bounded per-order updates, and one complete final snapshot.
+The header carries authority, actor/correlation, execution mode, gateway and verified broker scope;
+each known local order retains its fund-account attribution. The complete snapshot keeps all orders,
+including those beyond the ten names in `KillSwitchSweepResult.Describe()`. Recording follows the
+existing cancellation and fill paths; it does not apply executions or create accounting postings.
+
+`ExecutionAuditTrailService.GetCancelAllIncidentAsync(incidentId, fundAccountId)` and
+`GetCancelAllIncidentsAsync(fundAccountId, take)` reopen the WAL rather than the bounded audit display
+cache. Account projections omit other accounts and unattributed broker-only rows, and explicitly mark
+the projection. Full broker-only observations remain in the internal audit history. Public generic
+audit feeds must omit `ExecutionAuditEntry.CancelAllEvidence`; only an authorized account-scoped
+incident endpoint may expose its projection. Reopening never contacts or acts on the broker.
+Sweep lifecycle audit records carry a non-authorizing `cancelAllIncidentId` metadata marker, including
+parameterless sweeps, so generic HTTP projections can suppress raw cross-account details while
+the internal audit retains them.
+
+Outcomes distinguish confirmed cancellation, a fill during cancellation, another terminal outcome,
+still-working orders, unknown state, and escalation withdrawal before dispatch. Filled and remaining
+quantities are historical observations at `ObservedAt`, not current position exposure. A fresh
+executable-side quote can value measured USD equity share quantities; unsupported instruments,
+stale quotes, unknown state and unconfirmed replacements retain unavailable valuation. Terminal
+predecessors with retained pending amendments remain sweep targets and never count as cancelled
+while their successor is unresolved. Broker coverage remains explicit even if every local order
+was cancelled.
+The final local observations include cumulative fills applied while broker convergence was in
+flight, without overwriting a contradictory broker survivor or resolving earlier uncertainty.
+Missing broker share quantity, including native notional orders reported with quantity zero, stays
+unknown rather than becoming zero residual exposure. Valuation never runs before cancellation;
+post-cancel instrument and quote reads have a separate 250ms budget.
+
+Incident durability requires the audit WAL's default `EveryWrite` mode. Missing storage, weaker
+sync settings, or failed writes never veto cancellation: the result carries `IncidentId`,
+`EvidenceRetained=false` and `EvidenceError`, and its display text names missing retention.
+Each sweep audit write has a one-second budget. After a failed incident checkpoint, further
+checkpoints stay in memory until one final full-snapshot retry, preventing repeated storage delays
+from accumulating across the book.
+A successful final snapshot can recover earlier missing checkpoints while retaining the write
+failure explanation. Without a retained completion, readback reports incomplete observations.
+Identical replayed updates are idempotent; contradictory updates or audit corruption refuse
+complete readback. A retained order cannot change identity or move to another account, and a final
+snapshot cannot drop an already observed order; previously unknown attribution may become known.
+Synthetic regression coverage is in `CancelAllIncidentTests`,
+`CancelAllIncidentReplayTests`, and the amendment recovery incident scenario; this is not evidence
+of a live broker run.
+
+Designer typed strategy intents carry an optional `StrategyArtifactId` into the strategy-run
+submission authority and durable intent claim metadata. Legacy null identities are omitted from
+JSON and preserve existing fingerprints; reusing an intent key with a different artifact is refused
+by the existing authority fingerprint check.
 
 `PaperSessionPersistenceService.GetSessionFillHistory` exposes cloned retained execution reports for order investigation without rebuilding portfolio/ledger views. Consumers initialize retained sessions before reading and keep canonical report identity, source event time, cumulative-versus-last quantity and price basis explicit; completed-order workspace summaries are not individual fills.
 
@@ -25,6 +78,16 @@ unchanged; operational logs do not carry those payloads or storage paths.
 Paper mode has one paper book: the DI-resolved `IOrderGateway` is `OmsGovernedExecutionOrderGateway`, a read-only view over the OMS's own paper `IExecutionGateway`, so direct submit/cancel through `IOrderGateway` is refused in paper as well as live mode. Its order-update stream reads `OrderManagementSystem.SubscribeOrderStateChanges()`: the OMS order table publishes every order-state transition (acceptance, fills, amendment, cancellation, rejection) at write time, in write order. Each subscription keeps only the latest unread state per order incarnation (a token issued when an order id is registered or a terminal id is reused), so a slow subscriber never blocks the OMS, skips only intermediate states, and still receives every order's final state, including orders already evicted from retention. Terminal order-status checks share `OrderManagement.OrderStatusFacts.IsTerminal`.
 
 Paper matching reads the live feed cache as it is by default, however old the last quote or print.
+`PaperTrading:Gateway:RequireBondAccruedInterest=true` opts the hosted execution gateway into
+required bond settlement economics. Before emitting an immediate or resting face-value fill,
+shared analytics must return matching security, as-of, settlement date, clean/dirty prices and
+nonnegative accrued interest (zero is valid). Missing, refused, inconsistent or failed calculations
+produce a terminal rejection with no fill quantity, price or fees. Declared face-value orders
+without a resolvable security are also rejected. The default retains legacy clean-only fallback,
+and old persisted fills retain their original replay economics. This option does not enable
+canonical bond paper accounting, short-side accrued-interest treatment or holiday calendars.
+See the [synthetic LOT golden case](../../docs/testing/evidence/next-work-20261029/bond-lot-golden-case.md).
+
 Setting `PaperTrading:Gateway:MaxObservationAgeSeconds` opts into a freshness window
 (`PaperObservationFreshnessPolicy`): a quote or print outside it is dropped, and when a symbol has
 tick data but none is current the whole observation is withheld, including any cached bar. A market
@@ -122,7 +185,25 @@ recovery and may exceed the display-cache limit. The permanent minimal identity 
 
 ## Purpose
 
-Paper financing assessments use `PaperFinancingPostingService`, composed alongside
+Hosted native paper orders bind to a durable simulation session before dispatch. The server checks
+the session's account against the order's grant. A ticket can select an existing session with the
+`paperSessionId` query parameter on `POST /api/execution/orders/submit`. When no session is selected,
+the host reuses the active default session for that account. Account-bound simulation requires a
+verified USD base currency. The session opens with simulated capital and has its own journal.
+
+The session store retains one append-only journal batch for each opening, fill, settlement, or
+assessed financing charge. Batch identity binds the session, account, source, and posting purpose.
+The fill claim survives interruption, and the store acknowledges it only after the journal
+receipt is durable. Restart verifies retained batch content and recovers an unacknowledged
+source. Exact retries reuse the stored receipt and conflicting content is refused. Historical
+snapshot sessions remain readable. The cutoff proof compares verified journal cash and an
+independent portfolio replay, including its lot and carrying-value checks.
+
+The daily reconciliation worker retains exchange-close comparisons. Trading operators can review
+the latest comparison for an authorized session in either workstation. A later change to that
+cutoff's journal evidence raises a coverage blocker and preserves the original receipt.
+
+Paper sessions that post to the configured accounting book use `PaperFinancingPostingService`, composed alongside
 `Execution:TradeFillLedgerPosting`. An authenticated administrator can record a dated,
 cash-paid margin charge through `POST /api/execution/sessions/{sessionId}/financing` with
 `accrualDate`, `amount`, `sourceReference`, and `rationale`. The authenticated actor is retained
@@ -295,6 +376,10 @@ identity the caller put in metadata (`actor`, `runId`, `correlationId`, `session
   Security Master (`SECURITY_MASTER_REJECTED_AT_DISPATCH`). A refusal releases risk reservations and
   consumed approvals, the same way an operator-control refusal does. Untyped orders have no dispatch
   recheck.
+
+The live authorization lease binds the active run, retained artifact, and account through the
+broker send. Scoped Designer paper intents retain the exact strategy version, review, and
+session with their own durable intent evidence.
 
 Retention and reporting:
 

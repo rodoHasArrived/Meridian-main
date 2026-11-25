@@ -19,7 +19,8 @@ internal sealed class ProviderRotationStrategy
 
     private readonly ProviderRateLimitTracker _rateLimitTracker;
     private readonly double _approachingThreshold;
-    private readonly ProviderRateLimitHistory _history;
+    private readonly ProviderRateLimitHistory? _history;
+    private ProviderRateLimitHistory History => _history ?? ProviderRateLimitHistory.Current;
 
     public ProviderRotationStrategy(
         ProviderRateLimitTracker rateLimitTracker,
@@ -28,13 +29,15 @@ internal sealed class ProviderRotationStrategy
         ProviderRateLimitHistory? history = null)
     {
         _rateLimitTracker = rateLimitTracker;
-        _history = history ?? ProviderRateLimitHistory.Shared;
+        _history = history;
         Enabled = enabled;
         _approachingThreshold = approachingThreshold;
     }
 
     /// <summary>Whether rate-limit aware rotation is enabled.</summary>
     public bool Enabled { get; }
+
+    internal double ApproachingThreshold => _approachingThreshold;
 
     /// <summary>
     /// Order a provider set by rate-limit capacity when rotation is enabled: providers with
@@ -56,7 +59,8 @@ internal sealed class ProviderRotationStrategy
             if (_rateLimitTracker.IsApproachingLimit(p.Name, _approachingThreshold))
                 return 100 + (int)(_rateLimitTracker.GetStatus(p.Name)?.UsagePercent ?? 0);
 
-            return p.Priority;
+            // The route has already been sorted by its captured priority and preferences.
+            return 0;
         });
     }
 
@@ -94,16 +98,18 @@ internal sealed class ProviderRotationStrategy
 
     public TimeSpan? GetTimeUntilReset(string providerName) => _rateLimitTracker.GetTimeUntilReset(providerName);
 
+    public IDisposable ObserveRequests() => History.BeginScope();
+
     public void RecordRequest(string providerName) => _rateLimitTracker.RecordRequest(providerName);
 
-    public void RecordRateLimitHit(string providerName, TimeSpan? retryAfter, int? httpStatus = null)
+    public void RecordRateLimitHit(string providerName, TimeSpan? retryAfter, Exception exception, int? httpStatus)
     {
         _rateLimitTracker.RecordRateLimitHit(providerName, retryAfter);
-        _history.Record(providerName, _rateLimitTracker.GetStatus(providerName), httpStatus: httpStatus);
+        History.RecordThrottle(providerName, exception, _rateLimitTracker.GetStatus(providerName), httpStatus);
     }
 
     public void RecordRotation(string providerName, string nextProvider)
-        => _history.Record(providerName, _rateLimitTracker.GetStatus(providerName), nextProvider);
+        => History.Record(providerName, _rateLimitTracker.GetStatus(providerName), nextProvider);
 
     public void ClearRateLimitState(string providerName) => _rateLimitTracker.ClearRateLimitState(providerName);
 

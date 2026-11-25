@@ -174,7 +174,10 @@ public sealed record CoveredCallRunResult(
     CoveredCallMetricsDto Metrics,
     IReadOnlyList<CoveredCallEquityPoint> EquityCurve,
     IReadOnlyList<CoveredCallTradeDto> Trades,
-    IReadOnlyList<CoveredCallOpenPositionDto> OpenPositionsAtEnd);
+    IReadOnlyList<CoveredCallOpenPositionDto> OpenPositionsAtEnd)
+{
+    public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; init; }
+}
 
 /// <summary>Row in the run library / history list.</summary>
 public sealed record CoveredCallRunSummary(

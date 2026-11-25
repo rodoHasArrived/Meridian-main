@@ -10,6 +10,7 @@ namespace Meridian.Application.UI;
 /// <summary>Host-lifetime pending state shared by stores for the same file. Retains hashes, never values.</summary>
 internal sealed class ConfigurationChangeTracker
 {
+    private const string CapabilityOverridesPath = "featureCapabilities.overrides";
     private static readonly ConcurrentDictionary<string, ConfigurationChangeTracker> Trackers =
         new(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
     private readonly object _gate = new();
@@ -77,6 +78,8 @@ internal sealed class ConfigurationChangeTracker
         var root = path.Split('.')[0];
         if (root.Equals("Symbols", StringComparison.OrdinalIgnoreCase))
             return ConfigurationChangeImpact.Live;
+        if (path.Equals("Alpaca.Feed", StringComparison.OrdinalIgnoreCase))
+            return ConfigurationChangeImpact.RestartHost;
         if (root.Equals("DataSource", StringComparison.OrdinalIgnoreCase)
             || root.Equals("Alpaca", StringComparison.OrdinalIgnoreCase)
             || root.Equals("IB", StringComparison.OrdinalIgnoreCase)
@@ -95,8 +98,44 @@ internal sealed class ConfigurationChangeTracker
     private static Dictionary<string, string> Fingerprints(AppConfig config)
     {
         var fields = new Dictionary<string, string>(StringComparer.Ordinal);
-        Flatten(JsonSerializer.SerializeToNode(config, AppConfigJsonOptions.Write), "", fields);
+        // A first provider edit can materialize the complete section. Compare the
+        // adapter defaults that already apply so unchanged pacing does not require restart.
+        var document = (JsonObject)JsonSerializer.SerializeToNode(WithBackfillDefaults(config), AppConfigJsonOptions.Write)!;
+        document.Remove("featureCapabilities");
+        Flatten(document, "", fields);
+        fields[CapabilityOverridesPath] = HashCapabilityOverrides(config.FeatureCapabilities);
         return fields;
+    }
+
+    private static AppConfig WithBackfillDefaults(AppConfig config)
+    {
+        var backfill = config.Backfill ?? new BackfillConfig();
+        var providers = backfill.Providers ?? new BackfillProvidersConfig();
+        var alphaVantage = providers.AlphaVantage ?? new AlphaVantageConfig(Enabled: false);
+        var openFigi = providers.OpenFigi ?? new OpenFigiConfig();
+        return config with
+        {
+            Backfill = backfill with
+            {
+                Providers = providers with
+                {
+                    Alpaca = providers.Alpaca ?? new(Feed: string.Empty),
+                    Yahoo = providers.Yahoo ?? new(),
+                    Nasdaq = providers.Nasdaq ?? new(),
+                    Stooq = providers.Stooq ?? new(),
+                    Tiingo = providers.Tiingo ?? new(),
+                    Polygon = providers.Polygon ?? new(),
+                    AlphaVantage = alphaVantage with { TierId = alphaVantage.TierId ?? "free" },
+                    Finnhub = providers.Finnhub ?? new(),
+                    TwelveData = providers.TwelveData ?? new(),
+                    OpenFigi = openFigi with
+                    {
+                        RateLimitPerMinute = openFigi.RateLimitPerMinute ??
+                            (openFigi.TierId == "authenticated" ? BackfillProviderCatalog.OpenFigiAuthenticatedPerMinute : BackfillProviderCatalog.OpenFigiPerMinute)
+                    }
+                }
+            }
+        };
     }
 
     private static void Flatten(JsonNode? node, string path, Dictionary<string, string> fields)
@@ -114,4 +153,24 @@ internal sealed class ConfigurationChangeTracker
         else
             fields[path] = Sha256Digest.ComputeUtf8(node?.ToJsonString() ?? "null");
     }
+
+    internal void RecordFeatureCapabilities(AppConfig previous, AppConfig next)
+    {
+        var before = HashCapabilityOverrides(previous.FeatureCapabilities);
+        var after = HashCapabilityOverrides(next.FeatureCapabilities);
+        var change = new ConfigurationFieldChange(CapabilityOverridesPath, ConfigurationChangeImpact.RestartHost);
+        var changes = before == after ? Array.Empty<ConfigurationFieldChange>() : [change];
+        lock (_gate)
+        {
+            _baseline ??= Fingerprints(previous);
+            var pending = _status.PendingChanges.Where(entry => entry.Path != CapabilityOverridesPath).ToList();
+            if (_baseline[CapabilityOverridesPath] != after)
+                pending.Add(change);
+            _status = new(changes.Length == 0 ? ConfigurationChangeImpact.Live : change.Impact,
+                changes, pending, DateTimeOffset.UtcNow);
+        }
+    }
+
+    private static string HashCapabilityOverrides(FeatureCapabilityOptions? options)
+        => Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(options, AppConfigJsonOptions.Write));
 }

@@ -37,8 +37,7 @@ describe("workspace nav view model", () => {
       "/trading",
       "/trading/orders",
       "/trading/positions",
-      "/trading/risk",
-      "/trading/readiness"
+      "/trading/risk"
     ]);
   });
 
@@ -143,7 +142,7 @@ describe("workspace nav view model", () => {
 
     expect(accounting?.subItems.map((item) => item.route)).toEqual([
       "/accounting",
-      "/accounting/operations-continuity",
+      "/accounting/close",
       "/accounting/close-calendar",
       "/accounting/ledger",
       "/accounting/factor-paydown",
@@ -164,7 +163,7 @@ describe("workspace nav view model", () => {
       group.label,
       group.items.map((item) => item.label)
     ])).toEqual([
-      ["Close", ["Close cockpit", "Operations continuity", "Close calendar"]],
+      ["Close", ["Close cockpit", "Close", "Close calendar"]],
       ["Records", ["Ledger explorer", "Factor paydown", "Consolidation", "Adjustments", "Capital accounts", "Capital calls", "Security Master"]],
       ["Reconciliation", ["Import statement", "Casework", "External GL"]],
       ["Review", ["Exceptions", "Approvals"]],
@@ -177,10 +176,10 @@ describe("workspace nav view model", () => {
       ariaLabel: "Open Close cockpit"
     });
     expect(accounting?.subItems[1]).toMatchObject({
-      label: "Operations continuity",
+      label: "Close",
       active: false,
       ariaCurrent: undefined,
-      ariaLabel: "Open Operations continuity"
+      ariaLabel: "Open Close"
     });
     expect(accounting?.subItems[3]).toMatchObject({
       label: "Ledger explorer",

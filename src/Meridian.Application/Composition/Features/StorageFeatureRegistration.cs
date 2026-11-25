@@ -236,7 +236,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<SymbolRegistryService>(sp =>
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
-            return new SymbolRegistryService(storageOptions.RootPath);
+            return ProcessSymbolRegistries.ForStorageRoot(storageOptions.RootPath);
         });
         services.TryAddSingleton<ISymbolRegistryService>(sp => sp.GetRequiredService<SymbolRegistryService>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, SymbolRegistryInitializationHostedService>());

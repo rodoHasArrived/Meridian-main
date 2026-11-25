@@ -35,7 +35,7 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 [ImplementsAdr("ADR-001", "Interactive Brokers historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
-public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLimitAwareProvider, IDisposable
+public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLimitAwareProvider, IBackfillRequestMeteredProvider, IDisposable
 {
     private readonly EnhancedIBConnectionManager _connectionManager;
     private readonly RateLimiter _globalRateLimiter;
@@ -266,6 +266,7 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
                 _isRateLimited = true;
                 _rateLimitResetsAt = DateTimeOffset.UtcNow + PacingViolationCooldown;
                 OnRateLimitHit?.Invoke(GetRateLimitInfo());
+                HistoricalBackfillRequestScope.Current?.Throttled(Name, "provider-rate-limit", PacingViolationCooldown);
 
                 _log.Warning("IB pacing violation for {Symbol}, waiting {Seconds}s",
                     symbol, (int)PacingViolationCooldown.TotalSeconds);
@@ -294,15 +295,23 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
         await _concurrentRequestsSemaphore.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            // Wait for global rate limit
-            await _globalRateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
-
             // Enforce per-contract rate limiting
             var contractKey = $"{cfg.Symbol}:{cfg.Exchange}:{whatToShow}";
             await EnforcePerContractPacingAsync(contractKey, ct).ConfigureAwait(false);
 
+            var observation = HistoricalBackfillRequestScope.Current;
+            if (observation is not null && _rateLimitResetsAt is { } reset && reset - DateTimeOffset.UtcNow is var wait && wait > TimeSpan.Zero)
+            {
+                observation.Throttled(Name, "provider-backoff", wait);
+                await Task.Delay(wait, ct).ConfigureAwait(false);
+            }
+
+            await _globalRateLimiter.WaitForUnitsAsync(1, observation?.HeadroomPercent(this) ?? 0,
+                observation is null ? null : delay => observation.Throttled(Name, "quota-admission", delay), ct).ConfigureAwait(false);
+
             // Track request count
             Interlocked.Increment(ref _requestCount);
+            observation?.RequestStarted(Name);
 
             // Make the request
             var bars = await _connectionManager.RequestHistoricalDataAsync(
@@ -424,6 +433,7 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
                 _isRateLimited = true;
                 _rateLimitResetsAt = DateTimeOffset.UtcNow + PacingViolationCooldown;
                 OnRateLimitHit?.Invoke(GetRateLimitInfo());
+                HistoricalBackfillRequestScope.Current?.Throttled(Name, "provider-rate-limit", PacingViolationCooldown);
 
                 _log.Warning("IB pacing violation for {Symbol} intraday, waiting {Seconds}s",
                     symbol, (int)PacingViolationCooldown.TotalSeconds);

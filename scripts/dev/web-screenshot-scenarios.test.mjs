@@ -259,7 +259,9 @@ test("reconciliation readiness proves the loaded selected queue row and inspecto
   assert.ok(selectedRun, "The selected break must belong to a retained reconciliation run");
   assert.ok(capture.waitForSelectors.includes(`#reconciliation-run-picker[role="combobox"][value="${selectedRun.strategyName} · ${selectedRun.openBreakCount} open"]`));
   assert.ok(capture.waitForSelectors.some((selector) => selector.includes(`data-dense-row-id="${selectedBreak.breakId}"`) && selector.includes('aria-selected="true"')));
-  assert.ok(capture.waitForSelectors.some((selector) => selector.includes(`Reconciliation break detail for ${selectedBreak.breakId}`)));
+  assert.ok(capture.waitForSelectors.includes('[aria-label="Case inspector"][aria-busy="false"]'));
+  assert.ok(capture.waitForSelectors.some((selector) => selector.includes('[aria-label="Case inspector"]') && selector.includes(selectedBreak.breakId)));
+  assert.ok(capture.waitForSelectors.some((selector) => selector.includes('[aria-label="Case decisions"]') && selector.includes('button:not([disabled])')));
   assert.ok(capture.waitForAbsentTexts.includes("Loading reconciliation break queue..."));
   for (const obsolete of ["Open breaks", "Intraday Vol Carry", "Statement runs", "Reconciliation Casework"]) {
     assert.ok(!capture.waitForTexts.includes(obsolete), `Readiness must not wait for hidden supporting content: ${obsolete}`);
@@ -272,6 +274,21 @@ test("scenario fallback readiness waits for the selected break rather than an un
     const capture = scenarioCapture({ name: "reconciliation", path: "/accounting/reconciliation" }, scenario, source.module);
     const selectedBreak = source.module.accountingPayload.breakQueue[0];
     assert.deepEqual(capture.waitForTexts, ["Reconciliation run", "Reconciliation break queue", selectedBreak.strategyName, selectedBreak.reason]);
+  }
+});
+
+test("match workbench readiness proves the retained selected case and its evidence link", async () => {
+  const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
+  const capture = routeConfig.captures.find((item) => item.id === "W03I2");
+  const selectedBreak = source.module.accountingPayload.breakQueue[0];
+  assert.ok(capture.waitForTexts.includes(selectedBreak.reason));
+  assert.ok(capture.waitForTexts.includes("Disagreement"));
+  assert.ok(capture.waitForTexts.includes("Retained evidence"));
+  assert.ok(capture.waitForTexts.includes("Retained comparison and lineage"));
+  assert.ok(capture.waitForSelectors.includes(`[aria-label="Case inspector"][data-case-id="${selectedBreak.breakId}"][aria-busy="false"]`));
+  assert.ok(capture.waitForSelectors.includes(`[aria-label="Case inspector"] a[href="/workstation/reporting/evidence?subjectKind=reconciliation-break&subjectId=${encodeURIComponent(selectedBreak.breakId)}"]:visible`));
+  for (const obsolete of ["Open breaks", "Record match decision"]) {
+    assert.ok(!capture.waitForTexts.includes(obsolete), `Readiness must match retained case evidence: ${obsolete}`);
   }
 });
 

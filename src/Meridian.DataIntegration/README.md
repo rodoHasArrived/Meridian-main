@@ -6,10 +6,19 @@ module_id: SRC-DESIGN-DATA-INTEGRATION
 path: src/Meridian.DataIntegration
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.DataIntegration
+
+Canonical statement CSV retains receipt reversal links and optional instrument/allocation metadata.
+`CsvBrokerStatementService` appends `securityId`, `receiptAllocations`, `obligationKey` and
+`projectedCashFlowId` to the existing ordered optional suffix after `marketValue` and `accruedInterest`.
+It refuses conflicting allocation forms, duplicate identities/properties, invalid GUIDs and splits
+that do not conserve the absolute source payment. Present metadata remains in the retained canonical
+payload; absent fields are omitted from JSON so legacy retained row hashes remain unchanged.
+Existing imports are not backfilled with inferred links. See
+[receipt import evidence](../../docs/operators/reconciliation-operations.md).
 
 QuickBooks import and bound verification serialize refreshes, retain complete generation-checked
 rotations after caller cancellation, and refuse stale import success or failure updates after
@@ -57,6 +66,13 @@ remove stale files and failed copies retain the previous output. Source/destinat
 replacing an existing local extract requires `OverwriteIfExists`.
 
 ## External GL providers
+
+`QuickBooksOnlinePostingProvider` creates and queries journals through the provider-neutral
+posting contract. It uses the exact tenant-owned vault connection, a stable Intuit request ID,
+and a searchable journal number. Receipt reconciliation verifies line markers, accounts,
+dimensions and amounts from the provider. The initial lane covers US single-currency USD realms.
+See the [operator workflow](../../docs/operators/external-gl-providers.md#post-meridian-journals-to-quickbooks-online).
+Provider evidence is synthetic-verified and live-untested.
 
 `AccountingSystem/XeroAccountingProvider.cs` and `NetSuiteAccountingProvider.cs`
 import credentialed read-only evidence through `CredentialedAccountingProvider`.
@@ -503,3 +519,8 @@ Preserve the module boundary declared in `docs/source/data/source-modules.yml` a
 `Reconciliation/` owns canonical statement import, IB Flex parsing, case and durability adapters.
 FinancialOperations consumes these adapters without referencing the market-data Infrastructure
 assembly. Existing financial and tenant authority checks remain in their domain owners.
+
+The immutable statement match artifact retains the executed tolerance policy, the per-break match
+evidence, and the exact operands of accepted match groups. The recovery checkpoint binds these
+fields through the artifact hash. Legacy artifacts preserve their original byte shape when these
+fields are absent. Recovery adopts a verified older artifact as written.

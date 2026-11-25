@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Ui.Services.ApiEndpointConfiguration</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:768](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L768).
+Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:791](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L791).
 
 Immutable request-generation settings published atomically by ApiClientService.
 
@@ -40,7 +40,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.AppSettings</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:777](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L777).
+Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:800](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L800).
 
 Settings for API client configuration.
 
@@ -52,9 +52,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? ServiceUrl { get; init; }</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:779](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L779) |  |
-| <code>public int ServiceTimeoutSeconds { get; init; } = 30;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:780](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L780) |  |
-| <code>public int BackfillTimeoutMinutes { get; init; } = 60;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:781](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L781) |  |
+| <code>public string? ServiceUrl { get; init; }</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:802](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L802) |  |
+| <code>public int ServiceTimeoutSeconds { get; init; } = 30;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:803](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L803) |  |
+| <code>public int BackfillTimeoutMinutes { get; init; } = 60;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:804](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L804) |  |
 
 ## ArchiveBrowserService
 
@@ -249,14 +249,15 @@ Declared public members:
 | <code>public async Task&lt;List&lt;BackfillProviderInfo&gt;&gt; GetProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:24](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L24) | Gets the list of available backfill providers. |
 | <code>public async Task&lt;BackfillResultDto?&gt; GetLastStatusAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:33](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L33) | Gets the last backfill operation status. |
 | <code>public async Task&lt;BackfillRunProgressResponse?&gt; GetProgressAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:41](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L41) | Gets the typed live provider/fallback progress snapshot for the current or latest run. |
-| <code>public async Task&lt;BackfillResultDto?&gt; RunBackfillAsync(string provider, string[] symbols, string? from, string? to, string granularity = &quot;Daily&quot;, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:47](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L47) | Runs a backfill operation for the specified symbols. |
-| <code>public async Task&lt;BackfillHealthResponse?&gt; CheckProviderHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:86](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L86) | Checks the health of backfill providers. |
-| <code>public async Task&lt;BackfillExecutionResponse?&gt; RunGapFillAsync(string[] symbols, int lookbackDays = 30, string priority = &quot;High&quot;, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:94](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L94) | Runs an immediate gap-fill operation. |
-| <code>public async Task&lt;List&lt;BackfillPreset&gt;&gt; GetPresetsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:119](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L119) | Gets available backfill presets. |
-| <code>public async Task&lt;List&lt;BackfillExecution&gt;&gt; GetExecutionHistoryAsync(int limit = 50, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:128](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L128) | Gets backfill execution history. |
-| <code>public async Task&lt;BackfillExecutionHistoryResponse?&gt; GetExecutionHistoryResponseAsync(int limit = 50, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:137](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L137) | Gets the governed execution-history envelope, including typed remediation SLA evidence. |
-| <code>public async Task&lt;BackfillStatistics?&gt; GetStatisticsAsync(int? hours = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:146](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L146) | Gets backfill statistics. |
-| <code>public async Task&lt;SymbolGapAnalysisDto?&gt; GetSymbolGapAnalysisAsync(string symbol, string? date = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:159](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L159) | Gets real gap analysis for a symbol from the quality monitoring service. Returns null when the backend is unreachable or has no data for the symbol. |
+| <code>public Task&lt;BackfillResultDto?&gt; RunBackfillAsync(string provider, string[] symbols, string? from, string? to, string granularity = &quot;Daily&quot;, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:47](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L47) | Runs a backfill operation for the specified symbols. |
+| <code>public async Task&lt;BackfillResultDto?&gt; RunBackfillAsync(string provider, string[] symbols, string? from, string? to, string granularity, bool resumeFromCheckpoint, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:56](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L56) |  |
+| <code>public async Task&lt;BackfillHealthResponse?&gt; CheckProviderHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:97](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L97) | Checks the health of backfill providers. |
+| <code>public async Task&lt;BackfillExecutionResponse?&gt; RunGapFillAsync(string[] symbols, int lookbackDays = 30, string priority = &quot;High&quot;, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:105](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L105) | Runs an immediate gap-fill operation. |
+| <code>public async Task&lt;List&lt;BackfillPreset&gt;&gt; GetPresetsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:130](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L130) | Gets available backfill presets. |
+| <code>public async Task&lt;List&lt;BackfillExecution&gt;&gt; GetExecutionHistoryAsync(int limit = 50, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:139](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L139) | Gets backfill execution history. |
+| <code>public async Task&lt;BackfillExecutionHistoryResponse?&gt; GetExecutionHistoryResponseAsync(int limit = 50, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:148](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L148) | Gets the governed execution-history envelope, including typed remediation SLA evidence. |
+| <code>public async Task&lt;BackfillStatistics?&gt; GetStatisticsAsync(int? hours = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:157](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L157) | Gets backfill statistics. |
+| <code>public async Task&lt;SymbolGapAnalysisDto?&gt; GetSymbolGapAnalysisAsync(string symbol, string? date = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:170](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L170) | Gets real gap analysis for a symbol from the quality monitoring service. Returns null when the backend is unreachable or has no data for the symbol. |
 
 ## BackfillCheckpoint
 
@@ -319,7 +320,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.BackfillCompletedEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/BackfillService.cs:838](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L838).
+Source: [src/Meridian.Ui.Services/Services/BackfillService.cs:854](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L854).
 
 Backfill completed event args.
 
@@ -331,10 +332,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:840](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L840) |  |
-| <code>public BackfillProgress? Progress { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:841](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L841) |  |
-| <code>public bool WasCancelled { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:842](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L842) |  |
-| <code>public Exception? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:843](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L843) |  |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:856](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L856) |  |
+| <code>public BackfillProgress? Progress { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:857](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L857) |  |
+| <code>public bool WasCancelled { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:858](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L858) |  |
+| <code>public Exception? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:859](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L859) |  |
 
 ## BackfillPresentationService
 
@@ -359,7 +360,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.BackfillProgressEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/BackfillService.cs:830](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L830).
+Source: [src/Meridian.Ui.Services/Services/BackfillService.cs:846](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L846).
 
 Backfill progress event args.
 
@@ -371,7 +372,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public BackfillProgress? Progress { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:832](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L832) |  |
+| <code>public BackfillProgress? Progress { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:848](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L848) |  |
 
 ## BackfillProviderConfigService
 
@@ -494,28 +495,29 @@ Declared public members:
 | <code>public bool IsPaused =&gt; …;</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:69](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L69) | Gets whether a backfill is paused. |
 | <code>public double BarsPerSecond { get; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:74](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L74) | Gets the download speed in bars per second. |
 | <code>public TimeSpan? EstimatedTimeRemaining { get; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:90](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L90) | Gets the estimated time remaining. |
-| <code>public async Task StartBackfillAsync(string[] symbols, string provider, DateTime fromDate, DateTime toDate, string granularity = &quot;Daily&quot;, Action&lt;BackfillProgress&gt;? progressCallback = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:108](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L108) | Starts a new backfill operation using the real API. |
-| <code>public async Task StartGapFillAsync(string[] symbols, int lookbackDays = 30, Action&lt;BackfillProgress&gt;? progressCallback = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:296](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L296) | Starts a quick gap-fill operation for immediate data gaps. |
-| <code>public async Task&lt;List&lt;BackfillProviderInfo&gt;&gt; GetProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:390](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L390) | Gets available backfill providers from the API. |
-| <code>public async Task&lt;List&lt;BackfillPreset&gt;&gt; GetPresetsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:398](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L398) | Gets backfill presets from the API. |
-| <code>public async Task&lt;BackfillHealthResponse?&gt; CheckProviderHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:406](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L406) | Checks provider health. |
-| <code>public async Task&lt;List&lt;BackfillExecution&gt;&gt; GetExecutionHistoryAsync(int limit = 50, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:414](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L414) | Gets execution history. |
-| <code>public async Task&lt;BackfillStatistics?&gt; GetStatisticsAsync(int? hours = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:422](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L422) | Gets backfill statistics. |
-| <code>public void Pause();</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:430](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L430) | Pauses the current backfill operation. |
-| <code>public void Resume();</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:442](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L442) | Resumes a paused backfill operation. |
-| <code>public void Cancel();</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:454](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L454) | Cancels the current backfill operation. |
-| <code>public void ReorderQueue(int oldIndex, int newIndex);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:462](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L462) | Reorders the symbol queue (drag-drop priority). |
-| <code>public string GetFormattedEta();</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:486](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L486) | Gets a formatted ETA string. |
-| <code>public string GetFormattedSpeed();</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:502](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L502) | Gets a formatted speed string. |
-| <code>public Task&lt;BackfillResultDto?&gt; GetLastStatusAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:513](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L513) | Gets the last backfill status from the backend API. |
-| <code>public Task&lt;BackfillResultDto?&gt; RunBackfillAsync(string provider, string[] symbols, string? from, string? to, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:520](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L520) | Runs a backfill operation via the backend API (convenience overload). Delegates to BackfillApiService.RunBackfillAsync with Daily granularity. |
-| <code>public async Task&lt;List&lt;HistoricalBar&gt;&gt; GetHistoricalBarsAsync(string symbol, DateOnly fromDate, DateOnly toDate, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:532](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L532) | Gets historical bars for a symbol by reading from local storage. Falls back to triggering a backfill if no stored data is found. |
-| <code>public async Task ResumeBackfillAsync(string checkpointJobId, Action&lt;BackfillProgress&gt;? progressCallback = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:729](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L729) | Resumes a previously interrupted backfill job from its checkpoint. Only processes symbols that were pending or failed. |
-| <code>public async Task&lt;BackfillResultDto?&gt; PollBackendStatusAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:758](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L758) | Polls the backend for the latest backfill status and syncs it with local progress. Call periodically from the UI to keep progress up to date with backend state. |
-| <code>public async Task&lt;IReadOnlyList&lt;BackfillCheckpoint&gt;&gt; GetResumableJobsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:800](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L800) | Gets resumable jobs from the checkpoint store. |
-| <code>public async Task&lt;IReadOnlyList&lt;BackfillCheckpoint&gt;&gt; GetCheckpointHistoryAsync(int limit = 20, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:809](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L809) | Gets job history from checkpoints. |
-| <code>public event EventHandler&lt;BackfillProgressEventArgs&gt;? ProgressUpdated;</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:819](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L819) | Event raised when progress is updated. |
-| <code>public event EventHandler&lt;BackfillCompletedEventArgs&gt;? BackfillCompleted;</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:824](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L824) | Event raised when backfill completes. |
+| <code>public Task StartBackfillAsync(string[] symbols, string provider, DateTime fromDate, DateTime toDate, string granularity = &quot;Daily&quot;, Action&lt;BackfillProgress&gt;? progressCallback = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:108](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L108) | Starts a new backfill operation using the real API. |
+| <code>public async Task StartBackfillAsync(string[] symbols, string provider, DateTime fromDate, DateTime toDate, string granularity, bool resumeFromCheckpoint, Action&lt;BackfillProgress&gt;? progressCallback = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:117](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L117) |  |
+| <code>public async Task StartGapFillAsync(string[] symbols, int lookbackDays = 30, Action&lt;BackfillProgress&gt;? progressCallback = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:310](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L310) | Starts a quick gap-fill operation for immediate data gaps. |
+| <code>public async Task&lt;List&lt;BackfillProviderInfo&gt;&gt; GetProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:404](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L404) | Gets available backfill providers from the API. |
+| <code>public async Task&lt;List&lt;BackfillPreset&gt;&gt; GetPresetsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:412](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L412) | Gets backfill presets from the API. |
+| <code>public async Task&lt;BackfillHealthResponse?&gt; CheckProviderHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:420](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L420) | Checks provider health. |
+| <code>public async Task&lt;List&lt;BackfillExecution&gt;&gt; GetExecutionHistoryAsync(int limit = 50, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:428](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L428) | Gets execution history. |
+| <code>public async Task&lt;BackfillStatistics?&gt; GetStatisticsAsync(int? hours = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:436](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L436) | Gets backfill statistics. |
+| <code>public void Pause();</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:444](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L444) | Pauses the current backfill operation. |
+| <code>public void Resume();</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:456](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L456) | Resumes a paused backfill operation. |
+| <code>public void Cancel();</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:468](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L468) | Cancels the current backfill operation. |
+| <code>public void ReorderQueue(int oldIndex, int newIndex);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:476](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L476) | Reorders the symbol queue (drag-drop priority). |
+| <code>public string GetFormattedEta();</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:500](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L500) | Gets a formatted ETA string. |
+| <code>public string GetFormattedSpeed();</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:516](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L516) | Gets a formatted speed string. |
+| <code>public Task&lt;BackfillResultDto?&gt; GetLastStatusAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:527](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L527) | Gets the last backfill status from the backend API. |
+| <code>public Task&lt;BackfillResultDto?&gt; RunBackfillAsync(string provider, string[] symbols, string? from, string? to, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:534](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L534) | Runs a backfill operation via the backend API (convenience overload). Delegates to BackfillApiService.RunBackfillAsync with Daily granularity. |
+| <code>public async Task&lt;List&lt;HistoricalBar&gt;&gt; GetHistoricalBarsAsync(string symbol, DateOnly fromDate, DateOnly toDate, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:546](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L546) | Gets historical bars for a symbol by reading from local storage. Falls back to triggering a backfill if no stored data is found. |
+| <code>public async Task ResumeBackfillAsync(string checkpointJobId, Action&lt;BackfillProgress&gt;? progressCallback = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:743](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L743) | Resumes a previously interrupted backfill job from its checkpoint. Only processes symbols that were pending or failed. |
+| <code>public async Task&lt;BackfillResultDto?&gt; PollBackendStatusAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:774](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L774) | Polls the backend for the latest backfill status and syncs it with local progress. Call periodically from the UI to keep progress up to date with backend state. |
+| <code>public async Task&lt;IReadOnlyList&lt;BackfillCheckpoint&gt;&gt; GetResumableJobsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:816](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L816) | Gets resumable jobs from the checkpoint store. |
+| <code>public async Task&lt;IReadOnlyList&lt;BackfillCheckpoint&gt;&gt; GetCheckpointHistoryAsync(int limit = 20, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:825](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L825) | Gets job history from checkpoints. |
+| <code>public event EventHandler&lt;BackfillProgressEventArgs&gt;? ProgressUpdated;</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:835](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L835) | Event raised when progress is updated. |
+| <code>public event EventHandler&lt;BackfillCompletedEventArgs&gt;? BackfillCompleted;</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:840](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L840) | Event raised when backfill completes. |
 
 ## BackfillSymbolProgressPresentation
 

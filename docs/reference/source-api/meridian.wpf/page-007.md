@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataHeroMetric
+
+Qualified name: <code>Meridian.Wpf.Services.DataHeroMetric</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1106](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1106).
+
+Carries an overview metric label, value, detail, tone, and accessible description.
+
+```csharp
+public sealed class DataHeroMetric
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Label { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1108](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1108) |  |
+| <code>public string Value { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1109](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1109) |  |
+| <code>public string Detail { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1110](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1110) |  |
+| <code>public string Tone { get; init; } = WorkspaceTone.Neutral;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1111](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1111) |  |
+| <code>public string AutomationName =&gt; …;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1112](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1112) |  |
+| <code>public static IReadOnlyList&lt;DataHeroMetric&gt; LoadingMetrics() =&gt; …;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1114](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1114) |  |
+| <code>public static IReadOnlyList&lt;DataHeroMetric&gt; ErrorMetrics() =&gt; …;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1139](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1139) |  |
+
 ## DataHeroState
 
 Qualified name: <code>Meridian.Wpf.Services.DataHeroState</code>. Kind: `class`.
@@ -1116,25 +1140,5 @@ Declared public members:
 | <code>Task&lt;ApiResponse&lt;LedgerAccountRunningBalanceDto&gt;&gt; GetAccountRunningBalanceAsync(Guid periodId, string accountName, string? symbol, string? financialAccountId, LedgerDimensionSetDto? dimensions, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:44](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L44) | Posting history and running balance for one account of a ledger period. |
 | <code>Task&lt;ApiResponse&lt;EvidencePacketDto&gt;&gt; GetAmountProofAsync(string subjectId, Guid ledgerBookId, Guid periodId, string fundProfileId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:49](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L49) |  |
 | <code>Task&lt;ApiResponse&lt;JsonDocument&gt;&gt; GetRetainedManifestAsync(string route, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:53](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L53) |  |
-
-## ILifecycleControlClient
-
-Qualified name: <code>Meridian.Wpf.Services.ILifecycleControlClient</code>. Kind: `interface`.
-
-Source: [src/Meridian.Wpf/Services/LifecycleControlClient.cs:13](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L13).
-
-Defines startup and authenticated lifecycle queries and governed shutdown requests for the desktop workstation.
-
-```csharp
-public interface ILifecycleControlClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;RuntimeLifecycleSnapshotDto?&gt; GetStartupSnapshotAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:15](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L15) |  |
-| <code>Task&lt;bool&gt; AuthenticateAsync(string username, string password, CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:17](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L17) |  |
-| <code>Task&lt;RuntimeLifecycleSnapshotDto?&gt; GetSnapshotAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:22](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L22) |  |
-| <code>Task&lt;LifecycleShutdownReceiptDto?&gt; GetLatestReceiptAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:24](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L24) |  |
-| <code>Task&lt;LifecycleShutdownAcceptedDto?&gt; RequestShutdownAsync(LifecycleShutdownRequestDto request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:26](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L26) |  |
+| <code>Task&lt;ApiResponse&lt;BookFxSettlementSetDto&gt;&gt; GetBookFxSettlementSetAsync(Guid setId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:56](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L56) |  |
+| <code>Task&lt;ApiResponse&lt;PrivateCapitalUnitRegisterPreviewDto&gt;&gt; PreviewUnitRegisterAsync(Guid bookId, PreviewPrivateCapitalUnitRegisterRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:59](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L59) |  |

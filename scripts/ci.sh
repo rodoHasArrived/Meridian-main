@@ -102,6 +102,27 @@ if [[ "$local_jobs" != auto || "$cold_outputs" == true ]]; then
   exit 2
 fi
 
+# An unset shard means the complete lane. A malformed one must stop the lane rather than
+# silently run everything, or nothing, under a shard's name.
+parse_lane_shard() {
+  local variable="$1" lane="$2" value="${!1:-}"
+  if [[ -z "$value" ]]; then
+    echo 0
+    return
+  fi
+  if [[ "$selected_lane" != "$lane" ]]; then
+    echo "${variable} applies only to ${lane}." >&2
+    return 2
+  fi
+  if [[ ! "$value" =~ ^([1-9][0-9]*)/([1-9][0-9]*)$ ]] || (( BASH_REMATCH[1] > BASH_REMATCH[2] )); then
+    echo "${variable} must be INDEX/TOTAL with 1 <= INDEX <= TOTAL." >&2
+    return 2
+  fi
+  echo "${BASH_REMATCH[1]}"
+}
+dotnet_shard_index="$(parse_lane_shard MERIDIAN_CI_DOTNET_SHARD verify-dotnet)" || exit 2
+browser_shard_index="$(parse_lane_shard MERIDIAN_CI_BROWSER_SHARD verify-browser)" || exit 2
+
 export MERIDIAN_CI_ARTIFACT_ROOT="${MERIDIAN_CI_ARTIFACT_ROOT:-artifacts}"
 if [[ -n "${MERIDIAN_CI_ISOLATION_KEY:-}" ]]; then
   # MSBuild imports these environment properties, including during dotnet format.
@@ -110,7 +131,14 @@ if [[ -n "${MERIDIAN_CI_ISOLATION_KEY:-}" ]]; then
   export MeridianBuildIsolationKey="$MERIDIAN_CI_ISOLATION_KEY"
 fi
 if [[ -z "${MERIDIAN_BROWSER_RESULTS_DIR:-}" ]]; then
-  export MERIDIAN_BROWSER_RESULTS_DIR="$MERIDIAN_CI_ARTIFACT_ROOT/test-results/browser"
+  # The dashboard runner resolves this from src/Meridian.Ui/dashboard (npm --prefix), so a
+  # relative artifact root would place browser evidence under the dashboard instead of the
+  # repository-root artifacts/ tree that the shard upload and verdict read.
+  case "$MERIDIAN_CI_ARTIFACT_ROOT" in
+    /*) browser_results_root="$MERIDIAN_CI_ARTIFACT_ROOT" ;;
+    *) browser_results_root="$PWD/$MERIDIAN_CI_ARTIFACT_ROOT" ;;
+  esac
+  export MERIDIAN_BROWSER_RESULTS_DIR="$browser_results_root/test-results/browser"
 fi
 ci_summary_dir="${MERIDIAN_CI_ARTIFACT_ROOT}/ci-summary/${selected_lane}"
 ci_steps_tsv="${ci_summary_dir}/steps.tsv"
@@ -188,6 +216,29 @@ verify_dotnet() {
   run_step "Restore .NET solution" \
     dotnet restore Meridian.sln -p:EnableWindowsTargeting=true
 
+  # Hosted CI runs the test roster as several runner shards (MERIDIAN_CI_DOTNET_SHARD=K/N).
+  # The static checks and the web-host build are whole-tree facts, so the first shard owns
+  # them once; an unsharded run, including every local run, still performs all of them.
+  if [[ "$dotnet_shard_index" -le 1 ]]; then
+    verify_dotnet_static
+  else
+    echo "Shard ${MERIDIAN_CI_DOTNET_SHARD}: static checks and the web-host build run in shard 1."
+  fi
+
+  local test_output_args=()
+  if [[ -n "${MERIDIAN_CI_ISOLATION_KEY:-}" ]]; then
+    test_output_args+=(--isolation-key "$MERIDIAN_CI_ISOLATION_KEY")
+  fi
+  run_step "Run .NET non-integration test projects" \
+    "$python_cmd" build/scripts/ci/run-dotnet-ci-tests.py \
+      --configuration Release \
+      --filter "Category!=Integration&Category!=Performance" \
+      --results-dir "${MERIDIAN_CI_ARTIFACT_ROOT}/test-results/dotnet" \
+      --summary-output "${MERIDIAN_CI_ARTIFACT_ROOT}/test-results/dotnet/ci-dotnet-test-summary.md" \
+      --json-output "${MERIDIAN_CI_ARTIFACT_ROOT}/test-results/dotnet/ci-dotnet-test-summary.json" "${test_output_args[@]}"
+}
+
+verify_dotnet_static() {
   run_step "Verify .NET formatting" \
     dotnet format whitespace Meridian.sln --verify-no-changes --verbosity minimal --no-restore
 
@@ -223,22 +274,12 @@ verify_dotnet() {
 
   run_step "Build web workstation .NET lane" \
     bash -c 'set -euo pipefail; dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore -p:EnableWindowsTargeting=true -p:UseAppHost=false 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/web-workstation-build.log"'
-
-  local test_output_args=()
-  if [[ -n "${MERIDIAN_CI_ISOLATION_KEY:-}" ]]; then
-    test_output_args+=(--isolation-key "$MERIDIAN_CI_ISOLATION_KEY")
-  fi
-  run_step "Run .NET non-integration test projects" \
-    "$python_cmd" build/scripts/ci/run-dotnet-ci-tests.py \
-      --configuration Release \
-      --filter "Category!=Integration&Category!=Performance" \
-      --results-dir "${MERIDIAN_CI_ARTIFACT_ROOT}/test-results/dotnet" \
-      --summary-output "${MERIDIAN_CI_ARTIFACT_ROOT}/test-results/dotnet/ci-dotnet-test-summary.md" \
-      --json-output "${MERIDIAN_CI_ARTIFACT_ROOT}/test-results/dotnet/ci-dotnet-test-summary.json" "${test_output_args[@]}"
 }
 
 verify_browser() {
-  run_step "Validate browser evidence reader" node --test src/Meridian.Ui/dashboard/scripts/vitest-evidence.test.mjs
+  run_step "Validate browser evidence reader" node --test \
+    src/Meridian.Ui/dashboard/scripts/vitest-evidence.test.mjs \
+    src/Meridian.Ui/dashboard/scripts/merge-vitest-shards.test.mjs
   verify_toolchain_browser
 
   run_step "Install dashboard dependencies from lockfile" \
@@ -247,22 +288,35 @@ verify_browser() {
   run_step "Generate UI contracts" \
     bash -c 'set -euo pipefail; "$0" build/scripts/generate-ui-api-routes-ts.py 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/ui-api-routes-check.log"; "$0" build/scripts/generate-workspace-catalog-ts.py 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/workspace-catalog-check.log"' "$python_cmd"
 
-  run_step "Lint dashboard source" \
-    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run lint 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-lint.log"'
+  # Hosted CI runs the dashboard tests as several runner shards (MERIDIAN_CI_BROWSER_SHARD=K/N).
+  # Lint, the strict typecheck and the production bundle are whole-tree facts, so the first
+  # shard owns them once; an unsharded run, including every local run, still performs all.
+  if [[ "$browser_shard_index" -le 1 ]]; then
+    run_step "Lint dashboard source" \
+      bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run lint 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-lint.log"'
 
-  run_step "Enforce strictNullChecks on dashboard source" \
-    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run typecheck:strict 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-typecheck-strict.log"'
+    run_step "Enforce strictNullChecks on dashboard source" \
+      bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run typecheck:strict 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-typecheck-strict.log"'
+  else
+    echo "Shard ${MERIDIAN_CI_BROWSER_SHARD}: lint, strict typecheck and the bundle build run in shard 1."
+  fi
 
+  local test_shard_args=""
+  if [[ -n "${MERIDIAN_CI_BROWSER_SHARD:-}" ]]; then
+    test_shard_args=" -- --shard ${MERIDIAN_CI_BROWSER_SHARD}"
+  fi
   run_step "Run dashboard tests" \
-    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run test 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-test.log"'
+    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run test'"$test_shard_args"' 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-test.log"'
 
-  run_step "Build dashboard bundle" \
-    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run build 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-build.log"'
+  if [[ "$browser_shard_index" -le 1 ]]; then
+    run_step "Build dashboard bundle" \
+      bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run build 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-build.log"'
 
-  # Assets are CI products. Validate the complete built tree instead of
-  # requiring its hashed filenames to have been committed by a contributor.
-  run_step "Validate workstation bundle" \
-    "$python_cmd" build/scripts/ci/check-workstation-assets.py
+    # Assets are CI products. Validate the complete built tree instead of
+    # requiring its hashed filenames to have been committed by a contributor.
+    run_step "Validate workstation bundle" \
+      "$python_cmd" build/scripts/ci/check-workstation-assets.py
+  fi
 
 }
 
@@ -420,6 +474,11 @@ verify_workflows() {
   # owner, a category, and a review date that expires.
   run_step "Validate test skip register" \
     "$python_cmd" build/scripts/ci/check-test-skip-register.py --summary
+
+  # A route or task that honestly refuses because nothing implements it (501, "not executed")
+  # must be owned by a roadmap row or a reasoned baseline entry, so the gap cannot go stale.
+  run_step "Validate unimplemented surfaces are roadmap-tracked" \
+    "$python_cmd" build/scripts/ci/check-unimplemented-surfaces.py --summary
 
   # Audit finding P9: ~65 of 75 tests/scripts suites were wired to no CI lane and several
   # had rotted unnoticed. The runner gates every suite except the tracked quarantine list

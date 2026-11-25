@@ -44,6 +44,9 @@ public sealed class StrategyRunComparisonService
 
         var engineSet = comparison.Select(static row => row.Engine).Distinct().ToArray();
         var hasMixedEngines = engineSet.Length > 1;
+        var sourceWarnings = StrategyRunContractCompatibility.DescribeSourceMixDifferences(comparison
+            .Where(static row => row.Mode == StrategyRunMode.Backtest)
+            .Select(static row => row.SourceMixHash).ToArray());
 
         return comparison
             .Select(row =>
@@ -54,6 +57,9 @@ public sealed class StrategyRunComparisonService
                     warnings.Add(
                         $"Cross-engine comparison active ({string.Join(", ", engineSet)}). Validate artifact parity before promoting decisions.");
                 }
+
+                if (row.Mode == StrategyRunMode.Backtest)
+                    warnings.AddRange(sourceWarnings);
 
                 return row with
                 {
@@ -242,6 +248,12 @@ public sealed class StrategyRunComparisonService
 
         if (!baseCompleteness.HasLedger || !targetCompleteness.HasLedger)
             warnings.Add("Ledger evidence is incomplete for at least one run.");
+
+        if (baseRun.Summary.Mode == StrategyRunMode.Backtest && targetRun.Summary.Mode == StrategyRunMode.Backtest)
+        {
+            warnings.AddRange(StrategyRunContractCompatibility.DescribeSourceMixDifferences(
+                [baseRun.ReplayProvenance?.SourceMixHash, targetRun.ReplayProvenance?.SourceMixHash]));
+        }
 
         return warnings;
     }

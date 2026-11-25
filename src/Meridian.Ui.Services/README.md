@@ -11,6 +11,9 @@ last_reviewed: 2026-11-17
 
 # src/Meridian.Ui.Services
 
+Provider health keeps unavailable numeric metrics null in snapshots and history. Ranking uses
+measured values, and composite scores require every weighted component.
+
 The existing accounting agreement workspace/client carries optional structured legal declarations,
 dates-only schedule previews and explicit external-review attestations through the native host API.
 It keeps exact decimal strings, submitted hashes and reviewer/operator roles distinct. Obligation
@@ -148,6 +151,12 @@ omits (QuickBooks, Plaid, IB Flex). Verification treats a successful `NotRequire
 Removal accepts `Missing`, or `NotRequired` with an explicit `NotRequired` credential source;
 a missing or default source cannot confirm a `NotRequired` result.
 `providerWideOnly: true` reads provider-wide records only, without the tenant's connection credentials.
+`OAuthRefreshService` refreshes tokens through the host's `ICredentialService`; the shared
+`CredentialService` is a no-op test and fallback base that never yields a token. Provider ids come
+from the host's `OAuthTokenResourcePrefix` (WPF: `Meridian.OAuth.<provider>`), and `.refresh`
+companion entries are skipped. The WPF host starts the service after desktop activation and disposes
+it on exit. `TimeSeriesAlignmentService` reports an HTTP 501 as `IsServiceUnavailable` so callers can
+present alignment as unavailable rather than as a failed run.
 Provider IDs use the shared ProviderSdk identity map for request paths, mutation acknowledgements,
 status joins and catalog deduplication. Aliases resolve to one canonical status row and retain the
 service field schema; ambiguous duplicate service rows remain unavailable. Status projections retain

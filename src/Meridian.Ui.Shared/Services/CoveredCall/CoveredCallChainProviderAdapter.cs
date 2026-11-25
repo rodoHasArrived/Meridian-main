@@ -1,5 +1,6 @@
 using Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Instruments.Options;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services.CoveredCall;
@@ -17,6 +18,7 @@ public sealed class CoveredCallChainProviderAdapter : IOptionChainProvider
 
     /// <summary>Total candidates across all snapshot dates (for diagnostics).</summary>
     public int TotalCandidates { get; }
+    internal OptionsChainProvenance? Provenance { get; init; }
 
     /// <summary>Snapshot dates the adapter knows about.</summary>
     public IReadOnlyCollection<DateOnly> KnownDates => _snapshotsByDate.Keys.ToArray();

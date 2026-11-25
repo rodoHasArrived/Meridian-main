@@ -172,9 +172,9 @@ describe("QuantLabScreen", () => {
     expect(metricsTable).toHaveTextContent(/Metrics emitted by the Quant Lab script run/i);
     expect(screen.getByText("answer")).toBeInTheDocument();
     expect(screen.getByText("42")).toBeInTheDocument();
-    const consoleBlock = screen.getByText(/Hello from the Quant Lab\./, { selector: "pre" });
+    const consoleBlock = screen.getByText("Hello from the Quant Lab.", { selector: "pre" });
     expect(consoleBlock).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "Sine" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Sine" })).toBeInTheDocument();
   });
 
   it("labels run evidence when the editor changes before the run completes", async () => {

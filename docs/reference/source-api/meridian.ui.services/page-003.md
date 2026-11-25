@@ -86,7 +86,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Ui.Services.CheckResult</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/SetupWizardService.cs:711](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L711).
+Source: [src/Meridian.Ui.Services/Services/SetupWizardService.cs:709](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L709).
 
 Individual check result.
 
@@ -98,9 +98,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:713](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L713) |  |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:714](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L714) |  |
-| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:715](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L715) |  |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:711](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L711) |  |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:712](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L712) |  |
+| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:713](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L713) |  |
 
 ## CheckSeverity
 
@@ -1125,11 +1125,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>event EventHandler&lt;CredentialExpirationEventArgs&gt;? CredentialExpiring;</code> | [src/Meridian.Ui.Services/Contracts/ICredentialService.cs:15](../../../../src/Meridian.Ui.Services/Contracts/ICredentialService.cs#L15) |  |
-| <code>IReadOnlyList&lt;CredentialWithMetadata&gt; GetAllCredentialsWithMetadata();</code> | [src/Meridian.Ui.Services/Contracts/ICredentialService.cs:16](../../../../src/Meridian.Ui.Services/Contracts/ICredentialService.cs#L16) |  |
-| <code>Task&lt;OAuthRefreshResult&gt; RefreshOAuthTokenAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Contracts/ICredentialService.cs:17](../../../../src/Meridian.Ui.Services/Contracts/ICredentialService.cs#L17) |  |
-| <code>Task UpdateMetadataAsync(string resource, Action&lt;CredentialMetadataUpdate&gt; updateAction, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Contracts/ICredentialService.cs:18](../../../../src/Meridian.Ui.Services/Contracts/ICredentialService.cs#L18) |  |
-| <code>CredentialMetadataInfo? GetMetadata(string resource);</code> | [src/Meridian.Ui.Services/Contracts/ICredentialService.cs:19](../../../../src/Meridian.Ui.Services/Contracts/ICredentialService.cs#L19) |  |
+| <code>string OAuthTokenResourcePrefix { get; }</code> | [src/Meridian.Ui.Services/Contracts/ICredentialService.cs:19](../../../../src/Meridian.Ui.Services/Contracts/ICredentialService.cs#L19) | Resource-name prefix under which this host stores OAuth tokens. A token for provider x is stored as {OAuthTokenResourcePrefix}.x. |
+| <code>event EventHandler&lt;CredentialExpirationEventArgs&gt;? CredentialExpiring;</code> | [src/Meridian.Ui.Services/Contracts/ICredentialService.cs:21](../../../../src/Meridian.Ui.Services/Contracts/ICredentialService.cs#L21) |  |
+| <code>IReadOnlyList&lt;CredentialWithMetadata&gt; GetAllCredentialsWithMetadata();</code> | [src/Meridian.Ui.Services/Contracts/ICredentialService.cs:22](../../../../src/Meridian.Ui.Services/Contracts/ICredentialService.cs#L22) |  |
+| <code>Task&lt;OAuthRefreshResult&gt; RefreshOAuthTokenAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Contracts/ICredentialService.cs:23](../../../../src/Meridian.Ui.Services/Contracts/ICredentialService.cs#L23) |  |
+| <code>Task UpdateMetadataAsync(string resource, Action&lt;CredentialMetadataUpdate&gt; updateAction, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Contracts/ICredentialService.cs:24](../../../../src/Meridian.Ui.Services/Contracts/ICredentialService.cs#L24) |  |
+| <code>CredentialMetadataInfo? GetMetadata(string resource);</code> | [src/Meridian.Ui.Services/Contracts/ICredentialService.cs:25](../../../../src/Meridian.Ui.Services/Contracts/ICredentialService.cs#L25) |  |
 
 ## ILoggingService
 

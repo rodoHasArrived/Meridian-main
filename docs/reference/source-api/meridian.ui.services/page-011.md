@@ -6,6 +6,125 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RetentionAuditReport
+
+Qualified name: <code>Meridian.Ui.Services.RetentionAuditReport</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:184](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L184).
+
+Audit report for retention cleanup.
+
+```csharp
+public sealed class RetentionAuditReport
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; set; } = Guid.NewGuid().ToString();</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:186](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L186) |  |
+| <code>public DateTime ExecutedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:187](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L187) |  |
+| <code>public CleanupStatus Status { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:188](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L188) |  |
+| <code>public RetentionPolicy PolicyApplied { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:189](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L189) |  |
+| <code>public int DryRunFilesCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:190](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L190) |  |
+| <code>public long DryRunBytesTotal { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:191](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L191) |  |
+| <code>public List&lt;DeletedFileInfo&gt; DeletedFiles { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:192](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L192) |  |
+| <code>public long ActualBytesDeleted { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:193](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L193) |  |
+| <code>public ChecksumVerificationResult? ChecksumVerification { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:194](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L194) |  |
+| <code>public List&lt;string&gt; Errors { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:195](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L195) |  |
+| <code>public List&lt;string&gt; Notes { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:196](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L196) |  |
+
+## RetentionConfiguration
+
+Qualified name: <code>Meridian.Ui.Services.RetentionConfiguration</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:11](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L11).
+
+Retention configuration.
+
+```csharp
+public sealed class RetentionConfiguration
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public RetentionGuardrails Guardrails { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:13](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L13) |  |
+| <code>public bool EnableScheduledCleanup { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:14](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L14) |  |
+| <code>public string CleanupSchedule { get; set; } = &quot;0 3 * * 0&quot;;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:15](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L15) |  |
+| <code>public bool NotifyOnCleanup { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:16](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L16) |  |
+| <code>public bool RequireApproval { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:17](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L17) |  |
+
+## RetentionDryRunResult
+
+Qualified name: <code>Meridian.Ui.Services.RetentionDryRunResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:99](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L99).
+
+Result of a dry run.
+
+```csharp
+public sealed class RetentionDryRunResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public RetentionPolicy PolicyApplied { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:101](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L101) |  |
+| <code>public DateTime ExecutedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:102](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L102) |  |
+| <code>public List&lt;FileToDelete&gt; FilesToDelete { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:103](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L103) |  |
+| <code>public List&lt;SkippedFileInfo&gt; SkippedFiles { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:104](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L104) |  |
+| <code>public long TotalBytesToDelete { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:105](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L105) |  |
+| <code>public Dictionary&lt;string, SymbolDeletionSummary&gt; BySymbol { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:106](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L106) |  |
+| <code>public List&lt;string&gt; Errors { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:107](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L107) |  |
+| <code>public void GroupBySymbol();</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:109](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L109) |  |
+
+## RetentionGuardrails
+
+Qualified name: <code>Meridian.Ui.Services.RetentionGuardrails</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:23](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L23).
+
+Retention guardrails to prevent accidental data loss.
+
+```csharp
+public sealed class RetentionGuardrails
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int MinTickDataDays { get; set; } = 7;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:25](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L25) |  |
+| <code>public int MinBarDataDays { get; set; } = 30;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:26](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L26) |  |
+| <code>public int MinQuoteDataDays { get; set; } = 7;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:27](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L27) |  |
+| <code>public int MinDepthDataDays { get; set; } = 3;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:28](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L28) |  |
+| <code>public int MaxDailyDeletedFiles { get; set; } = 1000;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:29](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L29) |  |
+| <code>public bool RequireChecksumVerification { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:30](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L30) |  |
+| <code>public bool RequireDryRunPreview { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:31](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L31) |  |
+| <code>public bool AllowDeleteDuringTradingHours { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:32](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L32) |  |
+
+## RetentionPoliciesResponse
+
+Qualified name: <code>Meridian.Ui.Services.RetentionPoliciesResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:258](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L258).
+
+HTTP response payload for retention policies.
+
+```csharp
+public sealed class RetentionPoliciesResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public List&lt;StorageRetentionPolicy&gt;? Policies { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:260](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L260) |  |
+| <code>public StorageRetentionPolicy? DefaultPolicy { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:261](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L261) |  |
+
 ## RetentionPoliciesResult
 
 Qualified name: <code>Meridian.Ui.Services.RetentionPoliciesResult</code>. Kind: `class`.
@@ -625,7 +744,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.ScoreComponent</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:481](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L481).
+Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:463](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L463).
 
 Describes a health-score component&#x27;s weight, raw score, and weighted contribution.
 
@@ -637,9 +756,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int Weight { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:483](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L483) |  |
-| <code>public double Score { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:484](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L484) |  |
-| <code>public double WeightedScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:485](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L485) |  |
+| <code>public int Weight { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:465](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L465) |  |
+| <code>public double? Score { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:466](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L466) |  |
+| <code>public double? WeightedScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:467](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L467) |  |
 
 ## SearchOptions
 
@@ -1191,167 +1310,3 @@ Declared public members:
 | <code>public IAsyncRelayCommand PreviewProposalDatesCommand { get; private set; } = null !;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:91](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L91) |  |
 | <code>public IAsyncRelayCommand PreviewRevisionDatesCommand { get; private set; } = null !;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:92](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L92) |  |
 | <code>public IAsyncRelayCommand EvaluateObligationsCommand { get; private set; } = null !;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:93](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L93) |  |
-
-## IntercompanyAllocationEditor
-
-Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyAllocationEditor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:264](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L264).
-
-```csharp
-public sealed class IntercompanyAllocationEditor : ObservableObject
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string EntityId { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:267](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L267) |  |
-| <code>public string Percent { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:268](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L268) |  |
-
-## IntercompanyBalanceConfirmationRow
-
-Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyBalanceConfirmationRow</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:269](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L269).
-
-One retained confirmation as seen from the loaded book; amounts are the server&#x27;s exact decimals.
-
-```csharp
-public sealed class IntercompanyBalanceConfirmationRow(IntercompanyBalanceConfirmationDto confirmation, Guid book)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IntercompanyBalanceConfirmationDto Confirmation { get; } = confirmation;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:271](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L271) |  |
-| <code>public Guid ConfirmationId =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:272](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L272) |  |
-| <code>public long Version =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:273](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L273) |  |
-| <code>public string BalanceDigest =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:274](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L274) |  |
-| <code>public IntercompanyBalanceConfirmationStatusDto Status =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:275](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L275) |  |
-| <code>public IntercompanyBalanceConfirmationPartyDto ThisBookParty =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:276](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L276) |  |
-| <code>public string Profile =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:278](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L278) |  |
-| <code>public string StatusText =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:279](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L279) |  |
-| <code>public string PartyOne =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:288](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L288) |  |
-| <code>public string PartyTwo =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:289](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L289) |  |
-| <code>public string Net =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:290](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L290) |  |
-| <code>public string History =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:291](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L291) |  |
-| <code>public bool CanConfirm =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:293](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L293) |  |
-| <code>public bool CanResolve =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:297](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L297) | Disputed, and (across companies) this book&#x27;s side has not yet recorded its resolution. |
-| <code>public bool ThisSideResolved { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:298](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L298) |  |
-| <code>public bool CanDispute =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:308](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L308) |  |
-
-## IntercompanyBalanceConfirmationWorkspace
-
-Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyBalanceConfirmationWorkspace</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs#L11).
-
-Correction after a resolved dispute (DEC-IC-CONFIRM-003), over the browser&#x27;s route: a balanced draft on this book&#x27;s mapped intercompany account, retained in the journal workbench for ordinary review. Nothing is posted here.
-
-```csharp
-public sealed partial class IntercompanyBalanceConfirmationWorkspace
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;IntercompanyChoiceRow&gt; AdjustmentRoles { get; } = [new (nameof(IntercompanyAccountRoleDto.Receivable), &quot;Due from (receivable)&quot;), new (nameof(IntercompanyAccountRoleDto.Payable), &quot;Due to (payable)&quot;)];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs:17](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs#L17) | The choices for the intercompany account to correct. |
-| <code>public string AdjustmentRole { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs:19](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs#L19) |  |
-| <code>public string AdjustmentAmount { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs:21](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs#L21) | Agreement currency, invariant decimal. Positive debits the intercompany account, negative credits it. |
-| <code>public string AdjustmentOffsetAccount { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs:23](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs#L23) | A non-intercompany chart node of this book. |
-| <code>public string AdjustmentDate { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs:25](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs#L25) | Accounting date (yyyy-MM-dd); empty uses the confirmation date. |
-| <code>public IAsyncRelayCommand DraftAdjustmentCommand =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs:26](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs#L26) |  |
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:12](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L12).
-
-The loaded book&#x27;s opt-in confirmation close policy (ADR-032), over the same routes as the browser. Without an active policy, confirmation stays advisory; one operator proposes the blocking findings and a different one approves.
-
-```csharp
-public sealed partial class IntercompanyBalanceConfirmationWorkspace
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ObservableCollection&lt;IntercompanyClosePolicyCodeChoice&gt; BlockingCodeChoices { get; } = [..new (string Code, string Label)[] { (&quot;not-proposed&quot;, &quot;No confirmation proposed&quot;), (&quot;awaiting-confirmation&quot;, &quot;Awaiting the other side&quot;), (&quot;disputed&quot;, &quot;Disputed&quot;), (&quot;balances-changed&quot;, &quot;Balances changed since confirmation&quot;), (&quot;resolved-awaiting-proposal&quot;, &quot;Resolved, awaiting a new proposal&quot;) }.Select(item =&gt; new IntercompanyClosePolicyCodeChoice(item.Code, item.Label, item.Code == &quot;disputed&quot;))];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:20](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L20) | Findings a policy may make blocking; &quot;disputed&quot; is preselected. |
-| <code>public string ClosePolicyReason { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:25](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L25) |  |
-| <code>public string ClosePolicyText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:27](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L27) | The loaded book&#x27;s policy position in words. |
-| <code>public IntercompanyConfirmationClosePolicyDto? OpenClosePolicy { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:29](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L29) | The book&#x27;s proposed or active policy, if any. |
-| <code>public IAsyncRelayCommand ProposeClosePolicyCommand =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:30](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L30) |  |
-| <code>public IAsyncRelayCommand ApproveClosePolicyCommand =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:32](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L32) |  |
-| <code>public IAsyncRelayCommand RejectClosePolicyCommand =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:34](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L34) |  |
-| <code>public IAsyncRelayCommand DisableClosePolicyCommand =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:36](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L36) |  |
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:18](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L18).
-
-Desktop state for reciprocal intercompany balance confirmation over the routes the browser uses. Balances are pinned by the server from posted journals; this book&#x27;s operator confirms or disputes only this book&#x27;s side. The other book may belong to another company of the tenant; then each company records its own resolution of a dispute. Confirmation is advisory unless the book adopts a reviewed close policy (ADR-032, see the ClosePolicy part); nothing is calculated here.
-
-```csharp
-public sealed partial class IntercompanyBalanceConfirmationWorkspace : ObservableObject, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IntercompanyBalanceConfirmationWorkspace(IWorkstationIntercompanyAgreementApiClient client);</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:33](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L33) |  |
-| <code>public ObservableCollection&lt;IntercompanyBalanceConfirmationRow&gt; Confirmations { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:48](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L48) |  |
-| <code>public ObservableCollection&lt;string&gt; Findings { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:49](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L49) |  |
-| <code>public ObservableCollection&lt;IntercompanyChoiceRow&gt; Profiles { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:51](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L51) | Approved accounting profiles that map the loaded book on the loaded date. |
-| <code>public IAsyncRelayCommand LoadCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:52](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L52) |  |
-| <code>public IAsyncRelayCommand ProposeCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:53](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L53) |  |
-| <code>public IAsyncRelayCommand ConfirmCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:54](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L54) |  |
-| <code>public IAsyncRelayCommand DisputeCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L55) |  |
-| <code>public IAsyncRelayCommand ResolveCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:56](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L56) |  |
-| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:57](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L57) |  |
-| <code>public bool CanManageLedger { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:58](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L58) |  |
-| <code>public string PermissionNote =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:59](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L59) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:62](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L62) |  |
-| <code>public string SummaryText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:64](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L64) | The advisory position, stated as advisory: close eligibility is unchanged. |
-| <code>public string LedgerBook { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:65](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L65) |  |
-| <code>public string AsOf { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:67](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L67) | Confirmation date (yyyy-MM-dd), normally the period end. |
-| <code>public string Reason { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:68](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L68) |  |
-| <code>public string SelectedProfile { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:69](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L69) |  |
-| <code>public IntercompanyBalanceConfirmationRow? SelectedConfirmation { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:70](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L70) |  |
-| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:216](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L216) | Clear prior-session evidence and invalidate every outstanding response on account changes. |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:229](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L229) |  |
-
-## IntercompanyChoice
-
-Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyChoice</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs:30](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs#L30).
-
-One selectable identifier with a readable label. The selection list is a convenience over shared reads: the bound value is the identifier the command sends, and the server remains the authority for it.
-
-```csharp
-public sealed record IntercompanyChoice(string Id, string Label)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs:32](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs#L32) |  |
-
-## IntercompanyChoiceRow
-
-Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyChoiceRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:263](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L263).
-
-One selectable identifier with a readable label.
-
-```csharp
-public sealed record IntercompanyChoiceRow(string Id, string Label)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:265](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L265) |  |

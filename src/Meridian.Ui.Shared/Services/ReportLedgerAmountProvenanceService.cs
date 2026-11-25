@@ -7,7 +7,7 @@ using Meridian.Ui.Shared.Evidence;
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>Resolves generated amounts exclusively from the report's retained ledger population.</summary>
-public sealed class ReportLedgerAmountProvenanceService(
+public sealed partial class ReportLedgerAmountProvenanceService(
     IReportingRunStore? runs,
     PostedLedgerAmountProvenanceService postedAmounts)
 {
@@ -26,12 +26,14 @@ public sealed class ReportLedgerAmountProvenanceService(
         return population.ReportAmounts.Select(amount => amount with
         {
             SubjectId = $"report:{manifest.RunId}:{amount.AmountId}",
-            SourceSnapshotHash = manifest.AuthoritativeSource.CheckpointHash
+            SourceSnapshotHash = manifest.AuthoritativeSource.CheckpointHash,
+            AmountPassport = ReportReference($"report:{manifest.RunId}:{amount.AmountId}", amount, manifest.AuthoritativeSource)
         }).ToArray();
     }
 
     public async Task<EvidencePacketDto?> GetPacketAsync(string subjectId, LedgerAmountScopeDto scope,
-        ReportAccessQueryContext? access, CancellationToken ct = default)
+        ReportAccessQueryContext? access, CancellationToken ct = default, AmountPassportIdentityDto? passport = null,
+        IReadOnlyList<AmountPassportRecordDto>? history = null)
     {
         ct.ThrowIfCancellationRequested();
         if (!TryParseSubject(subjectId, out var runId, out var amountId) || access is null)
@@ -42,6 +44,8 @@ public sealed class ReportLedgerAmountProvenanceService(
             || source.LedgerBookId != scope.LedgerBookId.ToString("D")
             || source.AccountingPeriodId != scope.PeriodId.ToString("D"))
             return null;
+        if (passport is not null && ReportIdentity(subjectId, scope, source) != passport)
+            throw new AmountPassportScopeMismatchException();
 
         ReportingLedgerPopulationSnapshot population;
         try
@@ -54,9 +58,13 @@ public sealed class ReportLedgerAmountProvenanceService(
         catch (Exception exception) when (exception is ReportingGovernanceException or InvalidDataException
             or ArgumentException or LedgerValidationException or InvalidOperationException)
         {
-            return Packet(subjectId, scope, "Generated report amount", 0m,
+            var invalidPacket = Packet(subjectId, scope, "Generated report amount", 0m,
                 manifest.ResolvedParameters?.PresentationCurrency ?? "", [], [],
                 ["Generated amount proof is blocked: the retained ledger population or amount binding is missing, altered, or invalid."]);
+            if (passport is null)
+                return invalidPacket;
+            return WithPassport(invalidPacket, new(passport, null, AmountPassportFacts.CurrencyUnit, "calculated", false),
+                source, null, [], history ?? [], false, false);
         }
         var amounts = population.ReportAmounts.Where(amount => amount.AmountId == amountId).ToArray();
         if (amounts.Length != 1 || amounts[0].Scope != scope)
@@ -67,6 +75,8 @@ public sealed class ReportLedgerAmountProvenanceService(
         var edges = new List<EvidenceEdgeDto>();
         var warnings = new List<string>();
         var accountingAttestations = new List<AccountingPreparerAttestationDisclosureDto>();
+        var passportSources = new List<AmountPassportRecordDto>();
+        var staleSupport = false;
         foreach (var entryId in amount.LedgerEntryIds)
         {
             var records = population.Journals.Where(record => record.Entry.Lines.Any(line => line.EntryId == entryId)).ToArray();
@@ -81,12 +91,16 @@ public sealed class ReportLedgerAmountProvenanceService(
             // Historical balances may legitimately include earlier periods in the same book.
             // Their source association must retain the journal's own period, never the report period.
             var lineScope = scope with { PeriodId = record.PeriodId };
+            if (passport is not null)
+                passportSources.Add(new("journal-line", postedSubject, $"Contributing {line.Account.Name} posting",
+                    Passport: AmountPassportFacts.PostedReference(record, line, lineScope, amount.Currency).Identity));
             // Classify the exact frozen record before source readiness can withhold its routes.
             // A report-level approval cannot cure an upstream preparer-only accounting decision.
             accountingAttestations.AddRange(AccountingPreparerAttestationDisclosure.Read(record, lineScope) ?? []);
             var proof = await postedAmounts.GetRetainedPacketAsync(postedSubject, lineScope, record, amount.Currency, ct)
                 .ConfigureAwait(false);
             var verified = proof?.LedgerAmount;
+            staleSupport |= verified?.RetainedSupportStale == true;
             if (verified is null || verified.Status != EvidenceStatusDto.Ready
                 || !string.Equals(verified.Currency, amount.Currency, StringComparison.OrdinalIgnoreCase)
                 || line.Currency is { } currency
@@ -130,12 +144,15 @@ public sealed class ReportLedgerAmountProvenanceService(
             warnings.Add("The generated amount has no retained contributing ledger lines.");
         // Any incomplete contributor blocks the complete report amount. Do not expose routes from
         // an otherwise valid subset as if that subset proved the retained total.
-        if (warnings.Count != 0)
-            return Packet(subjectId, scope, amount.Label, amount.Amount, amount.Currency, [], [], warnings.Distinct().ToArray(),
-                accountingAttestations: AccountingPreparerAttestationDisclosure.Union(accountingAttestations));
-        return Packet(subjectId, scope, amount.Label, amount.Amount, amount.Currency,
-            evidence.Values.ToArray(), nodes.Values.ToArray(), [], edges,
-            AccountingPreparerAttestationDisclosure.Union(accountingAttestations));
+        var attestations = AccountingPreparerAttestationDisclosure.Union(accountingAttestations);
+        var packet = warnings.Count != 0
+            ? Packet(subjectId, scope, amount.Label, amount.Amount, amount.Currency, [], [], warnings.Distinct().ToArray(),
+                accountingAttestations: attestations)
+            : Packet(subjectId, scope, amount.Label, amount.Amount, amount.Currency,
+                evidence.Values.ToArray(), nodes.Values.ToArray(), [], edges, attestations);
+        return passport is null ? packet : WithPassport(packet, ReportReference(subjectId, amount, source),
+            source, amount.Amount, passportSources, history ?? [],
+            amount.LedgerEntryIds.Count > 0 && passportSources.Count == amount.LedgerEntryIds.Count, staleSupport);
     }
 
     private ReportingOutputManifest? AuthorizedManifest(string runId, ReportAccessQueryContext access)
@@ -162,7 +179,7 @@ public sealed class ReportLedgerAmountProvenanceService(
             + $"&periodId={scope.PeriodId:D}&fundProfileId={Uri.EscapeDataString(scope.FundProfileId)}&expectedContentHash={hash}";
     }
 
-    private static bool TryParseSubject(string subjectId, out string runId, out string amountId)
+    internal static bool TryParseSubject(string subjectId, out string runId, out string amountId)
     {
         runId = amountId = "";
         if (!IsReportSubject(subjectId))
@@ -175,7 +192,7 @@ public sealed class ReportLedgerAmountProvenanceService(
         return true;
     }
 
-    private static EvidencePacketDto Packet(string subjectId, LedgerAmountScopeDto scope, string label,
+    internal static EvidencePacketDto Packet(string subjectId, LedgerAmountScopeDto scope, string label,
         decimal amount, string currency, IReadOnlyList<LedgerAmountProofEvidenceDto> evidence,
         IReadOnlyList<EvidenceNodeDto> nodes, IReadOnlyList<string> warnings,
         IReadOnlyList<EvidenceEdgeDto>? sourceEdges = null,
@@ -183,7 +200,8 @@ public sealed class ReportLedgerAmountProvenanceService(
     {
         var status = warnings.Count == 0 ? EvidenceStatusDto.Ready : EvidenceStatusDto.Blocked;
         var subject = new EvidenceSubjectDto(subjectId, EvidenceSubjectResolver.LedgerAmountKind,
-            label, "Reporting", null, "ReportRunGovernance", scope.LedgerBookId);
+            label, TrialBalanceAmountProvenanceService.IsSubject(subjectId) ? "Accounting" : "Reporting", null,
+            TrialBalanceAmountProvenanceService.IsSubject(subjectId) ? "AccountingTrialBalance" : "ReportRunGovernance", scope.LedgerBookId);
         var ids = evidence.Select(item => item.EvidenceId).ToArray();
         string[] missing = status == EvidenceStatusDto.Ready ? [] : ["retained-report-amount-support"];
         var completeness = new EvidenceCompletenessDto(status == EvidenceStatusDto.Ready ? 100 : 0, status,
@@ -206,9 +224,9 @@ public sealed class ReportLedgerAmountProvenanceService(
                 [new(EvidenceProofChainLayerKindDto.Source, "Verified retained sources", status,
                     completeness.Score, sourceIds, sourceIds, sourceIds, [], missing, ["source-document"],
                     "Every contributing line requires exact retained accounting scope and verified source bytes."),
-                 new(EvidenceProofChainLayerKindDto.Ledger, "Report snapshot journal lines", status,
+                 new(EvidenceProofChainLayerKindDto.Ledger, "Retained aggregate journal lines", status,
                     completeness.Score, ledgerIds, ledgerIds, ledgerIds, [], missing, ["ledger-record"],
-                    "The amount reproduces from the retained report population, including prior-period balances.")],
+                    "The amount reproduces from its exact retained journal population.")],
                 status == EvidenceStatusDto.Ready ? "Verified retained evidence supports this generated amount." : "Generated amount proof is blocked.")
         };
     }
