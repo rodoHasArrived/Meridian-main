@@ -14623,6 +14623,7 @@ Meridian-main
 │   │   │   ├── CustomAssetPromotionRoundTripTests.cs
 │   │   │   ├── DataVendorEntitlementServiceTests.cs
 │   │   │   ├── DayCountConventionsTests.cs
+│   │   │   ├── DirectLoanAndSwapEconomicRuleTests.cs
 │   │   │   ├── DiscountedCashFlowValuationModelTests.cs
 │   │   │   ├── ExerciseStyleStoredLabelTests.cs
 │   │   │   ├── FaceValueLotGoldenTests.cs

@@ -196,11 +196,96 @@ internal static class DefaultAssetClassValidators
                 "Swap",
                 [
                     DateOrderRule.Optional("effectiveDate", "maturityDate", "SM_SWAP_DATE_RANGE_INVALID", "Swap date range is invalid", "Swap effective date must be on or before maturity date."),
-                    FieldRule.OptionalArrayNotEmpty("legs", "SM_SWAP_LEGS_REQUIRED", "Swap legs are missing", "Swaps must include at least one leg.")
+                    FieldRule.OptionalArrayNotEmpty("legs", "SM_SWAP_LEGS_REQUIRED", "Swap legs are missing", "Swaps must include at least one leg."),
+                    // Per-leg economic consistency (Warning while existing records are measured). Leg
+                    // currency and leg type are already required by the schema.
+                    TermArrayElementRule.Create(
+                        "legs",
+                        SecurityValidationSeverityDto.Warning,
+                        "SM_SWAP_FLOATING_LEG_INDEX_MISSING",
+                        "Floating swap leg has no index",
+                        "A leg with legType Floating has no index, so its resets cannot be fixed.",
+                        "Set the leg's reference index (for example SOFR or EURIBOR 3M).",
+                        static leg => leg.HasString("legType", "Floating") && !leg.HasNonBlankString("index") ? "index" : null),
+                    TermArrayElementRule.Create(
+                        "legs",
+                        SecurityValidationSeverityDto.Warning,
+                        "SM_SWAP_FIXED_LEG_RATE_MISSING",
+                        "Fixed swap leg has no fixed rate",
+                        "A leg with legType Fixed has no fixedRate.",
+                        "Set the leg's fixed rate and its rate unit.",
+                        static leg => leg.HasString("legType", "Fixed") && !leg.HasNumber("fixedRate") ? "fixedRate" : null),
+                    TermArrayElementRule.Create(
+                        "legs",
+                        SecurityValidationSeverityDto.Warning,
+                        "SM_SWAP_LEG_DAY_COUNT_MISSING",
+                        "Swap leg has no day count",
+                        "A swap leg has no dayCount and the record declares none to fall back to, so its accrual cannot be computed from declared terms.",
+                        "Set the leg's day count convention (for example ACT/360).",
+                        static leg => leg.HasNonBlankString("dayCount") || leg.RecordDeclaresString(SecurityCashFlowTermRole.DayCount)
+                            ? null
+                            : "dayCount"),
+                    TermArrayElementRule.Create(
+                        "legs",
+                        SecurityValidationSeverityDto.Warning,
+                        "SM_SWAP_LEG_PAYMENT_FREQUENCY_MISSING",
+                        "Swap leg has no payment frequency",
+                        "A swap leg has no paymentFrequency and the record declares none to fall back to, so its payment schedule cannot be generated from declared terms.",
+                        "Set the leg's payment frequency (for example Quarterly).",
+                        static leg => leg.HasNonBlankString("paymentFrequency") || leg.RecordDeclaresString(SecurityCashFlowTermRole.PaymentFrequency)
+                            ? null
+                            : "paymentFrequency"),
+                    TermArrayElementRule.Create(
+                        "legs",
+                        SecurityValidationSeverityDto.Warning,
+                        "SM_SWAP_LEG_NOTIONAL_SCHEDULE_ORDER",
+                        "Swap leg notional schedule is out of order",
+                        "A leg's notionalSchedule effective dates must be strictly increasing.",
+                        "Sort the leg's notional schedule by effective date and combine steps that share a date.",
+                        static leg => leg.ScheduleDatesIncrease("notionalSchedule", "effectiveDate") ? null : "notionalSchedule")
                 ]),
+            // DirectLoan economic consistency (Warning while existing records are measured; promote to
+            // Error once the count is known). The schema carries no origination, commitment, funded,
+            // floor or cap terms, so those relations are not checkable here.
             new JsonAssetClassValidator(
                 "DirectLoan",
                 [
+                    DependentTermRule.Create(
+                        "spreadBps",
+                        "referenceIndex",
+                        SecurityValidationSeverityDto.Warning,
+                        "SM_DIRECTLOAN_SPREAD_WITHOUT_INDEX",
+                        "Loan spread has no reference index",
+                        "spreadBps is set but referenceIndex is not; a spread is quoted over an index, so the floating coupon cannot be resolved.",
+                        "Add the loan's reference index (for example SOFR) or remove the spread."),
+                    TermScheduleDateOrderRule.Create(
+                        "principalSchedule",
+                        "paymentDate",
+                        SecurityValidationSeverityDto.Warning,
+                        "SM_DIRECTLOAN_PRINCIPAL_SCHEDULE_ORDER",
+                        "Loan principal schedule is out of order",
+                        "principalSchedule payment dates must be strictly increasing; a repeated or earlier date makes the repayment profile ambiguous.",
+                        "Sort the principal schedule by payment date and combine payments that share a date."),
+                    TermArrayElementRule.Create(
+                        "principalSchedule",
+                        SecurityValidationSeverityDto.Warning,
+                        "SM_DIRECTLOAN_PRINCIPAL_AMOUNT_INVALID",
+                        "Loan principal payment is not positive",
+                        "Every principalSchedule amount must be greater than zero.",
+                        "Correct or remove the zero or negative principal payment.",
+                        static payment => payment.TryGetDecimal("amount", out var amount) && amount <= 0m ? "amount" : null),
+                    TermArrayElementRule.Create(
+                        "principalSchedule",
+                        SecurityValidationSeverityDto.Warning,
+                        "SM_DIRECTLOAN_PRINCIPAL_AFTER_MATURITY",
+                        "Loan principal payment falls after maturity",
+                        "A principalSchedule payment date is after the loan's maturity.",
+                        "Correct the payment date or the loan maturity.",
+                        static payment => payment.TryGetDate("paymentDate", out var paid)
+                                          && payment.TryGetRecordDate("maturity", out var maturity)
+                                          && paid > maturity
+                            ? "paymentDate"
+                            : null)
                 ]),
             new JsonAssetClassValidator(
                 "StructuredCredit",
@@ -1172,6 +1257,202 @@ internal sealed record DiscouragedTrueBooleanRule(
     }
 }
 
+/// <summary>
+/// Reports a supplied term whose meaning depends on another term that is missing, such as a spread
+/// with no index to be quoted over.
+/// </summary>
+internal sealed record DependentTermRule(
+    string TriggerFieldPath,
+    string RequiredFieldPath,
+    SecurityValidationSeverityDto Severity,
+    string Code,
+    string Title,
+    string Message,
+    string SuggestedAction) : ISecurityValidationRule
+{
+    public static DependentTermRule Create(
+        string triggerFieldPath,
+        string requiredFieldPath,
+        SecurityValidationSeverityDto severity,
+        string code,
+        string title,
+        string message,
+        string suggestedAction)
+        => new(triggerFieldPath, requiredFieldPath, severity, code, title, message, suggestedAction);
+
+    public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
+    {
+        var terms = context.Record.AssetSpecificTerms;
+        var assetClass = context.Record.AssetClass;
+        if (!JsonValidationReader.TryGetAssetTermProperty(terms, TriggerFieldPath, assetClass, out var trigger)
+            || trigger.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+        {
+            return null;
+        }
+
+        if (JsonValidationReader.TryGetAssetTermProperty(terms, RequiredFieldPath, assetClass, out var required)
+            && JsonValidationReader.HasNonBlankString(required))
+        {
+            return null;
+        }
+
+        return SecurityValidationIssueFactory.Create(
+            Severity,
+            Code,
+            Title,
+            Message,
+            [$"assetSpecificTerms.{TriggerFieldPath}", $"assetSpecificTerms.{RequiredFieldPath}"],
+            SuggestedAction);
+    }
+}
+
+/// <summary>
+/// One element of a term array, read through the schema so element aliases resolve the same way the
+/// schema validator resolves them.
+/// </summary>
+internal readonly record struct TermArrayElement(JsonElement Value, JsonElement Terms, JsonElement CommonTerms, string AssetClass, string SchemaPath)
+{
+    public bool TryGet(string key, out JsonElement property)
+        => JsonValidationReader.TryGetElementTermProperty(Value, AssetClass, SchemaPath, key, out property)
+           && property.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined);
+
+    public bool HasNonBlankString(string key)
+        => TryGet(key, out var property) && JsonValidationReader.HasNonBlankString(property);
+
+    public bool HasString(string key, string expected)
+        => TryGet(key, out var property)
+           && property.ValueKind == JsonValueKind.String
+           && string.Equals(property.GetString()?.Trim(), expected, StringComparison.OrdinalIgnoreCase);
+
+    public bool HasNumber(string key)
+        => TryGet(key, out var property) && property.ValueKind == JsonValueKind.Number;
+
+    public bool TryGetDecimal(string key, out decimal value)
+    {
+        value = default;
+        return TryGet(key, out var property) && JsonValidationReader.TryGetDecimal(property, out value);
+    }
+
+    public bool TryGetDate(string key, out DateOnly value)
+    {
+        value = default;
+        return TryGet(key, out var property) && JsonValidationReader.TryGetDate(property, out value);
+    }
+
+    /// <summary>
+    /// Whether the record itself (asset terms or common terms) declares a value for a cash-flow term
+    /// role, read with the same spellings the cash-flow resolver uses for its record-level fallback.
+    /// </summary>
+    public bool RecordDeclaresString(SecurityCashFlowTermRole role)
+        => SecurityTermReader.ReadString([Terms, CommonTerms], SecurityCashFlowTermRoles.Spellings(AssetClass, role)) is { Length: > 0 } value
+           && !string.IsNullOrWhiteSpace(value);
+
+    /// <summary>A date on the record itself (not the element), such as the instrument's maturity.</summary>
+    public bool TryGetRecordDate(string path, out DateOnly value)
+        => JsonValidationReader.TryGetAssetTermDate(Terms, path, AssetClass, out value);
+
+    /// <summary>Whether a nested schedule's dates are strictly increasing; an absent schedule passes.</summary>
+    public bool ScheduleDatesIncrease(string scheduleKey, string dateKey)
+        => !TryGet(scheduleKey, out var schedule)
+           || JsonValidationReader.FirstOutOfOrderDateIndex(schedule, AssetClass, $"{SchemaPath}.{scheduleKey}", dateKey) < 0;
+}
+
+/// <summary>
+/// Applies a check to each element of a term array and reports every failing element in one issue.
+/// The check returns the element-relative field at fault, or <see langword="null"/> when the element
+/// passes. Element shape and types are the schema validator's job; checks skip what they cannot read.
+/// </summary>
+internal sealed record TermArrayElementRule(
+    string ArrayFieldPath,
+    SecurityValidationSeverityDto Severity,
+    string Code,
+    string Title,
+    string Message,
+    string SuggestedAction,
+    Func<TermArrayElement, string?> FindViolation) : ISecurityValidationRule
+{
+    public static TermArrayElementRule Create(
+        string arrayFieldPath,
+        SecurityValidationSeverityDto severity,
+        string code,
+        string title,
+        string message,
+        string suggestedAction,
+        Func<TermArrayElement, string?> findViolation)
+        => new(arrayFieldPath, severity, code, title, message, suggestedAction, findViolation);
+
+    public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
+    {
+        var terms = context.Record.AssetSpecificTerms;
+        var assetClass = context.Record.AssetClass;
+        if (!JsonValidationReader.TryGetAssetTermProperty(terms, ArrayFieldPath, assetClass, out var array)
+            || array.ValueKind != JsonValueKind.Array)
+        {
+            return null;
+        }
+
+        var affected = new List<string>();
+        var index = 0;
+        foreach (var item in array.EnumerateArray())
+        {
+            if (item.ValueKind == JsonValueKind.Object
+                && FindViolation(new TermArrayElement(item, terms, context.Record.CommonTerms, assetClass, ArrayFieldPath)) is { } field)
+            {
+                affected.Add($"assetSpecificTerms.{ArrayFieldPath}.{index}.{field}");
+            }
+
+            index++;
+        }
+
+        return affected.Count == 0
+            ? null
+            : SecurityValidationIssueFactory.Create(Severity, Code, Title, Message, affected, SuggestedAction);
+    }
+}
+
+/// <summary>
+/// Requires the dates of a top-level term schedule to be strictly increasing. Unparseable dates are
+/// skipped here; the schema validator reports them.
+/// </summary>
+internal sealed record TermScheduleDateOrderRule(
+    string ScheduleFieldPath,
+    string DateKey,
+    SecurityValidationSeverityDto Severity,
+    string Code,
+    string Title,
+    string Message,
+    string SuggestedAction) : ISecurityValidationRule
+{
+    public static TermScheduleDateOrderRule Create(
+        string scheduleFieldPath,
+        string dateKey,
+        SecurityValidationSeverityDto severity,
+        string code,
+        string title,
+        string message,
+        string suggestedAction)
+        => new(scheduleFieldPath, dateKey, severity, code, title, message, suggestedAction);
+
+    public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
+    {
+        if (!JsonValidationReader.TryGetAssetTermProperty(context.Record.AssetSpecificTerms, ScheduleFieldPath, context.Record.AssetClass, out var schedule))
+        {
+            return null;
+        }
+
+        var index = JsonValidationReader.FirstOutOfOrderDateIndex(schedule, context.Record.AssetClass, ScheduleFieldPath, DateKey);
+        return index < 0
+            ? null
+            : SecurityValidationIssueFactory.Create(
+                Severity,
+                Code,
+                Title,
+                Message,
+                [$"assetSpecificTerms.{ScheduleFieldPath}.{index}.{DateKey}"],
+                SuggestedAction);
+    }
+}
+
 internal enum SecurityFieldRuleKind
 {
     OptionalArrayNotEmpty,
@@ -1316,6 +1597,78 @@ internal static class JsonValidationReader
 
         value = raw;
         return true;
+    }
+
+    /// <summary>
+    /// Reads a field of one array element by its schema key or any declared alias of it.
+    /// </summary>
+    public static bool TryGetElementTermProperty(JsonElement element, string assetClass, string elementSchemaPath, string key, out JsonElement property)
+    {
+        property = default;
+        if (element.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        if (element.TryGetProperty(key, out property))
+        {
+            return true;
+        }
+
+        var field = SecurityAssetTermsSchema.ElementFields(assetClass, elementSchemaPath)
+            .FirstOrDefault(candidate => candidate.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
+        if (field is not null)
+        {
+            foreach (var alias in field.Aliases)
+            {
+                if (element.TryGetProperty(alias, out property))
+                {
+                    return true;
+                }
+            }
+        }
+
+        property = default;
+        return false;
+    }
+
+    public static bool TryGetDate(JsonElement property, out DateOnly value)
+    {
+        value = default;
+        return property.ValueKind == JsonValueKind.String
+               && DateOnly.TryParse(property.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.None, out value);
+    }
+
+    /// <summary>
+    /// The index of the first schedule element whose date is not after the previous readable date,
+    /// or -1 when the dates are strictly increasing (or the value is not an array).
+    /// </summary>
+    public static int FirstOutOfOrderDateIndex(JsonElement schedule, string assetClass, string elementSchemaPath, string dateKey)
+    {
+        if (schedule.ValueKind != JsonValueKind.Array)
+        {
+            return -1;
+        }
+
+        DateOnly? previous = null;
+        var index = 0;
+        foreach (var item in schedule.EnumerateArray())
+        {
+            if (TryGetElementTermProperty(item, assetClass, elementSchemaPath, dateKey, out var property)
+                && TryGetDate(property, out var date))
+            {
+                if (previous is { } prior && date <= prior)
+                {
+                    return index;
+                }
+
+                previous = date;
+            }
+
+            index++;
+        }
+
+        return -1;
     }
 
     public static bool TryGetDecimal(JsonElement property, out decimal value)

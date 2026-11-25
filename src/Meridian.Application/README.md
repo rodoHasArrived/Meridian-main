@@ -320,6 +320,9 @@ Hand-written asset-class validators (`AssetClassValidatorRegistry`) must agree w
 sign and fraction range of each rate field in `SecurityRateFieldUnits`;
 `SecurityRateFieldUnitsValidatorParityTests` enforces this and lists the disagreements still waiting
 on an owner ruling. A negative Bond `spreadBps` therefore validates, as the unit table declares.
+DirectLoan and Swap also carry Warning-level economic consistency rules (spread without an index,
+principal and notional schedule order, swap-leg index, fixed rate, day count and payment frequency);
+they surface issues for review without blocking a write.
 
 ## Configured direct-lending accounting
 

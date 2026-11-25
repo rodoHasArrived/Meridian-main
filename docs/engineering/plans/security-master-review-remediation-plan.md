@@ -105,6 +105,16 @@ test, not fixed, pending the negative-rate ruling: `Deposit.interestRate`, `Repo
 canonical-range ruling: `StructuredNote.principalProtectionPct` is unbounded above in the unit table
 but capped at 1 by the validator.
 
+**2026-11-25 (review Priority 1, step 2):** DirectLoan and Swap gain economic consistency rules at
+Warning severity, so existing records can be counted before any rule is promoted to Error. Warnings do
+not block a write. DirectLoan: a spread with no reference index, principal-schedule dates that are not
+strictly increasing, a principal payment of zero or less, and a payment after maturity. Swap legs: a
+Floating leg with no index, a Fixed leg with no fixed rate, no day count or no payment frequency (unless
+the record declares one for the cash-flow fallback), and notional-schedule dates that are not strictly
+increasing. Leg currency and leg type were already required by the schema. The review's floor ≤ cap,
+commitment ≥ funded and schedule total ≤ principal checks are not possible: the DirectLoan schema has
+none of those fields. The write golden now records the two leg-convention warnings on its Swap fixture.
+
 ## Slice 5 — Audit evidence contracts before storage/serialization changes
 
 **Evidence:** D7. Classify each mutable row (cash-flow source, entitlement, field provenance and
