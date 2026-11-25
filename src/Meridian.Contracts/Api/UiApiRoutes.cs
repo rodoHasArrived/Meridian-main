@@ -476,6 +476,7 @@ public static class UiApiRoutes
     public const string SecurityMasterWorkbenchPublish = "/api/security-master/{securityId:guid}/workbench/publish";
     public const string SecurityMasterWorkbenchPendingRevisions = "/api/security-master/workbench/revisions";
     public const string SecurityMasterImport = "/api/security-master/import";
+    public const string SecurityMasterImportPlan = "/api/security-master/import/plan";
     public const string SecurityMasterIngestStatus = "/api/security-master/ingest/status";
     public const string SecurityMasterEdgarIngest = "/api/security-master/ingest/edgar";
 

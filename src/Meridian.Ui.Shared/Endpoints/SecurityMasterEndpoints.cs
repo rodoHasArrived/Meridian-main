@@ -1154,6 +1154,31 @@ public static partial class SecurityMasterEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
+        // POST /api/security-master/import/plan — review C4 dry run: classifies every row as
+        // Create / Unchanged / AmendProposal / Ambiguous / Invalid without writing anything.
+        group.MapPost(UiApiRoutes.SecurityMasterImportPlan, async (
+            SecurityMasterImportRequest request,
+            HttpContext context,
+            [FromServices] AppSecurityMaster.SecurityMasterImportPlanner? planner,
+            CancellationToken ct) =>
+        {
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            if (planner is null)
+            {
+                return Results.Problem("Import planning needs the Security Master store.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var plan = await planner.PlanAsync(request.FileContent, request.FileExtension, actor, ct).ConfigureAwait(false);
+            return Results.Json(plan, jsonOptions);
+        })
+        .WithName("PlanSecurityMasterImport").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .Produces<AppSecurityMaster.SecurityMasterImportPlan>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized);
+
         // GET /api/security-master/ingest/status
         group.MapGet(UiApiRoutes.SecurityMasterIngestStatus, async (
             [FromServices] AppSecurityMaster.ISecurityMasterConflictService conflictService,

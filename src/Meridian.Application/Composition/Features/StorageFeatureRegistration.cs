@@ -482,6 +482,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             // Security Master bulk import services
             services.AddSingleton<SecurityMasterCsvParser>();
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
+            services.AddSingleton<SecurityMasterImportPlanner>();
             services.AddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
 
             // The composed migrate-on-read pipeline (v0 stamping + cross-family economic-terms v2 -> v1 flattening)
