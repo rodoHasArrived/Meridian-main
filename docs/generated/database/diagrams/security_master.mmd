@@ -1482,6 +1482,23 @@ erDiagram
         text policy_rule
         boolean is_policy_deviation
     }
+    security_master_security_master_exception_cases {
+        uuid case_id PK
+        text case_key
+        text category
+        text rule_code
+        uuid security_id
+        text severity
+        text title
+        text detail
+        text status
+        text assignee
+        timestamp_with_time_zone opened_at
+        timestamp_with_time_zone last_seen_at
+        timestamp_with_time_zone sla_due_at
+        timestamp_with_time_zone closed_at
+        text closed_reason
+    }
     security_master_security_master_held_amendments {
         uuid held_amendment_id PK
         uuid security_id

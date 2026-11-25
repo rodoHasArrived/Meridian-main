@@ -17,7 +17,7 @@ This catalog is extracted from a disposable PostgreSQL database after every regi
 | [`operator_triage`](modules/operator_triage.md) | `operator-triage` | 2 | 0 | 0 | 0 | `48b74e6e5f43` |
 | [`public`](modules/public.md) | - | 0 | 0 | 0 | 0 | `d50d95b1e1f1` |
 | [`reporting`](modules/reporting.md) | `reporting` | 20 | 18 | 21 | 0 | `33a0abf15576` |
-| [`security_master`](modules/security_master.md) | `security-master`, `direct-lending` | 141 | 16 | 39 | 0 | `26427d2fb41a` |
+| [`security_master`](modules/security_master.md) | `security-master`, `direct-lending` | 142 | 16 | 39 | 0 | `e1ad3ce18f73` |
 
 ## Default topology
 

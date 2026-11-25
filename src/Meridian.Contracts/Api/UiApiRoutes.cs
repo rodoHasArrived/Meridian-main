@@ -466,6 +466,9 @@ public static class UiApiRoutes
     public const string SecurityMasterHeldAmendments = "/api/security-master/held-amendments";
     public const string SecurityMasterMerge = "/api/security-master/{securityId:guid}/merge";
     public const string SecurityMasterTermsAsOf = "/api/security-master/{securityId:guid}/terms-as-of";
+    public const string SecurityMasterExceptionCases = "/api/security-master/exception-cases";
+    public const string SecurityMasterExceptionCasesSync = "/api/security-master/exception-cases/sync";
+    public const string SecurityMasterExceptionCaseAssign = "/api/security-master/exception-cases/{caseId:guid}/assign";
     public const string EntityMasterEntities = "/api/entity-master/entities";
     public const string EntityMasterEntity = "/api/entity-master/entities/{entityId:guid}";
     public const string EntityMasterEntityParent = "/api/entity-master/entities/{entityId:guid}/parent";

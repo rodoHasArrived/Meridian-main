@@ -2,7 +2,7 @@
 
 # `security_master` schema
 
-- Relations: 141
+- Relations: 142
 - Functions/procedures: 16
 - Triggers: 39
 - Row-level security policies: 0
@@ -1494,6 +1494,23 @@ erDiagram
         text policy_rule
         boolean is_policy_deviation
     }
+    security_master_security_master_exception_cases {
+        uuid case_id PK
+        text case_key
+        text category
+        text rule_code
+        uuid security_id
+        text severity
+        text title
+        text detail
+        text status
+        text assignee
+        timestamp_with_time_zone opened_at
+        timestamp_with_time_zone last_seen_at
+        timestamp_with_time_zone sla_due_at
+        timestamp_with_time_zone closed_at
+        text closed_reason
+    }
     security_master_security_master_held_amendments {
         uuid held_amendment_id PK
         uuid security_id
@@ -2094,6 +2111,7 @@ erDiagram
 | `security_identifiers` | table | 12 | `security_id`, `identifier_kind`, `identifier_value`, `valid_from` | 1 | 3 | - |
 | `security_master_change_outbox` | table | 10 | `change_id` | 0 | 3 | - |
 | `security_master_conflicts` | table | 17 | `conflict_id` | 0 | 3 | - |
+| `security_master_exception_cases` | table | 15 | `case_id` | 0 | 3 | Review D2: deployment-global Security Master exception cases, one open case per rule and subject. |
 | `security_master_held_amendments` | table | 11 | `held_amendment_id` | 0 | 2 | - |
 | `security_master_quality_reports` | table | 3 | `id` | 0 | 2 | - |
 | `security_master_quality_reports_id_seq` | sequence | 0 | - | 0 | 0 | - |

@@ -68184,6 +68184,24 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:security_master.ck_security_master_exception_cases_closed on security_master.security_master_exception_cases",
+      "target": "database:security_master.security_master_exception_cases.closed_at"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_security_master_exception_cases_closed on security_master.security_master_exception_cases",
+      "target": "database:security_master.security_master_exception_cases.status"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_security_master_exception_cases_status on security_master.security_master_exception_cases",
+      "target": "database:security_master.security_master_exception_cases.status"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:security_master.ck_security_master_held_amendments_closed on security_master.security_master_held_amendments",
       "target": "database:security_master.security_master_held_amendments.closed_at"
     },
@@ -72231,6 +72249,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.security_master_exception_cases"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.security_master_held_amendments"
     },
     {
@@ -72433,7 +72457,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "228bd8e80e17077a0bb3c8454c9d3cc3b917c02d7e01bd2b0af5ce38828514bb",
+  "fingerprint": "e327a4785cef5ef07657df2d340267b8a77f3441817e144464050fe42b877357",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -103910,6 +103934,16 @@
       "label": "security_master.ck_security_curves_rate_policy on security_master.security_curves"
     },
     {
+      "id": "database:security_master.ck_security_master_exception_cases_closed on security_master.security_master_exception_cases",
+      "kind": "database-object",
+      "label": "security_master.ck_security_master_exception_cases_closed on security_master.security_master_exception_cases"
+    },
+    {
+      "id": "database:security_master.ck_security_master_exception_cases_status on security_master.security_master_exception_cases",
+      "kind": "database-object",
+      "label": "security_master.ck_security_master_exception_cases_status on security_master.security_master_exception_cases"
+    },
+    {
       "id": "database:security_master.ck_security_master_held_amendments_closed on security_master.security_master_held_amendments",
       "kind": "database-object",
       "label": "security_master.ck_security_master_held_amendments_closed on security_master.security_master_held_amendments"
@@ -105988,6 +106022,22 @@
       "schema": "security_master"
     },
     {
+      "id": "database:security_master.security_master_exception_cases",
+      "kind": "database-table",
+      "label": "security_master.security_master_exception_cases",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_master_exception_cases.closed_at",
+      "kind": "database-object",
+      "label": "security_master.security_master_exception_cases.closed_at"
+    },
+    {
+      "id": "database:security_master.security_master_exception_cases.status",
+      "kind": "database-object",
+      "label": "security_master.security_master_exception_cases.status"
+    },
+    {
       "id": "database:security_master.security_master_held_amendments",
       "kind": "database-table",
       "label": "security_master.security_master_held_amendments",
@@ -106537,9 +106587,9 @@
   "summary": {
     "contract_references": 4419,
     "contract_set_memberships": 5840,
-    "edges": 12032,
+    "edges": 12036,
     "foreign_keys": 224,
     "logical_references": 6,
-    "nodes": 5933
+    "nodes": 5938
   }
 }

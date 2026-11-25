@@ -1481,6 +1481,8 @@ public static partial class SecurityMasterEndpoints
             MapMergeEndpoints(group, jsonOptions);
         if (app.Services.GetService<Meridian.Contracts.EntityMaster.IEntityMasterStore>() is not null)
             MapEntityMasterEndpoints(app, jsonOptions);
+        if (app.Services.GetService<AppSecurityMaster.SecurityMasterExceptionCaseSync>() is not null)
+            MapExceptionCaseEndpoints(group, jsonOptions);
 
         if (app.Services.GetService<SecurityMasterExceptionCaseworkService>() is not null)
             MapExceptionAgingEndpoints(group, jsonOptions);

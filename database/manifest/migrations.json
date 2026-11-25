@@ -640,6 +640,15 @@
       "sha256": "1e7d6a2181a0d69961b46d93ac3ac4fe9818b301bfad297cb3a409806a87dc50"
     },
     {
+      "filename": "074_security_master_exception_cases.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 74,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/074_security_master_exception_cases.sql",
+      "schema": "security_master",
+      "sha256": "fcfbf1b74dd1ff35dde66cef8061e9841403702cc2f98ee8ae68c9d1c8b3f873"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1829,7 +1838,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "a6ca3594c930b38ddd398efdd51aad8c8319f668b4c0f8e3736303e6b3d2a296",
+  "fingerprint": "c9a16b16fa1f12e95565f68c91fc2145a836f3c01e96851a1bc7e8256028ea2b",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -2113,7 +2122,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 203,
+    "files": 204,
     "migration_sets": 12,
     "waivers": 57,
     "warnings": 0
