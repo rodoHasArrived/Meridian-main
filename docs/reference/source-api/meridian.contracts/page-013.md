@@ -6,6 +6,114 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BackfillProviderAttemptProgressDto
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillProviderAttemptProgressDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillProgress.cs:366](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L366).
+
+One provider attempt in the live fallback chain for a requested symbol/range.
+
+```csharp
+public sealed record BackfillProviderAttemptProgressDto(string Symbol, string Provider, DateOnly? RangeStart, DateOnly? RangeEnd, int ProviderAttempt, int RetryRound, string? Operation, string? Status, int BarsDownloaded, DateTimeOffset StartedAt, DateTimeOffset ObservedAt, string? Error);
+```
+
+## BackfillProviderContribution
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillProviderContribution</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillRoutingEvidence.cs:7](../../../../src/Meridian.Contracts/Backfill/BackfillRoutingEvidence.cs#L7).
+
+Bars retained by a backfill request from one serving provider.
+
+```csharp
+public sealed record BackfillProviderContribution(string ProviderId, long Bars);
+```
+
+## BackfillProviderProgressSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillProviderProgressSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillProgress.cs:405](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L405).
+
+Bounded live provider-attempt snapshot shared by browser and desktop clients.
+
+```csharp
+public sealed record BackfillProviderProgressSnapshotDto(IReadOnlyDictionary<string, BackfillProviderSymbolProgressDto> Symbols, IReadOnlyList<BackfillProviderAttemptProgressDto> RecentProviderAttempts, double OverallPercentComplete, int TotalSymbols, int CompletedSymbols, int FailedSymbols, long DroppedProviderNotifications, DateTimeOffset Timestamp);
+```
+
+## BackfillProviderSymbolProgressDto
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillProviderSymbolProgressDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillProgress.cs:383](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L383).
+
+Current provider-attempt posture for a single symbol in an active or recently completed run.
+
+```csharp
+public sealed record BackfillProviderSymbolProgressDto(string Symbol, DateOnly? RangeStart, DateOnly? RangeEnd, int TotalDays, int CompletedDays, double PercentComplete, bool IsCompleted, bool IsFailed, bool IsSkipped, string? CurrentProvider, string? CurrentStatus, int ProviderAttempt, int RetryRound, string? Operation, DateTimeOffset? AttemptStartedAt, DateTimeOffset? LastUpdatedAt, string? Error);
+```
+
+## BackfillQuotaEstimate
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillQuotaEstimate</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillQuota.cs:4](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L4).
+
+Estimate based on the historical adapter&#x27;s quota and local observations.
+
+```csharp
+public sealed record BackfillQuotaEstimate(long? ExpectedRequests, int? RequestsPerWindow, double? WindowSeconds, int? ObservedRemainingRequests, DateTimeOffset? ObservedAt, DateTimeOffset? ResetAt, int? BackfillRequestsPerWindow, int? BackfillRemainingRequests, int ReservedHeadroomPercent, int? MaxConcurrentRequests, double? EstimatedDurationSeconds, bool ExceedsBudget, string Uncertainty)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string QuotaUnit { get; init; } = &quot;requests&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillQuota.cs:19](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L19) |  |
+| <code>public int? DailyLimit { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillQuota.cs:20](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L20) |  |
+| <code>public int? DailyBackfillAllowance { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillQuota.cs:21](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L21) |  |
+| <code>public int? ObservedDailyRemaining { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillQuota.cs:22](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L22) |  |
+| <code>public DateTimeOffset? DailyResetAt { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillQuota.cs:23](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L23) |  |
+
+## BackfillQuotaReceipt
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillQuotaReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillQuota.cs:29](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L29).
+
+Observed adapter activity and variance against the estimate retained at submission.
+
+```csharp
+public sealed record BackfillQuotaReceipt(BackfillQuotaEstimate Estimate, IReadOnlyList<string> ObservedProviders, long? ActualRequests, double ActualDurationSeconds, long? RequestVariance, double? DurationVarianceSeconds, int ThrottlingEventCount, IReadOnlyList<BackfillThrottleEvent> ThrottlingEvents, IReadOnlyList<string>? ProvidersThatReturnedBars = null);
+```
+
+## BackfillResult
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillResult.cs:10](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L10).
+
+Shared outcome payload for a single historical backfill run.
+
+```csharp
+public sealed record BackfillResult(bool Success, string Provider, string[] Symbols, DateOnly? From, DateOnly? To, long BarsWritten, DateTimeOffset StartedUtc, DateTimeOffset CompletedUtc, string? Error = null, string[]? SkippedSymbols = null, SymbolValidationSignal[]? SymbolValidationSignals = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public ProviderProvenanceReceipt? ProviderProvenance { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:25](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L25) |  |
+| <code>[JsonIgnore] public ProviderProvenanceAccess? ProvenanceAccess { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:28](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L28) |  |
+| <code>public BackfillResult ForTenant(string? tenantId) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:30](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L30) |  |
+| <code>public string[] SkippedSymbols { get; init; } = SkippedSymbols??[];</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:39](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L39) | Symbols skipped because their checkpoint already covered the requested date range. Only populated when resume-from-checkpoint mode is enabled on the backfill request. |
+| <code>public SymbolValidationSignal[] SymbolValidationSignals { get; init; } = SymbolValidationSignals??[];</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:45](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L45) | Per-symbol completeness signals (pass / warn / fail) produced at the end of the run. Provides operator-visible trust data for each symbol in Symbols. |
+| <code>public BackfillQuotaReceipt? QuotaReceipt { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:47](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L47) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;BackfillBatchReceipt&gt;? BatchReceipts { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:51](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L51) | Immutable response revisions that were retained after storage confirmed this run&#x27;s data. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;BackfillRoutingAttempt&gt;? RoutingAttempts { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:55](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L55) | Provider selection outcomes. Reasons are fixed codes without vendor response details. |
+| <code>public static BackfillResult Failed(string provider, IReadOnlyList&lt;string&gt; symbols, DateOnly? from, DateOnly? to, DateTimeOffset started, Exception ex) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:57](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L57) |  |
+
 ## BackfillRoutingAttempt
 
 Qualified name: <code>Meridian.Contracts.Backfill.BackfillRoutingAttempt</code>. Kind: `record`.
@@ -679,101 +787,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public decimal Delta =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs:5](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs#L5) |  |
-
-## CashFlowExerciseCalculation
-
-Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowExerciseCalculation</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:133](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L133).
-
-```csharp
-public sealed record CashFlowExerciseCalculation(SelectedCashFlowExercise Selection, CashFlowNoticeWindow NoticeWindow, decimal DirtyPresentValue, decimal AccruedInterest, decimal CleanFloor, decimal DirtyConsideration, decimal Premium);
-```
-
-## CashFlowExerciseEligibility
-
-Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowExerciseEligibility</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:129](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L129).
-
-American windows are represented as a predicate over the named calendar, not daily rows.
-
-```csharp
-public sealed record CashFlowExerciseEligibility(CashFlowExerciseSide Side, DateOnly EntryStartDate, string StreamId, DateOnly WindowEnd, CashFlowExerciseStyle Style, IReadOnlyList<DateOnly> Dates, string? BusinessDayCalendarId);
-```
-
-## CashFlowExerciseSide
-
-Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowExerciseSide</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:10](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L10).
-
-```csharp
-public enum CashFlowExerciseSide
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Call</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:10](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L10) |  |
-| <code>Put</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:10](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L10) |  |
-
-## CashFlowExerciseStyle
-
-Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowExerciseStyle</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:8](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L8).
-
-```csharp
-public enum CashFlowExerciseStyle
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>European</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:8](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L8) |  |
-| <code>American</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:8](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L8) |  |
-| <code>Bermudan</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:8](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L8) |  |
-
-## CashFlowNoticeWindow
-
-Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowNoticeWindow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:127](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L127).
-
-```csharp
-public sealed record CashFlowNoticeWindow(DateOnly? Earliest, DateOnly? Latest);
-```
-
-## CashFlowPrepaymentAssumption
-
-Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowPrepaymentAssumption</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:96](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L96).
-
-Intervals are &#91;StartDate, EndDate); Amount assumptions pay on StartDate.
-
-```csharp
-public sealed record CashFlowPrepaymentAssumption(string StreamId, DateOnly StartDate, DateOnly EndDate, CashFlowPrepaymentMethod Method, decimal Value, DateOnly? SeasoningOrigin = null, CashFlowRecastPolicy Policy = CashFlowRecastPolicy.PreservePayments);
-```
-
-## CashFlowPrepaymentMethod
-
-Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowPrepaymentMethod</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:12](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L12).
-
-```csharp
-public enum CashFlowPrepaymentMethod
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Cpr</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:12](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L12) |  |
-| <code>Smm</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:12](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L12) |  |
-| <code>Psa</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:12](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L12) |  |
-| <code>Amount</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:12](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L12) |  |

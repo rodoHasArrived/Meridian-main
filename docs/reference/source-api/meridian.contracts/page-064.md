@@ -6,6 +6,97 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundAuditPackReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundAuditPackReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:506](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L506).
+
+```csharp
+public sealed record FundAuditPackReadinessDto(bool IsComplete, double GeneratedInSeconds, int SlaTargetSeconds, bool SlaMet, IReadOnlyList<FundAuditEvidenceCategoryKeyDto> MissingEvidenceCategories, IReadOnlyList<string> Warnings, IReadOnlyList<FundAuditEvidenceCategorySummaryDto> EvidenceCategorySummaries);
+```
+
+## FundJournalLine
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundJournalLine</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:50](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L50).
+
+Journal row for a fund ledger view.
+
+```csharp
+public sealed record FundJournalLine(Guid JournalEntryId, DateTimeOffset Timestamp, string Description, decimal TotalDebits, decimal TotalCredits, int LineCount, IReadOnlyList<string>? FinancialAccountIds = null, LedgerDimensionSetDto? Dimensions = null);
+```
+
+## FundLedgerDimensionSnapshot
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundLedgerDimensionSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:126](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L126).
+
+Point-in-time ledger snapshot used by reconciliation views.
+
+```csharp
+public sealed record FundLedgerDimensionSnapshot(DateTimeOffset Timestamp, int JournalEntryCount, int LedgerEntryCount, IReadOnlyList<FundLedgerSnapshotBalanceLine> Balances);
+```
+
+## FundLedgerQuery
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundLedgerQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:27](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L27).
+
+Query for Accounting-first fund ledger views.
+
+```csharp
+public sealed record FundLedgerQuery(string FundProfileId, DateTimeOffset? AsOf = null, FundLedgerScope ScopeKind = FundLedgerScope.Consolidated, string? ScopeId = null, IReadOnlyList<string>? SelectedLedgerIds = null);
+```
+
+## FundLedgerReconciliationSnapshot
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundLedgerReconciliationSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:135](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L135).
+
+Reconciliation snapshot of one fund ledger book, including consolidated totals and per-dimension breakdowns.
+
+```csharp
+public sealed record FundLedgerReconciliationSnapshot(string FundProfileId, DateTimeOffset AsOf, FundLedgerDimensionSnapshot Consolidated, IReadOnlyDictionary<string, FundLedgerDimensionSnapshot> Entities, IReadOnlyDictionary<string, FundLedgerDimensionSnapshot> Sleeves, IReadOnlyDictionary<string, FundLedgerDimensionSnapshot> Vehicles);
+```
+
+## FundLedgerScope
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundLedgerScope</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L8).
+
+Fund-level ledger drill-in scope.
+
+```csharp
+public enum FundLedgerScope : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Consolidated</code> | [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L10) |  |
+| <code>Entity</code> | [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L11) |  |
+| <code>Sleeve</code> | [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L12) |  |
+| <code>Vehicle</code> | [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L13) |  |
+
+## FundLedgerSliceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundLedgerSliceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:75](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L75).
+
+Slice-level ledger projection that supports Accounting drill-in by logical ledger key.
+
+```csharp
+public sealed record FundLedgerSliceDto(string SliceKey, string LedgerKey, string LedgerGroupId, FundLedgerScope ScopeKind, string? ScopeId, string DisplayName, FundLedgerTotalsDto Totals, IReadOnlyList<FundTrialBalanceLine> TrialBalance, IReadOnlyList<FundJournalLine> Journal, IReadOnlyDictionary<string, string>? Metadata = null);
+```
+
 ## FundLedgerSnapshotBalanceLine
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundLedgerSnapshotBalanceLine</code>. Kind: `record`.
@@ -646,121 +737,3 @@ Enum declarations:
 | <code>Restated = 10</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:47](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L47) |  |
 | <code>InReview = 11</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:48](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L48) |  |
 | <code>Published = 12</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L49) |  |
-
-## GovernanceReportValidationSeverityDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.GovernanceReportValidationSeverityDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L53).
-
-```csharp
-public enum GovernanceReportValidationSeverityDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Info = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:55](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L55) |  |
-| <code>Warning = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L56) |  |
-| <code>Critical = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L57) |  |
-
-## HaircutRuleDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.HaircutRuleDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:25](../../../../src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs#L25).
-
-```csharp
-public sealed record HaircutRuleDto(string AssetClass, decimal HaircutPercent, decimal AdvanceRatePercent);
-```
-
-## IAutomatedJournalScheduleStatusSource
-
-Qualified name: <code>Meridian.Contracts.Workstation.IAutomatedJournalScheduleStatusSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:84](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L84).
-
-Read-only projection consumed by close surfaces without depending on the scheduler host.
-
-```csharp
-public interface IAutomatedJournalScheduleStatusSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;AutomatedJournalScheduleStatusDto&gt; GetStatusAsync(string? fundProfileId, Guid? ledgerBookId, string? periodId, CancellationToken ct = default, string? tenantId = null, string? companyId = null, string? entityId = null);</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:86](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L86) |  |
-
-## IBookOfRecordGuard
-
-Qualified name: <code>Meridian.Contracts.Workstation.IBookOfRecordGuard</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:147](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L147).
-
-Answers whether a ledger book is authoritative. A book in shadow mode (or a withdrawn shadow trial) is not.
-
-```csharp
-public interface IBookOfRecordGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;BookOfRecordStatusDto&gt; GetStatusAsync(string tenantId, string? companyId, Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:149](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L149) |  |
-
-## IClosePublicationReadinessGuard
-
-Qualified name: <code>Meridian.Contracts.Workstation.IClosePublicationReadinessGuard</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Workstation/IClosePublicationReadinessGuard.cs:4](../../../../src/Meridian.Contracts/Workstation/IClosePublicationReadinessGuard.cs#L4).
-
-Server-owned shared close evidence check at each publication or ledger-lock boundary.
-
-```csharp
-public interface IClosePublicationReadinessGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;OperationsWorkflowBlockerDto&gt;&gt; ValidateAsync(Guid workflowId, long expectedVersion, CloseReadinessScopeDto? scope, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/IClosePublicationReadinessGuard.cs:6](../../../../src/Meridian.Contracts/Workstation/IClosePublicationReadinessGuard.cs#L6) |  |
-
-## ICloseReadinessSubjectSource
-
-Qualified name: <code>Meridian.Contracts.Workstation.ICloseReadinessSubjectSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs#L22).
-
-Resolves the subject information needed to evaluate readiness for a scoped accounting close.
-
-```csharp
-public interface ICloseReadinessSubjectSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;CloseReadinessSubjectDto?&gt; GetSubjectAsync(CloseReadinessScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs#L24) |  |
-
-## IDailyValuationScheduleStatusSource
-
-Qualified name: <code>Meridian.Contracts.Workstation.IDailyValuationScheduleStatusSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:88](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L88).
-
-Read-only scheduler projection consumed by close-cockpit surfaces without taking a dependency on the workstation scheduler implementation.
-
-```csharp
-public interface IDailyValuationScheduleStatusSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;DailyValuationScheduleStatusDto&gt; GetStatusAsync(string? fundProfileId, Guid? ledgerBookId, string? periodId, CancellationToken ct = default, string? entityId = null, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:90](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L90) |  |

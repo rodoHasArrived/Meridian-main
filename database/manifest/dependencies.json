@@ -2500,6 +2500,48 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentDifference"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentExecution"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentPreview"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentRow"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentSeries"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentSummary"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.ToggleRequest"
     },
     {
@@ -37223,6 +37265,42 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Api.StorageAnalytics",
       "target": "contract:Meridian.Contracts.Api.StorageSymbolBreakdown"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentExecution",
+      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentRow"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentExecution",
+      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentSummary"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentPreview",
+      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentRow"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentPreview",
+      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentSummary"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentSummary",
+      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentDifference"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentSummary",
+      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentSeries"
     },
     {
       "kind": "contract-reference",
@@ -72118,7 +72196,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "782e2112c771980a650d0aed4b32a487d14025de678d921d02ef0e7dc2b579ea",
+  "fingerprint": "392c46f48662fc8cbc2c7cde0b81db61b55030117f225411933a1e3713e1018a",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -74666,6 +74744,48 @@
       "id": "contract:Meridian.Contracts.Api.SymbolUniverseResponse",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Api.SymbolUniverseResponse"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentDifference",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.TimeSeriesAlignmentDifference"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentExecution",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.TimeSeriesAlignmentExecution"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentPreview",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.TimeSeriesAlignmentPreview"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.TimeSeriesAlignmentRequest"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentRow",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.TimeSeriesAlignmentRow"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentSeries",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.TimeSeriesAlignmentSeries"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentSummary",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.TimeSeriesAlignmentSummary"
     },
     {
       "classification": "request",
@@ -105965,11 +106085,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4416,
-    "contract_set_memberships": 5821,
-    "edges": 11980,
+    "contract_references": 4422,
+    "contract_set_memberships": 5828,
+    "edges": 11993,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5886
+    "nodes": 5893
   }
 }

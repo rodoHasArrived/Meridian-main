@@ -6,6 +6,128 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityFactorHistoryProjector
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFactorHistoryProjector</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L48).
+
+Builds SecurityFactorHistoryDto from resolved terms and corporate actions.
+
+```csharp
+public static class SecurityFactorHistoryProjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SecurityFactorHistoryDto Build(Guid securityId, StructuredCashFlowTerms terms, DateOnly? currentFactorDate, IReadOnlyList&lt;CorporateActionDto&gt; actions, DateTimeOffset asOf);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L50) |  |
+
+## SecurityFactorSource
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFactorSource</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L7).
+
+Where a dated factor point comes from.
+
+```csharp
+public enum SecurityFactorSource
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>TermsSchedule</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L10) | A point of the declared factor schedule in the security&#x27;s terms. |
+| <code>PrincipalPaydown</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L13) | The post-paydown factor recorded on an effective principal-paydown corporate action. |
+| <code>CurrentFactor</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L16) | The scalar current factor in the terms, dated by its retained factor date. |
+
+## SecurityFieldProvenance
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFieldProvenance</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L46).
+
+Field-level provenance: which source system asserted the value at FieldPath, as of when, and with what confidence (null when the source carries no confidence score — never fabricated).
+
+```csharp
+public sealed record SecurityFieldProvenance(string FieldPath, string SourceSystem, DateTimeOffset? AsOf, string? UpdatedBy, decimal? Confidence);
+```
+
+## SecurityFieldProvenanceOrigins
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceOrigins</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L58).
+
+Canonical origins for persisted field-level provenance rows. The origin distinguishes canonical golden-record attribution from overlay annotations, so an operator edit can never masquerade as (or clobber) a conflict-resolution winner.
+
+```csharp
+public static class SecurityFieldProvenanceOrigins
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ConflictResolution = &quot;ConflictResolution&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L61) | The attribution written when a golden-record conflict resolves to a winning source. |
+| <code>public const string OperatorFieldEdit = &quot;OperatorFieldEdit&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L64) | The attribution written when an operator stages an overlay field edit. |
+| <code>public const string CanonicalWrite = &quot;CanonicalWrite&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:72](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L72) | The attribution written when an ordinary canonical create/amend changes a governed field — the per-field record of WHICH source supplied the current value, kept so conflict detection can name the true incumbent even when the field was never conflicted (record-level provenance flips on every amendment and cannot answer that question). |
+
+## SecurityFieldProvenanceRecord
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:81](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L81).
+
+A persisted field-level provenance row: the durable form of SecurityFieldProvenance, keyed by (security, field path, origin). OriginReference points back at the artifact that asserted the attribution — the conflict id for conflict resolutions, the revision id for operator field edits — so lineage is traceable to its governing record.
+
+```csharp
+public sealed record SecurityFieldProvenanceRecord(Guid SecurityId, string FieldPath, string SourceSystem, DateTimeOffset? AsOf, string? UpdatedBy, decimal? Confidence, string Origin, string? OriginReference, DateTimeOffset RecordedAt, long? SourceVersion = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityFieldProvenance ToFieldProvenance() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:99](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L99) | Projects the durable row onto the display-level field-provenance shape. |
+
+## SecurityForwardCurve
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityForwardCurve</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L15).
+
+Projected fixings for one floating-rate index, as observed on AsOfDate. A floating leg resets each period at the curve&#x27;s rate for the period&#x27;s accrual start date, linearly interpolated between points and held flat beyond the first and last point.
+
+```csharp
+public sealed record SecurityForwardCurve(string IndexName, DateOnly AsOfDate, IReadOnlyList<SecurityForwardCurvePoint> Points, string? Source = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondCalculationInput? RetainedInput { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L23) | The immutable stored curve version behind these projected fixings, when retained. |
+| <code>public decimal? RateAt(DateOnly resetDate);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L25) | The projected fixing for a reset on resetDate; null when the curve has no points. |
+| <code>public const string RateSourcePrefix = &quot;forwardCurve:&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L61) | The prefix of every Describe label, and so of a curve-projected leg&#x27;s RateSource. |
+| <code>public string Describe() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L70) | A short provenance label for projections: forwardCurve:{index}@{yyyy-MM-dd}, then ({source}) when a source is known. The date is written in the invariant culture, so TryReadAsOf reads it back on any host. |
+| <code>public static bool TryReadAsOf(string? rateSource, out DateOnly asOf);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:80](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L80) | Reads the curve&#x27;s as-of date back from a Describe label, such as a leg&#x27;s RateSource. The date is the first @yyyy-MM-dd that ends the label or is followed by the (source) suffix, so an index name or source that itself contains @ still reads. False for any other label. |
+
+## SecurityForwardCurveJsonContext
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:118](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L118).
+
+Supplies forward curves for floating-rate cash-flow projection. Hosts without one keep the flat-forward projection (last fixing plus spread). The stored implementation is StoredSecurityForwardCurveProvider in Application, reading ISecurityCurveStore.
+
+```csharp
+public sealed partial class SecurityForwardCurveJsonContext : JsonSerializerContext;
+```
+
 ## SecurityForwardCurvePoint
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityForwardCurvePoint</code>. Kind: `record`.
@@ -742,105 +864,3 @@ Declared public members:
 | <code>public bool TermsFormatBackfillLegacyWritersRetired { get; set; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs#L45) | One-time migration-068 upgrade attestation that every Security Master writer running after the migration commits declares termsFormat on the terms it persists (ADR-024 amendment 2026-11-13): no binary built before that change will write again. Migration 068 adds a check constraint that refuses an untagged row, so such a writer would fail any write that persists untagged terms, for example a custom-asset profile envelope (flat writers already declared the family). The runner also takes a transaction-scoped ACCESS EXCLUSIVE NOWAIT lock and refuses active writers and open readers. Not required for a fresh installation or after migration 068 is recorded. |
 | <code>public int ProjectionCacheRefreshMinutes { get; set; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs#L55) | Interval, in minutes, at which the projection warmup service re-warms the per-process projection cache from the durable store. Zero (the default) disables periodic re-warm — single-node deployments stay coherent through per-write cache upserts, and multi-node deployments through ProjectionCacheNotificationsEnabled. A positive value adds a backstop re-warm that bounds cross-node staleness even if a change notification is lost (authoritative reads always go to the durable store regardless). |
 | <code>public bool ProjectionCacheNotificationsEnabled { get; set; } = true;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs#L66) | When true (the default), every committed projection write emits a PostgreSQL NOTIFY on the schema&#x27;s projection channel inside the writing transaction, and each node runs a listener that refreshes its per-process projection cache from the durable store when another node commits a change. Cross-node staleness is then bounded by notification delivery rather than by ProjectionCacheRefreshMinutes, which remains a backstop. Disable only for single-node deployments that want to avoid the dedicated listener connection. |
-
-## SecurityMasterProfilePromotionBlockerDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionBlockerDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs#L20).
-
-One reason a promotion would be refused if it were applied now.
-
-```csharp
-public sealed record SecurityMasterProfilePromotionBlockerDto(string Code, string Message);
-```
-
-## SecurityMasterProfilePromotionCandidateDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionCandidateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs#L30).
-
-One active CustomAsset record pinned to the reported profile. A SecurityMasterProfilePromotionDisposition.Ready record decodes under TargetAssetClass, satisfies that class&#x27;s domain invariants and passes the profile catalog check, so an amendment that resubmits its pinned envelope promotes it.
-
-```csharp
-public sealed record SecurityMasterProfilePromotionCandidateDto(Guid SecurityId, string DisplayName, string PrimaryIdentifierKind, string PrimaryIdentifierValue, long Version, string SourceAssetClass, string CustomProfileId, int? ProfileVersion, string TargetAssetClass, SecurityMasterProfilePromotionDisposition Disposition, IReadOnlyList<SecurityMasterProfilePromotionBlockerDto> Blockers);
-```
-
-## SecurityMasterProfilePromotionDisposition
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionDisposition</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs#L13).
-
-Whether a CustomAsset record pinned to a reclassifying profile can be promoted to that profile&#x27;s first-class asset class by a write that carries its envelope (ADR-022). Blocked records list what the promoting envelope has to correct; for a record pinned to a reclassifying profile, repair and promotion are the same write.
-
-```csharp
-public enum SecurityMasterProfilePromotionDisposition
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Ready</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs#L15) |  |
-| <code>Blocked</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs#L16) |  |
-
-## SecurityMasterProfilePromotionReportDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionReportDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs#L49).
-
-Report-first inventory of the active CustomAsset records pinned to one reclassifying profile (SecurityAssetClassDescriptor.ReclassifyingProfileIds). Building the report changes nothing. AlreadyPromotedCount counts the active records pinned to the profile that already carry TargetAssetClass.
-
-```csharp
-public sealed record SecurityMasterProfilePromotionReportDto(DateTimeOffset GeneratedAt, string ProfileId, string TargetAssetClass, int SecuritiesScanned, int AlreadyPromotedCount, int CandidateCount, int ReadyCount, int BlockedCount, IReadOnlyList<SecurityMasterProfilePromotionCandidateDto> Candidates);
-```
-
-## SecurityMasterProvenanceReader
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterProvenanceReader</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:109](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L109).
-
-Typed reader for the Security Master provenance JSON ({ sourceSystem, sourceRecordId, asOf, updatedBy, reason } — the shape the F# snapshot serializer writes). Reads are tolerant: a missing or malformed document yields UnknownSource rather than failing the row.
-
-```csharp
-public static class SecurityMasterProvenanceReader
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string UnknownSource = &quot;Unknown&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:111](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L111) |  |
-| <code>public static SecurityRecordProvenance Read(JsonElement provenance);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:113](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L113) |  |
-
-## SecurityMasterQualityReportDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterQualityReportDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L37).
-
-```csharp
-public sealed record SecurityMasterQualityReportDto(DateTimeOffset RunAt, int SecuritiesScanned, int ViolationCount, IReadOnlyList<DataQualityRuleViolationDto> Violations)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int? UntaggedTermsPayloadCount { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L52) | How many stored securities rows — active and inactive — carry asset-specific terms with no declared termsFormat tag: the ADR-024 decision-5 retirement gate (select count(*) from securities where asset_specific_terms-&gt;&gt;&#x27;termsFormat&#x27; is null), measured per deployment so the shape rule&#x27;s remaining backlog is evidence instead of a guess. The tag drains organically: every write stamps it, so the count only falls. Null on reports persisted before the gauge existed. (One deliberate strictness over the SQL: a non-string tag also counts as untagged here; validation separately rejects it.) |
-
-## SecurityMasterReportingReference
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterReportingReference</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs#L41).
-
-Frozen reference-data input used by reporting. Event coordinates are populated when the reference was rebuilt from the Security Master event stream.
-
-```csharp
-public sealed record SecurityMasterReportingReference(SecurityDetailDto Detail, SecurityEconomicDefinitionRecord? EconomicDefinition, DateTimeOffset AsOfUtc, SecurityMasterReportingResolutionMode ResolutionMode, long? EventGlobalSequence = null, long? EventStreamVersion = null, DateTimeOffset? EventTimestamp = null);
-```

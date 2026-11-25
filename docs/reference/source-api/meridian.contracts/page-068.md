@@ -6,6 +6,88 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsCloseChecklistVersionGapDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseChecklistVersionGapDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs#L18).
+
+```csharp
+public sealed record OperationsCloseChecklistVersionGapDto(long AfterVersion, long BeforeVersion, Guid BeforeAuditId);
+```
+
+## OperationsClosePackagePublicationDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsClosePackagePublicationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1189](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1189).
+
+```csharp
+public sealed record OperationsClosePackagePublicationDto(string ClosePackageId, string ReportPackId, string RetainedManifestId, string RetainedManifestRoute, string EvidenceHash, DateTimeOffset PublishedAtUtc, string PublishedBy, string SignOffRationale, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<OperationsChecklistControlApprovalDto> ChecklistControlApprovals, IReadOnlyList<EvidenceDocumentDto>? DocumentSnapshots = null, EvidenceManifestDto? ManifestSnapshot = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;EvidenceDocumentDto&gt; DocumentSnapshots { get; init; } = DocumentSnapshots??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1203](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1203) |  |
+
+## OperationsCloseReadinessBlockerDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseReadinessBlockerDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1361](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1361).
+
+```csharp
+public sealed record OperationsCloseReadinessBlockerDto(string Code, string Category, string Severity, string Message, OperationsGateKeyDto? Gate, string? RouteHint);
+```
+
+## OperationsCloseReadinessComponentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseReadinessComponentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1350](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1350).
+
+```csharp
+public sealed record OperationsCloseReadinessComponentDto(string Key, string Label, int Score, int Weight, bool IsReady, string Severity, string? BlockingReason, OperationsGateKeyDto? Gate, string? RouteHint);
+```
+
+## OperationsCloseReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1342](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1342).
+
+```csharp
+public sealed record OperationsCloseReadinessDto(bool IsReadyToClose, string Severity, int Score, IReadOnlyList<OperationsCloseReadinessComponentDto> Components, IReadOnlyList<OperationsCloseReadinessBlockerDto> Blockers, IReadOnlyList<OperationsNextActionDto> NextActions);
+```
+
+## OperationsCloseWorkflowRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseWorkflowRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:709](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L709).
+
+```csharp
+public sealed record OperationsCloseWorkflowRequestDto(long ExpectedVersion, string Actor, string Rationale, string ReportPackId, IReadOnlyList<OperationsChecklistControlApprovalDto>? ChecklistControlApprovals = null, string? CorrelationId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, string? ClosePackageId = null, string? ClosePackageManifestId = null, string? ClosePackageEvidenceHash = null, string? ClosePackageRetainedManifestRoute = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, IReadOnlyList<EvidenceDocumentDto>? DocumentSnapshots = null, EvidenceManifestDto? ManifestSnapshot = null, CloseReadinessScopeDto? CloseScope = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;EvidenceDocumentDto&gt; DocumentSnapshots { get; init; } = DocumentSnapshots??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:726](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L726) |  |
+
+## OperationsContinuityCorrelationKeysDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsContinuityCorrelationKeysDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1310](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1310).
+
+```csharp
+public sealed record OperationsContinuityCorrelationKeysDto(string? RunId = null, Guid? FundAccountId = null, string? PortfolioSnapshotId = null, string? LedgerBatchId = null, string? LedgerPostingGroupId = null, string? ReconciliationCaseId = null);
+```
+
 ## OperationsContinuityWorkflowDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsContinuityWorkflowDto</code>. Kind: `record`.
@@ -634,102 +716,3 @@ One WPF desktop shortcut&#x27;s difference from its default. Each value is optio
 ```csharp
 public sealed record OperatorDesktopShortcutDto(string? Key = null, string? Modifiers = null, bool? IsEnabled = null);
 ```
-
-## OperatorInboxDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorInboxDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:95](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L95).
-
-```csharp
-public sealed record OperatorInboxDto(DateTimeOffset AsOf, IReadOnlyList<OperatorWorkItemDto> Items, int CriticalCount, int WarningCount, int ReviewCount, string Summary)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;OperatorWorkItemDto&gt; WorkItems =&gt; …;</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:104](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L104) | Compatibility alias for workstation readiness callers that still use the readiness work-item name. |
-
-## OperatorInboxTriageDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorInboxTriageDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L41).
-
-```csharp
-public sealed record OperatorInboxTriageDto(DateTimeOffset AsOf, string ActorId, IReadOnlyList<OperatorTriageItemDto> Items, bool PersistenceAvailable, string? UnavailableReason);
-```
-
-## OperatorNotificationPreferencesDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorNotificationPreferencesDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:66](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L66).
-
-The operator&#x27;s pop-up notification choices. Each value is optional: null keeps the client default (pop-ups on, every type on, quiet hours off from 22:00 to 07:00). Quiet hours are wall-clock times (HH:mm, 24-hour) in the operator&#x27;s display time zone; a window whose start is later than its end runs past midnight, and an equal start and end is an empty window. Pop-ups only: notification feeds, history and alert records are unaffected.
-
-```csharp
-public sealed record OperatorNotificationPreferencesDto(bool? Enabled = null, bool? ConnectionStatus = null, bool? Errors = null, bool? BackfillComplete = null, bool? DataGaps = null, bool? StorageWarnings = null, bool? QuietHoursEnabled = null, string? QuietHoursStart = null, string? QuietHoursEnd = null);
-```
-
-## OperatorPreferencesDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorPreferencesDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:88](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L88).
-
-The signed-in operator&#x27;s stored presentation preferences and when they last changed.
-
-```csharp
-public sealed record OperatorPreferencesDto(OperatorPreferenceValuesDto Preferences, DateTimeOffset? UpdatedAt);
-```
-
-## OperatorPreferencesSaveRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorPreferencesSaveRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:95](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L95).
-
-Replaces the signed-in operator&#x27;s presentation preferences as a whole. A null or empty set clears them.
-
-```csharp
-public sealed record OperatorPreferencesSaveRequest(OperatorPreferenceValuesDto? Preferences);
-```
-
-## OperatorPreferenceValuesDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorPreferenceValuesDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L41).
-
-The signed-in operator&#x27;s presentation preferences, kept on the host so they follow the operator to another browser or machine. Every value is optional: null means &quot;no preference stored&quot;, and the client keeps its own default. Values are display-only and never change stored or ledger data.
-
-```csharp
-public sealed record OperatorPreferenceValuesDto(string? Appearance = null, string? Density = null, string? DisplayTimeZone = null, bool? PageDescriptionsHidden = null, IReadOnlyDictionary<string, string>? KeyBindings = null, IReadOnlyDictionary<string, OperatorDesktopShortcutDto>? DesktopKeyBindings = null, OperatorNotificationPreferencesDto? Notifications = null);
-```
-
-## OperatorPreferenceVocabulary
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorPreferenceVocabulary</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L8).
-
-The shared value sets for OperatorPreferenceValuesDto, used by the host store and by both operator clients so the browser and WPF read one vocabulary. Clients map these to their own presentation types (the WPF shell has fewer density levels than the browser).
-
-```csharp
-public static class OperatorPreferenceVocabulary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string AppearanceSystem = &quot;system&quot;;</code> | [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L10) |  |
-| <code>public const string AppearanceLight = &quot;light&quot;;</code> | [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L11) |  |
-| <code>public const string AppearanceDark = &quot;dark&quot;;</code> | [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L12) |  |
-| <code>public const string DensityCompact = &quot;compact&quot;;</code> | [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L14) |  |
-| <code>public const string DensityDefault = &quot;default&quot;;</code> | [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L15) |  |
-| <code>public const string DensitySpacious = &quot;spacious&quot;;</code> | [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L16) |  |
-| <code>public static IReadOnlyList&lt;string&gt; Appearances { get; } = [AppearanceSystem, AppearanceLight, AppearanceDark];</code> | [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L19) | Every appearance the host accepts. |
-| <code>public static IReadOnlyList&lt;string&gt; Densities { get; } = [DensityCompact, DensityDefault, DensitySpacious];</code> | [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L22) | Every density the host accepts, from tightest to loosest. |
