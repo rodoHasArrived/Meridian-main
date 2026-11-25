@@ -6,6 +6,82 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RunFillSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.RunFillSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:963](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L963).
+
+Trade-level fill list for one run.
+
+```csharp
+public sealed record RunFillSummary(string RunId, StrategyRunMode Mode, int TotalFills, decimal TotalCommissions, IReadOnlyList<RunFillEntry> Fills);
+```
+
+## RunLotSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.RunLotSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1201](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1201).
+
+Lot history for a single strategy run, optionally filtered to one symbol.
+
+```csharp
+public sealed record RunLotSummary(string RunId, int TotalOpenLots, int TotalClosedLots, decimal TotalRealizedPnl, IReadOnlyList<OpenLotSummary> OpenLots, IReadOnlyList<ClosedLotSummary> ClosedLots);
+```
+
+## RunPortfolioDrillInSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.RunPortfolioDrillInSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1043](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1043).
+
+Composite portfolio drill-in payload that keeps attribution, drawdown, cash-flow, and trade slices aligned under one additive, versioned contract.
+
+```csharp
+public sealed record RunPortfolioDrillInSummary(string SchemaVersion, string RunId, DateTimeOffset AsOf, string Currency, StrategyRunMode Mode, RunAttributionSummary? Attribution, EquityCurveSummary? DrawdownProfile, RunCashFlowSummary? CashFlow, RunFillSummary? Trades);
+```
+
+## RunReconciliation
+
+Qualified name: <code>Meridian.Contracts.Workstation.RunReconciliation</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:26](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L26).
+
+```csharp
+public sealed record RunReconciliation(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
+```
+
+## SampleArtifactDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SampleArtifactDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L56).
+
+```csharp
+public sealed record SampleArtifactDto(string Name, string Status, string Detail, string Route);
+```
+
+## SampleBreakDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SampleBreakDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:47](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L47).
+
+```csharp
+public sealed record SampleBreakDto(string Id, string Title, string Category, string Severity, decimal Variance, string Summary, string Route);
+```
+
+## SampleHighlightDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SampleHighlightDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:60](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L60).
+
+```csharp
+public sealed record SampleHighlightDto(string Label, string Value, string Detail, string Route);
+```
+
 ## SampleHoldingDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.SampleHoldingDto</code>. Kind: `record`.
@@ -280,6 +356,61 @@ Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:
 public sealed record SecurityMasterEntitlementApplicabilityDto(Guid EntitlementId, string VendorName, DataVendorDataType DataType, string Scope, string? ClientId, string? AccountId, string? FundProfileId, Guid? SecurityId, bool IsApplicable, bool IsMostSpecific, DataVendorEntitlementStatus Status, bool RequiresDirectClientContract, string? ContractReference, string Summary);
 ```
 
+## SecurityMasterExceptionCaseDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterExceptionCaseDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs#L35).
+
+One case in the deployment-global Security Master exception queue (review D2): a conflict, an identifier ambiguity or a data-quality violation, with an SLA due date and an optional assignee.
+
+```csharp
+public sealed record SecurityMasterExceptionCaseDto(Guid CaseId, string CaseKey, string Category, string RuleCode, Guid? SecurityId, string Severity, string Title, string Detail, string Status, string? Assignee, DateTimeOffset OpenedAt, DateTimeOffset LastSeenAt, DateTimeOffset SlaDueAt, DateTimeOffset? ClosedAt, string? ClosedReason);
+```
+
+## SecurityMasterExceptionCaseQueueItemDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterExceptionCaseQueueItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs#L56).
+
+A queue row from GET /api/security-master/exception-cases: the case plus the server&#x27;s SLA verdict and age, computed at read time so neither workstation re-derives them.
+
+```csharp
+public sealed record SecurityMasterExceptionCaseQueueItemDto(SecurityMasterExceptionCaseDto Row, bool SlaBreached, double AgeHours);
+```
+
+## SecurityMasterExceptionCaseStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterExceptionCaseStatusDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs#L62).
+
+Exception-case statuses accepted by the status filter.
+
+```csharp
+public static class SecurityMasterExceptionCaseStatusDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Open = &quot;Open&quot;;</code> | [src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs:64](../../../../src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs#L64) |  |
+| <code>public const string Closed = &quot;Closed&quot;;</code> | [src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs#L65) |  |
+
+## SecurityMasterExceptionSyncResultDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterExceptionSyncResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs#L69).
+
+Result of POST /api/security-master/exception-cases/sync.
+
+```csharp
+public sealed record SecurityMasterExceptionSyncResultDto(int Opened, int Refreshed, int Closed);
+```
+
 ## SecurityMasterFactorPointDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterFactorPointDto</code>. Kind: `record`.
@@ -301,6 +432,38 @@ Read-only governance evidence from the same requirements seam that enforces edit
 ```csharp
 public sealed record SecurityMasterGovernanceDto(string Profile, string ProfileSource, bool IsProfileLatched, bool RequireGovernedTermAmendments, bool RequireIndependentReviewer, bool RequireIndependentProfileApprover, IReadOnlyList<string> ContradictedKeys);
 ```
+
+## SecurityMasterHeldAmendmentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterHeldAmendmentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs#L10).
+
+An ingest amendment held because a lower-ranked source tried to overwrite a value a higher-ranked source supplied (Security Master review A2). DominatedFieldPaths names the fields that triggered the hold and ConflictIds the conflicts opened for it; an operator adopts the held value through the conflict&#x27;s governed resolution or discards the row. Wire shape of GET /api/security-master/held-amendments, shared by both workstations.
+
+```csharp
+public sealed record SecurityMasterHeldAmendmentDto(Guid HeldAmendmentId, Guid SecurityId, string SourceSystem, string RequestJson, IReadOnlyList<string> DominatedFieldPaths, IReadOnlyList<Guid> ConflictIds, long HeldAtVersion, DateTimeOffset HeldAt, string Status, string? ClosedBy = null, DateTimeOffset? ClosedAt = null);
+```
+
+## SecurityMasterHeldAmendmentStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterHeldAmendmentStatusDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs#L24).
+
+Held-amendment statuses accepted by the status filter.
+
+```csharp
+public static class SecurityMasterHeldAmendmentStatusDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Held = &quot;Held&quot;;</code> | [src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs:26](../../../../src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs#L26) |  |
+| <code>public const string Replayed = &quot;Replayed&quot;;</code> | [src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs:27](../../../../src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs#L27) |  |
+| <code>public const string Discarded = &quot;Discarded&quot;;</code> | [src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs:28](../../../../src/Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs#L28) |  |
 
 ## SecurityMasterIdentifierSummaryDto
 
@@ -437,8 +600,15 @@ Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.c
 One governed revision awaiting action, across securities (review P5/D1 review inbox). The drafter is Actor; under the Institutional profile a different principal must approve.
 
 ```csharp
-public sealed record SecurityMasterPendingRevisionDto(Guid RevisionId, Guid SecurityId, SecurityMasterRevisionStateDto State, string Actor, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string? FieldPath, string? FieldValue, string? Justification, string? FundProfileId, long? BaseVersion, double AgeHours);
+public sealed record SecurityMasterPendingRevisionDto(Guid RevisionId, Guid SecurityId, SecurityMasterRevisionStateDto State, string Actor, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string? FieldPath, string? FieldValue, string? Justification, string? FundProfileId, long? BaseVersion, double AgeHours)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Guid? ConflictId { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:246](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L246) | Set when this revision is a review D3 &quot;Use B&quot; draft: the conflict it adopts a candidate for. The conflict stays open until this draft publishes. |
+| <code>public string? ConflictCandidateSource { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:249](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L249) | The source whose value the &quot;Use B&quot; draft adopts; null for ordinary revisions. |
 
 ## SecurityMasterProviderSymbolMappingDto
 
@@ -461,182 +631,3 @@ Result of publishing a revision. When the edit affects a hard-closed period with
 ```csharp
 public sealed record SecurityMasterPublishResultDto(Guid SecurityId, Guid RevisionId, long NewVersion, bool RestatementRequired, IReadOnlyList<RestatementCandidateDto> RestatementCandidates, IReadOnlyList<string> InvalidatedProjections, SecurityMasterCanonicalMergeOutcomeDto? CanonicalMerge = null);
 ```
-
-## SecurityMasterRecommendedActionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterRecommendedActionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:426](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L426).
-
-```csharp
-public sealed record SecurityMasterRecommendedActionDto(SecurityMasterRecommendedActionKind Kind, string Title, string Detail, bool IsPrimary, bool IsEnabled, Guid? ConflictId = null, string? Target = null);
-```
-
-## SecurityMasterRecommendedActionKind
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterRecommendedActionKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:26](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L26).
-
-```csharp
-public enum SecurityMasterRecommendedActionKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ResolveSelectedConflict = 0</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:28](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L28) |  |
-| <code>BulkResolveLowRiskConflicts = 1</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L29) |  |
-| <code>BackfillTradingParameters = 2</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:30](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L30) |  |
-| <code>ReviewCorporateActions = 3</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L31) |  |
-| <code>OpenPortfolioImpact = 4</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L32) |  |
-| <code>OpenLedgerImpact = 5</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L33) |  |
-| <code>OpenReconciliationImpact = 6</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:34](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L34) |  |
-| <code>OpenReportPackImpact = 7</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L35) |  |
-| <code>EditSelectedSecurity = 8</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:36](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L36) |  |
-| <code>RefreshTrustSnapshot = 9</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:37](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L37) |  |
-
-## SecurityMasterRevisionPublishedEvent
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterRevisionPublishedEvent</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:213](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L213).
-
-Domain event raised after a revision is durably published. Carries the affected ledger books so period-aware propagation can resolve each book&#x27;s lock status from the authoritative ledger period.
-
-```csharp
-public sealed record SecurityMasterRevisionPublishedEvent(Guid SecurityId, Guid RevisionId, long Version, DateTimeOffset EffectiveFrom, IReadOnlyList<string> ChangedFields, SecurityMasterDownstreamImpactDto DownstreamImpact, IReadOnlyList<Guid> AffectedLedgerBookIds, string Actor, string? CorrelationId);
-```
-
-## SecurityMasterRevisionStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterRevisionStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L21).
-
-Governed-write lifecycle state for a Security Master passport revision: draft → submitted → approved → published (or rejected).
-
-```csharp
-public enum SecurityMasterRevisionStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Draft = 0</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L23) |  |
-| <code>Submitted = 1</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L24) |  |
-| <code>Approved = 2</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:25](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L25) |  |
-| <code>Published = 3</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:26](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L26) |  |
-| <code>Rejected = 4</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:27](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L27) |  |
-| <code>Unknown = 5</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L33) | Read-tolerance member: a state written by a newer node that this node does not recognize. An unknown state matches no workflow transition, so the revision is visible but inert instead of failing every load of the revision list. |
-
-## SecurityMasterScheduleBlockerDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterScheduleBlockerDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:236](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L236).
-
-One reason a declared call or put schedule is blocked: a stable code and the operator-facing reason.
-
-```csharp
-public sealed record SecurityMasterScheduleBlockerDto(string Code, string Reason);
-```
-
-## SecurityMasterScheduleBookDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterScheduleBookDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:271](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L271).
-
-```csharp
-public sealed record SecurityMasterScheduleBookDto(bool SupportsCashflowSchedule, bool SupportsFactorHistory, bool HasEconomicScheduleTerms, string Currency, decimal? CurrentFactor, DateOnly? CurrentFactorDate, DateOnly? NextLifecycleDate, string SourceSummary, string Summary, IReadOnlyList<SecurityMasterScheduleEventDto> Events, IReadOnlyList<SecurityMasterFactorPointDto> FactorHistory, IReadOnlyList<SecurityMasterScheduleProvenanceDto> ProvenanceHistory, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] SecurityMasterDeclaredExerciseOutcomeDto? DeclaredExercise = null);
-```
-
-## SecurityMasterScheduleEventDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterScheduleEventDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:287](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L287).
-
-```csharp
-public sealed record SecurityMasterScheduleEventDto(string EventId, string EventType, DateOnly EffectiveDate, DateOnly? PayDate, DateOnly? AccrualStartDate, DateOnly? AccrualEndDate, decimal? ExpectedAmount, decimal? ActualAmount, decimal? VarianceAmount, decimal? FactorStart, decimal? FactorEnd, string Currency, string PostingStatus, string SourceSystem, string? SourceRecordId, DateTimeOffset? SourceAsOfUtc, string? SourceUpdatedBy, string? SourceReason, bool IsDerivedFromEconomicTerms, bool IsCurrentProjection);
-```
-
-## SecurityMasterScheduleProvenanceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterScheduleProvenanceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:321](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L321).
-
-```csharp
-public sealed record SecurityMasterScheduleProvenanceDto(string ProvenanceId, string Category, string Summary, DateOnly? EffectiveDate, string SourceSystem, string? SourceRecordId, DateTimeOffset? SourceAsOfUtc, string? SourceUpdatedBy, string? SourceReason, long? StreamVersion, string? EventType);
-```
-
-## SecurityMasterScheduleSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterScheduleSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:259](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L259).
-
-```csharp
-public sealed record SecurityMasterScheduleSummaryDto(bool SupportsCashflowSchedule, bool SupportsFactorHistory, bool HasEconomicScheduleTerms, decimal? CurrentFactor, DateOnly? CurrentFactorDate, DateOnly? NextLifecycleDate, string SourceSummary, string Summary, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] SecurityMasterDeclaredExerciseOutcomeDto? DeclaredExercise = null);
-```
-
-## SecurityMasterSchemaCompatibilityDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterSchemaCompatibilityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:200](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L200).
-
-```csharp
-public sealed record SecurityMasterSchemaCompatibilityDto(string AssetClass, int LegacyAssetSpecificTermsSchemaVersion, int EconomicTermsSchemaVersion, bool HasLegacyAssetSpecificTerms, bool HasEconomicTerms, bool HasClassificationPayload, string Summary);
-```
-
-## SecurityMasterSourceCandidateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterSourceCandidateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:148](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L148).
-
-```csharp
-public sealed record SecurityMasterSourceCandidateDto(Guid? ConflictId, string FieldPath, string SourceSystem, string DisplayValue, bool IsWinningSource, DateTimeOffset? AsOf, string? UpdatedBy, string? Reason, string? SourceRecordId = null, SecurityMasterImpactSeverity ImpactSeverity = SecurityMasterImpactSeverity.None);
-```
-
-## SecurityMasterTrustPostureDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterTrustPostureDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:134](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L134).
-
-```csharp
-public sealed record SecurityMasterTrustPostureDto(SecurityMasterTrustTone Tone, int TrustScore, string Summary, string GoldenCopySource, string GoldenCopyRule, string TradingParametersStatus, string CorporateActionReadiness, bool HasOpenConflicts, int OpenConflictCount, bool TradingParametersComplete, bool HasUpcomingCorporateActions, bool CorporateActionsTrusted);
-```
-
-## SecurityMasterTrustSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterTrustSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L49).
-
-```csharp
-public sealed record SecurityMasterTrustSnapshotDto(Guid SecurityId, SecurityMasterWorkstationDto Security, SecurityIdentityDrillInDto Identity, SecurityMasterEconomicDefinitionDrillInDto EconomicDefinition, SecurityMasterTrustPostureDto TrustPosture, IReadOnlyList<SecurityMasterSourceCandidateDto> ProvenanceCandidates, IReadOnlyList<SecurityMasterConflictAssessmentDto> ConflictAssessments, SecurityMasterDownstreamImpactDto DownstreamImpact, IReadOnlyList<SecurityMasterRecommendedActionDto> RecommendedActions, IReadOnlyList<SecurityMasterEventEnvelope> History, IReadOnlyList<CorporateActionDto> CorporateActions, DateTimeOffset RetrievedAtUtc)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityValidationReportDto? ValidationReport { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L63) |  |
-| <code>public SecurityMasterIdentifierSummaryDto? IdentifierSummary { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:64](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L64) |  |
-| <code>public SecurityMasterSchemaCompatibilityDto? SchemaCompatibility { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L65) |  |
-| <code>public IReadOnlyList&lt;SecurityMasterChangeHistoryItemDto&gt;? ChangeHistory { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:66](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L66) |  |
-| <code>public SecurityMasterScheduleSummaryDto? ScheduleSummary { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:67](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L67) |  |
-| <code>public SecurityMasterLotModelDto? LotModel { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L68) |  |
-| <code>public SecurityMasterScheduleBookDto? ScheduleBook { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L69) |  |
-| <code>public SecurityMasterOpenLotReadModelDto? OpenLotReadModel { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L70) |  |
-| <code>public InstrumentPassportDto? InstrumentPassport { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:71](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L71) |  |
-| <code>public IReadOnlyList&lt;CorporateActionDescriptorDto&gt;? CorporateActionDescriptors { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:72](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L72) |  |
-| <code>public SecurityMasterGovernanceDto? Governance { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L74) | The host&#x27;s effective requirements, including profile latching and ignored configuration. |
-| <code>public SecurityMasterScheduleBlockerDto? CashFlowBlocker { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L76) | Base calculation refusal on the selected terms at RetrievedAtUtc; distinct from exercise-date resolution. |

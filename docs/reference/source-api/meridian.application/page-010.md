@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterActiveImportStatus
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterActiveImportStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:13](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs#L13).
+
+Active Security Master ingest progress.
+
+```csharp
+public sealed record SecurityMasterActiveImportStatus(string FileExtension, int Total, int Processed, int Imported, int Skipped, int Failed, DateTimeOffset StartedAtUtc, DateTimeOffset UpdatedAtUtc);
+```
+
 ## SecurityMasterAmendmentHeldException
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterAmendmentHeldException</code>. Kind: `class`.
@@ -959,16 +971,4 @@ The restatement outcome a publish reports to the operator: whether a closed-peri
 
 ```csharp
 public sealed record SecurityMasterRestatementDecision(bool RestatementRequired, IReadOnlyList<RestatementCandidateDto> Candidates);
-```
-
-## SecurityMasterRevisionFieldBase
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionFieldBase</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:100](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L100).
-
-The canonical state a field-edit proposal was drafted against: the security version the edit was staged at and a canonical snapshot of every stored key the approved merge would overwrite for that field (SecurityAssetTermsFieldSnapshot).
-
-```csharp
-public sealed record SecurityMasterRevisionFieldBase(long BaseVersion, string FieldSnapshot);
 ```

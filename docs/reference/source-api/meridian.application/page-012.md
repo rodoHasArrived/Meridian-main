@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CredentialValidationService
+
+Qualified name: <code>Meridian.Application.Services.CredentialValidationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/CredentialValidationService.cs:14](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L14).
+
+Service for validating API credentials at startup. Performs lightweight validation calls to verify credentials are valid.
+
+```csharp
+public sealed class CredentialValidationService : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CredentialValidationService();</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:20](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L20) |  |
+| <code>public async Task&lt;ValidationSummary&gt; ValidateAllAsync(AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:49](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L49) | Validates all configured credentials. |
+| <code>public async Task&lt;ValidationResult&gt; ValidateAlpacaAsync(AlpacaOptions options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:148](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L148) | Validates Alpaca credentials by calling the account endpoint. |
+| <code>public async Task&lt;ValidationResult&gt; ValidatePolygonAsync(PolygonOptions options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:220](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L220) | Validates Polygon credentials by calling the ticker details endpoint. |
+| <code>public async Task&lt;ValidationResult&gt; ValidateTiingoAsync(TiingoConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:277](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L277) | Validates Tiingo credentials by calling the meta endpoint. |
+| <code>public async Task&lt;ValidationResult&gt; ValidateFinnhubAsync(FinnhubConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:333](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L333) | Validates Finnhub credentials by calling the profile endpoint. |
+| <code>public async Task&lt;ValidationResult&gt; ValidatePolygonBackfillAsync(PolygonConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:394](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L394) | Validates Polygon backfill credentials. |
+| <code>public async Task&lt;ValidationResult&gt; ValidateAlphaVantageAsync(AlphaVantageConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:450](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L450) | Validates Alpha Vantage credentials. |
+| <code>public async Task&lt;ValidationResult&gt; ValidateFredAsync(FredConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:531](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L531) | Validates FRED credentials. |
+| <code>public void PrintSummary(ValidationSummary summary, TextWriter? output = null);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:598](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L598) | Prints a summary of validation results to the console. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:652](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L652) |  |
+
 ## ValidationResult
 
 Qualified name: <code>Meridian.Application.Services.CredentialValidationService.ValidationResult</code>. Kind: `record`.
@@ -930,30 +958,3 @@ Declared public members:
 | <code>public async Task&lt;PortfolioImportRun?&gt; GetAsync(string tenantId, string companyId, Guid runId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs:27](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs#L27) |  |
 | <code>public async Task&lt;PortfolioImportRun&gt; RunAsync(PortfolioImportRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs:38](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs#L38) |  |
 | <code>public static string SnapshotHash(PortfolioSummary snapshot) =&gt; …;</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs:124](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs#L124) |  |
-
-## PortfolioImportService
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.PortfolioImportService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:17](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L17).
-
-Service for importing symbols from broker portfolios. Supports Alpaca, Interactive Brokers, and manual entry.
-
-```csharp
-public sealed partial class PortfolioImportService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PortfolioImportService(ConfigStore configStore, WatchlistService watchlistService, HttpClient? httpClient = null);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:24](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L24) |  |
-| <code>public async Task&lt;PortfolioImportResult&gt; ImportFromBrokerAsync(PortfolioImportRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:38](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L38) | Import symbols from a broker portfolio. |
-| <code>public async Task&lt;PortfolioImportResult&gt; ImportFromAlpacaAsync(PortfolioImportOptions options, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:57](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L57) | Import symbols from Alpaca portfolio. |
-| <code>public async Task&lt;PortfolioImportResult&gt; ImportFromInteractiveBrokersAsync(PortfolioImportOptions options, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:87](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L87) | Import symbols from Interactive Brokers portfolio. |
-| <code>public async Task&lt;PortfolioImportResult&gt; ImportManualAsync(ManualPortfolioEntry[] entries, PortfolioImportOptions options, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:123](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L123) | Import symbols from manual entries. |
-| <code>public Task&lt;PortfolioSummary?&gt; GetPortfolioSummaryAsync(string broker, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:157](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L157) | Get portfolio summary without importing. |
-| <code>public async Task&lt;PortfolioSummary?&gt; GetPortfolioSummaryAsync(string broker, string? accountId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:160](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L160) |  |
-| <code>public IReadOnlyList&lt;string&gt; GetAvailableBrokers();</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:178](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L178) | Get available brokers based on configuration. |
-| <code>public static IReadOnlyList&lt;PortfolioPosition&gt; SelectPositions(PortfolioSummary portfolio, PortfolioImportOptions options);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:355](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L355) |  |
-| <code>public async Task&lt;PortfolioImportResult&gt; ProcessPortfolioAsync(PortfolioSummary portfolio, PortfolioImportOptions options, CancellationToken ct);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:390](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L390) |  |

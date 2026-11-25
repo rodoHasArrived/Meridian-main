@@ -6,26 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## EndpointAuthorizationMetadata
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.EndpointAuthorizationMetadata</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L16).
-
-Marker metadata recorded on endpoints that attach a permission gate through EndpointAuthorization.RequirePermission{TBuilder} or EndpointAuthorization.RequireAllPermissions{TBuilder} or EndpointAuthorization.RequireAnyPermission{TBuilder}. Coverage tests inspect this metadata to prove every mapped route declares an explicit authorization requirement.
-
-```csharp
-public sealed class EndpointAuthorizationMetadata
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EndpointAuthorizationMetadata(IReadOnlyList&lt;UserPermission&gt; permissions, bool requireAll);</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L18) |  |
-| <code>public IReadOnlyList&lt;UserPermission&gt; Permissions { get; }</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:25](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L25) | The permission flags evaluated by the attached authorization filter. |
-| <code>public bool RequireAll { get; }</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:31](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L31) | true when every permission in Permissions is required; false when any single permission grants access. |
-
 ## EndpointIndependentAuthenticationMetadata
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.EndpointIndependentAuthenticationMetadata</code>. Kind: `class`.
@@ -1227,3 +1207,21 @@ Body linking a security to its issuer from a date.
 ```csharp
 public sealed record LinkSecurityIssuerRequest(Guid IssuerEntityId, DateOnly ValidFrom);
 ```
+
+## LiveDataEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.LiveDataEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs#L16).
+
+Extension methods for registering live data API endpoints. Provides access to collected real-time market data (trades, quotes, order book, order flow).
+
+```csharp
+public static class LiveDataEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapLiveDataEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs#L21) | Maps all live data API endpoints. |

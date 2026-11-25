@@ -6,24 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## LiveDataEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.LiveDataEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs#L16).
-
-Extension methods for registering live data API endpoints. Provides access to collected real-time market data (trades, quotes, order book, order flow).
-
-```csharp
-public static class LiveDataEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapLiveDataEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs#L21) | Maps all live data API endpoints. |
-
 ## LoginSessionMiddleware
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware</code>. Kind: `class`.
@@ -834,3 +816,15 @@ Declared public members:
 | <code>public IReadOnlyList&lt;ProviderProvenanceReceipt&gt; ProviderProvenanceReceipts { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:432](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L432) |  |
 | <code>public static QuantRunResponse From(ScriptRunResult result) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:435](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L435) | Maps a strongly-typed ScriptRunResult into the JSON DTO. |
 | <code>public static QuantRunResponse FromError(string message) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:477](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L477) | Constructs an error response for unhandled exceptions. |
+
+## QuantTemplateDto
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantTemplateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:412](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L412).
+
+A pre-built starter snippet for the lab.
+
+```csharp
+public sealed record QuantTemplateDto(string Id, string Title, string Description, string Source);
+```

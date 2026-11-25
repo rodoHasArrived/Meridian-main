@@ -6,24 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## BondMigrationEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.BondMigrationEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs#L14).
-
-Reviewed migration preparation and an administrative live-calculation cutover.
-
-```csharp
-public static class BondMigrationEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapBondMigrationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs#L16) |  |
-
 ## BondReferenceEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.BondReferenceEndpoints</code>. Kind: `class`.
@@ -190,7 +172,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CashFlowShadowCompareRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs#L14).
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs#L15).
 
 Securities to shadow-compare and the valuation date to compare from.
 
@@ -768,3 +750,23 @@ Declared public members:
 | <code>public static async Task&lt;ScopedAuthorizationDecisionDto&gt; AuthorizeScopedAsync(HttpContext context, UserPermission required, AccessScopeKindDto scopeKind, Guid? scopeId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:682](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L682) |  |
 | <code>public static async Task&lt;IReadOnlySet&lt;Guid&gt;&gt; AuthorizeScopedManyAsync(HttpContext context, UserPermission required, AccessScopeKindDto scopeKind, IReadOnlyCollection&lt;Guid&gt; scopeIds, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:748](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L748) |  |
 | <code>public static async Task&lt;bool&gt; HasScopedPermissionAsync(HttpContext context, UserPermission required, AccessScopeKindDto scopeKind, Guid? scopeId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:790](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L790) |  |
+
+## EndpointAuthorizationMetadata
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.EndpointAuthorizationMetadata</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L16).
+
+Marker metadata recorded on endpoints that attach a permission gate through EndpointAuthorization.RequirePermission{TBuilder} or EndpointAuthorization.RequireAllPermissions{TBuilder} or EndpointAuthorization.RequireAnyPermission{TBuilder}. Coverage tests inspect this metadata to prove every mapped route declares an explicit authorization requirement.
+
+```csharp
+public sealed class EndpointAuthorizationMetadata
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public EndpointAuthorizationMetadata(IReadOnlyList&lt;UserPermission&gt; permissions, bool requireAll);</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L18) |  |
+| <code>public IReadOnlyList&lt;UserPermission&gt; Permissions { get; }</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:25](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L25) | The permission flags evaluated by the attached authorization filter. |
+| <code>public bool RequireAll { get; }</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:31](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L31) | true when every permission in Permissions is required; false when any single permission grants access. |

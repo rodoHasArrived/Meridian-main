@@ -742,6 +742,22 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Integrations.FileProviderIntegrationManifestStore</code>. Kind: `class`.
 
+Source: [src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.ActorFlags.cs:10](../../../../src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.ActorFlags.cs#L10).
+
+Append-only actor flags (IProviderIntegrationActorFlagStore). Flags live in their own category and never touch the flagged record: manifest versions stay immutable and digest-verified.
+
+```csharp
+public sealed partial class FileProviderIntegrationManifestStore : IProviderIntegrationActorFlagStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyList&lt;ProviderIntegrationStoredActorValue&gt;&gt; ScanStoredActorValuesAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.ActorFlags.cs:23](../../../../src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.ActorFlags.cs#L23) |  |
+| <code>public async Task&lt;bool&gt; TryAppendActorFlagAsync(ProviderIntegrationActorFlagDto flag, CancellationToken ct = default);</code> | [src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.ActorFlags.cs:111](../../../../src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.ActorFlags.cs#L111) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ProviderIntegrationActorFlagDto&gt;&gt; ListActorFlagsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.ActorFlags.cs:133](../../../../src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.ActorFlags.cs#L133) |  |
+
 Source: [src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.cs:22](../../../../src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.cs#L22).
 
 File-backed provider-integration manifest, connection, payload, quarantine, and staging store.

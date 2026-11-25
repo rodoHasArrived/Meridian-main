@@ -6,6 +6,106 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AssetAccountingPostIntentDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AssetAccountingPostIntentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs:60](../../../../src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs#L60).
+
+An exact original posting command retained before any canonical financial side effect.
+
+```csharp
+public sealed record AssetAccountingPostIntentDto(string OriginalCommandHash, JournalEntryLifecycleActionRequestDto OriginalCommand, PostPostingRuleJournalCandidateRequestDto CanonicalRequest, string VaultId, string DocumentId);
+```
+
+## AttachManualJournalEntryEvidenceRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.AttachManualJournalEntryEvidenceRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:982](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L982).
+
+```csharp
+public sealed record AttachManualJournalEntryEvidenceRequest(Guid JournalEntryId, string FundProfileId, string Actor, int Version, ManualJournalEntryEvidenceAttachmentDto Attachment, string? CorrelationId = null, IReadOnlyList<string>? EvidenceLinks = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, bool PeriodIsLocked = false, Guid? LedgerBookId = null, string? TenantId = null, string? CompanyId = null, IReadOnlyList<string>? ReportGroupPrincipalIds = null);
+```
+
+## AuditChainIdentifiers
+
+Qualified name: <code>Meridian.Contracts.Ledger.AuditChainIdentifiers</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:104](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L104).
+
+Stable chain identifiers for AuditChainIntegrityResultDto.Chain.
+
+```csharp
+public static class AuditChainIdentifiers
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string AccountingActions = &quot;accounting-actions&quot;;</code> | [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:106](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L106) |  |
+| <code>public const string LedgerEvents = &quot;ledger-events&quot;;</code> | [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:107](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L107) |  |
+
+## AuditChainIntegrityResultDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AuditChainIntegrityResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:118](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L118).
+
+Verification outcome for one hash-chained audit log.
+
+```csharp
+public sealed record AuditChainIntegrityResultDto(string Chain, string Status, long LinksChecked, long UnprotectedPreChainCount, string? FailureKind = null, string? Detail = null, long? FailedSequence = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsVerified =&gt; …;</code> | [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:127](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L127) |  |
+
+## AuditChainIntegrityStatus
+
+Qualified name: <code>Meridian.Contracts.Ledger.AuditChainIntegrityStatus</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:81](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L81).
+
+Stable status values for AuditChainIntegrityResultDto.Status.
+
+```csharp
+public static class AuditChainIntegrityStatus
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Verified = &quot;verified&quot;;</code> | [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:84](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L84) | Every link and covered fact verified. |
+| <code>public const string Broken = &quot;broken&quot;;</code> | [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:87](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L87) | The chain does not verify: tampering, truncation, or an interrupted append. |
+| <code>public const string NotConfigured = &quot;not-configured&quot;;</code> | [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:90](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L90) | This composition retains no store that keeps this chain. |
+| <code>public const string Unavailable = &quot;unavailable&quot;;</code> | [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:93](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L93) | The store exists but could not be read; nothing is claimed about the chain. |
+| <code>public const string NotStarted = &quot;not-started&quot;;</code> | [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:100](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L100) | The store keeps this chain but nothing has been chained yet (a fresh store, or one upgraded from pre-chain history with no append since), so no record is protected and nothing is claimed about integrity. |
+
+## AutomatedJournalEvidenceAssessmentDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AutomatedJournalEvidenceAssessmentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AutomatedJournalEvidenceDtos.cs:19](../../../../src/Meridian.Contracts/Ledger/AutomatedJournalEvidenceDtos.cs#L19).
+
+Persisted assessment of the source evidence used to prepare an automated journal draft. A draft that requires investigation remains in the manual workbench but cannot enter the human approval lifecycle until new evidence produces a satisfactory assessment.
+
+```csharp
+public sealed record AutomatedJournalEvidenceAssessmentDto(string AssessmentCode, decimal ConfidenceScore, AutomatedJournalEvidenceQualityDto Quality, bool RequiresInvestigation, string Summary, IReadOnlyList<string>? Reasons = null, IReadOnlyList<string>? EvidenceLinks = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; Reasons { get; init; } = Reasons??[];</code> | [src/Meridian.Contracts/Ledger/AutomatedJournalEvidenceDtos.cs:28](../../../../src/Meridian.Contracts/Ledger/AutomatedJournalEvidenceDtos.cs#L28) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AutomatedJournalEvidenceDtos.cs:30](../../../../src/Meridian.Contracts/Ledger/AutomatedJournalEvidenceDtos.cs#L30) |  |
+
 ## AutomatedJournalEvidenceQualityDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.AutomatedJournalEvidenceQualityDto</code>. Kind: `enum`.
@@ -631,79 +731,3 @@ Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:51](../
 ```csharp
 public sealed record ClosePreparationIssueDto(string Code, string Message, bool IsBlocking, string? TaskId = null);
 ```
-
-## ClosePreparationOwnerMappingDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ClosePreparationOwnerMappingDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:44](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L44).
-
-Explicit owner assignment for this preparation; it does not certify directory membership.
-
-```csharp
-public sealed record ClosePreparationOwnerMappingDto(string SourceOwner, string TargetOwner);
-```
-
-## ClosePreparationPreviewDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ClosePreparationPreviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:58](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L58).
-
-```csharp
-public sealed record ClosePreparationPreviewDto(Guid PreviewId, Guid TemplateId, int TemplateVersion, Guid SourceWorkflowId, LedgerBookDto TargetBook, LedgerPeriodDto TargetPeriod, ClosePreparationCalendarDto Calendar, IReadOnlyList<ClosePreparationTaskDto> Tasks, IReadOnlyList<ClosePreparationIssueDto> Issues, bool PolicyChanged, bool CanCreate, DateTimeOffset CreatedAtUtc, DateTimeOffset ExpiresAtUtc);
-```
-
-## ClosePreparationTaskDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ClosePreparationTaskDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:53](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L53).
-
-```csharp
-public sealed record ClosePreparationTaskDto(string TaskId, string DisplayName, string SourceOwner, string Owner, DateOnly SourceDueDate, DateOnly DueDate, CloseDeadlineRuleDto DeadlineRule, IReadOnlyList<CloseTaskDependencyConfigurationDto> Dependencies, IReadOnlyList<CloseTaskSignOffRequirementConfigurationDto> SignOffRequirements, bool OwnerChanged);
-```
-
-## CloseSignOffDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.CloseSignOffDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:158](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L158).
-
-```csharp
-public sealed record CloseSignOffDto(string SignOffId, string Role, string? Actor, ManualJournalEntryStatusDto ApprovalState, DateTimeOffset? SignedAtUtc = null, IReadOnlyList<string>? EvidenceLinks = null, string? Notes = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:167](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L167) |  |
-
-## CloseSignOffRequirementDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.CloseSignOffRequirementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:171](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L171).
-
-```csharp
-public sealed record CloseSignOffRequirementDto(string RequirementId, string Role, int RequiredApprovalCount, int ApprovedCount, bool IsSatisfied, string EvidenceRequirement);
-```
-
-## CloseTaskConfigurationDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.CloseTaskConfigurationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:196](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L196).
-
-```csharp
-public sealed record CloseTaskConfigurationDto(string TaskId, string? DisplayName = null, string? Owner = null, DateOnly? DueDate = null, int? RequiredApprovalCount = null, string? RequiredApprovalRole = null, string? RequiredEvidence = null, IReadOnlyList<string>? DependsOnTaskIds = null, IReadOnlyList<CloseTaskDependencyConfigurationDto>? DependencyConfigurations = null, IReadOnlyList<CloseTaskSignOffRequirementConfigurationDto>? SignOffRequirementConfigurations = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool HasExplicitDependencies = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; DependsOnTaskIds { get; init; } = DependsOnTaskIds??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:209](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L209) |  |
-| <code>public IReadOnlyList&lt;CloseTaskDependencyConfigurationDto&gt; DependencyConfigurations { get; init; } = DependencyConfigurations??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:212](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L212) |  |
-| <code>public IReadOnlyList&lt;CloseTaskSignOffRequirementConfigurationDto&gt; SignOffRequirementConfigurations { get; init; } = SignOffRequirementConfigurations??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:215](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L215) |  |

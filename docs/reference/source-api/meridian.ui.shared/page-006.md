@@ -6,18 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## QuantTemplateDto
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantTemplateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:412](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L412).
-
-A pre-built starter snippet for the lab.
-
-```csharp
-public sealed record QuantTemplateDto(string Id, string Title, string Description, string Source);
-```
-
 ## QuantTemplatesResponse
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantTemplatesResponse</code>. Kind: `record`.
@@ -46,7 +34,7 @@ public sealed record QuantTradeDto(string Timestamp, string Symbol, string Side,
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.RecordFactorObservationRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs#L17).
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs#L18).
 
 An observed pool factor for an effective date.
 
@@ -395,13 +383,13 @@ Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.EntityMaster.c
 public static partial class SecurityMasterEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs#L22).
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs#L20).
 
 ```csharp
 public static partial class SecurityMasterEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.HeldAmendments.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.HeldAmendments.cs#L12).
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.HeldAmendments.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.HeldAmendments.cs#L13).
 
 ```csharp
 public static partial class SecurityMasterEndpoints
@@ -454,6 +442,25 @@ Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.WriteRefusals.
 ```csharp
 public static partial class SecurityMasterEndpoints
 ```
+
+## SecurityMasterReviewQueueProjection
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.SecurityMasterReviewQueueProjection</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterReviewQueueProjection.cs:11](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterReviewQueueProjection.cs#L11).
+
+Maps Security Master review-queue rows (held amendments, exception cases) to the shared contract DTOs both workstations read, so neither client deserializes an Application or Storage type.
+
+```csharp
+public static class SecurityMasterReviewQueueProjection
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SecurityMasterHeldAmendmentDto ToDto(AppSecurityMaster.SecurityMasterHeldAmendment row);</code> | [src/Meridian.Ui.Shared/Endpoints/SecurityMasterReviewQueueProjection.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterReviewQueueProjection.cs#L13) |  |
+| <code>public static SecurityMasterExceptionCaseQueueItemDto ToQueueItem(SecurityMasterExceptionCase row, DateTimeOffset asOf);</code> | [src/Meridian.Ui.Shared/Endpoints/SecurityMasterReviewQueueProjection.cs:31](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterReviewQueueProjection.cs#L31) | The queue row with the SLA verdict and age (hours, one decimal) computed at asOf. |
 
 ## SetEntityParentRequest
 

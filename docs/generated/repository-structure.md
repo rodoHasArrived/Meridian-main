@@ -908,8 +908,6 @@ Meridian-main
 │   │   ├── desktop-evaluation-prerelease.yml
 │   │   ├── desktop-installer-packaging.yml
 │   │   ├── desktop-screenshot-capture.yml
-│   │   ├── desktop-standalone-publish.yml
-│   │   ├── desktop-user-manual.yml
 │   │   ├── desktop-workflow-runner.yml
 │   │   ├── documentation.yml
 │   │   ├── generated-repair-publish.yml
@@ -932,9 +930,7 @@ Meridian-main
 │   │   ├── service-backed-integrations.yml
 │   │   ├── targeted-test.yml
 │   │   ├── web-screenshot-capture.yml
-│   │   ├── windows-desktop-build.yml
-│   │   ├── wpf-dev-validation.yml
-│   │   └── wpf-route-validation.yml
+│   │   └── windows-desktop-build.yml
 │   ├── CODEOWNERS
 │   ├── copilot-instructions.md
 │   ├── dependabot.yml
@@ -1169,6 +1165,7 @@ Meridian-main
 │       │   ├── ci-metrics.py
 │       │   ├── collect-actions.py
 │       │   ├── dependency-locks.py
+│       │   ├── detect-codeql-languages.py
 │       │   ├── detect-dotnet-changes.py
 │       │   ├── dispatch-targeted-test.py
 │       │   ├── duplicate-helper-baseline.json
@@ -1328,11 +1325,13 @@ Meridian-main
 │       │   └── stop-collector.sh
 │       ├── tests
 │       │   ├── test_ai_repo_updater_blocking_async.py
+│       │   ├── test_audit_provider_integration_actors.py
 │       │   ├── test_check_ai_navigation_freshness.py
 │       │   ├── test_generate_ai_navigation.py
 │       │   └── test_validate_budget.py
 │       ├── ai-architecture-check.py
 │       ├── ai-repo-updater.py
+│       ├── audit_provider_integration_actors.py
 │       ├── check-execution-log-sanitization.py
 │       ├── duplication-audit.ps1
 │       ├── ensure-workstation-assets.py
@@ -2826,8 +2825,52 @@ Meridian-main
 │   │   │   ├── source-readme-ignore.yml
 │   │   │   └── source-todos.yml
 │   │   ├── generated
+│   │   │   ├── source-hashes
+│   │   │   │   ├── _manifest.json
+│   │   │   │   ├── SRC-APP.json
+│   │   │   │   ├── SRC-BACKTESTING-SDK.json
+│   │   │   │   ├── SRC-BACKTESTING.json
+│   │   │   │   ├── SRC-CONTRACTS.json
+│   │   │   │   ├── SRC-CORE.json
+│   │   │   │   ├── SRC-DESIGN-AUDIT.json
+│   │   │   │   ├── SRC-DESIGN-DATA-INTEGRATION.json
+│   │   │   │   ├── SRC-DESIGN-DOCUMENTS.json
+│   │   │   │   ├── SRC-DESIGN-ENTITIES.json
+│   │   │   │   ├── SRC-DESIGN-FINANCIAL-OPERATIONS.json
+│   │   │   │   ├── SRC-DESIGN-IDENTITY.json
+│   │   │   │   ├── SRC-DESIGN-INSTRUMENTS.json
+│   │   │   │   ├── SRC-DESIGN-PLATFORM.json
+│   │   │   │   ├── SRC-DESIGN-PORTFOLIO-RECORDS.json
+│   │   │   │   ├── SRC-DESIGN-REFERENCE-DATA.json
+│   │   │   │   ├── SRC-DESIGN-REPORTING.json
+│   │   │   │   ├── SRC-DESIGN-WORKFLOW.json
+│   │   │   │   ├── SRC-DOMAIN.json
+│   │   │   │   ├── SRC-EXECUTION-SDK.json
+│   │   │   │   ├── SRC-EXECUTION.json
+│   │   │   │   ├── SRC-FSHARP-DIRECTLENDING.json
+│   │   │   │   ├── SRC-FSHARP-LEDGER.json
+│   │   │   │   ├── SRC-FSHARP-TRADING.json
+│   │   │   │   ├── SRC-FSHARP.json
+│   │   │   │   ├── SRC-HOST.json
+│   │   │   │   ├── SRC-IBAPI-SMOKESTUB.json
+│   │   │   │   ├── SRC-INFRASTRUCTURE.json
+│   │   │   │   ├── SRC-LAUNCHER.json
+│   │   │   │   ├── SRC-LEDGER.json
+│   │   │   │   ├── SRC-LIFECYCLE-SUPERVISOR.json
+│   │   │   │   ├── SRC-MCP.json
+│   │   │   │   ├── SRC-PROVIDER-SDK.json
+│   │   │   │   ├── SRC-QUANTSCRIPT.json
+│   │   │   │   ├── SRC-REPORTING-READMODELS.json
+│   │   │   │   ├── SRC-RISK.json
+│   │   │   │   ├── SRC-STORAGE-ACCOUNTING.json
+│   │   │   │   ├── SRC-STORAGE.json
+│   │   │   │   ├── SRC-STRATEGIES.json
+│   │   │   │   ├── SRC-UI-DASHBOARD.json
+│   │   │   │   ├── SRC-UI-SERVICES.json
+│   │   │   │   ├── SRC-UI-SHARED.json
+│   │   │   │   ├── SRC-UI.json
+│   │   │   │   └── SRC-WPF.json
 │   │   │   ├── adapter-readiness-matrix.md
-│   │   │   ├── source-hash-manifest.json
 │   │   │   ├── source-module-index.md
 │   │   │   ├── source-roadmap-traceability.md
 │   │   │   ├── source-todo-checklist.md
@@ -5388,6 +5431,7 @@ Meridian-main
 │   │   │   ├── BondHoldingImportService.cs
 │   │   │   ├── ProviderIntegrationActivationReadinessService.cs
 │   │   │   ├── ProviderIntegrationActivationService.cs
+│   │   │   ├── ProviderIntegrationActorFlagService.cs
 │   │   │   ├── ProviderIntegrationBondValueNormalization.cs
 │   │   │   ├── ProviderIntegrationDryRunService.cs
 │   │   │   ├── ProviderIntegrationFieldTransforms.cs
@@ -6105,6 +6149,7 @@ Meridian-main
 │   │   ├── FxSpot
 │   │   │   └── FxSpotReferenceDtos.cs
 │   │   ├── Integrations
+│   │   │   ├── ProviderIntegrationActorFlags.cs
 │   │   │   ├── ProviderIntegrationContracts.cs
 │   │   │   ├── ProviderIntegrationContractsJsonContext.cs
 │   │   │   ├── ProviderIntegrationIdentityDecision.cs
@@ -6443,6 +6488,7 @@ Meridian-main
 │   │   │   ├── ReportingDeploymentDtos.cs
 │   │   │   ├── ReportLedgerAmountBindingDtos.cs
 │   │   │   ├── ResearchBriefingDtos.cs
+│   │   │   ├── SecurityMasterReviewQueueDtos.cs
 │   │   │   ├── SecurityMasterTrustWorkbenchDtos.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandDtos.cs
 │   │   │   ├── SecurityMasterWorkstationDtos.cs
@@ -8371,6 +8417,7 @@ Meridian-main
 │   │   │   ├── PostgresIntercompanyAgreementStore.Persistence.cs
 │   │   │   └── PostgresIntercompanyRateFixingStore.cs
 │   │   ├── Integrations
+│   │   │   ├── FileProviderIntegrationManifestStore.ActorFlags.cs
 │   │   │   ├── FileProviderIntegrationManifestStore.cs
 │   │   │   ├── FileProviderIntegrationManifestStore.IdentityDecisions.cs
 │   │   │   ├── FileProviderIntegrationManifestStore.Manifests.cs
@@ -9480,6 +9527,10 @@ Meridian-main
 │   │   │   │   │   │   ├── security-details-tracker.view-model.ts
 │   │   │   │   │   │   ├── security-instrument-terms.test.tsx
 │   │   │   │   │   │   ├── security-instrument-terms.tsx
+│   │   │   │   │   │   ├── security-master-exception-queue.test.tsx
+│   │   │   │   │   │   ├── security-master-exception-queue.tsx
+│   │   │   │   │   │   ├── security-master-held-amendments.test.tsx
+│   │   │   │   │   │   ├── security-master-held-amendments.tsx
 │   │   │   │   │   │   ├── security-master-review-inbox.test.tsx
 │   │   │   │   │   │   ├── security-master-review-inbox.tsx
 │   │   │   │   │   │   ├── security-passport-editor-launcher.test.tsx
@@ -9726,6 +9777,8 @@ Meridian-main
 │   │   │   │   │   ├── use-report-run-stream.ts
 │   │   │   │   │   ├── use-request-lifecycle.test.ts
 │   │   │   │   │   ├── use-request-lifecycle.ts
+│   │   │   │   │   ├── use-signed-in-username.test.tsx
+│   │   │   │   │   ├── use-signed-in-username.ts
 │   │   │   │   │   ├── use-visible-interval.test.tsx
 │   │   │   │   │   ├── use-visible-interval.ts
 │   │   │   │   │   ├── use-workstation-data.test.ts
@@ -9753,6 +9806,7 @@ Meridian-main
 │   │   │   │   │   │   ├── asset-market-valuation.api.test.ts
 │   │   │   │   │   │   ├── asset-market-valuation.api.ts
 │   │   │   │   │   │   ├── audit-integrity.api.ts
+│   │   │   │   │   │   ├── auth.api.ts
 │   │   │   │   │   │   ├── banking-payments.api.test.ts
 │   │   │   │   │   │   ├── banking-payments.api.ts
 │   │   │   │   │   │   ├── bond-analytics.api.test.ts
@@ -9823,6 +9877,7 @@ Meridian-main
 │   │   │   │   │   │   ├── private-capital.api.ts
 │   │   │   │   │   │   ├── promotion.contracts.ts
 │   │   │   │   │   │   ├── provider-connection-templates.api.ts
+│   │   │   │   │   │   ├── provider-integration-actor-flags.api.ts
 │   │   │   │   │   │   ├── provider-integration-identity.api.test.ts
 │   │   │   │   │   │   ├── provider-integration-identity.api.ts
 │   │   │   │   │   │   ├── provider-management.api.ts
@@ -9840,6 +9895,8 @@ Meridian-main
 │   │   │   │   │   │   ├── security-curves.api.ts
 │   │   │   │   │   │   ├── security-instrument-terms.api.test.ts
 │   │   │   │   │   │   ├── security-instrument-terms.api.ts
+│   │   │   │   │   │   ├── security-master-review-queues.api.test.ts
+│   │   │   │   │   │   ├── security-master-review-queues.api.ts
 │   │   │   │   │   │   ├── security-master-schema.api.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.test.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.ts
@@ -10692,6 +10749,8 @@ Meridian-main
 │   │   │   │   │   ├── settings-owned-provider-credentials.tsx
 │   │   │   │   │   ├── settings-profile-backed-security.test.ts
 │   │   │   │   │   ├── settings-profile-backed-security.ts
+│   │   │   │   │   ├── settings-provider-integration-actor-flags.test.tsx
+│   │   │   │   │   ├── settings-provider-integration-actor-flags.tsx
 │   │   │   │   │   ├── settings-provider-integration.tsx
 │   │   │   │   │   ├── settings-provider-ownership-panel.test.tsx
 │   │   │   │   │   ├── settings-provider-ownership-panel.tsx
@@ -11086,6 +11145,9 @@ Meridian-main
 │   │   │   │   └── ProviderQuotaApiClient.cs
 │   │   │   ├── Reporting
 │   │   │   │   └── ReportingStatusProjectionService.cs
+│   │   │   ├── SecurityMaster
+│   │   │   │   ├── SecurityMasterReviewQueueApiClient.cs
+│   │   │   │   └── SecurityMasterWorkbenchFailure.cs
 │   │   │   ├── ActivityFeedService.cs
 │   │   │   ├── AdminMaintenanceModels.cs
 │   │   │   ├── AdminMaintenanceServiceBase.cs
@@ -11390,6 +11452,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterEndpoints.Reclassification.cs
 │   │   │   ├── SecurityMasterEndpoints.RegistryProjections.cs
 │   │   │   ├── SecurityMasterEndpoints.WriteRefusals.cs
+│   │   │   ├── SecurityMasterReviewQueueProjection.cs
 │   │   │   ├── StatusEndpoints.cs
 │   │   │   ├── StorageEndpoints.cs
 │   │   │   ├── StorageQualityEndpoints.cs
@@ -12389,7 +12452,10 @@ Meridian-main
 │   │   │   │   ├── BondAnalyticsViewModel.cs
 │   │   │   │   ├── BondMigrationPreviewViewModel.cs
 │   │   │   │   ├── BondReferenceLadderViewModel.cs
-│   │   │   │   └── CashDividendAttestationViewModel.cs
+│   │   │   │   ├── CashDividendAttestationViewModel.cs
+│   │   │   │   ├── SecurityMasterExceptionQueueViewModel.cs
+│   │   │   │   ├── SecurityMasterHeldAmendmentsViewModel.cs
+│   │   │   │   └── SecurityMasterReviewInboxViewModel.cs
 │   │   │   ├── Settings
 │   │   │   │   ├── BondCutoverConsoleViewModel.cs
 │   │   │   │   └── ProviderOwnershipAdministrationViewModel.cs
@@ -14947,6 +15013,7 @@ Meridian-main
 │   │   │   │   ├── IntercompanyRateFixingStoreTests.cs
 │   │   │   │   └── PostgresFundStructureStoreTests.cs
 │   │   │   ├── Integrations
+│   │   │   │   ├── FileProviderIntegrationManifestStoreTests.ActorFlags.cs
 │   │   │   │   ├── FileProviderIntegrationManifestStoreTests.cs
 │   │   │   │   ├── FileProviderIntegrationManifestStoreTests.ManifestVersions.cs
 │   │   │   │   └── FileProviderIntegrationManifestStoreTests.Provenance.cs
@@ -15768,6 +15835,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.PeriodAdjustmentSchedule.cs
 │   │   │   ├── WorkstationEndpointsTests.PostingActorBoundary.cs
 │   │   │   ├── WorkstationEndpointsTests.ProviderIdentityDecisions.cs
+│   │   │   ├── WorkstationEndpointsTests.ProviderIntegrationActorFlags.cs
 │   │   │   ├── WorkstationEndpointsTests.ProviderIntegrations.cs
 │   │   │   ├── WorkstationEndpointsTests.ReconciliationAndContinuity.cs
 │   │   │   ├── WorkstationEndpointsTests.RecordSearch.cs
@@ -15904,6 +15972,7 @@ Meridian-main
 │   │   │   ├── ScheduleManagerServiceTests.cs
 │   │   │   ├── SchemaServiceTests.cs
 │   │   │   ├── SearchServiceTests.cs
+│   │   │   ├── SecurityMasterReviewQueueApiClientTests.cs
 │   │   │   ├── SettingsConfigurationServiceTests.cs
 │   │   │   ├── SetupWizardServiceTests.cs
 │   │   │   ├── SmartRecommendationsServiceTests.cs
@@ -16152,6 +16221,7 @@ Meridian-main
 │   │   │   ├── ScheduleManagerViewModelTests.cs
 │   │   │   ├── SecurityMasterDeactivateViewModelTests.cs
 │   │   │   ├── SecurityMasterEditViewModelTests.cs
+│   │   │   ├── SecurityMasterReviewQueueViewModelTests.cs
 │   │   │   ├── SecurityMasterViewModelTests.cs
 │   │   │   ├── SecurityPassportEditorViewModelTests.cs
 │   │   │   ├── ServiceManagerViewModelTests.cs
@@ -16322,6 +16392,7 @@ Meridian-main
 │   │   ├── test_desktop_msix_packaging.py
 │   │   ├── test_desktop_screen_blueprint_checklist.py
 │   │   ├── test_desktop_workflow_fixture.py
+│   │   ├── test_detect_codeql_languages.py
 │   │   ├── test_detect_dotnet_changes.py
 │   │   ├── test_direct_lending_outbox_claim_sql.py
 │   │   ├── test_doc_health_dashboard_merge.py

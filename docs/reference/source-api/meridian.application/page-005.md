@@ -254,6 +254,25 @@ Declared public members:
 | <code>public async Task&lt;ProviderIntegrationActivationResultDto&gt; ActivateAsync(ProviderIntegrationActivationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs:23](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs#L23) |  |
 | <code>public async Task&lt;ProviderIntegrationActivationResultDto&gt; ActivateAsync(string? tenantId, ProviderIntegrationActivationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs:28](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs#L28) |  |
 
+## ProviderIntegrationActorFlagService
+
+Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationActorFlagService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationActorFlagService.cs:12](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActorFlagService.cs#L12).
+
+Flags provider-integration records whose stored actor does not name a person (a session desk label, a Settings placeholder, or blank). Flags are appended beside the records; nothing is rewritten, so immutable manifest versions keep their content digests and pinned references.
+
+```csharp
+public sealed class ProviderIntegrationActorFlagService(IProviderIntegrationManifestStore store, TimeProvider? timeProvider = null, ILogger<ProviderIntegrationActorFlagService>? logger = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ProviderIntegrationActorFlagScanResultDto&gt; ScanAsync(string tenantId, string flaggedBy, IReadOnlyCollection&lt;string&gt;? extraLabels = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActorFlagService.cs:24](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActorFlagService.cs#L24) | Scans the tenant&#x27;s integration store and appends a flag for each unverified actor not already flagged. flaggedBy is the authenticated operator running the scan. |
+| <code>public Task&lt;IReadOnlyList&lt;ProviderIntegrationActorFlagDto&gt;&gt; ListAsync(string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActorFlagService.cs:72](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActorFlagService.cs#L72) |  |
+
 ## ProviderIntegrationDryRunService
 
 Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationDryRunService</code>. Kind: `class`.
@@ -986,22 +1005,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public bool IsHeld =&gt; …;</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:71](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L71) | True when this value represents an actual held reservation. |
-
-## DedupReservationResult
-
-Qualified name: <code>Meridian.Application.Pipeline.DedupReservationResult</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Application/Pipeline/DedupReservation.cs:85](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L85).
-
-Result of an IDedupStore.TryReserveAsync call.
-
-```csharp
-public readonly record struct DedupReservationResult(DedupReservationStatus Status, DedupReservation Reservation)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsReserved =&gt; …;</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:88](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L88) | The caller holds the reservation and must commit or release it. |
-| <code>public bool IsSuppressed =&gt; …;</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:91](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L91) | The event must be suppressed (committed duplicate or pending elsewhere). |

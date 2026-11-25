@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionIngestRequest
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:17](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L17).
+
+Request for a corporate-action ingest sweep. When Symbols is null or empty the sweep covers every active security with a ticker identifier. Announcements whose distinct agreeing sources reach MinimumSourcesToApply are confidence-scored, but production ingest still records a durable proposal for explicit operator acceptance.
+
+```csharp
+public sealed record CorporateActionIngestRequest(IReadOnlyList<string>? Symbols = null, bool DryRun = false, int MinimumSourcesToApply = 2, string? Actor = null, string? CorrelationId = null);
+```
+
 ## CorporateActionIngestResult
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestResult</code>. Kind: `record`.
@@ -438,7 +450,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.FieldAlreadyStagedException</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2142](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2142).
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2162](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2162).
 
 A field edit was refused because another open revision already stages the same field (review P5/D1). Mapped to HTTP 409 with the first stager&#x27;s identity.
 
@@ -450,12 +462,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FieldAlreadyStagedException(Guid securityId, string fieldPath, Guid revisionId, string stagedBy, SecurityMasterRevisionStateDto state) : base($&quot;Field &#x27;{fieldPath}&#x27; of security &#x27;{securityId:D}&#x27; is already staged by {stagedBy} in revision &#x27;{revisionId:D}&#x27; ({state}). &quot; + &quot;Publish or discard that revision before staging the field again.&quot;);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2144](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2144) |  |
-| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2155](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2155) |  |
-| <code>public string FieldPath { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2157](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2157) |  |
-| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2159](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2159) |  |
-| <code>public string StagedBy { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2161](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2161) |  |
-| <code>public SecurityMasterRevisionStateDto State { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2163](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2163) |  |
+| <code>public FieldAlreadyStagedException(Guid securityId, string fieldPath, Guid revisionId, string stagedBy, SecurityMasterRevisionStateDto state) : base($&quot;Field &#x27;{fieldPath}&#x27; of security &#x27;{securityId:D}&#x27; is already staged by {stagedBy} in revision &#x27;{revisionId:D}&#x27; ({state}). &quot; + &quot;Publish or discard that revision before staging the field again.&quot;);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2164](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2164) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2175](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2175) |  |
+| <code>public string FieldPath { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2177](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2177) |  |
+| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2179](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2179) |  |
+| <code>public string StagedBy { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2181](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2181) |  |
+| <code>public SecurityMasterRevisionStateDto State { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2183](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2183) |  |
 
 ## FileSecurityCashFlowReceiptStore
 
@@ -955,27 +967,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>int Order { get; }</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionPublishedHandler.cs:14](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionPublishedHandler.cs#L14) | Lower runs first; the period-aware restatement handler runs last. |
 | <code>Task HandleAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionPublishedHandler.cs:16](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionPublishedHandler.cs#L16) |  |
-
-## ISecurityMasterRevisionStore
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterRevisionStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:12](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L12).
-
-Durable lifecycle state for a governed Security Master passport revision (SecurityMasterRevisionStateDto: Draft → Submitted → Approved → Published / Rejected). The store is the authority a publish consults to confirm a revision was actually approved through the governed gate, so an arbitrary revision id can never trigger downstream publish side effects.
-
-```csharp
-public interface ISecurityMasterRevisionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:15](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L15) | Creates a new SecurityMasterRevisionStateDto.Draft revision for a security. |
-| <code>Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId = null, SecurityMasterRevisionFieldValue? fieldValue = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:23](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L23) | Creates a Draft revision carrying the field-edit metadata (path, effective date, justification, and the optional fund-profile scope) so a later publish can emit the correct effective-from and changed-field set, and resolve the scoped downstream impact, for period-aware / restatement analysis instead of defaulting to publish time and an unscoped (empty) impact. |
-| <code>Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId, SecurityMasterRevisionFieldValue? fieldValue, SecurityMasterRevisionFieldBase fieldBase, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:38](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L38) | Creates a field-edit Draft that also records the canonical state the proposal was drafted against (fieldBase), so publish can refuse it if that field changed since. Stores that do not persist the base fall back to the overload without it. |
-| <code>Task&lt;SecurityMasterRevisionRecord?&gt; GetAsync(Guid revisionId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:51](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L51) | Returns the revision, or null when no revision with that id exists. |
-| <code>Task&lt;IReadOnlyList&lt;SecurityMasterRevisionRecord&gt;&gt; ListBySecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:58](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L58) | All revisions recorded for one security, in no guaranteed order. Used by the approval seam to decide whether a security-level override decision would co-approve values staged by OTHER, not-yet-approved revisions. |
-| <code>Task&lt;IReadOnlyList&lt;SecurityMasterRevisionRecord&gt;&gt; ListByStatesAsync(IReadOnlyCollection&lt;SecurityMasterRevisionStateDto&gt; states, int limit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:65](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L65) | Revisions in any of states across ALL securities, oldest first, at most limit. Feeds the review inbox (review P5/D1): a reviewer other than the drafter must be able to find a colleague&#x27;s submitted draft. |
-| <code>Task&lt;SecurityMasterRevisionRecord&gt; TransitionAsync(Guid revisionId, SecurityMasterRevisionStateDto expected, SecurityMasterRevisionStateDto next, string actor, Guid? workflowIdForSubmit = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:77](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L77) | Atomically transitions a revision from expected to next. Throws SecurityMasterRevisionStateException when the revision is missing or its current state is not expected (a concurrent or out-of-order transition). When workflowIdForSubmit is supplied on a Draft→Submitted transition, it is durably bound to the revision so approval can be restricted to that same workflow lane. |

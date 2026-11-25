@@ -597,6 +597,26 @@ Enum declarations:
 | <code>StreamingTemplate = 7</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:16](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L16) |  |
 | <code>CertifiedTradingAdapter = 8</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:17](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L17) |  |
 
+## IProviderIntegrationActorFlagStore
+
+Qualified name: <code>Meridian.Contracts.Integrations.IProviderIntegrationActorFlagStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:68](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L68).
+
+Append-only actor flags. Implementations never change or remove a flag, and never touch the flagged record itself.
+
+```csharp
+public interface IProviderIntegrationActorFlagStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;ProviderIntegrationStoredActorValue&gt;&gt; ScanStoredActorValuesAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:71](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L71) | Every actor field persisted in this store, read without modifying anything. |
+| <code>Task&lt;bool&gt; TryAppendActorFlagAsync(ProviderIntegrationActorFlagDto flag, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:74](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L74) | Appends flag; false when a flag with the same id already exists. |
+| <code>Task&lt;IReadOnlyList&lt;ProviderIntegrationActorFlagDto&gt;&gt; ListActorFlagsAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:76](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L76) |  |
+
 ## IProviderIntegrationIdentityDecisionStore
 
 Qualified name: <code>Meridian.Contracts.Integrations.IProviderIntegrationIdentityDecisionStore</code>. Kind: `interface`.
@@ -678,14 +698,4 @@ Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:678
 
 ```csharp
 public sealed record ManualCsvProviderIntegrationDryRunRequestDto(string SyncRunId, string ManifestId, string ConnectionId, ProviderCapabilityKindDto Capability, string FileName, string CsvContent, string RequestedBy, DateTimeOffset RequestedAt);
-```
-
-## ProviderCapabilityDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderCapabilityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:165](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L165).
-
-```csharp
-public sealed record ProviderCapabilityDto(ProviderCapabilityKindDto Capability, bool Enabled, bool RequiresCertifiedAdapter, IReadOnlyList<string> RequiredCanonicalFields);
 ```

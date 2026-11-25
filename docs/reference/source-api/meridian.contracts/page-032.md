@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderCapabilityDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderCapabilityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:165](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L165).
+
+```csharp
+public sealed record ProviderCapabilityDto(ProviderCapabilityKindDto Capability, bool Enabled, bool RequiresCertifiedAdapter, IReadOnlyList<string> RequiredCanonicalFields);
+```
+
 ## ProviderCapabilityKindDto
 
 Qualified name: <code>Meridian.Contracts.Integrations.ProviderCapabilityKindDto</code>. Kind: `enum`.
@@ -133,6 +143,68 @@ Enum declarations:
 | <code>Failed = 6</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:51](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L51) |  |
 | <code>Retired = 7</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:52](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L52) |  |
 
+## ProviderIntegrationActorFlagDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationActorFlagDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:25](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L25).
+
+An append-only marker that a stored provider-integration actor field does not name a person. Until PR rodoHasArrived/Meridian-main#3754 the provider-integration routes stored the actor the client sent, and the browser sent the session&#x27;s desk label or a Settings placeholder. Those records are never rewritten (nothing recorded who acted, and approvedBy is part of each manifest version&#x27;s content digest); this flag sits beside them instead.
+
+```csharp
+public sealed record ProviderIntegrationActorFlagDto(string FlagId, string RecordPath, string RecordKind, string? SubjectId, string FieldPath, string RecordedValue, string Reason, string? RecordedAt, string FlaggedBy, DateTimeOffset FlaggedAt)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string ComputeFlagId(string recordPath, string fieldPath, string recordedValue);</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:37](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L37) |  |
+
+## ProviderIntegrationActorFlagScanRequestDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationActorFlagScanRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:55](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L55).
+
+Optional scan input: extra session display names to treat as desk labels.
+
+```csharp
+public sealed record ProviderIntegrationActorFlagScanRequestDto(IReadOnlyList<string>? ExtraLabels = null);
+```
+
+## ProviderIntegrationActorFlagScanResultDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationActorFlagScanResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:58](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L58).
+
+Result of scanning a tenant&#x27;s integration store and appending flags.
+
+```csharp
+public sealed record ProviderIntegrationActorFlagScanResultDto(int ActorFieldsScanned, int FlagsAppended, int AlreadyFlagged, IReadOnlyList<ProviderIntegrationActorFlagDto> Flags);
+```
+
+## ProviderIntegrationActorLabelClassifier
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationActorLabelClassifier</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:83](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L83).
+
+Decides whether a stored actor value names a person. Mirrors build/scripts/audit_provider_integration_actors.py; keep the two in sync.
+
+```csharp
+public static class ProviderIntegrationActorLabelClassifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly IReadOnlySet&lt;string&gt; ActorFields = new HashSet&lt;string&gt;(StringComparer.Ordinal) { &quot;approvedBy&quot;, &quot;checkedBy&quot;, &quot;createdBy&quot;, &quot;importedBy&quot;, &quot;ownerUserId&quot;, &quot;requestedBy&quot;, &quot;reviewedBy&quot;, &quot;savedBy&quot; };</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:86](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L86) | The actor fields the provider-integration contracts persist. |
+| <code>public static readonly IReadOnlyList&lt;string&gt; TimestampFields = [&quot;approvedAt&quot;, &quot;savedAt&quot;, &quot;importedAt&quot;, &quot;requestedAt&quot;, &quot;checkedAt&quot;, &quot;reviewedAt&quot;, &quot;createdAt&quot;, &quot;updatedAt&quot;, &quot;startedAt&quot;, &quot;completedAt&quot;];</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:92](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L92) | Sibling fields that say when the flagged action happened. |
+| <code>public static string? Classify(string? value, IReadOnlyCollection&lt;string&gt;? extraLabels = null);</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:99](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L99) | Why value does not name a person, or null when it looks like a real principal. |
+
 ## ProviderIntegrationAuthConfigDto
 
 Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationAuthConfigDto</code>. Kind: `record`.
@@ -180,7 +252,7 @@ public sealed record ProviderIntegrationConnectionMonitorDto(string ConnectionId
 
 Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationContractsJsonContext</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContractsJsonContext.cs:119](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContractsJsonContext.cs#L119).
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContractsJsonContext.cs:123](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContractsJsonContext.cs#L123).
 
 Provides source-generated JSON metadata for provider integration configuration, ingestion, and review contracts.
 
@@ -644,54 +716,4 @@ Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:661
 
 ```csharp
 public sealed record ProviderIntegrationRunDueSyncItemResultDto(ProviderCapabilityKindDto Capability, string? EndpointKey, bool Started, bool Skipped, string Reason, string? SyncRunId, ProviderIntegrationDryRunResultDto? DryRunResult, IReadOnlyList<ValidationIssueDto> Issues);
-```
-
-## ProviderIntegrationRunDueSyncRequestDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationRunDueSyncRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:653](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L653).
-
-```csharp
-public sealed record ProviderIntegrationRunDueSyncRequestDto(string ConnectionId, DateTimeOffset RequestedAt, string RequestedBy, int MaxPages, IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> PathParametersByCapability, IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> QueryParametersByCapability);
-```
-
-## ProviderIntegrationRunDueSyncResultDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationRunDueSyncResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:671](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L671).
-
-```csharp
-public sealed record ProviderIntegrationRunDueSyncResultDto(string ConnectionId, DateTimeOffset RequestedAt, int StartedCount, int SkippedCount, IReadOnlyList<ProviderIntegrationRunDueSyncItemResultDto> Items);
-```
-
-## ProviderIntegrationSchemaDriftCheckRequestDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationSchemaDriftCheckRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:736](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L736).
-
-```csharp
-public sealed record ProviderIntegrationSchemaDriftCheckRequestDto(string ManifestId, string ConnectionId, ProviderCapabilityKindDto Capability, string EndpointKey, string SyncRunId, string RawPayloadId, string CheckedBy, DateTimeOffset CheckedAt);
-```
-
-## ProviderIntegrationSchemaDriftCheckResultDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationSchemaDriftCheckResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:746](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L746).
-
-```csharp
-public sealed record ProviderIntegrationSchemaDriftCheckResultDto(string ManifestId, string ConnectionId, ProviderCapabilityKindDto Capability, string EndpointKey, string SyncRunId, string RawPayloadId, bool DriftDetected, bool ShouldPauseCapability, int RecordsInspected, IReadOnlyList<ProviderIntegrationSchemaDriftIssueDto> Issues);
-```
-
-## ProviderIntegrationSchemaDriftIssueDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationSchemaDriftIssueDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:727](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L727).
-
-```csharp
-public sealed record ProviderIntegrationSchemaDriftIssueDto(string Code, ProviderIntegrationIssueSeverityDto Severity, ProviderCapabilityKindDto Capability, string EndpointKey, string JsonPath, string Message, string SuggestedFix);
 ```

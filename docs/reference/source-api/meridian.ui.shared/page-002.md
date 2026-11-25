@@ -647,18 +647,6 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:22
 public sealed record AssignAccountCashCaseRequest(int ExpectedVersion, string Owner, string Reason);
 ```
 
-## AssignSecurityMasterExceptionCaseRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.AssignSecurityMasterExceptionCaseRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs#L20).
-
-Body assigning an exception case.
-
-```csharp
-public sealed record AssignSecurityMasterExceptionCaseRequest(string Assignee);
-```
-
 ## AuthEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.AuthEndpoints</code>. Kind: `class`.
@@ -784,3 +772,21 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapBondDiscoveryEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs#L19) |  |
+
+## BondMigrationEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.BondMigrationEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs#L14).
+
+Reviewed migration preparation and an administrative live-calculation cutover.
+
+```csharp
+public static class BondMigrationEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapBondMigrationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs#L16) |  |
