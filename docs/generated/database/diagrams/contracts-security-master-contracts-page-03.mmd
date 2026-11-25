@@ -331,6 +331,10 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_InstrumentTypeDescriptorLabelField["InstrumentTypeDescriptorLabelField"] {
     }
+    class Meridian_Contracts_SecurityMaster_Iso4217Currencies["Iso4217Currencies"] {
+        +FrozenSet~string~ Codes
+        +FrozenSet~string~ MarketExtensions
+    }
     class Meridian_Contracts_SecurityMaster_IssueOtcMarginCallRequest["IssueOtcMarginCallRequest"] {
         +DateOnly? DueOn
         +DateOnly IssuedOn
@@ -405,15 +409,6 @@ classDiagram
         +string? ReasonCode
         +IReadOnlyList~string~? RemoveKeys
         +IReadOnlyDictionary~string__string~? SetValues
-    }
-    class Meridian_Contracts_SecurityMaster_OtcAuctionSettlementData["OtcAuctionSettlementData"] {
-        +DateOnly AuctionDate
-        +string AuctionReference
-        +Guid CreditEventId
-        +string Currency
-        +decimal FinalPricePercent
-        +decimal SettlementAmount
-        +int SettlementScale
     }
     Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusalCode
     Meridian_Contracts_SecurityMaster_DeclaredScheduleResolution --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal

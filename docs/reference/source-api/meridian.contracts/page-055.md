@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityForwardCurveJsonContext
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:118](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L118).
+
+Supplies forward curves for floating-rate cash-flow projection. Hosts without one keep the flat-forward projection (last fixing plus spread). The stored implementation is StoredSecurityForwardCurveProvider in Application, reading ISecurityCurveStore.
+
+```csharp
+public sealed partial class SecurityForwardCurveJsonContext : JsonSerializerContext;
+```
+
 ## SecurityForwardCurvePoint
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityForwardCurvePoint</code>. Kind: `record`.
@@ -832,15 +844,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public int? UntaggedTermsPayloadCount { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L52) | How many stored securities rows — active and inactive — carry asset-specific terms with no declared termsFormat tag: the ADR-024 decision-5 retirement gate (select count(*) from securities where asset_specific_terms-&gt;&gt;&#x27;termsFormat&#x27; is null), measured per deployment so the shape rule&#x27;s remaining backlog is evidence instead of a guess. The tag drains organically: every write stamps it, so the count only falls. Null on reports persisted before the gauge existed. (One deliberate strictness over the SQL: a non-string tag also counts as untagged here; validation separately rejects it.) |
-
-## SecurityMasterReportingReference
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterReportingReference</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs#L41).
-
-Frozen reference-data input used by reporting. Event coordinates are populated when the reference was rebuilt from the Security Master event stream.
-
-```csharp
-public sealed record SecurityMasterReportingReference(SecurityDetailDto Detail, SecurityEconomicDefinitionRecord? EconomicDefinition, DateTimeOffset AsOfUtc, SecurityMasterReportingResolutionMode ResolutionMode, long? EventGlobalSequence = null, long? EventStreamVersion = null, DateTimeOffset? EventTimestamp = null);
-```

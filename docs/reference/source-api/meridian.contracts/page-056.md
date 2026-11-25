@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterReportingReference
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterReportingReference</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs#L41).
+
+Frozen reference-data input used by reporting. Event coordinates are populated when the reference was rebuilt from the Security Master event stream.
+
+```csharp
+public sealed record SecurityMasterReportingReference(SecurityDetailDto Detail, SecurityEconomicDefinitionRecord? EconomicDefinition, DateTimeOffset AsOfUtc, SecurityMasterReportingResolutionMode ResolutionMode, long? EventGlobalSequence = null, long? EventStreamVersion = null, DateTimeOffset? EventTimestamp = null);
+```
+
 ## SecurityMasterReportingResolutionMode
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterReportingResolutionMode</code>. Kind: `enum`.
@@ -303,9 +315,9 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityQuoteConvention</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs#L15).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs#L16).
 
-How a raw unit quote scales into money for a class&#x27;s lots: the declared catalog fact behind the pricing conversion, instead of an inference from the lot unit at each call site. The vocabulary is deliberately minimal pending the domain-owner ruling recorded in remediation slice 8: PercentOfPar for face-value paper quoted as a percentage of par (a 99.5 quote on 1,000,000 face is 995,000), and PerUnit for everything quoted in money per economic unit. A class that quotes differently (yield-quoted bills, per-point contracts) extends this vocabulary through that decision, not through magnitude or class-name inference.
+How a raw unit quote scales into money for a class&#x27;s lots: the declared catalog fact behind the pricing conversion, instead of an inference from the lot unit at each call site. The vocabulary is deliberately minimal pending the domain-owner ruling recorded in remediation slice 8: PercentOfPar for face-value paper quoted as a percentage of par (a 99.5 quote on 1,000,000 face is 995,000), PerUnit for everything quoted in money per economic unit, and Balance for cash-like positions that are not quoted at all (Deposit and Repo, decided 2026-11-25). A class that quotes differently (yield-quoted bills, per-point contracts) extends this vocabulary through that decision, not through magnitude or class-name inference.
 
 ```csharp
 public enum SecurityQuoteConvention
@@ -315,8 +327,9 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>PerUnit</code> | [src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs#L18) | The quote is money per economic unit (share, contract-adjusted unit, currency unit). |
-| <code>PercentOfPar</code> | [src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs#L21) | The quote is a percentage of par; monetary value divides the quote by 100. |
+| <code>PerUnit</code> | [src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs#L19) | The quote is money per economic unit (share, contract-adjusted unit, currency unit). |
+| <code>PercentOfPar</code> | [src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs#L22) | The quote is a percentage of par; monetary value divides the quote by 100. |
+| <code>Balance</code> | [src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQuoteConvention.cs#L29) | The position is not quoted: it is valued at its outstanding balance (its economic units, in the position currency) plus accrued interest, which is carried by the accrual path rather than by a price. A supplied quote does not scale the value. |
 
 ## SecurityQuoteStatus
 
@@ -939,26 +952,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public SecurityTermsFormatUndeclaredException(JsonValueKind payloadKind) : base(payloadKind == JsonValueKind.Object? $&quot;Asset-specific terms declare no {SecurityTermsEnvelope.FormatKey}; this node no longer infers the payload &quot; + $&quot;family by shape. Declare {SecurityTermsEnvelope.FormatKey} as &#x27;{SecurityTermsFormats.Flat}&#x27; or &#x27;{SecurityTermsFormats.CustomProfile}&#x27; &quot; + $&quot;(&#x27;{SecurityTermsFormats.Economic}&#x27; is not accepted on writes) &quot; + &quot;(writers stamp it through SecurityTermsEnvelope.StampDeclaredFormat or StampFlat), or run migration 068 on stored rows.&quot; : $&quot;Asset-specific terms are a JSON {payloadKind}, not an object, so they cannot declare {SecurityTermsEnvelope.FormatKey}.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsEnvelope.cs:775](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsEnvelope.cs#L775) | Creates the refusal for a payload of the given JSON kind. |
 | <code>public JsonValueKind PayloadKind { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsEnvelope.cs:788](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsEnvelope.cs#L788) | The JSON kind of the refused payload. |
-
-## SecurityTermsLegacyEventClassifier
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermsLegacyEventClassifier</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L29).
-
-The frozen classifier for asset-specific terms carried by Security Master event history written before SecurityTermsEnvelope.FormatKey existed (ADR-024 decision 5, amendment 2026-11-13 steps 5 and 6). Live code dispatches on the declared tag alone: SecurityTermsEnvelope.ResolveFormat and SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument refuse an untagged payload with a precise error. Migration 068 declared the family on every current-state row and its ck_securities_terms_format_declared constraint refuses new untagged rows, but security_events is append-only (migration 059) and retained snapshots keep their pre-tag bytes, so event and snapshot decoding still meets untagged retained terms. Only that decoding — SecurityMasterMapping.FromEconomicPayload and the rebuild paths fed by it — classifies them here, and only in memory: nothing is ever written back to an event. The rule is frozen with the population it classifies and must never grow: a profile envelope (a string customProfileId and a profileFields object) is SecurityTermsFormats.CustomProfile; an object stamped ReservedForEconomicTerms that carries one of the ShapeRuleModules keys is SecurityTermsFormats.Economic; anything else is SecurityTermsFormats.Flat. Migration 042&#x27;s SQL backfill and migration 068&#x27;s refusal step mirror it; the parity test in SecurityTermsVersioningTests pins the SQL to ShapeRuleModules.
-
-```csharp
-public static class SecurityTermsLegacyEventClassifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int ReservedForEconomicTerms = 2;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:40](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L40) | The schemaVersion an untagged pre-tag economic-terms document carries, and therefore the one integer the historical shape rule consults. Before the tag existed, the asset-specific-terms slot held two payload families behind one schemaVersion key, so flat version 2 was reserved: declaring it would have routed untagged flat documents into the economic bridge. Live acceptance no longer reserves it (a tagged flat version-2 payload reads as flat and is judged by AssetSpecificTermsSchema.IsAccepted like any other flat version); the reservation survives only here, frozen with the untagged history it classifies. |
-| <code>public static IReadOnlyList&lt;string&gt; ShapeRuleModules { get; } = [&quot;maturity&quot;, &quot;coupon&quot;, &quot;payment&quot;, &quot;accrual&quot;, &quot;discount&quot;, &quot;redemption&quot;, &quot;call&quot;, &quot;auction&quot;, &quot;sweep&quot;, &quot;financing&quot;, &quot;issuer&quot;, &quot;equityBehavior&quot;, &quot;fund&quot;, &quot;structuredProduct&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L49) | The module keys the historical shape rule consults: exactly the modules the economic serializer wrote before SecurityTermsEnvelope.FormatKey existed. Untagged payloads predate the tag, so only these keys can mark one as economic; modules serialized later (ADR-027 stage 1 increment 5) never appear untagged and are deliberately not consulted. This list never grows — migration 042&#x27;s SQL mirror of it is pinned to it. |
-| <code>public static bool IsEconomicTermsShape(JsonElement payload);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L59) | The historical shape rule for an untagged payload: an object stamped ReservedForEconomicTerms that carries at least one of the ShapeRuleModules keys. The economic serializer always wrote them and a flat document never did, so the module keys, not the integer, told the two families apart. |
-| <code>public static string Classify(JsonElement payload);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:83](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L83) | The family of retained terms from event history: the declared SecurityTermsEnvelope.FormatKey when present (a tagged document never depends on its shape), otherwise the frozen shape rule. A non-object is SecurityTermsFormats.Flat. |
-| <code>public static string? GetStampableFormat(JsonElement payload);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:105](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L105) | The family replay declares on untagged retained terms: Classify&#x27;s verdict when it is SecurityTermsFormats.Flat or SecurityTermsFormats.CustomProfile. null for a payload that already declares a family, a non-object, or an untagged economic-shaped document (the asset-specific-terms slot never declares SecurityTermsFormats.Economic). |
-| <code>public static JsonElement StampDeclaredFormat(JsonElement payload) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:123](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L123) | Declares SecurityTermsEnvelope.FormatKey on untagged retained terms decoded from an event or snapshot, in memory, as GetStampableFormat classifies them. Only the key is added (after schemaVersion, or last); every other member is copied byte for byte. A payload that already declares a family, a non-object and an untagged economic-shaped document are returned unchanged, so the stamp is idempotent. |

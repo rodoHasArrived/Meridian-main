@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PreferredEquityTermsDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:200](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L200).
+
+Preferred-equity-specific terms returned by the preferred-terms query.
+
+```csharp
+public sealed record PreferredEquityTermsDto(Guid SecurityId, string? Classification, decimal? DividendRate, string? DividendType, bool? IsCumulative, decimal? RedemptionPrice, DateOnly? RedemptionDate, DateOnly? CallableDate, bool? ParticipatesInCommonDividends, decimal? AdditionalDividendThreshold, string? LiquidationPreferenceKind, decimal? LiquidationPreferenceMultiple, long Version);
+```
+
 ## PricingHierarchyEntryDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.PricingHierarchyEntryDto</code>. Kind: `record`.
@@ -892,7 +904,7 @@ public static partial class ScheduleTermsWriteRules
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAccountingDisposition</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1528](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1528).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1539](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1539).
 
 Whether, and how, an asset class takes part in the Security Master accounting slice.
 
@@ -904,25 +916,6 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Undeclared</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1531](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1531) | No disposition is declared: a missing mapping, not a decision. |
-| <code>InSlice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1534](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1534) | The class posts as its declared SecurityAssetClassDescriptor.AccountingInstrumentClass. |
-| <code>OutsideSlice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1537](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1537) | The class is intentionally outside the slice and must not reach any posting by fallback. |
-
-## SecurityAccountingInstrumentClasses
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1552](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1552).
-
-The closed vocabulary of accounting-slice instrument classes a Security Master record can post as. These are the values the Security Master accounting event slice gates on; keeping them here stops producers and that gate drifting on spelling.
-
-```csharp
-public static class SecurityAccountingInstrumentClasses
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Bond = &quot;Bond&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1555](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1555) | Coupon-bearing and discount fixed income booked against par. |
-| <code>public const string AssetBackedSecurity = &quot;AssetBackedSecurity&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1558](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1558) | Securitized credit tranches whose principal amortizes by pool factor (ADR-022). |
+| <code>Undeclared</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1542](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1542) | No disposition is declared: a missing mapping, not a decision. |
+| <code>InSlice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1545](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1545) | The class posts as its declared SecurityAssetClassDescriptor.AccountingInstrumentClass. |
+| <code>OutsideSlice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1548](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1548) | The class is intentionally outside the slice and must not reach any posting by fallback. |

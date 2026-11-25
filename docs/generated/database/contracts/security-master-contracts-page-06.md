@@ -2,11 +2,14 @@
 
 # `security-master-contracts` data objects - page 6 of 8
 
-Objects 401-480 of 607. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 608. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRoles["SecurityCashFlowTermRoles"] {
+        +IReadOnlyDictionary~SecurityCashFlowTermRole__IReadOnlyList~string~~ SharedSpellings
+    }
     class Meridian_Contracts_SecurityMaster_SecurityClassCodecBinding["SecurityClassCodecBinding"] {
         +string AssetClass
         +SecurityCodecInputs Inputs
@@ -438,8 +441,6 @@ classDiagram
         +IReadOnlyList~RestatementCandidateDto~ Candidates
         +string EvaluationStatus
         +bool RestatementRequired
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterEnumReads["SecurityMasterEnumReads"] {
     }
     Meridian_Contracts_SecurityMaster_SecurityClassCodecBinding --> Meridian_Contracts_SecurityMaster_SecurityCodecInputs
     Meridian_Contracts_SecurityMaster_SecurityClassificationDriftReportDto --> Meridian_Contracts_SecurityMaster_SecurityClassificationDriftEntryDto

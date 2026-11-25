@@ -115,6 +115,16 @@ increasing. Leg currency and leg type were already required by the schema. The r
 commitment ≥ funded and schedule total ≤ principal checks are not possible: the DirectLoan schema has
 none of those fields. The write golden now records the two leg-convention warnings on its Swap fixture.
 
+**2026-11-25 (review Priority 1, step 3):** precision and currency cleanup.
+- `SM_CURRENCY_NOT_ISO4217` (Warning) reports record, pair, settlement, NAV and swap-leg currency
+  codes that are not ISO 4217 or an accepted market code (CNH, GBX); crypto pair tickers are skipped
+  through the catalog fact `PairCurrenciesAreAssetTickers`.
+- Migration 070 widens the OTC `numeric(28,10)` columns to unconstrained `numeric`, as 058 did for
+  the schedule projections. Ordinal 069 is left to open PR #3603, which must merge first or
+  renumber. Its `alter-column-type` waiver is proposed and awaits owner review. Other bounded
+  Security Master columns (for example the `numeric(12,6)` rate projections) are not changed.
+- Prepayment survival is decimal (`survival-cpr-smm-psa-v2`); v1 runs replay unchanged.
+
 ## Slice 5 — Audit evidence contracts before storage/serialization changes
 
 **Evidence:** D7. Classify each mutable row (cash-flow source, entitlement, field provenance and
@@ -215,6 +225,14 @@ descriptor declares `QuoteConvention` (defaulting from the lot unit so no price 
 Open from this slice: moving class-aware pricing callers onto the convention overload when a
 class first declares a non-default convention, and the quote-convention vocabulary decision
 above.
+
+**2026-11-25:** the owner chose a `Balance` convention for Deposit and Repo: valued at outstanding
+balance plus accrued interest, never from a quote. `LotQuantity.ValueAtPrice(price, Balance)`
+returns the balance, both classes declare it, and the asset-position market-value service blocks
+them (`BalanceValuationUnavailable`) until a balance adapter exists. The class-aware callers that
+exist today (fixed-income accrual, the amortization bridge, the structured-note template) never
+receive Deposit or Repo; the unit-kind overload used by backtesting lots still prices any
+face-value lot as a percent of par.
 
 ## Slice 9 — Measure the ADR-024 retirement gate; drain through stamped writes (2026-11-09)
 

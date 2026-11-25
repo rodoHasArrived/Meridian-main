@@ -5902,6 +5902,7 @@ Meridian-main
 │   │   │   ├── ContractualCashFlowJsonContext.cs
 │   │   │   ├── ContractualCashFlowRunComparer.cs
 │   │   │   ├── ContractualCashFlowSubjectKinds.cs
+│   │   │   ├── DecimalMath.cs
 │   │   │   └── SecurityContractualCashFlowTerms.cs
 │   │   ├── Catalog
 │   │   │   ├── DirectoryIndex.cs
@@ -6254,6 +6255,7 @@ Meridian-main
 │   │   │   ├── ISecurityMasterService.cs
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── ISecurityTradingParametersQueryService.cs
+│   │   │   ├── Iso4217Currencies.cs
 │   │   │   ├── IStructuredCashFlowProvider.cs
 │   │   │   ├── LotQuantity.cs
 │   │   │   ├── NotionalLot.cs
@@ -8713,7 +8715,8 @@ Meridian-main
 │   │   │   │   ├── 065_security_price_quotation_evidence.sql
 │   │   │   │   ├── 066_corporate_action_cash_dividend_attestations.sql
 │   │   │   │   ├── 067_security_curve_rate_policy.sql
-│   │   │   │   └── 068_security_master_terms_format_backfill.sql
+│   │   │   │   ├── 068_security_master_terms_format_backfill.sql
+│   │   │   │   └── 070_otc_decimal_precision.sql
 │   │   │   ├── CorporateActionCashDividendPostingLease.cs
 │   │   │   ├── CorporateActionInboxExportSource.cs
 │   │   │   ├── FileBondMarketDataStore.cs
@@ -13013,6 +13016,7 @@ Meridian-main
 │   │   ├── ContractualCashFlowRunComparerTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Contracts.UnitTests.csproj
+│   │   ├── PrepaymentArithmeticV2Tests.cs
 │   │   └── README.md
 │   ├── Meridian.Core.UnitTests
 │   │   ├── Contracts
@@ -14616,6 +14620,7 @@ Meridian-main
 │   │   │   ├── CorporateActionTaxonomyPropertyTests.cs
 │   │   │   ├── CorporateActionTermsTests.cs
 │   │   │   ├── CorporateActionTypeDescriptorCatalogTests.cs
+│   │   │   ├── CurrencyCodeWarningTests.cs
 │   │   │   ├── CustomAssetProfileFieldProjectionPostgresTests.cs
 │   │   │   ├── CustomAssetProfileFieldProjectionTests.cs
 │   │   │   ├── CustomAssetPromotionReportTests.cs
@@ -14651,6 +14656,7 @@ Meridian-main
 │   │   │   ├── OtcContractsMigrationTests.cs
 │   │   │   ├── OtcContractsPostgresTests.cs
 │   │   │   ├── OtcContractsPostgresTests.Lifecycle.cs
+│   │   │   ├── OtcDecimalPrecisionMigrationTests.cs
 │   │   │   ├── OtcExposureRulesTests.cs
 │   │   │   ├── OtcExposureServiceTests.cs
 │   │   │   ├── PostgresOperatorOverridesStoreTests.cs
