@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -30,6 +31,9 @@ namespace Meridian.Tests.TestHelpers;
 /// provider, so code that reads <c>app.Services</c> inside a handler reaches the same instances.
 /// </para>
 /// <para>
+/// At most 128 graphs are kept; the least recently used one that no test holds is disposed first.
+/// </para>
+/// <para>
 /// Sharing is refused, and the test gets a host of its own exactly as before, when it could change
 /// what a test observes: a test-owned service is resolved while the graph is built (a mapper that
 /// captures an instance), the test replaces framework registrations, or it registers framework
@@ -41,7 +45,11 @@ internal static class SharedEndpointGraph
     private static readonly object RequestStateKey = new();
     private static readonly RequestState ProbeState = new(static _ => { }, TestServices: null);
     private static readonly AsyncLocal<IServiceProvider?> CallingTestServices = new();
-    private static readonly ConcurrentDictionary<string, Lazy<Task<WebApplication?>>> Graphs = new(StringComparer.Ordinal);
+    // A compiled workstation graph retains about 3.6 MB of managed memory, so the bound is worth
+    // roughly 460 MB at most. It is above the 114 graphs the largest class needs: a bound of 32
+    // rebuilt graphs so often that the class ran three times slower.
+    internal const int MaxRetainedGraphs = 128;
+    private static readonly Pool Default = new(MaxRetainedGraphs);
     // Set to "off" to give every test its own host, for example to rule sharing out while
     // investigating a failure that only appears when tests run together.
     private static readonly bool SharingDisabled = string.Equals(
@@ -49,14 +57,6 @@ internal static class SharedEndpointGraph
     // Set to a file path to record why each host was or was not shared.
     private static readonly string? DecisionLogPath = Environment.GetEnvironmentVariable("MERIDIAN_ENDPOINT_GRAPH_LOG");
     private static readonly object DecisionLogGate = new();
-    private static int _graphsBuilt;
-    private static int _sharedHosts;
-    private static int _isolatedHosts;
-
-    /// <summary>Counts since process start: compiled graphs, tests served by one, tests given their own host.</summary>
-    internal static (int GraphsBuilt, int SharedHosts, int IsolatedHosts) Statistics =>
-        (Volatile.Read(ref _graphsBuilt), Volatile.Read(ref _sharedHosts), Volatile.Read(ref _isolatedHosts));
-
     /// <summary>Creates a started host for one test.</summary>
     /// <param name="graphVariant">
     /// Identifies everything <paramref name="configureGraph"/> does that is not derived from the
@@ -67,53 +67,142 @@ internal static class SharedEndpointGraph
     /// <param name="configureRequest">Applies the test's caller identity to each request before the routes run.</param>
     /// <param name="configureGraph">Adds middleware and maps routes. Must not depend on per-test values.</param>
     /// <param name="allowSharing">False gives the test a host of its own.</param>
-    public static async Task<EndpointTestApp> CreateAsync(
+    public static Task<EndpointTestApp> CreateAsync(
         string graphVariant,
         Func<WebApplicationBuilder> createBuilder,
         Action<IServiceCollection> configureServices,
         Action<HttpContext> configureRequest,
         Action<WebApplication> configureGraph,
         bool allowSharing = true)
-    {
-        var builder = createBuilder();
-        builder.WebHost.UseTestServer();
-        var frameworkDescriptors = builder.Services.ToArray();
-        configureServices(builder.Services);
+        => Default.CreateAsync(graphVariant, createBuilder, configureServices, configureRequest, configureGraph, allowSharing);
 
-        var declined = "sharing is disabled";
-        var testDescriptors = allowSharing && !SharingDisabled
-            ? ShareableTestDescriptors(builder.Services, frameworkDescriptors, out declined)
-            : null;
-        if (testDescriptors is not null)
+    /// <summary>
+    /// One set of retained graphs. Tests of the sharing rules use their own, so their throwaway
+    /// graphs neither evict nor are served to the endpoint tests running in the same process.
+    /// </summary>
+    internal sealed class Pool(int maxRetainedGraphs)
+    {
+        private readonly Dictionary<string, GraphEntry> _graphs = new(StringComparer.Ordinal);
+        private readonly object _gate = new();
+        private long _useClock;
+
+        /// <inheritdoc cref="SharedEndpointGraph.CreateAsync"/>
+        public async Task<EndpointTestApp> CreateAsync(
+            string graphVariant,
+            Func<WebApplicationBuilder> createBuilder,
+            Action<IServiceCollection> configureServices,
+            Action<HttpContext> configureRequest,
+            Action<WebApplication> configureGraph,
+            bool allowSharing = true)
         {
-            var key = GraphKey(graphVariant, testDescriptors);
-            var graph = await Graphs
-                .GetOrAdd(key, _ => new Lazy<Task<WebApplication?>>(
-                    () => BuildGraphAsync(createBuilder, testDescriptors, configureGraph, graphVariant)))
-                .Value
-                .ConfigureAwait(false);
-            if (graph is not null)
+            var builder = createBuilder();
+            builder.WebHost.UseTestServer();
+            var frameworkDescriptors = builder.Services.ToArray();
+            configureServices(builder.Services);
+
+            var declined = "sharing is disabled";
+            var testDescriptors = allowSharing && !SharingDisabled
+                ? ShareableTestDescriptors(builder.Services, frameworkDescriptors, out declined)
+                : null;
+            if (testDescriptors is not null)
             {
-                // Tests that inspect route metadata read the endpoint list from their own services.
-                // Registered as an instance so disposing the test's host leaves the graph's list alone.
-                builder.Services.AddSingleton(graph.Services.GetRequiredService<EndpointDataSource>());
-                var testHost = builder.Build();
-                await testHost.StartAsync().ConfigureAwait(false);
-                Interlocked.Increment(ref _sharedHosts);
-                LogDecision(graphVariant, "shared");
-                return new EndpointTestApp(testHost, graph, new RequestState(configureRequest, testHost.Services));
+                var key = GraphKey(graphVariant, testDescriptors);
+                var entry = Lease(key, () => BuildGraphAsync(createBuilder, testDescriptors, configureGraph, graphVariant));
+                try
+                {
+                    var graph = await entry.Graph.Value.ConfigureAwait(false);
+                    if (graph is not null)
+                    {
+                        // Tests that inspect route metadata read the endpoint list from their own services.
+                        // Registered as an instance so disposing the test's host leaves the graph's list alone.
+                        builder.Services.AddSingleton(graph.Services.GetRequiredService<EndpointDataSource>());
+                        var testHost = builder.Build();
+                        await testHost.StartAsync().ConfigureAwait(false);
+                        LogDecision(graphVariant, "shared");
+                        return new EndpointTestApp(
+                            testHost, graph, new RequestState(configureRequest, testHost.Services), entry);
+                    }
+                }
+                catch
+                {
+                    await ReleaseAsync(entry).ConfigureAwait(false);
+                    throw;
+                }
+
+                await ReleaseAsync(entry).ConfigureAwait(false);
+                declined = "the graph for these service types cannot be shared";
             }
 
-            declined = "the graph for these service types cannot be shared";
+            LogDecision(graphVariant, $"isolated: {declined}");
+            var isolated = builder.Build();
+            AddRequestStateMiddleware(isolated);
+            configureGraph(isolated);
+            await isolated.StartAsync().ConfigureAwait(false);
+            return new EndpointTestApp(isolated, isolated, new RequestState(configureRequest, TestServices: null), lease: null);
         }
 
-        LogDecision(graphVariant, $"isolated: {declined}");
-        var isolated = builder.Build();
-        AddRequestStateMiddleware(isolated);
-        configureGraph(isolated);
-        await isolated.StartAsync().ConfigureAwait(false);
-        Interlocked.Increment(ref _isolatedHosts);
-        return new EndpointTestApp(isolated, isolated, new RequestState(configureRequest, TestServices: null));
+        private GraphEntry Lease(string key, Func<Task<WebApplication?>> build)
+        {
+            lock (_gate)
+            {
+                if (!_graphs.TryGetValue(key, out var entry))
+                {
+                    entry = new GraphEntry(this, key, new Lazy<Task<WebApplication?>>(build));
+                    _graphs[key] = entry;
+                }
+
+                entry.Leases++;
+                entry.LastUsed = ++_useClock;
+                return entry;
+            }
+        }
+
+        /// <summary>
+        /// Returns a test's hold on a graph, then disposes the least recently used graphs no test holds
+        /// until the pool is back within its bound. A refusal is kept: it holds no host.
+        /// </summary>
+        internal async ValueTask ReleaseAsync(GraphEntry released)
+        {
+            List<WebApplication>? evicted = null;
+            lock (_gate)
+            {
+                released.Leases--;
+                var retained = _graphs.Values.Where(static entry => entry.Host is not null).ToList();
+                foreach (var entry in retained
+                    .Where(static entry => entry.Leases == 0)
+                    .OrderBy(static entry => entry.LastUsed)
+                    .Take(Math.Max(0, retained.Count - maxRetainedGraphs)))
+                {
+                    _graphs.Remove(entry.Key);
+                    (evicted ??= []).Add(entry.Host!);
+                }
+            }
+
+            if (evicted is not null)
+            {
+                foreach (var host in evicted)
+                {
+                    await host.DisposeAsync().ConfigureAwait(false);
+                }
+            }
+        }
+    }
+
+    internal sealed class GraphEntry(Pool pool, string key, Lazy<Task<WebApplication?>> graph)
+    {
+        public Pool Pool { get; } = pool;
+
+        public string Key { get; } = key;
+
+        public Lazy<Task<WebApplication?>> Graph { get; } = graph;
+
+        public int Leases { get; set; }
+
+        public long LastUsed { get; set; }
+
+        /// <summary>The compiled host once it exists; null while building and for a refusal.</summary>
+        public WebApplication? Host =>
+            Graph.IsValueCreated && Graph.Value.IsCompletedSuccessfully ? Graph.Value.Result : null;
     }
 
     private static async Task<WebApplication?> BuildGraphAsync(
@@ -135,6 +224,7 @@ internal static class SharedEndpointGraph
         {
             var builder = createBuilder();
             builder.WebHost.UseTestServer();
+            ReleaseConfigurationWatchers(builder);
             var resolvedWhileBuilding = new ConcurrentBag<Type>();
             var registrations = testDescriptors
                 .GroupBy(descriptor => descriptor.ServiceType)
@@ -188,9 +278,25 @@ internal static class SharedEndpointGraph
                 return null;
             }
 
-            Interlocked.Increment(ref _graphsBuilt);
             LogDecision(graphVariant, $"graph built for {testDescriptors.Count} test registrations");
             return graph;
+        }
+    }
+
+    /// <summary>
+    /// Stops a graph host watching its settings files for changes.
+    /// </summary>
+    /// <remarks>
+    /// The default builder watches appsettings.json, which holds one inotify instance per host on
+    /// Linux until the host is disposed. Graph hosts outlive the tests that use them, and the default
+    /// limit is 128 instances per user: past it, every later host in the process fails to build.
+    /// The values already loaded stay in place.
+    /// </remarks>
+    private static void ReleaseConfigurationWatchers(WebApplicationBuilder builder)
+    {
+        foreach (var source in ((IConfigurationBuilder)builder.Configuration).Sources.OfType<FileConfigurationSource>())
+        {
+            (source.FileProvider as IDisposable)?.Dispose();
         }
     }
 
@@ -348,9 +454,11 @@ internal static class SharedEndpointGraph
         private readonly WebApplication _testHost;
         private readonly WebApplication _graphHost;
         private readonly RequestState _state;
+        private GraphEntry? _lease;
 
-        internal EndpointTestApp(WebApplication testHost, WebApplication graphHost, RequestState state)
+        internal EndpointTestApp(WebApplication testHost, WebApplication graphHost, RequestState state, GraphEntry? lease)
         {
+            _lease = lease;
             _testHost = testHost;
             _graphHost = graphHost;
             _state = state;
@@ -373,6 +481,13 @@ internal static class SharedEndpointGraph
         }
 
         // The graph host outlives the test; only the test's own host and its services are disposed.
-        public ValueTask DisposeAsync() => _testHost.DisposeAsync();
+        public async ValueTask DisposeAsync()
+        {
+            await _testHost.DisposeAsync().ConfigureAwait(false);
+            if (Interlocked.Exchange(ref _lease, null) is { } lease)
+            {
+                await lease.Pool.ReleaseAsync(lease).ConfigureAwait(false);
+            }
+        }
     }
 }

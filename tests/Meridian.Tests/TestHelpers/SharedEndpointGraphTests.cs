@@ -149,6 +149,55 @@ public sealed class SharedEndpointGraphTests
         replacedFramework.SharesEndpointGraph.Should().BeFalse();
     }
 
+    [Fact]
+    public async Task ManyDistinctGraphs_DoNotExhaustSettingsFileWatchers()
+    {
+        // Linux allows 128 inotify instances per user by default, and a host watching
+        // appsettings.json holds one. Graph hosts outlive their tests, so a class with more
+        // distinct graphs than that made every later host fail to build, in unrelated classes too.
+        var retainsEverything = new SharedEndpointGraph.Pool(maxRetainedGraphs: 200);
+        for (var i = 0; i < 140; i++)
+        {
+            await using var app = await CreateAsync(NewVariant(), new Counter("watchers"), pool: retainsEverything);
+            app.SharesEndpointGraph.Should().BeTrue();
+        }
+
+        await using var afterTheLimit = await CreateAsync(NewVariant(), new Counter("after"), pool: retainsEverything);
+        (await afterTheLimit.GetTestClient().GetStringAsync("/injected")).Should().Be("after:1");
+    }
+
+    [Fact]
+    public async Task RetainedGraphsAreBounded_ButAGraphInUseIsNeverDisposed()
+    {
+        var releasedVariant = NewVariant();
+        var heldVariant = NewVariant();
+        var releasedMapped = 0;
+        var heldMapped = 0;
+        await using (await CreateAsync(releasedVariant, new Counter("released"), onMap: () => releasedMapped++))
+        {
+        }
+
+        await using var held = await CreateAsync(heldVariant, new Counter("held"), onMap: () => heldMapped++);
+
+        // More graphs than the cache retains, each released as soon as it is built.
+        for (var i = 0; i < TestPoolBound + 4; i++)
+        {
+            await using var other = await CreateAsync(NewVariant(), new Counter("other"));
+        }
+
+        await using var releasedAgain = await CreateAsync(releasedVariant, new Counter("again"), onMap: () => releasedMapped++);
+        await using var heldAgain = await CreateAsync(heldVariant, new Counter("shared"), onMap: () => heldMapped++);
+
+        releasedMapped.Should().Be(2, "an idle graph past the bound is disposed and compiled again on demand");
+        heldMapped.Should().Be(1, "a graph a test still holds is never disposed");
+        (await held.GetTestClient().GetStringAsync("/injected")).Should().Be("held:1");
+        (await releasedAgain.GetTestClient().GetStringAsync("/injected")).Should().Be("again:1");
+    }
+
+    // Small enough to exercise eviction cheaply, and separate from the pool the endpoint tests use.
+    private const int TestPoolBound = 4;
+    private static readonly SharedEndpointGraph.Pool TestPool = new(TestPoolBound);
+
     private static string NewVariant() => $"shared-endpoint-graph-tests:{Guid.NewGuid():N}";
 
     private static Task<SharedEndpointGraph.EndpointTestApp> CreateAsync(
@@ -157,8 +206,9 @@ public sealed class SharedEndpointGraphTests
         string actor = "tester",
         bool captureWhileMapping = false,
         Action? onMap = null,
-        Action<IServiceCollection>? configureServices = null)
-        => SharedEndpointGraph.CreateAsync(
+        Action<IServiceCollection>? configureServices = null,
+        SharedEndpointGraph.Pool? pool = null)
+        => (pool ?? TestPool).CreateAsync(
             graphVariant: $"{variant}:capture={captureWhileMapping}",
             createBuilder: static () => WebApplication.CreateBuilder(new WebApplicationOptions
             {
