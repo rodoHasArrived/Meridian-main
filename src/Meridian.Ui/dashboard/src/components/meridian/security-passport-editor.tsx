@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, RefreshCw, Save } from "lucide-react";
+import { AlertTriangle, Info, RefreshCw, Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import {
   approveSecurityMasterRevision as defaultApprove,
   classifyWorkbenchWriteError,
+  proposeHistoricalIdentifierWindow as defaultProposeHistoricalWindow,
   publishSecurityMasterRevision as defaultPublish,
   resolveSourceConflict as defaultResolveConflict,
   submitSecurityMasterRevision as defaultSubmit,
@@ -39,6 +40,11 @@ import {
   validateSchemaFieldValue
 } from "./security-passport-schema-fields.view-model";
 import { Select } from "@/components/ui/select";
+import { HistoricalWindowSection } from "./security-passport-historical-window";
+import {
+  buildHistoricalWindowInput,
+  type HistoricalWindowDraft
+} from "./security-passport-historical-window.view-model";
 
 /** Injectable workbench client so the editor can be unit-tested without the network. */
 export interface SecurityPassportWorkbenchService {
@@ -47,6 +53,8 @@ export interface SecurityPassportWorkbenchService {
   submit: typeof defaultSubmit;
   approve: typeof defaultApprove;
   publish: typeof defaultPublish;
+  /** Stages a governed historical identifier window as a Draft revision. */
+  proposeHistoricalWindow: typeof defaultProposeHistoricalWindow;
   /** Loads the asset-class schema the term picker is built from. */
   getAssetClassDefinition: typeof defaultGetAssetClassDefinition;
 }
@@ -126,6 +134,7 @@ export function SecurityPassportEditor({
       submit: service?.submit ?? defaultSubmit,
       approve: service?.approve ?? defaultApprove,
       publish: service?.publish ?? defaultPublish,
+      proposeHistoricalWindow: service?.proposeHistoricalWindow ?? defaultProposeHistoricalWindow,
       getAssetClassDefinition: service?.getAssetClassDefinition ?? defaultGetAssetClassDefinition
     }),
     [
@@ -134,6 +143,7 @@ export function SecurityPassportEditor({
       service?.submit,
       service?.approve,
       service?.publish,
+      service?.proposeHistoricalWindow,
       service?.getAssetClassDefinition
     ]
   );
@@ -299,6 +309,35 @@ export function SecurityPassportEditor({
     });
   }, [run, client, securityId, revision]);
 
+  const handleProposeHistoricalWindow = useCallback(
+    async (draft: HistoricalWindowDraft): Promise<boolean> => {
+      let created = false;
+      await run(async () => {
+        const result = await client.proposeHistoricalWindow(
+          securityId,
+          buildHistoricalWindowInput(draft, expectedVersion, fundProfileId ?? null)
+        );
+        applyEditResult(result);
+        setBanner({
+          tone: "info",
+          title: "Historical window staged",
+          message: "Submit the draft for approval and name an independent reviewer; it is applied when published."
+        });
+        created = true;
+      });
+      return created;
+    },
+    [run, client, securityId, expectedVersion, fundProfileId, applyEditResult]
+  );
+
+  // The editor tracks one working revision, so a new proposal waits until the current one is
+  // published or discarded rather than silently replacing it.
+  const revisionInProgress =
+    revision?.state === "Draft" || revision?.state === "Submitted" || revision?.state === "Approved";
+  const historicalWindowUnavailableReason = revisionInProgress
+    ? "Publish or discard the current revision before proposing a historical window."
+    : null;
+
   const resolveConflict = useCallback(
     (conflictId: string, chosenWinnerSource: string, reason: string, acknowledgeDeviation: boolean) => {
       void run(async () => {
@@ -354,10 +393,14 @@ export function SecurityPassportEditor({
       <CardContent className="space-y-4">
         {banner ? (
           <div
-            role="alert"
+            role={banner.tone === "info" ? "status" : "alert"}
             className={cn("flex items-start gap-2 rounded-md border px-3 py-2 text-sm", BANNER_CLASS[banner.tone])}
           >
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+            {banner.tone === "info" ? (
+              <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+            ) : (
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+            )}
             <div className="space-y-1">
               <p className="font-medium">{banner.title}</p>
               <p>{banner.message}</p>
@@ -447,6 +490,13 @@ export function SecurityPassportEditor({
             />
           </label>
         </fieldset>
+
+        <HistoricalWindowSection
+          key={`${securityId}:${version}`}
+          isBusy={isBusy}
+          unavailableReason={historicalWindowUnavailableReason}
+          onPropose={handleProposeHistoricalWindow}
+        />
 
         {(revision?.state ?? null) === "Draft" || (revision?.state ?? null) === "Submitted" ? (
           <fieldset className="grid gap-3 sm:grid-cols-2" disabled={isBusy}>

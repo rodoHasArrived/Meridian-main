@@ -3,6 +3,7 @@ import { ApiError } from "@/lib/api-errors";
 import {
   approveSecurityMasterRevision,
   classifyWorkbenchWriteError,
+  proposeHistoricalIdentifierWindow,
   publishSecurityMasterRevision,
   resolveSourceConflict,
   submitSecurityMasterRevision,
@@ -69,6 +70,26 @@ describe("Security Master workbench API client", () => {
     const body = JSON.parse(fetchMock.mock.calls[0][1].body as string);
     expect(body).not.toHaveProperty("actor");
     expect(body.fieldPath).toBe("EconomicDefinition.Coupon");
+  });
+
+  it("posts a historical identifier window to its securityId-scoped route without an actor", async () => {
+    await proposeHistoricalIdentifierWindow(SECURITY_ID, {
+      expectedVersion: 3,
+      kind: "Ticker",
+      value: "FB",
+      validFrom: "2012-05-18T00:00:00Z",
+      validTo: "2022-06-09T00:00:00Z",
+      evidenceReference: "evidence-vault://security-master/meta-ticker-change",
+      justification: "Listed as FB until the 2022 ticker change."
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `/api/security-master/${SECURITY_ID}/workbench/historical-identifier-window`,
+      expect.objectContaining({ method: "POST" })
+    );
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string);
+    expect(body).not.toHaveProperty("actor");
+    expect(body).toMatchObject({ kind: "Ticker", value: "FB", validFrom: "2012-05-18T00:00:00Z" });
   });
 });
 
