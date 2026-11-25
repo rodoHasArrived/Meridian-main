@@ -403,6 +403,13 @@ SUBSYSTEM_SEEDS: dict[str, SubsystemSeed] = {
 
 DOC_CATALOG: list[dict[str, Any]] = [
     {
+        "path": "src/Meridian.Mcp/README.md",
+        "title": "Meridian MCP host and ledger tool routing",
+        "area": "mcp",
+        "whenToConsult": "When choosing an MCP tool, especially which read-only ledger tool answers a run-ledger or posted-books question.",
+        "keywords": ["mcp", "ledger", "trial balance", "journal", "running balance", "completeness"],
+    },
+    {
         "path": "docs/reference/lifecycle-control-plane.md",
         "title": "Installed lifecycle control plane",
         "area": "runtime",
@@ -577,6 +584,14 @@ SYMBOL_CATALOG: list[dict[str, Any]] = [
         "keywords": ["wpf", "shell", "desktop"],
     },
     {
+        "name": "LedgerTools",
+        "kind": "mcp-tools",
+        "path": "src/Meridian.Mcp/Tools/LedgerTools.cs",
+        "project": "Meridian.Mcp",
+        "reason": "Read-only MCP tools for run ledgers (runId) and posted books (periodId); they call the workstation API.",
+        "keywords": ["ledger", "trial balance", "journal", "running balance", "completeness", "mcp"],
+    },
+    {
         "name": "Program",
         "kind": "mcp-entrypoint",
         "path": "src/Meridian.Mcp/Program.cs",
@@ -675,6 +690,21 @@ TASK_ROUTE_SEEDS: list[dict[str, Any]] = [
         "docs": [
             "docs/ai/navigation/README.md",
             "docs/ai/README.md",
+        ],
+        "recommendedSkill": "meridian-repo-navigation",
+        "recommendedAgent": "repo-navigation-agent",
+    },
+    {
+        "id": "ledger-mcp-reads",
+        "title": "Ledger reads over MCP",
+        "description": "Use when answering a question from a strategy run's ledger or the posted accounting books, or when changing the read-only ledger MCP tools.",
+        "keywords": ["ledger", "trial balance", "journal", "running balance", "completeness", "posted", "integrity"],
+        "subsystems": ["mcp-integration", "domain-ledger-fsharp"],
+        "startProjects": ["Meridian.Mcp", "Meridian.Ledger"],
+        "startSymbols": ["LedgerTools"],
+        "docs": [
+            "src/Meridian.Mcp/README.md",
+            "docs/ai/navigation/README.md",
         ],
         "recommendedSkill": "meridian-repo-navigation",
         "recommendedAgent": "repo-navigation-agent",

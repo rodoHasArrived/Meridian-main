@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-25T19:42:06Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-25T19:44:47Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -14,6 +14,7 @@ Use this file when an assistant needs fast orientation before reading subsystem-
 | WPF and workstation workflow issues | `Meridian.Wpf`, `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian` | `docs/engineering/plans/wpf-web-ui-alignment-plan.md`, `docs/ai/ai-known-errors.md` |
 | Storage and WAL investigations | `Meridian.Storage`, `Meridian.Application` | `docs/ai/claude/CLAUDE.storage.md`, `docs/ai/ai-known-errors.md` |
 | MCP tools, prompts, and resources | `Meridian.Mcp` | `docs/ai/navigation/README.md`, `docs/ai/README.md` |
+| Ledger reads over MCP | `Meridian.Mcp`, `Meridian.Ledger` | `src/Meridian.Mcp/README.md`, `docs/ai/navigation/README.md` |
 
 ## Subsystems
 
@@ -85,7 +86,7 @@ MCP hosts, tools, prompts, and resources that expose Meridian capabilities to LL
 - Entrypoints: `src/Meridian.Mcp/Program.cs`, `src/Meridian.Mcp/Prompts`, `src/Meridian.Mcp/Resources`, `src/Meridian.Mcp/Tools`
 - Key contracts: `src/Meridian.Mcp/Program.cs`
 - Common tasks: mcp work, new mcp tool, resource routing
-- Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`
+- Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`, `src/Meridian.Mcp/README.md`
 
 ## Project Index
 
@@ -181,6 +182,7 @@ Every project under `src/` (45) and `tests/` (19). Subsystem routing above cover
 | `IRiskRule` | interface | `Meridian.Risk` | Key contract for pre-trade risk validation work. |
 | `IStrategyLifecycle` | interface | `Meridian.Strategies` | Primary lifecycle abstraction for strategy run work. |
 | `MainWindow` | wpf-shell | `Meridian.Wpf` | Desktop shell entrypoint for WPF workflow and navigation issues. |
+| `LedgerTools` | mcp-tools | `Meridian.Mcp` | Read-only MCP tools for run ledgers (runId) and posted books (periodId); they call the workstation API. |
 | `Program` | mcp-entrypoint | `Meridian.Mcp` | Registration point for MCP tools, resources, and prompts. |
 
 ## Dependency Highlights

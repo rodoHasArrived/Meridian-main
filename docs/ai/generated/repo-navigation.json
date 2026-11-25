@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-25T19:42:06Z",
+  "generatedAt": "2026-11-25T19:44:47Z",
   "generatorVersion": "1.1",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -394,7 +394,8 @@
         "docs/ai/README.md",
         "docs/ai/ai-known-errors.md",
         "docs/ai/claude/CLAUDE.fsharp.md",
-        "docs/ai/navigation/README.md"
+        "docs/ai/navigation/README.md",
+        "src/Meridian.Mcp/README.md"
       ],
       "recommendedStart": "Meridian.Domain",
       "docCoverageHint": "high"
@@ -437,10 +438,11 @@
       "relatedDocs": [
         "docs/ai/README.md",
         "docs/ai/ai-known-errors.md",
-        "docs/ai/navigation/README.md"
+        "docs/ai/navigation/README.md",
+        "src/Meridian.Mcp/README.md"
       ],
       "recommendedStart": "Meridian.Mcp",
-      "docCoverageHint": "medium"
+      "docCoverageHint": "high"
     }
   ],
   "projects": [
@@ -848,7 +850,9 @@
         "Meridian.Core",
         "Meridian.FSharp.Ledger"
       ],
-      "relatedDocs": []
+      "relatedDocs": [
+        "src/Meridian.Mcp/README.md"
+      ]
     },
     {
       "name": "Meridian.LifecycleSupervisor",
@@ -917,7 +921,9 @@
       "projectReferences": [
         "Meridian.Core"
       ],
-      "relatedDocs": []
+      "relatedDocs": [
+        "src/Meridian.Mcp/README.md"
+      ]
     },
     {
       "name": "Meridian.ProviderSdk",
@@ -1340,6 +1346,7 @@
       ],
       "projectReferences": [],
       "relatedDocs": [
+        "src/Meridian.Mcp/README.md",
         "docs/ai/claude/CLAUDE.fsharp.md"
       ]
     },
@@ -2372,6 +2379,20 @@
   ],
   "documents": [
     {
+      "path": "src/Meridian.Mcp/README.md",
+      "title": "Meridian MCP host and ledger tool routing",
+      "area": "mcp",
+      "whenToConsult": "When choosing an MCP tool, especially which read-only ledger tool answers a run-ledger or posted-books question.",
+      "keywords": [
+        "mcp",
+        "ledger",
+        "trial balance",
+        "journal",
+        "running balance",
+        "completeness"
+      ]
+    },
+    {
       "path": "docs/reference/lifecycle-control-plane.md",
       "title": "Installed lifecycle control plane",
       "area": "runtime",
@@ -2651,6 +2672,21 @@
       ]
     },
     {
+      "name": "LedgerTools",
+      "kind": "mcp-tools",
+      "path": "src/Meridian.Mcp/Tools/LedgerTools.cs",
+      "project": "Meridian.Mcp",
+      "reason": "Read-only MCP tools for run ledgers (runId) and posted books (periodId); they call the workstation API.",
+      "keywords": [
+        "ledger",
+        "trial balance",
+        "journal",
+        "running balance",
+        "completeness",
+        "mcp"
+      ]
+    },
+    {
       "name": "Program",
       "kind": "mcp-entrypoint",
       "path": "src/Meridian.Mcp/Program.cs",
@@ -2887,6 +2923,45 @@
       "authoritativeDocs": [
         "docs/ai/navigation/README.md",
         "docs/ai/README.md"
+      ],
+      "recommendedSkill": "meridian-repo-navigation",
+      "recommendedAgent": "repo-navigation-agent"
+    },
+    {
+      "id": "ledger-mcp-reads",
+      "title": "Ledger reads over MCP",
+      "description": "Use when answering a question from a strategy run's ledger or the posted accounting books, or when changing the read-only ledger MCP tools.",
+      "keywords": [
+        "ledger",
+        "trial balance",
+        "journal",
+        "running balance",
+        "completeness",
+        "posted",
+        "integrity"
+      ],
+      "subsystems": [
+        "mcp-integration",
+        "domain-ledger-fsharp"
+      ],
+      "subsystemTitles": [
+        "MCP Integration",
+        "Domain, Ledger, and F#"
+      ],
+      "startProjects": [
+        "Meridian.Mcp",
+        "Meridian.Ledger"
+      ],
+      "startSymbols": [
+        {
+          "name": "LedgerTools",
+          "path": "src/Meridian.Mcp/Tools/LedgerTools.cs",
+          "reason": "Read-only MCP tools for run ledgers (runId) and posted books (periodId); they call the workstation API."
+        }
+      ],
+      "authoritativeDocs": [
+        "src/Meridian.Mcp/README.md",
+        "docs/ai/navigation/README.md"
       ],
       "recommendedSkill": "meridian-repo-navigation",
       "recommendedAgent": "repo-navigation-agent"
