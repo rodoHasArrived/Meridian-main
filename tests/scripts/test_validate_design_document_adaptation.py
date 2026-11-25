@@ -126,6 +126,38 @@ class DesignDocumentAdaptationTests(unittest.TestCase):
         self.context("Research & Analytics")["runtime_projects"] = ["src/Meridian.Research"]
         self.assertTrue(any("Research & Analytics runtime projects" in error for error in self.errors()))
 
+    def test_in_progress_requires_accepted_progress_decision(self) -> None:
+        roadmap = module.load_data(ROOT / module.ROADMAP_REGISTRY)
+        decisions = module.load_data(ROOT / module.DECISION_REGISTRY)
+        item = next(item for item in roadmap["items"] if item["id"] == "W13-OMS-001")
+        item["status"] = "in_progress"
+        item["evidence_posture"] = "in_progress"
+        progress = next(decision for decision in decisions["decisions"] if decision["id"] == module.PROGRESS_DECISION)
+        progress["status"] = "accepted"
+        self.assertFalse(any("W13-OMS-001" in error for error in self.errors(roadmap=roadmap, decisions=decisions)))
+        progress["status"] = "proposed"
+        self.assertTrue(any(
+            f"W13-OMS-001 can be in_progress only while {module.PROGRESS_DECISION} is accepted" in error
+            for error in self.errors(roadmap=roadmap, decisions=decisions)
+        ))
+        progress["status"] = "accepted"
+        progress["related_roadmap_items"] = [entry for entry in progress["related_roadmap_items"] if entry != "W13-OMS-001"]
+        self.assertTrue(any("W13-OMS-001 can be in_progress only" in error for error in self.errors(roadmap=roadmap, decisions=decisions)))
+
+    def test_accepted_progress_decision_does_not_permit_acceptance_claims(self) -> None:
+        roadmap = module.load_data(ROOT / module.ROADMAP_REGISTRY)
+        decisions = module.load_data(ROOT / module.DECISION_REGISTRY)
+        next(decision for decision in decisions["decisions"] if decision["id"] == module.PROGRESS_DECISION)["status"] = "accepted"
+        item = next(item for item in roadmap["items"] if item["id"] == "W13-STRAT-001")
+        for status, posture in [("ready_for_acceptance", "in_progress"), ("accepted", "complete"), ("in_progress", "complete")]:
+            with self.subTest(status=status, posture=posture):
+                item["status"] = status
+                item["evidence_posture"] = posture
+                self.assertTrue(any(
+                    "W13-STRAT-001 must retain planned delivery" in error
+                    for error in self.errors(roadmap=roadmap, decisions=decisions)
+                ))
+
     def test_rejects_financial_baseline_ceiling_and_stale_charter_reference(self) -> None:
         self.adaptation["product_baseline"]["development_ceiling"] = True
         self.assertTrue(any("development_ceiling false" in error for error in self.errors()))

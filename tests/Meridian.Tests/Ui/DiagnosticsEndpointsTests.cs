@@ -15,6 +15,7 @@ using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Monitoring;
 using Meridian.Core.Config;
 using Meridian.Core.Performance;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Meridian.Identity.Auth;
@@ -37,6 +38,81 @@ public sealed class DiagnosticsEndpointsTests : IDisposable
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly string _tempRoot = Path.Combine(Path.GetTempPath(), $"meridian-diagnostics-endpoints-{Guid.NewGuid():N}");
+
+    [Theory]
+    [InlineData(0, false)]
+    [InlineData(650.5, false)]
+    [InlineData(650.5, true)]
+    public async Task ProviderHealth_SeparatesMeasuredLatencyAndConnectionStateFromUnavailableMetrics(double latency, bool configIsMalformed)
+    {
+        Directory.CreateDirectory(Path.Combine(_tempRoot, "_status"));
+        var configPath = Path.Combine(_tempRoot, "appsettings.json");
+        await File.WriteAllTextAsync(configPath, configIsMalformed ? "{" : """{"DataRoot":"."}""");
+        var observedAt = DateTimeOffset.UtcNow.AddMinutes(-1);
+        await File.WriteAllTextAsync(Path.Combine(_tempRoot, "_status", "providers.json"), JsonSerializer.Serialize(
+            new ProviderMetricsStatus(observedAt,
+                [new ProviderMetrics("alpaca", "Streaming", true, 2, 0, 3, 1, 0, 0, 1, latency, latency, latency, 1, 1, observedAt)],
+                TotalProviders: 1, HealthyProviders: 1),
+            JsonOptions));
+
+        var registry = new ProviderRegistry();
+        registry.Register(new DiagnosticProvider("alpaca", "Alpaca", new WebSocketConnectionDiagnostics(
+            ProviderName: "alpaca",
+            LifecycleState: ProviderConnectionLifecycleState.Connected,
+            WebSocketState: WebSocketState.Open,
+            IsConnected: true,
+            IsReconnecting: false,
+            ReconnectAttempts: 4,
+            LastConnectedAt: observedAt,
+            LastDisconnectedAt: null,
+            LastHeartbeatReceivedAt: observedAt,
+            LastMessageReceivedAt: observedAt,
+            LastReconnectAttemptAt: observedAt,
+            LastError: null,
+            LastFailureKind: ProviderFailureKind.TransientNetworkFailure,
+            ConnectionAge: null,
+            IdleDuration: null)));
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(registry);
+            services.AddSingleton(new UiConfigStore(configPath));
+        }, app => app.MapProviderExtendedEndpoints(JsonOptions));
+        using var client = app.GetTestClient();
+
+        using var healthResponse = await client.GetAsync(UiApiRoutes.ProviderHealth);
+        healthResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var health = JsonDocument.Parse(await healthResponse.Content.ReadAsStringAsync());
+        var provider = health.RootElement.GetProperty("providers").EnumerateArray().Should().ContainSingle().Subject;
+        provider.GetProperty("connectionState").GetString().Should().Be("connected");
+        provider.GetProperty("reconnectAttempts").GetInt32().Should().Be(4);
+        foreach (var field in new[]
+        {
+            "connectionStabilityScore", "latencyP99Ms", "latencyConsistencyScore",
+            "dataCompletenessPercent", "reconnectsLastHour", "uptimePercent", "messagesPerSecond", "errorsLastHour"
+        })
+        {
+            provider.GetProperty(field).ValueKind.Should().Be(JsonValueKind.Null);
+        }
+
+        using var dashboardResponse = await client.GetAsync(UiApiRoutes.ProvidersDashboard);
+        dashboardResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var dashboard = JsonDocument.Parse(await dashboardResponse.Content.ReadAsStringAsync());
+        var summary = dashboard.RootElement.GetProperty("providers").EnumerateArray().Should().ContainSingle().Subject;
+        if (!configIsMalformed && latency > 0)
+        {
+            provider.GetProperty("averageLatencyMs").GetDouble().Should().Be(latency);
+            provider.GetProperty("latencyObservedAt").GetDateTimeOffset().Should().Be(observedAt);
+            summary.GetProperty("latencyMs").GetString().Should().Be("650.5");
+            summary.GetProperty("trafficLight").GetString().Should().Be("yellow");
+        }
+        else
+        {
+            provider.GetProperty("averageLatencyMs").ValueKind.Should().Be(JsonValueKind.Null);
+            provider.GetProperty("latencyObservedAt").ValueKind.Should().Be(JsonValueKind.Null);
+            summary.GetProperty("latencyMs").ValueKind.Should().Be(JsonValueKind.Null);
+            summary.GetProperty("trafficLight").GetString().Should().Be("green");
+        }
+    }
 
     [Theory]
     [InlineData("GET", "/api/health/providers/interactive-brokers/diagnostics")]
