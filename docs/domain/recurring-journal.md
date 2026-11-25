@@ -105,6 +105,9 @@ Rules that keep an amount from being drafted twice:
   retirement. Assets are registered through `/api/ledger/fixed-assets`. A registered asset's cost,
   salvage value, life, method, currency and in-service date cannot be changed, because periods
   already depreciated are not recomputed; retire it and register the revised asset under a new id.
+  Each asset's charge is retained as source evidence with a SHA-256 content hash of the book scope,
+  asset, period end and posted lines, because recurring provenance requires every source to carry a
+  content hash or source version.
 - **A coupon accrues across windows, once.** The bond calculation drafts the day-count share of
   each coupon period that falls inside the window and the premium or discount amortized over the
   same days. Each share is a difference of rounded cumulative amounts, so the windows covering a
