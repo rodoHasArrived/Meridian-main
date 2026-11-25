@@ -126,7 +126,7 @@ public sealed class PortfolioImportRunTests : IDisposable
 
     private static readonly Guid AaplSecurityId = Guid.Parse("a0a0a0a0-0000-4000-8000-00000000aa01");
     private static readonly IReadOnlyDictionary<string, Guid> OpeningSecurityIds =
-        new Dictionary<string, Guid>(StringComparer.Ordinal) { ["AAPL"] = AaplSecurityId };
+        new Dictionary<string, Guid>(StringComparer.Ordinal) { ["AAPL"] = AaplSecurityId, ["MSFT"] = Guid.Parse("a0a0a0a0-0000-4000-8000-00000000aa02") };
 
     private PortfolioImportRunRequest Request() => new(Guid.NewGuid(), "alpaca", new(BrokerAccountId: "test-account"),
         new("tenant-a", "company-a", Guid.NewGuid().ToString("D"), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),

@@ -75,6 +75,16 @@ public sealed class StandardChartOfAccounts : IChartOfAccounts
         return Resolve(role, financialAccountId, symbol);
     }
 
+    /// <summary>Resolves a registered per-security posting code by <see cref="LedgerSecurityKey"/>.</summary>
+    public LedgerAccount ResolveCode(string code, string? financialAccountId, LedgerSecurityKey security)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(code);
+        if (!RolesByCode.TryGetValue(code.Trim(), out var role))
+            throw new ArgumentException($"Posting account code '{code}' is not registered.", nameof(code));
+
+        return Resolve(role, financialAccountId, security);
+    }
+
     /// <inheritdoc />
     public LedgerAccountChartReference? GetPostingReference(LedgerAccount account)
         => TryGetRegistered(account, out var role) ? Definitions[role].Reference : null;
