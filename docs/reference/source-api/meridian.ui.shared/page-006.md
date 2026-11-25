@@ -6,6 +6,64 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReplayEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ReplayEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs#L23).
+
+Extension methods for registering event replay API endpoints. Integrates with JsonlReplayer for JSONL event inspection and event-count scans. Timed playback and playback controls are not implemented by this host.
+
+```csharp
+public static class ReplayEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapReplayEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:26](../../../../src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs#L26) |  |
+
+## ReportExportRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ReportExportRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:762](../../../../src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs#L762).
+
+Request DTO for report export.
+
+```csharp
+public record ReportExportRequest(string? Date, string? Format);
+```
+
+## ResilienceEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ResilienceEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs#L19).
+
+Extension methods for registering resilience, cost estimation, and compliance endpoints.
+
+```csharp
+public static class ResilienceEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapResilienceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs#L21) |  |
+
+## RestoreRecurringJournalDefinitionsRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.RestoreRecurringJournalDefinitionsRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs#L17).
+
+```csharp
+public sealed record RestoreRecurringJournalDefinitionsRequest(string ScheduleId, int ScheduleVersion, int TemplateVersion, string Reason);
+```
+
 ## RevokeStrategyLiveAuthorizationRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.RevokeStrategyLiveAuthorizationRequest</code>. Kind: `record`.
@@ -204,6 +262,24 @@ Source: [src/Meridian.Ui.Shared/Endpoints/SecureReportingDistributionEndpoints.c
 ```csharp
 public sealed record SecureReportingGrantRevocationResponse(string GrantId, bool Revoked);
 ```
+
+## SecurityInstrumentTermsEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.SecurityInstrumentTermsEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityInstrumentTermsEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityInstrumentTermsEndpoints.cs#L15).
+
+Read-only, exact-value instrument terms for browser and desktop clients.
+
+```csharp
+public static class SecurityInstrumentTermsEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapSecurityInstrumentTermsEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SecurityInstrumentTermsEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityInstrumentTermsEndpoints.cs#L17) |  |
 
 ## SecurityMasterEndpoints
 
@@ -510,7 +586,7 @@ Qualified name: <code>Meridian.Ui.Shared.Endpoints.TradingActionResult</code>. K
 Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:82](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L82).
 
 ```csharp
-public sealed record TradingActionResult(string ActionId, string Status, string Message, DateTimeOffset OccurredAt, string? AuditId = null, IReadOnlyList<KillSwitchSweepFailure>? StillWorking = null, bool? BrokerViewUnavailable = null);
+public sealed record TradingActionResult(string ActionId, string Status, string Message, DateTimeOffset OccurredAt, string? AuditId = null, IReadOnlyList<KillSwitchSweepFailure>? StillWorking = null, bool? BrokerViewUnavailable = null, string? IncidentId = null, bool? EvidenceRetained = null, string? EvidenceError = null);
 ```
 
 ## UiEndpoints
@@ -534,17 +610,17 @@ Declared public members:
 | <code>public static WebApplication MapUiEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:80](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L80) | Maps all UI API endpoints using default JSON serializer options. |
 | <code>public static JsonSerializerOptions CreateEndpointJsonOptions(bool writeIndented = false) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:94](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L94) | Creates the standard JsonSerializerOptions used by UI API endpoints. Uses camelCase naming and a DefaultJsonTypeInfoResolver so callers can extend the type-info chain without reflection falling back to a null resolver. |
 | <code>public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:126](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L126) | Maps all UI API endpoints with custom JSON serializer options. |
-| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:330](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L330) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
-| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:349](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L349) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
-| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:355](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L355) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
-| <code>public const string LoginRateLimitPolicy = &quot;login&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:362](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L362) | Per-IP limiter for the unauthenticated sign-in endpoint. Bounds how quickly one client can guess credentials or churn the bounded failed-attempt table in LoginSessionService. |
-| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:371](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L371) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
+| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:331](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L331) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
+| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:350](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L350) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
+| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:356](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L356) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
+| <code>public const string LoginRateLimitPolicy = &quot;login&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:363](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L363) | Per-IP limiter for the unauthenticated sign-in endpoint. Bounds how quickly one client can guess credentials or churn the bounded failed-attempt table in LoginSessionService. |
+| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:372](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L372) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
 
 ## UpdateExecutionCircuitBreakerRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:102](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L102).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:105](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L105).
 
 Request to update the global execution circuit breaker.
 
@@ -556,7 +632,7 @@ public sealed record UpdateExecutionCircuitBreakerRequest(bool IsOpen, string? R
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionDefaultPositionLimitRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:108](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L108).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:111](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L111).
 
 Request to update the default execution position limit.
 
@@ -568,7 +644,7 @@ public sealed record UpdateExecutionDefaultPositionLimitRequest(decimal? MaxPosi
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionSymbolPositionLimitRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:113](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L113).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:116](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L116).
 
 Request to update or clear a symbol-specific execution position limit.
 
@@ -627,6 +703,12 @@ public static partial class WorkstationEndpoints
 ```
 
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ApprovalCollaboration.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ApprovalCollaboration.cs#L18).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AssetMarketValuation.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AssetMarketValuation.cs#L18).
 
 ```csharp
 public static partial class WorkstationEndpoints
@@ -1159,56 +1241,4 @@ Indicates that cash-forecast source evidence could not satisfy its authority req
 
 ```csharp
 public sealed class AccountCashForecastSourceAuthorityException(string message) : MeridianException(message);
-```
-
-## AccountCashForecastSourceDocument
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashForecastSourceDocument</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:12](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L12).
-
-Supported independently reviewed JSON source; provenance is resolved from the vault.
-
-```csharp
-public sealed record AccountCashForecastSourceDocument(int SchemaVersion, string Kind, string SourceDomain, string SourceEntityId, long EvidenceVersion, string AccountId, string BookId, DateOnly EffectiveDate, AccountCashEvidenceRole Role, AccountCashSourceBalance? Balance = null, AccountCashSourceFlow? Flow = null, AccountCashSourceFx? Fx = null, AccountCashSourceAllocation? Allocation = null, AccountCashSourceReceiptRevision? ReceiptRevision = null, AccountCashSourceWatchObservation? WatchObservation = null);
-```
-
-## AccountCashSourceAllocation
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceAllocation</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:25](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L25).
-
-```csharp
-public sealed record AccountCashSourceAllocation(string AllocationId, string ExpectedFlowId, string ActualVersionId, decimal NetAmount, decimal GrossAmount, decimal WithholdingTax, decimal Fees);
-```
-
-## AccountCashSourceBalance
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceBalance</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:18](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L18).
-
-```csharp
-public sealed record AccountCashSourceBalance(DateOnly AsOfDate, decimal Amount, string Currency, bool IsSettled);
-```
-
-## AccountCashSourceFlow
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceFlow</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:19](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L19).
-
-```csharp
-public sealed record AccountCashSourceFlow(string FlowId, string VersionId, AccountCashFlowStatus Status, string FlowType, decimal Amount, string Currency, DateOnly? EconomicDate, DateOnly? SettlementDate, DateOnly? CashReceiptDate, Guid? SecurityId = null, Guid? ProjectionRunId = null, string? ProjectionEngineVersion = null, Guid? TermsVersionId = null, string? TermsHash = null, string? SupersedesVersionId = null);
-```
-
-## AccountCashSourceFx
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceFx</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:24](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L24).
-
-```csharp
-public sealed record AccountCashSourceFx(string Currency, string BaseCurrency, DateOnly ConversionDate, decimal BaseUnitsPerCurrencyUnit);
 ```

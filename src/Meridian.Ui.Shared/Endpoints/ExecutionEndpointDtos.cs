@@ -96,7 +96,10 @@ public sealed record TradingActionResult(
     /// so the broker book must be verified by hand even when <c>Status</c> reads Completed.
     /// Null on actions that carry no sweep, and omitted when the broker view was established.
     /// </summary>
-    bool? BrokerViewUnavailable = null);
+    bool? BrokerViewUnavailable = null,
+    string? IncidentId = null,
+    bool? EvidenceRetained = null,
+    string? EvidenceError = null);
 
 /// <summary>Request to update the global execution circuit breaker.</summary>
 public sealed record UpdateExecutionCircuitBreakerRequest(

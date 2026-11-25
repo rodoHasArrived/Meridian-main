@@ -6,6 +6,57 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FailoverRuleApplyOutcome
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.FailoverRuleApplyOutcome</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1315](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1315).
+
+Whether one failover rule edit was applied to the running coordinator.
+
+```csharp
+public sealed record FailoverRuleApplyOutcome(string RuleId, bool Applied, string? Reason)
+```
+
+## FailoverRuleSnapshot
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1445](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1445).
+
+Point-in-time snapshot of a failover rule&#x27;s state.
+
+```csharp
+public readonly record struct FailoverRuleSnapshot(string RuleId, string PrimaryProviderId, string[] BackupProviderIds, string CurrentActiveProviderId, bool IsInFailoverState, DateTimeOffset? LastFailoverTime, int FailoverCount, int FailoverThreshold, int RecoveryThreshold);
+```
+
+## FailoverTransitionRequest
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.FailoverTransitionRequest</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1327](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1327).
+
+A requested provider transition. The failover coordinator does not change its active-provider state until the registered runtime confirms that connection and subscription restoration succeeded.
+
+```csharp
+public sealed class FailoverTransitionRequest
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Guid TransitionId { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1361](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1361) |  |
+| <code>public string RuleId { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1362](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1362) |  |
+| <code>public string FromProviderId { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1363](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1363) |  |
+| <code>public string ToProviderId { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1364](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1364) |  |
+| <code>public bool IsRecovery { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1365](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1365) |  |
+| <code>public string Reason { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1366](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1366) |  |
+| <code>public CancellationToken CancellationToken { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1367](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1367) |  |
+| <code>public Task&lt;bool&gt; Completion =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1368](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1368) |  |
+| <code>public bool TryComplete() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1371](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1371) |  |
+| <code>public bool TryReject(string reason) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1380](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1380) |  |
+
 ## FailoverTriggeredEvent
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent</code>. Kind: `record struct`.
@@ -1467,71 +1518,3 @@ Explicit parameters for a five-second IB real-time-bar stream.
 ```csharp
 public sealed record IBRealTimeBarRequest(SymbolConfig Contract, string WhatToShow = "TRADES", bool UseRegularTradingHours = true);
 ```
-
-## IBScannerRequest
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IBScannerRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:9](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L9).
-
-Scanner criteria intentionally limited to IB&#x27;s stable scanner subscription fields.
-
-```csharp
-public sealed record IBScannerRequest(string Instrument, string LocationCode, string ScanCode, int NumberOfRows = 50, string? AbovePrice = null, string? AboveVolume = null);
-```
-
-## IBSecurityNotFoundException
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IBSecurityNotFoundException</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:525](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L525).
-
-Exception thrown when a security definition is not found.
-
-```csharp
-public sealed class IBSecurityNotFoundException : IBApiException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IBSecurityNotFoundException(int errorCode, string message) : base(errorCode, message);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:527](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L527) |  |
-
-## IBSimulationClient
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IBSimulationClient</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:26](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L26).
-
-IB simulation client for development and testing without TWS/Gateway. Generates synthetic market data that mimics IB&#x27;s data patterns. Activated when DataSource is &quot;IB&quot; and IBAPI is not compiled in.
-
-```csharp
-public sealed class IBSimulationClient : IMarketDataClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IBSimulationClient(IMarketEventPublisher publisher, bool enableAutoTicks = true, TimeSpan? autoTickDueTime = null, TimeSpan? autoTickPeriod = null);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:62](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L62) |  |
-| <code>public bool IsEnabled =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:84](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L84) |  |
-| <code>public bool IsSimulation =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:85](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L85) |  |
-| <code>public bool IsSimulated =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:88](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L88) |  |
-| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:91](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L91) |  |
-| <code>public string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:92](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L92) |  |
-| <code>public string ProviderDescription =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:93](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L93) |  |
-| <code>public int ProviderPriority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:95](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L95) |  |
-| <code>public ProviderCapabilities ProviderCapabilities { get; } = ProviderCapabilities.Streaming(trades : true, quotes : true, depth : true, maxDepthLevels : 5) with { SupportedMarkets = new[] { &quot;US (Simulated)&quot; }, MaxRequestsPerWindow = 50, RateLimitWindow = TimeSpan.FromSeconds(1), MinRequestDelay = TimeSpan.FromMilliseconds(100) };</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:97](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L97) |  |
-| <code>public ProviderCredentialField[] ProviderCredentialFields =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:109](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L109) |  |
-| <code>public string[] ProviderNotes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:111](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L111) |  |
-| <code>public string[] ProviderWarnings =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:118](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L118) |  |
-| <code>public event Action&lt;WebSocketConnectionDiagnostics&gt;? ConnectionDiagnosticsChanged;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:125](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L125) |  |
-| <code>public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:128](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L128) |  |
-| <code>public Task ConnectAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:151](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L151) |  |
-| <code>public Task DisconnectAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:168](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L168) |  |
-| <code>public int SubscribeMarketDepth(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:191](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L191) |  |
-| <code>public void UnsubscribeMarketDepth(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:199](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L199) |  |
-| <code>public int SubscribeTrades(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:204](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L204) |  |
-| <code>public void UnsubscribeTrades(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:212](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L212) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:263](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L263) |  |

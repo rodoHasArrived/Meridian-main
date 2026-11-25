@@ -92,8 +92,8 @@ const shortOrigin = {
   sourced: "Src", calculated: "Calc", overridden: "Ovr", estimated: "Est", unavailable: "?"
 } as const;
 
-export function AmountPassportTrigger({ selection, children, ariaLabel, className, compact }: {
-  selection: AmountPassportSelection; children?: ReactNode; ariaLabel?: string; className?: string; compact?: boolean
+export function AmountPassportTrigger({ selection, children, ariaLabel, ariaDescribedBy, className, compact }: {
+  selection: AmountPassportSelection; children?: ReactNode; ariaLabel?: string; ariaDescribedBy?: string; className?: string; compact?: boolean
 }) {
   const open = useContext(PassportContext);
   const [local, setLocal] = useState<AmountPassportSelection | null>(null);
@@ -113,7 +113,7 @@ export function AmountPassportTrigger({ selection, children, ariaLabel, classNam
     <button type="button" aria-haspopup="dialog" className={cn(
       "inline-flex max-w-full items-center gap-1 rounded-sm text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 hover:underline",
       className
-    )} aria-label={ariaLabel ?? `Inspect ${selection.label}${selection.displayValue ? ` ${selection.displayValue}` : ""} · ${marker.map(([, label]) => label).join(", ")}`}
+    )} aria-label={ariaLabel ?? `Inspect ${selection.label}${selection.displayValue ? ` ${selection.displayValue}` : ""} · ${marker.map(([, label]) => label).join(", ")}`} aria-describedby={ariaDescribedBy}
       title={`Amount passport · ${marker.map(([, label]) => label).join(", ")}`}
       onKeyDown={event => { if (event.key === "Enter" || event.key === " ") event.stopPropagation(); }}
       onClick={event => {

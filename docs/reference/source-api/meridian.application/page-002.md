@@ -49,8 +49,8 @@ Declared public members:
 | <code>public IReadOnlyCollection&lt;IHistoricalDataProvider&gt; Providers =&gt; …;</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:64](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L64) |  |
 | <code>public Func&lt;string, DateOnly, DateOnly, CancellationToken, Task&lt;HistoricalSessionSchedule?&gt;&gt;? ResolveSessionsAsync { get; init; }</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:67](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L67) | Calendar evidence for instruments whose listing is known to the host. |
 | <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:82](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L82) |  |
-| <code>public void ValidateRequest(BackfillRequest request);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:93](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L93) |  |
-| <code>public async Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, EventPipeline pipeline, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:122](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L122) |  |
+| <code>public void ValidateRequest(BackfillRequest request);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:92](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L92) |  |
+| <code>public async Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, EventPipeline pipeline, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:121](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L121) |  |
 
 ## IBackfillExecutionGateway
 

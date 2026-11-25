@@ -6,6 +6,63 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IHistoricalSymbolTimelineResolver
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/IHistoricalSymbolTimelineResolver.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/IHistoricalSymbolTimelineResolver.cs#L9).
+
+Resolves the ticker a security actually traded under on a given date, using security-master identifier validity intervals. Lets a historical backfill that spans a ticker rename (e.g. FB→META) query the provider with the era-correct symbol per date-range chunk while landing all data under the canonical requested symbol.
+
+```csharp
+public interface IHistoricalSymbolTimelineResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;string&gt; ResolveTickerForDateAsync(string symbol, DateOnly date, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/IHistoricalSymbolTimelineResolver.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/IHistoricalSymbolTimelineResolver.cs#L16) | Returns the ticker under which the security identified by symbol traded on date. Returns symbol unchanged when the security master has no mapping for that date. |
+
+## ILivePositionCorporateActionAdjuster
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ILivePositionCorporateActionAdjuster</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs#L21).
+
+Adjusts an open position&#x27;s quantity and carrying basis for corporate actions.
+
+```csharp
+public interface ILivePositionCorporateActionAdjuster
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs#L24) | Returns unchanged values when no applicable action or identity is found. |
+| <code>Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, decimal totalCostBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs#L35) | Preserves retained total carrying basis when supported. Legacy implementations retain their quantity/quote behavior without claiming exact total-basis evidence. |
+
+## IngestSecurityRatesRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.IngestSecurityRatesRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L44).
+
+```csharp
+public sealed record IngestSecurityRatesRequest(Guid CurveId, DateOnly AsOf, SecurityRateConstructionMethod ConstructionMethod, string MethodDescription, IReadOnlyList<SecurityRateIngestionPointDto> Points);
+```
+
+## InstrumentTypeDescriptor
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:538](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L538).
+
+```csharp
+public sealed record InstrumentTypeDescriptor(InstrumentType InstrumentType, string DisplayName, string SecurityMasterAssetClass, string? SecurityMasterAssetFamily, string? SecurityMasterSubType, string DefaultProviderSecurityType, bool IsTradeable, bool IsReferenceOnly, bool IsDerivative, bool RequiresUnderlying, bool ProducesCashFlows, bool RequiresLotTracking, string SettlementModel, IReadOnlyList<string> CompatibleSecurityMasterAssetClasses, IReadOnlyList<string> PreferredIdentifierKinds, IReadOnlyList<string> RequiredEconomicTerms, IReadOnlyList<string> ProviderCapabilities, IReadOnlyList<string> LifecycleEvents, IReadOnlyList<string> ValidationRules, IReadOnlyList<string> LedgerBehaviorHints, IReadOnlyList<string> RiskModelHints);
+```
+
 ## InstrumentTypeDescriptorCatalog
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog</code>. Kind: `class`.
@@ -771,7 +828,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OfferCorporateActionTerms</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:201](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L201).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:209](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L209).
 
 An offer the holder may accept (tender offer).
 
@@ -885,58 +942,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Posted</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L12) | Posted by the fund; the counterparty holds it. |
 | <code>Received</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L15) | Received from the counterparty; the fund holds it. |
-
-## OtcCollateralHeldLineDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralHeldLineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:140](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L140).
-
-One collateral balance as the snapshot saw it, with the haircut applied: the haircut of the agreement&#x27;s eligible-collateral line at computation time, not the one copied onto the balance.
-
-```csharp
-public sealed record OtcCollateralHeldLineDto(Guid BalanceId, OtcCollateralDirection Direction, OtcCollateralKind Kind, string Description, decimal ValuedAmount, decimal HaircutPercent, decimal HaircutAdjusted, DateOnly ValuedAsOf);
-```
-
-## OtcCollateralJsonContext
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:522](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L522).
-
-Provides source-generated JSON metadata for OTC collateral contracts.
-
-```csharp
-public sealed partial class OtcCollateralJsonContext : JsonSerializerContext;
-```
-
-## OtcCollateralKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L20).
-
-What the collateral is.
-
-```csharp
-public enum OtcCollateralKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Cash</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L22) |  |
-| <code>Security</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L23) |  |
-
-## OtcCollateralMovementDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralMovementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:130](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L130).
-
-A collateral transfer the credit support terms imply: who moves it and whether it is a delivery or a return.
-
-```csharp
-public sealed record OtcCollateralMovementDto(OtcMovementKind Kind, OtcMovementParty Mover, decimal Amount, string Currency);
-```
