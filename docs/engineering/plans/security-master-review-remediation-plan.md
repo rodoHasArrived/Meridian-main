@@ -745,6 +745,12 @@ Tax-lot re-key (follow-through, 2026-11-25):
   review. The store re-checks label occupancy under lock and applies the label with the re-key, and
   the `protect_tax_lot_account_key` trigger allows a label change only to the instruction's target.
   The record id is unchanged; wash-sale deferrals keep the label they recorded.
+- Lots that predate canonical lot identity carry no Security Master or book-position identity;
+  the schema records the two together. The planner lists their accounts under `AwaitingBackfill`,
+  with the lot ids, instead of blocking them. Each lot is attributed through the governed open-lot
+  backfill: retained acquisition evidence, independent review, then a human-operator apply. The
+  next plan then re-keys the account, across however many book positions the backfill assigned.
+  The re-key never invents an identity for a lot.
 - An approved proposal posts one atomic `AccountRekey` batch: the reclass journal plus an in-place
   re-key of every open lot. It also copies the relief-policy history to the target key.
 - Migration `V_ledger_084` adds the batch instruction column, widens the mutation-kind checks and
@@ -753,5 +759,5 @@ Tax-lot re-key (follow-through, 2026-11-25):
 
 Known follow-ups:
 
-- A legacy account with an open lot that has no book position, or whose instrument is not the
-  resolved SecurityId, is listed as blocked by `LedgerSecurityKeyRekeyService`.
+- A legacy account whose open lot names a different instrument than the resolved SecurityId is
+  still listed as blocked by `LedgerSecurityKeyRekeyService`.

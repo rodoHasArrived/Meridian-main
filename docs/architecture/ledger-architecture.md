@@ -129,6 +129,8 @@ therefore keeps one account history.
   - As-of lot reads rebuild from the current row and its dated quantity mutations, so after the
     re-key a lot's whole history reads under the SecurityId account and nothing reads under the
     legacy key.
+  - Lots with no Security Master or book-position identity (pre-canonical lots) are listed under
+    `AwaitingBackfill`. They re-key after the governed open-lot backfill attributes them.
   - A lot whose label is already taken on the SecurityId-keyed account is relabeled to its first
     free `{label}~rekey` form. The original and target labels are in the reviewed instruction, and
     the record id is unchanged.

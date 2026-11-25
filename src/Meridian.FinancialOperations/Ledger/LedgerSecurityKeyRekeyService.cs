@@ -31,6 +31,18 @@ public sealed record LedgerSecurityKeyRekeyProposal(
 public sealed record LedgerSecurityKeyRekeyBlocked(LedgerSecurityKeyMappingRow Mapping, string Reason);
 
 /// <summary>
+/// A legacy account whose open lots predate canonical lot identity: they carry no Security Master or
+/// book-position identity (the two are recorded together), so nothing proves they belong to the
+/// resolved security. Attribute each listed lot through the governed open-lot backfill (retained
+/// acquisition evidence, independent review, human-operator apply), then plan again; the account then
+/// re-keys like any other, across however many book positions the backfill assigns.
+/// </summary>
+public sealed record LedgerSecurityKeyRekeyBackfillRequirement(
+    LedgerSecurityKeyMappingRow Mapping,
+    IReadOnlyList<Guid> TaxLotRecordIds,
+    string Reason);
+
+/// <summary>
 /// The re-key plan for one ledger book. <see cref="BalanceOnly"/> rows carry no tax lots (for example
 /// a dividend receivable) and move with an ordinary governed reclass from
 /// <see cref="LedgerSecurityKeyMigration.ProposeReclass"/>.
@@ -39,7 +51,8 @@ public sealed record LedgerSecurityKeyRekeyPlan(
     LedgerSecurityKeyMappingReport Report,
     IReadOnlyList<LedgerSecurityKeyRekeyProposal> Proposals,
     IReadOnlyList<LedgerSecurityKeyMappingRow> BalanceOnly,
-    IReadOnlyList<LedgerSecurityKeyRekeyBlocked> Blocked);
+    IReadOnlyList<LedgerSecurityKeyRekeyBlocked> Blocked,
+    IReadOnlyList<LedgerSecurityKeyRekeyBackfillRequirement> AwaitingBackfill);
 
 /// <summary>
 /// The approval and Security Master lineage a reviewer attaches to a re-key proposal. Nothing is ever
@@ -100,12 +113,19 @@ public sealed class LedgerSecurityKeyRekeyService
         var proposals = new List<LedgerSecurityKeyRekeyProposal>();
         var balanceOnly = new List<LedgerSecurityKeyMappingRow>();
         var blocked = new List<LedgerSecurityKeyRekeyBlocked>();
+        var awaitingBackfill = new List<LedgerSecurityKeyRekeyBackfillRequirement>();
         foreach (var row in report.ReclassCandidates)
         {
             var lots = await _store.ListOpenTaxLotsAsync(ledgerBookId, row.LegacyAccount, ct).ConfigureAwait(false);
             if (lots.Count == 0)
             {
                 balanceOnly.Add(row);
+                continue;
+            }
+
+            if (FindLotsAwaitingBackfill(row, lots) is { } requirement)
+            {
+                awaitingBackfill.Add(requirement);
                 continue;
             }
 
@@ -131,7 +151,31 @@ public sealed class LedgerSecurityKeyRekeyService
                 proposals.Add(proposal);
         }
 
-        return new LedgerSecurityKeyRekeyPlan(report, proposals, balanceOnly, blocked);
+        return new LedgerSecurityKeyRekeyPlan(report, proposals, balanceOnly, blocked, awaitingBackfill);
+    }
+
+    /// <summary>
+    /// Returns the backfill requirement for a resolved legacy account whose open lots lack canonical
+    /// Security Master and book-position identity, or <see langword="null"/> when every open lot has it.
+    /// </summary>
+    public static LedgerSecurityKeyRekeyBackfillRequirement? FindLotsAwaitingBackfill(
+        LedgerSecurityKeyMappingRow row,
+        IReadOnlyList<LedgerTaxLotRecord> openLots)
+    {
+        ArgumentNullException.ThrowIfNull(row);
+        ArgumentNullException.ThrowIfNull(openLots);
+        if (row.TargetAccount?.SecurityId is null)
+            return null;
+
+        var unattributed = openLots
+            .Where(static lot => lot.OpenQuantity > 0m && (lot.SecurityId == Guid.Empty || lot.BookPositionId == Guid.Empty))
+            .Select(static lot => lot.TaxLotRecordId)
+            .Order()
+            .ToArray();
+        return unattributed.Length == 0
+            ? null
+            : new LedgerSecurityKeyRekeyBackfillRequirement(row, unattributed,
+                $"{unattributed.Length} open lot(s) on {row.LegacyAccount} predate canonical lot identity; attribute them to Security Master {row.TargetAccount.SecurityId:D} and a book position through the governed open-lot backfill, then plan the re-key again.");
     }
 
     /// <summary>
@@ -165,6 +209,13 @@ public sealed class LedgerSecurityKeyRekeyService
             return null;
         }
 
+        // Lots without canonical identity are routed to the governed open-lot backfill first.
+        if (FindLotsAwaitingBackfill(row, open) is { } requirement)
+        {
+            reason = requirement.Reason;
+            return null;
+        }
+
         if (open.Any(lot => lot.SecurityId != securityId))
         {
             reason = "Open lots on the legacy account carry a different instrument than the resolved SecurityId.";
@@ -172,13 +223,7 @@ public sealed class LedgerSecurityKeyRekeyService
         }
 
         // A holding may sit in several book positions of the same security; the re-key moves them
-        // all in one batch (one reclass pair per position). A lot without a position cannot be
-        // attributed and blocks the account.
-        if (open.Any(static lot => lot.BookPositionId == Guid.Empty))
-        {
-            reason = "An open lot on the legacy account has no book position, so its basis cannot be attributed; assign it first.";
-            return null;
-        }
+        // all in one batch (one reclass pair per position).
 
         var positions = open.Select(static lot => lot.BookPositionId).Distinct().Order().ToArray();
 

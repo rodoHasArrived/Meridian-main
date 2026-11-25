@@ -110,7 +110,44 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         LedgerSecurityKeyRekeyService.TryPropose(bookId, period, RekeyAt, ResolvedRekeyRow(10_000m), [unpositioned],
                 out var unpositionedReason)
             .Should().BeNull();
-        unpositionedReason.Should().Contain("no book position");
+        unpositionedReason.Should().Contain("open-lot backfill");
+    }
+
+    [Fact]
+    public void AccountRekey_LotsWithoutCanonicalIdentity_AwaitBackfill_ThenReKeyOnceAttributed()
+    {
+        var bookId = Guid.NewGuid();
+        var period = RekeyPeriod(bookId, Guid.NewGuid(), version: 0);
+        // Pre-canonical lots carry neither Security Master nor book-position identity (recorded together).
+        var legacy = LegacyRekeyLot(bookId, Guid.NewGuid()) with { SecurityId = Guid.Empty, BookPositionId = Guid.Empty };
+
+        var requirement = LedgerSecurityKeyRekeyService.FindLotsAwaitingBackfill(ResolvedRekeyRow(10_000m), [legacy]);
+
+        requirement.Should().NotBeNull();
+        requirement!.TaxLotRecordIds.Should().Equal(legacy.TaxLotRecordId);
+        requirement.Reason.Should().Contain("open-lot backfill").And.Contain(TestSecurityId.ToString("D"));
+        LedgerSecurityKeyRekeyService.TryPropose(bookId, period, RekeyAt, ResolvedRekeyRow(10_000m), [legacy], out var reason)
+            .Should().BeNull();
+        reason.Should().Be(requirement.Reason, "the account is not re-keyed until its lots are attributed");
+
+        // The governed backfill attributes the lot; the same account then re-keys normally.
+        var attributed = legacy with { SecurityId = TestSecurityId, BookPositionId = TestBookPositionId };
+        LedgerSecurityKeyRekeyService.FindLotsAwaitingBackfill(ResolvedRekeyRow(10_000m), [attributed]).Should().BeNull();
+        LedgerSecurityKeyRekeyService.TryPropose(bookId, period, RekeyAt, ResolvedRekeyRow(10_000m), [attributed], out var after)
+            .Should().NotBeNull(after);
+    }
+
+    [Fact]
+    public void AccountRekey_UnresolvedTicker_IsNotRoutedToBackfill()
+    {
+        var bookId = Guid.NewGuid();
+        var legacy = LegacyRekeyLot(bookId, Guid.NewGuid()) with { SecurityId = Guid.Empty, BookPositionId = Guid.Empty };
+        var notFound = new LedgerSecurityKeyMappingRow(LegacyRekeyAccount, 10_000m,
+            CanonicalSecurityResolution.FromCandidates(new(SecurityIdentifierKind.Ticker, RekeyTicker), RekeyAt, []),
+            TargetAccount: null);
+
+        LedgerSecurityKeyRekeyService.FindLotsAwaitingBackfill(notFound, [legacy])
+            .Should().BeNull("without a resolved SecurityId there is no identity to attribute the lots to");
     }
 
     [Fact]
