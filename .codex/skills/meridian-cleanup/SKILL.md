@@ -23,14 +23,12 @@ Trigger examples:
 
 ## Do Not Use When
 
-Use `meridian-code-review` for a findings-only review, `meridian-archive-organizer` for moving
-retired material into `archive/`, and `meridian-blueprint` when the work is an architectural
-redesign.
+Use `meridian-code-review` for a findings-only review and `meridian-blueprint` when the work is an
+architectural redesign.
 
 Non-trigger examples:
 
 - "Review this PR and list bugs."
-- "Archive this superseded roadmap snapshot."
 - "Design a new provider orchestration layer."
 
 ## Workflow
@@ -44,7 +42,6 @@ Non-trigger examples:
 ## Handoffs
 
 - Hand off to `meridian-code-review` when cleanup uncovers a likely behavioral bug.
-- Hand off to `meridian-archive-organizer` when stale material should move to `archive/`.
 - Hand off to `meridian-implementation-assurance` when the cleanup changes AI tooling, docs contracts, or a shared workflow and needs formal evidence.
 
 ## Validation
@@ -61,6 +58,7 @@ Non-trigger examples:
 - Keep large cleanup requests theme-based; avoid mixing unrelated edits in one pass.
 - Do not run broad formatters or cosmetic-only rewrites outside the chosen cleanup target.
 - Prefer notes over risky rewrites when a "cleanup" request is really an architectural refactor.
+- Do not move stale material into an `archive/` folder; the repository no longer keeps one. Delete superseded material (git history retains it) or keep it in place with a status note; historical ADRs still cited by source live in `docs/adr/historical/`.
 
 ## Cleanup Lenses
 

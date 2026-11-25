@@ -242,9 +242,9 @@ ai_docs_maintain_skill = Skill(
     description=dedent("""\
         AI documentation maintenance skill for the Meridian project.
         Use this skill when the user asks to check AI doc freshness, detect drift
-        between documentation and code, archive stale docs, validate cross-references,
+        between documentation and code, validate cross-references,
         or generate a sync report for AI-related files. Also trigger when asked to
-        "update AI docs", "check doc staleness", "archive deprecated docs", or
+        "update AI docs", "check doc staleness", or
         "sync AI instructions".
     """),
     content=dedent("""\
@@ -264,9 +264,6 @@ ai_docs_maintain_skill = Skill(
         # Detect drift between docs and code reality
         python3 build/scripts/docs/ai-docs-maintenance.py drift
 
-        # Preview stale docs for archiving
-        python3 build/scripts/docs/ai-docs-maintenance.py archive-stale
-
         # Validate cross-references between AI docs
         python3 build/scripts/docs/ai-docs-maintenance.py validate-refs
 
@@ -283,8 +280,6 @@ ai_docs_maintain_skill = Skill(
         make ai-docs-freshness      # Check AI doc freshness
         make ai-docs-drift          # Detect doc/code drift
         make ai-docs-sync-report    # Generate sync report
-        make ai-docs-archive        # Preview archive candidates
-        make ai-docs-archive-execute # Actually archive stale docs
         make ai-audit-ai-docs       # Integrated audit via ai-repo-updater
         ```
 
@@ -293,9 +288,8 @@ ai_docs_maintain_skill = Skill(
         1. Run `freshness` to find stale docs (>60 days warning, >120 days critical)
         2. Run `drift` to find where docs diverge from code (provider counts, workflow counts, file counts)
         3. Fix stale/drifted docs by updating content and timestamps
-        4. Run `archive-stale` to identify deprecated content for archiving
-        5. Run `validate-refs` to check for broken cross-references
-        6. Generate a `sync-report` for human review
+        4. Run `validate-refs` to check for broken cross-references
+        5. Generate a `sync-report` for human review
 
         ## Key Files
 
@@ -381,24 +375,11 @@ def run_drift_script() -> str:
 
 @ai_docs_maintain_skill.script(
     name="run-full",
-    description="Run all AI doc maintenance checks (freshness, drift, refs, archive). Returns JSON.",
+    description="Run all AI doc maintenance checks (freshness, drift, refs). Returns JSON.",
 )
 def run_full_script() -> str:
     """Execute ai-docs-maintenance.py full check."""
     return _run_ai_docs_cmd("full", timeout=60)
-
-
-@ai_docs_maintain_skill.script(
-    name="run-archive",
-    description=(
-        "Find deprecated docs that should be archived. "
-        "Set execute=True to actually move files (default: dry-run preview only)."
-    ),
-)
-def run_archive_script(execute: bool = False) -> str:
-    """Execute ai-docs-maintenance.py archive-stale with optional execution."""
-    extra = ["--execute"] if execute else []
-    return _run_ai_docs_cmd("archive-stale", extra_args=extra)
 
 
 # ---------------------------------------------------------------------------
@@ -933,7 +914,6 @@ _SKILL_CHAINS: dict[str, dict[str, list[str]]] = {
     "ai-docs-maintain": {
         "health-check": ["run-freshness", "run-drift"],
         "full-health-check": ["run-freshness", "run-drift", "run-full"],
-        "archive-workflow": ["run-freshness", "run-archive"],
     },
 }
 
@@ -947,7 +927,6 @@ _SCRIPT_REGISTRY: dict[tuple[str, str], Any] = {
     ("ai-docs-maintain", "run-freshness"): run_freshness_script,
     ("ai-docs-maintain", "run-drift"): run_drift_script,
     ("ai-docs-maintain", "run-full"): run_full_script,
-    ("ai-docs-maintain", "run-archive"): run_archive_script,
 }
 
 #: Resource callables keyed by (skill_name, resource_name).

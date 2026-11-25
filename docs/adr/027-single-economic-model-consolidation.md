@@ -50,7 +50,7 @@ Three facts bound the decision space; each was verified against source at the da
    refusal paths; review slice 3 pins historical reads that never rewrite retained terms.
 
 The cost of the duality is recorded in the
-[2026-11-09 dual-model audit reconciliation](../../archive/docs/architecture/security-master-extensibility-review.md#verification-pass--2026-11-09--dual-model-audit-reconciliation):
+[2026-11-09 dual-model audit reconciliation](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/architecture/security-master-extensibility-review.md#verification-pass--2026-11-09--dual-model-audit-reconciliation):
 every new asset class pays both models plus bridge arms, four term concepts are defined twice, and
 the retained-terms workaround is permanent until something changes. The
 [remediation working plan](../engineering/plans/security-master-review-remediation-plan.md)

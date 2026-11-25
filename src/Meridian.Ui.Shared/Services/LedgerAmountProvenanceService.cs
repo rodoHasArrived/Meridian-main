@@ -10,13 +10,6 @@ public sealed class LedgerAmountProvenanceService(
     IGovernanceReportPackRepository? reportPackRepository,
     IReconciliationBreakQueueRepository? breakQueueRepository = null)
 {
-    [Obsolete("Authoritative provenance requires authenticated tenant/company scope and a retained amount id.")]
-    public Task<LedgerAmountProvenanceDetailDto?> GetAsync(Guid reportId, string scopeKey, CancellationToken ct = default)
-    {
-        ct.ThrowIfCancellationRequested();
-        return Task.FromResult<LedgerAmountProvenanceDetailDto?>(null);
-    }
-
     public async Task<LedgerAmountProvenanceDetailDto?> GetAsync(
         Guid reportId, string scopeKey, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default)
     {
