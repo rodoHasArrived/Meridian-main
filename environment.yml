@@ -1,4 +1,4 @@
-name: base
+name: meridian
 channels:
   - conda-forge
   - defaults

@@ -2,7 +2,7 @@
 
 **Status:** canonical-registry
 **Owner:** core-team
-**Reviewed:** 2026-10-28
+**Reviewed:** 2026-11-25
 
 This directory is the structured source of truth for Meridian roadmap status.
 Human-facing status pages may summarize it, but durable roadmap truth belongs in

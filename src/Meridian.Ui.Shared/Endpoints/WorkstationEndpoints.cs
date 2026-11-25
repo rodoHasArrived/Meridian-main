@@ -40,6 +40,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 using static Meridian.Contracts.Text.TextPrimitives;
@@ -1388,7 +1389,6 @@ public static partial class WorkstationEndpoints
         HttpContext context,
         Meridian.Application.UI.ConfigStore? configStore)
     {
-        var providerConnectionLifecycle = context.RequestServices.GetService<ProviderConnectionLifecycleService>();
         var routingConnectionService = context.RequestServices.GetService<ProviderConnectionService>();
         var routingBindingService = context.RequestServices.GetService<ProviderBindingService>();
         var routingTrustService = context.RequestServices.GetService<ProviderTrustScoringService>();
@@ -1399,11 +1399,18 @@ public static partial class WorkstationEndpoints
         var routingTenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
         // Provider readiness mirrors GET /api/providers/connections: a tenant-scoped request includes the
         // tenant's own connection credentials, so a scoped save is reflected here as it is in Settings.
-        var connectionRows = !canManageCredentials || providerConnectionLifecycle is null
-            ? []
-            : routingTenant.HasTenantScope
-                ? await providerConnectionLifecycle.GetConnectionsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
-                : await providerConnectionLifecycle.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
+        var connectionRows = canManageCredentials
+            ? await LoadOptionalDataProviderEvidenceAsync<ProviderConnectionRowDto>(context, "Provider connections", async () =>
+            {
+                var lifecycle = context.RequestServices.GetService<ProviderConnectionLifecycleService>();
+                if (lifecycle is null)
+                    return [];
+
+                return routingTenant.HasTenantScope
+                    ? await lifecycle.GetConnectionsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
+                    : await lifecycle.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
+            }).ConfigureAwait(false)
+            : [];
         // Routing reads mirror the direct /api/provider-routing endpoints: they are filtered to the
         // authenticated tenant's retained connections, and a request without tenant scope sees none.
         var canReadRouting = canManageCredentials && routingTenant.HasTenantScope;
@@ -1416,16 +1423,19 @@ public static partial class WorkstationEndpoints
         var trustSnapshots = canReadRouting && routingTrustService is not null
             ? await routingTrustService.GetTrustSnapshotsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
             : [];
-        var readinessRows = await LoadDataProviderReadinessRowsAsync(context).ConfigureAwait(false);
+        // Readiness also depends on the connection read. A failed read leaves only independent evidence.
+        var readinessRows = connectionRows is null
+            ? null
+            : await LoadDataProviderReadinessRowsAsync(context).ConfigureAwait(false);
         return BuildWorkstationDataProviderRecords(
             metricsStatus,
-            connectionRows,
+            connectionRows ?? [],
             routingConnections,
             routingBindings,
             trustSnapshots,
             readinessRows,
             asOf: DateTimeOffset.UtcNow,
-            exposeConnectionSummaries: canManageCredentials);
+            exposeConnectionSummaries: canManageCredentials && connectionRows is not null);
     }
 
     // The same permissions GET /api/providers/readiness admits, so the list never shows a caller a
@@ -1439,28 +1449,44 @@ public static partial class WorkstationEndpoints
     /// of its listed and readiness status; listing with the same rule here keeps the cross-screen
     /// "Providers healthy" count equal to what that page shows.
     /// </summary>
-    private static async Task<IReadOnlyList<ProviderReadinessRowDto>> LoadDataProviderReadinessRowsAsync(HttpContext context)
+    private static async Task<IReadOnlyList<ProviderReadinessRowDto>?> LoadDataProviderReadinessRowsAsync(HttpContext context)
     {
         if (!DataProviderReadinessPermissions.Any(permission => HasPermission(context, permission)))
         {
             return [];
         }
 
-        // The readiness service is built from the shared configuration store; a host that has not
-        // registered that store has no readiness to report, and resolving the service would throw.
-        if (context.RequestServices.GetService<Meridian.Ui.Shared.Services.ConfigStore>() is null)
+        return await LoadOptionalDataProviderEvidenceAsync<ProviderReadinessRowDto>(context, "Provider readiness", async () =>
         {
-            return [];
-        }
+            // Hosts without the shared configuration store do not offer readiness enrichment.
+            if (context.RequestServices.GetService<Meridian.Ui.Shared.Services.ConfigStore>() is null)
+                return [];
 
-        var readinessService = context.RequestServices.GetService<ProviderReadinessService>();
-        if (readinessService is null)
+            var readinessService = context.RequestServices.GetService<ProviderReadinessService>();
+            if (readinessService is null)
+                return [];
+
+            var readiness = await readinessService.GetReadinessAsync(context.RequestAborted).ConfigureAwait(false);
+            return readiness.Providers;
+        }).ConfigureAwait(false);
+    }
+
+    private static async Task<IReadOnlyList<T>?> LoadOptionalDataProviderEvidenceAsync<T>(
+        HttpContext context, string evidence, Func<Task<IReadOnlyList<T>>> read)
+    {
+        try
         {
-            return [];
+            return await read().ConfigureAwait(false);
         }
-
-        var readiness = await readinessService.GetReadinessAsync(context.RequestAborted).ConfigureAwait(false);
-        return readiness.Providers;
+        catch (Exception ex) when (ex is not OutOfMemoryException and not AccessViolationException)
+        {
+            context.RequestAborted.ThrowIfCancellationRequested();
+            // Repository failures can contain connection details. Log the type without the payload.
+            context.RequestServices.GetService<ILoggerFactory>()
+                ?.CreateLogger("Meridian.Ui.Shared.Endpoints.WorkstationEndpoints")
+                .LogWarning("{Evidence} unavailable ({FailureType}).", evidence, ex.GetType().Name);
+            return null;
+        }
     }
 
     // Returns null when neither the strategy run read service nor the configuration store is
@@ -1490,25 +1516,7 @@ public static partial class WorkstationEndpoints
             .CountProviderHealth(providers.Select(static provider => provider.Status))
             .Healthy;
 
-        var backfillStore = context.RequestServices.GetService<BackfillCoordinator>()?.GetReceiptStore()
-            ?? (configStore is null ? null : new BackfillStatusStore(configStore.GetDataRoot()));
-        var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
-        var retained = backfillStore?.ReadRecentRetainedResults(50, tenantId) ?? [];
-        var backfills = retained.Select(BuildRetainedBackfillRow).ToList();
-
-        if (backfillStore?.TryRead() is { ProviderProvenance: null } legacy)
-        {
-            var legacyId = "BF-" + Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
-            {
-                legacy.Provider,
-                legacy.CompletedUtc,
-                legacy.From,
-                legacy.To,
-                legacy.Symbols
-            }))[..16];
-            backfills.Add(BuildBackfillRow(legacyId, legacy.Symbols,
-                legacy.From, legacy.To, legacy.Provider, legacy.Success, legacy.CompletedUtc));
-        }
+        var backfills = LoadOptionalDataBackfillRows(context, configStore);
 
         var metrics = new List<WorkstationMetricCard>
         {
@@ -1537,6 +1545,44 @@ public static partial class WorkstationEndpoints
             Exports: [],
             UploadTemplates: BuildDataUploadTemplateCatalog(),
             KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
+    }
+
+    private static IReadOnlyList<WorkstationDataBackfillRecord> LoadOptionalDataBackfillRows(
+        HttpContext context, Meridian.Application.UI.ConfigStore? configStore)
+    {
+        context.RequestAborted.ThrowIfCancellationRequested();
+        var backfills = new List<WorkstationDataBackfillRecord>();
+        try
+        {
+            var backfillStore = context.RequestServices.GetService<BackfillCoordinator>()?.GetReceiptStore()
+                ?? (configStore is null ? null : new BackfillStatusStore(configStore.GetDataRoot()));
+            var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+            var retained = backfillStore?.ReadRecentRetainedResults(50, tenantId) ?? [];
+            backfills.AddRange(retained.Select(BuildRetainedBackfillRow));
+
+            if (backfillStore?.TryReadLegacySummary() is { } legacy)
+            {
+                var legacyId = "BF-" + Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
+                {
+                    legacy.Provider,
+                    legacy.CompletedUtc,
+                    legacy.From,
+                    legacy.To,
+                    legacy.Symbols
+                }))[..16];
+                backfills.Add(BuildBackfillRow(legacyId, legacy.Symbols,
+                    legacy.From, legacy.To, legacy.Provider, legacy.Success, legacy.CompletedUtc));
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            context.RequestServices.GetService<ILoggerFactory>()
+                ?.CreateLogger("Meridian.Ui.Shared.Endpoints.WorkstationEndpoints")
+                .LogWarning("Backfill evidence unavailable ({FailureType}).", ex.GetType().Name);
+        }
+
+        context.RequestAborted.ThrowIfCancellationRequested();
+        return backfills;
     }
 
     private static WorkstationDataBackfillRecord BuildBackfillRow(string id, IReadOnlyList<string> symbols,

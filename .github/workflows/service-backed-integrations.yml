@@ -133,18 +133,32 @@ jobs:
         if: ${{ !cancelled() && steps.dotnet.outcome == 'success' }}
         run: dotnet restore tests/Meridian.Demo.Tests/Meridian.Demo.Tests.csproj
 
+      # One xUnit class (AtomicTaxLotJournalStoreTests) runs serially for about a third of
+      # this suite's test time. The suite therefore runs as the two complementary processes
+      # declared in integration_evidence.MERIDIAN_PROCESSES: that class against its own
+      # database, and every other test against the primary one. Build once so neither
+      # process builds, and so both test exactly the same binaries.
+      - name: Build Meridian integration project
+        id: build-meridian
+        if: ${{ !cancelled() && steps.dotnet.outcome == 'success' }}
+        run: dotnet build tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore
+
+      - name: Create the second integration database
+        id: database-meridian
+        if: ${{ !cancelled() && steps.dotnet.outcome == 'success' }}
+        env:
+          POSTGRES_CONTAINER_ID: ${{ job.services.postgres.id }}
+        run: |
+          set -euo pipefail
+          docker exec -e PGPASSWORD=meridian-certification -u postgres "$POSTGRES_CONTAINER_ID" \
+            createdb --username postgres meridian_tax_lot
+
       - name: Run Meridian service-backed integration tests
         id: test-meridian
         if: ${{ !cancelled() && steps.dotnet.outcome == 'success' }}
-        run: |
-          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
-            -c Release \
-            --no-restore \
-            --collect:"XPlat Code Coverage" \
-            --settings tests/coverlet.runsettings \
-            --results-directory artifacts/test-results/production-certification/meridian-integrations \
-            --logger "trx;LogFilePrefix=meridian-integrations" \
-            --filter "Category=Integration&Category!=LiveProvider"
+        run: >-
+          python build/scripts/ci/run-meridian-integrations.py
+          --results-dir artifacts/test-results/production-certification/meridian-integrations
 
       - name: Run Direct Lending service-backed integration tests
         id: test-direct-lending
@@ -179,6 +193,8 @@ jobs:
           --results-dir artifacts/test-results/production-certification
           --output artifacts/test-results/production-certification/skip-evidence.json
           --require-trx-prefix meridian-integrations
+          --require-trx-prefix meridian-integrations-tax-lot-journal
+          --require-trx-prefix meridian-integrations-remainder
           --require-trx-prefix direct-lending-integrations
           --require-trx-prefix demo-integrations
 
@@ -211,14 +227,20 @@ jobs:
             docker exec -e PGPASSWORD=meridian-certification -u postgres "$POSTGRES_CONTAINER_ID" "$@"
           }
 
-          pg_client pg_dump --username postgres --dbname meridian \
-            --schema-only --no-owner --no-privileges > "$evidence_dir/database-schema.sql"
-          pg_client psql --username postgres --dbname meridian --csv \
-            --command "SELECT table_schema, table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog', 'information_schema') ORDER BY table_schema, table_name" \
-            > "$evidence_dir/database-table-inventory.csv"
-          pg_client psql --username postgres --dbname meridian --csv \
-            --command "SELECT table_schema, table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND (table_name LIKE '%migration%' OR table_name LIKE '%schema%') ORDER BY table_schema, table_name" \
-            > "$evidence_dir/migration-ledger-inventory.csv"
+          # One set of evidence per database a test process used. The primary database
+          # keeps its unprefixed file names.
+          for database in meridian meridian_tax_lot; do
+            prefix=""
+            if [ "$database" != "meridian" ]; then prefix="${database}-"; fi
+            pg_client pg_dump --username postgres --dbname "$database" \
+              --schema-only --no-owner --no-privileges > "$evidence_dir/${prefix}database-schema.sql"
+            pg_client psql --username postgres --dbname "$database" --csv \
+              --command "SELECT table_schema, table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog', 'information_schema') ORDER BY table_schema, table_name" \
+              > "$evidence_dir/${prefix}database-table-inventory.csv"
+            pg_client psql --username postgres --dbname "$database" --csv \
+              --command "SELECT table_schema, table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND (table_name LIKE '%migration%' OR table_name LIKE '%schema%') ORDER BY table_schema, table_name" \
+              > "$evidence_dir/${prefix}migration-ledger-inventory.csv"
+          done
 
       - name: Bind successful integration evidence to this commit and run attempt
         id: receipt
