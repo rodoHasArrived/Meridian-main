@@ -115,6 +115,10 @@ export function auditLedgerLabel(entry: AuditTrailTimelineEntry): string {
     ? "no sequence"
     : `#${entry.actionLedgerSequence}`;
 
+  if (entry.actionLedgerStatus === "WalRetainedPublicSummary") {
+    return `Retained public summary ${sequence}`;
+  }
+
   return `${executionEventLabel(entry.actionLedgerStatus, "Recorded")} ${sequence}`;
 }
 
@@ -124,6 +128,9 @@ export function auditLedgerTone(entry: AuditTrailTimelineEntry): AuditTrailTone 
   }
 
   const status = (entry.actionLedgerStatus ?? "").trim().toLowerCase();
+  if (status === "walretainedpublicsummary") {
+    return "default";
+  }
   if (status === "broken" || status === "mismatch" || status === "tampered") {
     return "danger";
   }

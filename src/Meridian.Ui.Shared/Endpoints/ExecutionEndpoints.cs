@@ -407,7 +407,10 @@ public static partial class ExecutionEndpoints
                 StillWorking: sweep.StillWorking,
                 // Distinct from Status: a Completed sweep over an unenumerable broker book has
                 // emptied only the in-memory view, and the caller must be able to see that.
-                BrokerViewUnavailable: sweep.BrokerViewUnavailable ? true : null);
+                BrokerViewUnavailable: sweep.BrokerViewUnavailable ? true : null,
+                IncidentId: sweep.IncidentId,
+                EvidenceRetained: sweep.EvidenceRetained,
+                EvidenceError: sweep.EvidenceError);
 
             return Results.Json(actionResult, jsonOptions);
         })
@@ -453,6 +456,7 @@ public static partial class ExecutionEndpoints
         .Produces(503);
 
         MapExecutionAuditEndpoints(group, jsonOptions);
+        MapExecutionCancelIncidentEndpoints(group, jsonOptions);
 
         group.MapGet("/controls", (HttpContext context) =>
         {
