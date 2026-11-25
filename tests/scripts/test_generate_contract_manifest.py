@@ -29,7 +29,7 @@ class ContractGenerationTests(unittest.TestCase):
         self.write_json("database/manifest/catalog.json", {"schemas": [{"name": "ledger", "relations": []}]})
         self.write_json("database/manifest/migrations.json", {"migration_sets": [], "files": []})
         self.write_json("database/manifest/policies.json", {"failed": False, "findings": []})
-        self.write("docs/source/generated/source-hash-manifest.json", "reviewed baseline\n")
+        self.write("docs/source/generated/source-hashes/SRC-APP.json", "reviewed baseline\n")
         self.write_contracts(2)
 
     def write(self, relative: str, value: str) -> None:

@@ -17,6 +17,7 @@ EXAMPLE_VALIDATION = "docs/status/example-validation.md"
 SOURCE = "src/Example/Example.cs"
 README = "src/Example/README.md"
 COVERAGE = "docs/status/coverage-report.md"
+HASHES = "docs/source/generated/source-hashes"
 MARKER = "<!-- auto-sync:coverage -->"
 
 
@@ -84,7 +85,7 @@ class GeneratedMergeRecoveryTests(unittest.TestCase):
 
     def test_apply_resolves_generated_only_and_preserves_manual_conflicts(self) -> None:
         paths = (ASSET, DOC, SOURCE, README, "docs/generated/README.md",
-                 "docs/source/generated/source-hash-manifest.json", "docs/HELP.md")
+                 f"{HASHES}/SRC-APP.json", "docs/HELP.md")
         self.start_conflict(paths)
         original_manual = {path: (self.repo / path).read_bytes() for path in paths[2:]}
         self.write("untracked.txt", "keep untracked work\n")
@@ -193,7 +194,7 @@ class GeneratedMergeRecoveryTests(unittest.TestCase):
         self.assertEqual(before, self.snapshot())
 
     def test_reviewed_hash_conflict_uses_only_parent_entries_matching_final_source(self) -> None:
-        manifest_path = "docs/source/generated/source-hash-manifest.json"
+        manifest_path = f"{HASHES}/Example.json"
         registry = {"modules": [{"id": "Example", "path": "src/Example", "readme": README}]}
         self.write("docs/source/data/source-modules.yml", json.dumps(registry))
         self.write(SOURCE, "// base\n")
@@ -226,6 +227,40 @@ class GeneratedMergeRecoveryTests(unittest.TestCase):
         self.assertEqual(json.loads((self.repo / manifest_path).read_bytes()),
                          json.loads(self.git("show", f"main:{manifest_path}").stdout))
         self.assertFalse(self.git("ls-files", "--unmerged").stdout)
+
+    def test_reviews_of_different_modules_merge_without_conflict(self) -> None:
+        # The repository marks each reviewed fingerprint file merge=binary; one
+        # file per module means only concurrent reviews of one module collide.
+        self.write(".gitattributes", f"{HASHES}/* merge=binary\n")
+        registry = {"modules": [
+            {"id": "Example", "path": "src/Example", "readme": README},
+            {"id": "Other", "path": "src/Other", "readme": "src/Other/README.md"},
+        ]}
+        self.write("docs/source/data/source-modules.yml", json.dumps(registry))
+        for module in ("Example", "Other"):
+            self.write(f"src/{module}/{module}.cs", "// base\n")
+            self.write(f"src/{module}/README.md", f"# {module}\n")
+        validator = SCRIPT.parent / "docs/validate-doc-hashes.py"
+        def refresh(module_id):
+            subprocess.run([sys.executable, str(validator), "--root", str(self.repo), "--write-module", module_id],
+                           check=True, capture_output=True)
+        refresh("Example")
+        refresh("Other")
+        self.commit("reviewed base")
+        self.git("switch", "-c", "feature")
+        self.write("src/Example/Example.cs", "// reviewed feature\n")
+        refresh("Example")
+        self.commit("feature review")
+        self.git("switch", "main")
+        self.write("src/Other/Other.cs", "// reviewed incoming\n")
+        refresh("Other")
+        self.commit("main review")
+        self.git("switch", "feature")
+        result = self.git("merge", "--no-edit", "main", check=False)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        check = subprocess.run([sys.executable, str(validator), "--root", str(self.repo)],
+                               capture_output=True, text=True, check=False)
+        self.assertNotIn("hash drift", check.stdout + check.stderr)
 
     def test_repeated_apply_does_not_overwrite_regenerated_output(self) -> None:
         self.start_conflict((ASSET,))
