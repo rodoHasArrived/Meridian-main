@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileBusinessDayCalendarSource
+
+Qualified name: <code>Meridian.Storage.Calendars.FileBusinessDayCalendarSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs:38](../../../../src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs#L38).
+
+The business-day calendars held as files under &lt;dataRoot&gt;/calendars, one calendar per {ID}.json file, loaded once (there is no hot reload) plus the built-in BusinessDayCalendars.WeekendsOnly calendar (ADR-025).
+
+```csharp
+public sealed class FileBusinessDayCalendarSource : IBusinessDayCalendarSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string DirectoryName = &quot;calendars&quot;;</code> | [src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs:41](../../../../src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs#L41) | The directory under the data root that holds calendar files. |
+| <code>public string CalendarDirectory { get; }</code> | [src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs:70](../../../../src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs#L70) | The directory the calendars were read from: &lt;dataRoot&gt;/calendars. |
+| <code>public IReadOnlyList&lt;HolidayBusinessDayCalendar&gt; Calendars { get; }</code> | [src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs:76](../../../../src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs#L76) | The calendars loaded from files, sorted by ordinal id. The built-in WEEKENDS calendar is not listed here but always resolves. |
+| <code>public IReadOnlyList&lt;BusinessDayCalendarFileRefusal&gt; RefusedFiles { get; }</code> | [src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs:79](../../../../src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs#L79) | The refused calendar files, in ordinal file-name order. |
+| <code>public static FileBusinessDayCalendarSource Load(string dataRoot, ILogger&lt;FileBusinessDayCalendarSource&gt;? logger = null);</code> | [src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs:87](../../../../src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs#L87) | Reads every top-level *.json file under &lt;dataRoot&gt;/calendars once, in ordinal file-name order, logging one Information line per loaded calendar (id, version, hash and coverage) and one Warning per refused file. Subdirectories and other files are ignored. |
+| <code>public bool TryGet(string calendarId, [NotNullWhen(true)] out IBusinessDayCalendar? calendar) =&gt; …;</code> | [src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs:180](../../../../src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs#L180) |  |
+| <code>public bool TryResolve(IReadOnlyList&lt;string&gt; calendarIds, [NotNullWhen(true)] out IBusinessDayCalendar? calendar) =&gt; …;</code> | [src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs:184](../../../../src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs#L184) |  |
+
+## CompressionCodec
+
+Qualified name: <code>Meridian.Storage.CompressionCodec</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/StorageOptions.cs:210](../../../../src/Meridian.Storage/StorageOptions.cs#L210).
+
+Compression codec options.
+
+```csharp
+public enum CompressionCodec : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None</code> | [src/Meridian.Storage/StorageOptions.cs:213](../../../../src/Meridian.Storage/StorageOptions.cs#L213) | No compression. |
+| <code>LZ4</code> | [src/Meridian.Storage/StorageOptions.cs:215](../../../../src/Meridian.Storage/StorageOptions.cs#L215) | LZ4 - fast compression, lower ratio. |
+| <code>Gzip</code> | [src/Meridian.Storage/StorageOptions.cs:217](../../../../src/Meridian.Storage/StorageOptions.cs#L217) | Gzip - balanced compression. |
+| <code>Zstd</code> | [src/Meridian.Storage/StorageOptions.cs:219](../../../../src/Meridian.Storage/StorageOptions.cs#L219) | Zstd - high compression ratio. |
+| <code>Brotli</code> | [src/Meridian.Storage/StorageOptions.cs:221](../../../../src/Meridian.Storage/StorageOptions.cs#L221) | Brotli - high compression, slower. |
+
 ## ConflictStrategy
 
 Qualified name: <code>Meridian.Storage.ConflictStrategy</code>. Kind: `enum`.
@@ -1185,47 +1231,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;code&quot;)] public string Code { get; init; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:301](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L301) |  |
 | <code>[JsonPropertyName(&quot;message&quot;)] public string Message { get; init; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:304](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L304) |  |
 | <code>[JsonPropertyName(&quot;remediation&quot;)] public string? Remediation { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:307](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L307) |  |
-
-## ExportValidationResult
-
-Qualified name: <code>Meridian.Storage.Export.ExportValidationResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Export/ExportValidator.cs:263](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L263).
-
-Result of a pre-export validation run.
-
-```csharp
-public sealed class ExportValidationResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;isValid&quot;)] public bool IsValid { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:266](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L266) |  |
-| <code>[JsonPropertyName(&quot;estimatedRecordCount&quot;)] public long EstimatedRecordCount { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:269](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L269) |  |
-| <code>[JsonPropertyName(&quot;estimatedSizeBytes&quot;)] public long EstimatedSizeBytes { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:272](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L272) |  |
-| <code>[JsonPropertyName(&quot;availableDiskSpaceBytes&quot;)] public long AvailableDiskSpaceBytes { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:275](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L275) |  |
-| <code>[JsonPropertyName(&quot;issues&quot;)] public IReadOnlyList&lt;ExportValidationIssue&gt; Issues { get; init; } = Array.Empty&lt;ExportValidationIssue&gt;();</code> | [src/Meridian.Storage/Export/ExportValidator.cs:278](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L278) |  |
-| <code>[JsonIgnore] public IEnumerable&lt;ExportValidationIssue&gt; Errors =&gt; …;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:281](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L281) |  |
-| <code>[JsonIgnore] public IEnumerable&lt;ExportValidationIssue&gt; Warnings =&gt; …;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:285](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L285) |  |
-
-## ExportValidationRulesRequest
-
-Qualified name: <code>Meridian.Storage.Export.ExportValidationRulesRequest</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Export/ExportRequest.cs:284](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L284).
-
-Per-request override of export validation rules.
-
-```csharp
-public sealed class ExportValidationRulesRequest
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;diskSpaceMultiplier&quot;)] public double DiskSpaceMultiplier { get; set; } = 1.2;</code> | [src/Meridian.Storage/Export/ExportRequest.cs:291](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L291) | Multiplier applied to the estimated output size to determine required free disk space. A value of 1.2 means 20 % headroom is required. Defaults to 1.2. |
-| <code>[JsonPropertyName(&quot;requireData&quot;)] public bool RequireData { get; set; }</code> | [src/Meridian.Storage/Export/ExportRequest.cs:298](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L298) | When true the export is aborted (rather than warned) when no data is found for the requested filters. |
-| <code>[JsonPropertyName(&quot;warnCsvComplexTypes&quot;)] public bool WarnCsvComplexTypes { get; set; } = true;</code> | [src/Meridian.Storage/Export/ExportRequest.cs:304](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L304) | Emit a warning when exporting nested data (e.g. LOBSnapshot) to CSV format. |

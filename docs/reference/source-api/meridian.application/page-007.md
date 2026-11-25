@@ -6,6 +6,51 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderRuntimeCredentialService
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:12](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L12).
+
+Explicit host credential selection and ownership-checked migration commands.
+
+```csharp
+public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IProviderCredentialStore credentialStore, ILogger<ProviderRuntimeCredentialService>? logger = null, ProviderRuntimeCredentialApplicationTracker? applicationTracker = null, IProviderRuntimeCredentialApplier? applier = null, ProviderRuntimeCredentialMutationGuard? mutationGuard = null, ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ProviderCredentialStoreStatus&gt; GetMigrationPreviewAsync(string providerId, string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:24](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L24) |  |
+| <code>public async Task&lt;ProviderRuntimeCredentialBinding&gt; BindAsync(string providerId, string connectionId, string tenantId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:36](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L36) |  |
+| <code>public ProviderRuntimeCredentialApplicationStatus GetApplicationStatus(string providerId, string connectionId, string tenantId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:70](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L70) | Whether the retained binding for this connection has reached running instances of this host. |
+| <code>public async Task&lt;ProviderRuntimeCredentialApplicationStatus&gt; ApplyAsync(string providerId, string connectionId, string tenantId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:90](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L90) | Asks the host&#x27;s applier to recycle the provider&#x27;s running instances under the retained binding. The default host has no in-process recycle and reports the binding as pending a deliberate restart. |
+| <code>public async Task&lt;ProviderCredentialMigrationReceipt&gt; TransferAsync(string providerId, string connectionId, string tenantId, string migrationId, string? expectedGeneration, string actor, bool rollback, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:136](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L136) |  |
+| <code>public async Task&lt;ProviderCredentialMigrationReceipt&gt; FinalizeAsync(string providerId, string connectionId, string tenantId, string migrationId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:160](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L160) | Retires a verified migration: rollback ends and the provider-wide record is released; the receipt stays in audit. |
+| <code>public static ProviderCredentialScope? ResolveScope(AppConfig config, string providerId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:176](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L176) | Null is permitted only for an entirely legacy provider family, never a partial owner or dangling default. |
+| <code>public static ProviderCredentialScope RequireScope(AppConfig config, string providerId, string connectionId, string tenantId, bool requireEnabled = true);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:205](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L205) |  |
+
+## ProviderSetupService
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderSetupService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:14](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L14).
+
+Configures provider setup requests without persisting raw provider credentials in application config.
+
+```csharp
+public sealed class ProviderSetupService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderSetupService(UI.ConfigStore store, IProviderCredentialStore credentialStore, IProviderSetupRegistry setupRegistry, ProviderCredentialOwnershipPolicy? ownershipPolicy = null, ProviderRuntimeCredentialMutationGuard? mutationGuard = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:25](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L25) |  |
+| <code>public async Task&lt;ProviderSetupResult&gt; ConfigureForConnectionAsync(ProviderSetupRequest request, string connectionId, string tenantId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:37](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L37) | Configures credentials for an existing connection whose tenant ownership is already retained. |
+| <code>public async Task&lt;ProviderSetupResult&gt; ConfigureAsync(ProviderSetupRequest request, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:86](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L86) |  |
+
 ## ProviderTemplateCompatibilityException
 
 Qualified name: <code>Meridian.Application.ProviderRouting.ProviderTemplateCompatibilityException</code>. Kind: `class`.
@@ -1096,39 +1141,3 @@ Declared public members:
 | <code>public decimal? DistributionRatio { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:58](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L58) |  |
 | <code>public decimal? ExchangeRatio { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:60](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L60) |  |
 | <code>public CorporateActionRetainedSourceEvidenceDto? SourceEvidence { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:62](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L62) |  |
-
-## CorporateActionProposalMapper
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionProposalMapper</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:15](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L15).
-
-Maps an ingest proposal onto the corporate-action event contract, mirroring the orchestrator&#x27;s auto-apply mapping so operator applies land identically.
-
-```csharp
-public static class CorporateActionProposalMapper
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static CorporateActionDto ToCorporateAction(CorporateActionProposal proposal);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:17](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L17) |  |
-
-## CorporateActionProviderFetchOutcome
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionProviderFetchOutcome</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:78](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L78).
-
-Per-provider, per-security coverage, independent of proposal acceptance authority.
-
-```csharp
-public sealed record CorporateActionProviderFetchOutcome(string ProviderId, string Ticker, CorporateActionFetchStatus Status, int ActionsFetched, IReadOnlyList<CorporateActionFetchFailure> Failures)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionFetchCoverage? Coverage { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:85](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L85) |  |
