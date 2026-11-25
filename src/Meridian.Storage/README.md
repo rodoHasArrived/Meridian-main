@@ -16,6 +16,13 @@ binds repair purpose, repair operation identity and quality snapshot before rows
 revision ID. Tampering with those facts invalidates the receipt. Older receipts omit the optional
 member and keep their existing content addresses; absent quality or repair status remains unknown.
 
+Historical bar evidence retains the precise OHLC price basis through JSON, batch row digests and
+Parquet. Known basis declarations change row identity even when numeric prices coincide; Unknown
+keeps the legacy row digest. Parquet historical-bar v2 files retain readable `PriceBasis` plus the
+legacy flag, while existing v1 files remain unchanged and discoverable. Catalog date parsing accepts
+both filename generations. Structured research exports retain basis companions with exported OHLC;
+legacy data is explicitly Unknown. See the [migration notes](../../docs/development/provider-implementation.md#historical-price-bases).
+
 The backfill status store exposes a legacy summary only for a raw snapshot written without a
 provenance receipt. Reads of retained results continue to enforce tenant visibility.
 

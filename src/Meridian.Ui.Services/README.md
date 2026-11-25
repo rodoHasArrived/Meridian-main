@@ -15,6 +15,10 @@ last_reviewed: 2026-11-21
 headers to return server artifact bytes. The desktop posted-ledger CSV action consumes it without
 reformatting journal amounts or treating authorization failures as fixture data.
 
+Stored historical-bar reads preserve explicit `PriceBasis` and the legacy adjustment flag.
+Missing basis remains Unknown; contradictory declarations are rejected as malformed records rather
+than relabeled raw. This keeps workstation-loaded prices consistent with provider and storage evidence.
+
 Provider health keeps unavailable numeric metrics null in snapshots and history. Ranking uses
 measured values, and composite scores require every weighted component.
 

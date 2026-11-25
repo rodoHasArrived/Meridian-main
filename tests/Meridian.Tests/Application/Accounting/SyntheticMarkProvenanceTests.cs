@@ -25,7 +25,8 @@ public sealed class SyntheticMarkProvenanceTests
     private static readonly DateTimeOffset AsOfUtc = new(2026, 7, 3, 21, 0, 0, TimeSpan.Zero);
 
     private static HistoricalBar Bar(string source, decimal close = 187.42m)
-        => new("AAPL", AsOf, 186m, 188m, 185m, close, 1_000_000, Source: source);
+        => new("AAPL", AsOf, 186m, 188m, 185m, close, 1_000_000, Source: source,
+            PriceBasis: HistoricalPriceBasis.Raw);
 
     [Fact]
     public async Task SyntheticProvider_MarkIsNeverStampedLevel1()
@@ -81,7 +82,7 @@ public sealed class SyntheticMarkProvenanceTests
     }
 
     [Fact]
-    public async Task RealSyntheticHistoricalProvider_DeclaresItselfSimulated()
+    public async Task RealSyntheticHistoricalProvider_DeclaresItselfSimulatedAndCannotSupplyRawAccountingMarks()
     {
         // Exercises the shipped provider rather than a stub, so the declaration cannot rot.
         using var provider = new SyntheticHistoricalDataProvider();
@@ -89,10 +90,7 @@ public sealed class SyntheticMarkProvenanceTests
 
         var quote = await new HistoricalCloseMarkPriceSource(provider).GetMarkPriceAsync("AAPL", AsOf);
 
-        quote.Should().NotBeNull();
-        quote!.Provenance.Should().Be(DataProvenance.Simulated);
-        quote.Level.Should().Be(FairValueLevel.Level3);
-        quote.EvidenceReference.Should().Contain("synthetic");
+        quote.Should().BeNull("the shipped synthetic adapter does not declare an authoritative raw-price basis");
     }
 
     [Fact]

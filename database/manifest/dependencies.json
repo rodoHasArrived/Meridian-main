@@ -4456,24 +4456,6 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRevision"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeState"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Configuration.ConnectivityProbeOptions"
     },
     {
@@ -5885,6 +5867,24 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Domain.Models.HistoricalBar"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasis"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasisJsonConverter"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasisValues"
     },
     {
       "kind": "contract-set-member",
@@ -39477,38 +39477,8 @@
     {
       "kind": "contract-reference",
       "label": "",
-      "source": "contract:Meridian.Contracts.Configuration.ConfigurationChangeStatus",
-      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRevision"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Configuration.ConfigurationChangeStatus",
-      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Configuration.ConfigurationChangeStatus",
-      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeState"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
       "source": "contract:Meridian.Contracts.Configuration.ConfigurationFieldChange",
       "target": "contract:Meridian.Contracts.Configuration.ConfigurationChangeImpact"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement",
-      "target": "contract:Meridian.Contracts.Configuration.ConfigurationApplyEntry"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement",
-      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRevision"
     },
     {
       "kind": "contract-reference",
@@ -40455,6 +40425,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar",
+      "target": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasis"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Domain.Models.AggregateBarPayload",
       "target": "contract:Meridian.Contracts.Domain.Events.MarketEventPayload"
     },
@@ -40523,6 +40499,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Domain.Models.HistoricalBar",
       "target": "contract:Meridian.Contracts.Domain.Events.MarketEventPayload"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Domain.Models.HistoricalBar",
+      "target": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasis"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasisJsonConverter",
+      "target": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasis"
     },
     {
       "kind": "contract-reference",
@@ -72166,7 +72154,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "f4a3d75ac5daa638228ffbd0d2ce512604b911791be268a6a1ec1e1cd11942c0",
+  "fingerprint": "e8c9e3058c8146819b153236e62280b5ab47bf6d4e8d724b5375e8e8463648c3",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -76672,24 +76660,6 @@
       "label": "Meridian.Contracts.Configuration.ConfigurationFieldChange"
     },
     {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.Configuration.ConfigurationRevision",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Configuration.ConfigurationRevision"
-    },
-    {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement"
-    },
-    {
-      "classification": "enum",
-      "id": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeState",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Configuration.ConfigurationRuntimeState"
-    },
-    {
       "classification": "configuration",
       "id": "contract:Meridian.Contracts.Configuration.ConnectivityProbeOptions",
       "kind": "contract-type",
@@ -78104,6 +78074,24 @@
       "id": "contract:Meridian.Contracts.Domain.Models.HistoricalBar",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Domain.Models.HistoricalBar"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasis",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Domain.Models.HistoricalPriceBasis"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasisJsonConverter",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Domain.Models.HistoricalPriceBasisJsonConverter"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasisValues",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Domain.Models.HistoricalPriceBasisValues"
     },
     {
       "classification": "record",
@@ -106031,9 +106019,9 @@
     }
   ],
   "summary": {
-    "contract_references": 4421,
+    "contract_references": 4419,
     "contract_set_memberships": 5824,
-    "edges": 11988,
+    "edges": 11986,
     "foreign_keys": 221,
     "logical_references": 6,
     "nodes": 5889

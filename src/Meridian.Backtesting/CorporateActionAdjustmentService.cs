@@ -178,6 +178,20 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
         IReadOnlyList<CorporateActionDto> sortedActions,
         CancellationToken ct)
     {
+        if (sortedActions.Any(static action =>
+            CorporateActionTypeDescriptorCatalog.TryNormalize(action.EventType, out var descriptor) &&
+            ((descriptor.AdjustmentBehavior == CorporateActionAdjustmentBehavior.PriceScaling && action.SplitRatio is > 0m and not 1m) ||
+             (descriptor.AdjustmentBehavior == CorporateActionAdjustmentBehavior.CashDistribution && action.DividendPerShare is > 0m))))
+        {
+            // Validate the complete history before adjusted/unknown closes could enter a
+            // dividend reference factor or a partially prepared plan could escape to replay.
+            foreach (var bar in bars)
+            {
+                ct.ThrowIfCancellationRequested();
+                CorporateActionAdjustmentPlan.RequireRawPriceBasis(bar);
+            }
+        }
+
         var dividendFactors = BuildDividendFactors(bars, sortedActions, ct);
         var steps = new List<(DateOnly ExDate, decimal SplitDivisor, decimal DividendFactor)>();
         foreach (var group in sortedActions.GroupBy(static action => action.ExDate))

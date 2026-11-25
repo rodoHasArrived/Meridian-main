@@ -586,19 +586,20 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Domain.Models.AdjustedHistoricalBar</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs:8](../../../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs#L8).
+Source: [src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs:10](../../../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs#L10).
 
-Extended historical bar with adjustment factors and corporate action data.
+Historical bar with two independently declared OHLC price sets and corporate-action data. The primary fields are not necessarily raw. Optional adjusted fields never prove raw availability.
 
 ```csharp
-public sealed record AdjustedHistoricalBar(string Symbol, DateOnly SessionDate, decimal Open, decimal High, decimal Low, decimal Close, long Volume, string Source = "unknown", long SequenceNumber = 0, decimal? AdjustedOpen = null, decimal? AdjustedHigh = null, decimal? AdjustedLow = null, decimal? AdjustedClose = null, long? AdjustedVolume = null, decimal? SplitFactor = null, decimal? DividendAmount = null) : MarketEventPayload
+public sealed record AdjustedHistoricalBar(string Symbol, DateOnly SessionDate, decimal Open, decimal High, decimal Low, decimal Close, long Volume, string Source = "unknown", long SequenceNumber = 0, decimal? AdjustedOpen = null, decimal? AdjustedHigh = null, decimal? AdjustedLow = null, decimal? AdjustedClose = null, long? AdjustedVolume = null, decimal? SplitFactor = null, decimal? DividendAmount = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)][property : JsonConverter(typeof(HistoricalPriceBasisJsonConverter))] HistoricalPriceBasis PriceBasis = HistoricalPriceBasis.Unknown, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)][property : JsonConverter(typeof(HistoricalPriceBasisJsonConverter))] HistoricalPriceBasis AdjustedPriceBasis = HistoricalPriceBasis.Unknown) : MarketEventPayload
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public HistoricalBar ToHistoricalBar(bool preferAdjusted = true);</code> | [src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs:32](../../../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs#L32) | Convert to standard HistoricalBar (uses adjusted values if available). When using adjusted values, ensures OHLC relationships are maintained by clamping values to valid ranges. This handles rounding errors in split/dividend adjustments. |
+| <code>public HistoricalBar ToHistoricalBar(bool preferAdjusted = true);</code> | [src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs:41](../../../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs#L41) | Projects a complete available price set without synthesizing prices. The default prefers the optional adjusted set, otherwise preserves the primary set and its declared basis. Setting preferAdjusted to false requires explicitly raw prices. Partial adjusted OHLC is rejected rather than borrowing individual primary components. |
+| <code>public HistoricalBar ToHistoricalBar(HistoricalPriceBasis requiredBasis);</code> | [src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs:53](../../../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs#L53) | Selects a complete price set in exactly the requested basis. This method does not reverse adjustments, derive raw prices from ratios, or silently substitute a different basis. |
 
 ## AggregateBarPayload
 
@@ -757,7 +758,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Domain.Models.HistoricalBar</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:8](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L8).
+Source: [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:9](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L9).
 
 Daily historical bar (OHLCV) used for backfilling from free data sources.
 
@@ -769,25 +770,85 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Symbol { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:13](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L13) | Gets the ticker symbol for the security. |
-| <code>public DateOnly SessionDate { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:18](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L18) | Gets the trading session date for this bar. |
-| <code>public decimal Open { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:23](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L23) | Gets the opening price for the session. |
-| <code>public decimal High { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:28](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L28) | Gets the highest price during the session. |
-| <code>public decimal Low { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:33](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L33) | Gets the lowest price during the session. |
-| <code>public decimal Close { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:38](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L38) | Gets the closing price for the session. |
-| <code>public long Volume { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:43](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L43) | Gets the total trading volume for the session. |
-| <code>public string Source { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:48](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L48) | Gets the data source identifier (e.g., &quot;stooq&quot;, &quot;alpaca&quot;). |
-| <code>public long SequenceNumber { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:53](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L53) | Gets the sequence number for ordering events. |
-| <code>public bool? IsAdjusted { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:61](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L61) | Gets the price-adjustment regime of this bar: true when OHLCV values are split/dividend adjusted, false when they are raw exchange prices, and null when the regime is unknown (the honest default for sources that do not declare it). |
-| <code>public HistoricalBar(string Symbol, DateOnly SessionDate, decimal Open, decimal High, decimal Low, decimal Close, long Volume, string Source = &quot;stooq&quot;, long SequenceNumber = 0, bool? IsAdjusted = null);</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:76](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L76) | Initializes a new instance of the HistoricalBar record. |
-| <code>public DateTimeOffset ToTimestampUtc() =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:121](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L121) | Converts the session date to a UTC timestamp. |
-| <code>public decimal Range =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:127](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L127) | Gets the trading range (High minus Low) for this bar. |
-| <code>public decimal BodySize =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:133](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L133) | Gets the body size (absolute difference between Open and Close). This represents the size of the candlestick body. |
-| <code>public bool IsBullish =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:139](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L139) | Returns true if the bar is bullish (Close greater than Open). Also known as a &quot;green candle&quot; in candlestick charting. |
-| <code>public bool IsBearish =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:145](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L145) | Returns true if the bar is bearish (Close less than Open). Also known as a &quot;red candle&quot; in candlestick charting. |
-| <code>public decimal ChangePercent =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:151](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L151) | Gets the percentage change from Open to Close. Positive values indicate price increase, negative values indicate decrease. |
-| <code>public decimal TypicalPrice =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:157](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L157) | Gets the typical price, calculated as (High + Low + Close) / 3. This is a common technical analysis value used in many indicators. |
-| <code>public decimal Notional =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:163](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L163) | Gets the approximate dollar volume (Close price multiplied by Volume). Useful for liquidity analysis and position sizing. |
+| <code>public string Symbol { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:14](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L14) | Gets the ticker symbol for the security. |
+| <code>public DateOnly SessionDate { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:19](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L19) | Gets the trading session date for this bar. |
+| <code>public decimal Open { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:24](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L24) | Gets the opening price for the session. |
+| <code>public decimal High { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:29](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L29) | Gets the highest price during the session. |
+| <code>public decimal Low { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:34](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L34) | Gets the lowest price during the session. |
+| <code>public decimal Close { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:39](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L39) | Gets the closing price for the session. |
+| <code>public long Volume { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:44](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L44) | Gets the total trading volume for the session. |
+| <code>public string Source { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:49](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L49) | Gets the data source identifier (e.g., &quot;stooq&quot;, &quot;alpaca&quot;). |
+| <code>public long SequenceNumber { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:54](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L54) | Gets the sequence number for ordering events. |
+| <code>public bool? IsAdjusted { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:61](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L61) | Gets the legacy coarse adjustment flag. New observations derive this from PriceBasis. A retained legacy flag alone does not establish the precise basis and must not be used to admit raw accounting or corporate-action replay inputs. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)][JsonConverter(typeof(HistoricalPriceBasisJsonConverter))] public HistoricalPriceBasis PriceBasis { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:70](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L70) | Gets the declared basis of the complete OHLC set. Legacy records without this field remain unknown, including records previously labeled raw by an ambiguous conversion. Unknown is omitted to preserve legacy serialized evidence. |
+| <code>public HistoricalBar(string Symbol, DateOnly SessionDate, decimal Open, decimal High, decimal Low, decimal Close, long Volume, string Source = &quot;stooq&quot;, long SequenceNumber = 0, bool? IsAdjusted = null, HistoricalPriceBasis PriceBasis = HistoricalPriceBasis.Unknown);</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:86](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L86) | Initializes a new instance of the HistoricalBar record. |
+| <code>public DateTimeOffset ToTimestampUtc() =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:145](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L145) | Converts the session date to a UTC timestamp. |
+| <code>public decimal Range =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:151](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L151) | Gets the trading range (High minus Low) for this bar. |
+| <code>public decimal BodySize =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:157](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L157) | Gets the body size (absolute difference between Open and Close). This represents the size of the candlestick body. |
+| <code>public bool IsBullish =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:163](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L163) | Returns true if the bar is bullish (Close greater than Open). Also known as a &quot;green candle&quot; in candlestick charting. |
+| <code>public bool IsBearish =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:169](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L169) | Returns true if the bar is bearish (Close less than Open). Also known as a &quot;red candle&quot; in candlestick charting. |
+| <code>public decimal ChangePercent =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:175](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L175) | Gets the percentage change from Open to Close. Positive values indicate price increase, negative values indicate decrease. |
+| <code>public decimal TypicalPrice =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:181](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L181) | Gets the typical price, calculated as (High + Low + Close) / 3. This is a common technical analysis value used in many indicators. |
+| <code>public decimal Notional =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:187](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L187) | Gets the approximate dollar volume (Close price multiplied by Volume). Useful for liquidity analysis and position sizing. |
+
+## HistoricalPriceBasis
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.HistoricalPriceBasis</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs:11](../../../../src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs#L11).
+
+Declared adjustment basis of one complete historical OHLC price set. This describes prices, not source authenticity, volume units, adjustment vintage, or accounting eligibility.
+
+```csharp
+public enum HistoricalPriceBasis
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs:14](../../../../src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs#L14) | The source has not established a supported, precise price basis. |
+| <code>Raw = 1</code> | [src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs:17](../../../../src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs#L17) | Original as-traded prices, without corporate-action adjustments. |
+| <code>SplitAdjusted = 2</code> | [src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs:20](../../../../src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs#L20) | Prices adjusted for stock splits, without cash-dividend adjustments. |
+| <code>DividendAdjusted = 3</code> | [src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs:23](../../../../src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs#L23) | Prices adjusted for cash dividends, without stock-split adjustments. |
+| <code>FullyAdjusted = 4</code> | [src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs:29](../../../../src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs#L29) | Prices adjusted for both splits and dividends under the source&#x27;s methodology. Different providers or vintages are not necessarily directly comparable. |
+
+## HistoricalPriceBasisJsonConverter
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.HistoricalPriceBasisJsonConverter</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs:64](../../../../src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs#L64).
+
+Serializes readable basis names and rejects composite strings that Enum.TryParse would otherwise combine into an unrelated defined value, such as &quot;Unknown, Raw&quot; becoming Raw.
+
+```csharp
+public sealed class HistoricalPriceBasisJsonConverter : JsonConverter<HistoricalPriceBasis>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public override HistoricalPriceBasis Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options);</code> | [src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs:66](../../../../src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs#L66) |  |
+| <code>public override void Write(Utf8JsonWriter writer, HistoricalPriceBasis value, JsonSerializerOptions options);</code> | [src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs:79](../../../../src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs#L79) |  |
+
+## HistoricalPriceBasisValues
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.HistoricalPriceBasisValues</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs:33](../../../../src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs#L33).
+
+Exact-name parsing shared by typed storage and projected historical exports.
+
+```csharp
+public static class HistoricalPriceBasisValues
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool TryParse(string? value, out HistoricalPriceBasis basis);</code> | [src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs:40](../../../../src/Meridian.Contracts/Domain/Models/HistoricalPriceBasis.cs#L40) | Parses one supported name. Enum flag combinations and numeric strings are not declarations. |
 
 ## HistoricalQuote
 

@@ -230,8 +230,10 @@ public sealed class DailyMarkToMarketServiceTests
         var sunday = new DateOnly(2026, 07, 05);
         IReadOnlyList<HistoricalBar> bars =
         [
-            new HistoricalBar("AAPL", friday.AddDays(-1), 149m, 151m, 148m, 150.5m, 1_000L, "stooq", 0),
-            new HistoricalBar("AAPL", friday, 150m, 152m, 149m, 151.25m, 1_000L, "stooq", 1)
+            new HistoricalBar("AAPL", friday.AddDays(-1), 149m, 151m, 148m, 150.5m, 1_000L, "fixture", 0,
+                PriceBasis: HistoricalPriceBasis.Raw),
+            new HistoricalBar("AAPL", friday, 150m, 152m, 149m, 151.25m, 1_000L, "fixture", 1,
+                PriceBasis: HistoricalPriceBasis.Raw)
         ];
         var provider = new Mock<IHistoricalDataProvider>();
         provider.Setup(p => p.Name).Returns("composite");
@@ -244,8 +246,34 @@ public sealed class DailyMarkToMarketServiceTests
 
         quote.Should().NotBeNull();
         quote!.Price.Should().Be(151.25m, "the latest session on or before the valuation date wins");
-        quote.Source.Should().Be("stooq");
+        quote.Source.Should().Be("fixture");
         quote.EvidenceReference.Should().Contain("2026-07-03");
+        quote.EvidenceReference.Should().Contain("basis=Raw");
+    }
+
+    [Theory]
+    [InlineData(HistoricalPriceBasis.Unknown)]
+    [InlineData(HistoricalPriceBasis.SplitAdjusted)]
+    [InlineData(HistoricalPriceBasis.DividendAdjusted)]
+    [InlineData(HistoricalPriceBasis.FullyAdjusted)]
+    public async Task HistoricalCloseMarkPriceSource_RejectsNonRawLatestClose(HistoricalPriceBasis basis)
+    {
+        var asOf = new DateOnly(2026, 7, 3);
+        IReadOnlyList<HistoricalBar> bars =
+        [
+            new("AAPL", asOf.AddDays(-1), 98m, 102m, 96m, 100m, 1_000,
+                PriceBasis: HistoricalPriceBasis.Raw),
+            new("AAPL", asOf, 49m, 51m, 48m, 50m, 2_000,
+                IsAdjusted: basis == HistoricalPriceBasis.Unknown ? false : null, PriceBasis: basis)
+        ];
+        var provider = new Mock<IHistoricalDataProvider>();
+        provider.Setup(p => p.Name).Returns("composite");
+        provider.Setup(p => p.GetDailyBarsAsync("AAPL", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(bars);
+
+        var quote = await new HistoricalCloseMarkPriceSource(provider.Object).GetMarkPriceAsync("AAPL", asOf);
+
+        quote.Should().BeNull("an adjusted or unverified latest observation cannot become an accounting mark or silently use an older raw close");
     }
 
     [Fact]

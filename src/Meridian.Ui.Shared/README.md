@@ -38,6 +38,10 @@ account rows retain counts and an unavailable explanation instead of a dollar to
 this distinction; the legacy scalar is only a compatibility field. Ledger-impact previews are
 omitted when this comparison evidence is unavailable.
 
+Designer canonical replay requires `HistoricalPriceBasis.Raw` on every retained daily bar.
+Legacy `IsAdjusted=false` without precise basis is insufficient, so previously ambiguous stored prices
+cannot enter raw-price replay or receive a second corporate-action adjustment.
+
 ## Cancel-all incident reads
 
 `GET /api/execution/cancel-incidents?fundAccountId=...` lists recent retained incident summaries;

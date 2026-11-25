@@ -36,6 +36,12 @@ cannot hide earlier carrying legs: the comparison reports unavailable with its c
 Migration `012_direct_lending_reconciliation_evidence.sql` retains
 new request/source evidence across restarts while leaving legacy evidence unknown.
 
+Historical ticker-era retagging preserves `HistoricalBar.PriceBasis`. The daily-close accounting
+source requires an explicit Raw basis and records `basis=Raw` in new evidence references; adjusted
+or unknown latest observations produce an unavailable mark rather than an older raw substitution.
+This guard does not supply the dedicated raw accounting-close capability or expand its provider
+coverage. Legacy `IsAdjusted=false` alone cannot qualify an accounting mark.
+
 Corporate-action ingest forwards specialized source terms and the provider's original JSON
 record into durable source proposals. Exact raw-text digests are checked before recording; source
 versions remain idempotent across JSON formatting changes without replacing the first retained

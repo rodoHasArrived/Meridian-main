@@ -179,7 +179,8 @@ public interface IHistoricalDataProvider : IProviderMetadata, IDisposable
     {
         var bars = await GetDailyBarsAsync(symbol, from, to, ct).ConfigureAwait(false);
         return bars.Select(b => new AdjustedHistoricalBar(
-            b.Symbol, b.SessionDate, b.Open, b.High, b.Low, b.Close, b.Volume, b.Source, b.SequenceNumber
+            b.Symbol, b.SessionDate, b.Open, b.High, b.Low, b.Close, b.Volume, b.Source, b.SequenceNumber,
+            PriceBasis: b.PriceBasis
         )).ToList();
     }
 

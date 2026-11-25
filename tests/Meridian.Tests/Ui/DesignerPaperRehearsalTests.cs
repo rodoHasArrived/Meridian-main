@@ -75,6 +75,59 @@ public sealed class DesignerPaperRehearsalTests
     }
 
     [Theory]
+    [InlineData(HistoricalPriceBasis.Unknown, false)]
+    [InlineData(HistoricalPriceBasis.SplitAdjusted, null)]
+    [InlineData(HistoricalPriceBasis.DividendAdjusted, null)]
+    [InlineData(HistoricalPriceBasis.FullyAdjusted, null)]
+    public async Task DesignerReplay_RequiresExplicitRawPricesBeforeStartingTheEngine(
+        HistoricalPriceBasis priceBasis, bool? legacyAdjusted)
+    {
+        var root = Directory.CreateTempSubdirectory("meridian-designer-price-basis-");
+        try
+        {
+            var from = new DateOnly(2024, 1, 2);
+            await WriteBarsAsync(root.FullName, from, priceBasis, legacyAdjusted);
+            var history = new FileOperationalCaseHistoryStore(root.FullName);
+            var repository = new StrategyRunStore(history);
+            var designService = new StrategyDesignService();
+            var document = designService.GetTemplates().Single(item => item.TemplateId == "equity-price-filter")
+                .Document with
+            { Universe = [Symbol] };
+            var evidence = new FileEvidenceArtifactStore(root.FullName, NullLogger<FileEvidenceArtifactStore>.Instance);
+            var sourceEvidence = await evidence.WriteManifestAsync(
+                new EvidencePacketDto(new EvidenceSubjectDto(document.DocumentId, "strategy", document.Name, "Strategy", null, "Strategy"),
+                    DateTimeOffset.UtcNow, [], [],
+                    new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, [], [], [], [], []), [], []),
+                new EvidencePacketExportRequest("fixture-author", "Retained synthetic replay input")
+                {
+                    TenantId = Tenant,
+                    Scope = Company
+                });
+            var reference = EvidenceVaultReference.CanonicalPrefix + sourceEvidence.VaultIdentity!.VaultId;
+            var actions = Substitute.For<ISecurityCorporateActionsQueryService>();
+            actions.GetCorporateActionsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult<IReadOnlyList<CorporateActionDto>>([]));
+            var engineInvocations = 0;
+            var service = new DesignerBacktestService(root.FullName, _ =>
+            {
+                engineInvocations++;
+                throw new InvalidOperationException("Unverified raw data must be blocked before engine creation.");
+            }, repository, evidence, designService, new TradingCalendar(), BuildSecurities(), actions, new StrategyArtifactRegistry(root.FullName));
+
+            var run = () => service.RunAsync(document, new StrategyRunRepositoryScope(Tenant, Company),
+                "fixture-operator", AccountId, from, from.AddDays(3),
+                new StrategyRunEvidenceLoop(["Use explicitly raw historical prices."], [reference], [], [], [], []), default);
+
+            await run.Should().ThrowAsync<DesignerBacktestBlockedException>().WithMessage("*unadjusted daily bar*");
+            engineInvocations.Should().Be(0, "a legacy false adjustment flag cannot establish raw replay prices");
+        }
+        finally
+        {
+            root.Delete(recursive: true);
+        }
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ReviewedPaperIntent_RetryAfterRestartPreservesArtifactAndRefusesChangedAuthority(bool hasArtifact)
@@ -522,14 +575,15 @@ public sealed class DesignerPaperRehearsalTests
     private static async Task AssertSuccessAsync(HttpResponseMessage response) =>
         response.IsSuccessStatusCode.Should().BeTrue(await response.Content.ReadAsStringAsync());
 
-    private static async Task WriteBarsAsync(string root, DateOnly from)
+    private static async Task WriteBarsAsync(string root, DateOnly from,
+        HistoricalPriceBasis priceBasis = HistoricalPriceBasis.Raw, bool? legacyAdjusted = null)
     {
         var directory = Directory.CreateDirectory(Path.Combine(root, Symbol));
         var prices = new[] { 99m, 101m, 102m, 104m };
         var lines = prices.Select((price, index) =>
         {
             var bar = new HistoricalBar(Symbol, from.AddDays(index), price, price, price, price,
-                1_000_000, "synthetic-fixture", index + 1, IsAdjusted: false);
+                1_000_000, "synthetic-fixture", index + 1, IsAdjusted: legacyAdjusted, PriceBasis: priceBasis);
             return JsonSerializer.Serialize(MarketEvent.HistoricalBar(bar.ToTimestampUtc(), Symbol, bar,
                 "synthetic-fixture", index + 1), MarketDataJsonContext.HighPerformanceOptions);
         });

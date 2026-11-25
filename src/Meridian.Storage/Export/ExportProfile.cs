@@ -52,12 +52,15 @@ public sealed class ExportProfile
 
     /// <summary>
     /// Fields to include in export (null = all fields).
+    /// Historical OHLC exports retain PriceBasis and IsAdjusted companions when prices are selected;
+    /// optional adjusted price fields retain their independent AdjustedPriceBasis.
     /// </summary>
     [JsonPropertyName("includeFields")]
     public string[]? IncludeFields { get; set; }
 
     /// <summary>
     /// Fields to exclude from export.
+    /// Historical price-basis companions cannot be removed while retaining the prices they describe.
     /// </summary>
     [JsonPropertyName("excludeFields")]
     public string[]? ExcludeFields { get; set; }

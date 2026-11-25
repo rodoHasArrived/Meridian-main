@@ -150,9 +150,22 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
                 => throw new ArgumentException("'raw' cannot be combined with other Alpaca adjustments.", nameof(adjustment)),
             _ when parts.Contains("all") && parts.Length > 1
                 => throw new ArgumentException("'all' cannot be combined with other Alpaca adjustments.", nameof(adjustment)),
-            _ => normalized
+            _ => string.Join(',', parts)
         };
     }
+
+    private HistoricalPriceBasis RequestedPriceBasis => _adjustment switch
+    {
+        "raw" => HistoricalPriceBasis.Raw,
+        "split" => HistoricalPriceBasis.SplitAdjusted,
+        "dividend" => HistoricalPriceBasis.DividendAdjusted,
+        "all" => HistoricalPriceBasis.FullyAdjusted,
+        _ when _adjustment.Split(',').Contains("split") && _adjustment.Split(',').Contains("dividend")
+            => HistoricalPriceBasis.FullyAdjusted,
+        // The shared basis vocabulary cannot represent spin-off-only or partial
+        // combinations containing spin-offs. Do not label them raw or fully adjusted.
+        _ => HistoricalPriceBasis.Unknown
+    };
 
     public override async Task<bool> IsAvailableAsync(CancellationToken ct = default)
     {
@@ -255,7 +268,9 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
                         AdjustedClose: isAdjusted ? bar.Close : null,
                         AdjustedVolume: isAdjusted ? bar.Volume : null,
                         SplitFactor: null,
-                        DividendAmount: null
+                        DividendAmount: null,
+                        PriceBasis: RequestedPriceBasis,
+                        AdjustedPriceBasis: isAdjusted ? RequestedPriceBasis : HistoricalPriceBasis.Unknown
                     ));
                 }
 

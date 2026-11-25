@@ -67,7 +67,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Accounting.HistoricalCloseMarkPriceSource</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs:15](../../../../src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs#L15).
+Source: [src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs:16](../../../../src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs#L16).
 
 Marks positions at the most recent daily close on or before the valuation date, sourced from the provider chain (typically the composite failover provider). Weekends and holidays fall back to the latest prior session within the lookback window.
 
@@ -79,8 +79,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public HistoricalCloseMarkPriceSource(IHistoricalDataProvider provider, ILogger? log = null);</code> | [src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs:22](../../../../src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs#L22) |  |
-| <code>public async Task&lt;MarkPriceQuote?&gt; GetMarkPriceAsync(string symbol, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs:29](../../../../src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs#L29) |  |
+| <code>public HistoricalCloseMarkPriceSource(IHistoricalDataProvider provider, ILogger? log = null);</code> | [src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs:23](../../../../src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs#L23) |  |
+| <code>public async Task&lt;MarkPriceQuote?&gt; GetMarkPriceAsync(string symbol, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs:30](../../../../src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs#L30) |  |
 
 ## IMarkPriceSource
 
