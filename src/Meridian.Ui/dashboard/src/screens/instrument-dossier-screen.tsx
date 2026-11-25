@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { AssetDetailPanel } from "@/screens/asset-detail-screen";
 import { FinancialValue } from "@/components/meridian/financial-value";
@@ -13,6 +13,7 @@ import { getSecurityDetail } from "@/lib/api";
 import { getLedgerBooks, getLedgerPeriods, getLedgerPeriodJournalEntries } from "@/lib/ledger-reports-api";
 import { parseExactDecimal } from "@/lib/exact-financial-value";
 import { instrumentRecordIdentity } from "@/lib/instrument-record-identity";
+import { describeBrokerageHouseholdSource, describeBrokerageSessionSource, describeLiveHoldingsSource, positionSourceAttributes, type PositionSource } from "@/lib/position-source";
 import { narrowRowsWithFundScopeContext, useFundScopeNarrowingContext } from "@/lib/operating-scope/fund-scope-context";
 import { useFundAccountScopeSelection } from "@/lib/operating-scope/scope-picker-context";
 import type { AmountPassportReference } from "@/types/amount-passport";
@@ -60,6 +61,10 @@ export function InstrumentDossierScreen({ portfolio, trading, accounting, broker
   const liveScope = narrowRowsWithFundScopeContext(fundScope, portfolio?.positions ?? trading?.positions ?? [], row => row.markFreshness?.financialAccountId, "positions");
   const caseScope = narrowRowsWithFundScopeContext(fundScope, accounting?.breakQueue ?? [], row => row.fundAccountId, "cases");
   const positionState = instrumentPositions(id, accountId, brokeragePortfolio ? { ...brokeragePortfolio, positions: brokerageScope.rows } : null, liveScope.rows);
+  const positionSource = brokeragePortfolio ? describeBrokerageHouseholdSource(brokeragePortfolio.providerId)
+    : portfolio ? { ...describeLiveHoldingsSource(), label: accountId ? "Portfolio holdings · selected account" : "Portfolio holdings · all loaded accounts" }
+      : trading?.brokerage ? describeBrokerageSessionSource(trading.brokerage)
+        : { ...describeLiveHoldingsSource(), label: "Trading workspace positions" };
   const cases = instrumentCases(id, caseScope.rows, accountId, periodId, params.get("ledgerBookId"));
   const changeTab = (value: string) => setParams((current) => {
     const next = new URLSearchParams(current);
@@ -70,7 +75,7 @@ export function InstrumentDossierScreen({ portfolio, trading, accounting, broker
     && row.price !== null && row.pricePassport?.freshness !== "stale" && row.pricePassport?.freshness !== "blocked");
   return <div className="min-w-0 space-y-4">
     <header className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
-      <div className="min-w-0"><p className="text-xs text-muted-foreground">Instrument dossier</p><h1 className="text-xl font-semibold">{entry.displayName}</h1><p className="break-all font-mono text-xs text-muted-foreground">{id} · {entry.classification.primaryIdentifierValue ?? "Identifier not recorded"} · {entry.economicDefinition.currency}</p></div>
+      <div className="min-w-0"><p className="text-xs text-muted-foreground">Instrument dossier</p><h1 className="text-xl font-semibold">{entry.displayName}</h1><p className="break-all font-mono text-xs text-muted-foreground">{entry.classification.primaryIdentifierValue ?? "Identifier not recorded"} · {entry.economicDefinition.currency}</p></div>
       <div className="flex flex-wrap gap-2"><Badge variant="outline">{entry.status}</Badge><Badge variant={allMarksCurrent ? "success" : "warning"}>{allMarksCurrent ? "Marks current" : positionState.rows.length > 0 ? "Marks need review" : "Mark unavailable"}</Badge></div>
     </header>
     {record ? <RecordIdentitySpine record={record} context={recordContext} /> : null}
@@ -80,7 +85,7 @@ export function InstrumentDossierScreen({ portfolio, trading, accounting, broker
       <TabPanel><Card><CardHeader><h2 className="card-title font-semibold">Positions by account</h2><CardDescription>Only retained Security Master identities establish an association.</CardDescription></CardHeader><CardContent>
         {positionState.unlinkedCount > 0 ? <p className="mb-3 text-sm text-muted-foreground">{positionState.unlinkedCount} loaded position(s) have no retained instrument identity and are excluded from this dossier.</p> : null}
         {(brokeragePortfolio ? brokerageScope.note : liveScope.note) ? <p className="mb-3 text-sm text-muted-foreground">{brokeragePortfolio ? brokerageScope.note : liveScope.note}</p> : null}
-        {!portfolio && !trading && !brokeragePortfolio ? <p>Position sources are unavailable.</p> : positionState.rows.length === 0 ? <p>No identity-linked positions were found in the loaded authorized accounts.</p> : <InstrumentPositionsTable rows={positionState.rows} sourceKey={JSON.stringify([id, accountId, fundScope?.entityId, fundScope?.fundId])} />}
+        {!portfolio && !trading && !brokeragePortfolio ? <p>Position sources are unavailable.</p> : positionState.rows.length === 0 ? <p>No identity-linked positions were found in the loaded authorized accounts.</p> : <InstrumentPositionsTable rows={positionState.rows} source={positionSource} observedAt={brokeragePortfolio?.asOf} sourceKey={JSON.stringify([id, accountId, fundScope?.entityId, fundScope?.fundId])} />}
       </CardContent></Card></TabPanel>
       <TabPanel>{tab === "ledger" ? <InstrumentLedger instrumentId={id} /> : null}</TabPanel>
       <TabPanel><Card><CardHeader><h2 className="card-title font-semibold">Reconciliation cases</h2><CardDescription>Cases require explicit instrument lineage and retain their own accounting scope.</CardDescription></CardHeader><CardContent>
@@ -97,14 +102,14 @@ export function InstrumentDossierScreen({ portfolio, trading, accounting, broker
   </div>;
 }
 
-function DossierValue({ value, currency, unit, amountPassport }: { value: string | number | null; currency?: string; unit?: string; amountPassport?: AmountPassportReference }) {
+function DossierValue({ value, currency, unit, amountPassport, conditionContextId }: { value: string | number | null; currency?: string; unit?: string; amountPassport?: AmountPassportReference; conditionContextId?: string }) {
   if (typeof value === "string" && (value.trim() === "—" || value.trim() === "")) value = null;
   // Legacy display strings such as "$1,000" have already been formatted upstream.
-  if (typeof value === "string" && !/^[+-]?\d+(?:\.\d+)?(?:e[+-]?\d+)?$/i.test(value.trim())) return <span className="font-mono">{value}<span className="block text-xs text-muted-foreground">Source-formatted value</span></span>;
+  if (typeof value === "string" && !/^[+-]?\d+(?:\.\d+)?(?:e[+-]?\d+)?$/i.test(value.trim())) return <span className="font-mono" aria-describedby={conditionContextId}>{value}<span className="block text-xs text-muted-foreground">Source-formatted value</span></span>;
   const condition = amountPassport?.freshness === "stale" ? "stale" : amountPassport?.freshness === "blocked" ? "review-required"
     : amountPassport?.origin === "estimated" ? "estimated" : amountPassport && amountPassport.origin !== "unavailable" ? "provisional" : "unavailable";
   const denomination = amountPassport ? amountPassport.currency ?? undefined : currency;
-  return <FinancialValue value={value} currency={denomination} unit={unit ?? (!denomination ? "Unit not recorded" : undefined)} decimals={unit === "units" ? Math.min(28, parseExactDecimal(value)?.scale ?? 0) : undefined} condition={condition} amountPassport={amountPassport} freshness={amountPassport?.freshness ?? undefined} reason={amountPassport ? "Inspect the source-owned snapshot and its recorded condition in the Amount passport." : "This legacy source has not supplied an amount-level data condition or exact scoped proof."} />;
+  return <FinancialValue value={value} currency={denomination} unit={unit ?? (!denomination ? "Unit not recorded" : undefined)} decimals={unit === "units" ? Math.min(28, parseExactDecimal(value)?.scale ?? 0) : undefined} condition={condition} conditionContextId={condition === "unavailable" ? conditionContextId : undefined} amountPassport={amountPassport} freshness={amountPassport?.freshness ?? undefined} reason={amountPassport ? "Inspect the source-owned snapshot and its recorded condition in the Amount passport." : "This legacy source has not supplied an amount-level data condition or exact scoped proof."} />;
 }
 
 function InstrumentLedger({ instrumentId }: { instrumentId: string }) {
@@ -178,15 +183,23 @@ function InstrumentLedger({ instrumentId }: { instrumentId: string }) {
   </CardContent></Card>;
 }
 
-function InstrumentPositionsTable({ rows, sourceKey }: { rows: InstrumentPositionRow[]; sourceKey: string }) {
+function InstrumentPositionsTable({ rows, sourceKey, source, observedAt }: { rows: InstrumentPositionRow[]; sourceKey: string; source: PositionSource; observedAt?: string | null }) {
+  const conditionContextId = useId();
+  const missingCondition = rows.some(row => [row.quantityPassport, row.pricePassport, row.valuePassport]
+    .some(reference => !reference || reference.origin === "unavailable"));
+  const sharedCondition = missingCondition ? conditionContextId : undefined;
   const columns: TableWorkbenchColumn<InstrumentPositionRow>[] = [
     { id: "account", label: "Account", rowHeader: true, render: row => row.account, exportValue: row => row.account },
-    { id: "quantity", label: "Quantity", numeric: true, render: row => <DossierValue value={row.quantity} unit="units" amountPassport={row.quantityPassport} />, exportValue: row => row.quantity },
-    { id: "mark", label: "Mark", numeric: true, render: row => <DossierValue value={row.price} currency={row.currency} amountPassport={row.pricePassport} />, exportValue: row => row.price },
-    { id: "value", label: "Market value / exposure", numeric: true, render: row => <DossierValue value={row.value} currency={row.currency} amountPassport={row.valuePassport} />, exportValue: row => row.value },
-    { id: "condition", label: "Mark condition", wrap: true, render: row => <><span>{row.markStatus}</span><p className="text-xs text-muted-foreground">{row.markReason}</p></>, exportValue: row => `${row.markStatus}: ${row.markReason}` }
+    { id: "quantity", label: "Quantity", numeric: true, render: row => <DossierValue value={row.quantity} unit="units" amountPassport={row.quantityPassport} conditionContextId={sharedCondition} />, exportValue: row => row.quantity },
+    { id: "mark", label: "Mark", numeric: true, render: row => <DossierValue value={row.price} currency={row.currency} amountPassport={row.pricePassport} conditionContextId={sharedCondition} />, exportValue: row => row.price },
+    { id: "value", label: "Market value / exposure", numeric: true, render: row => <DossierValue value={row.value} currency={row.currency} amountPassport={row.valuePassport} conditionContextId={sharedCondition} />, exportValue: row => row.value },
+    { id: "condition", label: "Mark condition", wrap: true, render: row => <><span>{row.markStatus}</span><details className="mt-1 text-xs text-muted-foreground"><summary className="cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">Mark evidence</summary><p className="mt-1">{row.markReason}</p></details></>, exportValue: row => `${row.markStatus}: ${row.markReason}` }
   ];
-  return <TableWorkbench workbenchId="instrument-dossier-positions" sourceKey={sourceKey} columns={columns}
+  return <div {...positionSourceAttributes(source)} className="space-y-3">
+    <p className="text-sm text-muted-foreground">Source: {source.label}{observedAt ? <> · Snapshot observed <time dateTime={observedAt}>{observedAt}</time></> : " · Snapshot observation time not supplied"}</p>
+    {missingCondition ? <p id={conditionContextId} className="text-xs text-muted-foreground">Data condition unavailable for values without supported amount-level source evidence. Original source amounts are shown.</p> : null}
+    <TableWorkbench workbenchId="instrument-dossier-positions" sourceKey={sourceKey} columns={columns}
     rows={rows} getRowId={row => row.id} ariaLabel="Instrument positions by account" emptyText="No identity-linked positions."
-    sourceDescription="Loaded authorized positions associated by retained instrument identity" completePopulation={false} exportLabel="Export loaded positions" />;
+    sourceDescription={`${source.label}; loaded authorized positions associated by retained instrument identity${observedAt ? `; snapshot observed ${observedAt}` : "; snapshot observation time not supplied"}`} completePopulation={false} exportLabel="Export loaded positions" />
+  </div>;
 }

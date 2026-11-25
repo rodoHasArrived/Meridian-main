@@ -6,63 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## IntercompanyAgreementTermsDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementTermsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:14](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L14).
-
-```csharp
-public sealed record IntercompanyAgreementTermsDto([property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? FixedAnnualRate = null, string? RateDescription = null, string? ScheduleDescription = null, string? AllocationDescription = null, int? SettlementDays = null, string? Notes = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyStructuredTermsDto? StructuredTerms { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:21](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L21) | Absent on retained prose-only revisions; omission preserves their exact historical review hashes. |
-
-## IntercompanyAgreementTypeDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementTypeDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L6).
-
-```csharp
-public enum IntercompanyAgreementTypeDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Loan</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L6) |  |
-| <code>ManagementFee</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L6) |  |
-| <code>CostShare</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L6) |  |
-| <code>CashSweep</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L6) |  |
-| <code>Guarantee</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L6) |  |
-| <code>Other</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L6) |  |
-
-## IntercompanyAgreementValidationException
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementValidationException</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:123](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L123).
-
-```csharp
-public class IntercompanyAgreementValidationException(string message) : InvalidOperationException(message);
-```
-
-## IntercompanyAllocationDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAllocationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs:25](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs#L25).
-
-```csharp
-public sealed record IntercompanyAllocationDto(Guid EntityId, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Percent);
-```
-
 ## IntercompanyApprovedRateFixingDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyApprovedRateFixingDto</code>. Kind: `record`.
@@ -723,3 +666,70 @@ Enum declarations:
 | <code>Broker</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:44](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L44) |  |
 | <code>Counterparty</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:45](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L45) |  |
 | <code>Other</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:46](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L46) |  |
+
+## LinkFundStructureNodesRequest
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:113](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L113).
+
+```csharp
+public sealed record LinkFundStructureNodesRequest(Guid OwnershipLinkId, Guid ParentNodeId, Guid ChildNodeId, OwnershipRelationshipTypeDto RelationshipType, DateTimeOffset EffectiveFrom, string CreatedBy, decimal? OwnershipPercent = null, bool IsPrimary = false, string? Notes = null);
+```
+
+## MarginCallStatusDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.MarginCallStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:297](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L297).
+
+Provider-reported margin-call posture for a margin snapshot.
+
+```csharp
+public enum MarginCallStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None = 0</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:299](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L299) |  |
+| <code>Potential = 1</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:300](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L300) |  |
+| <code>Active = 2</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:301](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L301) |  |
+| <code>Satisfied = 3</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:302](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L302) |  |
+| <code>Waived = 4</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:303](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L303) |  |
+
+## MarginModelTypeDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.MarginModelTypeDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:285](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L285).
+
+Supported margin model classification for provider and account readiness.
+
+```csharp
+public enum MarginModelTypeDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None = 0</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:287](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L287) |  |
+| <code>Cash = 1</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:288](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L288) |  |
+| <code>RegT = 2</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:289](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L289) |  |
+| <code>PortfolioMargin = 3</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:290](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L290) |  |
+| <code>House = 4</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:291](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L291) |  |
+| <code>Unsupported = 99</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:292](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L292) |  |
+
+## MarginRequirementDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.MarginRequirementDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:307](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L307).
+
+Per-position margin requirement used to explain account-level margin state.
+
+```csharp
+public sealed record MarginRequirementDto(string? SecurityId, string? Symbol, decimal Quantity, decimal MarketValue, decimal? InitialRequirement, decimal? MaintenanceRequirement, bool IsMarginable, string? CollateralClass, decimal? Haircut, string? EvidencePath = null);
+```

@@ -21,6 +21,24 @@ namespace Meridian.Tests.Ui;
 
 public sealed class BackfillProviderEditorTests
 {
+    [Fact]
+    public async Task ProviderStatuses_WhenConfigurationAndRuntimeAreMissing_ReturnsServiceUnavailable()
+    {
+        var (app, store, root) = await CreateApp(UserPermission.ViewHistoricalData);
+        await using (app)
+        {
+            (store.Load().Backfill?.Providers).Should().BeNull();
+            app.Services.GetService<Meridian.Application.Backfill.BackfillRoutingRuntime>().Should().BeNull();
+            using var client = app.GetTestClient();
+            using var response = await client.GetAsync("/api/backfill/providers/statuses");
+
+            response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+            using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            document.RootElement.GetProperty("service").GetString().Should().Be("backfill provider configuration");
+        }
+        Directory.Delete(root, true);
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]

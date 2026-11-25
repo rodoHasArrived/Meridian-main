@@ -1516,6 +1516,14 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         if (!quantity.HasValue)
             return null;
 
+        // Corporate-action removals and other non-trade movements report signed quantities
+        // without a buy/sell side. Taking their absolute value would turn a merger removal
+        // into an allocation and prevent reconciliation against the announced exchange ratio.
+        var providerCode = activity.ActivityType?.Trim().ToUpperInvariant() ?? "UNKNOWN";
+        var (category, _) = MapActivityType(providerCode, activity.Description);
+        if (category != BrokerageActivityCategory.Trade)
+            return quantity;
+
         return string.Equals(activity.Side, "sell", StringComparison.OrdinalIgnoreCase)
             ? -Math.Abs(quantity.Value)
             : Math.Abs(quantity.Value);

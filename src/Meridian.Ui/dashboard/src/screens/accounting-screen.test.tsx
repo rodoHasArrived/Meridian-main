@@ -1,8 +1,8 @@
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
 import * as bondReferenceApi from "@/lib/api/bond-reference.api";
@@ -42,6 +42,7 @@ import type {
   ReconciliationCaseworkOperationResult,
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
+  SecurityIdentityDrillIn,
   SecurityMasterConflict,
   SecurityMasterEntry,
   SecurityMasterTrustSnapshot,
@@ -1644,6 +1645,10 @@ function findAppleSecuritySearchRow() {
     { name: "Open identity drill-in for Apple Inc." },
     { timeout: SECURITY_MASTER_SEARCH_TIMEOUT_MS }
   );
+}
+
+function linkedSecurityIdentity(securityId: string, displayName = securityId): SecurityIdentityDrillIn {
+  return { securityId, displayName, assetClass: "Equity", status: "Active", version: 1, effectiveFrom: "2026-01-01", effectiveTo: null, identifiers: [], aliases: [] };
 }
 
 function inspectorCase(item: ReconciliationBreakQueueItem): ReconciliationBreakQueueItem {
@@ -4630,6 +4635,94 @@ describe("AccountingScreen", () => {
     }));
   });
 
+  it("blocks all decisions when a requested approval is absent instead of using the newest approval", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.getOperationsContinuityWorkflows).mockResolvedValue([approvalWorkflowSummary]);
+    vi.mocked(api.getOperationsContinuityWorkflow).mockResolvedValue(approvalWorkflowDetail);
+    vi.mocked(api.approveOperationsContinuityWorkflow).mockClear();
+    vi.mocked(api.rejectOperationsContinuityWorkflow).mockClear();
+
+    await renderAccountingScreen(data, "/accounting/approvals?approvalId=missing-approval");
+
+    expect(await screen.findByText(/The requested approval is not present in this workflow/)).toBeInTheDocument();
+    const detail = screen.getByRole("region", { name: "Selected approval detail" });
+    expect(detail).toHaveTextContent("Approval decisionRequested approval unavailable");
+    for (const name of ["Approve", "Reject", "Request changes"]) {
+      expect(screen.getByRole("button", { name })).toBeDisabled();
+      await user.click(screen.getByRole("button", { name }));
+    }
+    expect(api.approveOperationsContinuityWorkflow).not.toHaveBeenCalled();
+    expect(api.rejectOperationsContinuityWorkflow).not.toHaveBeenCalled();
+    expect(within(detail).queryByLabelText("Independent reviewer operator ID")).not.toBeInTheDocument();
+  });
+
+  it("opens the workflow named by an approval link instead of the newest workflow", async () => {
+    const user = userEvent.setup();
+    const newer = { ...approvalWorkflowSummary, workflowId: "workflow-newer", periodId: "2026-06", updatedAtUtc: "2026-07-01T12:00:00Z" };
+    vi.mocked(api.getOperationsContinuityWorkflows).mockResolvedValue([newer, approvalWorkflowSummary]);
+    vi.mocked(api.getOperationsContinuityWorkflow).mockClear().mockImplementation(async (id) => id === approvalWorkflowDetail.workflowId
+      ? approvalWorkflowDetail
+      : { ...approvalWorkflowDetail, ...newer, approvals: [{ ...approvalWorkflowDetail.approvals[0], approvalId: "newer-approval" }] });
+    vi.mocked(api.approveOperationsContinuityWorkflow).mockClear().mockResolvedValue({ success: true, workflow: approvalWorkflowDetail, blockers: [], message: null });
+
+    await renderAccountingScreen(data, "/accounting/approvals?approvalId=approval-close-1&workflowId=workflow-approval-1");
+
+    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1");
+    expect(api.getOperationsContinuityWorkflow).not.toHaveBeenCalledWith("workflow-newer");
+    await waitFor(() => expect(screen.getByRole("button", { name: "Approve" })).toBeEnabled());
+    await user.click(screen.getByRole("button", { name: "Approve" }));
+    expect(api.approveOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1", expect.objectContaining({ expectedVersion: 7 }));
+  });
+
+  it("does not replace an unavailable requested workflow with an actionable workflow", async () => {
+    vi.mocked(api.getOperationsContinuityWorkflows).mockResolvedValue([approvalWorkflowSummary]);
+    vi.mocked(api.getOperationsContinuityWorkflow).mockClear().mockResolvedValue(approvalWorkflowDetail);
+
+    await renderAccountingScreen(data, "/accounting/approvals?approvalId=missing-approval&workflowId=missing-workflow");
+
+    expect(await screen.findByText(/The requested workflow is unavailable in this approval queue/)).toBeInTheDocument();
+    expect(api.getOperationsContinuityWorkflow).not.toHaveBeenCalled();
+    expect(screen.queryByRole("button", { name: "Approve" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Reject" })).not.toBeInTheDocument();
+  });
+
+  it("blocks workflow-only decision links while detail is loading and after a detail failure", async () => {
+    const user = userEvent.setup();
+    let rejectDetail!: (error: Error) => void;
+    vi.mocked(api.getOperationsContinuityWorkflows).mockResolvedValue([approvalWorkflowSummary]);
+    vi.mocked(api.getOperationsContinuityWorkflow).mockImplementationOnce(() => new Promise((_resolve, reject) => { rejectDetail = reject; }));
+    vi.mocked(api.approveOperationsContinuityWorkflow).mockClear();
+    vi.mocked(api.rejectOperationsContinuityWorkflow).mockClear();
+
+    await renderAccountingScreen(data, "/accounting/approvals?workflowId=workflow-approval-1");
+
+    expect(screen.getByText("Loading requested approval")).toBeInTheDocument();
+    for (const name of ["Approve", "Reject", "Request changes"]) expect(screen.getByRole("button", { name })).toBeDisabled();
+    await act(async () => rejectDetail(new Error("Workflow detail unavailable.")));
+    expect(await screen.findByText("Decision actions are unavailable because the requested workflow detail could not be verified.")).toBeInTheDocument();
+    for (const name of ["Approve", "Reject", "Request changes"]) {
+      expect(screen.getByRole("button", { name })).toBeDisabled();
+      await user.click(screen.getByRole("button", { name }));
+    }
+    expect(api.approveOperationsContinuityWorkflow).not.toHaveBeenCalled();
+    expect(api.rejectOperationsContinuityWorkflow).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText("Independent reviewer operator ID")).not.toBeInTheDocument();
+  });
+
+  it("blocks a historical approval link from deciding a newer approval in the same workflow", async () => {
+    vi.mocked(api.getOperationsContinuityWorkflows).mockResolvedValue([approvalWorkflowSummary]);
+    vi.mocked(api.getOperationsContinuityWorkflow).mockResolvedValue({
+      ...approvalWorkflowDetail,
+      approvals: [...approvalWorkflowDetail.approvals, {
+        ...approvalWorkflowDetail.approvals[0], approvalId: "reassigned-approval", status: "ReviewerAssigned"
+      }]
+    });
+    await renderAccountingScreen(data, "/accounting/approvals?approvalId=approval-close-1");
+
+    expect(await screen.findByText(/The requested approval is a historical record/)).toBeInTheDocument();
+    for (const name of ["Approve", "Reject", "Request changes"]) expect(screen.getByRole("button", { name })).toBeDisabled();
+  });
+
   it("moves through approval rows and opens review or assignment without making a decision", async () => {
     const other = { ...approvalWorkflowSummary, workflowId: "workflow-approval-2", periodId: "2026-04", updatedAtUtc: "2026-05-01T12:00:00Z" };
     const discussion = vi.spyOn(approvalCollaboration, "getApprovalCollaboration").mockImplementation(async (workflowId) => ({
@@ -4718,7 +4811,8 @@ describe("AccountingScreen", () => {
     expect(comparison).toHaveTextContent("Cash reconciliation - broker statement vs. ledger");
     expect(comparison).toHaveTextContent("Statement balance");
     expect(comparison).toHaveTextContent("Ledger balance");
-    expect(comparison).toHaveTextContent("Out by $500");
+    expect(comparison).toHaveTextContent("Can't assess");
+    expect(comparison).toHaveTextContent("Cash totals are unavailable because the summary does not declare a currency.");
     expect(screen.getAllByRole("treegrid", { name: "Reconciliation runs" })).toHaveLength(1);
     expect(screen.queryByRole("link", { name: "Open Accounting reconciliation area" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Reconciliation detail for Paper Index Mean Reversion" })).toBeInTheDocument();
@@ -5104,6 +5198,45 @@ describe("AccountingScreen", () => {
     expect(screen.getByLabelText("Applied explorer filters")).toHaveTextContent("No selection");
     expect(screen.getByLabelText("Security & Instrument Explorer proof actions")).toHaveTextContent("Open search");
     expect(screen.getAllByText("Security coverage").length).toBeGreaterThan(0);
+  });
+
+  it("opens the exact securityId deep link and preserves a subsequent manual selection through tab changes", async () => {
+    const user = userEvent.setup();
+    const explorer = await api.getFinancialRecordExplorer("security-instrument");
+    const sourceRow = explorer.rows[0];
+    const selectedRow = { ...sourceRow, recordId: "security-instrument:sec-dev-001", detail: { ...sourceRow.detail, recordId: "security-instrument:sec-dev-001" } };
+    vi.mocked(api.getFinancialRecordExplorer).mockResolvedValueOnce({ ...explorer, rows: [selectedRow], selectedRecord: selectedRow.detail });
+    vi.mocked(api.getSecurityIdentity).mockClear()
+      .mockResolvedValueOnce(linkedSecurityIdentity("sec-linked", "Linked asset"))
+      .mockResolvedValueOnce(linkedSecurityIdentity("22222222-2222-2222-2222-222222222222", "Apple Inc."));
+
+    await renderAccountingScreen(data, "/accounting/security-master?securityId=sec-linked&fundAccountId=fund-alpha");
+    await waitFor(() => expect(api.getSecurityIdentity).toHaveBeenCalledWith("sec-linked"));
+    await waitFor(() => expect(screen.getByRole("region", { name: "Security Master command deck" })).toHaveTextContent("Linked asset"));
+    expect(api.getSecurityIdentity).not.toHaveBeenCalledWith("sec-dev-001");
+
+    enterAppleSecuritySearch();
+    const row = await findAppleSecuritySearchRow();
+    await user.click(row);
+    await waitFor(() => expect(row).toHaveAttribute("aria-selected", "true"));
+    const linkedLoads = vi.mocked(api.getSecurityIdentity).mock.calls.filter(([id]) => id === "sec-linked").length;
+    await user.click(screen.getByRole("tab", { name: /^Evidence/ }));
+    await waitFor(() => expect(row).toHaveAttribute("aria-selected", "true"));
+    expect(vi.mocked(api.getSecurityIdentity).mock.calls.filter(([id]) => id === "sec-linked")).toHaveLength(linkedLoads);
+  });
+
+  it("consumes a changed securityId deep link without requiring the Security Master screen to remount", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.getSecurityIdentity).mockClear()
+      .mockResolvedValueOnce(linkedSecurityIdentity("sec-linked"))
+      .mockResolvedValueOnce(linkedSecurityIdentity("sec-linked-next"));
+    renderWithRouter(<><AccountingScreen data={data} /><Link to="/accounting/security-master?securityId=sec-linked-next&tab=reference">Open another linked asset</Link></>, {
+      initialEntries: ["/accounting/security-master?securityId=sec-linked"]
+    });
+    await waitFor(() => expect(api.getSecurityIdentity).toHaveBeenCalledWith("sec-linked"));
+    await user.click(screen.getByRole("link", { name: "Open another linked asset" }));
+    await waitFor(() => expect(api.getSecurityIdentity).toHaveBeenCalledWith("sec-linked-next"));
+    await waitFor(() => expect(screen.getByRole("region", { name: "Security Master command deck" })).toHaveTextContent("sec-linked-next"));
   });
 
   it("synchronizes a resolved explorer instrument with the Security Master command deck", async () => {

@@ -92,6 +92,25 @@ Declared public members:
 | <code>public async Task&lt;SecurityValidationReportDto&gt; ValidateSecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:60](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L60) |  |
 | <code>public async Task&lt;SecurityValidationReportDto&gt; ValidateUniverseAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:90](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L90) |  |
 
+## AssetPositionMarketValuationService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Valuation.AssetPositionMarketValuationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Valuation/AssetPositionMarketValuationService.cs:13](../../../../src/Meridian.Application/SecurityMaster/Valuation/AssetPositionMarketValuationService.cs#L13).
+
+Adapts retained book-position operands to registered valuation models. No financial operand comes from the caller, no symbol quote is used, and the comparison is not ledger or posting authority.
+
+```csharp
+public sealed class AssetPositionMarketValuationService(IInstrumentPositionProjectionStore positions, ISecurityMasterQueryService securities, IEnumerable<ISecurityValuationModel> models, ISecurityMasterPricingService pricing)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ComparisonBasis = &quot;Market value less retained carrying amount; unposted mark-to-carrying comparison, not realized or tax-cost P/L.&quot;;</code> | [src/Meridian.Application/SecurityMaster/Valuation/AssetPositionMarketValuationService.cs:19](../../../../src/Meridian.Application/SecurityMaster/Valuation/AssetPositionMarketValuationService.cs#L19) |  |
+| <code>public async Task&lt;AssetPositionMarketValuationDto&gt; ValueAsync(AssetPositionMarketValuationRequest request, LedgerBookDto ownedBook, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Valuation/AssetPositionMarketValuationService.cs:21](../../../../src/Meridian.Application/SecurityMaster/Valuation/AssetPositionMarketValuationService.cs#L21) |  |
+
 ## DiscountedCashFlowValuationModel
 
 Qualified name: <code>Meridian.Application.SecurityMaster.Valuation.DiscountedCashFlowValuationModel</code>. Kind: `class`.
@@ -966,25 +985,3 @@ Declared public members:
 | <code>public StoredProviderCredentialResolver(IScopedProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, ProviderCredentialScope scope) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:45](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L45) | Binds runtime credential resolution to an already authorized connection scope. The caller must derive this scope from trusted ownership context. Missing scoped records never fall back to provider-wide credentials, configuration or environment. |
 | <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:54](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L54) |  |
 | <code>public async ValueTask&lt;IPreparedProviderCredentials&gt; PrepareAsync(IReadOnlyCollection&lt;Type&gt;? providerTypes = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:113](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L113) |  |
-
-## SymbolPreset
-
-Qualified name: <code>Meridian.Application.Services.SymbolPreset</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:979](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L979).
-
-Preset symbol lists.
-
-```csharp
-public enum SymbolPreset : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Custom</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:981](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L981) |  |
-| <code>USMajorIndices</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:982](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L982) |  |
-| <code>TechGiants</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:983](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L983) |  |
-| <code>SP500Top20</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:984](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L984) |  |
-| <code>Crypto</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:985](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L985) |  |

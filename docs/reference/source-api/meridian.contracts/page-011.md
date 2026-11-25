@@ -6,52 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## BookReceiptDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.BookReceiptDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:35](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L35).
-
-Canonical retained cash evidence, distinct from posted accounting evidence.
-
-```csharp
-public sealed record BookReceiptDto(string ReceiptId, Guid SecurityId, DateOnly EffectiveDate, string Currency, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Amount, string SourceSystem, string SourceReference, IReadOnlyList<BookReceiptAllocationDto> Allocations, string? ReversesReceiptId, IReadOnlyList<string> EvidenceLinks, string? FlowType = null);
-```
-
-## BookReceiptExpectationDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.BookReceiptExpectationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:11](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L11).
-
-An accepted holding-sized expectation. ObligationKey is independent of terms and run revisions.
-
-```csharp
-public sealed record BookReceiptExpectationDto(string ObligationKey, Guid PositionId, Guid SecurityId, string DisplayName, string FlowType, DateOnly DueDate, string Currency, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Quantity, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal ExpectedAmount, Guid TermsVersionId, string TermsHash, Guid ProjectionRunId, Guid ProjectedCashFlowId, IReadOnlyList<string> EvidenceLinks, IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence);
-```
-
-## BookReceiptExpectationVersionDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.BookReceiptExpectationVersionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:82](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L82).
-
-```csharp
-public sealed record BookReceiptExpectationVersionDto(string VersionId, DateOnly FirstObservedDate, BookReceiptExpectationDto Expectation);
-```
-
-## BookReceiptPostingDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.BookReceiptPostingDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:54](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L54).
-
-Posted journal evidence linked to a receipt allocation. Drafts are never postings. An inferred observation may leave ObligationKey empty when current projections no longer resolve a split; only a retained journal/receipt allocation can supply those historical legs.
-
-```csharp
-public sealed record BookReceiptPostingDto(string PostingId, string ReceiptId, string ObligationKey, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Amount, string Currency, string JournalEntryId, DateOnly EffectiveDate, bool IsReversed, IReadOnlyList<string> EvidenceLinks, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? JournalCashAmount = null, bool IsInferredAllocation = false);
-```
-
 ## BookReceiptQueryDto
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.BookReceiptQueryDto</code>. Kind: `record`.
@@ -835,3 +789,79 @@ The reference view of a DirectLoan security, read from its relational terms proj
 ```csharp
 public sealed record DirectLoanReferenceDto(Guid SecurityId, string DisplayName, string Currency, string Borrower, DateOnly? Maturity, string? ReferenceIndex, decimal? SpreadBps, decimal? CurrentCouponRate, string? ResetFrequency, string? PricingSource, string PrimaryIdentifier, long Version);
 ```
+
+## EconomicEventReferenceDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.EconomicEventReferenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:124](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L124).
+
+```csharp
+public sealed record EconomicEventReferenceDto(Guid EventId, string EventType, long EventVersion, DateOnly EffectiveDate, DateTimeOffset OccurredAtUtc, string SourceDomain, string? SourceEntityId = null, Guid? CorrelationId = null, Guid? CausationId = null, string? SourceContentHash = null, IReadOnlyList<string>? EvidenceLinks = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:137](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L137) |  |
+| <code>public Guid? SecurityId { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:139](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L139) |  |
+| <code>public Guid? BookPositionId { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:141](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L141) |  |
+| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:143](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L143) |  |
+
+## FactorPaydownProjectionIdentity
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.FactorPaydownProjectionIdentity</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/AssetOperations/FactorPaydownProjectionIdentity.cs:13](../../../../src/Meridian.Contracts/AssetOperations/FactorPaydownProjectionIdentity.cs#L13).
+
+The identity rule of the factor-paydown projection: the model event type and key the projector emits inside its lineage, and the deterministic event identity it derives from Security Master identity, book position, effective date, both factors and the retained source-content hash. Owned here so the Instruments projector and the Contracts paydown instruction recompute one identity rather than two copies that can drift.
+
+```csharp
+public static class FactorPaydownProjectionIdentity
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string EventType = &quot;MbsFactorPaydown&quot;;</code> | [src/Meridian.Contracts/AssetOperations/FactorPaydownProjectionIdentity.cs:16](../../../../src/Meridian.Contracts/AssetOperations/FactorPaydownProjectionIdentity.cs#L16) | The model&#x27;s own event type; the canonical spine event it feeds is typed AssetAccounting.CorporateAction. |
+| <code>public const string ModelKey = &quot;mbs-factor-paydown&quot;;</code> | [src/Meridian.Contracts/AssetOperations/FactorPaydownProjectionIdentity.cs:18](../../../../src/Meridian.Contracts/AssetOperations/FactorPaydownProjectionIdentity.cs#L18) |  |
+| <code>public static Guid EventId(Guid securityId, Guid positionId, DateOnly effectiveDate, decimal priorFactor, decimal currentFactor, string sourceContentHash);</code> | [src/Meridian.Contracts/AssetOperations/FactorPaydownProjectionIdentity.cs:20](../../../../src/Meridian.Contracts/AssetOperations/FactorPaydownProjectionIdentity.cs#L20) |  |
+| <code>public static Guid DeterministicGuid(string value);</code> | [src/Meridian.Contracts/AssetOperations/FactorPaydownProjectionIdentity.cs:40](../../../../src/Meridian.Contracts/AssetOperations/FactorPaydownProjectionIdentity.cs#L40) | A version-5-shaped GUID from the SHA-256 of value. |
+
+## IAccountBondHoldingsSource
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.IAccountBondHoldingsSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AccountBondHoldingsDtos.cs:14](../../../../src/Meridian.Contracts/AssetOperations/AccountBondHoldingsDtos.cs#L14).
+
+```csharp
+public interface IAccountBondHoldingsSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;AccountBondHoldingsSnapshotDto?&gt; GetHoldingsAsync(Guid accountId, DateOnly asOf, DateTimeOffset? knownAt = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/AccountBondHoldingsDtos.cs:16](../../../../src/Meridian.Contracts/AssetOperations/AccountBondHoldingsDtos.cs#L16) |  |
+
+## IAccountCashForecastService
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.IAccountCashForecastService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:133](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L133).
+
+Captures account cash forecasts and retrieves snapshots within an explicit account and book scope.
+
+```csharp
+public interface IAccountCashForecastService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;AccountCashForecastSnapshotDto&gt; CaptureAsync(AccountCashForecastRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:135](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L135) |  |
+| <code>Task&lt;AccountCashForecastSnapshotDto?&gt; GetAsync(AccountCashForecastScopeDto scope, string snapshotId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:136](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L136) |  |
+| <code>Task&lt;IReadOnlyList&lt;AccountCashForecastSnapshotDto&gt;&gt; GetHistoryAsync(AccountCashForecastScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:137](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L137) |  |

@@ -6,7 +6,7 @@ using System.Text.Json;
 namespace Meridian.Contracts.SecurityMaster;
 
 /// <summary>Exact decimal admission and accumulation for contractual schedule values.</summary>
-internal static class SecurityScheduleDecimal
+public static class SecurityScheduleDecimal
 {
     private const int MaximumScale = 28;
     private static readonly BigInteger MaximumCoefficient = new(decimal.MaxValue);
@@ -18,7 +18,8 @@ internal static class SecurityScheduleDecimal
         PrecisionLoss
     }
 
-    internal static bool TryRead(JsonElement element, out decimal value)
+    /// <summary>Reads only values exactly representable as a CLR decimal, without rounding.</summary>
+    public static bool TryRead(JsonElement element, out decimal value)
     {
         value = default;
         string raw;

@@ -6,62 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## BondExerciseNoticeWindow
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondExerciseNoticeWindow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs:24](../../../../src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs#L24).
-
-One contractual exercise date and its notice window. Not an exercise forecast or instruction.
-
-```csharp
-public sealed record BondExerciseNoticeWindow(string Kind, DateOnly ExerciseDate, decimal RedemptionPrice, DateOnly? EarliestNoticeDate, DateOnly? LatestNoticeDate, BondExerciseNoticeStatus Status, int? DaysToDeadline);
-```
-
-## BondExerciseYield
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondExerciseYield</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:78](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L78).
-
-Contractual exercise scenario, not an exercise forecast or trading instruction.
-
-```csharp
-public sealed record BondExerciseYield(string Kind, DateOnly ExerciseDate, decimal RedemptionPrice, decimal Yield, DateOnly? LatestNoticeDate, DateOnly? EarliestNoticeDate = null);
-```
-
-## BondFloatingRateEvidence
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondFloatingRateEvidence</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondFloatingRateEvidence.cs:6](../../../../src/Meridian.Contracts/FixedIncome/BondFloatingRateEvidence.cs#L6).
-
-Frozen inputs for one declared coupon. Rates are annual fractions; cash is unrounded.
-
-```csharp
-public sealed record BondFloatingRateEvidence(DateOnly ResetDate, bool IsObserved, string IndexName, decimal IndexRate, decimal Spread, decimal? Cap, decimal? Floor, decimal Principal, decimal AccrualFraction, SecurityCouponRateUnit OriginalRateUnit, string Source)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ModelVersion = &quot;bond-floating-coupon-v1&quot;;</code> | [src/Meridian.Contracts/FixedIncome/BondFloatingRateEvidence.cs:19](../../../../src/Meridian.Contracts/FixedIncome/BondFloatingRateEvidence.cs#L19) |  |
-| <code>public bool TryCoupon(decimal forecastIndexShift, out decimal cash, out string? refusal) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondFloatingRateEvidence.cs:21](../../../../src/Meridian.Contracts/FixedIncome/BondFloatingRateEvidence.cs#L21) |  |
-| <code>public bool TryCoupon(decimal forecastIndexShift, out decimal cash, out string? refusal, out SecurityCashFlowBlockerDto? blocker);</code> | [src/Meridian.Contracts/FixedIncome/BondFloatingRateEvidence.cs:24](../../../../src/Meridian.Contracts/FixedIncome/BondFloatingRateEvidence.cs#L24) |  |
-
-## BondFredIntakeRequest
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondFredIntakeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs:13](../../../../src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs#L13).
-
-Request contains source identifiers and dates, never an unreviewed series/unit mapping.
-
-```csharp
-public sealed record BondFredIntakeRequest(string EvidenceUri, string DocumentId, DateOnly From, DateOnly Through, DateOnly VintageDate);
-```
-
 ## BondFredIntakeResult
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondFredIntakeResult</code>. Kind: `record`.
@@ -665,3 +609,66 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public decimal TradeSettlementCash { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:42](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L42) | Observed buy/sell settlement cash, separate from coupon/principal collections. |
+
+## BondPerformanceSourceTrade
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceSourceTrade</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:21](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L21).
+
+```csharp
+public sealed record BondPerformanceSourceTrade(string TransactionId, Guid SecurityId, DateOnly CashDate, [property : JsonRequired] decimal Amount, string Currency)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonRequired] public string Kind { get; init; } = null !;</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:24](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L24) |  |
+| <code>[JsonRequired] public decimal OriginalFaceDelta { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:25](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L25) |  |
+| <code>public string? PaymentVersionId { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:26](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L26) |  |
+
+## BondPerformanceTradeCashDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceTradeCashDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:52](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L52).
+
+Retained, complete transaction populations, not caller attestations or inferred zero trades.
+
+```csharp
+public sealed record BondPerformanceTradeCashDto(Guid SecurityId, DateOnly CashDate, decimal Amount, string Currency, BondCalculationInput Evidence)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal? OriginalFaceDelta { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:55](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L55) |  |
+
+## BondPerformanceTransactionEvidenceDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceTransactionEvidenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:58](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L58).
+
+```csharp
+public sealed record BondPerformanceTransactionEvidenceDto(bool Complete, IReadOnlyList<BondPerformanceTradeCashDto> TradeCash, IReadOnlyList<BondCalculationInput> Inputs, IReadOnlyList<string> CoverageGaps)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool CashPopulationComplete { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:61](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L61) |  |
+| <code>public IReadOnlyList&lt;string&gt; PaymentVersionIds { get; init; } = [];</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:62](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L62) |  |
+
+## BondPerformanceTransactionImportRequest
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceTransactionImportRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:33](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L33).
+
+```csharp
+public sealed record BondPerformanceTransactionImportRequest(string EvidenceUri, string DocumentId);
+```

@@ -1,10 +1,24 @@
-import type { PromotionOutcomeLevel } from "@/screens/trading-screen.view-model";
+import type { PromotionOutcomeLevel, TradingDataTone } from "@/screens/trading-screen.view-model";
 import type { TradingWorkspaceResponse } from "@/types";
 
 /**
  * Presentation tone maps for the trading screen. Pure lookup tables with no behaviour, kept
  * out of the screen so its body stays the composition of panels rather than a palette.
  */
+export const promotionChecklistDotTone = {
+  ready: "bg-success",
+  blocked: "bg-danger",
+  review: "bg-warning"
+} as const;
+
+export const dataToneClass: Record<TradingDataTone, string> = {
+  default: "text-foreground",
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-danger",
+  muted: "text-muted-foreground"
+};
+
 export const riskTone: Record<TradingWorkspaceResponse["risk"]["state"], string> = {
   Healthy: "text-success",
   Observe: "text-warning",

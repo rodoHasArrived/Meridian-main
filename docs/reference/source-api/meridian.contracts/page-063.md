@@ -6,6 +6,72 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FeatureCapabilitySettingsResponse
+
+Qualified name: <code>Meridian.Contracts.Workstation.FeatureCapabilitySettingsResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FeatureCapabilityDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/FeatureCapabilityDtos.cs#L3).
+
+```csharp
+public sealed record FeatureCapabilitySettingsResponse(IReadOnlyList<FeatureCapabilityToggleDto> Capabilities);
+```
+
+## FeatureCapabilityToggleDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FeatureCapabilityToggleDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FeatureCapabilityDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/FeatureCapabilityDtos.cs#L6).
+
+```csharp
+public sealed record FeatureCapabilityToggleDto(string CapabilityKey, string DisplayName, string Description, bool IsEnabled, bool DefaultEnabled, bool IsPermanent, bool IsOverridden, bool CanToggle, string? DisabledReason);
+```
+
+## FeatureCapabilityToggleRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.FeatureCapabilityToggleRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FeatureCapabilityDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/FeatureCapabilityDtos.cs#L17).
+
+```csharp
+public sealed record FeatureCapabilityToggleRequest(bool IsEnabled);
+```
+
+## FinancialOperationsCloseSupportDecisionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialOperationsCloseSupportDecisionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs#L23).
+
+```csharp
+public sealed record FinancialOperationsCloseSupportDecisionDto(string DecisionId, string Status, bool IsReady, string Summary, string PeriodState, string LockReopenPosture, string NavReportDependencyPosture, int UnresolvedExceptionCount, int PendingApprovalCount, int RetainedEvidenceGapCount, IReadOnlyList<FinancialOperationsCloseSupportDecisionRowDto> Decisions);
+```
+
+## FinancialOperationsCloseSupportDecisionRowDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialOperationsCloseSupportDecisionRowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:36](../../../../src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs#L36).
+
+```csharp
+public sealed record FinancialOperationsCloseSupportDecisionRowDto(string DecisionId, string Category, string Label, string Status, bool IsBlocking, string Detail, string RequiredAction, string? RouteHint, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:47](../../../../src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs#L47) |  |
+
+## FinancialOperationsCommandCenterDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialOperationsCommandCenterDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs#L3).
+
+```csharp
+public sealed record FinancialOperationsCommandCenterDto(DateTimeOffset GeneratedAtUtc, string? FundProfileId, Guid? LedgerBookId, Guid? FundAccountId, string? PeriodId, string Status, bool IsReadyToComplete, string Summary, int ActiveItemCount, int BlockedItemCount, int ReviewItemCount, IReadOnlyList<FinancialOperationsCommandCenterMetricDto> Metrics, IReadOnlyList<FinancialOperationsQueueRowDto> QueueRows, OperationsContinuityWorkflowDto? ActiveWorkflow = null, OperationsCloseCalendarDto? CloseCalendar = null, PrivateCapitalCloseCockpitDto? PrivateCapitalCloseCockpit = null, FinancialOperationsCloseSupportDecisionDto? CloseSupportDecision = null, CloseReadinessProjectionDto? CloseReadiness = null);
+```
+
 ## FinancialOperationsCommandCenterMetricDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.FinancialOperationsCommandCenterMetricDto</code>. Kind: `record`.
@@ -527,76 +593,4 @@ Slice-level ledger projection that supports Accounting drill-in by logical ledge
 
 ```csharp
 public sealed record FundLedgerSliceDto(string SliceKey, string LedgerKey, string LedgerGroupId, FundLedgerScope ScopeKind, string? ScopeId, string DisplayName, FundLedgerTotalsDto Totals, IReadOnlyList<FundTrialBalanceLine> TrialBalance, IReadOnlyList<FundJournalLine> Journal, IReadOnlyDictionary<string, string>? Metadata = null);
-```
-
-## FundLedgerSnapshotBalanceLine
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundLedgerSnapshotBalanceLine</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:114](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L114).
-
-Balance row captured in a reconciliation snapshot.
-
-```csharp
-public sealed record FundLedgerSnapshotBalanceLine(string AccountName, string AccountType, string? Symbol, string? FinancialAccountId, decimal Balance, WorkstationSecurityReference? Security = null, LedgerDimensionSetDto? Dimensions = null);
-```
-
-## FundLedgerSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundLedgerSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:90](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L90).
-
-Accounting-facing fund ledger summary.
-
-```csharp
-public sealed record FundLedgerSummary(string FundProfileId, string FundDisplayName, FundLedgerScope ScopeKind, string? ScopeId, DateTimeOffset AsOf, int JournalEntryCount, int LedgerEntryCount, decimal AssetBalance, decimal LiabilityBalance, decimal EquityBalance, decimal RevenueBalance, decimal ExpenseBalance, IReadOnlyList<FundTrialBalanceLine> TrialBalance, IReadOnlyList<FundJournalLine> Journal, int EntityCount, int SleeveCount, int VehicleCount, FundLedgerTotalsDto? ConsolidatedTotals = null, IReadOnlyList<FundLedgerSliceDto>? LedgerSlices = null);
-```
-
-## FundLedgerTotalsDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundLedgerTotalsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L63).
-
-Aggregated ledger totals for a ledger scope or slice.
-
-```csharp
-public sealed record FundLedgerTotalsDto(int JournalEntryCount, int LedgerEntryCount, decimal AssetBalance, decimal LiabilityBalance, decimal EquityBalance, decimal RevenueBalance, decimal ExpenseBalance);
-```
-
-## FundNavAssetClassExposureDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundNavAssetClassExposureDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:107](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L107).
-
-Asset-class contribution within a NAV attribution summary.
-
-```csharp
-public sealed record FundNavAssetClassExposureDto(string AssetClass, decimal NetBalance);
-```
-
-## FundNavAttributionSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundNavAttributionSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:114](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L114).
-
-Accounting-facing NAV attribution summary for one fund workspace.
-
-```csharp
-public sealed record FundNavAttributionSummaryDto(string Currency, decimal TotalNav, int ComponentCount, int EntityCount, int SleeveCount, int VehicleCount, IReadOnlyList<FundNavAssetClassExposureDto> AssetClassExposure);
-```
-
-## FundNavTrendDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundNavTrendDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundNavTrendDtos.cs:25](../../../../src/Meridian.Contracts/Workstation/FundNavTrendDtos.cs#L25).
-
-A fund&#x27;s ledger NAV at each month-end over a recent window, ending with NAV at the as-of date. Every point is the posted ledger as it stood on that date, through the same NAV attribution the workspace and the NAV comparison use.
-
-```csharp
-public sealed record FundNavTrendDto(string FundProfileId, string Subject, string Currency, IReadOnlyList<FundNavTrendPointDto> Points, IReadOnlyList<string> Notes, DateTimeOffset GeneratedAt);
 ```

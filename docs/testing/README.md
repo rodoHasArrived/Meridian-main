@@ -13,6 +13,7 @@ This folder owns scenario-specific acceptance procedures and retained evidence.
 | Capture paper-session continuity evidence | [Wave 2 reliability runbook](wave2-cockpit-reliability-evidence-runbook.md) | Automated and manual evidence sequence. |
 | Understand the original Wave 2 gates | [Wave 2 gate checklist](../../archive/docs/summaries/WAVE2_ACCEPTANCE_GATE_CHECKLIST.md) | Historical requirements and implementation snapshot. |
 | Validate Alpaca account synchronization, orders, recovery, reference data and market data | [Alpaca paper sandbox](alpaca-paper-portfolio-sandbox.md) | Opt-in read-only, order-lifecycle, governed order-path, reference-data and market-data broker evidence, deterministic fixtures, and validation limits. |
+| Verify Alpaca corporate-action coverage, revisions and source comparisons | [Corporate-action coverage](alpaca-corporate-action-coverage.md) | Public schema examples, independent issuer/exchange facts, synthetic broker effects, retained raw evidence and review-only boundaries. |
 | Verify accounting trust corrections | [Accounting trust acceptance](accounting-trust-corrections.md) | Scenario checklist; operator decisions remain explicit. |
 | Verify posted amount provenance | [W10 amount provenance](w10-amount-provenance.md) | Scoped evidence selection, review regressions, and validation limits. |
 | Evaluate close readiness and mark freshness | [W10 operator acceptance](w10-mark-seam-operator-acceptance.md) | Current integration boundary, historical candidate evidence, population and pending operator decisions. |

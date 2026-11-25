@@ -17,6 +17,22 @@ vi.mock("@/lib/amount-passport-api", async (importOriginal) => ({
 describe("Amount passport rail", () => {
   beforeEach(() => vi.resetAllMocks());
 
+  it("forwards a shared condition description to the keyboard-operable passport button", async () => {
+    const proof = createAmountPassport();
+    vi.mocked(getAmountPassport).mockResolvedValue(proof);
+    render(<>
+      <p id="amount-condition">The source has not supplied a reconciliation condition.</p>
+      <AmountPassportTrigger selection={{ label: "Posting", displayValue: "$125.50", reference: proof.reference }} ariaDescribedBy="amount-condition" />
+    </>);
+    const trigger = screen.getByRole("button", { name: /Inspect Posting/ });
+    expect(trigger).toHaveAttribute("aria-describedby", "amount-condition");
+    expect(trigger).toHaveAccessibleDescription("The source has not supplied a reconciliation condition.");
+    trigger.focus();
+    await userEvent.keyboard("{Enter}");
+    expect(await screen.findByRole("dialog", { name: "Amount passport" })).toBeVisible();
+    expect(getAmountPassport).toHaveBeenCalledWith(proof.reference.identity, expect.anything());
+  });
+
   it.each([false, true])("discards the selected passport when the dossier tab changes within the same route and scope (incoming hash: %s)", async (incomingHash) => {
     const proof = createAmountPassport();
     vi.mocked(getAmountPassport).mockResolvedValue(proof);

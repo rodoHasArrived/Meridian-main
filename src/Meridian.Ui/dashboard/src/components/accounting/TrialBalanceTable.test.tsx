@@ -3,6 +3,12 @@ import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import { TrialBalanceTable } from "./TrialBalanceTable";
 import type { AccountingTrialBalanceRowViewModel } from "@/screens/accounting-screen.view-model";
+import type { LedgerAmountSelection } from "@/types/ledger-amount-proof";
+
+vi.mock("@/components/meridian/proof-drawer", () => ({
+  LedgerAmountProofDrawer: ({ selection }: { selection: LedgerAmountSelection | null }) => selection
+    ? <div role="dialog" aria-label="Amount passport">{selection.subjectId} · {selection.amount}</div> : null
+}));
 
 function row(
   rowId: string,
@@ -37,6 +43,26 @@ function row(
 }
 
 describe("TrialBalanceTable", () => {
+  it("states one shared unknown condition for all balances and totals while keeping the source passport accessible", async () => {
+    const cash = { ...row("cash", "Cash", "Asset", 100), accountName: "Cash", balanceProofSubjectId: "trial-balance:cash",
+      balanceProofScope: { tenantId: "tenant", companyId: "company", fundProfileId: "fund", ledgerBookId: "book", periodId: "period" },
+      balanceProofCurrency: "USD", journalEntryIds: ["journal-cash"], ledgerEntryIds: ["line-cash"] };
+    render(<TrialBalanceTable rows={[cash, row("receivables", "Receivables", "Asset", 25), row("payable", "Payables", "Liability", 125)]} />);
+    const notice = screen.getByText(/Data condition unavailable\. A reconciliation data condition/);
+    expect(notice).toBeVisible();
+    expect(screen.getAllByText(/Data condition unavailable\./)).toHaveLength(1);
+    expect(screen.queryByText("Data condition unavailable", { exact: true })).not.toBeInTheDocument();
+    for (const value of screen.getAllByRole("group", { name: /Data condition unavailable/ })) {
+      expect(value.getAttribute("aria-describedby")?.split(" ")).toContain(notice.id);
+      expect(value).toHaveAccessibleDescription(/A reconciliation data condition has not been supplied/);
+    }
+    expect(screen.getAllByText("125.00 USD").length).toBeGreaterThan(1);
+    const control = screen.getByRole("button", { name: "Open Amount passport for Cash net balance: 100.00 USD · Data condition unavailable" });
+    expect(control).toHaveAccessibleDescription(/source has not supplied a reconciled data condition/);
+    control.focus();
+    await userEvent.keyboard("{Enter}");
+    expect(screen.getByRole("dialog", { name: "Amount passport" })).toHaveTextContent("trial-balance:cash");
+  });
   it("renders grouped sections, debit and credit totals, and selected row", () => {
     render(
       <TrialBalanceTable

@@ -105,7 +105,7 @@ export function buildCloseCommandCenterViewState({
       id: "period",
       label: "Period status",
       value: readinessLabel,
-      detail: workflow ? `${workflow.status} workflow ${workflow.workflowId}` : "Using workspace close status until workflow detail loads.",
+      detail: workflow ? `${workflow.status} close workflow for ${workflow.periodId}.` : "Using workspace close status until workflow detail loads.",
       tone: statusTone,
       href: workflow ? WORKSTATION_ROUTE_CATALOG.accountingApprovals : null
     },
@@ -221,7 +221,11 @@ export function buildCloseCommandCenterViewState({
     statusLabel: status === "loading" ? "Loading" : "Blocked",
     statusTone,
     periodLabel: workflow?.periodId ?? "Current period",
-    fundAccountLabel: workflow?.fundAccountId ?? multiAssetCoverage?.fundAccountId ?? "All accounts",
+    fundAccountLabel: workflow?.fundAccountId || multiAssetCoverage?.fundAccountId ? "Selected fund account" : "All accounts",
+    technicalDetails: [
+      { label: "Fund account ID", value: workflow?.fundAccountId ?? multiAssetCoverage?.fundAccountId ?? "Not recorded" },
+      { label: "Workflow ID", value: workflow?.workflowId ?? "Not recorded" }
+    ],
     summary: "Shared close readiness is unavailable. Select the full close scope and refresh before sign-off.",
     updatedLabel,
     updatedAtUtc: workflow?.updatedAtUtc ?? accountingSystemReconciliation?.generatedAtUtc ?? multiAssetCoverage?.asOfUtc ?? null,
@@ -483,7 +487,12 @@ function buildSharedFinancialOperationsCommandCenterViewState(
     statusLabel: status === "ready" ? "Ready" : status === "blocked" ? "Blocked" : status === "loading" ? "Loading" : "At risk",
     statusTone,
     periodLabel: commandCenter.periodId ?? "Current period",
-    fundAccountLabel: commandCenter.fundAccountId ?? commandCenter.fundProfileId ?? "All accounts",
+    fundAccountLabel: commandCenter.fundAccountId ? "Selected fund account" : commandCenter.fundProfileId ? "Selected fund" : "All accounts",
+    technicalDetails: [
+      { label: "Fund account ID", value: commandCenter.fundAccountId ?? "Not recorded" },
+      { label: "Fund profile ID", value: commandCenter.fundProfileId ?? "Not recorded" },
+      { label: "Source summary", value: closeSupportDecision?.summary ?? commandCenter.summary }
+    ],
     summary: errorText ? `${closeSupportDecision?.summary ?? commandCenter.summary} ${errorText}` : closeSupportDecision?.summary ?? commandCenter.summary,
     updatedLabel: commandCenter.generatedAtUtc,
     updatedAtUtc: commandCenter.generatedAtUtc ?? null,

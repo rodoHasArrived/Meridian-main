@@ -10,6 +10,10 @@ boundaries of their runtime exposure. The matrix covers all 22 direct folders un
 The source and test definitions were inspected at `fcd72ec33307770b3f432e48daaf22bff25c2f8f`;
 this review does not establish a successful live-provider session or operator acceptance.
 
+Alpaca's corporate-action scope was expanded on 2026-11-23 to all 16 documented Market Data
+REST families. The retained-evidence and coverage boundary is described in the
+[corporate-action coverage guide](../testing/alpaca-corporate-action-coverage.md).
+
 Evidence note: where a `complete` row rests on offline, mock, simulator, or fixture tests (no dated live run), read it as **synthetic-verified** in the [solo-developer evidence labels](../ai/solo-developer-workflow.md#provider-evidence-labels), not **live-verified**. `complete` here does not claim compatibility with the live provider; absent a recorded live run, the live status is `live-untested`.
 
 ## Readiness Interpretation
@@ -48,7 +52,7 @@ currently enabled.
 
 | Adapter folder (provider ID) | Streaming | Historical | Search | Options | Corporate actions | Brokerage | Capability boundary |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `Alpaca` (`alpaca`) | Yes | Yes | Yes | Yes | Yes | Yes | Feed, asset class, credentials, and paper/live environment are separately selected; corporate actions cover dividend/split announcements. |
+| `Alpaca` (`alpaca`) | Yes | Yes | Yes | Yes | Yes | Yes | Feed, asset class, credentials, and paper/live environment are separately selected; all 16 Market Data corporate-action families are mapped to review-only observations with bounded coverage and retained raw evidence. |
 | `AlphaVantage` (`alphavantage`) | — | Yes | Yes | — | Yes | — | Credential/enable-gated history and keyword search; adjusted-daily dividend/split projection is review-only. |
 | `Core` | — | — | — | — | — | — | Shared factories, contracts, pacing, and orchestration; not an independent provider family. |
 | `Edgar` (`edgar`) | — | — | Yes | — | — | — | SEC company/ticker discovery; filing and Security Master ingestion use separate contracts. |
@@ -117,8 +121,10 @@ These implemented paths explain why a family can have useful behavior beside a *
 
 ### Corporate-action release and acceptance
 
-The six on-demand corporate-action adapters above implement dividend/split retrieval or projection;
-this does not imply support for every corporate-action type or permission to apply an observation.
+Alpaca maps all 16 documented `v1/corporate-actions` families, including multi-security allocations
+and separate capital-gain components. The other five on-demand adapters implement dividend/split
+retrieval or projection. Each adapter's coverage remains specific to its endpoint and request;
+retrieval does not authorize applying an observation.
 Their declared release statuses are:
 
 | Provider(s) | `CorporateActionProviderReleaseStatusDto` | Acceptance implication |
@@ -142,6 +148,13 @@ internal timeouts remain explicit failures. These outcomes do not change release
 establish live verification. Synthetic regression cases are in
 [`CorporateActionFetchOutcomeTests`](../../tests/Meridian.Tests/Infrastructure/Providers/CorporateActionFetchOutcomeTests.cs)
 and [`AlpacaCorporateActionProviderTests`](../../tests/Meridian.Tests/Infrastructure/Providers/AlpacaCorporateActionProviderTests.cs).
+
+Alpaca additionally returns the per-family coverage, processing-date interval, region and data-quality
+filter. Its incomplete/unavailable query results withhold all observations. Observed amendments retain
+native identity, family, mapping version and lossless canonical source content; the original JSON
+record and raw digest survive durable staging. REST does not provide cancellation tombstones or a
+complete mutation history. Unresolved successor identities, economic dates and cash-rate bases remain
+explicit source-review work. All families remain `ReviewOnly`, with live compatibility `live-untested`.
 
 ### Brokerage and Interactive Brokers runtime
 
