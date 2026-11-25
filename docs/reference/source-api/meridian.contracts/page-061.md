@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CloseReadinessContributionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.CloseReadinessContributionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:28](../../../../src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs#L28).
+
+A contributor&#x27;s retained records and evaluation posture for the selected close scope.
+
+```csharp
+public sealed record CloseReadinessContributionDto(string ContributorId, string Owner, string Status, DateTimeOffset? EvaluatedAtUtc, IReadOnlyList<string> RecordIds);
+```
+
 ## CloseReadinessProjectionDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.CloseReadinessProjectionDto</code>. Kind: `record`.
@@ -691,19 +703,3 @@ Enum declarations:
 | <code>StatementImport = 11</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:117](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L117) |  |
 | <code>IntercompanyAgreement = 12</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:118](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L118) |  |
 | <code>LegalEntity = 13</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:119](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L119) |  |
-
-## EvidenceDocumentReviewStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceDocumentReviewStateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:138](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L138).
-
-```csharp
-public sealed record EvidenceDocumentReviewStateDto(EvidenceDocumentReviewStatusDto Status, string? Reviewer = null, DateTimeOffset? ReviewedAt = null, string? Notes = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;EvidenceDocumentConfirmedFieldDto&gt; ConfirmedFields { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:144](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L144) |  |

@@ -6,6 +6,71 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MaintenanceOptionsDto
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.MaintenanceOptionsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs:548](../../../../src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs#L548).
+
+```csharp
+public record MaintenanceOptionsDto(bool? ValidateChecksums = null, bool? CheckSequenceContinuity = null, bool? IdentifyCorruption = null, bool? CheckFilePermissions = null, int? ParallelOperations = null, bool? DeleteOrphans = null, bool? DeleteTemporaryFiles = null, bool? DeleteEmptyDirectories = null, int? OrphanAgeDays = null, long? MinFileSizeBytes = null, int? MaxFilesPerMerge = null, int? FileAgeDaysThreshold = null, bool? DryRun = null, bool? DeleteSourceAfterMigration = null, bool? VerifyAfterMigration = null, string? TargetCompressionCodec = null, int? CompressionLevel = null, bool? RecompressExisting = null, bool? BackupBeforeRepair = null, string? BackupPath = null, bool? TruncateCorrupted = null, int? OverrideRetentionDays = null, bool? SkipCriticalData = null);
+```
+
+## MaintenanceScheduleEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.MaintenanceScheduleEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/MaintenanceScheduleEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/MaintenanceScheduleEndpoints.cs#L14).
+
+Extension methods for registering maintenance schedule CRUD API endpoints.
+
+```csharp
+public static class MaintenanceScheduleEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapMaintenanceScheduleEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/MaintenanceScheduleEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/MaintenanceScheduleEndpoints.cs#L16) |  |
+
+## MeridianApiExceptionHandler
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.MeridianApiExceptionHandler</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiExceptionHandler.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiExceptionHandler.cs#L14).
+
+Converts unhandled endpoint exceptions into safe, stable Problem Details responses.
+
+```csharp
+public sealed class MeridianApiExceptionHandler : IExceptionHandler
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MeridianApiExceptionHandler(ILogger&lt;MeridianApiExceptionHandler&gt; logger);</code> | [src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiExceptionHandler.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiExceptionHandler.cs#L18) |  |
+| <code>public async ValueTask&lt;bool&gt; TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiExceptionHandler.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiExceptionHandler.cs#L24) |  |
+
+## MeridianApiProblemDetailsServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.MeridianApiProblemDetailsServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiProblemDetailsServiceCollectionExtensions.cs:10](../../../../src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiProblemDetailsServiceCollectionExtensions.cs#L10).
+
+Registers the shared Meridian Problem Details writer and exception handler.
+
+```csharp
+public static class MeridianApiProblemDetailsServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddMeridianApiProblemDetails(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiProblemDetailsServiceCollectionExtensions.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiProblemDetailsServiceCollectionExtensions.cs#L16) | Adds the RFC 7807 services used by the shared UI endpoint surface. Hosts should call UseExceptionHandler() after building the application. |
+
 ## MessagingEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.MessagingEndpoints</code>. Kind: `class`.
@@ -741,62 +806,4 @@ Registers or replaces one fixed asset on a fund book&#x27;s depreciation registe
 
 ```csharp
 public sealed record RegisterFixedAssetRequest(string FundProfileId, Guid LedgerBookId, FixedAssetRecord Asset, string EvidenceUri, DateOnly? RetiredOn = null);
-```
-
-## ReplayEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.ReplayEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs#L23).
-
-Extension methods for registering event replay API endpoints. Integrates with JsonlReplayer for JSONL event inspection and event-count scans. Timed playback and playback controls are not implemented by this host.
-
-```csharp
-public static class ReplayEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapReplayEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:26](../../../../src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs#L26) |  |
-
-## ReportExportRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.ReportExportRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:762](../../../../src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs#L762).
-
-Request DTO for report export.
-
-```csharp
-public record ReportExportRequest(string? Date, string? Format);
-```
-
-## ResilienceEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.ResilienceEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs#L19).
-
-Extension methods for registering resilience, cost estimation, and compliance endpoints.
-
-```csharp
-public static class ResilienceEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapResilienceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs#L21) |  |
-
-## RestoreRecurringJournalDefinitionsRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.RestoreRecurringJournalDefinitionsRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs#L17).
-
-```csharp
-public sealed record RestoreRecurringJournalDefinitionsRequest(string ScheduleId, int ScheduleVersion, int TemplateVersion, string Reason);
 ```

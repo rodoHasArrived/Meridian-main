@@ -6,6 +6,74 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IBScannerRequest
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IBScannerRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:9](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L9).
+
+Scanner criteria intentionally limited to IB&#x27;s stable scanner subscription fields.
+
+```csharp
+public sealed record IBScannerRequest(string Instrument, string LocationCode, string ScanCode, int NumberOfRows = 50, string? AbovePrice = null, string? AboveVolume = null);
+```
+
+## IBSecurityNotFoundException
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IBSecurityNotFoundException</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:525](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L525).
+
+Exception thrown when a security definition is not found.
+
+```csharp
+public sealed class IBSecurityNotFoundException : IBApiException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IBSecurityNotFoundException(int errorCode, string message) : base(errorCode, message);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:527](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L527) |  |
+
+## IBSimulationClient
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IBSimulationClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:26](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L26).
+
+IB simulation client for development and testing without TWS/Gateway. Generates synthetic market data that mimics IB&#x27;s data patterns. Activated when DataSource is &quot;IB&quot; and IBAPI is not compiled in.
+
+```csharp
+public sealed class IBSimulationClient : IMarketDataClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IBSimulationClient(IMarketEventPublisher publisher, bool enableAutoTicks = true, TimeSpan? autoTickDueTime = null, TimeSpan? autoTickPeriod = null);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:62](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L62) |  |
+| <code>public bool IsEnabled =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:84](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L84) |  |
+| <code>public bool IsSimulation =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:85](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L85) |  |
+| <code>public bool IsSimulated =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:88](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L88) |  |
+| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:91](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L91) |  |
+| <code>public string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:92](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L92) |  |
+| <code>public string ProviderDescription =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:93](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L93) |  |
+| <code>public int ProviderPriority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:95](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L95) |  |
+| <code>public ProviderCapabilities ProviderCapabilities { get; } = ProviderCapabilities.Streaming(trades : true, quotes : true, depth : true, maxDepthLevels : 5) with { SupportedMarkets = new[] { &quot;US (Simulated)&quot; }, MaxRequestsPerWindow = 50, RateLimitWindow = TimeSpan.FromSeconds(1), MinRequestDelay = TimeSpan.FromMilliseconds(100) };</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:97](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L97) |  |
+| <code>public ProviderCredentialField[] ProviderCredentialFields =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:109](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L109) |  |
+| <code>public string[] ProviderNotes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:111](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L111) |  |
+| <code>public string[] ProviderWarnings =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:118](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L118) |  |
+| <code>public event Action&lt;WebSocketConnectionDiagnostics&gt;? ConnectionDiagnosticsChanged;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:125](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L125) |  |
+| <code>public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:128](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L128) |  |
+| <code>public Task ConnectAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:151](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L151) |  |
+| <code>public Task DisconnectAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:168](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L168) |  |
+| <code>public int SubscribeMarketDepth(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:191](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L191) |  |
+| <code>public void UnsubscribeMarketDepth(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:199](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L199) |  |
+| <code>public int SubscribeTrades(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:204](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L204) |  |
+| <code>public void UnsubscribeTrades(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:212](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L212) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:263](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L263) |  |
+
 ## IBTickByTickTypes
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickByTickTypes</code>. Kind: `class`.
@@ -1222,72 +1290,3 @@ Declared public members:
 | <code>public Func&lt;string?&gt;? AccessTokenProvider { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:17](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L17) | When supplied, the current host-owned token is read for each request, including revocation. |
 | <code>public static RobinhoodReadOnlyBrokerageOptions FromEnvironment() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:19](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L19) |  |
 | <code>public static RobinhoodReadOnlyBrokerageOptions FromConfiguration(Func&lt;string, string?&gt; getValue);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:22](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L22) |  |
-
-## RobinhoodReadOnlyBrokerageSyncAdapter
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Robinhood.RobinhoodReadOnlyBrokerageSyncAdapter</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:42](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L42).
-
-Read-only Robinhood portfolio sync adapter for an authorized brokerage aggregation bridge. This adapter consumes normalized Meridian brokerage DTO payloads from configured endpoints; it intentionally does not call Robinhood&#x27;s unofficial trading endpoints or store passwords.
-
-```csharp
-public sealed class RobinhoodReadOnlyBrokerageSyncAdapter : IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RobinhoodReadOnlyBrokerageSyncAdapter(IHttpClientFactory httpClientFactory, RobinhoodReadOnlyBrokerageOptions options, ILogger&lt;RobinhoodReadOnlyBrokerageSyncAdapter&gt; logger);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:56](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L56) |  |
-| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:66](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L66) |  |
-| <code>public string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:68](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L68) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;BrokerageExternalAccountDto&gt;&gt; GetAccountsAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:70](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L70) |  |
-| <code>public Task&lt;BrokeragePortfolioSnapshotDto&gt; GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:79](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L79) |  |
-| <code>public Task&lt;BrokerageActivitySnapshotDto&gt; GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:91](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L91) |  |
-
-## RobinhoodSymbolSearchProvider
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Robinhood.RobinhoodSymbolSearchProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:29](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L29).
-
-Symbol search provider backed by Robinhood&#x27;s public instruments API. No authentication required.
-
-```csharp
-public sealed class RobinhoodSymbolSearchProvider : BaseSymbolSearchProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:31](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L31) |  |
-| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:32](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L32) |  |
-| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:33](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L33) |  |
-| <code>public override IReadOnlyList&lt;string&gt; SupportedAssetTypes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:43](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L43) |  |
-| <code>public override IReadOnlyList&lt;string&gt; SupportedExchanges =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:48](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L48) |  |
-| <code>public RobinhoodSymbolSearchProvider(HttpClient? httpClient = null, ILogger? log = null) : base(apiKey : null, httpClient, log);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:56](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L56) |  |
-
-## StooqHistoricalDataProvider
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Stooq.StooqHistoricalDataProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:22](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L22).
-
-Pulls free end-of-day historical bars from Stooq (https://stooq.pl). Extends BaseHistoricalDataProvider for common functionality.
-
-```csharp
-public sealed class StooqHistoricalDataProvider : BaseHistoricalDataProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:26](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L26) |  |
-| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:27](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L27) |  |
-| <code>public override string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:28](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L28) |  |
-| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:32](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L32) |  |
-| <code>public StooqHistoricalDataProvider(HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(httpClient, log, runtimeOptions : runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L34) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:55](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L55) |  |

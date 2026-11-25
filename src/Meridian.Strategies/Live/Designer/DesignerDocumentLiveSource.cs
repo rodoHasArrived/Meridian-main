@@ -98,13 +98,14 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
 
         var isVersioned = context.Parameters.ContainsKey(DesignerStrategyVersion.VersionKey);
         var hasArtifact = context.Parameters.TryGetValue(RetainedArtifactParameterKey, out var artifactId);
-        if (hasArtifact && (isVersioned || string.IsNullOrWhiteSpace(artifactId)))
+        if (hasArtifact && string.IsNullOrWhiteSpace(artifactId))
         {
             failureReason = "The Designer run has conflicting or incomplete retained strategy identity.";
             return false;
         }
 
-        if (hasArtifact ? _artifacts is null : isVersioned ? _scopedDesigns is null : _repository is null)
+        if ((hasArtifact && _artifacts is null) || (isVersioned && _scopedDesigns is null) ||
+            (!hasArtifact && !isVersioned && _repository is null))
         {
             failureReason =
                 $"Run references designer document '{documentId}', but no strategy design repository is " +
@@ -362,7 +363,8 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
                     async () =>
                     {
                         if (artifactId is not null)
-                            return (await _artifacts!.GetAsync(artifactId, timeout.Token).ConfigureAwait(false))?.DesignerDocument;
+                            return await LoadArtifactDocumentAsync(context, documentId, isVersioned, artifactId, timeout.Token)
+                                .ConfigureAwait(false);
 
                         return isVersioned
                             ? await LoadScopedRevisionAsync(context, documentId, timeout.Token).ConfigureAwait(false)
@@ -403,12 +405,58 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
         }
     }
 
+    private async Task<StrategyDesignDocument?> LoadArtifactDocumentAsync(
+        LiveStrategyCreationContext context, string documentId, bool isVersioned, string artifactId,
+        CancellationToken ct)
+    {
+        var artifact = await _artifacts!.GetAsync(artifactId, ct).ConfigureAwait(false);
+        if (artifact is null)
+            return null;
+        if (artifact.Route != Meridian.Strategies.Artifacts.StrategyAuthoringRoute.Designer ||
+            !string.Equals(artifact.StrategyId, context.StrategyId, StringComparison.Ordinal))
+            throw new InvalidOperationException("The retained artifact belongs to a different strategy or authoring route.");
+        if (!isVersioned)
+        {
+            if (artifact.Parameters.ContainsKey(DesignerStrategyVersion.VersionKey))
+                throw new InvalidOperationException("The scoped Designer artifact requires its retained version and paper authority.");
+            return artifact.DesignerDocument;
+        }
+
+        // A digest does not grant access to a draft. Resolve the current saved revision inside
+        // the run's tenant/company scope and require both retained identities to describe it.
+        var document = await LoadScopedRevisionAsync(context, documentId, ct).ConfigureAwait(false);
+        if (document is null)
+            return null;
+        if (!context.Parameters.TryGetValue(DesignerStrategyVersion.VersionKey, out var version) ||
+            !Meridian.Contracts.Integrity.Sha256Digest.IsCanonical(version) ||
+            !context.Parameters.TryGetValue(DesignerStrategyVersion.RealismKey, out var realismHash) ||
+            !Meridian.Contracts.Integrity.Sha256Digest.IsCanonical(realismHash))
+            throw new InvalidOperationException("The scoped Designer version or execution settings are missing.");
+        var expected = artifact with
+        {
+            SourceRevision = DesignerDocumentRevision.ComputeHash(document),
+            Parameters = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                [DesignerStrategyVersion.VersionKey] = version,
+                [DesignerStrategyVersion.RealismKey] = realismHash
+            },
+            Universe = document.Universe,
+            DataDependency = document.DatasetReference,
+            DesignerDocument = document
+        };
+        if (!string.Equals(expected.ComputeId(), artifactId, StringComparison.Ordinal))
+            throw new InvalidOperationException("The retained artifact conflicts with the scoped Designer version or executable inputs.");
+        return document;
+    }
+
     private async Task<StrategyDesignDocument?> LoadScopedRevisionAsync(
         LiveStrategyCreationContext context, string documentId, CancellationToken ct)
     {
         var scope = new StrategyRunRepositoryScope(
             context.Parameters.GetValueOrDefault(DesignerStrategyVersion.TenantKey),
             context.Parameters.GetValueOrDefault(DesignerStrategyVersion.CompanyKey));
+        if (!string.Equals(context.StrategyId, DesignerStrategyVersion.ComputeStrategyId(scope, documentId), StringComparison.Ordinal))
+            throw new InvalidOperationException("The Designer strategy identity differs from its retained tenant and company scope.");
         var latest = await _scopedDesigns!.GetAsync(scope, documentId, revision: null, ct).ConfigureAwait(false);
         if (latest is null)
             return null;

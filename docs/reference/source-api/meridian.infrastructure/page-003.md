@@ -6,6 +6,53 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderCapabilityExclusion
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderCapabilityExclusion</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:294](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L294).
+
+```csharp
+public sealed record ProviderCapabilityExclusion(string Capability, string Reason);
+```
+
+## ProviderCapabilityFactoryOwner
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderCapabilityFactoryOwner</code>. Kind: `enum`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:299](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L299).
+
+Identifies the authority that supplies configured capability factories.
+
+```csharp
+public enum ProviderCapabilityFactoryOwner
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Descriptor</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:301](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L301) |  |
+| <code>Module</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:302](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L302) |  |
+
+## ProviderCapabilityRegistration
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderCapabilityRegistration</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:285](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L285).
+
+A constructible capability belonging to one canonical provider family.
+
+```csharp
+public sealed record ProviderCapabilityRegistration(string ProviderId, Type Contract, Type Implementation, Func<ProviderFactory, object?> Factory)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Func&lt;ProviderFactory, bool&gt; IsEnabled { get; init; } = static _ =&gt; true;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:291](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L291) |  |
+
 ## ProviderCreationResult
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderCreationResult</code>. Kind: `class`.
@@ -1047,54 +1094,3 @@ Raised when the primary provider recovers and is restored as active.
 ```csharp
 public readonly record struct FailoverRecoveredEvent(string RuleId, string FromProviderId, string ToProviderId, DateTimeOffset Timestamp);
 ```
-
-## FailoverRuleApplyOutcome
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.FailoverRuleApplyOutcome</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1315](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1315).
-
-Whether one failover rule edit was applied to the running coordinator.
-
-```csharp
-public sealed record FailoverRuleApplyOutcome(string RuleId, bool Applied, string? Reason)
-```
-
-## FailoverRuleSnapshot
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1445](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1445).
-
-Point-in-time snapshot of a failover rule&#x27;s state.
-
-```csharp
-public readonly record struct FailoverRuleSnapshot(string RuleId, string PrimaryProviderId, string[] BackupProviderIds, string CurrentActiveProviderId, bool IsInFailoverState, DateTimeOffset? LastFailoverTime, int FailoverCount, int FailoverThreshold, int RecoveryThreshold);
-```
-
-## FailoverTransitionRequest
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.FailoverTransitionRequest</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1327](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1327).
-
-A requested provider transition. The failover coordinator does not change its active-provider state until the registered runtime confirms that connection and subscription restoration succeeded.
-
-```csharp
-public sealed class FailoverTransitionRequest
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Guid TransitionId { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1361](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1361) |  |
-| <code>public string RuleId { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1362](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1362) |  |
-| <code>public string FromProviderId { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1363](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1363) |  |
-| <code>public string ToProviderId { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1364](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1364) |  |
-| <code>public bool IsRecovery { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1365](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1365) |  |
-| <code>public string Reason { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1366](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1366) |  |
-| <code>public CancellationToken CancellationToken { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1367](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1367) |  |
-| <code>public Task&lt;bool&gt; Completion =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1368](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1368) |  |
-| <code>public bool TryComplete() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1371](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1371) |  |
-| <code>public bool TryReject(string reason) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1380](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1380) |  |
