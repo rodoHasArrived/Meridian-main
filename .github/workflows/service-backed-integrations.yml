@@ -25,7 +25,16 @@ on:
         description: Result of the dependency that produced the evidence.
         type: string
         default: ""
+      skip-when-docs-only:
+        description: >-
+          Classify pull request changes in the integration job and skip its steps for a
+          documentation-only change. Callers without this input always run the suite.
+        type: boolean
+        default: false
     outputs:
+      dotnet-required:
+        description: The integration job's own .NET change decision (true or false).
+        value: ${{ jobs.deterministic-integrations.outputs.dotnet-required }}
       artifact-id:
         value: ${{ jobs.evidence-gate.outputs.artifact-id }}
       artifact-name:
@@ -54,6 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     outputs:
+      dotnet-required: ${{ steps.changes.outputs.dotnet }}
       artifact-id: ${{ steps.upload.outputs.artifact-id }}
       artifact-name: ${{ steps.receipt.outputs.artifact-name }}
       receipt-sha256: ${{ steps.receipt.outputs.receipt-sha256 }}
@@ -87,7 +97,45 @@ jobs:
       MERIDIAN_SECURITY_MASTER_CONNECTION_STRING: Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification
 
     steps:
+      # Meridian CI asks this job to classify the change itself rather than queue behind a
+      # separate changes job. It uses the same detector as verify-dotnet, and integration-gate
+      # fails if the two decisions differ. Every other caller always runs the suite.
+      - name: Check out PR history for change detection
+        if: inputs.skip-when-docs-only && github.event_name == 'pull_request'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          filter: blob:none
+          path: .ci-change-detection
+
+      - name: Detect .NET changes
+        id: changes
+        env:
+          CLASSIFY: ${{ inputs.skip-when-docs-only && github.event_name == 'pull_request' }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$CLASSIFY" == "true" ]]; then
+            (cd .ci-change-detection &&
+              python3 build/scripts/ci/detect-dotnet-changes.py \
+                --base "$BASE_SHA" --head "$HEAD_SHA" --github-output "$GITHUB_OUTPUT")
+            rm -rf .ci-change-detection
+          else
+            # Main, merge queues, manual runs and release callers always run the suite.
+            echo "dotnet=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Report docs-only skip
+        if: steps.changes.outputs.dotnet != 'true'
+        run: |
+          echo "Docs-only PR: service-backed integrations intentionally skipped." | tee -a "$GITHUB_STEP_SUMMARY"
+
       - name: Check out repository
+        if: steps.changes.outputs.dotnet == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -96,11 +144,13 @@ jobs:
 
       - name: Set up .NET SDK
         id: dotnet
+        if: steps.changes.outputs.dotnet == 'true'
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           global-json-file: global.json
 
       - name: Set up Python
+        if: steps.changes.outputs.dotnet == 'true'
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
@@ -109,6 +159,7 @@ jobs:
       # every run. Reuse the package cache across runs so a slow or rate-limited feed cannot
       # add minutes to the certification's critical path.
       - name: Cache NuGet packages
+        if: steps.changes.outputs.dotnet == 'true'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
@@ -187,7 +238,7 @@ jobs:
             --filter "Category=Integration&Category!=LiveProvider"
 
       - name: Reject missing, failed, skipped or empty deterministic test evidence
-        if: always()
+        if: always() && steps.changes.outputs.dotnet == 'true'
         run: >-
           python build/scripts/ci/validate-test-results.py
           --results-dir artifacts/test-results/production-certification
@@ -206,7 +257,7 @@ jobs:
       # tools at exactly the server's major, so run them in there instead: no install, no
       # third-party fetch, and the major can never drift from the service image again.
       - name: Capture migrated database schema and ledger evidence
-        if: always()
+        if: always() && steps.changes.outputs.dotnet == 'true'
         env:
           POSTGRES_CONTAINER_ID: ${{ job.services.postgres.id }}
         run: |
@@ -244,6 +295,7 @@ jobs:
 
       - name: Bind successful integration evidence to this commit and run attempt
         id: receipt
+        if: steps.changes.outputs.dotnet == 'true'
         env:
           EVIDENCE_ARTIFACT_NAME: ${{ inputs.artifact-name }}-${{ github.run_number }}-${{ github.run_attempt }}
         run: >-
@@ -253,7 +305,7 @@ jobs:
 
       - name: Upload deterministic integration evidence
         id: upload
-        if: always()
+        if: always() && steps.changes.outputs.dotnet == 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ inputs.artifact-name }}-${{ github.run_number }}-${{ github.run_attempt }}
@@ -343,6 +395,7 @@ jobs:
           REUSE_RESULT: ${{ needs.reuse-integrations.result }}
           FRESH_OUTPUTS: ${{ toJSON(needs.deterministic-integrations.outputs) }}
           REUSE_OUTPUTS: ${{ toJSON(needs.reuse-integrations.outputs) }}
+          SKIP_WHEN_DOCS_ONLY: ${{ inputs.skip-when-docs-only }}
         run: |
           python - <<'PY'
           import json, os, re
@@ -351,6 +404,13 @@ jobs:
           if results not in (("success", "skipped"), ("skipped", "success")):
               raise SystemExit("Integration evidence is missing, failed, cancelled, or ambiguous: " + repr(results))
           outputs = json.loads(os.environ["FRESH_OUTPUTS" if results[0] == "success" else "REUSE_OUTPUTS"])
+          # Only a caller that opted into classification can produce dotnet-required=false,
+          # and only for a pull request that changes no .NET input. That run has no evidence
+          # to bind; integration-gate checks the decision against verify-dotnet's.
+          if (os.environ.get("SKIP_WHEN_DOCS_ONLY", "false") == "true" and results[0] == "success"
+                  and outputs.get("dotnet-required") == "false"):
+              print("Docs-only pull request: no integration evidence is required.")
+              raise SystemExit(0)
           patterns = {"artifact-id": r"[1-9][0-9]*", "artifact-name": r"[A-Za-z0-9][A-Za-z0-9_.-]{0,199}", "receipt-sha256": r"[0-9a-f]{64}"}
           if any(not re.fullmatch(pattern, outputs.get(key, "")) for key, pattern in patterns.items()):
               raise SystemExit("Successful integration job did not produce complete evidence outputs")

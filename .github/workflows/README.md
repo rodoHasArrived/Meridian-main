@@ -162,10 +162,22 @@ run unless the lane reported for one commit, ran every default roster entry exac
 entry failed. It publishes `meridian-ci-dotnet-<run>-<attempt>`. A local or unsharded run still
 executes the whole lane.
 
-`verify-dotnet` also classifies the pull request itself with `detect-dotnet-changes.py`, so it
-does not queue behind the `changes` job. On a docs-only PR it runs, skips its .NET steps and
-reports success; `quality-gate` fails unless its decision equals the `changes` job's decision.
-`changes` still feeds `service-backed-integrations` and `integration-gate`.
+`verify-dotnet` also classifies the pull request itself with `detect-dotnet-changes.py`; there is
+no separate `changes` job for any lane to queue behind. On a docs-only PR it runs, skips its .NET
+steps and reports success, and `quality-gate` requires its decision to be `true` or `false`. The
+reusable integration job classifies the same way when Meridian CI passes
+`skip-when-docs-only: true`, and `integration-gate` fails unless the two lanes' decisions agree.
+Production Certification never passes that input, so it always runs the suite.
+
+Pushes to `main` never cancel a running Meridian CI run, so every merge gets a completed
+`quality-gate`; GitHub keeps only the newest pending run per concurrency group. Pull request
+and merge-group runs still cancel superseded work.
+
+CodeQL, legacy CI's `Secret Scan`, Windows Desktop Build and Roadmap Source Docs skip draft pull
+requests and run on `ready_for_review`. A draft cannot merge, so the required `Secret Scan` and
+`Analyze <language>` contexts are produced by the ready-for-review run; until then a draft shows
+`Secret Scan` as skipped and the CodeQL contexts as expected. Meridian CI and Generated Repair
+still run on drafts.
 
 `verify-browser` sets `MERIDIAN_CI_BROWSER_SHARD=1/1`, runs install, UI contract generation,
 lint, the strict typecheck, the test files (`run-vitest-stable.mjs`), the production bundle and
