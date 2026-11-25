@@ -591,7 +591,7 @@ public sealed partial class ScheduledArchiveMaintenanceServiceTests : IDisposabl
         execution.ScheduleName.Should().Be(name);
         _scheduleManager.ExecutionHistory.GetExecution(execution.ExecutionId)!.ScheduleId.Should().Be(scheduleId);
         var messages = logger.Invocations.Where(call => call.Method.Name == "Log")
-            .Select(call => call.Arguments[2]!.ToString()!).ToArray();
+            .Select(call => call.Arguments[2].ToString()!).ToArray();
         messages.Should().Contain(message => message.Contains("Nightly__forged") && message.Contains("schedule__forged"));
         messages.Should().OnlyContain(message => !message.Contains('\r') && !message.Contains('\n'));
     }
