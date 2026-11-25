@@ -38,7 +38,7 @@ Snapshot date: 2026-11-25
 | W5X-EVIDENCE-001 | Evidence Vault productization | done | green | high | Accounting and Ledger |
 | W5X-FINOPS-001 | Financial operations control center | done | green | high | Accounting and Ledger |
 | W5X-FREX-001 | Shared financial record explorers | done | green | high | Workstation Shell and UX |
-| W5X-OEG-001 | Operational evidence graph product surface | planned | green | high | Workstation Shell and UX |
+| W5X-OEG-001 | Operational evidence graph product surface | in_progress | green | high | Workstation Shell and UX |
 | W5X-STMT-ONBOARD-001 | Statement reconciliation onboarding wedge | done | green | high | Accounting and Ledger |
 | W6-BTSTUDIO-001 | Backtesting studio evidence loop | done | green | medium | Strategy Analytics |
 | W7-LIVE-001 | Live-readiness governance | done | green | medium | Accounting and Ledger |
@@ -57,11 +57,11 @@ Snapshot date: 2026-11-25
 | W9-ASSET-010 | Asset Accounting Event Spine and atomic lot posting | done | green | critical | Accounting and Ledger |
 | W9-CORPACT-011 | Durable corporate action case processing and accounting projection | accepted | green | high | Accounting and Ledger |
 | W10-BOND-001 | Bond analytics, declared-schedule migration and contractual cash-flow projection | in_progress | green | medium | Accounting and Ledger |
-| W10-DEBT-001 | God-file burn-down against the file-size ratchet | planned | green | medium | Workstation Shell and UX |
+| W10-DEBT-001 | God-file burn-down against the file-size ratchet | in_progress | green | medium | Workstation Shell and UX |
 | W10-MARK-001 | Fail-closed stale-mark policy and mark-age surfacing | in_progress | green | high | Accounting and Ledger |
 | W10-RECON-001 | Durable break lineage identity and run-over-run break diff | in_progress | yellow | high | Accounting and Ledger |
 | W10-PROV-001 | Ledger-amount evidence subject and shared proof drawer | in_progress | green | high | Workstation Shell and UX |
-| W10-RECON-002 | Break clustering and bulk-resolution activation | planned | green | high | Accounting and Ledger |
+| W10-RECON-002 | Break clustering and bulk-resolution activation | in_progress | green | high | Accounting and Ledger |
 | W10-JRNL-001 | Durable recurring journal schedules and draft runner | in_progress | green | high | Accounting and Ledger |
 | W10-TAX-001 | Tax character, wash-sale, and lot-relief operator surface | planned | green | high | Accounting and Ledger |
 | W10-SEAM-001 | Unified close-readiness projection behind one shared contract | in_progress | green | high | Workstation Shell and UX |

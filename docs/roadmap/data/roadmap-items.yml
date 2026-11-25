@@ -405,11 +405,11 @@ items:
       - Reporting
       - Data
     owner_lane: Workstation Shell and UX
-    status: planned
+    status: in_progress
     health: green
     priority: high
-    evidence_posture: planned_evidence
-    status_note: Planned shared evidence graph; implementation, both-workstation paths and acceptance evidence remain required.
+    evidence_posture: in_progress
+    status_note: Shared EvidenceGraphService, proof drawers in both workstations and evidence manifests exist. Compact proof ribbon, full proof-graph page and explorer deep-link coverage remain open; W10-PROV-001 and W11-PASSPORT-001 feed this umbrella.
     decision_ids: []
     pr_references: []
     status_detail: docs/roadmap/snapshots/status-prose-2026-11-14/W5X-OEG-001.md
@@ -428,7 +428,18 @@ items:
     diagrams:
       - DIA-ASSURANCE-LOOP
       - DIA-BROWSER-WORKSTATION
-    last_reviewed: 2026-06-15
+    evidence:
+      - type: source
+        path: src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs
+      - type: source
+        path: src/Meridian.Ui/dashboard/src/components/meridian/amount-passport-drawer.tsx
+      - type: source
+        path: src/Meridian.Wpf/Controls/LedgerAmountProofDrawer.xaml
+      - type: source
+        path: src/Meridian.Wpf/ViewModels/LedgerAmountProofDrawerViewModel.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs
+    last_reviewed: 2026-11-25
 
   - id: W5X-FREX-001
     title: Shared financial record explorers
@@ -1622,7 +1633,7 @@ items:
     health: green
     priority: high
     evidence_posture: in_progress
-    status_note: Shared fail-closed valuation freshness is implemented; live acceptance and retained exit criteria remain open.
+    status_note: Freshness policy, both-workstation mark age and preview are implemented; acceptance waits on W10-LOT-002 in the work queue. Open gap - AssetPositionMarketValuationService (2026-11-21) applies its own staleness rule instead of ValuationFreshnessPolicy. Live acceptance remains open.
     decision_ids: []
     pr_references: []
     status_detail: docs/roadmap/snapshots/status-prose-2026-11-14/W10-MARK-001.md
@@ -1657,7 +1668,7 @@ items:
         path: tests/Meridian.Tests/Application/Accounting/ValuationFreshnessAcceptanceTests.cs
       - type: test
         path: tests/Meridian.Wpf.Tests/ViewModels/MarkFreshnessPresentationTests.cs
-    last_reviewed: 2026-09-23
+    last_reviewed: 2026-11-25
 
   - id: W10-RECON-001
     title: Durable break lineage identity and run-over-run break diff
@@ -1822,13 +1833,14 @@ items:
     workspace:
       - Accounting
     owner_lane: Accounting and Ledger
-    status: planned
+    status: in_progress
     health: green
     priority: high
-    evidence_posture: planned_evidence
-    status_note: Activate existing bulk casework and retain break classification through the shared queue; recorded exit criteria remain open.
+    evidence_posture: in_progress
+    status_note: Bulk triage is wired in the browser queue with dry-run then execute, per-case audit, material-action denial and reviewed-version binding (9f4366fa98, PR 3705). Cause grouping, stored classification and the gross-exposure group threshold remain open.
     decision_ids: []
-    pr_references: []
+    pr_references:
+    - 3705
     status_detail: docs/roadmap/snapshots/status-prose-2026-11-14/W10-RECON-002.md
     exit_criteria:
       - An operator can resolve a group of related breaks in one governed action instead of one action per break.
@@ -1846,7 +1858,16 @@ items:
       - SRC-WPF
     diagrams:
       - DIA-ASSURANCE-LOOP
-    last_reviewed: 2026-07-31
+    evidence:
+      - type: source
+        path: src/Meridian.Ui/dashboard/src/screens/reconciliation-bulk-triage-bar.tsx
+      - type: test
+        path: src/Meridian.Ui/dashboard/src/screens/reconciliation-bulk-triage.test.ts
+      - type: source
+        path: src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/WorkstationEndpointsTests.BulkCasework.cs
+    last_reviewed: 2026-11-25
 
   - id: W10-JRNL-001
     title: Durable recurring journal schedules and draft runner
@@ -2096,9 +2117,10 @@ items:
     health: green
     priority: medium
     evidence_posture: planned_evidence
-    status_note: Matching-tolerance preview requires complete propagation and retained comparison evidence before operator acceptance.
+    status_note: PR 3705 retains executed tolerance policies, one prerequisite. No unified engine tolerance model, replay determinism proof or preview surface exists. Candidate to split (model and retention vs replay workbench) or defer; owner decision.
     decision_ids: []
-    pr_references: []
+    pr_references:
+    - 3705
     status_detail: docs/roadmap/snapshots/status-prose-2026-11-14/W10-RECON-003.md
     exit_criteria:
       - One tolerance model reaches the matching engine, so every tolerance an operator can configure is one the engine actually applies.
@@ -2114,7 +2136,7 @@ items:
       - SRC-WPF
     diagrams:
       - DIA-ASSURANCE-LOOP
-    last_reviewed: 2026-07-31
+    last_reviewed: 2026-11-25
 
   - id: W10-RECON-004
     title: Operator-taught match rules with promotion gate
@@ -2130,7 +2152,7 @@ items:
     health: green
     priority: medium
     evidence_posture: planned_evidence
-    status_note: Operator-taught matches remain candidate rules until governed promotion; retained exit criteria define activation.
+    status_note: Not started. The matcher's candidate rule IDs are fixed built-in rules, and operator matches are not captured as rules. Depends in practice on W10-RECON-002 stored classification; deferral costs nothing.
     decision_ids: []
     pr_references: []
     status_detail: docs/roadmap/snapshots/status-prose-2026-11-14/W10-RECON-004.md
@@ -2150,7 +2172,7 @@ items:
       - SRC-WPF
     diagrams:
       - DIA-ASSURANCE-LOOP
-    last_reviewed: 2026-07-31
+    last_reviewed: 2026-11-25
 
   - id: W10-PERF-001
     title: Portfolio and investor return measurement
@@ -2505,11 +2527,11 @@ items:
     title: God-file burn-down against the file-size ratchet
     wave: W10
     owner_lane: Workstation Shell and UX
-    status: planned
+    status: in_progress
     health: green
     priority: medium
-    evidence_posture: planned_evidence
-    status_note: Unranked engineering hygiene retains ADR-017/ADR-018 burn-down targets and ratchet containment; it adds no product dependency.
+    evidence_posture: in_progress
+    status_note: Five of 50 baselined files retired (2026-11-10 to 11-13); current lines 168,123 to 118,648 (-29% vs 15%/quarter). Residual SecurityMasterViewModel.cs sits at 1,883 lines; caps total 140,149, so check tightening.
     decision_ids: []
     pr_references:
     - 2860
@@ -2531,7 +2553,9 @@ items:
     evidence:
       - type: reference
         path: docs/engineering/plans/god-file-burn-down-plan.md
-    last_reviewed: 2026-08-29
+      - type: reference
+        path: build/config/file-size-baseline.json
+    last_reviewed: 2026-11-25
 
   - id: W10-BOND-001
     title: Bond analytics, declared-schedule migration and contractual cash-flow projection

@@ -14,12 +14,14 @@ program:
     - W1-DATA-PROVCFG-001
     - W10-BOND-001
     - W10-CONSOL-001
+    - W10-DEBT-001
     - W10-JRNL-001
     - W10-LOT-002
     - W10-MARK-001
     - W10-PERF-001
     - W10-PROV-001
     - W10-RECON-001
+    - W10-RECON-002
     - W10-SEAM-001
     - W11-SHADOW-001
     - W12-CAPITAL-001
@@ -34,6 +36,7 @@ program:
     - W13-OMS-001
     - W13-STRAT-001
     - W14-ATTEST-001
+    - W5X-OEG-001
     - W8-UX-CONSOL-001
     - W8-UX-TRUST-001
     - W8-WPF-PARITY-001
