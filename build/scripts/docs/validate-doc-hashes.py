@@ -12,13 +12,16 @@ import re
 import sys
 from pathlib import Path
 
-from common import EXCLUDE_DIRS, Finding, emit_findings, load_data, repo_path, repo_root, sha256_manifest_file, sha256_text, write_text_if_changed
+from common import EXCLUDE_DIRS, Finding, emit_findings, load_data, repo_path, repo_root, sha256_manifest_file, sha256_text
 from reviewed_doc_fingerprints import (
-    LEGACY_VERSION, REVIEW_VERSION, generated_blocks, manifest_version, metadata,
-    normalized_text, reviewed_readme_hash,
+    HASH_DIRECTORY, LEGACY_VERSION, REVIEW_VERSION, assemble_manifest, generated_blocks, manifest_version, metadata,
+    normalized_text, read_manifest_directory, reviewed_readme_hash, serialize_manifest, write_manifest_directory,
 )
 
-HASH_MANIFEST = Path("docs/source/generated/source-hash-manifest.json")
+# Re-exported for the reviewed-hash merger: assemble_manifest, serialize_manifest.
+# One reviewed fingerprint file per module (plus a shared header) keeps unrelated
+# module reviews from conflicting with each other in Git.
+HASH_MANIFEST = Path(HASH_DIRECTORY)
 SOURCE_SUFFIXES = {
     ".cs",
     ".csproj",
@@ -136,8 +139,8 @@ def tree_hash(root: Path, module_path: Path) -> str:
 
 def build_manifest(root: Path, schema_version: str | None = None) -> dict:
     if schema_version is None:
-        existing = root / HASH_MANIFEST
-        schema_version = manifest_version(load_json(existing)) if existing.exists() else LEGACY_VERSION
+        existing = load_reviewed_manifest(root)
+        schema_version = manifest_version(existing) if existing is not None else LEGACY_VERSION
     header = metadata(schema_version)
     modules_data = load_data(root / "docs/source/data/source-modules.yml")
     modules = []
@@ -161,6 +164,11 @@ def build_manifest(root: Path, schema_version: str | None = None) -> dict:
 
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def load_reviewed_manifest(root: Path) -> dict | None:
+    """Assemble the reviewed per-module fingerprint files into one logical manifest."""
+    return read_manifest_directory(root / HASH_MANIFEST)
 
 
 def validate_generated_manifests(root: Path) -> list[Finding]:
@@ -187,9 +195,12 @@ def validate_generated_manifests(root: Path) -> list[Finding]:
 
 def validate_source_hash_manifest(root: Path, actual_manifest: dict) -> list[Finding]:
     manifest_path = root / HASH_MANIFEST
-    if not manifest_path.exists():
+    try:
+        expected = load_reviewed_manifest(root)
+    except (ValueError, OSError) as error:
+        return [Finding("error", repo_path(manifest_path, root), f"reviewed source hashes are unreadable: {error}")]
+    if expected is None:
         return [Finding("error", repo_path(manifest_path, root), "source hash manifest is missing; run with --write")]
-    expected = load_json(manifest_path)
     if manifest_version(expected) != manifest_version(actual_manifest):
         return [Finding("error", repo_path(manifest_path, root), "fingerprint versions differ; use the explicit reviewed README migration")]
     findings: list[Finding] = []
@@ -197,7 +208,7 @@ def validate_source_hash_manifest(root: Path, actual_manifest: dict) -> list[Fin
     for actual in actual_manifest.get("modules", []):
         expected_entry = expected_by_id.get(actual["id"])
         if expected_entry is None:
-            findings.append(Finding("error", repo_path(manifest_path, root), f"missing module hash entry {actual['id']}"))
+            findings.append(Finding("error", repo_path(manifest_path / f"{actual['id']}.json", root), f"missing module hash entry {actual['id']}"))
             continue
         if actual["source_hash"] != expected_entry.get("source_hash"):
             findings.append(Finding("error", actual["path"], "source hash drift; update docs or rerun hash manifest after review"))
@@ -237,7 +248,9 @@ def migrate_reviewed_readmes(root: Path, *, apply: bool = True) -> tuple[bool, i
     blessed: every old full-content fingerprint must match before any write.
     """
     path = root / HASH_MANIFEST
-    expected = load_json(path)
+    expected = load_reviewed_manifest(root)
+    if expected is None:
+        raise ValueError("Reviewed README migration requires an existing reviewed baseline")
     if manifest_version(expected) != LEGACY_VERSION:
         raise ValueError("Reviewed README migration requires a v1 manifest")
     actual = build_manifest(root, LEGACY_VERSION)
@@ -266,13 +279,13 @@ def migrate_reviewed_readmes(root: Path, *, apply: bool = True) -> tuple[bool, i
     result = {**metadata(REVIEW_VERSION), "modules": sorted(migrated, key=lambda entry: entry["id"])}
     if not apply:
         return False, len(migrated)
-    return write_text_if_changed(path, json.dumps(result, indent=2, sort_keys=True)), len(migrated)
+    return write_manifest_directory(path, result), len(migrated)
 
 
 def refresh_source_hash_manifest(root: Path, actual_manifest: dict, module_ids: list[str] | None = None) -> tuple[bool, int]:
     manifest_path = root / HASH_MANIFEST
     if not module_ids:
-        return write_text_if_changed(manifest_path, json.dumps(actual_manifest, indent=2, sort_keys=True)), len(actual_manifest.get("modules", []))
+        return write_manifest_directory(manifest_path, actual_manifest), len(actual_manifest.get("modules", []))
 
     requested = set(module_ids)
     actual_by_id = {entry["id"]: entry for entry in actual_manifest.get("modules", [])}
@@ -280,8 +293,8 @@ def refresh_source_hash_manifest(root: Path, actual_manifest: dict, module_ids: 
     if missing:
         raise ValueError(f"unknown source module id(s): {', '.join(missing)}")
 
-    if manifest_path.exists():
-        next_manifest = load_json(manifest_path)
+    next_manifest = load_reviewed_manifest(root)
+    if next_manifest is not None:
         if manifest_version(next_manifest) != manifest_version(actual_manifest):
             raise ValueError("Narrow writes cannot change fingerprint schema; use the explicit reviewed README migration")
     else:
@@ -309,7 +322,7 @@ def refresh_source_hash_manifest(root: Path, actual_manifest: dict, module_ids: 
     next_manifest["generator"] = actual_manifest["generator"]
     next_manifest["contract"] = actual_manifest["contract"]
     next_manifest["modules"] = sorted(modules, key=lambda item: item["id"])
-    changed = write_text_if_changed(manifest_path, json.dumps(next_manifest, indent=2, sort_keys=True))
+    changed = write_manifest_directory(manifest_path, next_manifest)
     return changed, len(requested)
 
 
@@ -317,7 +330,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Validate documentation hash alignment.")
     parser.add_argument("--root", default=str(repo_root()), help="Repository root.")
     write_group = parser.add_mutually_exclusive_group()
-    write_group.add_argument("--write", action="store_true", help="Refresh every docs/source/generated/source-hash-manifest.json module entry.")
+    write_group.add_argument("--write", action="store_true", help=f"Refresh every reviewed module fingerprint file under {HASH_DIRECTORY}.")
     write_group.add_argument(
         "--migrate-reviewed-readmes", action="store_true",
         help="Explicitly migrate verified v1 README bytes to v2 handwritten fingerprints without refreshing accepted source hashes.",
@@ -358,7 +371,7 @@ def main() -> int:
             return 1
         if args.summary:
             scope = f"{refreshed} module entr{'y' if refreshed == 1 else 'ies'}" if args.write_module else "all module entries"
-            print(f"doc hash manifest refreshed ({scope}): {1 if changed else 0} file(s) changed")
+            print(f"reviewed source hashes refreshed ({scope}): {'changed' if changed else 'unchanged'}")
         return 0
 
     findings = validate_generated_manifests(root)
