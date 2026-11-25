@@ -13486,6 +13486,7 @@ Meridian-main
 │   │   │   │   ├── QuickSetupAtomicSaveTests.cs
 │   │   │   │   └── RuntimeDiagnosticRedactorTests.cs
 │   │   │   ├── Subscriptions
+│   │   │   │   ├── DepthAutoResubscribeTests.cs
 │   │   │   │   ├── PortfolioImportReliabilityTests.cs
 │   │   │   │   ├── PortfolioImportRunTests.cs
 │   │   │   │   ├── SchedulingServiceReliabilityTests.cs

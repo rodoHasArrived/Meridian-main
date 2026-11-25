@@ -1825,7 +1825,16 @@ blocking read on the thread pool. See
 
 **Pipeline.** `EventPipeline` counts events the channel evicts in DropOldest/DropNewest mode as
 dropped. `PersistentDedupLedger` offers a synchronous `Initialize` for dependency-injection
-factories, and `AutoResubscribePolicy` awaits `SubscriptionOrchestrator.ApplyAsync`.
+factories, and `AutoResubscribePolicy` awaits `SubscriptionOrchestrator.ApplyAsync` for
+configuration-driven resubscription.
+
+**Depth recovery.** The collector runner hooks `MarketDepthCollector.IntegrityDetected` into an
+`AutoResubscribePolicy` (except under `--simulate-feed`, which resets its own stale book). Depth
+events go through `SubscriptionOrchestrator.ResubscribeDepthAsync`, which cancels the symbol's depth
+request, resets its book and re-requests depth with the last applied configuration; an
+unchanged-config `ApplyAsync` would keep the stale request. The policy's per-symbol cooldown,
+minimum interval and circuit breakers bound retries, a symbol this process does not hold is skipped
+without counting as a failure, and the runner keeps at most one recovery in flight per symbol.
 
 ## Diagrams
 

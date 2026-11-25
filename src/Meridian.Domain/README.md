@@ -66,6 +66,10 @@ Use this module for domain behavior that should remain stable across providers, 
   execution venues without discarding trade-ID or venue provenance from emitted events.
   `SequenceSessionDate` scopes a provider-reset stream to its market session date; adapters own the
   timezone conversion rather than letting the collector mistake UTC midnight for a session boundary.
+- `MarketDepthCollector` marks a symbol's book stale on any depth integrity failure and rejects
+  later updates until `ResetSymbolStream`. It raises `IntegrityDetected` for the first failure and
+  for every update rejected while stale, so a recovery policy can re-request depth; a throwing
+  handler is swallowed so ingestion continues. Recent-trade limits of zero or less return empty.
 
 ## Diagrams
 
