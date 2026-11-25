@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildConflictRows,
+  classifyConflictResolution,
   buildPassportActions,
   buildPassportStateBadge,
   buildTrustPosture,
@@ -130,5 +131,34 @@ describe("trust posture", () => {
     expect(buildTrustPosture("Trusted").tone).toBe("trusted");
     expect(buildTrustPosture("anything-else").tone).toBe("review");
     expect(buildTrustPosture(null).tone).toBe("review");
+  });
+});
+
+describe("conflict resolution outcome (review D3 \"Use B\")", () => {
+  it("treats a result without a pending revision as resolved", () => {
+    expect(classifyConflictResolution({ chosenWinnerSource: "golden-copy", newVersion: 8 })).toEqual({ kind: "resolved", newVersion: 8 });
+    expect(classifyConflictResolution({ chosenWinnerSource: "golden-copy", newVersion: 8, pendingRevisionId: "  " })).toEqual({
+      kind: "resolved",
+      newVersion: 8
+    });
+  });
+
+  it("adopts the staged draft and explains that the conflict resolves on publish", () => {
+    const outcome = classifyConflictResolution({ chosenWinnerSource: "vendor-b", newVersion: 7, pendingRevisionId: "rev-9" });
+    expect(outcome).toMatchObject({ kind: "draft-staged", newVersion: 7, pendingRevisionId: "rev-9" });
+    if (outcome.kind !== "draft-staged") throw new Error("expected a staged draft");
+    expect(outcome.banner.tone).toBe("info");
+    expect(outcome.banner.message).toBe(
+      "Staged draft rev-9 adopting vendor-b's value. The conflict resolves to that source when the draft is approved and published."
+    );
+  });
+
+  it("keeps a conflict awaiting its staged draft from being resolved again", () => {
+    const [row] = buildConflictRows(
+      [{ conflictId: "k1", fieldLabel: "Coupon", policyWinnerSource: "golden-copy", challengerSource: "vendor-b", pendingRevisionId: "rev-9" }],
+      { isBusy: false }
+    );
+    expect(row.canAct).toBe(false);
+    expect(row.pendingDraftLabel).toBe("Awaiting draft rev-9 — resolves when it is published");
   });
 });

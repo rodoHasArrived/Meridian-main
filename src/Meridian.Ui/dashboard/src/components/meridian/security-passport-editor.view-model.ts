@@ -163,6 +163,11 @@ export interface PassportConflictInput {
   challengerSource: string;
   severity?: string | null;
   isResolved?: boolean;
+  /**
+   * Review D3 "Use B": the draft staged for the chosen source. The conflict stays open until that draft
+   * is approved and published, so the row cannot be resolved again in the meantime.
+   */
+  pendingRevisionId?: string | null;
 }
 
 export interface PassportConflictRowViewModel {
@@ -172,8 +177,10 @@ export interface PassportConflictRowViewModel {
   challengerSource: string;
   severityTone: PassportSeverityTone;
   severityLabel: string;
-  /** False when resolved or while a write is in flight. */
+  /** False when resolved, awaiting a staged draft, or while a write is in flight. */
   canAct: boolean;
+  /** Shown while the conflict waits on a staged draft; null otherwise. */
+  pendingDraftLabel: string | null;
 }
 
 function classifySeverity(severity: string | null | undefined): { tone: PassportSeverityTone; label: string } {
@@ -203,7 +210,10 @@ export function buildConflictRows(
       challengerSource: conflict.challengerSource,
       severityTone: severity.tone,
       severityLabel: severity.label,
-      canAct: !conflict.isResolved && !context.isBusy
+      canAct: !conflict.isResolved && !conflict.pendingRevisionId && !context.isBusy,
+      pendingDraftLabel: conflict.pendingRevisionId
+        ? `Awaiting draft ${conflict.pendingRevisionId} — resolves when it is published`
+        : null
     };
   });
 }
@@ -248,4 +258,37 @@ export function buildTrustPosture(posture: string | null | undefined): PassportT
     return { label: "Trusted", tone: "trusted" };
   }
   return { label: "Review", tone: "review" };
+}
+
+/** What the editor does with a conflict-resolution result. */
+export type ConflictResolutionOutcome =
+  | { kind: "resolved"; newVersion: number }
+  | { kind: "draft-staged"; newVersion: number; pendingRevisionId: string; banner: PassportBannerViewModel };
+
+/**
+ * Review D3 "Use B": choosing the source whose value is not current stages a governed draft instead of
+ * resolving. The conflict stays open and resolves to the chosen source when that draft publishes, so the
+ * editor adopts the draft as its working revision (the same as the desktop editor).
+ */
+export function classifyConflictResolution(result: {
+  chosenWinnerSource: string;
+  newVersion: number;
+  pendingRevisionId?: string | null;
+}): ConflictResolutionOutcome {
+  const pendingRevisionId = result.pendingRevisionId?.trim();
+  if (!pendingRevisionId) {
+    return { kind: "resolved", newVersion: result.newVersion };
+  }
+  return {
+    kind: "draft-staged",
+    newVersion: result.newVersion,
+    pendingRevisionId,
+    banner: {
+      tone: "info",
+      title: "Draft staged",
+      message:
+        `Staged draft ${pendingRevisionId} adopting ${result.chosenWinnerSource}'s value. ` +
+        "The conflict resolves to that source when the draft is approved and published."
+    }
+  };
 }
