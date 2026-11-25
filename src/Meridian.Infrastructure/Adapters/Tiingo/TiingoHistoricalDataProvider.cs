@@ -145,11 +145,11 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
                 if ((int)response.StatusCode == 429)
                 {
                     var retryAfter = HttpResponseHandler.ExtractRetryAfter(response) ?? TimeSpan.FromMinutes(1);
-                    throw new RateLimitException(
+                    throw CreateRateLimitException(
                         $"Tiingo rate limit exceeded (429) for {symbol}",
-                        provider: Name,
-                        symbol: symbol,
-                        retryAfter: retryAfter);
+                        symbol,
+                        retryAfter,
+                        response);
                 }
 
                 throw new InvalidOperationException($"Tiingo returned {(int)response.StatusCode} for symbol {symbol}");

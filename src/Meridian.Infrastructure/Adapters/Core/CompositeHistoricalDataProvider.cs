@@ -339,6 +339,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         CancellationToken ct,
         Action<BackfillRoutingAttempt>? captureAttempt = null)
     {
+        using var historyScope = _rotation.ObserveRequests();
         var requestStartedAt = DateTimeOffset.UtcNow;
         var retryDeadline = requestStartedAt + _maxRateLimitRetryBudget;
         var providerAttempt = 0;
@@ -531,7 +532,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                     {
                         var retryAfter = ExtractRetryAfter(ex);
                         HistoricalBackfillRequestScope.Current?.Throttled(provider.Name, "provider-rate-limit", null);
-                        _rotation.RecordRateLimitHit(provider.Name, retryAfter,
+                        _rotation.RecordRateLimitHit(provider.Name, retryAfter, ex,
                             HasHttpTooManyRequestsStatus(ex) ? 429 : null);
                         throttledProvider = provider.Name;
                         rateLimitedCandidates.Add(provider);

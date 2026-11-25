@@ -15,6 +15,9 @@ Stored historical-bar reads preserve explicit `PriceBasis` and the legacy adjust
 Missing basis remains Unknown; contradictory declarations are rejected as malformed records rather
 than relabeled raw. This keeps workstation-loaded prices consistent with provider and storage evidence.
 
+Provider health keeps unavailable numeric metrics null in snapshots and history. Ranking uses
+measured values, and composite scores require every weighted component.
+
 The existing accounting agreement workspace/client carries optional structured legal declarations,
 dates-only schedule previews and explicit external-review attestations through the native host API.
 It keeps exact decimal strings, submitted hashes and reviewer/operator roles distinct. Obligation

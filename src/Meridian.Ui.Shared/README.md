@@ -78,6 +78,15 @@ enable the unsupported canonical paper-bond path. See the
 Provider quota responses preserve the runtime's explicit credits/request unit and daily usage,
 cap and reset-policy evidence. They do not infer fundamentals entitlement from available credits.
 
+The Data workspace and its shared provider counts can use the retained records when readiness
+repositories or the provider credential vault are unavailable. Affected rows report unavailable
+readiness evidence, and a failed vault read leaves the credential summary unavailable. Provider
+health returns connection state separately from performance measurements. Absent measurements
+are null, and measured average latency includes its observation timestamp.
+Data keeps independent records available when the backfill receipt store cannot be read.
+Retained backfill runs require a receipt visible to the requesting tenant. The legacy summary
+is available only from a snapshot written without provenance.
+
 `IntercompanyObligationEndpoints` adds an owned-book advisory monitor at
 `/api/ledger/intercompany/obligations` and dates-only native agreement `/{id}/schedule` reads.
 Authenticated scope, retained evidence and existing legal read authority remain server-owned.
