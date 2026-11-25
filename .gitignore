@@ -330,7 +330,6 @@ provider-credentials.json
 # ============================================
 # Local tool scratch output
 # ============================================
-# Why: Playwright CLI/MCP sessions write page snapshots and screenshots here.
-# They are local scratch, not repo evidence.
-.playwright-cli/
+# Why: Playwright MCP sessions write page snapshots and screenshots here
+# (.playwright-cli/ is ignored above). They are local scratch, not repo evidence.
 .playwright-mcp/
