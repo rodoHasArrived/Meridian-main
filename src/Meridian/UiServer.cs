@@ -869,10 +869,19 @@ public sealed class UiServer : IAsyncDisposable
     ];
 
     /// <summary>
+    /// The category prefix whose Warning-and-above lines reach the process's Serilog logger, so the
+    /// pipeline, storage and provider failures a supervised host writes land in <c>_logs</c>.
+    /// </summary>
+    internal const string MeridianLogCategoryPrefix = "Meridian";
+
+    /// <summary>
     /// The host's logging. Every category stops below Warning through the default providers, as
-    /// before; the startup inventory categories alone also reach <paramref name="serilogLogger"/>, the
-    /// process's Serilog logger and its file sink, from Information, so the rollout can read the
-    /// capability and calendar lines from a workstation-mode host's log file.
+    /// before. <paramref name="serilogLogger"/>, the process's Serilog logger and its file sink,
+    /// receives Warning and above from <c>Meridian.*</c> categories, so a supervised host (whose
+    /// console output is not kept) still records pipeline backpressure, flush failures and consumer
+    /// faults in its log file; the startup inventory categories also reach it from Information, so the
+    /// rollout can read the capability and calendar lines. ASP.NET Core and other framework
+    /// categories never reach it.
     /// </summary>
     internal static void ConfigureLogging(ILoggingBuilder logging, Serilog.ILogger serilogLogger)
     {
@@ -883,9 +892,12 @@ public sealed class UiServer : IAsyncDisposable
         logging.SetMinimumLevel(LogLevel.Warning);
 
         // Provider-specific rules beat the global level and configured rules, so the Serilog provider
-        // receives these categories and nothing else; it never disposes the process logger.
+        // receives Meridian warnings and the inventory lines and nothing else; the longest matching
+        // category prefix wins, so the inventory categories keep their Information floor. It never
+        // disposes the process logger.
         Serilog.SerilogLoggingBuilderExtensions.AddSerilog(logging, serilogLogger, dispose: false);
         logging.AddFilter<SerilogLoggerProvider>(category: null, LogLevel.None);
+        logging.AddFilter<SerilogLoggerProvider>(MeridianLogCategoryPrefix, LogLevel.Warning);
         foreach (var category in StartupInventoryLogCategories)
         {
             logging.AddFilter<SerilogLoggerProvider>(category, LogLevel.Information);

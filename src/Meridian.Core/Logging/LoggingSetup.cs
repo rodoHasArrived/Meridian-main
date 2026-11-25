@@ -14,6 +14,15 @@ public static class LoggingSetup
     private const long LogFileSizeLimitBytes = 16L * 1024L * 1024L;
     private const int RetainedLogFileCountLimit = 30;
 
+    /// <summary>
+    /// The file sink's output template. <c>{TraceId}</c>/<c>{SpanId}</c> carry the ambient
+    /// <see cref="System.Diagnostics.Activity"/>, and <c>{Properties:j}</c> renders the remaining
+    /// event and scope properties (for example the pipeline's <c>CorrelationId</c> and <c>Symbol</c>)
+    /// that the message text does not already show.
+    /// </summary>
+    public const string FileOutputTemplate =
+        "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{ThreadId}] {SourceContext} {Message:lj} {Properties:j} {TraceId} {SpanId}{NewLine}{Exception}";
+
     private static ILogger? _logger;
     private static LoggingLevelSwitch? _levelSwitch;
 
@@ -109,7 +118,7 @@ public static class LoggingSetup
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
             .MinimumLevel.Override("System", LogEventLevel.Warning)
             .Enrich.FromLogContext()
-            .Enrich.WithProperty("ThreadId", Environment.CurrentManagedThreadId)
+            .Enrich.With<ThreadIdEnricher>()
             .Enrich.WithProperty("Application", "Meridian")
             .WriteTo.Console(
                 outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
@@ -120,7 +129,7 @@ public static class LoggingSetup
                 retainedFileCountLimit: RetainedLogFileCountLimit,
                 fileSizeLimitBytes: LogFileSizeLimitBytes,
                 rollOnFileSizeLimit: true,
-                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{ThreadId}] {SourceContext} {Message:lj}{NewLine}{Exception}",
+                outputTemplate: FileOutputTemplate,
                 shared: true,
                 flushToDiskInterval: TimeSpan.FromSeconds(1));
 

@@ -107,10 +107,14 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
             var policy = sp.GetRequiredService<JsonlStoragePolicy>();
+            // Pass the logger: without it the sink falls back to NullLogger and its flush and
+            // retention failures never reach the host's log file.
+            var logger = sp.GetService<Microsoft.Extensions.Logging.ILogger<JsonlStorageSink>>();
             return new JsonlStorageSink(
                 storageOptions,
                 policy,
-                JsonlBatchOptions.Default);
+                JsonlBatchOptions.Default,
+                logger);
         });
 
         // ParquetStorageSink - writes events to Parquet files (optional). Shares the same
@@ -222,6 +226,9 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
             var wal = sp.GetService<Storage.Archival.WriteAheadLog>();
             var auditTrail = sp.GetService<Pipeline.DroppedEventAuditTrail>();
             var dedupLedger = sp.GetService<PersistentDedupLedger>();
+            // Without a logger the pipeline falls back to NullLogger, losing its backpressure,
+            // flush-failure and consumer-fault logs together with their correlation scope.
+            var logger = sp.GetService<Microsoft.Extensions.Logging.ILogger<EventPipeline>>();
 
             var configStore = sp.GetRequiredService<ConfigStore>();
             var config = configStore.Load();
@@ -246,6 +253,7 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
             return new EventPipeline(
                 sink,
                 EventPipelinePolicy.DurableStreaming,
+                logger: logger,
                 metrics: metrics,
                 wal: wal,
                 auditTrail: auditTrail,
