@@ -100,11 +100,11 @@ public sealed partial class FredHistoricalDataProvider : BaseHistoricalDataProvi
             {
                 if (httpResult.IsRateLimited)
                 {
-                    throw new RateLimitException(
+                    throw CreateRateLimitException(
                         $"{Name} API rate limit exceeded for {normalizedSeriesId}",
-                        provider: Name,
-                        symbol: normalizedSeriesId,
-                        retryAfter: httpResult.RetryAfter ?? TimeSpan.FromSeconds(60));
+                        normalizedSeriesId,
+                        httpResult.RetryAfter ?? TimeSpan.FromSeconds(60),
+                        response);
                 }
 
                 throw new InvalidOperationException($"Failed to fetch FRED data for {normalizedSeriesId}: {httpResult.ErrorMessage}");
@@ -162,8 +162,8 @@ public sealed partial class FredHistoricalDataProvider : BaseHistoricalDataProvi
         if (result.IsNotFound)
             return [];
         if (result.IsRateLimited)
-            throw new RateLimitException($"FRED rate limit exceeded for {normalized}", provider: Name,
-                symbol: normalized, retryAfter: result.RetryAfter ?? TimeSpan.FromSeconds(60));
+            throw CreateRateLimitException($"FRED rate limit exceeded for {normalized}", normalized,
+                result.RetryAfter ?? TimeSpan.FromSeconds(60), response);
         if (!result.IsSuccess)
             throw new InvalidOperationException($"Unable to load FRED rate observations: {result.ErrorMessage}");
         var payload = DeserializeResponse<FredObservationsResponse>(await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false), normalized);
