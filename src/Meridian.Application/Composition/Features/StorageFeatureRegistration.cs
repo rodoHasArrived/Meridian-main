@@ -497,6 +497,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<SecurityMasterImportPlanner>();
             // ADR-034 bitemporal term reads.
             services.AddSingleton<SecurityMasterValidTimeQuery>();
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityTermsValidTimeReader>(
+                sp => sp.GetRequiredService<SecurityMasterValidTimeQuery>());
             services.AddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
 
             // The composed migrate-on-read pipeline (v0 stamping + cross-family economic-terms v2 -> v1 flattening)

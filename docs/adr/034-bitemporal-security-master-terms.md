@@ -56,11 +56,49 @@ Three facts bound the design:
 | Writers | `src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs`, `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs`, `src/Meridian.Application/SecurityMaster/SecurityMasterService.Creation.cs`, `src/Meridian.Application/SecurityMaster/SecurityMasterService.Deactivation.cs` | Stamp `validFrom` on create, amend and deactivate |
 | Read path | `src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs`, `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Merge.cs` | Bitemporal read and route |
 | Tests | `tests/Meridian.Tests/SecurityMaster/SecurityMasterValidTimePostgresTests.cs` | A back-dated correction applies from its valid-from and is invisible before it was recorded |
+| Shared rule | `src/Meridian.Contracts/SecurityMaster/SecurityTermsValidTime.cs` | `ISecurityTermsValidTimeReader`, the valid-time assignment rule and economic equality, shared by every reader |
+| Cash-flow consumer | `src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.ValidTime.cs` | Period-correct calculated schedules |
+| Accrual consumer | `src/Meridian.Strategies/Services/SecurityMasterAccountingEventSourceAdapter.cs`, `src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs` | Accrual reads the terms valid at period end |
+| Restatement consumer | `src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs`, `src/Meridian.Ui.Shared/Services/ReportPackRestatementCandidateResolver.cs` | Restatement routing over the window a term change governs |
+| Change history | `src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.History.cs`, `src/Meridian.Wpf/Models/SecurityMasterChangeHistoryRow.cs`, `src/Meridian.Ui/dashboard/src/screens/accounting-screen.security-master-detail-panels.tsx` | Valid time in both workstations' change history |
+| Consumer tests | `tests/Meridian.Tests/SecurityMaster/ValidTime/`, `tests/Meridian.Tests/SecurityMaster/SecurityMasterCashFlowValidTimeTests.cs`, `tests/Meridian.Tests/Strategies/SecurityMasterAccountingValidTimeTests.cs`, `src/Meridian.Ui/dashboard/src/screens/security-master-change-history.test.tsx`, `tests/Meridian.Wpf.Tests/Models/SecurityMasterChangeHistoryRowTests.cs` | Each migrated consumer |
 
 **Implemented on 2026-11-25:** the valid-from stamp, the read path and its route.
 
-**Still proposed:** migrating consumers (cash flows, accrual, restatement routing, reporting) to
-period-correct reads, and showing valid time in both workstations' change history.
+**Consumers migrated on 2026-11-25** (each opts in only when the host composes the PostgreSQL event
+store, which registers `ISecurityTermsValidTimeReader`; other hosts keep "latest recorded" reads):
+
+1. **Cash-flow generation.** `SecurityMasterCashFlowService.GetProjectionAsOfAsync` composes a calculated
+   schedule from the security's valid-time periods.
+   - Each row takes the terms valid at its accrual start: the accrual start, else the unadjusted start,
+     else the payment date. A change in the middle of a period applies from the next period.
+   - Rows before the first valid-from use the first period's terms.
+   - Consecutive periods with equal economics merge, so an identifier-only amendment changes nothing.
+   - A composed projection lists its `TermsPeriods`. A single economic period returns exactly the
+     previous projection.
+   - Fail closed: if one period's terms are blocked, or the leg set differs between periods, the projection
+     is blocked with `ValidTimeCompositionUnsupported` rather than mixing terms silently.
+   - The receipt-capturing context path (`CaptureProjectionAsync` / `ReplayProjectionAsync`) is unchanged,
+     because a receipt pins the terms it was computed from.
+2. **Accrual.** `SecurityMasterAccountingEventSourceAdapter` reads the terms valid at the end of the
+   reconciliation period.
+   - When those economics equal the latest recorded economics, it reads the projection row exactly as before.
+   - If different economics took effect inside the period, `SecurityMasterAccountingEventService` raises
+     `SM_TERMS_CHANGED_IN_PERIOD` (Medium). The single-terms accrual does not split the period.
+3. **Restatement routing.** `PeriodAwareRestatementResolver` bounds a published term change by the next
+   later valid-from.
+   - The decision carries `GovernedFrom` and `GovernedUntil`, and the persisted change-outbox decision
+     records both.
+   - Report-pack candidates whose period lies entirely on or after `GovernedUntil` are dropped. This fails
+     open on period labels it cannot parse.
+   - Period-lock routing still keys on the effective date.
+   - The window is applied only when an economic event asserts the change at exactly its effective instant.
+     Corporate actions and overlay-only edits stay open-ended.
+4. **Change history.** The workbench change history carries `ValidFromUtc`, `ValidToUtc` and
+   `SupersededByStreamVersion`. The browser Security Master change-history panel and the WPF History grid
+   show Valid from and Valid to: an end date, "open", or "superseded by vN".
+
+**Still proposed:** reporting consumers, and splitting one accrual period across two sets of terms.
 
 ## Rationale
 
@@ -129,4 +167,4 @@ dotnet run --project build/dotnet/DocGenerator/DocGenerator.csproj -- verify-adr
 
 ---
 
-*Last Updated: 2026-11-25*
+*Last Updated: 2026-11-25 (consumer migrations)*

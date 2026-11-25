@@ -37,6 +37,7 @@ import {
 } from "react";
 import { formatCount } from "./accounting-screen.formatting";
 import {
+  buildSecurityChangeHistoryViewState,
   buildSecurityConflictAction,
   buildSecurityIdentityAliasRow,
   buildSecurityIdentityIdentifierRow,
@@ -799,6 +800,15 @@ export function useSecurityMasterViewModel(
       trustSnapshotLoading
     ]
   );
+  const changeHistoryView = useMemo(
+    () => buildSecurityChangeHistoryViewState({
+      securityId: selectedSecurityId,
+      changeHistory: trustSnapshot?.changeHistory ?? null,
+      loading: trustSnapshotLoading,
+      error: trustSnapshotError
+    }),
+    [selectedSecurityId, trustSnapshot?.changeHistory, trustSnapshotError, trustSnapshotLoading]
+  );
   const instrumentPassportView = useMemo(
     () => buildInstrumentPassportViewState({
       securityId: selectedSecurityId,
@@ -947,6 +957,7 @@ export function useSecurityMasterViewModel(
     openLotRows,
     openLotReadModelView,
     selectOpenLot: setSelectedOpenLotId,
+    changeHistoryView,
     instrumentPassport,
     instrumentPassportView,
     instrumentPassportLoading,

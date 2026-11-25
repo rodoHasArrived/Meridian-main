@@ -1217,7 +1217,9 @@ public sealed class SecurityMasterViewModelTests
         xaml.Should().Contain("ItemsSource=\"{Binding OpenLotRows}\"");
         xaml.Should().Contain("Header=\"Short\" Binding=\"{Binding IsShort}\"");
         viewModel.Should().Contain("ObservableCollection<SecurityValidationIssueDto> ValidationIssues");
-        viewModel.Should().Contain("ObservableCollection<SecurityMasterChangeHistoryItemDto> ChangeHistoryItems");
+        viewModel.Should().Contain("ObservableCollection<SecurityMasterChangeHistoryRow> ChangeHistoryItems");
+        xaml.Should().Contain("Header=\"Valid from\" Binding=\"{Binding ValidFromText}\"");
+        xaml.Should().Contain("Header=\"Valid to\" Binding=\"{Binding ValidToText}\"");
         viewModel.Should().Contain("ObservableCollection<SecurityMasterScheduleEventDto> ScheduleBookEvents");
         viewModel.Should().Contain("ObservableCollection<SecurityMasterOpenLotDto> OpenLotRows");
         viewModel.Should().Contain("PopulateValidationPresentation(snapshot);");

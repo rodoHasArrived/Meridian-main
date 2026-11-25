@@ -103,3 +103,32 @@ public static class EntityMasterRules
         return digits.PadLeft(10, '0');
     }
 }
+
+/// <summary>
+/// ADR-033 issuer-level concentration: gross exposure grouped by the issuer each security is linked to
+/// in the entity master, as of a date.
+/// </summary>
+/// <param name="IssuerEntityId">The direct issuer.</param>
+/// <param name="LegalName">The issuer's legal name.</param>
+/// <param name="UltimateParentEntityId">The top of the issuer's parent hierarchy as of the date; the issuer itself when it has no parent.</param>
+/// <param name="GrossExposure">Sum of the absolute exposure of every position whose security this entity issued.</param>
+/// <param name="ShareOfGross">Gross exposure over the report's total gross exposure; 0 when that total is 0.</param>
+/// <param name="Symbols">The symbols contributing, ordered.</param>
+public sealed record IssuerConcentrationDto(
+    Guid IssuerEntityId,
+    string LegalName,
+    Guid? UltimateParentEntityId,
+    decimal GrossExposure,
+    decimal ShareOfGross,
+    IReadOnlyList<string> Symbols);
+
+/// <summary>
+/// Issuer concentration for one exposure report. Exposure whose security is unresolved or has no issuer
+/// link is reported as unlinked rather than dropped, so the linked share never overstates coverage.
+/// </summary>
+public sealed record IssuerConcentrationReport(
+    DateOnly AsOf,
+    IReadOnlyList<IssuerConcentrationDto> Issuers,
+    decimal LinkedGrossExposure,
+    decimal UnlinkedGrossExposure,
+    IReadOnlyList<string> UnlinkedSymbols);

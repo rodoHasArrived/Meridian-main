@@ -50,7 +50,15 @@ public sealed record CrossStrategyExposureReport(
     decimal GrossExposure,
     decimal NetExposure,
     IReadOnlyList<string> Top5Concentrations,
-    DateTimeOffset AsOf);
+    DateTimeOffset AsOf)
+{
+    /// <summary>
+    /// ADR-033 issuer-level concentration, when the host composes the entity master and a canonical
+    /// security resolver; null otherwise.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.EntityMaster.IssuerConcentrationReport? IssuerConcentration { get; init; }
+}
 
 /// <summary>Net position for a single symbol across all active runs.</summary>
 /// <param name="Symbol">Ticker symbol.</param>

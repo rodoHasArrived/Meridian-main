@@ -1,3 +1,4 @@
+import type { SecurityMasterChangeHistoryItem } from "@/lib/api/security-master-workbench.api";
 import type { ProviderIntegrationIdentityDecision } from "./provider-integration-identity";
 import type {
   MetricSnapshot,
@@ -122,6 +123,7 @@ export interface SecurityMasterTrustSnapshot {
   corporateActionDescriptors?: CorporateActionDescriptor[] | null;
   governance?: SecurityMasterGovernance | null;
   cashFlowBlocker?: SecurityMasterScheduleBlocker | null;
+  changeHistory?: SecurityMasterChangeHistoryItem[] | null;
 }
 
 /** Effective host requirements; absent means unavailable, never a Standard-profile assumption. */

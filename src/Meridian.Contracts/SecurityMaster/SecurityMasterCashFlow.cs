@@ -378,7 +378,24 @@ public sealed record StructuredCashFlowProjectionDto(
     /// <summary>Exact dependencies selected by the context-aware calculation path.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<Meridian.Contracts.FixedIncome.BondCalculationInput>? InputManifest { get; init; }
+
+    /// <summary>
+    /// ADR-034: the valid-time term periods a period-correct schedule was composed from, each row taking
+    /// the terms valid at its accrual start. Null when the terms never changed in valid time, so the
+    /// schedule was projected from one set of terms exactly as before.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<StructuredCashFlowTermsPeriod>? TermsPeriods { get; init; }
 }
+
+/// <summary>
+/// One ADR-034 valid-time period a period-correct schedule used: the economic event (by stream
+/// version) whose full state applied over <c>[ValidFrom, ValidTo)</c>.
+/// </summary>
+public sealed record StructuredCashFlowTermsPeriod(
+    long StreamVersion,
+    DateTimeOffset ValidFrom,
+    DateTimeOffset? ValidTo);
 
 /// <summary>
 /// Request to assign or update the cash flow source for a security.

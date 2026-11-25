@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
@@ -23,7 +22,7 @@ public sealed record SecurityTermsAsOf(
 /// recorded by T with the latest valid-from not after V; equal valid-froms resolve to the later recording,
 /// so a back-dated correction recorded later wins for the dates it covers without rewriting history.
 /// </summary>
-public sealed class SecurityMasterValidTimeQuery
+public sealed class SecurityMasterValidTimeQuery : ISecurityTermsValidTimeReader
 {
     private readonly ISecurityMasterEventStore _events;
 
@@ -46,18 +45,7 @@ public sealed class SecurityMasterValidTimeQuery
             if (@event.EventTimestamp > asKnownAt)
                 continue;
 
-            SecurityEconomicDefinitionRecord definition;
-            try
-            {
-                definition = SecurityMasterMapping.FromEventEnvelope(@event);
-            }
-            catch (Exception ex) when (ex is InvalidOperationException or NotSupportedException or JsonException)
-            {
-                // An event this node cannot replay is not silently skipped: valid-time reads refuse
-                // exactly as replay does.
-                throw new InvalidOperationException(
-                    $"Event {@event.StreamVersion} of security '{securityId:D}' cannot be replayed for a valid-time read: {ex.Message}", ex);
-            }
+            var definition = Decode(securityId, @event);
 
             var assertedFrom = ReadValidFrom(@event.Metadata) ?? definition.EffectiveFrom;
             if (assertedFrom > validAt)
@@ -74,11 +62,73 @@ public sealed class SecurityMasterValidTimeQuery
         return best;
     }
 
-    internal static DateTimeOffset? ReadValidFrom(JsonElement metadata)
-        => metadata.ValueKind == JsonValueKind.Object
-           && metadata.TryGetProperty(SecurityMasterEventPayloads.ValidFromMetadataKey, out var value)
-           && value.ValueKind == JsonValueKind.String
-           && DateTimeOffset.TryParse(value.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsed)
-            ? parsed
-            : null;
+    /// <inheritdoc />
+    public async Task<SecurityTermsValidTimeSegment?> GetValidAtAsync(
+        Guid securityId,
+        DateTimeOffset validAt,
+        DateTimeOffset? knownAt = null,
+        CancellationToken ct = default)
+    {
+        // The governing segment covering V is exactly the event GetAsync selects: the latest governing
+        // valid-from not after V, equal valid-froms already resolved to the later recording.
+        var timeline = await GetTimelineAsync(securityId, knownAt, ct).ConfigureAwait(false);
+        return timeline.LastOrDefault(segment => segment.ValidFrom <= validAt);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<SecurityTermsValidTimeSegment>> GetTimelineAsync(
+        Guid securityId,
+        DateTimeOffset? knownAt = null,
+        CancellationToken ct = default)
+    {
+        var asKnownAt = knownAt ?? DateTimeOffset.UtcNow;
+        var events = await _events.LoadAsync(securityId, ct).ConfigureAwait(false);
+        var definitions = new Dictionary<long, SecurityEconomicDefinitionRecord>();
+        var inputs = new List<(long StreamVersion, DateTimeOffset RecordedAt, DateTimeOffset ValidFrom)>();
+        foreach (var @event in events)
+        {
+            if (@event.EventTimestamp > asKnownAt)
+                continue;
+
+            var definition = Decode(securityId, @event);
+            definitions[@event.StreamVersion] = definition;
+            inputs.Add((@event.StreamVersion, @event.EventTimestamp, ReadValidFrom(@event.Metadata) ?? definition.EffectiveFrom));
+        }
+
+        return SecurityTermsValidTime.Assign(inputs)
+            .Where(static assertion => assertion.Governs)
+            .OrderBy(static assertion => assertion.ValidFrom)
+            .Select(assertion => new SecurityTermsValidTimeSegment(
+                securityId,
+                assertion.StreamVersion,
+                assertion.RecordedAt,
+                assertion.ValidFrom,
+                assertion.ValidTo,
+                definitions[assertion.StreamVersion]))
+            .ToArray();
+    }
+
+    private static SecurityEconomicDefinitionRecord Decode(Guid securityId, SecurityMasterEventEnvelope @event)
+    {
+        try
+        {
+            return SecurityMasterMapping.FromEventEnvelope(@event);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or NotSupportedException or JsonException)
+        {
+            // An event this node cannot replay is not silently skipped: valid-time reads refuse
+            // exactly as replay does.
+            throw new InvalidOperationException(
+                $"Event {@event.StreamVersion} of security '{securityId:D}' cannot be replayed for a valid-time read: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// The economic definition of a valid-time segment as the detail shape cash-flow and accounting
+    /// readers consume: the same conversion an as-of rebuild applies to a replayed event.
+    /// </summary>
+    public static SecurityDetailDto ToDetail(SecurityEconomicDefinitionRecord definition)
+        => SecurityMasterMapping.ToDetail(SecurityEconomicDefinitionAdapter.ToProjection(definition));
+
+    internal static DateTimeOffset? ReadValidFrom(JsonElement metadata) => SecurityTermsValidTime.ReadValidFrom(metadata);
 }

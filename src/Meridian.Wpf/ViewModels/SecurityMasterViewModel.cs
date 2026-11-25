@@ -126,7 +126,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
     public ObservableCollection<SecurityValidationIssueDto> ValidationIssues => _scheduleSection.ValidationIssues;
 
-    public ObservableCollection<SecurityMasterChangeHistoryItemDto> ChangeHistoryItems => _scheduleSection.ChangeHistoryItems;
+    public ObservableCollection<SecurityMasterChangeHistoryRow> ChangeHistoryItems => _scheduleSection.ChangeHistoryItems;
 
     public ObservableCollection<SecurityMasterPresentationField> ScheduleBookFields => _scheduleSection.ScheduleBookFields;
 

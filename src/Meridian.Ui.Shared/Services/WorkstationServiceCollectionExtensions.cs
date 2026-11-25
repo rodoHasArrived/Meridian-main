@@ -1128,6 +1128,10 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IExternalStatementSource, NullExternalStatementSource>();
         services.TryAddSingleton<IExternalStatementReconciliationSourceAdapter, ExternalStatementReconciliationSourceAdapter>();
         services.TryAddSingleton<ISecurityMasterAccountingEventService, SecurityMasterAccountingEventService>();
+        // ADR-033: issuer-level concentration on the portfolio exposure report.
+        services.TryAddSingleton(sp => new IssuerConcentrationService(
+            sp.GetService<Meridian.Contracts.EntityMaster.IEntityMasterStore>(),
+            sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityResolver>()));
         services.TryAddSingleton<ISecurityMasterAccountingEventSourceAdapter>(sp =>
             new SecurityMasterAccountingEventSourceAdapter(
                 sp.GetService<ContractSecurityMasterQueryService>(),
@@ -1135,7 +1139,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ISecurityActualCashActivitySource>()
                     ?? (sp.GetService<BrokeragePortfolioSyncService>() is { } brokerageSync
                         ? new BrokerageSyncActualCashActivitySource(brokerageSync.GetActivityForActiveLinkAsync, brokerageSync.GetCashTransactionHistoryAsync)
-                        : null)));
+                        : null),
+                sp.GetService<ISecurityTermsValidTimeReader>()));
         services.TryAddSingleton<FileAccountingConfigurationStore>(sp =>
             new FileAccountingConfigurationStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "accounting-configuration.json")));

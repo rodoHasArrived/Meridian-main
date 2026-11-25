@@ -58,6 +58,12 @@ export interface SecurityMasterChangeHistoryItem {
   summary: string;
   changedFields: string[];
   changedFieldsSummary: string;
+  /** ADR-034 valid time: instant the event's full state applies from; absent for non-economic entries. */
+  validFromUtc?: string | null;
+  /** Exclusive end of the governed period as known now; absent when open-ended or never governing. */
+  validToUtc?: string | null;
+  /** Later same-valid-from recording that replaced this event for its whole period (a correction). */
+  supersededByStreamVersion?: number | null;
 }
 
 export interface SecurityMasterEditResult {

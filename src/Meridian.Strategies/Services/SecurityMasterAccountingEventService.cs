@@ -37,7 +37,25 @@ public sealed record SecurityMasterAccountingSecurity(
     string AssetClass,
     string Currency,
     SecurityFixedIncomeTerms? FixedIncomeTerms = null,
-    SecurityAccountingRule? AccountingRule = null);
+    SecurityAccountingRule? AccountingRule = null)
+{
+    /// <summary>
+    /// ADR-034: the valid-time period of the terms this record was read from, when the source adapter
+    /// read period-correct terms. Null when the terms are the latest recorded ones.
+    /// </summary>
+    public SecurityAccountingTermsValidity? TermsValidity { get; init; }
+}
+
+/// <summary>
+/// Which valid-time terms an accrual used (ADR-034). The accrual reads the terms valid at the end of the
+/// period; <see cref="ChangedWithinPeriodAt"/> is set when different economics applied earlier in the
+/// same period, which the single-terms accrual does not split.
+/// </summary>
+public sealed record SecurityAccountingTermsValidity(
+    long StreamVersion,
+    DateTimeOffset ValidFrom,
+    DateTimeOffset? ValidTo,
+    DateTimeOffset? ChangedWithinPeriodAt);
 
 public sealed record SecurityFixedIncomeTerms(
     decimal? CouponRate,
@@ -186,6 +204,9 @@ public sealed class NullSecurityMasterAccountingEventSourceAdapter : ISecurityMa
 /// <summary>Generates Security Master accounting projections and related validation issues for a reporting period.</summary>
 public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccountingEventService
 {
+    /// <summary>Issue code when a security's economics changed in valid time inside the accrual period.</summary>
+    public const string SecurityTermsChangedInPeriodCode = "SM_TERMS_CHANGED_IN_PERIOD";
+
     private readonly IFactorPaydownProjectionService _factorPaydownProjector;
 
     public SecurityMasterAccountingEventService(IFactorPaydownProjectionService? factorPaydownProjector = null)
@@ -275,6 +296,19 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
             // retained factor evidence fully supports. The coverage issues still surface.
             var coverageIssues = ValidateFixedIncomeCoverage(security, position.AccountId);
             issues.AddRange(coverageIssues);
+            if (security.TermsValidity?.ChangedWithinPeriodAt is { } changedAt)
+            {
+                // ADR-034: the accrual reads the terms valid at period end. Different economics applied
+                // before the change, and this slice does not split one period across two sets of terms,
+                // so the reviewer is told rather than the earlier days being silently re-rated.
+                issues.Add(CreateIssue(
+                    SecurityTermsChangedInPeriodCode,
+                    "security-master",
+                    security.Symbol,
+                    position.AccountId,
+                    $"Security '{security.Symbol}' terms changed in valid time on {changedAt:yyyy-MM-dd}, inside the period {request.PeriodStart:yyyy-MM-dd}–{request.PeriodEnd:yyyy-MM-dd}; the accrual uses the terms valid at period end (version {security.TermsValidity.StreamVersion}) for the whole period.",
+                    ReconciliationBreakSeverity.Medium));
+            }
             if (!coverageIssues.Any(static issue => issue.Severity >= ReconciliationBreakSeverity.High))
             {
                 GenerateFixedCouponEvents(request, security, position, events, accruals, previews);

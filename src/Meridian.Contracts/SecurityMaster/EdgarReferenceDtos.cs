@@ -24,7 +24,11 @@ public sealed record EdgarIngestResult(
     int SecuritiesSkipped,
     int ConflictsDetected,
     bool DryRun,
-    IReadOnlyList<string> Errors);
+    IReadOnlyList<string> Errors)
+{
+    /// <summary>ADR-033: securities newly linked to their issuer in the entity master (by CIK) during this run.</summary>
+    public int IssuersLinked { get; init; }
+}
 
 /// <summary>
 /// Local EDGAR filer reference record derived from the SEC submissions API.

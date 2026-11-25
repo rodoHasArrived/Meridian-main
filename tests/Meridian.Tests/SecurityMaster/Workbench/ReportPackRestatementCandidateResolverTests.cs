@@ -238,6 +238,49 @@ public sealed class ReportPackRestatementCandidateResolverTests
         result.HasNonActionableMatches.Should().BeFalse("a period before the edit is unaffected, so no manual follow-up");
     }
 
+    [Fact]
+    public async Task ValidTimeWindow_PackEntirelyAfterGovernedUntil_IsNotACandidate()
+    {
+        // ADR-034: a coupon correction effective 2026-03-15 stops governing at the next later
+        // valid-from (2026-06-01); the June pack reports terms the correction never applied to.
+        var resolver = NewResolver(
+            PublishedPack(FundProfileId, "2026-04", SecurityLine("april.line", SecurityId)),
+            PublishedPack(FundProfileId, "2026-06", SecurityLine("june.line", SecurityId)));
+
+        var result = await resolver.ResolveAsync(
+            SecurityId, LedgerBookId, EffectiveDate, governedUntil: new DateOnly(2026, 06, 01),
+            ["EconomicDefinition.Coupon"], FundProfileId);
+
+        result.Candidates.Should().ContainSingle().Which.PeriodLabel.Should().Be("2026-04");
+        result.Candidates[0].Summary.Should().Contain("until 2026-06-01");
+    }
+
+    [Fact]
+    public async Task ValidTimeWindow_PackStraddlingGovernedUntil_IsKept()
+    {
+        var resolver = NewResolver(
+            PublishedPack(FundProfileId, "2026-05", SecurityLine("may.line", SecurityId)));
+
+        var result = await resolver.ResolveAsync(
+            SecurityId, LedgerBookId, EffectiveDate, governedUntil: new DateOnly(2026, 05, 20),
+            ["EconomicDefinition.Coupon"], FundProfileId);
+
+        result.Candidates.Should().ContainSingle("May is partly inside the window the correction governs");
+    }
+
+    [Fact]
+    public async Task ValidTimeWindow_UnparseablePeriod_IsKept()
+    {
+        var resolver = NewResolver(
+            PublishedPack(FundProfileId, "2026-P09", SecurityLine("nav.line", SecurityId)));
+
+        var result = await resolver.ResolveAsync(
+            SecurityId, LedgerBookId, EffectiveDate, governedUntil: new DateOnly(2026, 06, 01),
+            ["EconomicDefinition.Coupon"], FundProfileId);
+
+        result.Candidates.Should().ContainSingle("window narrowing fails open on a label it cannot parse");
+    }
+
     // ---- helpers ------------------------------------------------------------------------------
 
     private static ReportPackRestatementCandidateResolver NewResolver(params ReportPackWorkflowRecordDto[] seedRecords)

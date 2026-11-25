@@ -13,15 +13,20 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
     private readonly ISecurityMasterQueryService? _securityMasterQueryService;
     private readonly IAssetOperationsQueryService? _assetOperationsQueryService;
     private readonly ISecurityActualCashActivitySource? _actualCashActivitySource;
+    private readonly ISecurityTermsValidTimeReader? _validTime;
 
     public SecurityMasterAccountingEventSourceAdapter(
         ISecurityMasterQueryService? securityMasterQueryService = null,
         IAssetOperationsQueryService? assetOperationsQueryService = null,
-        ISecurityActualCashActivitySource? actualCashActivitySource = null)
+        ISecurityActualCashActivitySource? actualCashActivitySource = null,
+        ISecurityTermsValidTimeReader? validTime = null)
     {
         _securityMasterQueryService = securityMasterQueryService;
         _assetOperationsQueryService = assetOperationsQueryService;
         _actualCashActivitySource = actualCashActivitySource;
+        // ADR-034: with a valid-time reader the accrual reads the terms valid at period end; without
+        // one it reads the latest recorded terms, as before.
+        _validTime = validTime;
     }
 
     public async Task<SecurityMasterAccountingEventRequest?> BuildRequestAsync(
@@ -45,9 +50,21 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
 
         var (periodStart, periodEnd) = ResolvePeriod(detail);
         var definitions = new Dictionary<Guid, SecurityEconomicDefinitionRecord>();
+        var validities = new Dictionary<Guid, SecurityAccountingTermsValidity>();
         foreach (var securityId in positions.Select(static position => position.SecurityId!.Value).Distinct())
         {
             ct.ThrowIfCancellationRequested();
+            var periodCorrect = await ReadPeriodCorrectTermsAsync(securityId, periodStart, periodEnd, ct).ConfigureAwait(false);
+            if (periodCorrect is { } valid)
+            {
+                validities[securityId] = valid.Validity;
+                if (valid.Definition is { } periodDefinition)
+                {
+                    definitions[securityId] = periodDefinition;
+                    continue;
+                }
+            }
+
             var definition = await _securityMasterQueryService
                 .GetEconomicDefinitionByIdAsync(securityId, ct)
                 .ConfigureAwait(false);
@@ -63,7 +80,10 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         // filtering them out below — would silently suppress expected events AND the break for a
         // held security whose Security Master definition is unavailable.
         var securities = definitions.Values
-            .Select(ToAccountingSecurity)
+            .Select(definition => ToAccountingSecurity(definition) with
+            {
+                TermsValidity = validities.GetValueOrDefault(definition.SecurityId)
+            })
             .ToArray();
 
         var factorSchedule = BuildFactorSchedule(definitions.Values, periodStart, periodEnd);
@@ -123,6 +143,47 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             FactorSchedule: factorSchedule.Count > 0 ? factorSchedule : null,
             ActualActivity: actualActivity,
             AmountTolerance: request.AmountTolerance);
+    }
+
+    /// <summary>
+    /// ADR-034 period-correct read: the terms valid at the end of the period (as known now), and the
+    /// latest in-period instant at which different economics took over. Null without a reader, or when
+    /// the security has no terms valid at period end, so the caller keeps the latest recorded terms. The
+    /// definition is null when the period-end economics equal the latest recorded economics: the caller
+    /// then reads the projection row exactly as before and only records the validity.
+    /// </summary>
+    private async Task<(SecurityEconomicDefinitionRecord? Definition, SecurityAccountingTermsValidity Validity)?> ReadPeriodCorrectTermsAsync(
+        Guid securityId,
+        DateOnly periodStart,
+        DateOnly periodEnd,
+        CancellationToken ct)
+    {
+        if (_validTime is null)
+            return null;
+
+        var timeline = await _validTime.GetTimelineAsync(securityId, knownAt: null, ct).ConfigureAwait(false);
+        var startOfPeriod = new DateTimeOffset(periodStart.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var endOfPeriod = new DateTimeOffset(periodEnd.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+        var atEnd = timeline.LastOrDefault(segment => segment.ValidFrom <= endOfPeriod);
+        if (atEnd is null)
+            return null;
+
+        // The latest in-period valid-from at which the economics differ from the segment before it.
+        DateTimeOffset? changedAt = null;
+        for (var index = 1; index < timeline.Count; index++)
+        {
+            var segment = timeline[index];
+            if (segment.ValidFrom <= startOfPeriod || segment.ValidFrom > endOfPeriod)
+                continue;
+            if (!SecurityTermsValidTime.EconomicallyEqual(timeline[index - 1].Definition, segment.Definition))
+                changedAt = segment.ValidFrom;
+        }
+
+        var validity = new SecurityAccountingTermsValidity(atEnd.StreamVersion, atEnd.ValidFrom, atEnd.ValidTo, changedAt);
+        var latestRecorded = timeline.MaxBy(static segment => segment.StreamVersion)!;
+        return SecurityTermsValidTime.EconomicallyEqual(atEnd.Definition, latestRecorded.Definition)
+            ? (null, validity)
+            : (atEnd.Definition, validity);
     }
 
     private async Task<List<SecurityMasterAccountingPosition>> ResolveDurablePositionsAsync(

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
+using Meridian.Ui.Shared.Services;
 using Meridian.Strategies.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -49,7 +50,18 @@ public static partial class WorkstationEndpoints
             // weighted-average cost can go negative and produce nonsensical gross).
             var scoped = await FilterToAuthorizedAccountsAsync(
                 context, aggregator.GetAggregatedPositions()).ConfigureAwait(false);
-            return Results.Json(BuildExposureReport(scoped), jsonOptions);
+            var report = BuildExposureReport(scoped);
+            if (context.RequestServices.GetService<IssuerConcentrationService>() is { } issuers)
+            {
+                report = report with
+                {
+                    IssuerConcentration = await issuers
+                        .ComputeAsync(SymbolGrossExposure(scoped), report.GrossExposure, DateOnly.FromDateTime(report.AsOf.UtcDateTime), context.RequestAborted)
+                        .ConfigureAwait(false)
+                };
+            }
+
+            return Results.Json(report, jsonOptions);
         })
         .WithName("GetPortfolioExposure")
         .Produces<CrossStrategyExposureReport>(200)
@@ -93,6 +105,21 @@ public static partial class WorkstationEndpoints
     /// $100 against short 90 at $200 nets to a negative weighted cost and would report
     /// negative gross exposure.
     /// </summary>
+    /// <summary>
+    /// One contribution's absolute exposure. Same multiplier the risk snapshot applies: an
+    /// operator-facing exposure figure that contradicts enforcement is worse than no figure at all.
+    /// </summary>
+    private static decimal ContributionGross(RunPositionContribution contribution)
+        => Math.Abs(contribution.Quantity)
+           * Math.Abs(contribution.CostBasis)
+           * (contribution.ContractMultiplier > 0m ? contribution.ContractMultiplier : 1m);
+
+    /// <summary>Gross exposure per symbol, on the same basis as <see cref="BuildExposureReport"/>.</summary>
+    internal static IReadOnlyList<(string Symbol, decimal Gross)> SymbolGrossExposure(IReadOnlyList<AggregatedPosition> positions)
+        => positions
+            .Select(static position => (position.Symbol, position.Contributions.Sum(ContributionGross)))
+            .ToArray();
+
     internal static CrossStrategyExposureReport BuildExposureReport(IReadOnlyList<AggregatedPosition> positions)
     {
         var longExposure = 0m;
@@ -104,11 +131,7 @@ public static partial class WorkstationEndpoints
             var gross = 0m;
             foreach (var contribution in position.Contributions)
             {
-                // Same multiplier the risk snapshot applies: an operator-facing exposure
-                // figure that contradicts enforcement is worse than no figure at all.
-                var value = Math.Abs(contribution.Quantity)
-                    * Math.Abs(contribution.CostBasis)
-                    * (contribution.ContractMultiplier > 0m ? contribution.ContractMultiplier : 1m);
+                var value = ContributionGross(contribution);
                 gross += value;
                 if (contribution.Quantity >= 0m)
                 {
