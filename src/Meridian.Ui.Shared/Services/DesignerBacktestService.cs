@@ -12,6 +12,7 @@ using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Replay;
+using Meridian.Strategies.Artifacts;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Live.Designer;
 using Meridian.Strategies.Models;
@@ -29,7 +30,8 @@ public sealed class DesignerBacktestService(
     StrategyDesignService designs,
     IOperationalTradingCalendar calendar,
     ISecurityIdentityQueryService? securities,
-    ISecurityCorporateActionsQueryService? corporateActions)
+    ISecurityCorporateActionsQueryService? corporateActions,
+    StrategyArtifactRegistry artifacts)
 {
     private const string DailyEquityDataset = "provider-bars/equities/daily";
     private const int MaxReplayDays = 366;
@@ -133,8 +135,7 @@ public sealed class DesignerBacktestService(
 
         // A stored bar's provider text alone cannot attest its origin. This bounded replay lane
         // carries simulation provenance until the dataset has independently verified authority.
-        var scopedStrategyId = "strategy-design-" + Sha256Digest.ComputeUtf8(
-            JsonSerializer.Serialize(new[] { scope.TenantId, scope.CompanyId, document.DocumentId }));
+        var scopedStrategyId = DesignerStrategyVersion.ComputeStrategyId(scope, document.DocumentId);
         var entry = StrategyRunEntry.StartForFundAccount(
             scopedStrategyId, document.Name, RunType.Backtest, accountId,
             datasetReference: document.DatasetReference,
@@ -151,6 +152,12 @@ public sealed class DesignerBacktestService(
             ActorId = actor,
             DataProvenanceToken = provenance
         };
+
+        // Publish immutable executable inputs before the run can reference them. Replay dates,
+        // captured data, evidence and the saved draft revision remain bound by the v6 run hash.
+        var artifactId = await artifacts.RetainAsync(
+            StrategyArtifact.FromScopedDesigner(document, scope, realism), ct).ConfigureAwait(false);
+        entry = entry.WithStrategyArtifact(artifactId);
 
         await runs.RecordRunAsync(entry, ct).ConfigureAwait(false);
         try

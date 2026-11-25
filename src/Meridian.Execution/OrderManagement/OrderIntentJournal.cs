@@ -66,6 +66,8 @@ internal sealed class OrderIntentJournal(IOperationalCaseHistoryStore history)
             ["sessionId"] = intent.StrategyAuthority?.PaperSessionId ?? "",
             ["fundAccountId"] = intent.FundAccountId.ToString("D")
         };
+        if (intent.StrategyAuthority?.StrategyArtifactId is { } artifactId)
+            data["strategyArtifactId"] = artifactId;
 
         try
         {
