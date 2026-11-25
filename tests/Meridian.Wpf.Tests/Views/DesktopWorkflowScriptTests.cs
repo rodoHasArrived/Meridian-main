@@ -341,7 +341,7 @@ public sealed class DesktopWorkflowScriptTests
         slices.Should().Contain("Meridian.LifecycleSupervisor.Tests.csproj");
         workflow.Should().Contain("run_smoke_publish");
         workflow.Should().Contain("Decide desktop smoke publish");
-        workflow.Should().Contain("if: needs.smoke-plan.outputs.run == 'true'");
+        workflow.Should().Contain("if: steps.desktop-smoke.outputs.run == 'true'");
         workflow.Should().Contain("dotnet restore src/Meridian.Wpf/Meridian.Wpf.csproj");
         workflow.Should().Contain("dotnet publish src/Meridian.Wpf/Meridian.Wpf.csproj");
         workflow.Should().Contain("/p:EnableWindowsTargeting=true");
