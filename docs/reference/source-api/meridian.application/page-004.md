@@ -6,6 +6,47 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IBGatewayProbe
+
+Qualified name: <code>Meridian.Application.Config.IBGatewayProbe</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Config/IBGatewayProbe.cs:12](../../../../src/Meridian.Application/Config/IBGatewayProbe.cs#L12).
+
+Probes localhost for a listening IB Gateway/TWS instance on the default API ports. Shared by the configuration services so detection behavior, ports, and timeouts stay consistent instead of drifting across copy-pasted probes.
+
+```csharp
+public static class IBGatewayProbe
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsAvailable();</code> | [src/Meridian.Application/Config/IBGatewayProbe.cs:24](../../../../src/Meridian.Application/Config/IBGatewayProbe.cs#L24) | Returns true when any default IB API port accepts a TCP connection on loopback. |
+
+## PipelineOptions
+
+Qualified name: <code>Meridian.Application.Config.PipelineOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Config/ConfigurationPipeline.cs:472](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L472).
+
+Options for controlling the configuration pipeline behavior.
+
+```csharp
+public sealed record PipelineOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool ApplySelfHealing { get; init; } = true;</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:477](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L477) | Whether to apply self-healing fixes to the configuration. |
+| <code>public bool ValidateConfig { get; init; } = true;</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:482](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L482) | Whether to validate the configuration. |
+| <code>public SelfHealingStrictness HealingStrictness { get; init; } = SelfHealingStrictness.Development;</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:492](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L492) | Controls how aggressively self-healing behaviours are applied. SelfHealingStrictness.Development (default) applies all fixes and logs significant ones as warnings. SelfHealingStrictness.Production applies only cosmetic SelfHealingSeverity.AutoFix changes and refuses SelfHealingSeverity.Warn-level fixes with a startup error so that operators must correct the configuration manually. |
+| <code>public static PipelineOptions Default { get; } = new () { HealingStrictness = ParseStrictness(Environment.GetEnvironmentVariable(&quot;MDC_CONFIG_STRICTNESS&quot;)) };</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:498](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L498) | Default options — self-healing and validation enabled, strictness from MDC_CONFIG_STRICTNESS environment variable (defaults to Development). |
+| <code>public static PipelineOptions Strict { get; } = new () { ApplySelfHealing = false, ValidateConfig = true };</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:506](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L506) | Options for strict validation without self-healing. |
+| <code>public static PipelineOptions Lenient { get; } = new () { ApplySelfHealing = false, ValidateConfig = false };</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:515](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L515) | Options for lenient loading (no validation, no self-healing). |
+
 ## SelfHealingFix
 
 Qualified name: <code>Meridian.Application.Config.SelfHealingFix</code>. Kind: `record`.
@@ -1285,31 +1326,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static IntercompanyAgreementTimelineResult Resolve(IEnumerable&lt;IntercompanyAgreementRevisionDto&gt; revisions, DateOnly asOf, DateTimeOffset? knownAtUtc = null);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs:11](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs#L11) |  |
 | <code>public static int? SemanticBase(IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt; revisions, IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs:29](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs#L29) |  |
-
-## IntercompanyAgreementTimelineResult
-
-Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAgreementTimelineResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs:5](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs#L5).
-
-```csharp
-public sealed record IntercompanyAgreementTimelineResult(IntercompanyAgreementRevisionDto? Revision, IntercompanyAgreementStatusDto Status, DateOnly? TerminationCutoff);
-```
-
-## IntercompanyFeeAccrualPreviewService
-
-Qualified name: <code>Meridian.Application.FundStructure.IntercompanyFeeAccrualPreviewService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs:20](../../../../src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs#L20).
-
-Turns a declared fixed management fee into an amount for a half-open window (rule IntercompanyFeeAccrualRules.RuleVersion). Pure: it reads no ledger and creates nothing.
-
-```csharp
-public sealed class IntercompanyFeeAccrualPreviewService(IBusinessDayCalendarSource calendars) : IIntercompanyFeeAccrualPreviewService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IntercompanyFeeAccrualPreviewDto Preview(IntercompanyFeeAccrualComputationInput input);</code> | [src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs:22](../../../../src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs#L22) |  |

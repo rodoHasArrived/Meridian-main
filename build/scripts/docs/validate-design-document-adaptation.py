@@ -14,6 +14,9 @@ CONFORMANCE_MAP = Path("docs/architecture/design-module-conformance.yml")
 ROADMAP_REGISTRY = Path("docs/roadmap/data/roadmap-items.yml")
 DECISION_REGISTRY = Path("docs/roadmap/data/decision-log.yml")
 ADOPTION_DECISION = "DEC-TRADING-STRATEGY-DIRECTION-001"
+# Accepted owner decision that lets the adopted W13 rows record bounded in-progress delivery.
+# It never authorizes ready_for_acceptance, accepted, or done; those still need their own evidence.
+PROGRESS_DECISION = "DEC-W13-STATUS-001"
 DESIGN_VERSION = "1.7"
 DIRECTION_SECTION = "22.7 Strategy and Order-Management Direction"
 
@@ -311,7 +314,12 @@ def _validate_planned_direction(findings: list[Finding], root: Path, data: dict,
         if item_id not in _list(decision.get("related_roadmap_items")):
             findings.append(Finding("error", DECISION_REGISTRY.as_posix(), f"{ADOPTION_DECISION} must include {item_id}"))
         item = items.get(item_id, {})
-        if item.get("status") != "planned" or item.get("evidence_posture") != "planned_evidence":
+        posture = (item.get("status"), item.get("evidence_posture"))
+        progress = decisions.get(PROGRESS_DECISION, {})
+        progress_accepted = progress.get("status") == "accepted" and item_id in _list(progress.get("related_roadmap_items"))
+        if posture == ("in_progress", "in_progress") and not progress_accepted:
+            findings.append(Finding("error", ROADMAP_REGISTRY.as_posix(), f"{item_id} can be in_progress only while {PROGRESS_DECISION} is accepted and names it"))
+        elif posture not in {("planned", "planned_evidence"), ("in_progress", "in_progress")}:
             findings.append(Finding("error", ROADMAP_REGISTRY.as_posix(), f"{item_id} must retain planned delivery and planned_evidence until the adaptation is reviewed"))
 
         projects = expected["runtime_projects"]

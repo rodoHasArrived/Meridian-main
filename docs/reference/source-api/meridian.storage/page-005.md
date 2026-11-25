@@ -6,6 +6,51 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISymbolRegistryService
+
+Qualified name: <code>Meridian.Storage.Interfaces.ISymbolRegistryService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs:17](../../../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs#L17).
+
+Service for managing the symbol registry.
+
+```csharp
+public interface ISymbolRegistryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>SymbolRegistry GetRegistry();</code> | [src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs:22](../../../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs#L22) | Gets the symbol registry. |
+| <code>Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs:27](../../../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs#L27) | Initializes the registry from storage. |
+| <code>Task RegisterSymbolAsync(SymbolRegistryEntry entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs:32](../../../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs#L32) | Registers or updates a symbol entry. |
+| <code>SymbolLookupResult LookupSymbol(string query);</code> | [src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs:37](../../../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs#L37) | Looks up a symbol by any identifier (canonical, alias, ISIN, FIGI, etc.). |
+| <code>string ResolveAlias(string alias);</code> | [src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs:42](../../../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs#L42) | Resolves an alias to a canonical symbol. |
+| <code>string? GetProviderSymbol(string canonical, string provider);</code> | [src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs:47](../../../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs#L47) | Gets the provider-specific symbol for a canonical symbol. |
+| <code>Task AddAliasAsync(string canonical, SymbolAlias alias, CancellationToken ct = default);</code> | [src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs:52](../../../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs#L52) | Adds an alias for a symbol. |
+| <code>Task AddProviderMappingAsync(string canonical, string provider, string providerSymbol, CancellationToken ct = default);</code> | [src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs:57](../../../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs#L57) | Adds a provider mapping. |
+| <code>Task AddProviderMappingAsync(string canonical, string provider, string providerSymbol, string source, bool isOverride, CancellationToken ct = default);</code> | [src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs:62](../../../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs#L62) | Adds a provider mapping with provenance and merge precedence. |
+| <code>Task&lt;bool&gt; RemoveProviderMappingAsync(string canonical, string provider, CancellationToken ct = default);</code> | [src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs:73](../../../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs#L73) | Removes a provider mapping without removing the canonical security entry. |
+| <code>IEnumerable&lt;SymbolRegistryEntry&gt; GetAllSymbols();</code> | [src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs:78](../../../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs#L78) | Gets all symbols. |
+| <code>IEnumerable&lt;SymbolRegistryEntry&gt; GetSymbolsByAssetClass(string assetClass);</code> | [src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs:83](../../../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs#L83) | Gets symbols by asset class. |
+| <code>Task&lt;string?&gt; GetMigrationMarkerAsync(string migrationId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs:89](../../../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs#L89) | Gets the retained fingerprint for a completed registry migration while holding the registry mutation gate. |
+| <code>Task SetMigrationMarkerAsync(string migrationId, string fingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs:94](../../../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs#L94) | Persists a registry migration fingerprint while holding the registry mutation gate. |
+| <code>Task SaveRegistryAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs:99](../../../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs#L99) | Saves the registry to disk. |
+| <code>Task&lt;int&gt; ImportSymbolsAsync(IEnumerable&lt;SymbolRegistryEntry&gt; symbols, bool merge = true, CancellationToken ct = default);</code> | [src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs:104](../../../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs#L104) | Imports symbols from an external source. |
+
+## SourceInfo
+
+Qualified name: <code>Meridian.Storage.Interfaces.SourceInfo</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:52](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L52).
+
+Information about a data source.
+
+```csharp
+public sealed record SourceInfo(string Id, string Name, SourceType Type, int Priority = 1, string[]? AssetClasses = null, string[]? DataTypes = null, double? LatencyMs = null, double? Reliability = null, decimal? CostPerEvent = null, bool Enabled = true);
+```
+
 ## SourceType
 
 Qualified name: <code>Meridian.Storage.Interfaces.SourceType</code>. Kind: `enum`.
@@ -886,41 +931,3 @@ Declared public members:
 | <code>Task&lt;ControlledCloseAuthorizationDto&gt; SaveCloseAuthorizationAsync(ControlledCloseAuthorizationDto authorization, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs:9](../../../../src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs#L9) |  |
 | <code>Task&lt;ControlledCloseAuthorizationDto?&gt; GetCloseAuthorizationAsync(Guid authorizationId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs:10](../../../../src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs#L10) |  |
 | <code>Task&lt;ControlledCloseAuthorizationDto?&gt; FindCloseAuthorizationAsync(Guid bookId, Guid journalId, int draftVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs:11](../../../../src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs#L11) |  |
-
-## IFiscalYearCloseReceiptStore
-
-Qualified name: <code>Meridian.Storage.Ledger.IFiscalYearCloseReceiptStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs:6](../../../../src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs#L6).
-
-Projects and retains the authorized fiscal close of one continuous ledger book.
-
-```csharp
-public interface IFiscalYearCloseReceiptStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;FiscalYearClosePlanDto&gt; GetFiscalYearClosePlanAsync(Guid ledgerBookId, int fiscalYear, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs:8](../../../../src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs#L8) |  |
-| <code>Task&lt;FiscalYearCloseReceiptDto?&gt; GetFiscalYearCloseReceiptAsync(Guid ledgerBookId, int fiscalYear, Guid? receiptId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs:11](../../../../src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs#L11) |  |
-| <code>Task&lt;FiscalYearCloseReceiptDto&gt; FinalizeFiscalYearCloseAsync(Guid ledgerBookId, int fiscalYear, FinalizeFiscalYearCloseRequestDto request, string actor, string controllerRole, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs:14](../../../../src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs#L14) |  |
-
-## IGovernedLedgerPostingTarget
-
-Qualified name: <code>Meridian.Storage.Ledger.IGovernedLedgerPostingTarget</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs:13](../../../../src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs#L13).
-
-Durable posting seam used after a governed workflow has approved a journal write. The workflow remains responsible for validation and approval; this target owns the idempotent handoff to the authoritative journal store.
-
-```csharp
-public interface IGovernedLedgerPostingTarget
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;GovernedLedgerPostingResult&gt; PostAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs:15](../../../../src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs#L15) |  |

@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RebuildOptions
+
+Qualified name: <code>Meridian.Storage.Services.RebuildOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:865](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L865).
+
+```csharp
+public sealed record RebuildOptions(int ParallelIndexers = 4);
+```
+
+## RepairOptions
+
+Qualified name: <code>Meridian.Storage.Services.RepairOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:908](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L908).
+
+```csharp
+public sealed record RepairOptions(RepairStrategy Strategy, bool DryRun = false, bool BackupBeforeRepair = true, string? BackupPath = null, RepairScope Scope = RepairScope.All, string? ScopeTarget = null);
+```
+
 ## RepairResult
 
 Qualified name: <code>Meridian.Storage.Services.RepairResult</code>. Kind: `record`.
@@ -521,7 +541,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.TierInfo</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:645](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L645).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:646](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L646).
 
 ```csharp
 public sealed record TierInfo(int FileCount, long TotalBytes, DateTime? OldestFile, DateTime? NewestFile);
@@ -553,7 +573,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.TierStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:640](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L640).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:641](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L641).
 
 ```csharp
 public sealed record TierStatistics(DateTimeOffset GeneratedAt, Dictionary<StorageTier, TierInfo> TierInfo);
@@ -706,7 +726,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Sinks.JsonlStorageSinkStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:1219](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L1219).
+Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:1221](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L1221).
 
 ```csharp
 public sealed record JsonlStorageSinkStatistics(bool IsBatchingEnabled, int BatchSize, TimeSpan FlushInterval, long EventsBuffered, long EventsWritten, long BatchesWritten, int WriterCount, int BufferCount, DateTimeOffset Timestamp, long FsyncCount = 0, int OpenWriterHandles = 0);
@@ -903,35 +923,3 @@ Enum declarations:
 | <code>Research</code> | [src/Meridian.Storage/StorageProfiles.cs:10](../../../../src/Meridian.Storage/StorageProfiles.cs#L10) |  |
 | <code>LowLatency</code> | [src/Meridian.Storage/StorageProfiles.cs:11](../../../../src/Meridian.Storage/StorageProfiles.cs#L11) |  |
 | <code>Archival</code> | [src/Meridian.Storage/StorageProfiles.cs:12](../../../../src/Meridian.Storage/StorageProfiles.cs#L12) |  |
-
-## StorageProfilePreset
-
-Qualified name: <code>Meridian.Storage.StorageProfilePreset</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/StorageProfiles.cs:15](../../../../src/Meridian.Storage/StorageProfiles.cs#L15).
-
-```csharp
-public sealed record StorageProfilePreset(string Id, string Label, string Description, Func<StorageOptions, StorageOptions> Apply);
-```
-
-## StorageProfilePresets
-
-Qualified name: <code>Meridian.Storage.StorageProfilePresets</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/StorageProfiles.cs:24](../../../../src/Meridian.Storage/StorageProfiles.cs#L24).
-
-Defines the default storage profile and the available preset storage configurations.
-
-```csharp
-public static class StorageProfilePresets
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string DefaultProfile = &quot;Research&quot;;</code> | [src/Meridian.Storage/StorageProfiles.cs:30](../../../../src/Meridian.Storage/StorageProfiles.cs#L30) | Default storage profile when none is specified. The retained Research profile ID provides balanced defaults for strategy use cases. |
-| <code>public static StorageOptions ApplyProfile(string? profile, StorageOptions options, bool useDefaultIfEmpty = true);</code> | [src/Meridian.Storage/StorageProfiles.cs:120](../../../../src/Meridian.Storage/StorageProfiles.cs#L120) | Applies a storage profile to the given options. If no profile is specified, applies the default strategy profile. |
-| <code>public static StorageProfilePreset? GetProfile(string id);</code> | [src/Meridian.Storage/StorageProfiles.cs:138](../../../../src/Meridian.Storage/StorageProfiles.cs#L138) | Gets a profile preset by ID. |
-| <code>public static StorageOptions CreateFromProfile(string? profile, string rootPath, bool? compress = null);</code> | [src/Meridian.Storage/StorageProfiles.cs:147](../../../../src/Meridian.Storage/StorageProfiles.cs#L147) | Creates storage options from a profile without requiring a base options object. Uses default profile if none specified. |
-| <code>public static IReadOnlyList&lt;StorageProfilePreset&gt; GetPresets() =&gt; …;</code> | [src/Meridian.Storage/StorageProfiles.cs:158](../../../../src/Meridian.Storage/StorageProfiles.cs#L158) |  |
