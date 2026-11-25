@@ -148,7 +148,7 @@ public sealed class ShortCarryIntakeTests
     {
         var evidence = new RetainedEvidenceIdentityDto("acquisition-evidence", "evidence://synthetic/short-open", new string('a', 64),
             "Synthetic", LotRecordId.ToString("D"), "Accepted", "synthetic-source-validation", Now,
-            DateOnly.FromDateTime(Now.UtcDateTime), 1, Now, "synthetic-source-validation", "OpenLotAcquisition", LotRecordId.ToString("D"));
+            new DateOnly(2026, 10, 1), 1, Now, "synthetic-source-validation", "OpenLotAcquisition", LotRecordId.ToString("D"));
         var batch = Guid.NewGuid();
         return new LedgerTaxLotRecord(LotRecordId, BookId, ShortCarrying, "short-lot-1", new DateOnly(2026, 10, 1),
             100m, openQuantity, 50m, "USD", Now, Now, Version: 1,

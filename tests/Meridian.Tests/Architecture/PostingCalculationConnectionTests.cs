@@ -73,11 +73,20 @@ public sealed class PostingCalculationConnectionTests
     [Fact]
     public void ACallerThatIsItselfUnused_DoesNotConnectACalculation()
     {
-        // ShortCarryProjector.Lines is called only by ShortCarryPostingGuard, a static validator that no
-        // production code references, so the call must not count as a production posting path.
-        var lines = typeof(ShortCarryProjector).GetMethod(nameof(ShortCarryProjector.Lines))!;
+        // A static validator that no other production file names cannot launder a calculation it calls;
+        // once something references it, its calls count again.
+        (string Path, string Code) guard = ("src/OrphanGuard.cs",
+            "public static class OrphanGuard { public static void Check() => Projector.Lines(); }");
+        (string Path, string Code) unrelated = ("src/Other.cs", "public sealed class Other { }");
+        (string Path, string Code) referencing = ("src/Workflow.cs",
+            "public sealed class Workflow { public void Run() => OrphanGuard.Check(); }");
+        (string Path, string Code) extensions = ("src/Extensions.cs",
+            "public static class ProjectorExtensions { public static void Use(this Other o) => Projector.Lines(); }");
 
-        Assert.False(HasProductionCaller(lines, LoadProductionSources()));
+        Assert.True(IsUnreferencedStaticHolder(guard, [guard, unrelated]));
+        Assert.False(IsUnreferencedStaticHolder(guard, [guard, unrelated, referencing]));
+        // Extension methods are invoked without their class name, so their holder is never treated as unused.
+        Assert.False(IsUnreferencedStaticHolder(extensions, [extensions, unrelated]));
     }
 
     [Fact]
