@@ -187,6 +187,26 @@ groups:
           immediate_mitigation: "1. Check disk space immediately. 2. Verify storage path permissions. 3. Capture the corrupted records before any repair. 4. Review storage error logs for root cause."
           rollback_criteria: "The affected window is reconciled and a subsequent restart recovers with zero corrupted records"
 
+      # A directory fsync could not open or sync the directory, so a rename,
+      # create, or delete in it may not survive power loss. AtomicFileWriter
+      # advances this counter per failure and never resets it, so the rule tests
+      # the absolute total like MeridianStorageWriteErrors. operation="fsync_unsupported"
+      # (EINVAL/EBADF/ENOTSUP from procfs, some FUSE/9p mounts) is a platform
+      # limitation, not a fault, and is excluded.
+      - alert: MeridianDirectoryFsyncFailures
+        expr: sum(mdc_storage_directory_fsync_failures_total{operation=~"open|fsync"}) > 0
+        for: 1m
+        labels:
+          severity: warning
+          incident_priority: P2
+        annotations:
+          summary: "Directory fsync failures detected"
+          description: "{{ $value }} directory fsync(s) failed to open or sync; renames, creates, or deletes in those directories may not survive power loss."
+          runbook_url: "docs/operators/operator-runbook.md#directory-fsync-failures"
+          probable_causes: "I/O errors, disk full, file-descriptor exhaustion (EMFILE/ENFILE), failing volume"
+          immediate_mitigation: "1. Check kernel and storage logs for I/O errors. 2. Search Meridian Error logs for 'Directory fsync failed' or 'Unable to open directory for fsync'. 3. Check disk space and open-file limits. 4. Restart once the volume is healthy."
+          rollback_criteria: "The volume is healthy and the restarted process records no further open or fsync directory sync failures"
+
       # Validation pass rate below the SLO-DC-001 critical threshold (gauge, 0-100).
       - alert: MeridianLowDataQuality
         expr: mdc_validation_pass_rate_percent < 80

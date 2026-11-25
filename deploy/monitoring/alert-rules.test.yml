@@ -105,6 +105,40 @@ tests:
         alertname: MeridianStorageWriteErrors
         exp_alerts: []
 
+  # --- MeridianDirectoryFsyncFailures ---------------------------------------
+  # AtomicFileWriter counts real failures as operation="open"|"fsync" and
+  # filesystems that cannot fsync a directory at all as "fsync_unsupported".
+  # Only the first two are faults; an unsupported mount must never page.
+  - interval: 1m
+    name: MeridianDirectoryFsyncFailures fires on a real fsync failure
+    input_series:
+      - series: 'mdc_storage_directory_fsync_failures_total{operation="fsync"}'
+        values: "2+0x30"
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: MeridianDirectoryFsyncFailures
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P2
+            exp_annotations:
+              summary: "Directory fsync failures detected"
+              description: "2 directory fsync(s) failed to open or sync; renames, creates, or deletes in those directories may not survive power loss."
+              runbook_url: "docs/operators/operator-runbook.md#directory-fsync-failures"
+              probable_causes: "I/O errors, disk full, file-descriptor exhaustion (EMFILE/ENFILE), failing volume"
+              immediate_mitigation: "1. Check kernel and storage logs for I/O errors. 2. Search Meridian Error logs for 'Directory fsync failed' or 'Unable to open directory for fsync'. 3. Check disk space and open-file limits. 4. Restart once the volume is healthy."
+              rollback_criteria: "The volume is healthy and the restarted process records no further open or fsync directory sync failures"
+
+  - interval: 1m
+    name: MeridianDirectoryFsyncFailures stays silent on a filesystem that cannot fsync directories
+    input_series:
+      - series: 'mdc_storage_directory_fsync_failures_total{operation="fsync_unsupported"}'
+        values: "5+1x30"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: MeridianDirectoryFsyncFailures
+        exp_alerts: []
+
   # --- MeridianProviderDisconnected -----------------------------------------
   # 0=Closed, 1=Open, 2=HalfOpen. Half-open still means the provider is unusable
   # and resubscription is only probing; an equality test would go silent exactly

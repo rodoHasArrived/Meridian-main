@@ -230,6 +230,30 @@ public sealed class AlertRunbookRegistry
 
         Register(new AlertRunbookEntry
         {
+            AlertName = "MeridianDirectoryFsyncFailures",
+            Severity = "warning",
+            IncidentPriority = "P2",
+            Summary = "Directory fsync failures detected",
+            RunbookUrl = "docs/operators/operator-runbook.md#directory-fsync-failures",
+            ProbableCauses = new[]
+            {
+                "I/O errors on disk",
+                "Disk full",
+                "File-descriptor exhaustion (EMFILE/ENFILE) that persisted after one retry",
+                "Failing volume"
+            },
+            ImmediateActions = new[]
+            {
+                "Check kernel and storage logs for I/O errors",
+                "Search Error logs for 'Directory fsync failed' or 'Unable to open directory for fsync'",
+                "Check disk space and open-file limits",
+                "Restart once the volume is healthy"
+            },
+            RollbackCriteria = "The volume is healthy and the restarted process records no further open or fsync directory sync failures"
+        });
+
+        Register(new AlertRunbookEntry
+        {
             AlertName = "MeridianLowDataQuality",
             Severity = "warning",
             IncidentPriority = "P3",
