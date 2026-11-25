@@ -11,6 +11,30 @@ last_reviewed: 2026-11-23
 
 # src/Meridian.Ui.Shared
 
+## Cancel-all incident reads
+
+`GET /api/execution/cancel-incidents?fundAccountId=...` lists recent retained incident summaries;
+`GET /api/execution/cancel-incidents/{incidentId}?fundAccountId=...` reopens every retained order
+attributed to that account. Both require global and scoped trading-read authority, a concrete
+tenant/company, and authoritative ownership of the account's fund. Administrator access does not
+override tenant ownership. Missing storage is unavailable, not an empty history. List limits apply
+to incidents, never to an incident's order rows; exact-ID reads remain available for older incidents.
+The incident order table registers saved table views under `ViewTrades`, matching these routes;
+layout access does not replace the incident reads' account and tenant ownership checks.
+
+The HTTP projection separates evidence completion from cancellation success, preserves unknown
+quantities as null, and emits financial quantities as exact decimal strings. Raw broker-wide errors
+and local storage paths remain internal. Generic audit feeds expose safe cancel-all summaries;
+the account-authorized incident is the order-detail authority. These reads do not contact the broker,
+resume execution, post journals, or establish current exposure. Focused coverage lives in
+`ExecutionCancelIncidentEndpointsTests`.
+
+Hosted scoped Designer backtests publish their immutable executable artifact before retaining the
+first run. The shared service composes `StrategyArtifactRegistry` and binds its ID through the
+existing account/evidence run hash. Repeated historical experiments keep separate input hashes
+while the unchanged executable can share an artifact. The scoped draft/version, simulated
+provenance and paper-only review rules continue to apply; see `DesignerPaperRehearsalTests`.
+
 Asset Detail reads full canonical terms through `SecurityInstrumentTermsEndpoints` and
 `SecurityInstrumentTermsReadService`. The schema-guided read preserves exact scalar JSON text,
 all nested/unknown properties and raw blocks, with version/fingerprint and matching source evidence.

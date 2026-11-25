@@ -30,6 +30,7 @@ import { TradingOrderTicketForm } from "@/screens/trading-screen.order-ticket-fo
 import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TradingRiskControls } from "@/components/ui/trading-risk-controls";
+import { CancelAllIncidentPanel } from "@/screens/trading-screen.cancel-incidents";
 import {
   dataToneClass,
   promotionChecklistDotTone,
@@ -1051,6 +1052,7 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
           </CardContent>
         </Card>
       </section>
+      <CancelAllIncidentPanel fundAccountId={operatingFundAccountId} />
       </section>
       ) : null}
 

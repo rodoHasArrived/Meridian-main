@@ -5313,7 +5313,6 @@ Meridian-main
 │   │   │   ├── AccrualLedgerService.cs
 │   │   │   ├── DailyAccrualWorker.cs
 │   │   │   ├── DirectLendingEventRebuilder.cs
-│   │   │   ├── DirectLendingEventRebuilder.Lifecycle.cs
 │   │   │   ├── DirectLendingJournalLines.cs
 │   │   │   ├── DirectLendingJournalLines.Events.cs
 │   │   │   ├── DirectLendingOutboxDispatcher.cs
@@ -5335,7 +5334,6 @@ Meridian-main
 │   │   │   ├── LoanAccountingProjector.cs
 │   │   │   ├── LoanPortfolioSummaryBuilder.cs
 │   │   │   ├── PostgresDirectLendingCommandService.cs
-│   │   │   ├── PostgresDirectLendingCommandService.LifecycleReplay.cs
 │   │   │   ├── PostgresDirectLendingCommandService.ServicingSchedules.cs
 │   │   │   ├── PostgresDirectLendingQueryService.cs
 │   │   │   └── PostgresDirectLendingService.cs
@@ -6791,6 +6789,7 @@ Meridian-main
 │   │   │   ├── BrokerageOrderCheckpointEvidence.cs
 │   │   │   ├── BrokerageOrderRecoveryJournal.cs
 │   │   │   ├── BrokerOrderSweep.cs
+│   │   │   ├── CancelAllIncidentRecorder.cs
 │   │   │   ├── ExecutionFailureState.cs
 │   │   │   ├── ExecutionReportHub.cs
 │   │   │   ├── ILiveStrategyOrderAuthorization.cs
@@ -6825,6 +6824,7 @@ Meridian-main
 │   │   │   ├── BrokerActivityImportService.cs
 │   │   │   ├── BrokerageExecutionReconciliationService.cs
 │   │   │   ├── ExecutionAlerts.cs
+│   │   │   ├── ExecutionAuditTrailService.CancelIncidents.cs
 │   │   │   ├── ExecutionAuditTrailService.cs
 │   │   │   ├── ExecutionJournal.cs
 │   │   │   ├── ExecutionOperatorControlService.cs
@@ -6874,6 +6874,7 @@ Meridian-main
 │   │   ├── ISecurityMasterGate.cs
 │   │   ├── Meridian.Execution.csproj
 │   │   ├── OrderManagementSystem.BrokerageLimits.cs
+│   │   ├── OrderManagementSystem.CancelIncidents.cs
 │   │   ├── OrderManagementSystem.Cancellation.cs
 │   │   ├── OrderManagementSystem.ChildOrders.cs
 │   │   ├── OrderManagementSystem.cs
@@ -6910,6 +6911,7 @@ Meridian-main
 │   │   ├── BrokerageRequestNotSentException.cs
 │   │   ├── BrokerageValidationEvaluator.cs
 │   │   ├── BrokerNotionalMetadata.cs
+│   │   ├── CancelAllIncident.cs
 │   │   ├── CanonicalTaxLotAdapter.cs
 │   │   ├── ExecutionOrderMetadataPolicy.cs
 │   │   ├── ExecutionWorkflows.cs
@@ -7357,7 +7359,6 @@ Meridian-main
 │   │   │   │   ├── AlpacaCorporateActionProvider.AdditionalMappings.cs
 │   │   │   │   ├── AlpacaCorporateActionProvider.cs
 │   │   │   │   ├── AlpacaCorporateActionProvider.Mapping.cs
-│   │   │   │   ├── AlpacaHistoricalDataProvider.Accounting.cs
 │   │   │   │   ├── AlpacaHistoricalDataProvider.cs
 │   │   │   │   ├── AlpacaMarketDataClient.cs
 │   │   │   │   ├── AlpacaOptionsChainProvider.cs
@@ -7389,7 +7390,6 @@ Meridian-main
 │   │   │   │   ├── SymbolResolution
 │   │   │   │   │   ├── CanonicalRegistrySymbolResolver.cs
 │   │   │   │   │   └── ISymbolResolver.cs
-│   │   │   │   ├── AccountingClosePrice.cs
 │   │   │   │   ├── BackfillBarValidation.cs
 │   │   │   │   ├── BackfillProgressTracker.cs
 │   │   │   │   ├── BackfillProviderRuntimeOptions.cs
@@ -9731,6 +9731,7 @@ Meridian-main
 │   │   │   │   │   │   ├── bond-workflow.api.test.ts
 │   │   │   │   │   │   ├── bond-workflow.api.ts
 │   │   │   │   │   │   ├── break-audit-rebuild.api.ts
+│   │   │   │   │   │   ├── cancel-incidents.api.ts
 │   │   │   │   │   │   ├── canonical-amortization.api.test.ts
 │   │   │   │   │   │   ├── canonical-amortization.api.ts
 │   │   │   │   │   │   ├── capital-call-issuance.api.ts
@@ -10744,6 +10745,8 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.brokerage-recovery-state.ts
 │   │   │   │   │   ├── trading-screen.brokerage-recovery.test.tsx
 │   │   │   │   │   ├── trading-screen.brokerage-recovery.tsx
+│   │   │   │   │   ├── trading-screen.cancel-incidents.test.tsx
+│   │   │   │   │   ├── trading-screen.cancel-incidents.tsx
 │   │   │   │   │   ├── trading-screen.cancel-preview.test.tsx
 │   │   │   │   │   ├── trading-screen.cancel-preview.ts
 │   │   │   │   │   ├── trading-screen.evidence-timeline.ts
@@ -10853,6 +10856,7 @@ Meridian-main
 │   │   │   │   │   ├── bond-settlement.types.ts
 │   │   │   │   │   ├── bond-workflow.types.ts
 │   │   │   │   │   ├── brokerage-recovery.ts
+│   │   │   │   │   ├── cancel-incidents.types.ts
 │   │   │   │   │   ├── canonical-symbol.ts
 │   │   │   │   │   ├── cash-dividend-attestation.ts
 │   │   │   │   │   ├── close-preparation.ts
@@ -11207,6 +11211,7 @@ Meridian-main
 │   │   │   ├── EvidenceEndpoints.SinglePrincipalAttestation.cs
 │   │   │   ├── ExecutionEndpointDtos.cs
 │   │   │   ├── ExecutionEndpoints.Audit.cs
+│   │   │   ├── ExecutionEndpoints.CancelIncidents.cs
 │   │   │   ├── ExecutionEndpoints.cs
 │   │   │   ├── ExecutionEndpoints.Metadata.cs
 │   │   │   ├── ExecutionEndpoints.PaperIntents.cs
@@ -11581,6 +11586,7 @@ Meridian-main
 │   │   │   ├── EntityTimelineAccessAuthority.cs
 │   │   │   ├── EntityTimelineService.cs
 │   │   │   ├── EquityOrderSessionPolicy.cs
+│   │   │   ├── ExecutionAuditPublicProjection.cs
 │   │   │   ├── ExecutionWorkflowWorker.cs
 │   │   │   ├── ExternalGlPostingHostedService.cs
 │   │   │   ├── FamilyOfficeReadService.cs
@@ -13053,7 +13059,6 @@ Meridian-main
 │   │   ├── DirectLendingDatabaseFactAttribute.cs
 │   │   ├── DirectLendingPostgresIntegrationTests.cs
 │   │   ├── DirectLendingPostgresTestDatabase.cs
-│   │   ├── DirectLendingRestructuringTests.cs
 │   │   ├── DirectLendingServiceTests.cs
 │   │   ├── DirectLendingServicingSchedulePostgresTests.cs
 │   │   ├── DirectLendingServicingScheduleScenarioTests.cs
@@ -13191,7 +13196,6 @@ Meridian-main
 │   │   │   └── LotQuantityBasisRulesTests.cs
 │   │   ├── Application
 │   │   │   ├── Accounting
-│   │   │   │   ├── AccountingCloseMarkPriceSourceTests.cs
 │   │   │   │   ├── DailyMarkToMarketServiceTests.cs
 │   │   │   │   ├── DailyValuationPolicyTests.cs
 │   │   │   │   ├── SyntheticMarkProvenanceTests.cs
@@ -13335,8 +13339,6 @@ Meridian-main
 │   │   │   │   ├── DirectLendingExcessBalancesCompatibilityTests.cs
 │   │   │   │   ├── DirectLendingExcessRoutingParityTests.cs
 │   │   │   │   ├── DirectLendingJournalLinesTests.cs
-│   │   │   │   ├── DirectLendingLifecycleReplayTests.cs
-│   │   │   │   ├── DirectLendingLifecycleReplayTests.Inventory.cs
 │   │   │   │   ├── DirectLendingOutboxDispatcherTests.cs
 │   │   │   │   ├── DirectLendingOutboxFailureTests.cs
 │   │   │   │   ├── DirectLendingPrepaidInterestConsumptionTests.cs
@@ -13348,11 +13350,6 @@ Meridian-main
 │   │   │   │   ├── ManualPaymentResolutionTests.cs
 │   │   │   │   ├── PostgresDirectLendingCommandServiceTests.CapabilityFloor.cs
 │   │   │   │   ├── PostgresDirectLendingCommandServiceTests.cs
-│   │   │   │   ├── PostgresDirectLendingCommandServiceTests.LifecyclePersistenceRace.cs
-│   │   │   │   ├── PostgresDirectLendingCommandServiceTests.LifecycleReplay.cs
-│   │   │   │   ├── PostgresDirectLendingCommandServiceTests.LifecycleRetry.cs
-│   │   │   │   ├── PostgresDirectLendingCommandServiceTests.Restructuring.cs
-│   │   │   │   ├── PostgresDirectLendingCommandServiceTests.RestructuringPostgres.cs
 │   │   │   │   ├── PostgresDirectLendingProjectionCharacterizationTests.cs
 │   │   │   │   └── RateUnitNormalizerTests.cs
 │   │   │   ├── FundStructure
@@ -13777,6 +13774,8 @@ Meridian-main
 │   │   │   ├── BrokerageOrderRecoveryTests.Retention.cs
 │   │   │   ├── BrokerageValidationEvaluatorTests.cs
 │   │   │   ├── BrokerOrderSweepTests.cs
+│   │   │   ├── CancelAllIncidentReplayTests.cs
+│   │   │   ├── CancelAllIncidentTests.cs
 │   │   │   ├── CanonicalPaperPortfolioBootstrapperTests.cs
 │   │   │   ├── DurableFillDeliveryBoundaryTests.cs
 │   │   │   ├── ExecutionAuditTrailServiceTests.cs
@@ -13808,6 +13807,7 @@ Meridian-main
 │   │   │   ├── OrderLifecycleServicesTests.cs
 │   │   │   ├── OrderManagementLifecycleCoordinatorTests.cs
 │   │   │   ├── OrderManagementSystemAmendmentHandoffTests.cs
+│   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.CancelIncident.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.Outcomes.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.RejectedSuccessor.cs
@@ -14076,7 +14076,6 @@ Meridian-main
 │   │   │   │   │       ├── polygon-recorded-session-nvda-multi-batch.json
 │   │   │   │   │       ├── polygon-recorded-session-spy-etf.json
 │   │   │   │   │       └── polygon-recorded-session-tsla-opening-cross.json
-│   │   │   │   ├── AlpacaAccountingClosePriceTests.cs
 │   │   │   │   ├── AlpacaAssetStreamRoutingTests.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.AccountIdentity.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.Amendments.cs
@@ -14305,6 +14304,11 @@ Meridian-main
 │   │   │   ├── ConnectionRetryIntegrationTests.cs
 │   │   │   ├── EndpointStubDetectionTests.cs
 │   │   │   ├── FixtureProviderTests.cs
+│   │   │   ├── FreshHostAccountingRehearsalTests.Completion.cs
+│   │   │   ├── FreshHostAccountingRehearsalTests.cs
+│   │   │   ├── FreshHostAccountingRehearsalTests.Host.cs
+│   │   │   ├── FreshHostAccountingRehearsalTests.Scope.cs
+│   │   │   ├── FreshHostAccountingRehearsalTests.Strategy.cs
 │   │   │   ├── FundStructureScopePostgresTests.cs
 │   │   │   ├── FundStructureScopePostgresTests.Fixture.cs
 │   │   │   ├── FundStructureTenantBackfillPostgresTests.cs
@@ -15177,6 +15181,7 @@ Meridian-main
 │   │   │   ├── ReconciliationCaseWorkflowVocabularyTests.cs
 │   │   │   ├── ReconciliationProjectionServiceTests.cs
 │   │   │   ├── ReconciliationSlaCalendarTests.cs
+│   │   │   ├── ScopedDesignerArtifactTests.cs
 │   │   │   ├── SecurityMasterAccountingEventServiceTests.cs
 │   │   │   ├── SecurityMasterAccountingEventSourceRateUnitTests.cs
 │   │   │   ├── ShadowBookValuationServiceTests.cs
@@ -15395,6 +15400,7 @@ Meridian-main
 │   │   │   ├── EntityTimelineServiceTests.cs
 │   │   │   ├── EquityOrderSessionPolicyTests.cs
 │   │   │   ├── EvidenceWorkflowFabricTests.cs
+│   │   │   ├── ExecutionCancelIncidentEndpointsTests.cs
 │   │   │   ├── ExecutionGovernanceEndpointsTests.cs
 │   │   │   ├── ExecutionRouteContractParityTests.cs
 │   │   │   ├── ExecutionWriteEndpointsTests.cs
