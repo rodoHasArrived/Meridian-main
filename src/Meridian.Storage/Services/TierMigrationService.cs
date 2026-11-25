@@ -301,6 +301,28 @@ public sealed class TierMigrationService : ITierMigrationService
         ));
     }
 
+    /// <summary>
+    /// The most specific configured tier folder that contains <paramref name="sourcePath"/>, or
+    /// <see langword="null"/> when the file is in no tier folder. Most specific, because a hot tier
+    /// configured as the storage root itself also contains every other tier's folder.
+    /// </summary>
+    private string? GetContainingTierRoot(string sourcePath)
+    {
+        string? best = null;
+        foreach (var tier in _options.Tiering?.Tiers ?? [])
+        {
+            if (string.IsNullOrWhiteSpace(tier.Path))
+                continue;
+
+            var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(tier.Path));
+            var prefix = root + Path.DirectorySeparatorChar;
+            if (sourcePath.StartsWith(prefix, PathComparison) && (best is null || root.Length > best.Length))
+                best = root;
+        }
+
+        return best;
+    }
+
     private TierConfig? GetTierConfig(StorageTier tier)
     {
         return _options.Tiering?.Tiers.FirstOrDefault(t =>
@@ -409,10 +431,13 @@ public sealed class TierMigrationService : ITierMigrationService
         var sourceInfo = new FileInfo(sourcePath);
         var originalSize = sourceInfo.Length;
 
-        // Determine target path. The migrated file must land inside the target tier's root:
-        // a source outside the storage root produces ".." segments in the relative path, and
-        // writing (or later deleting) through such a path would escape the tier directory.
-        var relativePath = Path.GetRelativePath(storageRoot, sourcePath);
+        // Determine target path. The path inside the tier is taken relative to the tier folder the
+        // source already sits in, so hot/AAPL/x moves to warm/AAPL/x. Relative to the storage root
+        // it became warm/hot/AAPL/x, then cold/warm/hot/AAPL/x, one more folder per migration.
+        // The migrated file must land inside the target tier's root: a source outside the storage
+        // root produces ".." segments, and writing (or later deleting) through such a path would
+        // escape the tier directory.
+        var relativePath = Path.GetRelativePath(GetContainingTierRoot(sourcePath) ?? storageRoot, sourcePath);
         var tierRoot = Path.GetFullPath(targetTier.Path);
         var targetPath = Path.GetFullPath(Path.Combine(tierRoot, relativePath));
         var tierPrefix = Path.EndsInDirectorySeparator(tierRoot) ? tierRoot : tierRoot + Path.DirectorySeparatorChar;

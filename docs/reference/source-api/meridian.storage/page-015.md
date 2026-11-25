@@ -521,7 +521,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.TierInfo</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:676](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L676).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:701](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L701).
 
 ```csharp
 public sealed record TierInfo(int FileCount, long TotalBytes, DateTime? OldestFile, DateTime? NewestFile);
@@ -553,7 +553,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.TierStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:671](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L671).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:696](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L696).
 
 ```csharp
 public sealed record TierStatistics(DateTimeOffset GeneratedAt, Dictionary<StorageTier, TierInfo> TierInfo);

@@ -279,7 +279,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.FileMigrationResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:664](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L664).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:689](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L689).
 
 ```csharp
 public sealed record FileMigrationResult(string SourcePath, string TargetPath, long OriginalSize, long NewSize);
@@ -879,7 +879,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.ITierMigrationService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:608](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L608).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:633](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L633).
 
 Interface for tier migration service.
 
@@ -891,10 +891,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;MigrationResult&gt; MigrateAsync(string sourcePath, StorageTier targetTier, MigrationOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:610](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L610) |  |
-| <code>Task&lt;MigrationPlan&gt; PlanMigrationAsync(TimeSpan horizon, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:611](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L611) |  |
-| <code>StorageTier DetermineTargetTier(string filePath);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:612](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L612) |  |
-| <code>Task&lt;TierStatistics&gt; GetTierStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:613](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L613) |  |
+| <code>Task&lt;MigrationResult&gt; MigrateAsync(string sourcePath, StorageTier targetTier, MigrationOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:635](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L635) |  |
+| <code>Task&lt;MigrationPlan&gt; PlanMigrationAsync(TimeSpan horizon, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:636](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L636) |  |
+| <code>StorageTier DetermineTargetTier(string filePath);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:637](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L637) |  |
+| <code>Task&lt;TierStatistics&gt; GetTierStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:638](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L638) |  |
 
 ## JobExecutionStatus
 

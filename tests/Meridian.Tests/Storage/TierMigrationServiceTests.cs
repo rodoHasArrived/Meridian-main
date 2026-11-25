@@ -89,7 +89,7 @@ public sealed class TierMigrationServiceTests : IDisposable
 
         result.Success.Should().BeTrue(string.Join("; ", result.Errors));
         File.Exists(source).Should().BeFalse();
-        var target = Path.Combine(_warm, "hot", "session.jsonl.gz");
+        var target = Path.Combine(_warm, "session.jsonl.gz");
         (await ReadGzipTextAsync(target)).Should().Be(jsonl, "one decompression must produce the original JSONL, never another gzip stream");
         var replayed = new List<MarketEvent>();
         await foreach (var evt in new JsonlReplayer(target).ReadEventsAsync())
@@ -193,11 +193,11 @@ public sealed class TierMigrationServiceTests : IDisposable
         result.FilesFailed.Should().Be(0);
         progress.Should().ContainSingle().Which.TotalFiles.Should().Be(1);
 
-        var targetFile = Path.Combine(_warm, "hot", "alpaca", "AAPL", "Trade", "session.jsonl.gz");
+        var targetFile = Path.Combine(_warm, "alpaca", "AAPL", "Trade", "session.jsonl.gz");
         File.Exists(targetFile).Should().BeTrue("compressed tier rollover must keep the original .jsonl filename before adding .gz");
         var migratedPayload = await ReadGzipTextAsync(targetFile);
         migratedPayload.Should().Be("{\"symbol\":\"AAPL\",\"price\":213.45}");
-        File.Exists(Path.Combine(_warm, "hot", "alpaca", "AAPL", "Trade", "notes.txt")).Should().BeFalse();
+        File.Exists(Path.Combine(_warm, "alpaca", "AAPL", "Trade", "notes.txt")).Should().BeFalse();
         File.Exists(sourceFile).Should().BeTrue();
     }
 
@@ -220,7 +220,7 @@ public sealed class TierMigrationServiceTests : IDisposable
         result.Errors.Should().BeEmpty();
         File.Exists(sourceFile).Should().BeFalse("verified rollover should delete the hot-tier file only after target checksum validation");
 
-        var targetFile = Path.Combine(_warm, "hot", "polygon", "SPY", "HistoricalBar", "2026-06-29.jsonl.gz");
+        var targetFile = Path.Combine(_warm, "polygon", "SPY", "HistoricalBar", "2026-06-29.jsonl.gz");
         File.Exists(targetFile).Should().BeTrue();
         var migratedPayload = await ReadGzipTextAsync(targetFile);
         migratedPayload.Should().Be("{\"symbol\":\"SPY\",\"close\":500.12}");
@@ -255,7 +255,7 @@ public sealed class TierMigrationServiceTests : IDisposable
         result.Success.Should().BeTrue("a configured storage root with a trailing separator must accept its enumerated child files");
         result.FilesProcessed.Should().Be(1);
         result.FilesFailed.Should().Be(0);
-        var targetFile = Path.Combine(_warm, "hot", "alpaca", "AAPL", "Trade", "session.jsonl.gz");
+        var targetFile = Path.Combine(_warm, "alpaca", "AAPL", "Trade", "session.jsonl.gz");
         File.Exists(targetFile).Should().BeTrue();
         (await ReadGzipTextAsync(targetFile)).Should().Be("{\"symbol\":\"AAPL\",\"price\":213.45}");
     }
@@ -612,7 +612,7 @@ public sealed class TierMigrationServiceTests : IDisposable
             result.FilesProcessed.Should().Be(1);
             result.FilesFailed.Should().Be(1);
             File.Exists(safe).Should().BeFalse();
-            File.Exists(Path.Combine(_warm, "hot", "safe.jsonl.gz")).Should().BeTrue();
+            File.Exists(Path.Combine(_warm, "safe.jsonl.gz")).Should().BeTrue();
             (await File.ReadAllTextAsync(evidence)).Should().Be("outside evidence");
             Directory.EnumerateFiles(_warm, "*", SearchOption.AllDirectories).Should().ContainSingle();
         }
@@ -635,9 +635,12 @@ public sealed class TierMigrationServiceTests : IDisposable
         Directory.CreateDirectory(outside);
         var evidence = Path.Combine(outside, "evidence.jsonl.gz");
         await File.WriteAllTextAsync(evidence, "outside evidence");
-        var source = Path.Combine(_hot, "evidence.jsonl");
+        // The target keeps the source's path inside its tier, so a link at warm/nested sits on
+        // the migration's write path for hot/nested/evidence.jsonl.
+        Directory.CreateDirectory(Path.Combine(_hot, "nested"));
+        var source = Path.Combine(_hot, "nested", "evidence.jsonl");
         await File.WriteAllTextAsync(source, "source evidence");
-        var parent = Path.Combine(_warm, "hot");
+        var parent = Path.Combine(_warm, "nested");
         var link = directoryLink ? parent : Path.Combine(parent, "evidence.jsonl.gz");
         try
         {
@@ -753,6 +756,68 @@ public sealed class TierMigrationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task MigrateAsync_KeepsThePathInsideTheTier_SoRepeatedMigrationsDoNotNestTierFolders()
+    {
+        var cold = Path.Combine(_root, "cold");
+        var service = new TierMigrationService(new StorageOptions
+        {
+            RootPath = _root,
+            Tiering = new TieringOptions
+            {
+                Enabled = true,
+                Tiers =
+                [
+                    new TierConfig { Name = "Hot", Path = _hot, MaxAgeDays = 7, Format = "jsonl", Compression = CompressionCodec.None },
+                    new TierConfig { Name = "Warm", Path = _warm, MaxAgeDays = 90, Format = "jsonl", Compression = CompressionCodec.None },
+                    new TierConfig { Name = "Cold", Path = cold, MaxAgeDays = 180, Format = "jsonl", Compression = CompressionCodec.None }
+                ]
+            }
+        });
+        var source = Path.Combine(_hot, "AAPL", "Trade", "2026-06-01.jsonl");
+        Directory.CreateDirectory(Path.GetDirectoryName(source)!);
+        await File.WriteAllTextAsync(source, "{\"symbol\":\"AAPL\"}");
+
+        (await service.MigrateAsync(source, StorageTier.Warm, new MigrationOptions(DeleteSource: true))).Success.Should().BeTrue();
+        var inWarm = Path.Combine(_warm, "AAPL", "Trade", "2026-06-01.jsonl");
+        File.Exists(inWarm).Should().BeTrue("hot/AAPL/... moves to warm/AAPL/..., not warm/hot/AAPL/...");
+
+        (await service.MigrateAsync(inWarm, StorageTier.Cold, new MigrationOptions(DeleteSource: true))).Success.Should().BeTrue();
+
+        File.Exists(Path.Combine(cold, "AAPL", "Trade", "2026-06-01.jsonl")).Should().BeTrue();
+        Directory.Exists(Path.Combine(cold, "warm")).Should().BeFalse();
+        Directory.Exists(Path.Combine(cold, "hot")).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task MigrateAsync_TierAtTheStorageRoot_UsesTheMostSpecificContainingTier()
+    {
+        // A hot tier configured as the storage root also "contains" the warm folder; a warm file
+        // must still be taken relative to warm, not to the root.
+        var cold = Path.Combine(_root, "cold");
+        var service = new TierMigrationService(new StorageOptions
+        {
+            RootPath = _root,
+            Tiering = new TieringOptions
+            {
+                Enabled = true,
+                Tiers =
+                [
+                    new TierConfig { Name = "Hot", Path = _root, MaxAgeDays = 7, Format = "jsonl", Compression = CompressionCodec.None },
+                    new TierConfig { Name = "Warm", Path = _warm, MaxAgeDays = 90, Format = "jsonl", Compression = CompressionCodec.None },
+                    new TierConfig { Name = "Cold", Path = cold, MaxAgeDays = 180, Format = "jsonl", Compression = CompressionCodec.None }
+                ]
+            }
+        });
+        var source = Path.Combine(_warm, "SPY", "2026-06-01.jsonl");
+        Directory.CreateDirectory(Path.GetDirectoryName(source)!);
+        await File.WriteAllTextAsync(source, "{\"symbol\":\"SPY\"}");
+
+        (await service.MigrateAsync(source, StorageTier.Cold, new MigrationOptions())).Success.Should().BeTrue();
+
+        File.Exists(Path.Combine(cold, "SPY", "2026-06-01.jsonl")).Should().BeTrue();
+    }
+
+    [Fact]
     public async Task Scenario_WindowsCaseEquivalentSource_UsesDiscoveredCanonicalPath()
     {
         if (!OperatingSystem.IsWindows())
@@ -765,7 +830,7 @@ public sealed class TierMigrationServiceTests : IDisposable
 
         result.Success.Should().BeTrue();
         result.FilesProcessed.Should().Be(1);
-        File.Exists(Path.Combine(_warm, "hot", "case-preserved.jsonl.gz")).Should().BeTrue();
+        File.Exists(Path.Combine(_warm, "case-preserved.jsonl.gz")).Should().BeTrue();
         File.Exists(source).Should().BeTrue();
     }
 

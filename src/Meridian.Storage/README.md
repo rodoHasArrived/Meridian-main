@@ -541,6 +541,10 @@ reach their age limit within it, each with a `DueAt`. The maintenance scheduler 
 maintenance execute plans, so they plan with a zero horizon. The scheduler moves files
 (`DeleteSource`, which deletes only after the target checksum matches); copying left the source in
 place, so every run re-copied the same files.
+A migrated file keeps its path relative to the tier folder it came from (the most specific
+configured tier folder containing it), so `hot/AAPL/x` moves to `warm/AAPL/x`. It used to be taken
+relative to the storage root, which nested one more tier folder per migration (`warm/hot/...`, then
+`cold/warm/hot/...`). Files already migrated under the old layout keep it.
 
 `PostgresSecurityMasterPricingStore.ClosePrices` extends retained pricing receipts with immutable
 account/book/date price snapshots and separate independent-review records (Security Master

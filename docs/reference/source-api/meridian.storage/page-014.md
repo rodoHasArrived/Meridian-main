@@ -348,7 +348,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.MigrationOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:617](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L617).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:642](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L642).
 
 ```csharp
 public sealed record MigrationOptions(bool DeleteSource = false, bool VerifyChecksum = true, bool ConvertFormat = false, int ParallelFiles = 4, Action<MigrationProgress>? OnProgress = null);
@@ -358,7 +358,7 @@ public sealed record MigrationOptions(bool DeleteSource = false, bool VerifyChec
 
 Qualified name: <code>Meridian.Storage.Services.MigrationPlan</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:642](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L642).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:667](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L667).
 
 ```csharp
 public sealed record MigrationPlan(DateTimeOffset GeneratedAt, TimeSpan Horizon, IReadOnlyList<PlannedMigrationAction> Actions, long EstimatedBytesToMigrate, TimeSpan EstimatedDuration);
@@ -368,7 +368,7 @@ public sealed record MigrationPlan(DateTimeOffset GeneratedAt, TimeSpan Horizon,
 
 Qualified name: <code>Meridian.Storage.Services.MigrationProgress</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:625](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L625).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:650](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L650).
 
 ```csharp
 public sealed record MigrationProgress(string CurrentFile, int FilesProcessed, int TotalFiles, long BytesProcessed);
@@ -388,7 +388,7 @@ public sealed record MigrationRecord(DateTime TimestampUtc, string SourceTier, s
 
 Qualified name: <code>Meridian.Storage.Services.MigrationResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:632](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L632).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:657](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L657).
 
 ```csharp
 public sealed record MigrationResult(bool Success, int FilesProcessed, int FilesFailed, long BytesProcessed, long BytesSaved, TimeSpan Duration, IReadOnlyList<string> Errors);
@@ -464,7 +464,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.PlannedMigrationAction</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:654](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L654).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:679](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L679).
 
 ```csharp
 public sealed record PlannedMigrationAction(string SourcePath, StorageTier TargetTier, string Reason, long SizeBytes, TimeSpan FileAge, long EstimatedSavings, DateTimeOffset? DueAt = null);
