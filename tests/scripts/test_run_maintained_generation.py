@@ -20,7 +20,7 @@ SPEC.loader.exec_module(generation)
 
 STRUCTURE = "docs/generated/repository-structure.md"
 OVERVIEW = "docs/generated/workflows-overview.md"
-BASELINE = "docs/source/generated/source-hash-manifest.json"
+BASELINE = "docs/source/generated/source-hashes/SRC-APP.json"
 HELP = "docs/HELP.md"
 COVERAGE = "docs/status/coverage-report.md"
 COVERAGE_MARKER = "<!-- auto-sync:coverage -->"

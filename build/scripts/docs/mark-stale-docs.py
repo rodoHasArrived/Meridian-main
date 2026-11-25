@@ -13,7 +13,7 @@ from common import markdown_table, repo_path, repo_root, write_text_if_changed
 
 STALE_JSON = Path("docs/source/generated/stale-docs.json")
 STALE_MARKDOWN = Path("docs/source/generated/stale-docs.md")
-HASH_MANIFEST = Path("docs/source/generated/source-hash-manifest.json")
+HASH_MANIFEST = Path("docs/source/generated/source-hashes")
 
 
 def load_hash_module():
@@ -28,10 +28,8 @@ def load_hash_module():
 
 
 def load_existing_manifest(root: Path) -> dict:
-    path = root / HASH_MANIFEST
-    if not path.exists():
-        return {"modules": []}
-    return json.loads(path.read_text(encoding="utf-8"))
+    manifest = load_hash_module().load_reviewed_manifest(root)
+    return manifest if manifest is not None else {"modules": []}
 
 
 def stale_reasons(actual: dict, expected: dict | None) -> list[str]:
