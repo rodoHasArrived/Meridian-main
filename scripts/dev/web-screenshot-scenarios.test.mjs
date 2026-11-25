@@ -310,12 +310,19 @@ test("a scenario capture of a route outside the scenario reads the screenshot fi
   const fixtures = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-fixtures.json"), "utf8"));
   const workbenchPath = "/api/ledger/journal-entry-workbench";
   assert.ok(Object.hasOwn(fixtures.routes, workbenchPath), "Journal Entries capture depends on the screenshot workbench fixture");
+  // accounting.normal does not define the workbench, so it falls through to the screenshot fixture.
+  const normal = createScreenshotApiResolver(source.module, fixtures.routes, { scenarioId: "accounting.normal" })
+    .resolve(`http://localhost${workbenchPath}?fundProfileId=fund-alpha`);
+  assert.equal(normal.status, 200);
+  assert.deepEqual(normal.body, fixtures.routes[workbenchPath]);
+  // accounting.non-usd defines its own EUR workbench, and a scenario's explicit route wins.
+  const nonUsd = createScreenshotApiResolver(source.module, fixtures.routes, { scenarioId: "accounting.non-usd" })
+    .resolve(`http://localhost${workbenchPath}?fundProfileId=fund-alpha`);
+  assert.equal(nonUsd.status, 200);
+  assert.equal(nonUsd.body.drafts[0].currency, "EUR");
+  // The workbench readiness texts still hold for the scenario's own draft.
+  assert.equal(nonUsd.body.drafts[0].memo, fixtures.routes[workbenchPath].drafts[0].memo);
   for (const scenarioId of ["accounting.normal", "accounting.non-usd"]) {
-    const resolver = createScreenshotApiResolver(source.module, fixtures.routes, { scenarioId });
-    const response = resolver.resolve(`http://localhost${workbenchPath}?fundProfileId=fund-alpha`);
-    assert.equal(response.status, 200, scenarioId);
-    assert.deepEqual(response.body, fixtures.routes[workbenchPath], scenarioId);
-    // The scenario's explicit routes still win over a same-path fixture.
     const accounting = createScreenshotApiResolver(source.module, { "/api/workstation/accounting": { obsoleteDuplicate: true } }, { scenarioId })
       .resolve("http://localhost/api/workstation/accounting");
     assert.notDeepEqual(accounting.body, { obsoleteDuplicate: true }, scenarioId);
