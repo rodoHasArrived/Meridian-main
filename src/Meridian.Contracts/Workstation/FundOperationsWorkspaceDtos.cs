@@ -1531,7 +1531,7 @@ public sealed record ReportWriterChartDefinitionDto(
 public sealed record ReportWriterChartSeriesDto(
     string Key,
     string Label,
-    IReadOnlyList<decimal> Values);
+    IReadOnlyList<decimal?> Values);
 
 public sealed record ReportWriterChartRenderDto(
     ReportWriterChartTypeDto Type,

@@ -91,4 +91,7 @@ public sealed record LedgerReportPackRequest
     public IReadOnlyList<string> ApprovalEvidenceLinks { get; }
 
     public LedgerLineDimensionSet? LineDimensions { get; }
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public LedgerStatementControlDefinition? StatementControl { get; init; }
 }

@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
@@ -63,9 +64,26 @@ public sealed partial class FileReconciliationBreakQueueRepository :
 
     private static JsonSerializerOptions CreateJsonOptions()
     {
+        var resolver = new DefaultJsonTypeInfoResolver();
+        resolver.Modifiers.Add(static typeInfo =>
+        {
+            // These additions are API projections, not schema-6 persistence fields. Serializing
+            // them on load would change the canonical bytes of an existing integrity envelope.
+            string[] excluded = typeInfo.Type == typeof(ReconciliationBreakQueueItem)
+                ? [nameof(ReconciliationBreakQueueItem.VarianceExact), nameof(ReconciliationBreakQueueItem.ToleranceBandExact), nameof(ReconciliationBreakQueueItem.PermittedCommands)]
+                : typeInfo.Type == typeof(ReconciliationBreakMeasureDto)
+                    ? [nameof(ReconciliationBreakMeasureDto.ExpectedExact), nameof(ReconciliationBreakMeasureDto.ActualExact), nameof(ReconciliationBreakMeasureDto.VarianceExact), nameof(ReconciliationBreakMeasureDto.ToleranceExact)]
+                    : [];
+            for (var index = typeInfo.Properties.Count - 1; index >= 0; index--)
+            {
+                if (excluded.Any(name => string.Equals(name, typeInfo.Properties[index].Name, StringComparison.OrdinalIgnoreCase)))
+                    typeInfo.Properties.RemoveAt(index);
+            }
+        });
         var options = new JsonSerializerOptions
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            TypeInfoResolver = resolver
         };
         options.Converters.Add(new JsonStringEnumConverter());
         return options;
@@ -725,6 +743,17 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                     Error: "Break was not found.");
             }
 
+            if (request.ExpectedVersion.HasValue && request.ExpectedVersion.Value != item.Version)
+            {
+                return BindTransitionOutcome(
+                    new ReconciliationBreakQueueTransitionResult(
+                        ReconciliationBreakQueueTransitionStatus.Conflict,
+                        item,
+                        "Case version conflict. Review the latest case before confirming.",
+                        ReconciliationBreakQueueTransitionErrorCode.ConcurrencyConflict),
+                    command, inputHash, startedAt);
+            }
+
             if (item.Status != ReconciliationBreakQueueStatus.Open)
             {
                 return new ReconciliationBreakQueueTransitionResult(
@@ -929,6 +958,20 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                     Error: "Break was not found.");
             }
 
+            if (request.ExpectedVersion.HasValue
+                && request.ExpectedVersion != item.Version)
+            {
+                return BindTransitionOutcome(
+                    new ReconciliationBreakQueueTransitionResult(
+                        ReconciliationBreakQueueTransitionStatus.Conflict,
+                        item,
+                        request.ExpectedVersion.HasValue
+                            ? "Case version conflict. Review the latest case before confirming."
+                            : "The version reviewed by the operator is required.",
+                        ReconciliationBreakQueueTransitionErrorCode.ConcurrencyConflict),
+                    command, inputHash, startedAt);
+            }
+
             if (item.Status != ReconciliationBreakQueueStatus.InReview)
             {
                 return new ReconciliationBreakQueueTransitionResult(
@@ -936,6 +979,7 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                     Item: item,
                     Error: $"Cannot move break from {item.Status} to {request.Status}.");
             }
+
 
             if (!OperationsOriginGuard.IsHumanOperator(request.ActionOrigin))
             {
@@ -971,6 +1015,14 @@ public sealed partial class FileReconciliationBreakQueueRepository :
             }
 
             var now = DateTimeOffset.UtcNow;
+            if (request.ExpectedVersion.HasValue)
+            {
+                var decisionValidation = ValidateCaseworkCommand(item, command);
+                if (decisionValidation is not null)
+                {
+                    return BindTransitionOutcome(decisionValidation, command, inputHash, startedAt);
+                }
+            }
             var approval = _workflowService.Apply(item, new ReconciliationCaseTransitionCommand(request.BreakId, ReconciliationCaseTransitionAction.RequestApproval, request.ResolvedBy, request.OperatorRationale, ["resolution-note"]), now);
             if (approval.Status != ReconciliationBreakQueueTransitionStatus.Success || approval.Item is null)
             {
@@ -985,8 +1037,8 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                 ResolvedBy = request.ResolvedBy,
                 ResolvedAt = now,
                 ResolutionNote = request.ResolutionNote,
-                RootCauseCode = approval.Item.RootCauseCode ?? (request.Status == ReconciliationBreakQueueStatus.Dismissed ? "DismissedFalsePositive" : null),
-                ResolutionCode = approval.Item.ResolutionCode ?? (request.Status == ReconciliationBreakQueueStatus.Dismissed ? "DismissedFalsePositive" : "LegacyResolved"),
+                RootCauseCode = request.Status == ReconciliationBreakQueueStatus.Dismissed ? "DismissedFalsePositive" : request.RootCauseCode ?? approval.Item.RootCauseCode,
+                ResolutionCode = request.Status == ReconciliationBreakQueueStatus.Dismissed ? "DismissedFalsePositive" : request.ResolutionCode ?? approval.Item.ResolutionCode ?? "LegacyResolved",
                 SignoffStatus = request.Status == ReconciliationBreakQueueStatus.Dismissed ? "dismissed-false-positive" : "ready-for-signoff",
                 Disposition = ReconciliationBreakDispositionDto.Resolved,
                 DispositionReason = request.OperatorRationale,
@@ -1399,6 +1451,18 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                     ct).ConfigureAwait(false);
             }
 
+            ReviewedBulkVersions? reviewedVersions = null;
+            if (!request.DryRun && (request.RequireReviewedPreview || request.PreviewBulkActionId is not null))
+            {
+                reviewedVersions = ReadReviewedBulkVersions(request, scope, inputHash);
+                if (reviewedVersions is null)
+                    return CreateRejectedBulkResult(request, inputHash, startedAt,
+                        "Run a fresh bulk preview for this exact action and execute its eligible cases together.",
+                        ReconciliationBreakQueueTransitionErrorCode.InvalidRequest);
+            }
+
+            var successorChanged = reviewedVersions?.SuccessorVersion is { } successorVersion
+                && (!_items!.TryGetValue(request.SupersedingBreakId!.Trim(), out var successor) || successor.Version != successorVersion);
             var originalItems = new Dictionary<string, ReconciliationBreakQueueItem>(_items!, StringComparer.OrdinalIgnoreCase);
             var auditCount = _auditEvents.Count;
             var beforeBulkPayload = JsonSerializer.Serialize(request, _jsonOptions);
@@ -1451,7 +1515,9 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                     CommandId: $"{bulkActionId}:{breakId}",
                     CorrelationId: request.CorrelationId,
                     Source: request.Source,
-                    ExpectedVersion: item.Version,
+                    ExpectedVersion: reviewedVersions is not null ? reviewedVersions.Cases[breakId]
+                        : request.ExpectedVersions is not null && request.ExpectedVersions.TryGetValue(breakId, out var reviewedVersion)
+                            ? reviewedVersion : request.ExpectedVersions is null ? item.Version : -1,
                     Reason: request.Reason,
                     Assignee: request.Assignee,
                     Priority: request.Priority,
@@ -1464,7 +1530,10 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                     ApprovalActor: request.ApprovalActor,
                     ApprovalReference: request.ApprovalReference,
                     SupersedingBreakId: request.SupersedingBreakId);
-                var validation = ValidateCloseScopeMutation(item, command)
+                var validation = successorChanged
+                    ? new ReconciliationBreakQueueTransitionResult(ReconciliationBreakQueueTransitionStatus.Conflict, item,
+                        "The superseding case version changed since preview.", ReconciliationBreakQueueTransitionErrorCode.ConcurrencyConflict)
+                    : ValidateCloseScopeMutation(item, command)
                     ?? ValidateSupersessionSuccessor(
                         item,
                         command,
@@ -1549,6 +1618,20 @@ public sealed partial class FileReconciliationBreakQueueRepository :
 
             var successCount = results.Count(result => request.DryRun ? result.WouldSucceed : result.Succeeded);
             var failureCount = results.Count - successCount;
+            ReconciliationBulkReviewedCaseVersion? reviewedSuccessor = null;
+            if (request.DryRun && request.Action == ReconciliationCaseworkAction.Supersede
+                && results.Any(static result => result.WouldSucceed && result.Error is null)
+                && _items!.TryGetValue(request.SupersedingBreakId!.Trim(), out var target))
+            {
+                reviewedSuccessor = new ReconciliationBulkReviewedCaseVersion(target.BreakId, target.Version);
+                await AppendAuditAsync(CreateAudit(prepared.First(static entry => entry.Validation is null).Command!, target, target,
+                    DateTimeOffset.UtcNow) with
+                {
+                    BreakId = target.BreakId,
+                    CommandId = bulkActionId,
+                    EventType = "BulkActionSuccessorReviewed"
+                }, ct).ConfigureAwait(false);
+            }
             var outcome = CreateBulkOutcome(
                 request,
                 inputHash,
@@ -1566,7 +1649,9 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                 results.ToArray())
             {
                 InputHashSha256 = inputHash,
-                Outcome = outcome
+                Outcome = outcome,
+                ReviewProtocol = request.DryRun ? 1 : null,
+                ReviewedSuccessor = reviewedSuccessor
             };
             _bulkResults[bulkActionId] = result;
             _bulkResultIdsByIdempotencyKey[request.IdempotencyKey] = bulkActionId;
@@ -1576,7 +1661,10 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                 request.IdempotencyKey,
                 inputHash,
                 result,
-                AccessScope: scope);
+                AccessScope: scope)
+            {
+                PreviewBulkActionId = reviewedVersions is null ? null : request.PreviewBulkActionId
+            };
             try
             {
                 await PersistSnapshotAsync(ct).ConfigureAwait(false);

@@ -228,12 +228,17 @@ public sealed class AutomatedTradeFillAccountingService(
         var rules = sources.ToDictionary(source => source,
             source => policySnapshot.RulePack!.Rules.Single(rule => rule.SourceEventType == source), StringComparer.Ordinal);
 
+        var chartAccounts = new Dictionary<LedgerAccount, LedgerAccountChartReference>();
         async Task<LedgerAccount> Resolve(string path, LedgerAccountType type, bool instrument)
         {
             var node = await accounts.ResolveAsync(new ConfiguredLedgerAccountRequestDto(grant.TenantId, grant.CompanyId,
                 book.FundProfileId, book.LedgerBookId, path, type.ToString(), grant.MappingRevision,
                 instrument ? fill.Symbol : null, fill.FinancialAccountId), ct).ConfigureAwait(false);
-            return new LedgerAccount(node.AccountName, type, instrument ? fill.Symbol : null, fill.FinancialAccountId);
+            var account = new LedgerAccount(node.AccountName, type, instrument ? fill.Symbol : null, fill.FinancialAccountId);
+            var reference = new LedgerAccountChartReference(node.NodeId, grant.MappingRevision, node.AccountCode);
+            if (!chartAccounts.TryAdd(account, reference) && chartAccounts[account] != reference)
+                throw new InvalidOperationException($"Different chart nodes resolve to one fill posting account '{account}'.");
+            return account;
         }
         var cash = await Resolve(options.CashAccountPath, LedgerAccountType.Asset, false).ConfigureAwait(false);
         if (cash != LedgerAccounts.CashFor(fill.FinancialAccountId))
@@ -318,7 +323,8 @@ public sealed class AutomatedTradeFillAccountingService(
             if (pnl < 0m)
                 tradeLines.Add((loss, -pnl, 0m));
         }
-        var trade = BuildWrite(fill, context, book, position, security, "trade", "execution.trade-fill", tradeLines, evidence, rules["execution.trade-fill"]);
+        var trade = BuildWrite(fill, context, book, position, security, "trade", "execution.trade-fill", tradeLines,
+            chartAccounts, evidence, rules["execution.trade-fill"]);
         trade = trade with { Entry = LedgerCashFlowAttribution.WithClassifiedActivity(trade.Entry, LedgerCashFlowCategory.Investing, "Security trade") };
         var atomic = AtomicTaxLotJournalCommand.Create(batchId, book.LedgerBookId, trade, trade.SourceEventId!.Value,
             trade.Entry.Metadata.IdempotencyKey!, context.ExpectedPeriodVersion!.Value,
@@ -330,16 +336,20 @@ public sealed class AutomatedTradeFillAccountingService(
         var fees = new List<LedgerJournalEntryWrite>();
         if (fill.Commission > 0m)
             fees.Add(BuildWrite(fill, context, book, position, security, "commission", "execution.trade-commission",
-                [(await Resolve(options.CommissionAccountPath, LedgerAccountType.Expense, false).ConfigureAwait(false), fill.Commission, 0m), (cash, 0m, fill.Commission)], evidence, rules["execution.trade-commission"]));
+                [(await Resolve(options.CommissionAccountPath, LedgerAccountType.Expense, false).ConfigureAwait(false), fill.Commission, 0m), (cash, 0m, fill.Commission)],
+                chartAccounts, evidence, rules["execution.trade-commission"]));
         foreach (var fee in fill.Fees ?? [])
             fees.Add(BuildWrite(fill, context, book, position, security, $"fee:{fee.FeeId}", "execution.trade-fee",
-                [(await Resolve(options.FeeAccountPath, LedgerAccountType.Expense, false).ConfigureAwait(false), fee.Amount, 0m), (cash, 0m, fee.Amount)], evidence, rules["execution.trade-fee"]));
+                [(await Resolve(options.FeeAccountPath, LedgerAccountType.Expense, false).ConfigureAwait(false), fee.Amount, 0m), (cash, 0m, fee.Amount)],
+                chartAccounts, evidence, rules["execution.trade-fee"]));
         return new PreparedFillAccountingIntent(2, requestHash, context, securityId, atomic, fees, "");
     }
 
     private LedgerJournalEntryWrite BuildWrite(TradeExecutedEvent fill, TradeFillLedgerPostingContext context,
         LedgerBookRecord book, BookPositionDto position, SecurityDetailDto security, string activity, string source,
-        IReadOnlyList<(LedgerAccount Account, decimal Debit, decimal Credit)> amounts, RetainedEvidenceIdentityDto evidence, AccountingPolicyRuleDto rule)
+        IReadOnlyList<(LedgerAccount Account, decimal Debit, decimal Credit)> amounts,
+        IReadOnlyDictionary<LedgerAccount, LedgerAccountChartReference> chartAccounts,
+        RetainedEvidenceIdentityDto evidence, AccountingPolicyRuleDto rule)
     {
         var securityId = security.SecurityId;
         var id = Identity(context, fill.FillId, activity + ":journal");
@@ -352,7 +362,10 @@ public sealed class AutomatedTradeFillAccountingService(
         { PositionId = position.PositionId };
         var lines = amounts.Select((line, index) => new LedgerEntry(Identity(context, fill.FillId, $"{activity}:line:{index}"), id,
             fill.OccurredAt, line.Account, line.Debit, line.Credit, source, dimensions,
-            new LedgerEntryCurrency("USD", "USD", line.Debit, line.Credit, 1m))).ToArray();
+            new LedgerEntryCurrency("USD", "USD", line.Debit, line.Credit, 1m))
+        {
+            ChartAccount = chartAccounts[line.Account]
+        }).ToArray();
         var tags = new Dictionary<string, string>
         {
             ["ledgerPosting.scope"] = context.PostingScope,

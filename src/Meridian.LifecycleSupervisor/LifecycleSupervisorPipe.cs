@@ -212,6 +212,17 @@ internal sealed class LifecycleSupervisorPipeServer : IAsyncDisposable
 
         try
         {
+            if (!string.IsNullOrWhiteSpace(first.SessionId) && first.SessionId == first.Lifecycle?.SessionId)
+            {
+                await connection.WriteAsync(new LifecycleSupervisorMessageDto
+                {
+                    Command = "host-registered",
+                    RequestId = first.RequestId,
+                    SessionId = first.SessionId,
+                    Success = true
+                }, ct).ConfigureAwait(false);
+            }
+
             while (!ct.IsCancellationRequested && pipe.IsConnected)
             {
                 var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);

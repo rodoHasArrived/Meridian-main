@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceShellBadge
+
+Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellBadge</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:82](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L82).
+
+Carries the label, value, glyph, and tone of a shell context badge.
+
+```csharp
+public sealed class WorkspaceShellBadge
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Label { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:84](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L84) |  |
+| <code>public string Value { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:86](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L86) |  |
+| <code>public string Glyph { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:88](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L88) |  |
+| <code>public string Tone { get; init; } = WorkspaceTone.Neutral;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:90](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L90) |  |
+
 ## WorkspaceShellContext
 
 Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellContext</code>. Kind: `class`.
@@ -1120,27 +1141,3 @@ Declared public members:
 | <code>public string? GetOAuthToken(string providerId);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:921](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L921) |  |
 | <code>public async Task&lt;bool&gt; RefreshOAuthTokenAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:927](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L927) |  |
 | <code>public async Task&lt;bool&gt; EnsureTokenValidAsync(string providerId, int refreshThresholdMinutes = 5, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:988](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L988) |  |
-
-## DataHeroMetric
-
-Qualified name: <code>Meridian.Wpf.Services.DataHeroMetric</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1106](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1106).
-
-Carries an overview metric label, value, detail, tone, and accessible description.
-
-```csharp
-public sealed class DataHeroMetric
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Label { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1108](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1108) |  |
-| <code>public string Value { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1109](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1109) |  |
-| <code>public string Detail { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1110](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1110) |  |
-| <code>public string Tone { get; init; } = WorkspaceTone.Neutral;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1111](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1111) |  |
-| <code>public string AutomationName =&gt; …;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1112](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1112) |  |
-| <code>public static IReadOnlyList&lt;DataHeroMetric&gt; LoadingMetrics() =&gt; …;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1114](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1114) |  |
-| <code>public static IReadOnlyList&lt;DataHeroMetric&gt; ErrorMetrics() =&gt; …;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1139](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1139) |  |

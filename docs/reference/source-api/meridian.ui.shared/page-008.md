@@ -6,6 +6,184 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementToReportWorkflowExecution
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementToReportWorkflowExecution</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:20](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L20).
+
+Compatibility execution result for callers compiled against the pre-rename operation.
+
+```csharp
+public sealed record StatementToReportWorkflowExecution(StatementImportCommitResultDto? ImportResult, StatementToReportWorkflowDto Workflow);
+```
+
+## StatementToReportWorkflowService
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementToReportWorkflowService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:35](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L35).
+
+Source- and binary-compatible adapter over the single statement reconciliation report workflow. It retains the old public API and wire links without owning storage, orchestration, or rendering.
+
+```csharp
+public sealed class StatementToReportWorkflowService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StatementToReportWorkflowService(IStatementImportCommitService imports, IStatementImportEvidenceRetainer evidence, IStatementRunWorkflowService statementRuns, string dataRoot, ILogger&lt;StatementToReportWorkflowService&gt;? logger = null) : this(new StatementReconciliationReportWorkflowService(imports, evidence, statementRuns, dataRoot));</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:39](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L39) |  |
+| <code>public async Task&lt;StatementToReportWorkflowExecution&gt; StartAsync(StatementToReportStartCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:59](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L59) |  |
+| <code>public async Task&lt;StatementToReportWorkflowDto?&gt; GetAsync(string workflowId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:75](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L75) |  |
+| <code>public async Task&lt;StatementToReportWorkflowExecution?&gt; ResumeAsync(string workflowId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:85](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L85) |  |
+| <code>public async Task&lt;StatementToReportArtifactDownload?&gt; DownloadArtifactAsync(string workflowId, string artifactId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:99](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L99) |  |
+
+## StrategyRunEvidenceContributor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.StrategyRunEvidenceContributor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:21](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L21).
+
+Adds strategy-run provenance and supporting execution evidence to an evidence graph.
+
+```csharp
+public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StrategyRunEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:27](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L27) |  |
+| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:32](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L32) |  |
+| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:34](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L34) |  |
+| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L37) |  |
+
+## TradingReadinessEvidenceContributor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.TradingReadinessEvidenceContributor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:23](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L23).
+
+Adds trading readiness gates and their supporting evidence to an evidence graph.
+
+```csharp
+public sealed class TradingReadinessEvidenceContributor : IEvidenceContributor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TradingReadinessEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:27](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L27) |  |
+| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:32](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L32) |  |
+| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:34](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L34) |  |
+| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L37) |  |
+
+## ExtensibilityCatalogService
+
+Qualified name: <code>Meridian.Ui.Shared.Extensibility.ExtensibilityCatalogService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Extensibility/ExtensibilityCatalogService.cs:8](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityCatalogService.cs#L8).
+
+Combines extension providers into the workstation extensibility catalog.
+
+```csharp
+public sealed class ExtensibilityCatalogService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ExtensibilityCatalogService(IEnumerable&lt;IExtensibilityCatalogProvider&gt; providers);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityCatalogService.cs:12](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityCatalogService.cs#L12) |  |
+| <code>public ExtensibilityCatalogDto GetCatalog(DateTimeOffset generatedAt);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityCatalogService.cs:17](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityCatalogService.cs#L17) |  |
+
+## ExtensibilityConfigurationService
+
+Qualified name: <code>Meridian.Ui.Shared.Extensibility.ExtensibilityConfigurationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:342](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L342).
+
+Applies extension configuration changes against the available extension catalog.
+
+```csharp
+public sealed class ExtensibilityConfigurationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ExtensibilityConfigurationService(IExtensibilityConfigurationStore store);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:348](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L348) |  |
+| <code>public Task&lt;IReadOnlyList&lt;TenantTemplateConfigurationBundleDto&gt;&gt; ListTenantTemplatesAsync(string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:353](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L353) |  |
+| <code>public Task&lt;TenantTemplateConfigurationBundleDto?&gt; GetTenantTemplateAsync(string tenantId, string tenantTemplateId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:356](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L356) |  |
+| <code>public async Task&lt;TenantTemplateConfigurationBundleDto&gt; UpsertTenantTemplateAsync(string tenantId, TenantTemplateConfigurationBundleDto tenantTemplate, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:359](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L359) |  |
+| <code>public async Task&lt;ExtensibilityActivationReadinessDto&gt; EvaluateTenantTemplateActivationAsync(string tenantId, string tenantTemplateId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:371](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L371) |  |
+| <code>public async Task&lt;TenantTemplateActivationResultDto&gt; ActivateTenantTemplateAsync(string tenantId, string tenantTemplateId, string actor, TenantTemplateActivationRequestDto? request, DateTimeOffset evaluatedAt, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:381](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L381) |  |
+| <code>public Task&lt;IReadOnlyList&lt;TenantTemplateActivationResultDto&gt;&gt; ListActivationHistoryAsync(string tenantId, string? tenantTemplateId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:442](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L442) |  |
+
+## ExtensibilityServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Extensibility.ExtensibilityServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Extensibility/ExtensibilityServiceCollectionExtensions.cs:9](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityServiceCollectionExtensions.cs#L9).
+
+Registers extension catalogs and their configuration services.
+
+```csharp
+public static class ExtensibilityServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddExtensibilityCatalog(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityServiceCollectionExtensions.cs:11](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityServiceCollectionExtensions.cs#L11) |  |
+
+## FileExtensibilityConfigurationStore
+
+Qualified name: <code>Meridian.Ui.Shared.Extensibility.FileExtensibilityConfigurationStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:139](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L139).
+
+Persists extension configuration snapshots in file-backed storage.
+
+```csharp
+public sealed class FileExtensibilityConfigurationStore : IExtensibilityConfigurationStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileExtensibilityConfigurationStore(string workstationDataRoot, ILogger&lt;FileExtensibilityConfigurationStore&gt; logger);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:147](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L147) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;TenantTemplateConfigurationBundleDto&gt;&gt; ListTenantTemplatesAsync(string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:159](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L159) |  |
+| <code>public async Task&lt;TenantTemplateConfigurationBundleDto?&gt; GetTenantTemplateAsync(string tenantId, string tenantTemplateId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:168](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L168) |  |
+| <code>public async Task SaveTenantTemplateAsync(string tenantId, TenantTemplateConfigurationBundleDto tenantTemplate, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:176](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L176) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;TenantTemplateActivationResultDto&gt;&gt; ListActivationHistoryAsync(string tenantId, string? tenantTemplateId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:199](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L199) |  |
+| <code>public async Task RecordActivationResultAsync(string tenantId, TenantTemplateActivationResultDto result, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:210](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L210) |  |
+
+## IExtensibilityCatalogProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Extensibility.IExtensibilityCatalogProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Extensibility/IExtensibilityCatalogProvider.cs:8](../../../../src/Meridian.Ui.Shared/Extensibility/IExtensibilityCatalogProvider.cs#L8).
+
+Supplies extension registrations to the workstation catalog.
+
+```csharp
+public interface IExtensibilityCatalogProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;ExtensibilityRegistrationDto&gt; GetRegistrations();</code> | [src/Meridian.Ui.Shared/Extensibility/IExtensibilityCatalogProvider.cs:10](../../../../src/Meridian.Ui.Shared/Extensibility/IExtensibilityCatalogProvider.cs#L10) |  |
+
 ## IExtensibilityConfigurationStore
 
 Qualified name: <code>Meridian.Ui.Shared.Extensibility.IExtensibilityConfigurationStore</code>. Kind: `interface`.
@@ -281,7 +459,7 @@ public partial class IntercompanyOperationsJsonContext : JsonSerializerContext;
 
 Qualified name: <code>Meridian.Ui.Shared.Serialization.RunLedgerExportRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:13](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L13).
+Source: [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:15](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L15).
 
 ```csharp
 public sealed record RunLedgerExportRequest(string Format = "csv", IReadOnlyDictionary<string, string>? AccountMapping = null);
@@ -383,7 +561,7 @@ public sealed record AccountingCertificationEvidenceSource(string AuthorityRefer
 
 Qualified name: <code>Meridian.Ui.Shared.Services.AccountingClosePostingWorkbenchBridge</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:21](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L21).
+Source: [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:23](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L23).
 
 Projects the Financial Operations close gate onto the shared manual-journal workbench. It may create drafts or governed reversal drafts, but approval and posting stay human actions.
 
@@ -395,13 +573,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public AccountingClosePostingWorkbenchBridge(AutomatedJournalIntakeRunner runner, IManualJournalEntryWorkbenchService workbench, IManualJournalEntryLifecycleService lifecycle, ILedgerBookService? ledgerBookService, ReportingReconciliationEvidenceRetentionService? reportingEvidenceRetention = null, IFundProfileTenancyRegistry? tenancyRegistry = null, IReconciliationBreakQueueRepository? breakQueue = null, IReportingReleaseConsistencyGate? releaseConsistencyGate = null) : this(runner, workbench, lifecycle, ledgerBookService, reportingEvidenceRetention, tenancyRegistry, breakQueue, operationsWorkflowService : null, releaseConsistencyGate : releaseConsistencyGate);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:39](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L39) |  |
-| <code>public AccountingClosePostingWorkbenchBridge(AutomatedJournalIntakeRunner runner, IManualJournalEntryWorkbenchService workbench, IManualJournalEntryLifecycleService lifecycle, ILedgerBookService? ledgerBookService, ReportingReconciliationEvidenceRetentionService? reportingEvidenceRetention, IFundProfileTenancyRegistry? tenancyRegistry, IReconciliationBreakQueueRepository? breakQueue, IOperationsContinuityWorkflowService? operationsWorkflowService, IReportingReleaseConsistencyGate? releaseConsistencyGate = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:61](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L61) |  |
-| <code>public async ValueTask&lt;IAsyncDisposable&gt; AcquireAsync(AccountingClosePostingContext context, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:91](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L91) |  |
-| <code>public async Task&lt;ClosePostingGateDto&gt; EvaluateAsync(AccountingClosePostingContext context, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:105](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L105) |  |
-| <code>public async Task&lt;ClosePostingGateDto&gt; EnsureClosingDraftQueuedAsync(AccountingClosePostingContext context, AccountingClosePostingCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:139](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L139) |  |
-| <code>public async Task&lt;LedgerPeriodDto&gt; FinalizeHardCloseAsync(AccountingClosePostingContext context, AccountingClosePostingCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:173](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L173) |  |
-| <code>public async Task&lt;ClosePostingGateDto&gt; ReopenAndQueueClosingReversalsAsync(AccountingClosePostingContext context, AccountingClosePostingCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:1084](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L1084) |  |
+| <code>public AccountingClosePostingWorkbenchBridge(AutomatedJournalIntakeRunner runner, IManualJournalEntryWorkbenchService workbench, IManualJournalEntryLifecycleService lifecycle, ILedgerBookService? ledgerBookService, ReportingReconciliationEvidenceRetentionService? reportingEvidenceRetention = null, IFundProfileTenancyRegistry? tenancyRegistry = null, IReconciliationBreakQueueRepository? breakQueue = null, IReportingReleaseConsistencyGate? releaseConsistencyGate = null) : this(runner, workbench, lifecycle, ledgerBookService, reportingEvidenceRetention, tenancyRegistry, breakQueue, operationsWorkflowService : null, releaseConsistencyGate : releaseConsistencyGate);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:42](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L42) |  |
+| <code>public AccountingClosePostingWorkbenchBridge(AutomatedJournalIntakeRunner runner, IManualJournalEntryWorkbenchService workbench, IManualJournalEntryLifecycleService lifecycle, ILedgerBookService? ledgerBookService, ReportingReconciliationEvidenceRetentionService? reportingEvidenceRetention, IFundProfileTenancyRegistry? tenancyRegistry, IReconciliationBreakQueueRepository? breakQueue, IOperationsContinuityWorkflowService? operationsWorkflowService, IReportingReleaseConsistencyGate? releaseConsistencyGate = null, IExternalGlConfirmationGate? externalGl = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:64](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L64) |  |
+| <code>public async ValueTask&lt;IAsyncDisposable&gt; AcquireAsync(AccountingClosePostingContext context, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:96](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L96) |  |
+| <code>public async Task&lt;ClosePostingGateDto&gt; EvaluateAsync(AccountingClosePostingContext context, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:110](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L110) |  |
+| <code>public async Task&lt;ClosePostingGateDto&gt; EnsureClosingDraftQueuedAsync(AccountingClosePostingContext context, AccountingClosePostingCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:144](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L144) |  |
+| <code>public async Task&lt;LedgerPeriodDto&gt; FinalizeHardCloseAsync(AccountingClosePostingContext context, AccountingClosePostingCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:178](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L178) |  |
+| <code>public async Task&lt;ClosePostingGateDto&gt; ReopenAndQueueClosingReversalsAsync(AccountingClosePostingContext context, AccountingClosePostingCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:1092](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L1092) |  |
 
 ## AccountingConfigurationService
 
@@ -429,15 +607,15 @@ Declared public members:
 | <code>public async Task&lt;AccountingAuditRecoveryResult&gt; RecoverPendingAuditAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:81](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L81) | Resolves an audit append that was declared but never confirmed, and reports what it found. |
 | <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; GetWorkspaceAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:258](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L258) |  |
 | <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; UpsertChartNodeAsync(UpsertChartOfAccountsNodeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:292](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L292) |  |
-| <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; UpsertTemplateAsync(UpsertJournalEntryTemplateRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:321](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L321) |  |
-| <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; UpsertPostingRuleAsync(UpsertPostingRuleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:348](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L348) |  |
-| <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; ApprovePostingRulePromotionAsync(ApprovePostingRulePromotionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:386](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L386) |  |
-| <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; UpsertRuleTestCaseAsync(UpsertAccountingRuleTestCaseRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:497](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L497) |  |
-| <code>public async Task&lt;AccountingJournalTemplatePreviewDto&gt; PreviewTemplateAsync(PreviewJournalTemplateRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:537](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L537) |  |
-| <code>public async Task&lt;RuleDryRunResultDto&gt; DryRunPostingRuleAsync(RuleDryRunRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:590](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L590) |  |
-| <code>public async Task&lt;AccountingRuleTestSuiteResultDto&gt; ExecuteRuleTestCasesAsync(ExecuteAccountingRuleTestCasesRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:768](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L768) |  |
-| <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; ActivateAsync(ActivateAccountingConfigurationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:826](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L826) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountingActionAuditEventDto&gt;&gt; ListAuditAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:853](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L853) |  |
+| <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; UpsertTemplateAsync(UpsertJournalEntryTemplateRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:342](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L342) |  |
+| <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; UpsertPostingRuleAsync(UpsertPostingRuleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:369](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L369) |  |
+| <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; ApprovePostingRulePromotionAsync(ApprovePostingRulePromotionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:407](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L407) |  |
+| <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; UpsertRuleTestCaseAsync(UpsertAccountingRuleTestCaseRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:518](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L518) |  |
+| <code>public async Task&lt;AccountingJournalTemplatePreviewDto&gt; PreviewTemplateAsync(PreviewJournalTemplateRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:558](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L558) |  |
+| <code>public async Task&lt;RuleDryRunResultDto&gt; DryRunPostingRuleAsync(RuleDryRunRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:611](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L611) |  |
+| <code>public async Task&lt;AccountingRuleTestSuiteResultDto&gt; ExecuteRuleTestCasesAsync(ExecuteAccountingRuleTestCasesRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:789](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L789) |  |
+| <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; ActivateAsync(ActivateAccountingConfigurationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:847](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L847) |  |
+| <code>public Task&lt;IReadOnlyList&lt;AccountingActionAuditEventDto&gt;&gt; ListAuditAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:874](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L874) |  |
 
 Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.IntercompanyValidation.cs:6](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.IntercompanyValidation.cs#L6).
 
@@ -697,8 +875,8 @@ Declared public members:
 | <code>public bool HasSource =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:21](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L21) |  |
 | <code>public AuditTrailExplorerService(ExecutionAuditTrailService? auditTrail = null, IOperationsContinuityWorkflowService? operationsContinuity = null, PaperSessionPersistenceService? paperSessions = null);</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:23](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L23) |  |
 | <code>public Task&lt;AuditTrailExplorerResultDto&gt; SearchAsync(AuditTrailExplorerQueryDto? query = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:33](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L33) |  |
-| <code>public Task&lt;AuditTrailExplorerResultDto&gt; SearchAuthorizedAsync(AuditTrailExplorerQueryDto? query, Func&lt;OperationsContinuityWorkflowSummaryDto, CancellationToken, Task&lt;bool&gt;&gt; canReadWorkflow, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:39](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L39) | HTTP reads authorize each operations source before loading its timeline. |
-| <code>public Task&lt;AuditTrailExplorerResultDto&gt; ExportAuthorizedAsync(AuditTrailExplorerQueryDto? query, Func&lt;OperationsContinuityWorkflowSummaryDto, CancellationToken, Task&lt;bool&gt;&gt; canReadWorkflow, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:44](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L44) | Every authorized retained match; the browser/1,000-row browse cap is never an export limit. |
+| <code>public Task&lt;AuditTrailExplorerResultDto&gt; SearchAuthorizedAsync(AuditTrailExplorerQueryDto? query, Func&lt;OperationsContinuityWorkflowSummaryDto, CancellationToken, Task&lt;bool&gt;&gt; canReadWorkflow, CancellationToken ct = default, Func&lt;Guid, Task&lt;bool&gt;&gt;? canReadPaperAccount = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:39](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L39) | HTTP reads authorize each operations source before loading its timeline. |
+| <code>public Task&lt;AuditTrailExplorerResultDto&gt; ExportAuthorizedAsync(AuditTrailExplorerQueryDto? query, Func&lt;OperationsContinuityWorkflowSummaryDto, CancellationToken, Task&lt;bool&gt;&gt; canReadWorkflow, CancellationToken ct = default, Func&lt;Guid, Task&lt;bool&gt;&gt;? canReadPaperAccount = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:45](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L45) | Every authorized retained match; the browser/1,000-row browse cap is never an export limit. |
 
 ## AuditTrailExportLimitException
 
@@ -801,175 +979,3 @@ Declared public members:
 | <code>public AutomatedJournalDraftIntakeService(IManualJournalEntryWorkbenchService workbench, IManualJournalEntryDraftStore draftStore, IAccountingConfigurationService configurationService);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:122](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L122) |  |
 | <code>public async Task&lt;AutomatedJournalDraftIntakeResult&gt; IntakeAsync(AutomatedJournalDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:132](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L132) |  |
 | <code>public Task&lt;AutomatedJournalDraftIntakeResult&gt; IntakeDraftsAsync(AutomatedJournalPreparedDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:180](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L180) | Admits prebuilt drafts (for example period-close closing entries) into the workbench queue with the same idempotent dedup, chart mapping, and human approve lifecycle as event-projected drafts. |
-
-## AutomatedJournalDraftIntakeSkip
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeSkip</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:82](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L82).
-
-```csharp
-public sealed record AutomatedJournalDraftIntakeSkip(Guid JournalEntryId, string IdempotencyKey, string Reason, AutomatedJournalDraftIntakeDisposition Disposition = AutomatedJournalDraftIntakeDisposition.ProjectionFailed, ManualJournalEntryStatusDto? ExistingStatus = null, AutomatedJournalEvidenceAssessmentDto? ExistingEvidenceAssessment = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsReadyDuplicate =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:90](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L90) |  |
-
-## AutomatedJournalEventProduction
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalEventProduction</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:17](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L17).
-
-Events produced for automated journal intake plus the skips that need attention.
-
-```csharp
-public sealed record AutomatedJournalEventProduction(IReadOnlyList<AutomatedJournalEvent> Events, IReadOnlyList<AutomatedJournalEventProductionSkip> Skipped, IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyDictionary&lt;string, AutomatedJournalEvidenceAssessmentDto&gt; EvidenceAssessments { get; init; } = EvidenceAssessments?? new Dictionary&lt;string, AutomatedJournalEvidenceAssessmentDto&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:22](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L22) |  |
-
-## AutomatedJournalEventProductionSkip
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalEventProductionSkip</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:12](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L12).
-
-One position an automated producer could not turn into an event, with the reason.
-
-```csharp
-public sealed record AutomatedJournalEventProductionSkip(string Subject, string Reason);
-```
-
-## AutomatedJournalEvidencePolicy
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalEvidencePolicy</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs:11](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs#L11).
-
-Server-owned bounds for evidence that can support an automated accounting draft. Request thresholds may strengthen these controls, but cannot weaken the confidence floor or variance cap selected by the host.
-
-```csharp
-public sealed record AutomatedJournalEvidencePolicy(decimal MinimumCapitalAccountConfidence, decimal MaximumCapitalAccountVarianceTolerance)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static AutomatedJournalEvidencePolicy Default { get; } = new (MinimumCapitalAccountConfidence : 0.90m, MaximumCapitalAccountVarianceTolerance : 0.01m);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs:15](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs#L15) |  |
-| <code>public decimal ResolveMinimumCapitalAccountConfidence(decimal requestedMinimum);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs:19](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs#L19) |  |
-| <code>public decimal ResolveMaximumCapitalAccountVarianceTolerance(decimal retainedTolerance);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs:37](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs#L37) |  |
-
-## AutomatedJournalIntakeReadiness
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalIntakeReadiness</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:102](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L102).
-
-Outcome of one automated intake run: producer-side skips plus the intake result (created drafts and intake-side skips). Empty productions return an empty intake rather than an error.
-
-```csharp
-public enum AutomatedJournalIntakeReadiness
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Ready = 0</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:104](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L104) |  |
-| <code>NeedsInvestigation = 1</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:105](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L105) |  |
-| <code>Blocked = 2</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:106](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L106) |  |
-
-## AutomatedJournalIntakeRunner
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalIntakeRunner</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:140](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L140).
-
-Wires the automated event producers to AutomatedJournalDraftIntakeService: corporate-action dividends and fee-schedule accruals become governed drafts in the close cockpit&#x27;s approval queue. The dividend lane requires the Security Master query service; when it is not configured the run fails loudly instead of producing nothing.
-
-```csharp
-public sealed partial class AutomatedJournalIntakeRunner
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AutomatedJournalIntakeRunner(AutomatedJournalDraftIntakeService intake, FeeScheduleAccrualEventProducer feeProducer, CorporateActionDividendEventProducer? dividendProducer = null, ILedgerBookService? ledgerBookService = null, DailyMarkToMarketService? dailyMarkToMarketService = null, DailyValuationPositionService? dailyValuationPositionService = null, AutomatedJournalEvidencePolicy? evidencePolicy = null, IAutomatedJournalCapitalAccountReconciliationResolver? capitalAccountReconciliationResolver = null, TimeProvider? timeProvider = null, IManualJournalEntryWorkbenchService? manualJournalWorkbench = null, IPrivateCapitalStore? privateCapitalStore = null, Meridian.Contracts.Banking.IBankTransactionSource? bankTransactionSource = null, Meridian.FinancialOperations.FundAdministration.IDistributionRegister? distributionRegister = null);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:158](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L158) |  |
-| <code>public bool CanRunDailyMarkToMarket =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:189](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L189) | Whether this process can execute the provider-backed daily valuation lane. |
-| <code>public async Task&lt;AutomatedJournalIntakeRunResult&gt; RunDividendIntakeAsync(RunDividendDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:192](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L192) |  |
-| <code>public async Task&lt;DailyMarkToMarketIntakeRunResult&gt; RunDailyMarkToMarketIntakeAsync(RunDailyMarkToMarketDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:239](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L239) | Resolves policy-qualified closing marks and admits the resulting fair-value draft into the existing human approval queue. Posting remains exclusively available via the workbench lifecycle and its governed durable posting target. |
-| <code>public async Task&lt;ValuationFreshnessPreviewDto&gt; PreviewDailyMarkToMarketAsync(RunDailyMarkToMarketDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:314](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L314) |  |
-| <code>public async Task&lt;AutomatedJournalIntakeRunResult&gt; RunPeriodCloseIntakeAsync(RunPeriodCloseDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:346](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L346) | Projects closing entries from a closed period&#x27;s trial balance and admits the resulting draft into the workbench queue. Mutating intake is allowed only while the period is soft-closed; hard-closed periods remain available through the read-only preview path but cannot acquire new drafts. A period with no temporary-account balances returns an empty intake — a correct outcome, not a gap. |
-| <code>public Task&lt;AutomatedJournalIntakeRunResult&gt; RunFeeAccrualIntakeAsync(RunFeeAccrualDraftIntakeRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:478](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L478) |  |
-| <code>public async Task&lt;AutomatedJournalIntakeRunResult&gt; RunCapitalCallIssuanceIntakeAsync(RunCapitalCallIssuanceDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:590](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L590) | Plans a fund-level capital call over approved commitment authority and admits the per-LP issuance drafts into the human approval queue. The called-to-date basis is recomputed server-side from exact commitment posting receipts before planning; runs whose evidence or capacity cannot be corroborated return Blocked with reasons instead of drafts. Posting remains exclusively available via the governed workbench lifecycle. |
-| <code>public async Task&lt;AutomatedJournalIntakeRunResult&gt; RunCapitalCallFundingIntakeAsync(RunCapitalCallFundingDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:689](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L689) | Records LP cash receipts against an issued capital call and admits the per-LP funding drafts (Dr Cash / Cr Capital Call Receivable) into the human approval queue. The fundable ceiling is recomputed server-side from the call&#x27;s posted ledger activity — issuance debits minus funding credits on each LP&#x27;s receivable — before drafting; runs that name an unissued call, exceed the open receivable, or carry no retained funding evidence return Blocked with reasons instead of drafts. Partial funding drafts the funded portion and leaves the receivable balance open. Posting remains exclusively available via the governed workbench lifecycle. |
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapital.cs:7](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapital.cs#L7).
-
-```csharp
-public sealed partial class AutomatedJournalIntakeRunner
-```
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs:6](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs#L6).
-
-```csharp
-public sealed partial class AutomatedJournalIntakeRunner
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;AutomatedJournalIntakeRunResult&gt; RunCapitalCallDefaultInterestIntakeAsync(RunCapitalCallDefaultInterestDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs:15](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs#L15) | Admits default-interest drafts for the unfunded part of a posted capital call into the approval queue. Nothing is posted; a blocked run admits nothing. |
-| <code>public async Task&lt;AutomatedJournalIntakeRunResult&gt; RunDistributionDeclarationIntakeAsync(RunDistributionDeclarationDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs:49](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs#L49) | Admits one distribution draft per investor into the approval queue and retains each declaration&#x27;s waterfall tiers so the investor&#x27;s next distribution continues from them. |
-
-## AutomatedJournalIntakeRunResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalIntakeRunResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:109](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L109).
-
-```csharp
-public sealed record AutomatedJournalIntakeRunResult(IReadOnlyList<AutomatedJournalEventProductionSkip> ProducerSkips, AutomatedJournalDraftIntakeResult Intake, IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null, AutomatedJournalIntakeReadiness Readiness = AutomatedJournalIntakeReadiness.Ready, IReadOnlyList<string>? ReadinessBlockers = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyDictionary&lt;string, AutomatedJournalEvidenceAssessmentDto&gt; EvidenceAssessments { get; init; } = EvidenceAssessments?? new Dictionary&lt;string, AutomatedJournalEvidenceAssessmentDto&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:116](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L116) |  |
-| <code>public IReadOnlyList&lt;string&gt; ReadinessBlockers { get; init; } = ReadinessBlockers??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:119](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L119) |  |
-
-## AutomatedJournalPositionSnapshotScope
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalPositionSnapshotScope</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:9](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L9).
-
-Named durable position source used by a recurring dividend schedule.
-
-```csharp
-public sealed record AutomatedJournalPositionSnapshotScope(string RunId, string AccountId);
-```
-
-## AutomatedJournalPreparedDraftIntakeRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalPreparedDraftIntakeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:53](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L53).
-
-Batch of prebuilt automated journal drafts (for example period-close closing entries, whose lines come from a projection rather than a single economic event) to admit into the manual journal workbench queue for the named fund profile.
-
-```csharp
-public sealed record AutomatedJournalPreparedDraftIntakeRequest(string FundProfileId, string Currency, IReadOnlyList<AutomatedJournalDraft> Drafts, string Actor, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null, string? BatchCorrelationId = null, Guid? RecurringJournalEntryId = null, AccountingBasisKindDto? AccountingBasis = null);
-```

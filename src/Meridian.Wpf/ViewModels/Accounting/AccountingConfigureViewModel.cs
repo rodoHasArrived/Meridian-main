@@ -234,6 +234,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
     private string _chartAccountName = "Operating Cash";
 
     private string _chartAccountType = "Asset";
+    private string _chartAccountCode = string.Empty;
 
     private string _chartAccountParentPath = "Assets:Cash";
 
@@ -476,7 +477,8 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         IFactorPaydownApiClient? factorPaydownClient = null,
         IWorkstationEntityConsolidationApiClient? entityConsolidationClient = null,
         IWorkstationManualJournalApiClient? manualJournalApiClient = null,
-        IWorkstationOnboardingApiClient? onboardingClient = null)
+        IWorkstationOnboardingApiClient? onboardingClient = null,
+        PrivateCapitalUnitRegisterViewModel? unitRegister = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _authenticationSession = authenticationSession;
@@ -486,6 +488,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         EntityConsolidation = new EntityConsolidationViewModel(entityConsolidationClient);
         AttachEntityConsolidationSessionReset();
         ShadowOnboarding = new OnboardingShadowWorkspace(onboardingClient);
+        UnitRegister = unitRegister;
         AttachShadowOnboardingSessionReset();
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _manualJournalEntryWorkbenchService = manualJournalApiClient ?? manualJournalEntryWorkbenchService ?? throw new ArgumentNullException(nameof(manualJournalEntryWorkbenchService));
@@ -781,6 +784,8 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
             if (SetProperty(ref _chartAccountNodeId, value))
             {
                 NotifyChartAccountSaveStateChanged();
+                OnPropertyChanged(nameof(ChartAccountCode));
+                OnPropertyChanged(nameof(IsChartAccountCodeReadOnly));
             }
         }
     }
@@ -820,6 +825,21 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
             }
         }
     }
+
+    public string ChartAccountCode
+    {
+        get => RetainedChartAccountCode ?? _chartAccountCode;
+        set
+        {
+            if (!IsChartAccountCodeReadOnly)
+                SetProperty(ref _chartAccountCode, value ?? string.Empty);
+        }
+    }
+
+    public bool IsChartAccountCodeReadOnly => RetainedChartAccountCode is not null;
+
+    private string? RetainedChartAccountCode => _configuration?.ChartOfAccounts
+        .FirstOrDefault(node => string.Equals(node.NodeId, ChartAccountNodeId.Trim(), StringComparison.OrdinalIgnoreCase))?.AccountCode;
 
     public string ChartAccountParentPath
     {

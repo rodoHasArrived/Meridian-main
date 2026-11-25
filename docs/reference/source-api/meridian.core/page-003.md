@@ -6,6 +6,67 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RobinhoodConfig
+
+Qualified name: <code>Meridian.Core.Config.RobinhoodConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:330](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L330).
+
+Robinhood historical data provider configuration. Uses the unofficial Robinhood API; requires a personal access token. No official public API exists — set ROBINHOOD_ACCESS_TOKEN via environment variable.
+
+```csharp
+public sealed record RobinhoodConfig(bool Enabled = false, int Priority = 35, int RateLimitPerHour = 100);
+```
+
+## ScheduledBackfillConfig
+
+Qualified name: <code>Meridian.Core.Config.ScheduledBackfillConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:111](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L111).
+
+Configuration for scheduled backfill operations.
+
+```csharp
+public sealed record ScheduledBackfillConfig(bool Enabled = false, int ScheduleCheckIntervalSeconds = 60, int MaxExecutionDurationHours = 6, bool CatchUpMissedSchedules = true, int CatchUpWindowHours = 24, int MaxConcurrentExecutions = 1, bool PauseDuringMarketHours = false, DefaultScheduleConfig[]? DefaultSchedules = null);
+```
+
+## SemanticValidationStage
+
+Qualified name: <code>Meridian.Core.Config.SemanticValidationStage</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Config/IConfigValidator.cs:140](../../../../src/Meridian.Core/Config/IConfigValidator.cs#L140).
+
+Semantic validation that checks cross-property constraints and configuration consistency. Duplicate-symbol and retention-days checks are now handled by AppConfigValidator in the field validation stage. This stage handles warning-level checks that should not affect FluentValidation.Results.ValidationResult.IsValid.
+
+```csharp
+public sealed class SemanticValidationStage : IConfigValidationStage
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;ConfigValidationResult&gt; Validate(AppConfig config);</code> | [src/Meridian.Core/Config/IConfigValidator.cs:142](../../../../src/Meridian.Core/Config/IConfigValidator.cs#L142) |  |
+
+## SensitiveKeyRegistry
+
+Qualified name: <code>Meridian.Core.Config.SensitiveKeyRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Config/SensitiveKeyRegistry.cs:10](../../../../src/Meridian.Core/Config/SensitiveKeyRegistry.cs#L10).
+
+Single registry of sensitive key/property-name fragments shared by every masking and redaction surface (SensitiveValueMasker, Meridian.Core.Diagnostics.RuntimeDiagnosticRedactor). The surfaces previously carried overlapping-but-different lists, so a value could be masked in one output and leak in another. Add new fragments here, never to a per-surface list.
+
+```csharp
+public static class SensitiveKeyRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly IReadOnlyList&lt;string&gt; Fragments = [&quot;password&quot;, &quot;pwd&quot;, &quot;secret&quot;, &quot;key&quot;, &quot;token&quot;, &quot;credential&quot;, &quot;connectionstring&quot;, &quot;connection_string&quot;, &quot;auth&quot;, &quot;authorization&quot;, &quot;session&quot;, &quot;refresh&quot;, &quot;bearer&quot;, &quot;certificate&quot;, &quot;otlpheaders&quot;];</code> | [src/Meridian.Core/Config/SensitiveKeyRegistry.cs:17](../../../../src/Meridian.Core/Config/SensitiveKeyRegistry.cs#L17) | Case-insensitive fragments; a key containing any fragment is considered sensitive. The union of the historical masker and redactor taxonomies — removing an entry narrows redaction somewhere, so entries may only be added. |
+| <code>public static bool IsSensitive(string? key);</code> | [src/Meridian.Core/Config/SensitiveKeyRegistry.cs:28](../../../../src/Meridian.Core/Config/SensitiveKeyRegistry.cs#L28) | Returns true when the key/property/env-var name contains any sensitive fragment. |
+
 ## SensitiveValueMasker
 
 Qualified name: <code>Meridian.Core.Config.SensitiveValueMasker</code>. Kind: `class`.
@@ -53,7 +114,7 @@ public sealed record SourceRegistryConfig(string? PersistencePath = null);
 
 Qualified name: <code>Meridian.Core.Config.StooqConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:183](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L183).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:192](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L192).
 
 Stooq provider configuration.
 
@@ -159,7 +220,7 @@ public sealed record SyntheticScenarioConfig(bool Enabled = false, int ThrottleE
 
 Qualified name: <code>Meridian.Core.Config.TiingoConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:233](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L233).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:242](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L242).
 
 Tiingo provider configuration. Best for: High-quality dividend-adjusted OHLCV with corporate actions. Free tier: 1,000 requests/day, 50 requests/hour.
 
@@ -198,7 +259,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.TwelveDataConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:323](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L323).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:337](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L337).
 
 Twelve Data options; credentials are resolved separately from the provider settings UI.
 
@@ -215,7 +276,7 @@ Source: [src/Meridian.Core/Config/ProviderQuotasConfig.cs:13](../../../../src/Me
 Twelve Data Basic defaults. Daily credits reset at midnight UTC. A paid account must explicitly declare its limits and fundamentals entitlement; numeric capacity alone grants none. NoDailyLimit explicitly declares an account without a daily credit cap.
 
 ```csharp
-public sealed record TwelveDataQuotaConfig(int CreditsPerMinute = 8, int DailyCredits = 800, bool FundamentalsEntitled = false, bool NoDailyLimit = false);
+public sealed record TwelveDataQuotaConfig(int CreditsPerMinute = BackfillProviderCatalog.TwelveDataPerMinute, int DailyCredits = BackfillProviderCatalog.TwelveDataBasicDailyCredits, bool FundamentalsEntitled = false, bool NoDailyLimit = false);
 ```
 
 ## ValidatedConfig
@@ -265,7 +326,7 @@ public sealed record ValidationPipelineConfig(bool Enabled = false, bool UseReal
 
 Qualified name: <code>Meridian.Core.Config.YahooFinanceConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:156](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L156).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:165](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L165).
 
 Yahoo Finance provider configuration.
 
@@ -864,89 +925,3 @@ Statistics about published alerts.
 ```csharp
 public sealed record AlertStatistics(long TotalAlerts, IReadOnlyDictionary<AlertSeverity, long> AlertsBySeverity, IReadOnlyDictionary<AlertCategory, long> AlertsByCategory, IReadOnlyDictionary<string, long> AlertsBySource, DateTimeOffset Since);
 ```
-
-## HealthCheckResult
-
-Qualified name: <code>Meridian.Core.Monitoring.Core.HealthCheckResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:33](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L33).
-
-Represents a health check result with status and diagnostics.
-
-```csharp
-public sealed record HealthCheckResult(string ComponentName, HealthSeverity Severity, string Message, DateTimeOffset CheckedAt, TimeSpan Duration, IReadOnlyDictionary<string, object>? Details = null, Exception? Exception = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static HealthCheckResult Healthy(string componentName, string message, TimeSpan duration, IReadOnlyDictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:45](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L45) | Creates a healthy result. |
-| <code>public static HealthCheckResult Degraded(string componentName, string message, TimeSpan duration, IReadOnlyDictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:52](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L52) | Creates a degraded result. |
-| <code>public static HealthCheckResult Unhealthy(string componentName, string message, TimeSpan duration, Exception? exception = null, IReadOnlyDictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:59](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L59) | Creates an unhealthy result. |
-| <code>public static HealthCheckResult Unknown(string componentName, string message, TimeSpan duration) =&gt; …;</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:66](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L66) | Creates an unknown result. |
-
-## HealthSeverity
-
-Qualified name: <code>Meridian.Core.Monitoring.Core.HealthSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:8](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L8).
-
-Represents the severity of a health status.
-
-```csharp
-public enum HealthSeverity : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Healthy</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:11](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L11) | Component is healthy and fully operational. |
-| <code>Degraded</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:14](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L14) | Component is operational but with minor issues. |
-| <code>Unhealthy</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:17](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L17) | Component has critical issues affecting functionality. |
-| <code>Unknown</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:20](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L20) | Component status is unknown or cannot be determined. |
-
-## IAlertDispatcher
-
-Qualified name: <code>Meridian.Core.Monitoring.Core.IAlertDispatcher</code>. Kind: `interface`.
-
-Source: [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:164](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L164).
-
-Centralized alert dispatcher for publishing and subscribing to monitoring alerts.
-
-```csharp
-public interface IAlertDispatcher
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>void Publish(MonitoringAlert alert);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:170](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L170) | Publishes an alert to all subscribers. |
-| <code>Task PublishAsync(MonitoringAlert alert, CancellationToken ct = default);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:177](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L177) | Publishes an alert asynchronously. |
-| <code>IDisposable Subscribe(Action&lt;MonitoringAlert&gt; handler, AlertFilter? filter = null);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:185](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L185) | Subscribes to alerts with the specified filter. |
-| <code>IDisposable Subscribe(Func&lt;MonitoringAlert, Task&gt; handler, AlertFilter? filter = null);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:193](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L193) | Subscribes to alerts with an async handler. |
-| <code>IReadOnlyList&lt;MonitoringAlert&gt; GetRecentAlerts(int count = 100, AlertFilter? filter = null);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:201](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L201) | Gets recent alerts matching the filter. |
-| <code>AlertStatistics GetStatistics();</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:207](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L207) | Gets alert statistics. |
-
-## IHealthCheckAggregator
-
-Qualified name: <code>Meridian.Core.Monitoring.Core.IHealthCheckAggregator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:139](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L139).
-
-Aggregates health checks from multiple providers into a unified report.
-
-```csharp
-public interface IHealthCheckAggregator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>void Register(IHealthCheckProvider provider);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:145](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L145) | Registers a health check provider. |
-| <code>void Unregister(string componentName);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:151](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L151) | Unregisters a health check provider. |
-| <code>Task&lt;AggregatedHealthReport&gt; CheckAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:158](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L158) | Runs all registered health checks and returns an aggregated report. |
-| <code>Task&lt;HealthCheckResult?&gt; CheckAsync(string componentName, CancellationToken ct = default);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:166](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L166) | Runs a specific health check by component name. |

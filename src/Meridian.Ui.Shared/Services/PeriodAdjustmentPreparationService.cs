@@ -48,8 +48,19 @@ public sealed class PeriodAdjustmentPreparationService(
         if (!request.ReversePeriodEndMark)
             throw new ArgumentException("Only explicit period-end mark reversal policy can be scheduled.");
         var prepared = await BuildAsync(request, actor, tenantId, companyId, ct).ConfigureAwait(false);
-        var identity = $"period-mark-reversal:{request.LedgerBookId:N}:{request.SourceJournalEntryId:N}:{Uri.EscapeDataString(request.IntentId.Trim())}";
+        var identity = $"period-mark-reversal:{request.LedgerBookId:N}:{request.SourceJournalEntryId:N}";
         var existing = await schedules.GetAsync(identity, ct).ConfigureAwait(false);
+        if (existing is null)
+        {
+            // Older schedules carried the operator's intent in the schedule key. Keep a single
+            // exact legacy schedule reachable without creating a second one for that source.
+            var legacy = (await schedules.ListAsync(ct).ConfigureAwait(false))
+                .Where(item => item.ScheduleId.StartsWith(identity + ":", StringComparison.OrdinalIgnoreCase)
+                    && item.TenantId == tenantId && item.CompanyId == companyId).ToArray();
+            if (legacy.Length > 1)
+                throw new InvalidOperationException("Multiple retained schedules already refer to this period-end mark. Review them before scheduling another.");
+            existing = legacy.SingleOrDefault();
+        }
         var normalizedRequest = request with { IntentId = request.IntentId.Trim(), Reason = request.Reason.Trim() };
         if (existing is not null)
         {

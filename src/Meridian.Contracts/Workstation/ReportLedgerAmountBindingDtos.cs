@@ -24,4 +24,7 @@ public sealed record ReportLedgerAmountBindingDto(
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? ProofAvailable { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AmountPassportReferenceDto? AmountPassport { get; init; }
 }

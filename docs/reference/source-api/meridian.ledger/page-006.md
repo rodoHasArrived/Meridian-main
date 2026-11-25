@@ -6,6 +6,219 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ShadowNavValidationPolicy
+
+Qualified name: <code>Meridian.Ledger.ShadowNavValidationPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/ShadowNavValidationPolicy.cs:6](../../../../src/Meridian.Ledger/ShadowNavValidationPolicy.cs#L6).
+
+Tolerance and governance metadata for comparing an actual ledger to a shadow-NAV ledger.
+
+```csharp
+public sealed record ShadowNavValidationPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ShadowNavValidationPolicy(decimal navTolerance, decimal accountTolerance, string policyId = &quot;shadow-nav-default&quot;, string? reviewerGroup = null);</code> | [src/Meridian.Ledger/ShadowNavValidationPolicy.cs:8](../../../../src/Meridian.Ledger/ShadowNavValidationPolicy.cs#L8) |  |
+| <code>public decimal NavTolerance { get; }</code> | [src/Meridian.Ledger/ShadowNavValidationPolicy.cs:27](../../../../src/Meridian.Ledger/ShadowNavValidationPolicy.cs#L27) |  |
+| <code>public decimal AccountTolerance { get; }</code> | [src/Meridian.Ledger/ShadowNavValidationPolicy.cs:29](../../../../src/Meridian.Ledger/ShadowNavValidationPolicy.cs#L29) |  |
+| <code>public string PolicyId { get; }</code> | [src/Meridian.Ledger/ShadowNavValidationPolicy.cs:31](../../../../src/Meridian.Ledger/ShadowNavValidationPolicy.cs#L31) |  |
+| <code>public string? ReviewerGroup { get; }</code> | [src/Meridian.Ledger/ShadowNavValidationPolicy.cs:33](../../../../src/Meridian.Ledger/ShadowNavValidationPolicy.cs#L33) |  |
+
+## ShadowNavValidationReport
+
+Qualified name: <code>Meridian.Ledger.ShadowNavValidationReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/ShadowNavValidationReport.cs:6](../../../../src/Meridian.Ledger/ShadowNavValidationReport.cs#L6).
+
+Point-in-time comparison between published actual books and an independent shadow-NAV book.
+
+```csharp
+public sealed record ShadowNavValidationReport(LedgerBookKey ActualLedgerKey, LedgerBookKey ShadowLedgerKey, DateTimeOffset AsOf, string PolicyId, string? ReviewerGroup, decimal NavTolerance, decimal AccountTolerance, decimal ActualNav, decimal ShadowNav, decimal NavVariance, IReadOnlyList<ShadowNavValidationFinding> Findings)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal AbsoluteNavVariance =&gt; …;</code> | [src/Meridian.Ledger/ShadowNavValidationReport.cs:19](../../../../src/Meridian.Ledger/ShadowNavValidationReport.cs#L19) |  |
+| <code>public bool NavWithinTolerance =&gt; …;</code> | [src/Meridian.Ledger/ShadowNavValidationReport.cs:21](../../../../src/Meridian.Ledger/ShadowNavValidationReport.cs#L21) |  |
+| <code>public bool AccountVariancesWithinTolerance =&gt; …;</code> | [src/Meridian.Ledger/ShadowNavValidationReport.cs:23](../../../../src/Meridian.Ledger/ShadowNavValidationReport.cs#L23) |  |
+| <code>public bool RequiresOverride =&gt; …;</code> | [src/Meridian.Ledger/ShadowNavValidationReport.cs:25](../../../../src/Meridian.Ledger/ShadowNavValidationReport.cs#L25) |  |
+| <code>public ShadowNavOverrideDraft CreateOverrideDraft(DateTimeOffset createdAtUtc, string createdBy, string reason);</code> | [src/Meridian.Ledger/ShadowNavValidationReport.cs:27](../../../../src/Meridian.Ledger/ShadowNavValidationReport.cs#L27) |  |
+
+## ShadowNavValidator
+
+Qualified name: <code>Meridian.Ledger.ShadowNavValidator</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/ShadowNavValidator.cs:6](../../../../src/Meridian.Ledger/ShadowNavValidator.cs#L6).
+
+Compares actual and shadow ledgers for independent NAV validation.
+
+```csharp
+public static class ShadowNavValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ShadowNavValidationReport Validate(ProjectLedgerBook projectLedgerBook, LedgerBookKey actualLedgerKey, LedgerBookKey shadowLedgerKey, DateTimeOffset asOf, ShadowNavValidationPolicy policy, ChartOfAccounts? chart = null, string? financialAccountId = null);</code> | [src/Meridian.Ledger/ShadowNavValidator.cs:8](../../../../src/Meridian.Ledger/ShadowNavValidator.cs#L8) |  |
+
+## ShareClass
+
+Qualified name: <code>Meridian.Ledger.ShareClass</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/ShareClass.cs:25](../../../../src/Meridian.Ledger/ShareClass.cs#L25).
+
+A fund share/unit class with the terms needed to unitize NAV: base currency, fee rates, the inception NAV per unit, and the equalization method.
+
+```csharp
+public sealed record ShareClass
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ShareClass(string shareClassId, string fundProfileId, string name, string currency, decimal managementFeeRateAnnual, decimal performanceFeeRate, decimal inceptionNavPerUnit, DateOnly inceptionDate, EqualizationMethod equalizationMethod = EqualizationMethod.None);</code> | [src/Meridian.Ledger/ShareClass.cs:27](../../../../src/Meridian.Ledger/ShareClass.cs#L27) |  |
+| <code>public string ShareClassId { get; }</code> | [src/Meridian.Ledger/ShareClass.cs:62](../../../../src/Meridian.Ledger/ShareClass.cs#L62) |  |
+| <code>public string FundProfileId { get; }</code> | [src/Meridian.Ledger/ShareClass.cs:64](../../../../src/Meridian.Ledger/ShareClass.cs#L64) |  |
+| <code>public string Name { get; }</code> | [src/Meridian.Ledger/ShareClass.cs:66](../../../../src/Meridian.Ledger/ShareClass.cs#L66) |  |
+| <code>public string Currency { get; }</code> | [src/Meridian.Ledger/ShareClass.cs:68](../../../../src/Meridian.Ledger/ShareClass.cs#L68) |  |
+| <code>public decimal ManagementFeeRateAnnual { get; }</code> | [src/Meridian.Ledger/ShareClass.cs:70](../../../../src/Meridian.Ledger/ShareClass.cs#L70) |  |
+| <code>public decimal PerformanceFeeRate { get; }</code> | [src/Meridian.Ledger/ShareClass.cs:72](../../../../src/Meridian.Ledger/ShareClass.cs#L72) |  |
+| <code>public decimal InceptionNavPerUnit { get; }</code> | [src/Meridian.Ledger/ShareClass.cs:74](../../../../src/Meridian.Ledger/ShareClass.cs#L74) |  |
+| <code>public DateOnly InceptionDate { get; }</code> | [src/Meridian.Ledger/ShareClass.cs:76](../../../../src/Meridian.Ledger/ShareClass.cs#L76) |  |
+| <code>public EqualizationMethod EqualizationMethod { get; }</code> | [src/Meridian.Ledger/ShareClass.cs:78](../../../../src/Meridian.Ledger/ShareClass.cs#L78) |  |
+
+## ShareClassUnitHolding
+
+Qualified name: <code>Meridian.Ledger.ShareClassUnitHolding</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:7](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L7).
+
+One investor&#x27;s unit holding in a share class.
+
+```csharp
+public sealed record ShareClassUnitHolding(string InvestorId, decimal Units, decimal SubscribedAmount, decimal RedeemedAmount, decimal EqualisationCredit, decimal ContingentRedemption)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal Value(decimal navPerUnit) =&gt; …;</code> | [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:16](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L16) | Current value of the holding at the class NAV per unit. |
+
+## ShareClassUnitMovement
+
+Qualified name: <code>Meridian.Ledger.ShareClassUnitMovement</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:20](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L20).
+
+One processed unit-register transaction with its resulting units and equalization.
+
+```csharp
+public sealed record ShareClassUnitMovement(string TransactionId, string InvestorId, DateOnly DealingDate, UnitTransactionType Type, decimal NavPerUnit, decimal Amount, decimal Units, decimal EqualisationCredit, decimal ContingentRedemption);
+```
+
+## ShareClassUnitRegister
+
+Qualified name: <code>Meridian.Ledger.ShareClassUnitRegister</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:32](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L32).
+
+Unitized state of a share class after folding its transactions to a valuation date.
+
+```csharp
+public sealed record ShareClassUnitRegister(ShareClass ShareClass, DateOnly AsOf, decimal UnitsOutstanding, decimal ClassNav, decimal NavPerUnit, decimal HighWaterNavPerUnit, IReadOnlyList<ShareClassUnitHolding> Holdings, IReadOnlyList<ShareClassUnitMovement> Movements, IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal AggregateHoldingValue =&gt; …;</code> | [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:44](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L44) | Aggregate value of all holdings at the class NAV per unit; ties to class NAV. |
+
+## ShareClassUnitRegisterProjector
+
+Qualified name: <code>Meridian.Ledger.ShareClassUnitRegisterProjector</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:55](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L55).
+
+Folds a share class&#x27;s subscription/redemption transactions into a unit register: units outstanding, per-investor holdings, NAV per unit, running high-water mark, and — for equalising classes — the equalisation credit / contingent redemption on each subscription. Pure and deterministic. NAV per unit at the valuation date uses the supplied class NAV when known, otherwise the last dealing price.
+
+```csharp
+public static class ShareClassUnitRegisterProjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string RedemptionExceedsHoldingIssueCode = &quot;fund.share-class.redemption-exceeds-holding&quot;;</code> | [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:57](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L57) |  |
+| <code>public static ShareClassUnitRegister Project(ShareClass shareClass, IReadOnlyList&lt;UnitTransaction&gt; transactions, DateOnly asOf, decimal? classNav = null);</code> | [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:59](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L59) |  |
+
+## ShortCarryProjector
+
+Qualified name: <code>Meridian.Ledger.ShortCarryProjector</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/ShortCarryProjector.cs:11](../../../../src/Meridian.Ledger/ShortCarryProjector.cs#L11).
+
+Book accounting for short carrying charges: a borrow fee is an expense paid in cash; a payment in lieu is dividend expense paid in cash. Neither changes the short lot&#x27;s quantity or liability basis, so neither is a lot mutation; both are governed period journals that must reference the open short lot they belong to.
+
+```csharp
+public static class ShortCarryProjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly IReadOnlySet&lt;int&gt; SupportedDaysPerYear = new HashSet&lt;int&gt;{ 360, 365 };</code> | [src/Meridian.Ledger/ShortCarryProjector.cs:13](../../../../src/Meridian.Ledger/ShortCarryProjector.cs#L13) |  |
+| <code>public static decimal? TryComputeAmount(ShortCarryInstruction instruction, out string? refusal);</code> | [src/Meridian.Ledger/ShortCarryProjector.cs:16](../../../../src/Meridian.Ledger/ShortCarryProjector.cs#L16) | The functional-currency charge, at ledger rounding, or the reason it cannot be calculated. |
+| <code>public static IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; Lines(ShortCarryInstruction instruction, LedgerAccount carryingAccount);</code> | [src/Meridian.Ledger/ShortCarryProjector.cs:35](../../../../src/Meridian.Ledger/ShortCarryProjector.cs#L35) | Expected journal lines for the instruction against the lot&#x27;s liability carrying account. |
+
+## ShortCoverLine
+
+Qualified name: <code>Meridian.Ledger.ShortCoverLine</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/ShortLotJournalProjector.cs:7](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L7).
+
+One projected currency-aware short cover line; functional amounts plus the transaction leg.
+
+```csharp
+public sealed record ShortCoverLine(LedgerAccount Account, decimal Debit, decimal Credit, string TransactionCurrency, decimal TransactionDebit, decimal TransactionCredit, decimal FxRateToFunctional, string FunctionalCurrency);
+```
+
+## ShortLotJournalProjector
+
+Qualified name: <code>Meridian.Ledger.ShortLotJournalProjector</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/ShortLotJournalProjector.cs:11](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L11).
+
+Book accounting only: opening proceeds are a liability; a cover relieves that liability.
+
+```csharp
+public static class ShortLotJournalProjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static decimal CoverCost(decimal coveredQuantity, decimal coverPrice);</code> | [src/Meridian.Ledger/ShortLotJournalProjector.cs:14](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L14) | Functional-currency cost of covering coveredQuantity at the explicit execution price, at ledger rounding. |
+| <code>public static bool MatchesExactly(IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; expected, IReadOnlyList&lt;LedgerEntry&gt; actual);</code> | [src/Meridian.Ledger/ShortLotJournalProjector.cs:25](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L25) | True when the journal carries exactly the projected lines: the same count, and each expected account/debit/credit triple present exactly once. Extra, missing or inverted lines fail. |
+| <code>public static IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; Open(LedgerAccount carryingAccount, decimal proceeds);</code> | [src/Meridian.Ledger/ShortLotJournalProjector.cs:34](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L34) |  |
+| <code>public static IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; Cover(LedgerAccount carryingAccount, decimal relievedProceeds, decimal coverCost);</code> | [src/Meridian.Ledger/ShortLotJournalProjector.cs:41](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L41) |  |
+| <code>public static IReadOnlyList&lt;ShortCoverLine&gt; CoverInCurrency(LedgerAccount carryingAccount, ShortCoverTerms terms);</code> | [src/Meridian.Ledger/ShortLotJournalProjector.cs:66](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L66) | Cover in the transaction currency with execution fees. Cash is credited in the transaction currency at the cover FX; the liability relief stays at the retained acquisition FX; the book result is measured at acquisition FX and the FX movement on the cover cost is a separate realized FX result, so the two results add up to proceeds relieved less functional cash paid. Each amount is rounded to its currency&#x27;s minor units once; the functional cash credit is the sum of the rounded cost and fee legs so the journal always balances with no residue line. |
+| <code>public static bool MatchesExactly(IReadOnlyList&lt;ShortCoverLine&gt; expected, IReadOnlyList&lt;LedgerEntry&gt; actual);</code> | [src/Meridian.Ledger/ShortLotJournalProjector.cs:111](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L111) | True when the journal carries exactly the projected currency-aware lines: same count, and each expected account, functional debit/credit, transaction and functional currencies, transaction amounts and FX rate present exactly once. |
+| <code>[PostingCalculationNotYetConnected(&quot;Corrections are reversed by the journal workbench, which keeps line dimensions and currency; this tuple form drops both, so it should be retired or extended, not wired as is.&quot;)] public static IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; Reverse(IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; posted);</code> | [src/Meridian.Ledger/ShortLotJournalProjector.cs:125](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L125) | The exact inverse of a posted short opening or cover journal: every line&#x27;s sides swapped, nothing else. |
+| <code>public static IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; Reverse(IReadOnlyList&lt;LedgerEntry&gt; posted);</code> | [src/Meridian.Ledger/ShortLotJournalProjector.cs:135](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L135) | The exact inverse of a posted journal, read back from its retained entries. |
+
 ## StalePriceAssessment
 
 Qualified name: <code>Meridian.Ledger.StalePriceAssessment</code>. Kind: `record`.
@@ -82,8 +295,12 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static StandardChartOfAccounts Instance { get; } = new ();</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:12](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L12) |  |
-| <code>public LedgerAccount GetDefinition(LedgerAccountRole role);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:61](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L61) |  |
-| <code>public LedgerAccount Resolve(LedgerAccountRole role, string? financialAccountId = null, string? symbol = null);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:70](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L70) |  |
+| <code>public const string Revision = &quot;meridian-standard-chart-v1&quot;;</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:13](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L13) |  |
+| <code>public LedgerAccount ResolveCode(string code, string? financialAccountId = null, string? symbol = null);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:69](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L69) | Resolves an explicitly registered posting code with the same scope rules as its role. |
+| <code>public LedgerAccountChartReference? GetPostingReference(LedgerAccount account) =&gt; …;</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:79](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L79) |  |
+| <code>public LedgerAccount GetDefinition(LedgerAccountRole role);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:83](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L83) |  |
+| <code>public LedgerAccount Resolve(LedgerAccountRole role, string? financialAccountId = null, string? symbol = null);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:92](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L92) |  |
+| <code>public bool TryGetRegistered(LedgerAccount account, out LedgerAccountRole role);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:113](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L113) |  |
 
 ## StructuredNoteAccountingTemplate
 

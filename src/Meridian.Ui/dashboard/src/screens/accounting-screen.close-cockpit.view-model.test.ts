@@ -2571,8 +2571,12 @@ describe("accounting-screen close-cockpit view model", () => {
       statusLabel: "Blocked",
       statusTone: "danger",
       periodLabel: "2026-05",
-      fundAccountLabel: "fund-alpha"
+      fundAccountLabel: "Selected fund account"
     });
+    expect(state.technicalDetails).toEqual(expect.arrayContaining([
+      { label: "Fund account ID", value: closeWorkflow.fundAccountId },
+      { label: "Workflow ID", value: closeWorkflow.workflowId }
+    ]));
     expect(state.metricRows).toEqual(expect.arrayContaining([
       // Counted once from the break queue (A3); the workflow's own break case is named in the detail, not added.
       expect.objectContaining({ id: "breaks", value: "1", tone: "warning", detail: expect.stringContaining("also tracks 1 break case") }),

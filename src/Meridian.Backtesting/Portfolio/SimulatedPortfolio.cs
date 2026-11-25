@@ -12,7 +12,7 @@ namespace Meridian.Backtesting.Portfolio;
 internal sealed partial class SimulatedPortfolio
 {
     private readonly BacktestLedger? _ledger;
-    private readonly IChartOfAccounts _chart = StandardChartOfAccounts.Instance;
+    private readonly IChartOfAccounts _chart;
     private readonly IReadOnlyDictionary<string, (SecurityLotUnitKind UnitKind, decimal Multiplier)> _lotConventions;
     private readonly string _defaultBrokerageAccountId;
     private readonly Dictionary<string, AccountState> _accounts;
@@ -23,6 +23,8 @@ internal sealed partial class SimulatedPortfolio
 
     public bool FailOnLedgerIntegrityBreak { get; init; }
     public IReadOnlyList<LedgerIntegrityBreak> LedgerIntegrityBreaks => _ledgerIntegrityBreaks.AsReadOnly();
+
+    internal Func<string, DateTimeOffset, IReadOnlyList<JournalEvidenceReference>>? MarketDataEvidence { get; set; }
 
     // Rebuilding the aggregate views walks every account, every position, and every lot. The
     // engine reads them through IBacktestContext.PortfolioValue / .Positions, so a strategy that
@@ -71,6 +73,7 @@ internal sealed partial class SimulatedPortfolio
         ArgumentException.ThrowIfNullOrWhiteSpace(defaultBrokerageAccountId);
 
         _ledger = ledger;
+        _chart = ledger?.Policy?.Chart ?? StandardChartOfAccounts.Instance;
         _lotConventions = lotConventions is null
             ? new Dictionary<string, (SecurityLotUnitKind UnitKind, decimal Multiplier)>(StringComparer.OrdinalIgnoreCase)
             : new Dictionary<string, (SecurityLotUnitKind UnitKind, decimal Multiplier)>(lotConventions, StringComparer.OrdinalIgnoreCase);
@@ -282,9 +285,9 @@ internal sealed partial class SimulatedPortfolio
         if (assetEvent.HasPositionTransformation && assetEvent.PositionFactor <= 0m)
             throw new InvalidOperationException($"Asset event factor must be positive for {symbol}.");
 
-        var authoritativeReferencePrice = assetEvent.HasPositionTransformation
+        var (authoritativeReferencePrice, referencePriceSymbol) = assetEvent.HasPositionTransformation
             ? ResolveMarketReferencePrice(assetEvent)
-            : null;
+            : (null, null);
         // Freeze every impacted account and its cash-in-lieu reference before mutating any
         // position or global mark. This prevents account iteration order from changing a later
         // account's economics; an account-specific average-cost fallback remains account-specific.
@@ -351,7 +354,8 @@ internal sealed partial class SimulatedPortfolio
                     assetEvent,
                     existingQty,
                     targetSymbol,
-                    impacted.ReferencePrice);
+                    impacted.ReferencePrice,
+                    referencePriceSymbol);
                 totalCashImpact += transformation.CashInLieu;
             }
 
@@ -464,7 +468,11 @@ internal sealed partial class SimulatedPortfolio
                         (_chart.Resolve(LedgerAccountRole.Cash, account.Account.AccountId), Math.Max(rebate, 0m), Math.Max(-rebate, 0m)),
                         (_chart.Resolve(LedgerAccountRole.ShortRebateIncome, account.Account.AccountId), Math.Max(-rebate, 0m), Math.Max(rebate, 0m)),
                     ],
-                    BuildAccountMetadata(account, "short_rebate", symbol));
+                    BuildAccountMetadata(account, "short_rebate", symbol) with
+                    {
+                        EvidenceReferences = MarketDataEvidence?.Invoke(symbol,
+                            new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero)) ?? []
+                    });
             }
 
             // Rebates and borrow fees move cash after the margin-interest gate above, so the
@@ -592,16 +600,18 @@ internal sealed partial class SimulatedPortfolio
         {
             var accountId = account.Account.AccountId;
             var lines = new List<(LedgerAccount account, decimal debit, decimal credit)>();
+            var cashAccount = _chart.Resolve(LedgerAccountRole.Cash, accountId);
+            var securitiesAccount = _chart.Resolve(LedgerAccountRole.Securities, accountId, assetEvent.Symbol);
             if (amount > 0m)
-                lines.Add((LedgerAccounts.CashAccount(accountId), amount, 0m));
+                lines.Add((cashAccount, amount, 0m));
             else
-                lines.Add((LedgerAccounts.CashAccount(accountId), 0m, -amount));
+                lines.Add((cashAccount, 0m, -amount));
             if (basisRelieved > 0m)
-                lines.Add((LedgerAccounts.Securities(assetEvent.Symbol, accountId), 0m, basisRelieved));
+                lines.Add((securitiesAccount, 0m, basisRelieved));
             else if (basisRelieved < 0m)
-                lines.Add((LedgerAccounts.Securities(assetEvent.Symbol, accountId), -basisRelieved, 0m));
+                lines.Add((securitiesAccount, -basisRelieved, 0m));
             if (gain > 0m)
-                lines.Add((LedgerAccounts.RealizedGainFor(accountId), 0m, gain));
+                lines.Add((_chart.Resolve(LedgerAccountRole.RealizedGain, accountId), 0m, gain));
             PostInvestingLedgerLines(assetEvent.EffectiveAt, string.IsNullOrWhiteSpace(assetEvent.Description)
                     ? $"Return of capital – {assetEvent.Symbol}" : assetEvent.Description,
                 lines, BuildAssetEventMetadata(account, assetEvent, assetEvent.Symbol, null, quantity, amount, null));
@@ -614,7 +624,8 @@ internal sealed partial class SimulatedPortfolio
         AssetEvent assetEvent,
         long existingQty,
         string targetSymbol,
-        decimal? referencePriceOverride)
+        decimal? referencePriceOverride,
+        string? referencePriceSymbol)
     {
         var factor = assetEvent.PositionFactor;
         if (factor <= 0m)
@@ -685,7 +696,8 @@ internal sealed partial class SimulatedPortfolio
             retainedBasis,
             fractionalBasis,
             cashInLieu,
-            fractionalRealized);
+            fractionalRealized,
+            referencePriceSymbol);
 
         return new PositionTransformationResult(
             cashInLieu,
@@ -715,26 +727,27 @@ internal sealed partial class SimulatedPortfolio
         return existingQty == 0 ? 0m : 1m;
     }
 
-    private decimal? ResolveMarketReferencePrice(AssetEvent assetEvent)
+    private (decimal? Price, string? Symbol) ResolveMarketReferencePrice(AssetEvent assetEvent)
     {
         if (assetEvent.ReferencePrice is > 0m)
-            return assetEvent.ReferencePrice;
+            return (assetEvent.ReferencePrice, null);
 
         if (!assetEvent.DestinationSymbol.Equals(assetEvent.Symbol, StringComparison.OrdinalIgnoreCase) &&
             _lastPrices.TryGetValue(assetEvent.DestinationSymbol, out var destinationPrice) &&
             destinationPrice > 0m)
         {
-            return destinationPrice;
+            return (destinationPrice, assetEvent.DestinationSymbol);
         }
 
         if (_lastPrices.TryGetValue(assetEvent.Symbol, out var sourcePrice) && sourcePrice > 0m)
         {
-            return assetEvent.PositionFactor == 0m
+            var price = assetEvent.PositionFactor == 0m
                 ? sourcePrice
                 : sourcePrice / Math.Abs(assetEvent.PositionFactor);
+            return (price, assetEvent.Symbol);
         }
 
-        return null;
+        return (null, null);
     }
 
     private void PostAssetCashLedgerEntry(
@@ -818,7 +831,8 @@ internal sealed partial class SimulatedPortfolio
 
         return BuildAccountMetadata(account, $"asset_event_{assetEvent.EventType.ToString().ToLowerInvariant()}", symbol) with
         {
-            Tags = tags
+            Tags = tags,
+            EvidenceReferences = assetEvent.EvidenceReferences ?? []
         };
     }
 
@@ -1159,7 +1173,8 @@ internal sealed partial class SimulatedPortfolio
         decimal retainedBasis,
         decimal fractionalBasis,
         decimal cashInLieu,
-        decimal fractionalRealized)
+        decimal fractionalRealized,
+        string? referencePriceSymbol)
     {
         if (_ledger is null)
             return;
@@ -1233,11 +1248,18 @@ internal sealed partial class SimulatedPortfolio
         else if (fractionalRealized < 0m)
             lines.Add((_chart.Resolve(LedgerAccountRole.RealizedLoss, accountId), Math.Abs(fractionalRealized), 0m));
 
+        var priceEvidence = referencePriceSymbol is null
+            ? []
+            : MarketDataEvidence?.Invoke(referencePriceSymbol, assetEvent.EffectiveAt) ?? [];
         PostInvestingLedgerLines(
             assetEvent.EffectiveAt,
             $"Cash in lieu {sourceSymbol} -> {targetSymbol} – {account.Account.DisplayName}",
             lines,
-            metadata with { ActivityType = $"asset_event_{assetEvent.EventType.ToString().ToLowerInvariant()}_cash_in_lieu" });
+            metadata with
+            {
+                ActivityType = $"asset_event_{assetEvent.EventType.ToString().ToLowerInvariant()}_cash_in_lieu",
+                EvidenceReferences = metadata.EvidenceReferences.Concat(priceEvidence).Distinct().ToArray()
+            });
     }
 
     private static void MergeLots(
@@ -1300,7 +1322,10 @@ internal sealed partial class SimulatedPortfolio
         var ts = fill.FilledAt;
         var symbol = fill.Symbol;
         var accountId = account.Account.AccountId;
-        var fillMetadata = BuildAccountMetadata(account, "fill", symbol, fill.OrderId, fill.FillId);
+        var fillMetadata = BuildAccountMetadata(account, "fill", symbol, fill.OrderId, fill.FillId) with
+        {
+            EvidenceReferences = MarketDataEvidence?.Invoke(symbol, ts) ?? []
+        };
 
         var longBuyQty = qty > 0
             ? (existingQty >= 0 ? qty : Math.Max(qty + existingQty, 0L))
@@ -1368,7 +1393,11 @@ internal sealed partial class SimulatedPortfolio
             return;
         var journalId = Guid.NewGuid();
         var draft = new JournalEntry(journalId, timestamp, description, lines.Select(line =>
-            new LedgerEntry(Guid.NewGuid(), journalId, timestamp, line.account, line.debit, line.credit, description)).ToArray(), metadata);
+            new LedgerEntry(Guid.NewGuid(), journalId, timestamp, line.account, line.debit, line.credit, description,
+                currency: _ledger.Policy?.FunctionalAmount(line.debit, line.credit))
+            {
+                ChartAccount = _ledger.Policy?.Chart.GetPostingReference(line.account)
+            }).ToArray(), metadata);
         _ledger.Post(LedgerCashFlowAttribution.WithClassifiedActivity(draft, LedgerCashFlowCategory.Investing, description));
     }
 

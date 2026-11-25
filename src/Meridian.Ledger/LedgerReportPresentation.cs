@@ -26,13 +26,15 @@ public static class LedgerReportPresentation
         {
             BuildOverview(reportPack),
             BuildBalanceSheet(statements),
-            BuildIncomeStatement(statements),
+            reportPack.StatementControl is { } control ? BuildPeriodIncomeStatement(control) : BuildIncomeStatement(statements),
         };
 
         if (statements.CashFlow is { } cashFlow)
             tables.Add(BuildCashFlow(cashFlow));
         if (statements.PartnersCapital is { } partnersCapital)
             tables.Add(BuildPartnersCapital(partnersCapital));
+        if (reportPack.StatementControl is { } statementsControl)
+            tables.Add(statementsControl.ToTable());
         if (reportPack.PreparerAttestations is { Count: > 0 } attestations)
             tables.Add(new("Accounting Preparer Attestations", ["Journal", "Decision", "Disclosure", "Receipt", "Declaration / Policy", "Actor / Recorded"],
                 attestations.Select(item => (IReadOnlyList<string>)[item.JournalEntryId.ToString("D"), item.Classification,
@@ -59,7 +61,7 @@ public static class LedgerReportPresentation
             Row("Total assets", Money(statements.TotalAssets)),
             Row("Total liabilities", Money(statements.TotalLiabilities)),
             Row("Ending equity", Money(statements.EndingEquity)),
-            Row("Net income", Money(statements.NetIncome)),
+            Row(reportPack.StatementControl is null ? "Net income" : "Undistributed net income", Money(statements.NetIncome)),
             Row("Accounting equation variance", Money(statements.AccountingEquationVariance)),
             Row("Report pack signature", reportPack.Signature.PayloadChecksumSha256),
         };
@@ -97,6 +99,11 @@ public static class LedgerReportPresentation
         return new LedgerReportTable("Income Statement", ["Type", "Account", "Amount"], rows);
     }
 
+    private static LedgerReportTable BuildPeriodIncomeStatement(LedgerStatementControlPack control)
+        => new("Income Statement", ["Type", "Account", "Amount"], control.Rows
+            .Where(static row => row.Statement == "Income Statement")
+            .Select(row => (IReadOnlyList<string>)[row.Measure, row.Label, Money(row.Amount)]).ToArray());
+
     private static LedgerReportTable BuildCashFlow(LedgerCashFlowStatement cashFlow)
     {
         var rows = cashFlow.Lines
@@ -110,6 +117,8 @@ public static class LedgerReportPresentation
         rows.Add(["Financing", "Net financing cash flow", Money(cashFlow.FinancingCashFlow)]);
         rows.Add(["", "Net change in cash", Money(cashFlow.NetCashFlow)]);
         rows.Add(["", "Beginning cash", Money(cashFlow.BeginningCash)]);
+        if (cashFlow.ExchangeRateEffects != 0m)
+            rows.Add(["", "Exchange-rate effects", Money(cashFlow.ExchangeRateEffects)]);
         rows.Add(["", "Ending cash", Money(cashFlow.EndingCash)]);
 
         return new LedgerReportTable("Statement of Cash Flows", ["Activity", "Description", "Amount"], rows);

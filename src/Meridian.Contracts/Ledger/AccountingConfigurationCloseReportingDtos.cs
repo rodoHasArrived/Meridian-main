@@ -28,7 +28,8 @@ public sealed record ExternalGlMappingProfileDto(
     DateTimeOffset UpdatedAtUtc,
     IReadOnlyList<DimensionMappingProfileDto> DimensionMappings,
     IReadOnlyDictionary<string, string>? AccountMappings = null,
-    AccountingCertificationStateDto CertificationState = AccountingCertificationStateDto.Draft)
+    AccountingCertificationStateDto CertificationState = AccountingCertificationStateDto.Draft,
+    ExternalGlDestination? CertifiedPostingDestination = null)
 {
     public IReadOnlyDictionary<string, string> AccountMappings { get; init; } =
         AccountMappings ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

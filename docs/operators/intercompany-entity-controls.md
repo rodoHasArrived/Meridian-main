@@ -4,7 +4,7 @@
 
 **Owner:** Accounting and Ledger
 
-**Reviewed:** 2026-11-14
+**Reviewed:** 2026-11-18
 
 Use Accounting's entity/intercompany and consolidation views to inspect the shared entity timeline,
 agreements, books, source evidence, counterpart proposals and consolidation output. Desktop uses
@@ -59,10 +59,11 @@ unavailable for date preview.
 
 ## Accruing loan interest
 
-Interest on a fixed-rate, simple-interest intercompany loan can be calculated from its approved
-structured terms. It needs two approved accounting profiles of the same legal agreement: the `Loan`
-profile that carries posted principal, and a `LoanInterest` profile that maps interest receivable and
-payable and puts interest income on one party against interest expense on the other.
+Interest on an intercompany loan can be calculated from its approved structured terms: fixed-rate,
+floating-rate (from approved rate fixings) or periodically compounding. It needs two approved
+accounting profiles of the same legal agreement: the `Loan` profile that carries posted principal,
+and a `LoanInterest` profile that maps interest receivable and payable and puts interest income on
+one party against interest expense on the other.
 
 1. Preview with `POST /api/ledger/intercompany/accruals/preview`, giving the source book, the two
    profile IDs and the window. `accrualTo` is exclusive: June is `2026-06-01` to `2026-07-01`.
@@ -82,12 +83,57 @@ is refreshed in place, and edited lines block review.
 
 An accrual is unavailable, with the reason stated, when a day in the window has no approved
 `LoanInterest` profile revision or falls outside the declared schedule; when the loan is
-floating-rate, compounding or unstructured; when no principal is posted under the `Loan` profile;
+unstructured; when a floating-rate period has no approved fixing at its observation date; when a
+compounding window is not covered by posted, unreversed earlier accruals or crosses a period; when
+no principal is posted under the `Loan` profile;
 when a posted accrual already covers part of the window (reverse it first); when the source book has
 no open period containing the last accrued day; or when a cross-currency loan has no approved FX
 configuration. After an amendment, approve a `LoanInterest` profile revision that pins the amended
 legal version before accruing the affected days; the days on each side of the amendment then use
-their own rate. Fees are not calculated.
+their own rate.
+
+Floating-rate loans use reviewed rate fixings. Propose a fixing for the index and observation date
+with `POST /api/ledger/intercompany/rate-fixings`; someone else approves it. A correction is a new
+approved value, never an edit. Each accrual period uses exactly the approved fixing observed the
+agreement's fixing lag before the period starts, plus the spread.
+
+A fixed management fee declared on an agreement is accrued the same way, through
+`POST /api/ledger/intercompany/fees/preview` and `/drafts` under the `ManagementFee` profile.
+Percentage fees and loan commitment or utilisation fees are not calculated.
+
+A book can opt in to scheduled accruals. Propose a schedule for one loan-interest profile and its
+principal profile with `POST /api/ledger/intercompany/accrual-schedules`; someone else approves it.
+An active schedule drafts each completed period that ends after approval and enters it in ordinary
+review; nothing posts, and existing drafts are never recomputed.
+
+With a ledger database configured, journal drafts and their command receipts are kept in
+PostgreSQL, so two hosts cannot change the same draft at once. To link an existing posted
+counterpart instead of a generated one, choose the counterpart book and then the journal from the
+list of posted journals that reciprocate the source; linking re-checks the choice.
+
+## Confirming intercompany balances
+
+Each side confirms the due-to/due-from balance of an approved accounting profile at a date, from
+posted journals only. Load the book's confirmations for the period end, then:
+
+1. Pin the current balances with `POST /api/ledger/intercompany/confirmations`. Both sides' posted
+   balances are recorded with a balance digest.
+2. Confirm or dispute this book's side. The same person cannot confirm both sides, and an
+   unbalanced pair cannot be confirmed.
+3. A dispute needs a reason and is resolved, with a reason, by someone other than the disputer.
+   Pin the corrected balances again afterwards.
+
+Open findings appear in the close advisory as `intercompany.confirmation.not-proposed`,
+`awaiting-confirmation`, `disputed`, `balances-changed`, `resolved-awaiting-proposal` or
+`unavailable`. These warnings do not change close eligibility.
+
+A book can adopt one **confirmation close policy** (ADR-032) on the same screen. Choose which of
+the findings above (except `unavailable`) block close and give a reason; a different reviewer
+approves it, and it can be rejected or disabled with a reason. While it is active, a listed finding
+at the close period end adds an `intercompany-confirmation` close-readiness blocker, and
+confirmation status that cannot be read stops close until it can. Disabling the policy makes
+confirmation advisory again. `DEC-IC-CONFIRM-002` records this as a proposed decision awaiting the
+repository owner's acceptance.
 
 Ordinary legal approval retains the independent-reviewer rule. To attest an external legal review,
 select the exact submitted hash and accepted retained review document, identify the distinct
@@ -110,7 +156,7 @@ Evaluate obligation advisories for the selected book/fund and as-of date. The de
 is 30 calendar days. Inspect expiry, coverage, lifecycle and guarantee findings and their source
 versions; refresh stale results and investigate unavailable authority. These advisory findings do
 not change close-readiness blockers or posting eligibility. Existing blocking balance-schedule
-requirements and controlled-close rules remain authoritative.
+requirements, controlled-close rules and any active confirmation close policy remain authoritative.
 
 For WindingDown, use a retained controlled-close authorization for the exact settlement, closing
 expense, tax, revaluation or correction obligation. New commitments remain blocked. Dissolved and
@@ -126,7 +172,10 @@ The shared API families are `/api/fund-structure/intercompany-agreements`,
 `/api/ledger/intercompany-accounting-arrangements`, entity
 `/lifecycle` and `/timeline`, `/api/ledger/intercompany/account-bindings`,
 `/api/ledger/intercompany/legacy-attributions`, `/api/ledger/intercompany/proposals`,
-`/api/ledger/intercompany/accruals`, `/api/ledger/intercompany/breaks`, book `/controls`, `/api/ledger/consolidation`, and its `/transitions` preview/activation/history routes.
+`/api/ledger/intercompany/accruals`, `/api/ledger/intercompany/accrual-schedules`,
+`/api/ledger/intercompany/fees`, `/api/ledger/intercompany/rate-fixings`,
+`/api/ledger/intercompany/confirmations`, `/api/ledger/intercompany/confirmation-close-policies`,
+`/api/ledger/intercompany/breaks`, book `/controls`, `/api/ledger/consolidation`, and its `/transitions` preview/activation/history routes.
 Use the host's authenticated capability responses; service absence is an unavailable capability.
 The native agreement `/{id}/schedule` read selects an approved version or proposal for dates-only
 preview. `/api/ledger/intercompany/obligations` requires an owned ledger book and explicit as-of
@@ -137,6 +186,8 @@ schedule's numeric JSON and fingerprint remain unchanged; clients must not reser
 monitor response to manufacture a canonical schedule hash.
 PostgreSQL is the governed multi-resource commit authority. File stores are durable local/demo
 counterparts and do not establish production certification or cross-process transactional fencing.
+With a ledger database configured, journal drafts and their command receipts are also kept in
+PostgreSQL (ledger migration 077), so two hosts cannot change the same draft at once.
 
 Canonical legal-reference postings require the ledger-owned standalone transaction or the
 sealed native producer that retains authority through its outer commit. Generic caller-owned

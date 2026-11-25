@@ -43,6 +43,10 @@ must retain the requested organization/entity/as-of or consolidation scope. Its 
 drafts through existing workbench and lifecycle routes; the authenticated host resolves actor and
 tenant authority. Refused, stale and unavailable responses never produce local success.
 
+`Services/Accounting/WorkstationFiscalYearCloseApiClient` reads the governed fiscal-year close plan
+for one book and year. It refuses a plan for another book or year, and a "ready" plan without a
+hash or with blockers; workstations present the server's sections and never recompute balances.
+
 The shared entity/consolidation API client supplies authorized organization/entity/book/period
 choices, entity timeline and consolidation preview/draft operations to WPF. Requests preserve host
 scope and server-calculated capabilities; no workstation client derives financial truth locally.
@@ -144,6 +148,12 @@ omits (QuickBooks, Plaid, IB Flex). Verification treats a successful `NotRequire
 Removal accepts `Missing`, or `NotRequired` with an explicit `NotRequired` credential source;
 a missing or default source cannot confirm a `NotRequired` result.
 `providerWideOnly: true` reads provider-wide records only, without the tenant's connection credentials.
+`OAuthRefreshService` refreshes tokens through the host's `ICredentialService`; the shared
+`CredentialService` is a no-op test and fallback base that never yields a token. Provider ids come
+from the host's `OAuthTokenResourcePrefix` (WPF: `Meridian.OAuth.<provider>`), and `.refresh`
+companion entries are skipped. The WPF host starts the service after desktop activation and disposes
+it on exit. `TimeSeriesAlignmentService` reports an HTTP 501 as `IsServiceUnavailable` so callers can
+present alignment as unavailable rather than as a failed run.
 Provider IDs use the shared ProviderSdk identity map for request paths, mutation acknowledgements,
 status joins and catalog deduplication. Aliases resolve to one canonical status row and retain the
 service field schema; ambiguous duplicate service rows remain unavailable. Status projections retain
@@ -332,6 +342,15 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 <!-- source-todos:begin module=SRC-UI-SERVICES -->
 - No registry-backed TODOs are open for this module.
 <!-- source-todos:end -->
+
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+`IntercompanyCounterpartQueueWorkspace` loads `TargetJournalChoices` from the counterpart-candidate read when the
+target book changes and exposes `OpenTargetJournalCommand` through a host-supplied `JournalOpener`.
+`IntercompanyBalanceConfirmationWorkspace.ClosePolicy` shows the book's confirmation close policy and proposes,
+approves, rejects or disables it over `/api/ledger/intercompany/confirmation-close-policies`; an unreadable policy is
+reported, never shown as none. The matching `WorkstationIntercompanyAgreementApiClient` partials check that each
+response belongs to the requested proposal, book and request.
 
 ## Validation
 

@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.Storage
@@ -19,6 +19,13 @@ Storage primitives.
 
 Position snapshots preserve reviewed preparation lineages alongside economic-state history.
 Historical reads still exclude lineage effective after their requested date.
+
+`IInstrumentPositionProjectionStore.GetBookAsync` enumerates retained holdings begun by an observation
+date, including expired holdings with potentially unpaid receipts. Its in-memory and PostgreSQL
+implementations bound economic-state history by that date and isolate the exact book; PostgreSQL
+uses a repeatable-read transaction. The shared receipt source separately verifies canonical book
+ownership and accepted projection evidence before deriving amounts. These source paths compile in
+`Meridian.Storage.Accounting`. See [book receipt operations](../../docs/operators/book-receipt-queue.md).
 
 `FileBondMarketDataStore` retains host-local typed bond market observations in hashed tenant
 partitions with process-wide file leases, atomic publication, content validation and immutable
@@ -250,6 +257,19 @@ above one million identifier rows. Fresh installations and already-applied resta
 from upgrade attestations. See the [migration procedure](../../docs/operators/security-master-governed-edit-rollout.md#identifier-history-migration-062).
 
 `BackfillStatusStore` keeps a verified coverage sidecar (`_status/backfill-symbol-coverage.json`, atomic write): per symbol, granularity, provider and feed, the session ranges whose bars were written. Backfill resume reads only this sidecar; the date-only checkpoint and bar-count sidecars remain for status surfaces and are not evidence for skipping. An unreadable or newer-format coverage file is treated as no coverage. `BackfillCoverageMath` owns the range merge and missing-range arithmetic.
+
+Fresh fetches reset status checkpoints for the requested granularity and retain verified coverage
+and batch receipts.
+
+For a batch interrupted between sink confirmation and receipt publication, the durable dedup
+ledger can confirm each exact versioned row while its entry is retained. Replay discovers
+market-data files using the storage catalog's reserved-directory exclusions.
+
+Each durable historical response has a content-addressed batch receipt. It records the request,
+actual provider, row count, hash, and observed sessions. An identified exchange calendar supplies
+expected sessions. Incomplete intervals can resume around already verified sessions, including
+interior holes. Backtests retain the consumed revision links and expose incomplete or unknown
+coverage in the run disclosure.
 
 `JsonlBackfillBarWriter` gives every granularity its own file prefix (`bar_4hour`, `bar_weekly`, `bar_monthly` alongside the existing ones) and throws for an unknown granularity instead of writing it as `bar_daily`.
 
@@ -1004,6 +1024,11 @@ journal and retained wash-sale deferrals. They do not invent a source execution 
 an explicit retained quote exactly, while old unversioned batches keep the legacy allocator.
 Unsupported versions or inconsistent retained economics block reporting.
 
+Migration `V_ledger_082__external_gl_posting.sql` retains scoped mapping revisions, immutable
+packages, decisions and receipt observations. Approval atomically reserves a journal at the
+external destination and enqueues it. Worker leases fence receipt writes. Hard close checks
+required external-GL coverage under the existing period lock.
+
 `PostgresLedgerJournalStore.GetPeriodLockOwnerAsync` reads the retained close actor under the same
 tenant guard as the period. Recurring journal generation consumes the existing PostgreSQL period
 authority and this actor for blocked-occurrence evidence; its file-backed schedule store never
@@ -1644,6 +1669,9 @@ connection so production journal reads stay explicitly scoped. Account and line-
 first identify matching journal entries, then rehydrate every retained leg for those entries, so
 durable scoped reads do not return unbalanced partial journals to close, reporting, reconciliation,
 or export consumers.
+The `PostgresLedgerJournalStore.TenantReads.cs` partial keeps caller resolution, read predicates,
+and unscoped-read refusal together. It shares the existing store fields and preserves both
+deployment-boundary and fail-closed tenant enforcement.
 `LedgerJournalEntryQuery.SourceEventId` also filters the existing indexed
 `journal_entries.source_event_id` column, allowing a book/event proof chain to find its immutable
 journal without scanning unrelated metadata. No projection-event-to-journal link table, alternate
@@ -1973,6 +2001,15 @@ ordinary lifecycle transitions cannot replace the preparation link or relax sour
 <!-- source-todos:begin module=SRC-STORAGE -->
 - No registry-backed TODOs are open for this module.
 <!-- source-todos:end -->
+
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+`PostgresManualJournalEntryDraftStore` (ledger migration 077) keeps manual journal drafts keyed by fund, tenant,
+company and journal ID exactly as the file store does, retaining each complete draft so server-held intercompany
+fields round-trip unchanged; batch saves are one transaction. The same migration holds the command receipts that
+serialize journal commands across hosts; completed receipts cannot be rewritten or removed.
+`PostgresIntercompanyConfirmationClosePolicyStore` (ledger migration 078) and `FileIntercompanyConfirmationClosePolicyStore`
+retain append-only confirmation close-policy versions; the database refuses update, delete and truncate.
 
 ## Validation
 

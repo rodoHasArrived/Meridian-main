@@ -281,7 +281,10 @@ public sealed class StrategyDesignService
             cellCount,
             transitionCount,
             document.UpdatedAt,
-            validationSummary);
+            validationSummary)
+        {
+            Revision = document.Revision
+        };
     }
 
     /// <summary>Builds deterministic trace rows used by preview and run responses.</summary>
@@ -651,6 +654,30 @@ public sealed class StrategyDesignService
         var now = new DateTimeOffset(2026, 5, 15, 0, 0, 0, TimeSpan.Zero);
         return
         [
+            new(
+                "equity-price-filter",
+                "Equity price filter",
+                "Buy a fixed share quantity when the price exceeds the entry threshold.",
+                "Equity",
+                "Meridian closed-expression Designer",
+                ["paper", "equity"],
+                Normalize(new StrategyDesignDocument(
+                    "strategy-design-equity-price-filter",
+                    "Equity price filter",
+                    "Single-equity daily bar strategy.",
+                    "1", "provider-bars/equities/daily", ["SPY"],
+                    [
+                        new("price-filter", "Entry threshold", "visual", "filter", "PRICE > 100", ["PRICE"]),
+                        new("fixed-shares", "Buy equities", "trade", "trade", "Buy fixed shares", [],
+                            new Dictionary<string, string>
+                            {
+                                ["instrument"] = "Equity",
+                                ["direction"] = "Buy",
+                                ["sizingMethod"] = "FixedShares",
+                                ["sizingValue"] = "10"
+                            })
+                    ],
+                    [], null, now, now))),
             new(
                 "investment-grade-income",
                 "Investment-grade income screen",

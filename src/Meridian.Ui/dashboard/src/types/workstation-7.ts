@@ -1140,6 +1140,7 @@ export interface BackfillTriggerRequest {
   symbols: string[];
   from: string | null;
   to: string | null;
+  resumeFromCheckpoint?: boolean;
 }
 
 export interface BackfillTriggerResult {
@@ -1152,6 +1153,93 @@ export interface BackfillTriggerResult {
   startedUtc: string;
   completedUtc: string;
   error: string | null;
+  quotaReceipt?: BackfillQuotaReceipt | null;
+  providerProvenance?: import("./provider-provenance").ProviderProvenanceReceipt | null;
+  batchReceipts?: BackfillBatchReceipt[] | null;
+  routingAttempts?: BackfillRoutingAttempt[] | null;
+}
+
+export interface BackfillRoutingAttempt {
+  symbol: string;
+  providerId: string;
+  reason: string;
+  bars: number;
+  attempted: boolean;
+}
+
+export interface BackfillQuotaEstimate {
+  expectedRequests: number | null;
+  requestsPerWindow: number | null;
+  windowSeconds: number | null;
+  observedRemainingRequests: number | null;
+  observedAt: string | null;
+  resetAt: string | null;
+  backfillRequestsPerWindow: number | null;
+  backfillRemainingRequests: number | null;
+  reservedHeadroomPercent: number;
+  maxConcurrentRequests: number | null;
+  estimatedDurationSeconds: number | null;
+  exceedsBudget: boolean;
+  uncertainty: string;
+  quotaUnit?: string;
+  dailyLimit?: number | null;
+  dailyBackfillAllowance?: number | null;
+  observedDailyRemaining?: number | null;
+  dailyResetAt?: string | null;
+}
+
+export interface BackfillQuotaReceipt {
+  estimate: BackfillQuotaEstimate;
+  observedProviders: string[];
+  actualRequests: number | null;
+  actualDurationSeconds: number;
+  requestVariance: number | null;
+  durationVarianceSeconds: number | null;
+  throttlingEventCount: number;
+  throttlingEvents: { provider: string; reason: string; observedAt: string; waitSeconds: number | null }[];
+  providersThatReturnedBars?: string[] | null;
+}
+
+export interface BackfillProviderAlternative {
+  provider: string;
+  displayName: string;
+}
+
+export interface BackfillSubmissionRequest extends BackfillTriggerRequest {
+  executionPolicy: "queued" | "scheduled";
+  scheduledAt: string | null;
+  submissionId: string;
+  approvedAlternativeFor?: string;
+}
+
+export interface BackfillSubmissionReceipt {
+  executionId: string;
+  status: string;
+  provider: string;
+  scheduledAt: string;
+  quota: BackfillQuotaEstimate;
+}
+
+export interface BackfillBatchReceiptSummary {
+  revisionId: string;
+  requestedProvider: string;
+  servingProvider: string | null;
+  feed: string;
+  instrument: string;
+  granularity: string;
+  from: string | null;
+  to: string | null;
+  status: string;
+  rowCount: number;
+  contentHash: string;
+  calendar: string | null;
+  expectedSessionCount: number | null;
+  receivedSessionCount: number;
+}
+
+export interface BackfillBatchReceipt extends Omit<BackfillBatchReceiptSummary, "expectedSessionCount" | "receivedSessionCount"> {
+  expectedSessions: string[] | null;
+  receivedSessions: string[];
 }
 
 export interface BackfillPreviewSymbol {
@@ -1169,8 +1257,10 @@ export interface BackfillPreviewResult {
   totalDays: number;
   estimatedTradingDays: number;
   symbols: BackfillPreviewSymbol[];
-  estimatedDurationSeconds: number;
+  estimatedDurationSeconds: number | null;
   notes: string[];
+  quota?: BackfillQuotaEstimate;
+  approvedAlternatives?: BackfillProviderAlternative[];
 }
 
 export interface BackfillProgressEntry {
@@ -1272,6 +1362,13 @@ export interface BackfillExecutionHistoryRow {
   autoRemediationLastOutcome: string | null;
   autoRemediationIdempotencyKey: string | null;
   autoRemediationSla: BackfillRemediationSla | null;
+  requestedProvider?: string | null;
+  scheduledAt?: string | null;
+  throttledUntil?: string | null;
+  submissionEstimate?: BackfillQuotaEstimate | null;
+  quotaReceipt?: BackfillQuotaReceipt | null;
+  batchReceipts?: BackfillBatchReceiptSummary[] | null;
+  routingAttempts?: BackfillRoutingAttempt[] | null;
 }
 
 export interface BackfillExecutionHistoryResponse {

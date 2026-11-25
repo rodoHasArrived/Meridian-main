@@ -499,6 +499,8 @@ public sealed partial class StatementReconciliationReportWorkflowService
                 await SaveSnapshotAsync(location, snapshot, ct).ConfigureAwait(false);
             }
 
+            snapshot = await PublishReviewedRowCasesAsync(snapshot, ct).ConfigureAwait(false);
+            await SaveSnapshotAsync(location, snapshot, ct).ConfigureAwait(false);
             var reconciliationGate = await EvaluateCurrentReconciliationAsync(snapshot, ct)
                 .ConfigureAwait(false);
             if (!reconciliationGate.IsSatisfied)
@@ -685,7 +687,8 @@ public sealed partial class StatementReconciliationReportWorkflowService
         var queueScope = new ReconciliationBreakQueueScope(tenantId, companyId);
         var items = (await _breakQueue.GetAllAsync(queueScope, ct: ct).ConfigureAwait(false))
             .Where(item =>
-                string.Equals(item.SourceType, "statement", StringComparison.OrdinalIgnoreCase)
+                (string.Equals(item.SourceType, "statement", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(item.SourceType, "statement-import-review", StringComparison.OrdinalIgnoreCase))
                 && string.Equals(item.SourceImportId, import.RunId, StringComparison.OrdinalIgnoreCase))
             .OrderBy(static item => item.BreakId, StringComparer.Ordinal)
             .ToArray();
@@ -733,8 +736,8 @@ public sealed partial class StatementReconciliationReportWorkflowService
                 or ReconciliationCaseLifecycleState.AwaitingEvidence
                 or ReconciliationCaseLifecycleState.Reopened);
         var incompleteHandoffs = items.Count(static item =>
-            StatementCaseworkHandoffObligation.HasPending(item)
-            || !StatementCaseworkHandoffObligation.HasCompleted(item)
+            (string.Equals(item.SourceType, "statement", StringComparison.OrdinalIgnoreCase)
+                && (StatementCaseworkHandoffObligation.HasPending(item) || !StatementCaseworkHandoffObligation.HasCompleted(item)))
             || string.IsNullOrWhiteSpace(item.FundProfileId)
             || !item.LedgerBookId.HasValue
             || item.LedgerBookId.Value == Guid.Empty
@@ -1244,7 +1247,11 @@ public sealed partial class StatementReconciliationReportWorkflowService
             command.Import.PeriodEnd,
             command.Import.ToleranceProfileId,
             command.Import.ImportedBy,
-            command.Import.AccountingScope);
+            command.Import.AccountingScope)
+        {
+            ReviewId = command.Import.ReviewId,
+            RowDispositions = command.Import.RowDispositions
+        };
         var workflow = new StatementReconciliationReportWorkflowDto(
             workflowId,
             StatementReconciliationReportWorkflowStatusDto.InputRetained,
@@ -1300,7 +1307,12 @@ public sealed partial class StatementReconciliationReportWorkflowService
             request.ToleranceProfileId,
             request.ImportedBy)
         {
-            AccountingScope = request.AccountingScope
+            AccountingScope = request.AccountingScope,
+            ReviewId = request.ReviewId,
+            RowDispositions = request.RowDispositions,
+            TenantId = snapshot.Workflow.TenantId,
+            CompanyId = snapshot.Workflow.CompanyId,
+            AllowAcceptAsBreak = SupportsReviewedRowCases
         };
         var command = new StatementReconciliationReportStartCommand(
             importRequest,
@@ -1482,6 +1494,12 @@ public sealed partial class StatementReconciliationReportWorkflowService
             CanonicalizeSemanticIdentity(command.Import.Document.ExternalAccountId),
             CanonicalizeSemanticIdentity(command.Import.ToleranceProfileId),
             contentHash);
+        if (!string.IsNullOrWhiteSpace(command.Import.ReviewId))
+        {
+            identity += "|review:" + command.Import.ReviewId + "|decisions:" + string.Join(";",
+                command.Import.RowDispositions.OrderBy(row => row.RowId, StringComparer.Ordinal)
+                    .Select(row => $"{row.RowId}:{row.Disposition}:{Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(row.Reason))}"));
+        }
         return prefix + Sha256Digest.ComputeUtf8(identity)[..32];
     }
 
@@ -1631,7 +1649,9 @@ public sealed partial class StatementReconciliationReportWorkflowService
             && SemanticIdentityEquals(
                 request.DocumentExternalAccountId,
                 import.Document.ExternalAccountId)
-            && SemanticIdentityEquals(request.ToleranceProfileId, import.ToleranceProfileId);
+            && SemanticIdentityEquals(request.ToleranceProfileId, import.ToleranceProfileId)
+            && string.Equals(request.ReviewId, import.ReviewId, StringComparison.Ordinal)
+            && request.RowDispositions.SequenceEqual(import.RowDispositions);
         if (identityMatches)
         {
             var retainedInput = await File.ReadAllBytesAsync(
@@ -1883,7 +1903,11 @@ public sealed partial class StatementReconciliationReportWorkflowService
         DateOnly PeriodEnd,
         string? ToleranceProfileId,
         string ImportedBy,
-        StatementAccountingScope? AccountingScope = null);
+        StatementAccountingScope? AccountingScope = null)
+    {
+        public string? ReviewId { get; init; }
+        public IReadOnlyList<StatementImportRowDispositionDto> RowDispositions { get; init; } = [];
+    }
 
     private sealed record StatementReconciliationReport(
         int SchemaVersion,

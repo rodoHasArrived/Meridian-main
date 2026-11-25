@@ -14,4 +14,23 @@ public static class StrategyRunContractCompatibility
         if (identity.Mode != summary.Mode)
             throw new InvalidOperationException("Identity mode must match summary mode.");
     }
+
+    /// <summary>Discloses observed source differences and missing evidence among compared backtests.</summary>
+    public static IReadOnlyList<string> DescribeSourceMixDifferences(IReadOnlyList<string?> backtestSourceMixHashes)
+    {
+        if (backtestSourceMixHashes.Count < 2)
+            return [];
+
+        var warnings = new List<string>(2);
+        if (backtestSourceMixHashes.Where(static hash => hash is not null)
+            .Distinct(StringComparer.Ordinal).Skip(1).Any())
+        {
+            warnings.Add("These backtests replayed different provider mixes.");
+        }
+
+        if (backtestSourceMixHashes.Any(static hash => hash is null))
+            warnings.Add("Replay provider mix is unavailable for at least one backtest.");
+
+        return warnings;
+    }
 }

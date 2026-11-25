@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TickerStripService
+
+Qualified name: <code>Meridian.Wpf.Services.TickerStripService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/TickerStripService.cs:12](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L12).
+
+Manages the single always-on-top TickerStripWindow instance. Call Toggle to open/close the strip from any part of the shell.
+
+```csharp
+public static class TickerStripService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void Toggle();</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:17](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L17) | Opens the strip if it is closed; closes it if it is open. |
+| <code>public static void Open();</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:26](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L26) | Opens and shows the ticker strip (no-op if already visible). |
+| <code>public static void Close();</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:41](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L41) | Closes the ticker strip (no-op if already closed). |
+| <code>public static bool IsOpen =&gt; …;</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:48](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L48) | Returns true while the strip window is open. |
+
 ## TickerUpdateMessage
 
 Qualified name: <code>Meridian.Wpf.Services.TickerUpdateMessage</code>. Kind: `class`.
@@ -407,20 +428,20 @@ Declared public members:
 | <code>public string? GetPageFilterState(string pageTag, string filterKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:853](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L853) | Retrieves a previously saved filter value for a page from the active session. Returns null when no value has been stored. |
 | <code>public Task&lt;string&gt; ExportWorkspaceAsync(string workspaceId) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:865](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L865) |  |
 | <code>public Task&lt;WorkspaceTemplate?&gt; ImportWorkspaceAsync(string json, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:877](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L877) |  |
-| <code>public event EventHandler&lt;WorkspaceEventArgs&gt;? WorkspaceCreated;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1694](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1694) |  |
-| <code>public event EventHandler&lt;WorkspaceEventArgs&gt;? WorkspaceUpdated;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1695](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1695) |  |
-| <code>public event EventHandler&lt;WorkspaceEventArgs&gt;? WorkspaceDeleted;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1696](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1696) |  |
-| <code>public event EventHandler&lt;WorkspaceEventArgs&gt;? WorkspaceActivated;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1697](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1697) |  |
-| <code>public Task SaveDockLayoutAsync(string workspaceId, string layoutXml, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1705](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1705) | Persists the AvalonDock layout XML string for a named workspace shell (e.g., &quot;trading&quot; or &quot;strategy&quot;) to the local application settings file. |
-| <code>public Task&lt;string?&gt; GetDockLayoutAsync(string workspaceId, string? fundProfileId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1719](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1719) | Retrieves the previously persisted AvalonDock layout XML for a workspace shell. Returns null if no layout has been saved yet. |
-| <code>public Task SaveWorkspaceLayoutStateAsync(string workspaceId, WorkstationLayoutState layoutState, string? fundProfileId = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1749](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1749) |  |
-| <code>public Task SaveWorkspaceLayoutStateForContextAsync(string workspaceId, WorkstationLayoutState layoutState, string? operatingContextKey = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1784](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1784) |  |
-| <code>public Task&lt;WorkstationLayoutState?&gt; GetWorkspaceLayoutStateAsync(string workspaceId, string? fundProfileId = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1791](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1791) |  |
-| <code>public Task&lt;WorkstationLayoutState?&gt; GetWorkspaceLayoutStateForContextAsync(string workspaceId, string? operatingContextKey = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1818](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1818) |  |
-| <code>public WorkspaceSummaryStats GetSummaryStatsForActiveWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1833](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1833) | Returns a live WorkspaceSummaryStats for the currently active workspace derived from LastSession. Falls back to an empty instance when no session is present. This is a fast, synchronous read that does not hit any remote service. |
-| <code>public WorkspaceSummaryStats? GetCachedSummaryStats() =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1840](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1840) | Returns the cached WorkspaceSummaryStats from the last persisted session without recomputing it. Useful for cold-start display before the first full load. |
-| <code>public Task SaveQuickActionsAsync(string workspaceId, IEnumerable&lt;WorkspaceQuickAction&gt; actions, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1847](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1847) | Updates the quick-action list on the active workspace template and persists the change. Replaces the existing list; pass an empty collection to clear all quick actions. |
-| <code>public IReadOnlyList&lt;WorkspaceQuickAction&gt; GetQuickActionsForWorkspace(string workspaceId) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1876](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1876) | Returns the quick-action list for the specified workspace, or an empty list when the workspace does not exist or has no actions configured. |
+| <code>public event EventHandler&lt;WorkspaceEventArgs&gt;? WorkspaceCreated;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1696](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1696) |  |
+| <code>public event EventHandler&lt;WorkspaceEventArgs&gt;? WorkspaceUpdated;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1697](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1697) |  |
+| <code>public event EventHandler&lt;WorkspaceEventArgs&gt;? WorkspaceDeleted;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1698](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1698) |  |
+| <code>public event EventHandler&lt;WorkspaceEventArgs&gt;? WorkspaceActivated;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1699](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1699) |  |
+| <code>public Task SaveDockLayoutAsync(string workspaceId, string layoutXml, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1707](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1707) | Persists the AvalonDock layout XML string for a named workspace shell (e.g., &quot;trading&quot; or &quot;strategy&quot;) to the local application settings file. |
+| <code>public Task&lt;string?&gt; GetDockLayoutAsync(string workspaceId, string? fundProfileId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1721](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1721) | Retrieves the previously persisted AvalonDock layout XML for a workspace shell. Returns null if no layout has been saved yet. |
+| <code>public Task SaveWorkspaceLayoutStateAsync(string workspaceId, WorkstationLayoutState layoutState, string? fundProfileId = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1751](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1751) |  |
+| <code>public Task SaveWorkspaceLayoutStateForContextAsync(string workspaceId, WorkstationLayoutState layoutState, string? operatingContextKey = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1786](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1786) |  |
+| <code>public Task&lt;WorkstationLayoutState?&gt; GetWorkspaceLayoutStateAsync(string workspaceId, string? fundProfileId = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1793](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1793) |  |
+| <code>public Task&lt;WorkstationLayoutState?&gt; GetWorkspaceLayoutStateForContextAsync(string workspaceId, string? operatingContextKey = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1820](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1820) |  |
+| <code>public WorkspaceSummaryStats GetSummaryStatsForActiveWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1835](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1835) | Returns a live WorkspaceSummaryStats for the currently active workspace derived from LastSession. Falls back to an empty instance when no session is present. This is a fast, synchronous read that does not hit any remote service. |
+| <code>public WorkspaceSummaryStats? GetCachedSummaryStats() =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1842](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1842) | Returns the cached WorkspaceSummaryStats from the last persisted session without recomputing it. Useful for cold-start display before the first full load. |
+| <code>public Task SaveQuickActionsAsync(string workspaceId, IEnumerable&lt;WorkspaceQuickAction&gt; actions, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1849](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1849) | Updates the quick-action list on the active workspace template and persists the change. Replaces the existing list; pass an empty collection to clear all quick actions. |
+| <code>public IReadOnlyList&lt;WorkspaceQuickAction&gt; GetQuickActionsForWorkspace(string workspaceId) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceService.cs:1878](../../../../src/Meridian.Wpf/Services/WorkspaceService.cs#L1878) | Returns the quick-action list for the specified workspace, or an empty list when the workspace does not exist or has no actions configured. |
 
 ## WorkspaceShellContextService
 
@@ -1139,23 +1160,3 @@ Declared public members:
 | <code>IReadOnlyList&lt;PaneContentState&gt; GetVisiblePaneContentStates(PaneHostViewModel paneHost);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:28](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L28) |  |
 | <code>FrameworkElement CreatePaneContent(PaneContentState state);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:30](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L30) |  |
 | <code>void InitializeNavigationFrame(Frame frame);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:32](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L32) |  |
-
-## IShellPageRegistry
-
-Qualified name: <code>Meridian.Wpf.Shell.Services.IShellPageRegistry</code>. Kind: `interface`.
-
-Source: [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:8](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L8).
-
-Exposes the registered desktop pages, workspace capabilities, and shell definitions.
-
-```csharp
-public interface IShellPageRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IReadOnlyList&lt;ShellPageDescriptor&gt; Pages { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:10](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L10) |  |
-| <code>IReadOnlyList&lt;WorkspaceCapabilityDescriptor&gt; WorkspaceCapabilities { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:12](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L12) |  |
-| <code>IReadOnlyList&lt;WorkspaceShellDefinition&gt; WorkspaceShells { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:14](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L14) |  |

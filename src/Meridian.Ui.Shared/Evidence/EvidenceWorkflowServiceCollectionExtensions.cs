@@ -100,6 +100,11 @@ public static class EvidenceWorkflowServiceCollectionExtensions
         services.TryAddSingleton(sp => new ReportLedgerAmountProvenanceService(
             sp.GetService<IReportingRunStore>(),
             sp.GetRequiredService<PostedLedgerAmountProvenanceService>()));
+        services.TryAddSingleton(sp => new TrialBalanceAmountProvenanceService(
+            sp.GetService<Meridian.Storage.Ledger.ILedgerJournalStore>(),
+            sp.GetService<Meridian.Contracts.Ledger.ILedgerBookService>(),
+            sp.GetService<Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry>(),
+            sp.GetRequiredService<PostedLedgerAmountProvenanceService>()));
         services.TryAddSingleton<IEvidenceDocumentExtractor, ManualEvidenceDocumentExtractor>();
         var hasKnownDurableStatementAuthority =
             HasKnownDurableStatementAuthority(services);

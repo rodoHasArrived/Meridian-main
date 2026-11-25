@@ -6,6 +6,198 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ThroughputAnalysisOptions
+
+Qualified name: <code>Meridian.Ui.Services.ThroughputAnalysisOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:501](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L501).
+
+Selects the provider, period, and time-bucket interval for throughput analysis.
+
+```csharp
+public sealed class ThroughputAnalysisOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? Provider { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:503](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L503) |  |
+| <code>public TimeSpan? Period { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:504](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L504) |  |
+| <code>public int IntervalSeconds { get; set; } = 60;</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:505](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L505) |  |
+
+## ThroughputAnalysisResponse
+
+Qualified name: <code>Meridian.Ui.Services.ThroughputAnalysisResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:525](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L525).
+
+Carries API throughput rates, total processed events, and time-bucket measurements.
+
+```csharp
+public sealed class ThroughputAnalysisResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public double CurrentThroughput { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:527](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L527) |  |
+| <code>public double AverageThroughput { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:528](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L528) |  |
+| <code>public double PeakThroughput { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:529](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L529) |  |
+| <code>public long TotalEventsProcessed { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:530](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L530) |  |
+| <code>public List&lt;ThroughputDataPoint&gt;? Timeline { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:531](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L531) |  |
+
+## ThroughputAnalysisResult
+
+Qualified name: <code>Meridian.Ui.Services.ThroughputAnalysisResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:511](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L511).
+
+Reports throughput-query success, current and peak rates, and the event timeline.
+
+```csharp
+public sealed class ThroughputAnalysisResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:513](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L513) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:514](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L514) |  |
+| <code>public double CurrentThroughput { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:515](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L515) |  |
+| <code>public double AverageThroughput { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:516](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L516) |  |
+| <code>public double PeakThroughput { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:517](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L517) |  |
+| <code>public long TotalEventsProcessed { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:518](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L518) |  |
+| <code>public List&lt;ThroughputDataPoint&gt; Timeline { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:519](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L519) |  |
+
+## ThroughputDataPoint
+
+Qualified name: <code>Meridian.Ui.Services.ThroughputDataPoint</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:537](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L537).
+
+Records the event rate and total events at one point in a throughput timeline.
+
+```csharp
+public sealed class ThroughputDataPoint
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:539](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L539) |  |
+| <code>public double EventsPerSecond { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:540](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L540) |  |
+| <code>public long TotalEvents { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:541](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L541) |  |
+
+## TierConfigResponse
+
+Qualified name: <code>Meridian.Ui.Services.TierConfigResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:152](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L152).
+
+HTTP response payload for tier configuration.
+
+```csharp
+public sealed class TierConfigResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public List&lt;StorageTierConfig&gt;? Tiers { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:154](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L154) |  |
+| <code>public bool AutoMigrationEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:155](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L155) |  |
+| <code>public string? MigrationSchedule { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:156](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L156) |  |
+
+## TierConfigResult
+
+Qualified name: <code>Meridian.Ui.Services.TierConfigResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:140](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L140).
+
+Result of getting tier configuration.
+
+```csharp
+public sealed class TierConfigResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:142](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L142) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:143](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L143) |  |
+| <code>public List&lt;StorageTierConfig&gt; Tiers { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:144](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L144) |  |
+| <code>public bool AutoMigrationEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:145](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L145) |  |
+| <code>public string? MigrationSchedule { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:146](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L146) |  |
+
+## TierMigrationApiResult
+
+Qualified name: <code>Meridian.Ui.Services.TierMigrationApiResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1501](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1501).
+
+Response from /api/storage/tiers/migrate endpoint.
+
+```csharp
+public sealed class TierMigrationApiResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1503](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1503) |  |
+| <code>public int FilesMigrated { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1504](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1504) |  |
+| <code>public long BytesMigrated { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1505](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1505) |  |
+| <code>public TimeSpan Duration { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1506](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1506) |  |
+| <code>public List&lt;string&gt; Errors { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1507](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1507) |  |
+
+## TierMigrationOptions
+
+Qualified name: <code>Meridian.Ui.Services.TierMigrationOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:175](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L175).
+
+Options for tier migration.
+
+```csharp
+public sealed class TierMigrationOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateOnly? OlderThan { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:177](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L177) |  |
+| <code>public List&lt;string&gt;? Symbols { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:178](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L178) |  |
+| <code>public List&lt;string&gt;? EventTypes { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:179](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L179) |  |
+| <code>public bool DryRun { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:180](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L180) |  |
+
+## TierMigrationResponse
+
+Qualified name: <code>Meridian.Ui.Services.TierMigrationResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:199](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L199).
+
+HTTP response payload for tier migration.
+
+```csharp
+public sealed class TierMigrationResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int FilesProcessed { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:201](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L201) |  |
+| <code>public long BytesMigrated { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:202](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L202) |  |
+| <code>public long SpaceSavedBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:203](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L203) |  |
+| <code>public string[]? Errors { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:204](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L204) |  |
+
 ## TierMigrationResult
 
 Qualified name: <code>Meridian.Ui.Services.TierMigrationResult</code>. Kind: `class`.
@@ -179,21 +371,21 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static TimeSeriesAlignmentService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:17](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L17) |  |
-| <code>public event EventHandler&lt;AlignmentProgressEventArgs&gt;? ProgressChanged;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:28](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L28) |  |
-| <code>public async Task&lt;AlignmentResult&gt; AlignDataAsync(AlignmentOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:34](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L34) | Aligns time series data with specified options. |
-| <code>public Task&lt;List&lt;AlignmentInterval&gt;&gt; GetAlignmentIntervalsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:83](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L83) | Gets available alignment intervals. |
-| <code>public Task&lt;List&lt;AggregationMethod&gt;&gt; GetAggregationMethodsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:104](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L104) | Gets available aggregation methods. |
-| <code>public Task&lt;List&lt;GapHandlingStrategy&gt;&gt; GetGapStrategiesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:170](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L170) | Gets available gap handling strategies. |
-| <code>public Task&lt;List&lt;AlignmentPreset&gt;&gt; GetAlignmentPresetsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:222](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L222) | Gets alignment presets for common use cases. |
-| <code>public async Task&lt;AlignmentPreview&gt; PreviewAlignmentAsync(AlignmentOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:299](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L299) | Previews alignment results without creating output. |
-| <code>public AlignmentValidationResult ValidateOptions(AlignmentOptions options);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:338](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L338) | Validates alignment options. |
+| <code>public static TimeSeriesAlignmentService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:23](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L23) |  |
+| <code>public event EventHandler&lt;AlignmentProgressEventArgs&gt;? ProgressChanged;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:34](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L34) |  |
+| <code>public async Task&lt;AlignmentResult&gt; AlignDataAsync(AlignmentOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:40](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L40) | Aligns time series data with specified options. |
+| <code>public Task&lt;List&lt;AlignmentInterval&gt;&gt; GetAlignmentIntervalsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:90](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L90) | Gets available alignment intervals. |
+| <code>public Task&lt;List&lt;AggregationMethod&gt;&gt; GetAggregationMethodsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:111](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L111) | Gets available aggregation methods. |
+| <code>public Task&lt;List&lt;GapHandlingStrategy&gt;&gt; GetGapStrategiesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:177](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L177) | Gets available gap handling strategies. |
+| <code>public Task&lt;List&lt;AlignmentPreset&gt;&gt; GetAlignmentPresetsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:229](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L229) | Gets alignment presets for common use cases. |
+| <code>public async Task&lt;AlignmentPreview&gt; PreviewAlignmentAsync(AlignmentOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:306](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L306) | Previews alignment results without creating output. |
+| <code>public AlignmentValidationResult ValidateOptions(AlignmentOptions options);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:346](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L346) | Validates alignment options. |
 
 ## TimeSeriesInterval
 
 Qualified name: <code>Meridian.Ui.Services.TimeSeriesInterval</code>. Kind: `enum`.
 
-Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:399](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L399).
+Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:407](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L407).
 
 ```csharp
 public enum TimeSeriesInterval : byte
@@ -203,23 +395,23 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Second1</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:401](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L401) |  |
-| <code>Second5</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:402](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L402) |  |
-| <code>Second10</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:403](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L403) |  |
-| <code>Second30</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:404](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L404) |  |
-| <code>Minute1</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:405](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L405) |  |
-| <code>Minute5</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:406](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L406) |  |
-| <code>Minute15</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:407](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L407) |  |
-| <code>Minute30</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:408](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L408) |  |
-| <code>Hour1</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:409](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L409) |  |
-| <code>Hour4</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:410](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L410) |  |
-| <code>Daily</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:411](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L411) |  |
+| <code>Second1</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:409](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L409) |  |
+| <code>Second5</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:410](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L410) |  |
+| <code>Second10</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:411](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L411) |  |
+| <code>Second30</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:412](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L412) |  |
+| <code>Minute1</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:413](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L413) |  |
+| <code>Minute5</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:414](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L414) |  |
+| <code>Minute15</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:415](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L415) |  |
+| <code>Minute30</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:416](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L416) |  |
+| <code>Hour1</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:417](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L417) |  |
+| <code>Hour4</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:418](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L418) |  |
+| <code>Daily</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:419](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L419) |  |
 
 ## TokenExpirationWarningEventArgs
 
 Qualified name: <code>Meridian.Ui.Services.TokenExpirationWarningEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:465](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L465).
+Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:479](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L479).
 
 Event args for token expiration warning.
 
@@ -231,17 +423,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:467](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L467) |  |
-| <code>public DateTime ExpiresAt { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:468](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L468) |  |
-| <code>public bool CanAutoRefresh { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:469](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L469) |  |
-| <code>public TimeSpan TimeRemaining =&gt; …;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:470](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L470) |  |
-| <code>public TokenExpirationWarningEventArgs(string providerId, DateTime expiresAt, bool canAutoRefresh);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:472](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L472) |  |
+| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:481](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L481) |  |
+| <code>public DateTime ExpiresAt { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:482](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L482) |  |
+| <code>public bool CanAutoRefresh { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:483](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L483) |  |
+| <code>public TimeSpan TimeRemaining =&gt; …;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:484](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L484) |  |
+| <code>public TokenExpirationWarningEventArgs(string providerId, DateTime expiresAt, bool canAutoRefresh);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:486](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L486) |  |
 
 ## TokenRefreshEventArgs
 
 Qualified name: <code>Meridian.Ui.Services.TokenRefreshEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:435](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L435).
+Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:449](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L449).
 
 Event args for successful token refresh.
 
@@ -253,15 +445,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:437](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L437) |  |
-| <code>public DateTime RefreshedAt { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:438](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L438) |  |
-| <code>public TokenRefreshEventArgs(string providerId, DateTime refreshedAt);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:440](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L440) |  |
+| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:451](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L451) |  |
+| <code>public DateTime RefreshedAt { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:452](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L452) |  |
+| <code>public TokenRefreshEventArgs(string providerId, DateTime refreshedAt);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:454](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L454) |  |
 
 ## TokenRefreshFailedEventArgs
 
 Qualified name: <code>Meridian.Ui.Services.TokenRefreshFailedEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:450](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L450).
+Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:464](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L464).
 
 Event args for failed token refresh.
 
@@ -273,9 +465,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:452](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L452) |  |
-| <code>public string ErrorMessage { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:453](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L453) |  |
-| <code>public TokenRefreshFailedEventArgs(string providerId, string errorMessage);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:455](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L455) |  |
+| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:466](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L466) |  |
+| <code>public string ErrorMessage { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:467](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L467) |  |
+| <code>public TokenRefreshFailedEventArgs(string providerId, string errorMessage);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:469](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L469) |  |
 
 ## TooltipPlacement
 
@@ -896,219 +1088,3 @@ Declared public members:
 | <code>public double Height { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:104](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L104) |  |
 | <code>public string? MonitorId { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:105](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L105) |  |
 | <code>public bool IsMaximized { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:106](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L106) |  |
-
-## WorkspaceCategory
-
-Qualified name: <code>Meridian.Ui.Services.WorkspaceCategory</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:38](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L38).
-
-Persisted workspace category. Numeric values are stable because saved workspace state may contain them. Legacy member names remain as aliases for source and persisted-state compatibility.
-
-```csharp
-public enum WorkspaceCategory : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Strategy = 0</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:40](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L40) |  |
-| <code>Trading</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:41](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L41) |  |
-| <code>Data</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:42](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L42) |  |
-| <code>Accounting</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:43](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L43) |  |
-| <code>Custom</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:44](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L44) |  |
-| <code>[Obsolete(&quot;Use Strategy. Research is retained only as a compatibility alias.&quot;)] Research = Strategy</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:45](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L45) |  |
-| <code>[Obsolete(&quot;Use Data. DataOperations is retained only as a compatibility alias.&quot;)] DataOperations = Data</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:47](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L47) |  |
-| <code>[Obsolete(&quot;Use Accounting. Governance is retained only as a compatibility alias.&quot;)] Governance = Accounting</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:49](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L49) |  |
-
-## WorkspaceCategoryExtensions
-
-Qualified name: <code>Meridian.Ui.Services.WorkspaceCategoryExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:56](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L56).
-
-Maps persisted workspace categories to canonical operator-facing workspace names.
-
-```csharp
-public static class WorkspaceCategoryExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string ToDisplayName(this WorkspaceCategory category);</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:58](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L58) |  |
-
-## WorkspaceEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.WorkspaceEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:199](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L199).
-
-Workspace event args.
-
-```csharp
-public sealed class WorkspaceEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkspaceTemplate? Workspace { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:201](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L201) |  |
-
-## WorkspaceLayoutPreset
-
-Qualified name: <code>Meridian.Ui.Services.WorkspaceLayoutPreset</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:187](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L187).
-
-User-saveable workstation layout preset.
-
-```csharp
-public sealed class WorkspaceLayoutPreset
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string PresetId { get; set; } = Guid.NewGuid().ToString(&quot;N&quot;);</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:189](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L189) |  |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:190](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L190) |  |
-| <code>public bool IsBuiltIn { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:191](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L191) |  |
-| <code>public WorkstationLayoutState Layout { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:192](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L192) |  |
-| <code>public DateTime SavedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:193](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L193) |  |
-
-## WorkspacePage
-
-Qualified name: <code>Meridian.Ui.Services.WorkspacePage</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:74](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L74).
-
-Page within a workspace.
-
-```csharp
-public sealed class WorkspacePage
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string PageTag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:76](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L76) |  |
-| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:77](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L77) |  |
-| <code>public bool IsDefault { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:78](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L78) |  |
-| <code>public double ScrollPosition { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:79](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L79) |  |
-| <code>public Dictionary&lt;string, object&gt; PageState { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:80](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L80) |  |
-
-## WorkspaceQuickAction
-
-Qualified name: <code>Meridian.Ui.Services.WorkspaceQuickAction</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:211](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L211).
-
-Named quick action attached to a workspace. Each action carries a target page tag and an optional tone so shells can render it as a contextual button or menu item without requiring a full workflow summary fetch.
-
-```csharp
-public sealed class WorkspaceQuickAction
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ActionId { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:214](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L214) | Stable identifier used for deduplication and analytics. |
-| <code>public string Label { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:217](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L217) | Human-readable action label shown in the shell tile. |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:220](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L220) | Description shown as tooltip or secondary text. |
-| <code>public string TargetPageTag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:223](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L223) | Navigation target invoked when the action is activated. |
-| <code>public string Tone { get; set; } = &quot;default&quot;;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:226](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L226) | Visual tone: default, primary, success, warning, or danger. |
-| <code>public bool IsEnabled { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:229](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L229) | When false the action is rendered but not interactive (e.g. locked behind context). |
-| <code>public int Order { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:232](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L232) | Display order within the action list (lower = earlier). |
-
-## WorkspaceSummaryStats
-
-Qualified name: <code>Meridian.Ui.Services.WorkspaceSummaryStats</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:239](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L239).
-
-Lightweight workspace summary statistics surfaced in shell tiles, session restore hints, and the quick-action rail. Computed on demand from the active session; not persisted.
-
-```csharp
-public sealed class WorkspaceSummaryStats
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int ActiveRunCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:242](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L242) | Number of strategy runs currently in a running or paused state. |
-| <code>public int PendingReviewCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:245](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L245) | Number of runs flagged for review (failed, cancelled, or promotion pending). |
-| <code>public int PromotionCandidateCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:248](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L248) | Number of completed runs eligible for paper or live promotion. |
-| <code>public bool HasLedgerCoverage { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:251](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L251) | Whether at least one run in this workspace has a ledger reference. |
-| <code>public bool HasPortfolioCoverage { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:254](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L254) | Whether at least one run in this workspace has a portfolio reference. |
-| <code>public DateTimeOffset? LastActivityAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:257](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L257) | When the most recently active page in this workspace was last visited. |
-| <code>public string Digest { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:263](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L263) | Human-readable one-line digest e.g. &quot;3 active · 2 review · ledger covered&quot;. Produced by WorkspaceService.BuildSummaryDigest; empty when stats are all zero. |
-
-## WorkspaceTemplate
-
-Qualified name: <code>Meridian.Ui.Services.WorkspaceTemplate</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:9](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L9).
-
-Workspace template definition.
-
-```csharp
-public sealed class WorkspaceTemplate
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:11](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L11) |  |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:12](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L12) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:13](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L13) |  |
-| <code>public string PreferredPageTag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:14](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L14) |  |
-| <code>public WorkspaceCategory Category { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:15](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L15) |  |
-| <code>public bool IsBuiltIn { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:16](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L16) |  |
-| <code>public DateTime CreatedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:17](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L17) |  |
-| <code>public DateTime UpdatedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:18](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L18) |  |
-| <code>public DateTime? LastActivatedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:19](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L19) |  |
-| <code>public string? LastActivePageTag { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:20](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L20) |  |
-| <code>public List&lt;WorkspacePage&gt; Pages { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:21](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L21) |  |
-| <code>public List&lt;string&gt; RecentPageTags { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:22](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L22) |  |
-| <code>public Dictionary&lt;string, WidgetPosition&gt; WidgetLayout { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:23](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L23) |  |
-| <code>public Dictionary&lt;string, string&gt; Filters { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:24](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L24) |  |
-| <code>public Dictionary&lt;string, string&gt; Context { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:25](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L25) |  |
-| <code>public WindowBounds? WindowBounds { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:26](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L26) |  |
-| <code>public SessionState? SessionSnapshot { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:27](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L27) |  |
-| <code>public List&lt;WorkspaceQuickAction&gt; QuickActions { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:30](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L30) |  |
-
-## WorkstationLayoutState
-
-Qualified name: <code>Meridian.Ui.Services.WorkstationLayoutState</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:132](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L132).
-
-Persisted docking and pane composition for a workstation workspace.
-
-```csharp
-public sealed class WorkstationLayoutState
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string LayoutId { get; set; } = &quot;default&quot;;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:134](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L134) |  |
-| <code>public string DisplayName { get; set; } = &quot;Default Layout&quot;;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:135](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L135) |  |
-| <code>public string ActivePaneId { get; set; } = &quot;pane-1&quot;;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:136](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L136) |  |
-| <code>public string? OperatingContextKey { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:137](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L137) |  |
-| <code>public BoundedWindowMode WindowMode { get; set; } = BoundedWindowMode.DockFloat;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:138](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L138) |  |
-| <code>public string? LayoutPresetId { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:139](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L139) |  |
-| <code>public string? DockLayoutXml { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:140](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L140) |  |
-| <code>public List&lt;WorkstationPaneState&gt; Panes { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:141](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L141) |  |
-| <code>public List&lt;FloatingWorkspaceWindowState&gt; FloatingWindows { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:142](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L142) |  |
-| <code>public Dictionary&lt;string, string&gt; LayoutContext { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:143](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L143) |  |
-| <code>public DateTime SavedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:144](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L144) |  |

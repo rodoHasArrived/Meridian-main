@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Threading;
+using Meridian.Contracts.Operations;
 using Meridian.Core.IO;
 using Meridian.Core.Logging;
 using Serilog;
@@ -25,6 +26,7 @@ public sealed class BackfillJobManager : IDisposable
     private readonly RootedPathGuard _jobsPathGuard;
     private readonly Func<string, string, CancellationToken, Task> _atomicWriteAsync;
     private readonly ILogger _log;
+    private readonly Func<BackfillRoutingSnapshot?>? _captureRouting;
     private static readonly JsonSerializerOptions PersistedJobJsonOptions = new() { WriteIndented = true };
 
     private readonly SemaphoreSlim _persistLock = new(1, 1);
@@ -33,6 +35,9 @@ public sealed class BackfillJobManager : IDisposable
     private Func<string, CancellationToken, Task>? _jobCancellationHandler;
     private Func<IReadOnlyCollection<BackfillRequest>, Task>? _uncommittedBatchCancellationHandler;
     private bool _disposed;
+
+    internal Action<BackfillJob, DateTimeOffset, BackfillRoutingSnapshot?>? CaptureReceipt { get; set; }
+    internal Func<BackfillJob, CancellationToken, Task>? RetainReceiptAsync { get; init; }
 
     /// <summary>
     /// Event raised when a job's status changes.
@@ -49,7 +54,8 @@ public sealed class BackfillJobManager : IDisposable
         BackfillRequestQueue requestQueue,
         string jobsDirectory,
         IAtomicFileWriter atomicFileWriter,
-        ILogger? log = null)
+        ILogger? log = null,
+        Func<BackfillRoutingSnapshot?>? captureRouting = null)
         : this(
             gapAnalyzer,
             requestQueue,
@@ -57,6 +63,7 @@ public sealed class BackfillJobManager : IDisposable
             (atomicFileWriter ?? throw new ArgumentNullException(nameof(atomicFileWriter))).WriteAsync,
             log)
     {
+        _captureRouting = captureRouting;
     }
 
     internal BackfillJobManager(
@@ -152,6 +159,10 @@ public sealed class BackfillJobManager : IDisposable
                         await PersistJobAsync(job, ct).ConfigureAwait(false);
                         OnJobStatusChanged?.Invoke(job, previousStatus);
                     }
+                    else if (job.IsComplete)
+                    {
+                        await PublishReceiptAsync(job).ConfigureAwait(false);
+                    }
 
                     _log.Debug("Loaded job {JobId}: {Name} ({Status})", job.JobId, job.Name, job.Status);
                 }
@@ -212,6 +223,7 @@ public sealed class BackfillJobManager : IDisposable
         if (!job.CanStart)
             throw new InvalidOperationException($"Job {jobId} cannot be started (status: {job.Status})");
 
+        var routing = _captureRouting?.Invoke();
         var startSnapshot = BackfillJobStartSnapshot.Capture(job);
         var previousStatus = startSnapshot.Status;
         IReadOnlyList<BackfillRequest> admittedRequests = Array.Empty<BackfillRequest>();
@@ -240,8 +252,9 @@ public sealed class BackfillJobManager : IDisposable
                 if (!gapAnalysis.HasGaps)
                 {
                     _log.Information("No gaps detected for job {JobId}, completing immediately", jobId);
-                    job.Status = BackfillJobStatus.Completed;
                     job.CompletedAt = DateTimeOffset.UtcNow;
+                    CaptureReceipt?.Invoke(job, job.CompletedAt.Value, routing);
+                    job.Status = BackfillJobStatus.Completed;
                     job.StatusReason = "No data gaps detected";
                     await PersistJobAsync(job, ct).ConfigureAwait(false);
                     durableStartStatePersisted = true;
@@ -253,7 +266,7 @@ public sealed class BackfillJobManager : IDisposable
                 admittedRequests = await _requestQueue.EnqueueJobRequestsAsync(
                     job,
                     gapAnalysis,
-                    ct).ConfigureAwait(false);
+                    ct, routing).ConfigureAwait(false);
             }
             else
             {
@@ -283,7 +296,7 @@ public sealed class BackfillJobManager : IDisposable
                 admittedRequests = await _requestQueue.EnqueueJobRequestsAsync(
                     job,
                     gapAnalysis,
-                    ct).ConfigureAwait(false);
+                    ct, routing).ConfigureAwait(false);
             }
 
             await PersistJobAsync(job, ct).ConfigureAwait(false);
@@ -502,7 +515,7 @@ public sealed class BackfillJobManager : IDisposable
     /// </summary>
     public async Task UpdateJobProgressAsync(BackfillRequest request, CancellationToken ct = default)
     {
-        if (!_jobs.TryGetValue(request.JobId, out var job))
+        if (request.Status == BackfillRequestStatus.Pending || !_jobs.TryGetValue(request.JobId, out var job))
             return;
 
         BackfillJobStatus? completedFromStatus = null;
@@ -514,32 +527,61 @@ public sealed class BackfillJobManager : IDisposable
         {
             if (job.SymbolProgress.TryGetValue(request.Symbol, out var progress))
             {
+                var hasRoutingEvidence = request.RoutingSnapshot is not null || request.RoutingAttempts.Count > 0;
+                if (request.RoutingSnapshot is not null)
+                {
+                    foreach (var session in request.RetainedSessions)
+                    {
+                        if (progress.FilledDates.Add(session))
+                            job.Statistics.GapsFilled++;
+                    }
+                }
+                if (hasRoutingEvidence)
+                {
+                    progress.RoutingAttempts.AddRange(request.RoutingAttempts);
+                    foreach (var (providerId, bars) in request.ServedBy)
+                    {
+                        progress.ServedBy[providerId] = progress.ServedBy.GetValueOrDefault(providerId) + bars;
+                        job.Statistics.BarsByProvider[providerId] = job.Statistics.BarsByProvider.GetValueOrDefault(providerId) + bars;
+                    }
+                    foreach (var attempt in request.RoutingAttempts.Where(attempt => attempt.Attempted))
+                        job.Statistics.RequestsByProvider[attempt.ProviderId] = job.Statistics.RequestsByProvider.GetValueOrDefault(attempt.ProviderId) + 1;
+
+                    progress.SuccessfulProvider = progress.ServedBy.Count == 1 ? progress.ServedBy.Keys.Single() : null;
+                    progress.BarsRetrieved += request.BarsRetrieved;
+                    job.Statistics.TotalBarsRetrieved += request.BarsRetrieved;
+                }
                 if (request.Status == BackfillRequestStatus.Completed)
                 {
                     progress.CompletedRequests++;
-                    progress.BarsRetrieved += request.BarsRetrieved;
-                    progress.SuccessfulProvider = request.AssignedProvider;
-
-                    // Mark dates as filled, counting only dates this request newly covered.
-                    var newlyFilledDates = 0;
-                    var current = request.FromDate;
-                    while (current <= request.ToDate)
+                    if (!hasRoutingEvidence)
                     {
-                        if (current.DayOfWeek != DayOfWeek.Saturday &&
-                            current.DayOfWeek != DayOfWeek.Sunday &&
-                            progress.FilledDates.Add(current))
+                        progress.BarsRetrieved += request.BarsRetrieved;
+                        progress.SuccessfulProvider = request.AssignedProvider;
+                        job.Statistics.TotalBarsRetrieved += request.BarsRetrieved;
+                    }
+
+                    // Older in-process callers can provide a completed request without
+                    // retained-session detail. Preserve that completion contract for them.
+                    if (request.RoutingSnapshot is null)
+                    {
+                        var current = request.FromDate;
+                        while (current <= request.ToDate)
                         {
-                            newlyFilledDates++;
+                            if (current.DayOfWeek != DayOfWeek.Saturday &&
+                                current.DayOfWeek != DayOfWeek.Sunday &&
+                                progress.FilledDates.Add(current))
+                            {
+                                job.Statistics.GapsFilled++;
+                            }
+                            current = current.AddDays(1);
                         }
-                        current = current.AddDays(1);
                     }
 
                     // Update stats
-                    job.Statistics.TotalBarsRetrieved += request.BarsRetrieved;
                     job.Statistics.SuccessfulRequests++;
-                    job.Statistics.GapsFilled += newlyFilledDates;
 
-                    if (request.AssignedProvider != null)
+                    if (!hasRoutingEvidence && request.AssignedProvider != null)
                     {
                         job.Statistics.RequestsByProvider.TryGetValue(request.AssignedProvider, out var count);
                         job.Statistics.RequestsByProvider[request.AssignedProvider] = count + 1;
@@ -578,8 +620,9 @@ public sealed class BackfillJobManager : IDisposable
                 var hasFailures = job.SymbolProgress.Values.Any(p => p.Status == SymbolBackfillStatus.Failed);
                 completedFromStatus = job.Status;
 
-                job.Status = hasFailures ? BackfillJobStatus.Failed : BackfillJobStatus.Completed;
                 job.CompletedAt = DateTimeOffset.UtcNow;
+                CaptureReceipt?.Invoke(job, job.CompletedAt.Value, request.RoutingSnapshot);
+                job.Status = hasFailures ? BackfillJobStatus.Failed : BackfillJobStatus.Completed;
                 job.StatusReason = hasFailures ? "Completed with errors" : "All symbols backfilled successfully";
             }
         }
@@ -686,10 +729,28 @@ public sealed class BackfillJobManager : IDisposable
             }
             _jobsPathGuard.EnsurePath(filePath);
             await _atomicWriteAsync(filePath, json, ct).ConfigureAwait(false);
+            await PublishReceiptAsync(job).ConfigureAwait(false);
         }
         finally
         {
             _persistLock.Release();
+        }
+    }
+
+    private async Task PublishReceiptAsync(BackfillJob job)
+    {
+        if (job.ProviderProvenance is null || RetainReceiptAsync is null)
+            return;
+
+        try
+        {
+            await RetainReceiptAsync(job, CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // The terminal job snapshot owns the receipt. Rebuild the workstation history
+            // entry from it on reload if publication was interrupted.
+            _log.Warning(ex, "Could not index the retained receipt for backfill job {JobId}", job.JobId);
         }
     }
 
@@ -794,6 +855,8 @@ public sealed class BackfillJobManager : IDisposable
         DateTimeOffset? PausedAt,
         string? StatusReason,
         int GapsDetected,
+        ProviderProvenanceReceipt? ProviderProvenance,
+        ProviderProvenanceAccess? ProvenanceAccess,
         IReadOnlyDictionary<string, SymbolBackfillProgress> SymbolProgress)
     {
         public static BackfillJobStartSnapshot Capture(BackfillJob job)
@@ -804,6 +867,8 @@ public sealed class BackfillJobManager : IDisposable
                 job.PausedAt,
                 job.StatusReason,
                 job.Statistics.GapsDetected,
+                job.ProviderProvenance,
+                job.ProvenanceAccess,
                 job.SymbolProgress.ToDictionary(
                     static pair => pair.Key,
                     static pair => CloneProgress(pair.Value),
@@ -817,6 +882,8 @@ public sealed class BackfillJobManager : IDisposable
             job.PausedAt = PausedAt;
             job.StatusReason = StatusReason;
             job.Statistics.GapsDetected = GapsDetected;
+            job.ProviderProvenance = ProviderProvenance;
+            job.ProvenanceAccess = ProvenanceAccess;
             job.SymbolProgress.Clear();
             foreach (var (symbol, progress) in SymbolProgress)
                 job.SymbolProgress[symbol] = CloneProgress(progress);
@@ -833,6 +900,8 @@ public sealed class BackfillJobManager : IDisposable
                 FailedRequests = source.FailedRequests,
                 BarsRetrieved = source.BarsRetrieved,
                 SuccessfulProvider = source.SuccessfulProvider,
+                ServedBy = new Dictionary<string, long>(source.ServedBy, StringComparer.OrdinalIgnoreCase),
+                RoutingAttempts = [.. source.RoutingAttempts],
                 LastError = source.LastError,
                 StartedAt = source.StartedAt,
                 CompletedAt = source.CompletedAt,

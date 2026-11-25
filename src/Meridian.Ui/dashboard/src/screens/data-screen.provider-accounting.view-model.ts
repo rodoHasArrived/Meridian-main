@@ -33,6 +33,7 @@ export interface ProviderRateLimitRow {
   status: string;
   statusTone: "success" | "warning" | "danger";
   requestUsage: string;
+  backfillAttempts: string;
   dailyUsage: string;
   remaining: string;
   resetCountdown: string;
@@ -53,7 +54,7 @@ export interface ProviderAccountingPanelState {
   observedAt: string | null;
 }
 
-const HISTORY_GUIDANCE = "Inspect retained observations in Rate-limit and quota history below. History is bounded and cleared on host restart.";
+const HISTORY_GUIDANCE = "Rate-limit and quota history shows recent events and seven UTC days of retained daily totals.";
 
 const defaultServices: ProviderAccountingServices = {
   getCatalog: (signal) => workstationApi.getProviderCatalog({ signal }),
@@ -197,6 +198,9 @@ function buildRateLimitRow(
     requestUsage: provider.requestsInWindow === null
       ? `Unavailable / ${provider.maxRequestsPerWindow} ${unit}`
       : `${provider.requestsInWindow} / ${provider.maxRequestsPerWindow} ${unit}`,
+    backfillAttempts: provider.backfillAttemptsInWindow == null
+      ? "Unavailable"
+      : `${provider.backfillAttemptsInWindow} per ${provider.backfillAttemptWindowSeconds}s`,
     remaining: provider.remainingRequests === null ? "Unavailable" : `${provider.remainingRequests} ${unit}`,
     dailyUsage: !provider.stateAvailable || provider.dailyMaximum === undefined
       ? "Unavailable"

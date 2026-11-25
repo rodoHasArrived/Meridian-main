@@ -1,6 +1,7 @@
 using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -23,9 +24,9 @@ public static class CheckpointEndpoints
         var group = app.MapGroup("").WithTags("Checkpoints");
 
         // Get all checkpoint history
-        group.MapGet(UiApiRoutes.BackfillCheckpoints, (BackfillCoordinator backfill) =>
+        group.MapGet(UiApiRoutes.BackfillCheckpoints, (BackfillCoordinator backfill, HttpContext context) =>
         {
-            var status = backfill.TryReadLast();
+            var status = backfill.TryReadLast()?.ForTenant(HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId);
             return status is null
                 ? Results.Json(Array.Empty<object>(), jsonOptions)
                 : Results.Json(new[] { status }, jsonOptions);
@@ -213,22 +214,26 @@ public static class CheckpointEndpoints
                 return Results.NotFound(new { error = $"No checkpoint found for job {jobId}" });
             }
 
-            if (status.Success)
+            if (status.Success && status.SymbolValidationSignals.All(static signal => signal.Status == "Pass"))
             {
-                return Results.BadRequest(new { error = "This job already completed successfully. Nothing to resume." });
+                return Results.BadRequest(new { error = "All requested symbols passed coverage validation. Nothing to resume." });
             }
 
-            // Trigger a new backfill for the same symbols
+            // Retry the same provider, range and data lane.
             try
             {
+                var retainedGranularity = status.BatchReceipts?.FirstOrDefault()?.Granularity;
+                var granularity = DataGranularityExtensions.TryParseValue(retainedGranularity, out var parsedGranularity)
+                    ? parsedGranularity : DataGranularity.Daily;
                 var request = new AppBackfillRequest(
                     status.Provider ?? "composite",
                     status.Symbols ?? Array.Empty<string>(),
                     status.From,
                     status.To ?? DateOnly.FromDateTime(DateTime.Today),
+                    granularity,
                     ResumeFromCheckpoint: true);
 
-                var result = await backfill.RunAsync(request, context.RequestAborted);
+                var result = await backfill.RunAsync(request, HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId, context.RequestAborted);
 
                 return Results.Json(new
                 {

@@ -39,6 +39,7 @@ public sealed class PaperTradingGateway :
     private readonly Interfaces.ILiveFeedAdapter? _liveFeed;
     private readonly PaperTradingCostModel _costModel;
     private readonly Meridian.Contracts.FixedIncome.IBondAnalyticsService? _bondAnalytics;
+    private readonly bool _requireBondAccruedInterest;
     private readonly PaperSymbolEvaluationPump _evaluationPump;
     private readonly System.Threading.Channels.Channel<ExecutionReport> _restingReports;
     private readonly CancellationTokenSource _disposeCts = new();
@@ -109,6 +110,7 @@ public sealed class PaperTradingGateway :
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _bondAnalytics = bondAnalytics;
+        _requireBondAccruedInterest = options?.RequireBondAccruedInterest == true;
         _tradingParameters = new Adapters.PaperTradingGatewayTradingParameters(
             _logger,
             securityMaster,
@@ -588,6 +590,19 @@ public sealed class PaperTradingGateway :
             report = report with { LotUnitKind = SecurityLotUnitKind.Contracts };
         }
 
+        if (_requireBondAccruedInterest
+            && (report.UsesFaceValuePercentageOfPar || UsesFaceValuePercentageOfPar(request))
+            && (report.AccruedInterestPer100 is null || report.SettlementDate is null))
+        {
+            // A terminal rejection goes through the same immediate/resting report path as a
+            // fill. No portfolio, cash or accounting event may observe a clean-only fill in
+            // this explicitly supported mode. Historical reports remain replayable unchanged.
+            return BuildReport(request, orderId, gatewayOrderId, ExecutionReportType.Rejected,
+                OrderStatus.Rejected, filledQuantity: 0m, fillPrice: null, costs: null,
+                "Bond settlement unavailable: required accrued interest could not be verified for the security and settlement date. "
+                + "Review the bond terms and analytics before resubmitting (PaperTrading:Gateway:RequireBondAccruedInterest).");
+        }
+
         _logger.LogInformation(
             "Paper fill: {Symbol} {Side} {Quantity} @ {Price} (commission {Commission}, fees {Fees}, slippage {Slippage})",
             LogSanitizer.Sanitize(request.Symbol), request.Side, request.Quantity, report.FillPrice,
@@ -601,7 +616,8 @@ public sealed class PaperTradingGateway :
     /// analytics kernel at the fill's clean price and its contractual settlement date. When no
     /// analytics service is composed, or the kernel refuses the bond (unsupported coupon
     /// structure, undeclared schedule, settlement outside its life), the fill keeps its clean
-    /// settlement and the refusal is logged rather than guessed at.
+    /// settlement and the refusal is logged rather than guessed at. The opt-in required-accrual
+    /// mode rejects that unstamped outcome before it can become an economic fill.
     /// </summary>
     private async Task<ExecutionReport> StampAccruedInterestAsync(
         ExecutionReport report, Guid securityId, decimal cleanPricePer100, CancellationToken ct)
@@ -619,18 +635,23 @@ public sealed class PaperTradingGateway :
                     new Meridian.Contracts.FixedIncome.BondCalculationContext(tradeTime, settlement),
                     CleanPrice: cleanPricePer100),
                 ct).ConfigureAwait(false);
-            if (result is { IsBlocked: false, AccruedInterest: { } accruedPer100 } && accruedPer100 >= 0m)
+            if (result is { IsBlocked: false, AccruedInterest: { } accruedPer100 } && accruedPer100 >= 0m
+                && (!_requireBondAccruedInterest ||
+                    (result.SecurityId == securityId && result.Context.AsOf == tradeTime
+                     && result.Context.SettlementDate == settlement && result.CleanPrice == cleanPricePer100
+                     && result.DirtyPrice == cleanPricePer100 + accruedPer100)))
                 return report with { AccruedInterestPer100 = accruedPer100, SettlementDate = settlement };
 
             _logger.LogWarning(
-                "Paper bond fill {Symbol} settles clean: accrued interest unavailable ({Blockers})",
+                "Paper bond settlement {Symbol}: accrued interest unavailable ({Blockers}); required-accrual mode {Required}",
                 LogSanitizer.Sanitize(report.Symbol),
-                result is null ? "SecurityUnknown" : string.Join(",", result.Blockers.Select(static b => b.Code)));
+                result is null ? "SecurityUnknown" : string.Join(",", result.Blockers.Select(static b => b.Code)),
+                _requireBondAccruedInterest);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _logger.LogWarning(ex, "Paper bond fill {Symbol} settles clean: accrued interest calculation failed",
-                LogSanitizer.Sanitize(report.Symbol));
+            _logger.LogWarning(ex, "Paper bond settlement {Symbol}: accrued interest calculation failed; required-accrual mode {Required}",
+                LogSanitizer.Sanitize(report.Symbol), _requireBondAccruedInterest);
         }
 
         return report;

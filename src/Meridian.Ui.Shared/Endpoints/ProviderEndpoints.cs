@@ -72,6 +72,11 @@ public static class ProviderEndpoints
         };
     }
 
+    private static DataSourceConfig PreserveSourceAlpacaSettings(DataSourceConfig source, AlpacaOptionsDto? requested, DataSourceConfig existing)
+        => source.Provider == DataSourceKind.Alpaca && existing.Provider == DataSourceKind.Alpaca
+            ? source with { Alpaca = requested?.ToDomain(existing.Alpaca) ?? existing.Alpaca }
+            : source;
+
     /// <summary>
     /// Maps all provider and data source API endpoints.
     /// </summary>
@@ -149,7 +154,7 @@ public static class ProviderEndpoints
 
                 var idx = sources.FindIndex(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
                 if (idx >= 0)
-                    sources[idx] = source;
+                    sources[idx] = PreserveSourceAlpacaSettings(source, req.Alpaca, sources[idx]);
                 else
                     sources.Add(source);
 
@@ -252,8 +257,8 @@ public static class ProviderEndpoints
                 {
                     DataSources = dataSources with
                     {
-                        DefaultRealTimeSourceId = req.DefaultRealTimeSourceId,
-                        DefaultHistoricalSourceId = req.DefaultHistoricalSourceId
+                        DefaultRealTimeSourceId = req.UpdateRealTime ? req.DefaultRealTimeSourceId : dataSources.DefaultRealTimeSourceId,
+                        DefaultHistoricalSourceId = req.UpdateHistorical ? req.DefaultHistoricalSourceId : dataSources.DefaultHistoricalSourceId
                     }
                 };
             }, context.RequestAborted);
@@ -752,7 +757,7 @@ public static class ProviderEndpoints
 
                 var idx = sources.FindIndex(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
                 if (idx >= 0)
-                    sources[idx] = source;
+                    sources[idx] = PreserveSourceAlpacaSettings(source, req.Alpaca, sources[idx]);
                 else
                     sources.Add(source);
 

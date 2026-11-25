@@ -231,6 +231,8 @@ export interface DetailPaneProps {
   status?: DetailPaneStatus | null;
   /** One line under the heading, e.g. "Buy 20 MSFT". */
   subtitle?: ReactNode;
+  /** Compact identity facts for the selected record. */
+  identity?: ReactNode;
   /** A sentence or two of context under the heading. */
   summary?: ReactNode;
   /** The next action(s) for the selected object. */
@@ -270,6 +272,7 @@ export function DetailPane({
   title,
   status,
   subtitle,
+  identity,
   summary,
   actions,
   fields = [],
@@ -312,6 +315,7 @@ export function DetailPane({
             {status ? <StatusBadge status={toneToSeverity(status.tone)} label={status.label} /> : null}
           </header>
           {subtitle ? <p className="mt-0.5 break-words text-xs leading-5 text-muted-foreground">{subtitle}</p> : null}
+          {identity ? <div className="mt-2">{identity}</div> : null}
           {summary ? <p className="mt-2 break-words text-xs leading-5 text-foreground/80">{summary}</p> : null}
           {actions ? <div className="mt-3 flex flex-wrap gap-2">{actions}</div> : null}
           <DetailFieldList fields={visible} label={fieldsLabel ?? `${objectType} details`} className="mt-3" />

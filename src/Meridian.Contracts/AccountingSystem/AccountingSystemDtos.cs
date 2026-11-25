@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
@@ -1466,6 +1467,12 @@ public sealed record AccountingSystemReconciliationSummaryDto(
     Guid? LedgerBookId = null,
     string? ImportContentHash = null)
 {
+    /// <summary>Invariant decimal text accompanies numeric compatibility fields for precise workstation reads.</summary>
+    public string TotalExternalDebitsExact => TotalExternalDebits.ToString(CultureInfo.InvariantCulture);
+    public string TotalExternalCreditsExact => TotalExternalCredits.ToString(CultureInfo.InvariantCulture);
+    public string TotalMeridianDebitsExact => TotalMeridianDebits.ToString(CultureInfo.InvariantCulture);
+    public string TotalMeridianCreditsExact => TotalMeridianCredits.ToString(CultureInfo.InvariantCulture);
+
     public IReadOnlyList<AccountingSystemReconciliationEvidencePackageDto> EvidencePackages { get; init; } = [];
 }
 
@@ -1483,6 +1490,21 @@ public sealed record AccountingSystemReconciliationRowDto(
     string Detail,
     string? EvidenceRef = null)
 {
+    /// <summary>Invariant decimal text accompanies numeric compatibility fields for precise workstation reads.</summary>
+    public string ExternalDebitExact => ExternalDebit.ToString(CultureInfo.InvariantCulture);
+    public string ExternalCreditExact => ExternalCredit.ToString(CultureInfo.InvariantCulture);
+    public string MeridianDebitExact => MeridianDebit.ToString(CultureInfo.InvariantCulture);
+    public string MeridianCreditExact => MeridianCredit.ToString(CultureInfo.InvariantCulture);
+    public string VarianceExact => Variance.ToString(CultureInfo.InvariantCulture);
+
+    /// <summary>Currency declared by the external trial-balance source; null means unavailable or no source row.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]
+    public string? ExternalCurrency { get; init; }
+
+    /// <summary>Currency declared by the resolved Meridian ledger book; null means unavailable or no ledger row.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]
+    public string? MeridianCurrency { get; init; }
+
     /// <summary>Gross activity in the requested export period, separate from report balances.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public decimal? PeriodDebit { get; init; }
@@ -1507,7 +1529,8 @@ public sealed record AccountingSystemMappingProfileUpsertRequestDto(
     IReadOnlyList<string>? EvidenceLinks = null,
     string? TenantId = null,
     string? CompanyId = null,
-    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    ExternalGlDestination? PostingDestination = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];

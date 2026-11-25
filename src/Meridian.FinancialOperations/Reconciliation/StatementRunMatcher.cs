@@ -1,6 +1,7 @@
 using Meridian.Domain.Reconciliation;
 using System.Globalization;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Reconciliation;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
@@ -85,19 +86,22 @@ internal static class StatementRunMatcher
             populations.Positions,
             internalCash,
             internalTransactions,
-            ToEngineTolerance(toleranceProfile)));
+            ToEngineTolerance(toleranceProfile))
+        {
+            StatementPeriodStart = import.StatementPeriodStart == default ? null : import.StatementPeriodStart,
+            StatementPeriodEnd = statementPeriodEnd == default ? null : statementPeriodEnd
+        });
 
         var breaks = new List<StatementRunBreak>();
         var matchGroups = new List<StatementRunMatchGroupRecord>();
+        var groupAllocations = new Dictionary<string, RetainedStatementMatchEvidence>(StringComparer.Ordinal);
+        var matchEvidence = new StatementMatchEvidenceBuilder(normalizedBase);
         var matchCount = 0;
         var breakOrdinal = 0;
         // With no retained internal ledger transactions, every statement movement is structurally
         // unmatched — the breaks are real evidence but carry no comparison. Classify them so the
         // governed queue publishes them as informational instead of close blockers.
         var internalTransactionsUnavailable = populations.LedgerTransactions.Count == 0;
-        var internalPositionsByEvidence = populations.Positions
-            .GroupBy(static position => position.EvidenceReference, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.OrdinalIgnoreCase);
         var accruedTolerance = Math.Max(
             ToEngineTolerance(toleranceProfile).PositionMarketValue,
             StatementAccruedInterestReconciliation.MinimumTolerance);
@@ -106,11 +110,13 @@ internal static class StatementRunMatcher
             if (result.MatchTier is StatementMatchTier.Exact or StatementMatchTier.Tolerance)
             {
                 matchCount++;
-                matchGroups.Add(BuildMatchGroup(import.ImportId, result));
+                var group = BuildMatchGroup(import.ImportId, result);
+                matchGroups.Add(group);
+                groupAllocations.TryAdd(group.MatchGroupId, matchEvidence.Build(result));
                 // A holding can agree on quantity and value yet disagree on accrued interest (a bond
                 // bought between coupons). That is a distinct break on the matched position.
                 if (result.Kind == StatementMatchKind.Position
-                    && TryBuildAccruedInterestBreak(import.ImportId, result, rowByEvidence, internalPositionsByEvidence,
+                    && TryBuildAccruedInterestBreak(import.ImportId, result, rowByEvidence,
                         accruedTolerance, fxRateProvider, normalizedBase, createdAtUtc, ref breakOrdinal) is { } accruedBreak)
                 {
                     breaks.Add(accruedBreak);
@@ -149,10 +155,10 @@ internal static class StatementRunMatcher
                     : null
             };
 
-            breaks.Add(new StatementRunBreak(record, result, statementRow));
+            breaks.Add(new StatementRunBreak(record, result, statementRow, matchEvidence.Build(result)));
         }
 
-        return new StatementRunMatchResult(breaks, matchCount, matchGroups);
+        return new StatementRunMatchResult(breaks, matchCount, matchGroups, groupAllocations);
     }
 
     /// <summary>
@@ -244,7 +250,6 @@ internal static class StatementRunMatcher
         string importId,
         StatementMatchResult result,
         IReadOnlyDictionary<string, CanonicalStatementRow> rowByEvidence,
-        IReadOnlyDictionary<string, InternalPortfolioPosition> internalPositionsByEvidence,
         decimal tolerance,
         IReconciliationFxRateProvider fxRateProvider,
         string baseCurrency,
@@ -255,7 +260,7 @@ internal static class StatementRunMatcher
             || result.InternalEvidenceReference is not { } internalEvidence
             || !rowByEvidence.TryGetValue(brokerEvidence, out var row)
             || row.AccruedInterest is not { } statedAccrued
-            || !internalPositionsByEvidence.TryGetValue(internalEvidence, out var internalPosition))
+            || result.InternalRecords is not [InternalPortfolioPosition internalPosition])
         {
             return null;
         }
@@ -263,8 +268,10 @@ internal static class StatementRunMatcher
         string breakCode;
         decimal delta;
         string explanation;
-        if (!fxRateProvider.TryConvert(statedAccrued, NormalizeCurrency(row.Currency, baseCurrency), baseCurrency,
-                row.TradeDate, out var custodianAccrued))
+        var sourceCurrency = NormalizeCurrency(row.Currency, baseCurrency);
+        var converted = fxRateProvider.TryConvert(statedAccrued, sourceCurrency, baseCurrency,
+            row.TradeDate, out var custodianAccrued);
+        if (!converted)
         {
             breakCode = StatementAccruedInterestReconciliation.UnavailableBreakCode;
             delta = Math.Abs(statedAccrued);
@@ -307,7 +314,10 @@ internal static class StatementRunMatcher
             ToleranceBreached: true,
             CreatedAtUtc: createdAtUtc,
             Status: "Open");
-        return new StatementRunBreak(record, engineResult, row);
+        var evidence = StatementMatchEvidenceBuilder.AccruedInterest(engineResult, row, internalPosition,
+            converted ? custodianAccrued : statedAccrued, converted ? baseCurrency : sourceCurrency,
+            baseCurrency, breakCode == StatementAccruedInterestReconciliation.VarianceBreakCode);
+        return new StatementRunBreak(record, engineResult, row, evidence);
     }
 
     private static NormalizedStatementPosition MapPosition(
@@ -358,7 +368,7 @@ internal static class StatementRunMatcher
         string baseCurrency)
     {
         var sourceCurrency = NormalizeCurrency(row.Currency, baseCurrency);
-        var (_, amount) = ToBaseCurrency(row.CashAmount, sourceCurrency, baseCurrency, row.TradeDate, fxRateProvider);
+        var (comparisonCurrency, amount) = ToBaseCurrency(row.CashAmount, sourceCurrency, baseCurrency, row.TradeDate, fxRateProvider);
         // A cash balance is a closing balance only when it is dated at the run's closing period. Keep the
         // source as-of date for evidence and mark an out-of-period row ineligible for matching. This
         // prevents a stale cash row from reconciling if a faulty internal source happens to return the
@@ -370,7 +380,8 @@ internal static class StatementRunMatcher
             amount,
             evidence,
             row.TradeDate,
-            IsForStatementPeriodEnd: row.TradeDate == statementPeriodEnd);
+            IsForStatementPeriodEnd: row.TradeDate == statementPeriodEnd)
+        { ComparisonCurrency = comparisonCurrency };
     }
 
     private static NormalizedStatementTransaction MapTransaction(
@@ -406,8 +417,8 @@ internal static class StatementRunMatcher
         DateOnly asOf)
     {
         var sourceCurrency = NormalizeCurrency(cash.Currency, baseCurrency);
-        var (_, amount) = ToBaseCurrency(cash.Balance, sourceCurrency, baseCurrency, asOf, fxRateProvider);
-        return cash with { Currency = sourceCurrency, Balance = amount };
+        var (comparisonCurrency, amount) = ToBaseCurrency(cash.Balance, sourceCurrency, baseCurrency, asOf, fxRateProvider);
+        return cash with { Currency = sourceCurrency, Balance = amount, ComparisonCurrency = comparisonCurrency };
     }
 
     private static InternalLedgerTransaction NormalizeInternalTransaction(
@@ -475,6 +486,11 @@ internal static class StatementRunMatcher
 
     private static string BuildBreakCode(StatementMatchResult result)
     {
+        if (result.BreakCode is { } code)
+        {
+            return code;
+        }
+
         var tier = result.MatchTier == StatementMatchTier.Candidate ? "CANDIDATE" : "UNMATCHED";
         return $"{result.Kind.ToString().ToUpperInvariant()}_{tier}";
     }
@@ -507,7 +523,8 @@ internal static class StatementRunMatcher
 internal sealed record StatementRunMatchResult(
     IReadOnlyList<StatementRunBreak> Breaks,
     int MatchCount,
-    IReadOnlyList<StatementRunMatchGroupRecord> MatchGroups);
+    IReadOnlyList<StatementRunMatchGroupRecord> MatchGroups,
+    IReadOnlyDictionary<string, RetainedStatementMatchEvidence> GroupAllocations);
 
 /// <summary>
 /// A single break produced by the match pass, carrying the persisted record, the originating engine
@@ -517,7 +534,8 @@ internal sealed record StatementRunMatchResult(
 internal sealed record StatementRunBreak(
     ReconciliationBreakRecord Record,
     StatementMatchResult EngineResult,
-    CanonicalStatementRow? StatementRow);
+    CanonicalStatementRow? StatementRow,
+    RetainedStatementMatchEvidence MatchEvidence);
 
 /// <summary>
 /// Typed break codes and policy for reconciling custodian-stated accrued interest on a matched

@@ -54,7 +54,11 @@ public static class LedgerJournalReversal
                         currency.TransactionCredit,
                         currency.TransactionDebit,
                         currency.FxRateToFunctional)
-                    : null))
+                    : null)
+            {
+                Memo = line.Memo,
+                ChartAccount = line.ChartAccount
+            })
             .ToList();
 
         var reversal = new JournalEntry(reversalJournalId, reversedAt, description, lines, BuildReversalMetadata(original, normalizedReason));

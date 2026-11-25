@@ -2,15 +2,17 @@
 
 **Status:** supporting-generated
 **Owner:** core-team
-**Reviewed:** 2026-11-13
+**Reviewed:** 2026-11-21
 
 This folder stores maintained screenshot references used by documentation and
 workflow evidence.
 
-The maintained capture plan covers **207 PNGs**: 82 browser routes, 98 native WPF catalog
+The maintained capture plan covers **211 PNGs**: 86 browser captures, 98 native WPF catalog
 screens, and 27 native desktop manual frames. [Capture provenance](capture-manifest.json) records
 the retained file hashes, source commits, browser paths, native page observations, actual capture
-intervals, and Windows Actions artifact identities. The images use synthetic fixtures.
+intervals, and Windows Actions artifact identities. The images use synthetic fixtures. The browser set includes three 1024px variants of existing routes.
+
+The browser catalog was refreshed locally on 2026-11-21 from `50bef8a8f01e`. [Its original raw capture manifest](provenance/web-2026-11-21-manifest.json) records successful route observations and the capture interval; [a separate same-environment runtime observation](provenance/web-2026-11-21-runtime.json) records installed Playwright and Chromium versions. The current native catalog is byte-bound to its Windows Actions artifact and logged request/save intervals, but its raw observed-page/frame records were not retained. Manual frames retain their original raw workflow observations. These gaps are explicit in the provenance manifest; retained PNGs alone do not establish route/state acceptance.
 
 Generated local screenshot runs should stay under ignored artifact locations
 unless a reviewer explicitly chooses a new screenshot as durable documentation
@@ -55,8 +57,10 @@ fixture-backed wait evidence together when adding a new browser page.
 Run **Web Screenshot Capture** from GitHub Actions to refresh the full browser catalog.
 Dispatch captures the default branch; pull requests that change the dashboard or capture harness
 render the proposed head commit without publishing. Set `create_pr` to `false` for an artifact-only
-manual run. Its default is `true`, which opens or updates `automation/web-screenshot-capture` only
-after capture and image validation both pass. A failure to open the refresh PR fails the job.
+manual run. Its default is `true`, which opens a refresh PR on a per-run
+`automation/web-screenshot-capture-<run>-<attempt>` branch only after capture and image validation
+both pass, then closes older open refresh PRs. Repository rules forbid force-pushes, so a run never
+reuses an existing branch. A failure to open the refresh PR fails the job.
 
 Each job retains one 14-day archive containing `captures/*.png`, `manifest.json`, and `summary.md`.
 The Actions job summary reports capture, validation, and refresh-PR outcomes, the checked-out commit,

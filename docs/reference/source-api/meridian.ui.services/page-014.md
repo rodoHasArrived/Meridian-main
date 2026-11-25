@@ -6,6 +6,172 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## QualityCheckResult
+
+Qualified name: <code>Meridian.Ui.Services.Services.QualityCheckResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:183](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L183).
+
+Reports a quality check&#x27;s score, issues, recommendations, and execution time.
+
+```csharp
+public sealed class QualityCheckResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:185](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L185) |  |
+| <code>public double Score { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:186](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L186) |  |
+| <code>public List&lt;string&gt; Issues { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:187](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L187) |  |
+| <code>public List&lt;string&gt; Recommendations { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:188](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L188) |  |
+| <code>public DateTime CheckedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:189](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L189) |  |
+
+## QualityCompletenessReport
+
+Qualified name: <code>Meridian.Ui.Services.Services.QualityCompletenessReport</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:97](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L97).
+
+Groups overall completeness with breakdowns by data type and date.
+
+```csharp
+public sealed class QualityCompletenessReport
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public double OverallCompleteness { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:99](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L99) |  |
+| <code>public Dictionary&lt;string, double&gt; ByDataType { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:100](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L100) |  |
+| <code>public Dictionary&lt;string, double&gt; ByDate { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:101](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L101) |  |
+
+## QualityDataGap
+
+Qualified name: <code>Meridian.Ui.Services.Services.QualityDataGap</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:85](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L85).
+
+Describes a missing-data interval, event type, and estimated missing record count.
+
+```csharp
+public sealed class QualityDataGap
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTime Start { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:87](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L87) |  |
+| <code>public DateTime End { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:88](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L88) |  |
+| <code>public TimeSpan Duration { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:89](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L89) |  |
+| <code>public string DataType { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:90](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L90) |  |
+| <code>public int MissingRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:91](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L91) |  |
+
+## QualityIssue
+
+Qualified name: <code>Meridian.Ui.Services.Services.QualityIssue</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:73](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L73).
+
+Describes a detected quality problem, its severity, and the affected path.
+
+```csharp
+public sealed class QualityIssue
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Type { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:75](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L75) |  |
+| <code>public string Severity { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:76](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L76) |  |
+| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:77](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L77) |  |
+| <code>public DateTime DetectedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:78](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L78) |  |
+| <code>public string AffectedPath { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:79](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L79) |  |
+
+## QualityScoreEntry
+
+Qualified name: <code>Meridian.Ui.Services.Services.QualityScoreEntry</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:41](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L41).
+
+Describes a data file&#x27;s quality grade, record defects, coverage dates, and analysis time.
+
+```csharp
+public sealed class QualityScoreEntry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:43](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L43) |  |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:44](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L44) |  |
+| <code>public string DataType { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:45](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L45) |  |
+| <code>public double Score { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:46](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L46) |  |
+| <code>public string Grade { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:47](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L47) |  |
+| <code>public int RecordCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:48](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L48) |  |
+| <code>public int MissingCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:49](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L49) |  |
+| <code>public int DuplicateCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:50](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L50) |  |
+| <code>public int AnomalyCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:51](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L51) |  |
+| <code>public DateTime DateFrom { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:52](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L52) |  |
+| <code>public DateTime DateTo { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:53](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L53) |  |
+| <code>public DateTime LastAnalyzed { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:54](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L54) |  |
+
+## QualityTrendData
+
+Qualified name: <code>Meridian.Ui.Services.Services.QualityTrendData</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:146](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L146).
+
+Groups overall and symbol-specific quality trends for a time window.
+
+```csharp
+public sealed class QualityTrendData
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public List&lt;TrendDataPoint&gt; OverallTrend { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:148](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L148) |  |
+| <code>public Dictionary&lt;string, List&lt;TrendDataPoint&gt;&gt; BySymbol { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:149](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L149) |  |
+| <code>public string TimeWindow { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:150](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L150) |  |
+| <code>public double AverageScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:151](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L151) |  |
+| <code>public double TrendDirection { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:152](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L152) |  |
+
+## IReportingStatusProjectionService
+
+Qualified name: <code>Meridian.Ui.Services.Services.Reporting.IReportingStatusProjectionService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs:35](../../../../src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs#L35).
+
+Projects reporting manifests, audit entries, and templates into workstation read models.
+
+```csharp
+public interface IReportingStatusProjectionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ReportingStatusProjection Project(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; audit);</code> | [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs:37](../../../../src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs#L37) |  |
+| <code>IReadOnlyList&lt;ReportingTemplateProjection&gt; ProjectTemplates(IReportingTemplateCatalog catalog);</code> | [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs:38](../../../../src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs#L38) |  |
+
+## ReportingLineageProjection
+
+Qualified name: <code>Meridian.Ui.Services.Services.Reporting.ReportingLineageProjection</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs:5](../../../../src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs#L5).
+
+```csharp
+public sealed record ReportingLineageProjection(string SectionId, string DatasetSnapshotId, string DatasetSnapshotHash, string ReconciliationCheckpointId);
+```
+
 ## ReportingStatusProjection
 
 Qualified name: <code>Meridian.Ui.Services.Services.Reporting.ReportingStatusProjection</code>. Kind: `record`.
@@ -54,7 +220,7 @@ Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:20](.
 Provides settings configuration capabilities including storage path preview generation, provider catalog data, and configuration profile management.
 
 ```csharp
-public sealed class SettingsConfigurationService
+public sealed partial class SettingsConfigurationService
 ```
 
 Declared public members:
@@ -66,20 +232,41 @@ Declared public members:
 | <code>public string GenerateStoragePreview(string rootPath, string namingConvention, string datePartition, string compression, IReadOnlyList&lt;string&gt; symbols);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:50](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L50) | Generates a file tree preview showing what the storage directory structure would look like based on the given naming convention and symbols. |
 | <code>public IReadOnlyList&lt;ProviderCatalogEntry&gt; GetProviderCatalog();</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:87](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L87) | Gets metadata about all available data providers for display in a catalog. |
 | <code>public IReadOnlyList&lt;ProviderCredentialStatus&gt; GetProviderCredentialStatuses();</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:97](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L97) | Gets legacy environment diagnostics. Operator workflows use the asynchronous server status method. |
-| <code>public async Task&lt;ProviderCredentialStateDto&gt; SaveProviderCredentialsAsync(string providerId, IReadOnlyDictionary&lt;string, string?&gt; fields, string? connectionId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:147](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L147) | Saves credential fields through the authenticated service and returns the persisted state. ProviderCredentialStateDto.Partial means the fields were saved but required fields are still missing; callers present that as incomplete rather than as a failed save. |
-| <code>public async Task RemoveProviderCredentialsAsync(string providerId, string? connectionId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:164](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L164) | Removes credentials through the authenticated service. |
-| <code>public async Task&lt;bool&gt; VerifyProviderCredentialsAsync(string providerId, string? connectionId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:177](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L177) | Requests verification from the authenticated credential service. |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionDto&gt;&gt; GetOwnedCredentialConnectionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:207](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L207) | Lists uniquely identified connections with complete retained credential ownership. |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderCredentialStatus&gt;&gt; GetProviderCredentialStatusesAsync(CancellationToken ct = default, string? connectionId = null, bool providerWideOnly = false);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:225](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L225) | Reads server-owned credential status without treating local environment values as authority. By default provider rows include the authenticated tenant&#x27;s own connection credentials; providerWideOnly reads only the provider-wide records, for flows that write them. |
-| <code>public DesktopShellPreferences GetDesktopShellPreferences();</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:302](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L302) | Gets the persisted desktop shell preferences, migrating any legacy compact-mode payloads on first load. |
-| <code>public ShellDensityMode GetShellDensityMode() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:314](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L314) | Gets the current workstation shell density mode. |
-| <code>public void SetShellDensityMode(ShellDensityMode densityMode);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:319](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L319) | Persists a new workstation shell density mode and raises a change event for live shell surfaces. |
-| <code>public IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; GetShortcutOverrides() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:347](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L347) | Gets the operator&#x27;s persisted desktop keyboard shortcut overrides, keyed by action id. |
-| <code>public void SetShortcutOverrides(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:354](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L354) | Replaces the persisted desktop keyboard shortcut overrides. An empty set restores every shortcut to its default binding. Density and other shell preferences are preserved. |
-| <code>public IReadOnlyList&lt;ConfigProfile&gt; GetProfiles() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:458](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L458) | Gets all configuration profiles (built-in + custom). |
-| <code>public ConfigProfile CreateProfile(string name, string description);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:461](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L461) | Creates a new custom configuration profile. |
-| <code>public bool RemoveProfile(string profileId);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:470](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L470) | Removes a custom profile (built-in profiles cannot be removed). |
-| <code>public string EstimateDailyStorageSize(int symbolCount, bool trades, bool quotes, bool depth);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:481](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L481) | Estimates daily storage size based on symbol count and data types. |
+| <code>public async Task&lt;ProviderCredentialStateDto&gt; SaveProviderCredentialsAsync(string providerId, IReadOnlyDictionary&lt;string, string?&gt; fields, string? connectionId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:147](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L147) | Saves credential fields through the authenticated service and returns the persisted state. ProviderCredentialStateDto.Partial means the fields were saved but required fields are still missing; callers present that as incomplete rather than as a failed save. |
+| <code>public async Task RemoveProviderCredentialsAsync(string providerId, string? connectionId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:168](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L168) | Removes credentials through the authenticated service. |
+| <code>public async Task&lt;bool&gt; VerifyProviderCredentialsAsync(string providerId, string? connectionId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:181](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L181) | Requests verification from the authenticated credential service. |
+| <code>public async Task&lt;ProviderCredentialDraftVerificationResultDto&gt; VerifyDraftProviderCredentialsAsync(string providerId, IReadOnlyDictionary&lt;string, string?&gt; fields, string connectionId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:194](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L194) | Tests an unsaved draft on the selected owned connection. |
+| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionDto&gt;&gt; GetOwnedCredentialConnectionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:224](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L224) | Lists uniquely identified connections with complete retained credential ownership. |
+| <code>public async Task&lt;IReadOnlyList&lt;ProviderCredentialStatus&gt;&gt; GetProviderCredentialStatusesAsync(CancellationToken ct = default, string? connectionId = null, bool providerWideOnly = false);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:242](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L242) | Reads server-owned credential status without treating local environment values as authority. By default provider rows include the authenticated tenant&#x27;s own connection credentials; providerWideOnly reads only the provider-wide records, for flows that write them. |
+| <code>public DesktopShellPreferences GetDesktopShellPreferences();</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:320](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L320) | Gets the persisted desktop shell preferences, migrating any legacy compact-mode payloads on first load. |
+| <code>public ShellDensityMode GetShellDensityMode() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:332](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L332) | Gets the current workstation shell density mode. |
+| <code>public void SetShellDensityMode(ShellDensityMode densityMode);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:337](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L337) | Persists a new workstation shell density mode and raises a change event for live shell surfaces. |
+| <code>public IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; GetShortcutOverrides() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:365](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L365) | Gets the operator&#x27;s persisted desktop keyboard shortcut overrides, keyed by action id. |
+| <code>public void SetShortcutOverrides(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:372](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L372) | Replaces the persisted desktop keyboard shortcut overrides. An empty set restores every shortcut to its default binding. Density and other shell preferences are preserved. |
+| <code>public IReadOnlyList&lt;ConfigProfile&gt; GetProfiles() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:476](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L476) | Gets all configuration profiles (built-in + custom). |
+| <code>public ConfigProfile CreateProfile(string name, string description);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:479](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L479) | Creates a new custom configuration profile. |
+| <code>public bool RemoveProfile(string profileId);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:488](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L488) | Removes a custom profile (built-in profiles cannot be removed). |
+| <code>public string EstimateDailyStorageSize(int symbolCount, bool trades, bool quotes, bool depth);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:499](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L499) | Estimates daily storage size based on symbol count and data types. |
+
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs:7](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs#L7).
+
+```csharp
+public sealed partial class SettingsConfigurationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ProviderConnectionTemplateOption[]&gt; GetProviderTemplatesAsync(CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs:9](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs#L9) |  |
+| <code>public async Task&lt;ProviderConnectionTemplateFile&gt; ExportProviderTemplateAsync(string name, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs:13](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs#L13) |  |
+| <code>public async Task&lt;int&gt; ImportProviderTemplatesAsync(JsonElement json, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs:17](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs#L17) |  |
+| <code>public async Task&lt;ProviderConnectionTemplateOption&gt; SaveConnectionAsTemplateAsync(SaveProviderConnectionTemplateRequest request, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs:21](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs#L21) |  |
+| <code>public async Task&lt;ProviderTemplateSetupDraft&gt; BeginProviderTemplateSetupAsync(BeginProviderTemplateSetupRequest request, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs:26](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs#L26) |  |
+| <code>public Task&lt;ProviderCredentialStateDto&gt; SaveTemplateCredentialsAsync(ProviderTemplateSetupDraft draft, IReadOnlyDictionary&lt;string, string?&gt; fields, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs:30](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs#L30) |  |
+| <code>public async Task&lt;ProviderTemplateSetupTestResult&gt; TestProviderTemplateSetupAsync(Guid setupId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs:36](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs#L36) |  |
+| <code>public async Task&lt;SavedProviderTemplateConnection&gt; SaveProviderTemplateSetupAsync(Guid setupId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs:40](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs#L40) |  |
+| <code>public async Task DiscardProviderTemplateSetupAsync(Guid setupId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs:44](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.ProviderTemplates.cs#L44) |  |
 
 ## ShellDensityMode
 
@@ -395,7 +582,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.ServiceUrlChangedEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:791](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L791).
+Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:814](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L814).
 
 Event args for service URL changes.
 
@@ -407,8 +594,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string OldUrl { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:793](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L793) |  |
-| <code>public string NewUrl { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:794](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L794) |  |
+| <code>public string OldUrl { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:816](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L816) |  |
+| <code>public string NewUrl { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:817](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L817) |  |
 
 ## SessionState
 
@@ -442,7 +629,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.SetupPreset</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/SetupWizardService.cs:736](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L736).
+Source: [src/Meridian.Ui.Services/Services/SetupWizardService.cs:734](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L734).
 
 Setup preset for quick configuration.
 
@@ -454,18 +641,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:738](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L738) |  |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:739](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L739) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:740](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L740) |  |
-| <code>public string Icon { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:741](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L741) |  |
-| <code>public string[] RecommendedProviders { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:742](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L742) |  |
-| <code>public string[] DefaultSymbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:743](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L743) |  |
-| <code>public bool SubscribeTrades { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:744](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L744) |  |
-| <code>public bool SubscribeDepth { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:745](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L745) |  |
-| <code>public bool SubscribeQuotes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:746](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L746) |  |
-| <code>public int DepthLevels { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:747](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L747) |  |
-| <code>public bool EnableBackfill { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:748](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L748) |  |
-| <code>public string StorageTier { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:749](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L749) |  |
+| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:736](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L736) |  |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:737](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L737) |  |
+| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:738](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L738) |  |
+| <code>public string Icon { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:739](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L739) |  |
+| <code>public string[] RecommendedProviders { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:740](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L740) |  |
+| <code>public string[] DefaultSymbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:741](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L741) |  |
+| <code>public bool SubscribeTrades { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:742](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L742) |  |
+| <code>public bool SubscribeDepth { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:743](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L743) |  |
+| <code>public bool SubscribeQuotes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:744](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L744) |  |
+| <code>public int DepthLevels { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:745](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L745) |  |
+| <code>public bool EnableBackfill { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:746](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L746) |  |
+| <code>public string StorageTier { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:747](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L747) |  |
 
 ## SetupWizardService
 
@@ -483,12 +670,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SetupWizardService(ConnectivityProbeOptions? probeOptions = null, ApiClientService? apiClient = null);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:21](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L21) |  |
-| <code>public async Task&lt;PreflightCheckResult&gt; RunPreflightChecksAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:36](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L36) | Performs preflight checks for all configured providers. |
-| <code>public async Task&lt;ProviderTestResult&gt; TestProviderConnectivityAsync(string provider, Dictionary&lt;string, string&gt; credentials, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:58](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L58) | Tests connectivity to a specific provider. |
-| <code>public IReadOnlyList&lt;SetupPreset&gt; GetSetupPresets();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:511](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L511) | Gets available setup presets for quick configuration. |
-| <code>public async Task ApplyPresetAsync(SetupPreset preset, string provider, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:611](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L611) | Applies a setup preset to the configuration. |
-| <code>public async Task SaveCredentialsAsync(string provider, Dictionary&lt;string, string&gt; credentials, CancellationToken ct = default, string? connectionId = null);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:638](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L638) | Saves provider credentials securely. |
+| <code>public SetupWizardService(ConnectivityProbeOptions? probeOptions = null, ApiClientService? apiClient = null);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:20](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L20) |  |
+| <code>public async Task&lt;PreflightCheckResult&gt; RunPreflightChecksAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:34](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L34) | Performs preflight checks for all configured providers. |
+| <code>public async Task&lt;ProviderTestResult&gt; TestProviderConnectivityAsync(string provider, Dictionary&lt;string, string&gt; credentials, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:56](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L56) | Tests connectivity to a specific provider. |
+| <code>public IReadOnlyList&lt;SetupPreset&gt; GetSetupPresets();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:509](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L509) | Gets available setup presets for quick configuration. |
+| <code>public async Task ApplyPresetAsync(SetupPreset preset, string provider, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:609](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L609) | Applies a setup preset to the configuration. |
+| <code>public async Task SaveCredentialsAsync(string provider, Dictionary&lt;string, string&gt; credentials, CancellationToken ct = default, string? connectionId = null);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:636](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L636) | Saves provider credentials securely. |
 
 ## ShowConfigResponse
 
@@ -977,183 +1164,3 @@ Declared public members:
 | <code>public int TotalSymbols { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:19](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L19) |  |
 | <code>public DateTime OldestData { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:20](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L20) |  |
 | <code>public DateTime NewestData { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:21](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L21) |  |
-
-## StorageStatusResponse
-
-Qualified name: <code>Meridian.Ui.Services.StorageStatusResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:607](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L607).
-
-Carries API storage-path existence, writability, and free-space diagnostics.
-
-```csharp
-public sealed class StorageStatusResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:609](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L609) |  |
-| <code>public bool PathExists { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:610](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L610) |  |
-| <code>public bool IsWritable { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:611](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L611) |  |
-| <code>public double FreeSpaceGb { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:612](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L612) |  |
-
-## StorageTierConfig
-
-Qualified name: <code>Meridian.Ui.Services.StorageTierConfig</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:162](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L162).
-
-Configuration for a single storage tier.
-
-```csharp
-public sealed class StorageTierConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:164](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L164) |  |
-| <code>public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:165](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L165) |  |
-| <code>public int Priority { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:166](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L166) |  |
-| <code>public int RetentionDays { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:167](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L167) |  |
-| <code>public string CompressionLevel { get; set; } = &quot;Standard&quot;;</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:168](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L168) |  |
-| <code>public bool Enabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:169](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L169) |  |
-
-## StreamHealthInfo
-
-Qualified name: <code>Meridian.Ui.Services.StreamHealthInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/LiveDataService.cs:341](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L341).
-
-Describes a symbol stream&#x27;s health, latency, event rate, latest event, and issue.
-
-```csharp
-public sealed class StreamHealthInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:343](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L343) |  |
-| <code>public string StreamType { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:344](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L344) |  |
-| <code>public bool IsHealthy { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:345](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L345) |  |
-| <code>public double LatencyMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:346](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L346) |  |
-| <code>public DateTime LastEventAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:347](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L347) |  |
-| <code>public double EventsPerSecond { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:348](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L348) |  |
-| <code>public string? Issue { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:349](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L349) |  |
-
-## SubscribeRequest
-
-Qualified name: <code>Meridian.Ui.Services.SubscribeRequest</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/LiveDataService.cs:298](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L298).
-
-Selects live trade, quote, and depth subscriptions and the requested depth levels.
-
-```csharp
-public sealed class SubscribeRequest
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:300](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L300) |  |
-| <code>public bool SubscribeTrades { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:301](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L301) |  |
-| <code>public bool SubscribeDepth { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:302](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L302) |  |
-| <code>public bool SubscribeQuotes { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:303](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L303) |  |
-| <code>public int DepthLevels { get; set; } = 10;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:304](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L304) |  |
-
-## SubscriptionInfo
-
-Qualified name: <code>Meridian.Ui.Services.SubscriptionInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/LiveDataService.cs:283](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L283).
-
-Describes a live symbol subscription&#x27;s identity, type, activity, and received-event rate.
-
-```csharp
-public sealed class SubscriptionInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:285](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L285) |  |
-| <code>public int SubscriptionId { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:286](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L286) |  |
-| <code>public string SubscriptionType { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:287](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L287) |  |
-| <code>public bool IsActive { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:288](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L288) |  |
-| <code>public DateTime SubscribedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:289](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L289) |  |
-| <code>public int EventCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:290](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L290) |  |
-| <code>public DateTime? LastEventAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:291](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L291) |  |
-| <code>public double EventsPerSecond { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:292](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L292) |  |
-
-## SubscriptionResult
-
-Qualified name: <code>Meridian.Ui.Services.SubscriptionResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/LiveDataService.cs:310](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L310).
-
-Reports subscription creation success, assigned identity, and an explanatory message.
-
-```csharp
-public sealed class SubscriptionResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:312](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L312) |  |
-| <code>public int SubscriptionId { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:313](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L313) |  |
-| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:314](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L314) |  |
-
-## SuggestedBackfill
-
-Qualified name: <code>Meridian.Ui.Services.SuggestedBackfill</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:600](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L600).
-
-A suggested backfill operation.
-
-```csharp
-public sealed class SuggestedBackfill
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:602](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L602) |  |
-| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:603](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L603) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:604](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L604) |  |
-| <code>public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:605](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L605) |  |
-| <code>public int RecommendedDateRange { get; set; } = 365;</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:606](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L606) |  |
-| <code>public string? Reason { get; set; }</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:607](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L607) |  |
-| <code>public string? Category { get; set; }</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:608](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L608) |  |
-
-## SwitchProviderResponse
-
-Qualified name: <code>Meridian.Ui.Services.SwitchProviderResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:705](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L705).
-
-Carries API provider-switch success, previous and new providers, and an explanatory message.
-
-```csharp
-public sealed class SwitchProviderResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:707](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L707) |  |
-| <code>public string? PreviousProvider { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:708](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L708) |  |
-| <code>public string? NewProvider { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:709](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L709) |  |
-| <code>public string? Message { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:710](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L710) |  |

@@ -74,11 +74,13 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
 
     public TradingWorkspaceShellViewModel(
         TradingWorkspaceShellPresentationService? presentationService = null,
-        TradingSafetyCommandService? safetyCommands = null)
+        TradingSafetyCommandService? safetyCommands = null,
+        PaperSessionReconciliationViewModel? paperReconciliation = null)
         : base(ShellNavigationCatalog.GetWorkspaceShell("trading")!)
     {
         _presentationService = presentationService;
         _safetyCommands = safetyCommands;
+        PaperReconciliation = paperReconciliation;
         CommandGroup = TradingWorkspaceShellPresentationService.BuildCommandGroup();
     }
 
@@ -446,6 +448,8 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
 
     internal WorkflowNextAction? CurrentWorkflowAction => _currentWorkflowAction;
 
+    public PaperSessionReconciliationViewModel? PaperReconciliation { get; }
+
     public async Task StartAsync()
     {
         if (_isStarted)
@@ -471,6 +475,7 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
         }
 
         _isStarted = false;
+        PaperReconciliation?.Clear();
         if (_presentationService is not null)
         {
             _presentationService.PresentationInvalidated -= OnPresentationInvalidated;

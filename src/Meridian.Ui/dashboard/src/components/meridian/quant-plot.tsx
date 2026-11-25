@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useId, useMemo, useRef, type ReactNode } from "react";
+import { ChartEvidenceMark, ChartEvidenceView, type ChartEvidenceProof } from "@/components/charts/chart-evidence";
 import type { QuantPlot } from "@/types";
 import {
   buildQuantPlotViewModel,
@@ -15,9 +16,10 @@ export { buildQuantPlotViewModel, histogramBins, prepareSeries };
 
 interface QuantPlotChartProps {
   plot: QuantPlot;
+  proof?: ChartEvidenceProof;
 }
 
-export function QuantPlotChart({ plot }: QuantPlotChartProps) {
+export function QuantPlotChart({ plot, proof }: QuantPlotChartProps) {
   const vm = useMemo(() => buildQuantPlotViewModel(plot), [plot]);
 
   if (vm.kind === "unsupported") {
@@ -29,12 +31,33 @@ export function QuantPlotChart({ plot }: QuantPlotChartProps) {
     );
   }
 
-  return <RenderableQuantPlot vm={vm} />;
+  return <RenderableQuantPlot vm={vm} proof={proof} />;
 }
 
-function RenderableQuantPlot({ vm }: { vm: Exclude<QuantPlotViewModel, { kind: "unsupported" }> }) {
+export function QuantPlotSource({ source, children }: { source?: string | null; children: (proof?: ChartEvidenceProof) => ReactNode }) {
+  const id = useId();
+  const details = useRef<HTMLDetailsElement>(null);
+  const proof = source ? {
+    href: `#${id}`,
+    label: "Open submitted script",
+    onOpen: () => { if (details.current) details.current.open = true; }
+  } : undefined;
   return (
-    <ChartFrame frame={vm.frame}>
+    <>
+      {children(proof)}
+      {source ? (
+        <details ref={details} className="mt-2 rounded-sm border border-border/60 px-3 py-2 text-xs">
+          <summary id={id} className="cursor-pointer font-medium">Submitted script</summary>
+          <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words font-mono">{source}</pre>
+        </details>
+      ) : null}
+    </>
+  );
+}
+
+function RenderableQuantPlot({ vm, proof }: { vm: Exclude<QuantPlotViewModel, { kind: "unsupported" }>; proof?: ChartEvidenceProof }) {
+  return (
+    <ChartFrame frame={vm.frame} proof={proof}>
       {"axisTicks" in vm ? <YAxis ticks={vm.axisTicks} /> : null}
       {vm.kind === "line" ? (
         <>
@@ -71,9 +94,7 @@ function RenderableQuantPlot({ vm }: { vm: Exclude<QuantPlotViewModel, { kind: "
       {vm.kind === "histogram" ? (
         <>
           {vm.bars.map((bar) => (
-            <rect key={bar.id} {...bar}>
-              <title>{bar.title}</title>
-            </rect>
+            <rect key={bar.id} {...bar} />
           ))}
         </>
       ) : null}
@@ -81,7 +102,6 @@ function RenderableQuantPlot({ vm }: { vm: Exclude<QuantPlotViewModel, { kind: "
         <>
           {vm.candles.map((candle) => (
             <g key={candle.id}>
-              <title>{candle.title}</title>
               <line {...candle.wick} />
               <rect {...candle.body} />
             </g>
@@ -91,9 +111,7 @@ function RenderableQuantPlot({ vm }: { vm: Exclude<QuantPlotViewModel, { kind: "
       {vm.kind === "heatmap" ? (
         <>
           {vm.cells.map((cell) => (
-            <rect key={cell.id} {...cell}>
-              <title>{cell.title}</title>
-            </rect>
+            <rect key={cell.id} {...cell} />
           ))}
           {vm.xLabels.map((label) => (
             <text
@@ -140,9 +158,11 @@ function RenderableQuantPlot({ vm }: { vm: Exclude<QuantPlotViewModel, { kind: "
   );
 }
 
-function ChartFrame({ frame, children }: { frame: QuantPlotFrameViewModel; children: React.ReactNode }) {
+function ChartFrame({ frame, proof, children }: { frame: QuantPlotFrameViewModel; proof?: ChartEvidenceProof; children: ReactNode }) {
+  const descriptionId = `${frame.descriptionId}-${useId()}`;
+  const evidence = frame.marks.map((mark) => ({ ...mark, proof }));
   return (
-    <figure className="rounded-md border border-border/60 bg-secondary/15 p-3">
+    <figure className="min-w-0 rounded-md border border-border/60 bg-secondary/15 p-3">
       <figcaption className="mb-2 flex flex-wrap items-baseline justify-between gap-2 text-xs">
         <span className="font-semibold text-foreground">{frame.title}</span>
         {frame.legend.length > 0 ? (
@@ -156,19 +176,26 @@ function ChartFrame({ frame, children }: { frame: QuantPlotFrameViewModel; child
           </div>
         ) : null}
       </figcaption>
-      <svg
-        role="img"
-        aria-label={frame.ariaLabel}
-        aria-describedby={frame.descriptionId}
-        viewBox={frame.viewBox}
-        className="h-auto w-full"
-        preserveAspectRatio="xMidYMid meet"
-        width={QUANT_PLOT_WIDTH}
-        height={QUANT_PLOT_HEIGHT}
-      >
-        {children}
-      </svg>
-      <p id={frame.descriptionId} className="sr-only">
+      <ChartEvidenceView label={frame.title} evidence={evidence}>
+        {(inspection) => (
+          <svg
+            role="group"
+            aria-label={frame.ariaLabel}
+            aria-describedby={`${descriptionId} ${inspection.hintId}`}
+            viewBox={frame.viewBox}
+            className="h-auto w-full overflow-visible"
+            preserveAspectRatio="xMidYMid meet"
+            width={QUANT_PLOT_WIDTH}
+            height={QUANT_PLOT_HEIGHT}
+          >
+            {children}
+            {frame.marks.map((mark, index) => (
+              <ChartEvidenceMark key={mark.id} inspection={inspection} index={index} geometry={mark.geometry} />
+            ))}
+          </svg>
+        )}
+      </ChartEvidenceView>
+      <p id={descriptionId} className="sr-only">
         {frame.description}
       </p>
     </figure>

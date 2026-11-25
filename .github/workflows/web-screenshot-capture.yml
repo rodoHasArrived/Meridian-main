@@ -45,10 +45,10 @@ permissions:
   contents: read
 
 concurrency:
-  # A dispatch always checks out the default branch and writes the fixed
-  # automation/web-screenshot-capture branch, so every dispatch must share one
-  # concurrency lane. Otherwise duplicate dispatches can queue and reopen a
-  # screenshot PR from the same base after the first PR merges. Pull-request
+  # A dispatch always checks out the default branch and opens a refresh PR on a
+  # per-run automation/web-screenshot-capture-* branch, closing older refresh
+  # PRs, so every dispatch must share one concurrency lane. Otherwise duplicate
+  # dispatches could race and each close the other's PR. Pull-request
   # validation publishes nothing, so each PR takes its own lane instead --
   # sharing the publish lane would let an ordinary PR cancel a refresh run.
   group: web-screenshot-capture-${{ github.event.pull_request.number || 'publish' }}
@@ -79,7 +79,7 @@ jobs:
         with:
           # Always capture and propose the refresh from the canonical default branch so a
           # dispatch from a feature branch cannot publish that branch's commits into the
-          # automation/web-screenshot-capture PR alongside the screenshots.
+          # automation/web-screenshot-capture-* PR alongside the screenshots.
           ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
           fetch-depth: 1
@@ -243,7 +243,11 @@ jobs:
           # (a GitHub App or fine-grained token with contents and pull-requests
           # write) lets them run; without it the PR still opens, unchecked.
           token: ${{ secrets.SCREENSHOT_PR_TOKEN || github.token }}
-          branch: automation/web-screenshot-capture
+          # Each run publishes on its own branch. create-pull-request rebuilds
+          # its branch from the base, so reusing one fixed branch needs a
+          # force-push, and repository rules forbid force-pushes (run
+          # 44419303252 failed with GH013). The next step closes older refresh PRs.
+          branch: automation/web-screenshot-capture-${{ github.run_id }}-${{ github.run_attempt }}
           base: ${{ github.event.repository.default_branch }}
           title: "chore: refresh web workstation screenshot catalog"
           commit-message: "chore: refresh web workstation screenshot catalog"
@@ -257,6 +261,14 @@ jobs:
           add-paths: |
             ${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png
           delete-branch: true
+
+      - name: Close superseded screenshot refresh PRs
+        if: ${{ steps.refresh_pr.outputs.pull-request-number != '' }}
+        uses: ./.github/actions/close-superseded-refresh-prs
+        with:
+          branch-prefix: automation/web-screenshot-capture
+          keep-pr-number: ${{ steps.refresh_pr.outputs.pull-request-number }}
+          token: ${{ secrets.SCREENSHOT_PR_TOKEN || github.token }}
 
       - name: Summarize web screenshot run
         if: ${{ always() }}
