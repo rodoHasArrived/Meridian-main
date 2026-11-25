@@ -327,7 +327,7 @@ public sealed class CrossProviderToleranceEndpointTests
             "SPY", day, day, "stooq", ["tiingo"]));
 
         var preview = CrossProviderToleranceEndpoints.BuildPreview("SPY", day, day, "stooq", "tiingo",
-            CrossProviderTolerancePolicy.Default.Resolve((string?)null), result);
+            new CrossProviderToleranceResolution(null, CrossProviderTolerancePolicy.Default.Resolve((string?)null)), result);
 
         result.IsClean.Should().BeFalse();
         preview.FlaggedDays.Should().Be(0);
