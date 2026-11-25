@@ -1553,6 +1553,18 @@ Declared public members:
 | <code>public string RepairableText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:794](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L794) |  |
 | <code>public SolidColorBrush? RepairableBackground { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:795](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L795) |  |
 
+## HistoricalWindowKindOption
+
+Qualified name: <code>Meridian.Wpf.ViewModels.HistoricalWindowKindOption</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.HistoricalWindow.cs:15](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.HistoricalWindow.cs#L15).
+
+An identifier kind offered by the historical window form, with its operator-facing label.
+
+```csharp
+public sealed record HistoricalWindowKindOption(SecurityIdentifierKind Kind, string Label);
+```
+
 ## HomeWorkspaceActivityItem
 
 Qualified name: <code>Meridian.Wpf.ViewModels.HomeWorkspaceActivityItem</code>. Kind: `record`.
@@ -1772,25 +1784,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>string PageTitle { get; }</code> | [src/Meridian.Wpf/ViewModels/IPageActionBarProvider.cs:14](../../../../src/Meridian.Wpf/ViewModels/IPageActionBarProvider.cs#L14) | The title to display on the left of the action bar. |
 | <code>ObservableCollection&lt;ActionEntry&gt; Actions { get; }</code> | [src/Meridian.Wpf/ViewModels/IPageActionBarProvider.cs:19](../../../../src/Meridian.Wpf/ViewModels/IPageActionBarProvider.cs#L19) | Observable collection of actions to display in the action bar. |
-
-## IRetentionAssuranceClient
-
-Qualified name: <code>Meridian.Wpf.ViewModels.IRetentionAssuranceClient</code>. Kind: `interface`.
-
-Source: [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:718](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L718).
-
-Defines retention configuration persistence, policy validation, dry runs, and audited cleanup execution.
-
-```csharp
-public interface IRetentionAssuranceClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>RetentionConfiguration Configuration { get; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:720](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L720) |  |
-| <code>Task SaveConfigurationAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:722](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L722) |  |
-| <code>RetentionValidationResult ValidateRetentionPolicy(RetentionPolicy policy);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:724](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L724) |  |
-| <code>Task&lt;RetentionDryRunResult&gt; PerformDryRunAsync(RetentionPolicy policy, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:726](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L726) |  |
-| <code>Task&lt;RetentionAuditReport&gt; ExecuteRetentionCleanupAsync(RetentionDryRunResult dryRun, bool verifyChecksums, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:728](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L728) |  |

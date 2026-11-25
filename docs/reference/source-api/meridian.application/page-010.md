@@ -167,12 +167,13 @@ Declared public members:
 | <code>public const string FieldPath = &quot;identifiers.historicalWindow&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalIdentifierWindow.cs:20](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalIdentifierWindow.cs#L20) | Reserved revision field path for a historical identifier window proposal. |
 | <code>public static bool IsWindowPath(string? fieldPath) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalIdentifierWindow.cs:23](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalIdentifierWindow.cs#L23) | True when fieldPath names the reserved window path. |
 | <code>public static bool IsWindowRevision(SecurityMasterRevisionRecord? revision) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalIdentifierWindow.cs:27](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalIdentifierWindow.cs#L27) | True when revision is a historical-identifier-window proposal. |
+| <code>public static string? Validate(SecurityIdentifierKind kind, string? value, string? provider, DateTimeOffset validFrom, DateTimeOffset? validTo, string? evidenceReference, string? justification, DateTimeOffset? now = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalIdentifierWindow.cs:78](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalIdentifierWindow.cs#L78) | The proposal invariants, or null when they hold. The window must start in the past (it is historical), end after it starts when it ends at all, and cite evidence and a justification. Public so operator clients (the WPF desktop) pre-check with the server&#x27;s own rules; the server still re-validates every proposal. |
 
 ## SecurityMasterHistoricalIdentifierWindowPayload
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterHistoricalIdentifierWindowPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalIdentifierWindow.cs:129](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalIdentifierWindow.cs#L129).
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalIdentifierWindow.cs:131](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalIdentifierWindow.cs#L131).
 
 The historical identifier window a proposal revision governs, recorded verbatim in the revision&#x27;s field value so the approved window, its evidence, and its proposer are durable with the revision.
 

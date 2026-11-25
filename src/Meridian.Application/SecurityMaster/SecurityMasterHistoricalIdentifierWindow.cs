@@ -72,8 +72,10 @@ public static class SecurityMasterHistoricalIdentifierWindow
     /// <summary>
     /// The proposal invariants, or null when they hold. The window must start in the past (it is
     /// historical), end after it starts when it ends at all, and cite evidence and a justification.
+    /// Public so operator clients (the WPF desktop) pre-check with the server's own rules; the server
+    /// still re-validates every proposal.
     /// </summary>
-    internal static string? Validate(
+    public static string? Validate(
         SecurityIdentifierKind kind,
         string? value,
         string? provider,

@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderDataProjectionViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.ProviderDataProjectionViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:7](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L7).
+
+Desktop presentation shell over the provider-neutral shared projection.
+
+```csharp
+public sealed class ProviderDataProjectionViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderDataProjectionViewModel(ProviderDataReadModelService providerData);</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:12](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L12) |  |
+| <code>public ObservableCollection&lt;ProviderNewsReadModel&gt; News { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:17](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L17) |  |
+| <code>public ObservableCollection&lt;ProviderScannerReadModel&gt; ScannerResults { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:18](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L18) |  |
+| <code>public ObservableCollection&lt;ProviderPnlReadModel&gt; PnlStreams { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:19](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L19) |  |
+| <code>public ObservableCollection&lt;ProviderCalendarReadModel&gt; Calendars { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:20](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L20) |  |
+| <code>public ObservableCollection&lt;ProviderMarketRuleReadModel&gt; MarketRules { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:21](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L21) |  |
+| <code>public ObservableCollection&lt;ProviderInstrumentDiscoveryReadModel&gt; Instruments { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:22](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L22) |  |
+| <code>public ProviderDataProjectionSnapshot? Projection { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:23](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L23) |  |
+| <code>public void Refresh(string tenantId, string companyId);</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:25](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L25) |  |
+
 ## ProviderHealthViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.ProviderHealthViewModel</code>. Kind: `class`.
@@ -1591,7 +1617,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SecurityPassportEditorParameter</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:602](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L602).
+Source: [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:604](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L604).
 
 Navigation context for opening the passport editor against a selected security. Supplied by the shell when launching the editor contextually (e.g. from the Security Master page); the editor hydrates its identity and optimistic-concurrency token from it.
 
@@ -1623,14 +1649,30 @@ Declared public members:
 | <code>public CashFlows.ContractualCashFlowScenarioViewModel? CashFlowScenarios { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:111](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L111) | Cash-flow scenario workbench (web-UI parity); null when the host registers no cash-flow client. |
 | <code>public bool HasCashFlowScenarios =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:117](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L117) |  |
 | <code>public async Task LoadSchemaAsync(string? assetClass);</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L125) | Loads the asset-class registry definition that the term picker is built from. A failed or missing schema leaves the free-text field path in place. |
-| <code>public bool HasBanner =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:221](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L221) |  |
-| <code>public ObservableCollection&lt;SecurityAssetTermFieldDefinitionDto&gt; SchemaFields { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:235](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L235) | The scalar-editable terms of the passport&#x27;s asset class, from the registry. |
-| <code>public bool HasSchemaFields =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:237](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L237) |  |
-| <code>public IReadOnlyList&lt;string&gt; SchemaValueChoices =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:266](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L266) |  |
-| <code>public bool HasSchemaValueChoices =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:268](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L268) |  |
-| <code>public string? SchemaValueError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:271](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L271) | Client-side pre-check of the value against the selected term; the server stays authoritative. |
-| <code>public bool HasLoadedPassport =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:306](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L306) |  |
-| <code>public bool HasUnsavedWork =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:320](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L320) | True when the editor holds a still-editable revision or any unsaved operator input. A host reusing this editor across contextual launches must not silently discard such work by re-hydrating; a terminal published/rejected session is not preserve-worthy. |
+| <code>public bool HasBanner =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:222](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L222) |  |
+| <code>public ObservableCollection&lt;SecurityAssetTermFieldDefinitionDto&gt; SchemaFields { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:236](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L236) | The scalar-editable terms of the passport&#x27;s asset class, from the registry. |
+| <code>public bool HasSchemaFields =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:238](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L238) |  |
+| <code>public IReadOnlyList&lt;string&gt; SchemaValueChoices =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:267](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L267) |  |
+| <code>public bool HasSchemaValueChoices =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:269](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L269) |  |
+| <code>public string? SchemaValueError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:272](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L272) | Client-side pre-check of the value against the selected term; the server stays authoritative. |
+| <code>public bool HasLoadedPassport =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:307](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L307) |  |
+| <code>public bool HasUnsavedWork =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:321](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L321) | True when the editor holds a still-editable revision or any unsaved operator input. A host reusing this editor across contextual launches must not silently discard such work by re-hydrating; a terminal published/rejected session is not preserve-worthy. |
+
+Source: [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.HistoricalWindow.cs:25](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.HistoricalWindow.cs#L25).
+
+Desktop parity for proposing a governed historical identifier window (browser passport editor&#x27;s &quot;Propose historical identifier&quot; section). Imports stamp identifier validity with the ingest time, so an identifier the security carried earlier is staged here as a Draft revision; the editor&#x27;s existing Submit, Approve and Publish commands then carry it through the maker-checker gate. The form pre-checks with the server&#x27;s own proposal rules (SecurityMasterHistoricalIdentifierWindow.Validate); the server re-validates.
+
+```csharp
+public sealed partial class SecurityPassportEditorViewModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;HistoricalWindowKindOption&gt; WindowKinds { get; } = Enum.GetValues&lt;SecurityIdentifierKind&gt;().Where(static kind =&gt; kind != SecurityIdentifierKind.Unknown).Select(static kind =&gt; new HistoricalWindowKindOption(kind, KindLabels.TryGetValue(kind, out var label)? label : kind.ToString())).ToArray();</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.HistoricalWindow.cs:54](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.HistoricalWindow.cs#L54) | Every proposable identifier kind (all but SecurityIdentifierKind.Unknown). |
+| <code>public string WindowProviderLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.HistoricalWindow.cs:75](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.HistoricalWindow.cs#L75) |  |
+| <code>public string? WindowBlockedReason { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.HistoricalWindow.cs:83](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.HistoricalWindow.cs#L83) | Why the window cannot be staged right now, or null when it can. The editor tracks one working revision, so a new proposal waits until the current one is published or discarded. |
 
 ## ServiceManagerViewModel
 
@@ -1686,50 +1728,3 @@ One batch preview result row; amounts are never resubmitted.
 ```csharp
 public sealed record BondCutoverBatchPreviewRow(string DisplayName, long Version, int ChangedPayments, string Gaps, bool CanStage, string PreviewHash);
 ```
-
-## BondCutoverConsoleViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.Settings.BondCutoverConsoleViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:53](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L53).
-
-Desktop parity for the browser bond calculation cutover console (bond-capability-expansion steps 5–6): read the complete active inventory, require a reviewed block for every bond without supported declared conventions, and submit the fresh inventory hash. Amendments echo the current receipt hash so a receipt that changed underneath the operator is refused rather than overwritten. Nothing is read until asked.
-
-```csharp
-public sealed class BondCutoverConsoleViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public BondCutoverConsoleViewModel(IWorkstationBondCutoverApiClient client);</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:63](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L63) |  |
-| <code>public IAsyncRelayCommand PreviewBatchCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:71](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L71) |  |
-| <code>public IReadOnlyList&lt;string&gt; CouponRateUnits { get; } = [&quot;Percent&quot;, &quot;Fraction&quot;];</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:72](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L72) |  |
-| <code>public IReadOnlyList&lt;string&gt; CouponCashBases { get; } = [&quot;Level&quot;, &quot;DayCount&quot;];</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:73](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L73) |  |
-| <code>public IReadOnlyList&lt;string&gt; BusinessDayConventions { get; } = [&quot;Unadjusted&quot;, &quot;Following&quot;, &quot;ModifiedFollowing&quot;, &quot;Preceding&quot;, &quot;ModifiedPreceding&quot;];</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:74](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L74) |  |
-| <code>public string BatchCouponRateUnit { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:80](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L80) |  |
-| <code>public string BatchCouponCashBasis { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:81](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L81) |  |
-| <code>public string BatchBusinessDayConvention { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:82](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L82) |  |
-| <code>public bool BatchAccrualAdjusted { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:83](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L83) |  |
-| <code>public bool BatchEndOfMonthRule { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:84](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L84) |  |
-| <code>public ObservableCollection&lt;BondCutoverBatchPreviewRow&gt; BatchPreviews { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:85](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L85) |  |
-| <code>public string BatchSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:87](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L87) |  |
-| <code>public ObservableCollection&lt;BondCutoverRowViewModel&gt; Rows { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:123](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L123) |  |
-| <code>public IAsyncRelayCommand LoadCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:124](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L124) |  |
-| <code>public IAsyncRelayCommand SubmitCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L125) |  |
-| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:127](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L127) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:128](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L128) |  |
-| <code>public bool HasInventory =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L129) |  |
-| <code>public string InventoryHash =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:130](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L130) |  |
-| <code>public string CurrentReceiptHash =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:131](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L131) |  |
-| <code>public bool CutoverEnabled =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:132](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L132) |  |
-| <code>public string GateText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:133](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L133) |  |
-| <code>public string SubmitLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L137) |  |
-| <code>public int UndeclaredCount =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:138](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L138) |  |
-| <code>public int MissingReasonCount =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:139](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L139) |  |
-| <code>public int BlockCount =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:140](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L140) |  |
-| <code>public bool Reviewed { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:142](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L142) |  |
-| <code>public bool CanSubmit =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:148](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L148) |  |
-| <code>public BondMigrationCutoverReceiptDto? Receipt =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:149](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L149) |  |
-| <code>public string ReceiptText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:150](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L150) |  |

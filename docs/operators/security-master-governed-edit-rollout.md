@@ -227,7 +227,12 @@ In the browser workstation, open a security's passport editor (Accounting covera
 **Propose historical identifier…**. The form checks the same rules before staging the draft, then
 the editor's **Submit for approval**, **Approve** and **Publish** actions carry it through the gate.
 The editor tracks one working revision, so a new proposal waits until the current one is published
-or discarded. The WPF desktop has no equivalent screen yet.
+or discarded.
+
+The WPF desktop passport editor has the same form under **Propose historical identifier…**. It
+checks proposals with the server's own rules (`SecurityMasterHistoricalIdentifierWindow.Validate`),
+then **Stage window draft** creates the Draft that the desktop **Submit for approval**, **Approve**
+and **Publish** buttons carry through the gate, with the same one-revision-at-a-time rule.
 
 ## Concurrency and Recovery Rehearsal
 

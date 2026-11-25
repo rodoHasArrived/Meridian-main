@@ -12476,6 +12476,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterViewModel.Services.cs
 │   │   │   ├── SecurityMasterViewModel.TextHelpers.cs
 │   │   │   ├── SecurityPassportEditorViewModel.cs
+│   │   │   ├── SecurityPassportEditorViewModel.HistoricalWindow.cs
 │   │   │   ├── ServiceManagerViewModel.cs
 │   │   │   ├── SettingsViewModel.AssetProfiles.cs
 │   │   │   ├── SettingsViewModel.cs
