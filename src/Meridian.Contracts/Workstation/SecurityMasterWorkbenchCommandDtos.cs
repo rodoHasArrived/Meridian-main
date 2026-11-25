@@ -135,7 +135,15 @@ public sealed record SecurityMasterConflictResolutionDto(
     string ChosenWinnerSource,
     bool IsPolicyDeviation,
     string Reason,
-    long NewVersion);
+    long NewVersion)
+{
+    /// <summary>
+    /// Set when the chosen source's value is not the current canonical value: instead of refusing, the
+    /// workbench staged this pending draft carrying that value (review D3). The conflict stays open and
+    /// resolves to <see cref="ChosenWinnerSource"/> when the draft is approved and published.
+    /// </summary>
+    public Guid? PendingRevisionId { get; init; }
+}
 
 /// <summary>
 /// Result of publishing a revision. When the edit affects a hard-closed period with report-pack

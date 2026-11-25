@@ -2,9 +2,9 @@
 
 # `security_master` schema
 
-- Relations: 138
-- Functions/procedures: 15
-- Triggers: 37
+- Relations: 140
+- Functions/procedures: 16
+- Triggers: 39
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -1463,6 +1463,18 @@ erDiagram
         text normalized_identifier_value
         text normalized_provider
     }
+    security_master_security_master_change_outbox {
+        uuid change_id PK
+        uuid security_id
+        bigint stream_version
+        text event_type
+        text actor
+        timestamp_with_time_zone recorded_at
+        jsonb restatement_decision
+        text claimed_by
+        timestamp_with_time_zone claimed_at
+        timestamp_with_time_zone processed_at
+    }
     security_master_security_master_conflicts {
         uuid conflict_id PK
         uuid security_id
@@ -1481,6 +1493,19 @@ erDiagram
         text policy_winner_source
         text policy_rule
         boolean is_policy_deviation
+    }
+    security_master_security_master_held_amendments {
+        uuid held_amendment_id PK
+        uuid security_id
+        text source_system
+        jsonb request_json
+        text[] dominated_field_paths
+        uuid[] conflict_ids
+        bigint held_at_version
+        timestamp_with_time_zone held_at
+        text status
+        text closed_by
+        timestamp_with_time_zone closed_at
     }
     security_master_security_master_quality_reports {
         bigint id PK
@@ -2060,7 +2085,9 @@ erDiagram
 | `security_governance_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_identifier_revisions` | table | 17 | `security_id`, `identifier_kind`, `identifier_value`, `valid_from`, `revision` | 1 | 2 | Append-only recorded history of security_identifiers rows. Each projection replacement appends Added/Amended/Expired/Removed revisions in the same transaction; recorded-as-of reads select the latest revision per row identity at or before the cutoff. Pre-migration rows are Baseline revisions available only from history_available_from. |
 | `security_identifiers` | table | 12 | `security_id`, `identifier_kind`, `identifier_value`, `valid_from` | 1 | 3 | - |
+| `security_master_change_outbox` | table | 10 | `change_id` | 0 | 3 | - |
 | `security_master_conflicts` | table | 17 | `conflict_id` | 0 | 3 | - |
+| `security_master_held_amendments` | table | 11 | `held_amendment_id` | 0 | 2 | - |
 | `security_master_quality_reports` | table | 3 | `id` | 0 | 2 | - |
 | `security_master_quality_reports_id_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_master_revisions` | table | 16 | `revision_id` | 0 | 2 | - |

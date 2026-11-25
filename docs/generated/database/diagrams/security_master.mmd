@@ -1451,6 +1451,18 @@ erDiagram
         text normalized_identifier_value
         text normalized_provider
     }
+    security_master_security_master_change_outbox {
+        uuid change_id PK
+        uuid security_id
+        bigint stream_version
+        text event_type
+        text actor
+        timestamp_with_time_zone recorded_at
+        jsonb restatement_decision
+        text claimed_by
+        timestamp_with_time_zone claimed_at
+        timestamp_with_time_zone processed_at
+    }
     security_master_security_master_conflicts {
         uuid conflict_id PK
         uuid security_id
@@ -1469,6 +1481,19 @@ erDiagram
         text policy_winner_source
         text policy_rule
         boolean is_policy_deviation
+    }
+    security_master_security_master_held_amendments {
+        uuid held_amendment_id PK
+        uuid security_id
+        text source_system
+        jsonb request_json
+        text[] dominated_field_paths
+        uuid[] conflict_ids
+        bigint held_at_version
+        timestamp_with_time_zone held_at
+        text status
+        text closed_by
+        timestamp_with_time_zone closed_at
     }
     security_master_security_master_quality_reports {
         bigint id PK

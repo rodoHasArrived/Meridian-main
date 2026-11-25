@@ -55,6 +55,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
     private readonly IOperationsContinuityWorkflowService _approvalWorkflow;
     private readonly ISecurityMasterRevisionStore _revisions;
     private readonly IPeriodAwareRestatementResolver _restatementResolver;
+    private readonly ISecurityMasterChangeOutbox? _changeOutbox;
     private readonly IAffectedLedgerBookResolver _affectedLedgerBookResolver;
     private readonly IReadOnlyList<ISecurityMasterRevisionPublishedHandler> _handlers;
     private readonly ILogger<SecurityMasterWorkbenchCommandService> _logger;
@@ -78,8 +79,10 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         ISecurityFieldProvenanceStore? fieldProvenance = null,
         ISecurityMasterStore? projectionStore = null,
         Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null,
-        ISecurityMasterGovernanceRequirements? governanceRequirements = null)
+        ISecurityMasterGovernanceRequirements? governanceRequirements = null,
+        ISecurityMasterChangeOutbox? changeOutbox = null)
     {
+        _changeOutbox = changeOutbox;
         if (governanceRequirements is not null)
         {
             // The effective requirement (its own setting or the Institutional profile), read at each
@@ -460,6 +463,28 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         // so there is no window in which the conflict is resolved but its winner is unrecorded. A
         // null result means another operator already resolved this conflict, so surface it as a
         // concurrency conflict rather than letting the later decision silently win.
+        // Review D3 / #3662 2c: choosing the candidate whose value is NOT the current canonical value
+        // used to be refused until someone amended it separately. Stage a governed draft carrying that
+        // value instead; the conflict resolves to the chosen source when the draft publishes.
+        if (!dismissal
+            && !string.Equals(request.ChosenWinnerSource?.Trim(), assessment.CurrentWinningSource?.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            var pendingRevisionId = await StageConflictCandidateDraftAsync(request, assessment.Conflict, currentVersion, ct).ConfigureAwait(false);
+            _logger.LogInformation(
+                "Staged revision {RevisionId} adopting {Chosen}'s value for conflict {ConflictId} on {SecurityId}",
+                pendingRevisionId, request.ChosenWinnerSource, request.ConflictId, request.SecurityId);
+            return new SecurityMasterConflictResolutionDto(
+                request.ConflictId,
+                decision.PolicyWinnerSource,
+                request.ChosenWinnerSource!,
+                isDeviation,
+                request.Reason,
+                currentVersion)
+            {
+                PendingRevisionId = pendingRevisionId
+            };
+        }
+
         var resolution = dismissal ? "Dismiss" : "Resolve";
         // The policy decision is persisted with the close (review A5) so deviations are auditable
         // from the database alone rather than only from logs.
@@ -501,6 +526,99 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             isDeviation,
             request.Reason,
             currentVersion);
+    }
+
+    /// <summary>
+    /// Review P4: the restatement routing a publish computed is persisted on the change record of the
+    /// economic event this publish produced (the canonical merge), instead of only being returned and
+    /// logged. A publish that changed no canonical term produced no event and therefore no change
+    /// record; best-effort, because the publish itself already committed.
+    /// </summary>
+    private async Task TryPersistRestatementDecisionAsync(
+        PublishSecurityMasterRevisionRequest request, long versionBeforePublish, SecurityMasterRestatementDecision restatement)
+    {
+        if (_changeOutbox is null)
+            return;
+
+        try
+        {
+            var versionAfterPublish = await GetCurrentVersionAsync(request.SecurityId, CancellationToken.None).ConfigureAwait(false);
+            if (versionAfterPublish <= versionBeforePublish)
+                return;
+
+            using var buffer = new MemoryStream();
+            using (var writer = new System.Text.Json.Utf8JsonWriter(buffer))
+            {
+                writer.WriteStartObject();
+                writer.WriteString("revisionId", request.RevisionId);
+                writer.WriteBoolean("restatementRequired", restatement.RestatementRequired);
+                writer.WriteStartArray("candidateReportIds");
+                foreach (var candidate in restatement.Candidates)
+                    writer.WriteStringValue(candidate.ReportId);
+                writer.WriteEndArray();
+                writer.WriteEndObject();
+            }
+
+            await _changeOutbox.RecordRestatementDecisionAsync(
+                    request.SecurityId,
+                    versionAfterPublish,
+                    System.Text.Encoding.UTF8.GetString(buffer.ToArray()),
+                    CancellationToken.None)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex,
+                "Persisting the restatement decision of revision {RevisionId} for {SecurityId} failed; the publish committed and the decision was returned to the caller.",
+                request.RevisionId, request.SecurityId);
+        }
+    }
+
+    /// <summary>Justification marker the canonical-merge handler reads to close the adopted conflict.</summary>
+    internal static string ConflictCandidateMarker(Guid conflictId, string source)
+        => $"[adopt-conflict-candidate {conflictId:D} {source.Trim()}]";
+
+    internal static readonly System.Text.RegularExpressions.Regex ConflictCandidateMarkerPattern = new(
+        @"\[adopt-conflict-candidate (?<id>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}) (?<source>[^\]]+)\]",
+        System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+    /// <summary>
+    /// The workbench path a conflict's governed field maps to. Economic terms and pinned profile fields
+    /// live in the asset-specific terms the canonical merge writes; common terms (currency, country of
+    /// risk) have no governed field-edit path yet, so they still need a governed amendment.
+    /// </summary>
+    internal static string? WorkbenchPathForConflictField(string conflictFieldPath)
+    {
+        const string economic = "EconomicTerms.";
+        if (conflictFieldPath.StartsWith(economic, StringComparison.Ordinal))
+            return SecurityAssetTermsFieldEditValidator.AssetSpecificTermsPrefix + conflictFieldPath[economic.Length..];
+        if (conflictFieldPath.StartsWith(SecurityMasterConflictDetection.ProfileFieldPathPrefix, StringComparison.Ordinal))
+            return SecurityAssetTermsFieldEditValidator.AssetSpecificTermsPrefix + "profileFields." + conflictFieldPath[SecurityMasterConflictDetection.ProfileFieldPathPrefix.Length..];
+        return null;
+    }
+
+    private async Task<Guid> StageConflictCandidateDraftAsync(
+        ResolveSourceConflictRequest request, SecurityMasterConflict conflict, long currentVersion, CancellationToken ct)
+    {
+        var chosen = request.ChosenWinnerSource!.Trim();
+        var value = string.Equals(chosen, conflict.ProviderA.Trim(), StringComparison.OrdinalIgnoreCase) ? conflict.ValueA : conflict.ValueB;
+        var path = WorkbenchPathForConflictField(conflict.FieldPath)
+            ?? throw new InvalidOperationException(
+                $"Conflict '{conflict.ConflictId:D}' is on '{conflict.FieldPath}', which has no governed field-edit path. "
+                + $"Apply {chosen}'s value through a governed amendment, then retry the resolution.");
+
+        var edit = await UpdateSecurityFieldAsync(
+            new UpdateSecurityFieldRequest(
+                request.SecurityId,
+                currentVersion,
+                path,
+                value,
+                DateTimeOffset.UtcNow,
+                request.Actor,
+                $"{ConflictCandidateMarker(conflict.ConflictId, chosen)} Adopt {chosen}'s value for {conflict.FieldPath}. {request.Reason}",
+                SourceRecordId: $"conflict:{conflict.ConflictId:D}"),
+            ct).ConfigureAwait(false);
+        return edit.RevisionId;
     }
 
     public async Task<SecurityMasterEditResultDto> SubmitForApprovalAsync(
@@ -931,6 +1049,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         _logger.LogInformation(
             "Published Security Master revision {RevisionId} for {SecurityId} by {Actor} ({HandlerCount} handlers, restatementRequired={RestatementRequired})",
             request.RevisionId, request.SecurityId, request.Actor, _handlers.Count, restatement.RestatementRequired);
+
+        await TryPersistRestatementDecisionAsync(request, currentVersion, restatement).ConfigureAwait(false);
 
         return new SecurityMasterPublishResultDto(
             request.SecurityId,

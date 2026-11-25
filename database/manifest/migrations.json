@@ -604,6 +604,33 @@
       "sha256": "a8365e7029b0fc78ed685ad79266491bc1deb654dd6988c930c71d28cffebc0e"
     },
     {
+      "filename": "070_security_master_held_amendments.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 70,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/070_security_master_held_amendments.sql",
+      "schema": "security_master",
+      "sha256": "921193f375200ac26fb07aaff5ec9907ced1ea24428f4d82eb2dcca4a1655401"
+    },
+    {
+      "filename": "071_corporate_actions_append_only_guard.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 71,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/071_corporate_actions_append_only_guard.sql",
+      "schema": "security_master",
+      "sha256": "61cb7940b7c893c84d968ba3923151b2e5c8296211fde8a15eb0c8cbb5fb2ab2"
+    },
+    {
+      "filename": "072_security_master_change_outbox.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 72,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/072_security_master_change_outbox.sql",
+      "schema": "security_master",
+      "sha256": "77980a29a604dbed15ef10f41a6616f8070a386a9fe823806a58d6b3e5ebf44b"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1784,7 +1811,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "8845d12b7073b1405632a35956d645d8f1423d397ed869d4cce957e44ffff3ba",
+  "fingerprint": "348cfcaf0ec343b27c29d8d5e3de4d6377af3f2c2f5efb74192a0be76dcbe51c",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -2046,9 +2073,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 198,
+    "files": 201,
     "migration_sets": 11,
-    "waivers": 56,
+    "waivers": 57,
     "warnings": 0
   },
   "waivers": [
@@ -2435,6 +2462,13 @@
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/066_corporate_action_cash_dividend_attestations.sql",
       "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers on the newly created bounded cash-dividend declaration history, reservations, event aliases, postings and attestation receipts. No TRUNCATE command or data removal is executed. UPDATE and DELETE guards remain intact. The real PostgreSQL native-post regression attempts UPDATE, DELETE and raw TRUNCATE CASCADE after a successful posting, requires SQLSTATE 55000 from the rejection triggers, and checks that every original row remains unchanged. This exception covers only this migration's truncation-rejection trigger declarations.",
       "review_after": "2027-05-12",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/071_corporate_actions_append_only_guard.sql",
+      "reason": "The lexical TRUNCATE match is the migration's own BEFORE TRUNCATE guard trigger, which rejects truncation of declared corporate actions (Security Master review A6). The migration truncates nothing; CorporateActionsAppendOnlyGuardPostgresTests attempts truncation and verifies refusal.",
+      "review_after": "2027-05-25",
       "rule_id": "migration-truncate"
     },
     {

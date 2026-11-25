@@ -68029,6 +68029,24 @@
       "target": "database:security_master.security_curves.rate_policy"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_security_master_held_amendments_closed on security_master.security_master_held_amendments",
+      "target": "database:security_master.security_master_held_amendments.closed_at"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_security_master_held_amendments_closed on security_master.security_master_held_amendments",
+      "target": "database:security_master.security_master_held_amendments.status"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_security_master_held_amendments_status on security_master.security_master_held_amendments",
+      "target": "database:security_master.security_master_held_amendments.status"
+    },
+    {
       "constraint": "commitment_guarantee_covenant_projection_security_id_fkey",
       "kind": "foreign-key",
       "label": "security_id",
@@ -72006,7 +72024,19 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.security_master_change_outbox"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.security_master_conflicts"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.security_master_held_amendments"
     },
     {
       "kind": "contains",
@@ -72202,7 +72232,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "defdd922b584514ef0433ef9f928c3f9425767eb7834fbb215cb6e865bd95d6d",
+  "fingerprint": "ccf36966635b0717eed2a21e2594dea64a16fd5fd8d49592c954a5fd12531290",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -103523,6 +103553,16 @@
       "label": "security_master.ck_security_curves_rate_policy on security_master.security_curves"
     },
     {
+      "id": "database:security_master.ck_security_master_held_amendments_closed on security_master.security_master_held_amendments",
+      "kind": "database-object",
+      "label": "security_master.ck_security_master_held_amendments_closed on security_master.security_master_held_amendments"
+    },
+    {
+      "id": "database:security_master.ck_security_master_held_amendments_status on security_master.security_master_held_amendments",
+      "kind": "database-object",
+      "label": "security_master.ck_security_master_held_amendments_status on security_master.security_master_held_amendments"
+    },
+    {
       "id": "database:security_master.commercial_paper_projection",
       "kind": "database-table",
       "label": "security_master.commercial_paper_projection",
@@ -105574,10 +105614,32 @@
       "label": "security_master.security_identifiers_security_id_fkey on security_master.security_identifiers"
     },
     {
+      "id": "database:security_master.security_master_change_outbox",
+      "kind": "database-table",
+      "label": "security_master.security_master_change_outbox",
+      "schema": "security_master"
+    },
+    {
       "id": "database:security_master.security_master_conflicts",
       "kind": "database-table",
       "label": "security_master.security_master_conflicts",
       "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_master_held_amendments",
+      "kind": "database-table",
+      "label": "security_master.security_master_held_amendments",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_master_held_amendments.closed_at",
+      "kind": "database-object",
+      "label": "security_master.security_master_held_amendments.closed_at"
+    },
+    {
+      "id": "database:security_master.security_master_held_amendments.status",
+      "kind": "database-object",
+      "label": "security_master.security_master_held_amendments.status"
     },
     {
       "id": "database:security_master.security_master_quality_reports",
@@ -106087,9 +106149,9 @@
   "summary": {
     "contract_references": 4418,
     "contract_set_memberships": 5833,
-    "edges": 11994,
+    "edges": 11999,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5892
+    "nodes": 5898
   }
 }

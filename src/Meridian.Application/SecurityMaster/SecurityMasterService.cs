@@ -36,6 +36,8 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     private readonly ISecurityMasterTermsCapabilityVerifier _termsCapabilityVerifier;
     private readonly IGovernedTermAmendmentPolicy _governedTermAmendmentPolicy;
     private readonly ISecurityMasterRevisionStore? _revisionStore;
+    private readonly ISecurityMasterSourceAdmissionPolicy? _sourceAdmissionPolicy;
+    private readonly ISecurityMasterHeldAmendmentStore? _heldAmendments;
 
     // Owned lifetime token so background fire-and-forget tasks are cancelled on disposal.
     private readonly CancellationTokenSource _serviceCts = new();
@@ -59,8 +61,12 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         ISecurityMasterCanonicalWriteScope? canonicalWriteScope = null,
         ISecurityMasterTermsCapabilityVerifier? termsCapabilityVerifier = null,
         IGovernedTermAmendmentPolicy? governedTermAmendmentPolicy = null,
-        ISecurityMasterRevisionStore? revisionStore = null)
+        ISecurityMasterRevisionStore? revisionStore = null,
+        ISecurityMasterSourceAdmissionPolicy? sourceAdmissionPolicy = null,
+        ISecurityMasterHeldAmendmentStore? heldAmendments = null)
     {
+        _sourceAdmissionPolicy = sourceAdmissionPolicy;
+        _heldAmendments = heldAmendments;
         _governedTermAmendmentPolicy = governedTermAmendmentPolicy ?? PermissiveGovernedTermAmendmentPolicy.Instance;
         _revisionStore = revisionStore;
         _canonicalWriteScope = canonicalWriteScope ?? PassthroughSecurityMasterCanonicalWriteScope.Instance;
@@ -225,6 +231,14 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
                 assetTermsOverride));
         EnsureProfileBackedTermsAreCatalogValid(projection, request.EffectiveFrom);
         SecurityAssetPackAdmission.EnsureAdmitted(projection, request.EffectiveFrom, currentProjection.AssetSpecificTerms);
+
+        // Review A2: an ingest amendment from a lower-ranked source that would overwrite a value a
+        // higher-ranked source supplied is HELD, not applied (owner decision 2026-11-25: hold the
+        // whole amendment). Approved governed publications are maker-checked and never held.
+        if (!approvedPublication)
+        {
+            await HoldIfOutrankedAsync(request, currentProjection, projection, ct).ConfigureAwait(false);
+        }
 
         // The amend seam is the one place the pre-write golden copy and the incoming revision are
         // both in hand: record field-level cross-source conflicts (a different source disagreeing
@@ -604,6 +618,47 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     /// silently drop the challenger from the governed resolution workflow, and the caller can
     /// safely retry because the amendment has not yet been written.
     /// </summary>
+    private async Task HoldIfOutrankedAsync(
+        AmendSecurityTermsRequest request,
+        SecurityProjectionRecord currentProjection,
+        SecurityProjectionRecord incoming,
+        CancellationToken ct)
+    {
+        if (_sourceAdmissionPolicy is null)
+            return;
+
+        var (incumbentFieldSources, _) = await TryLoadIncumbentFieldSourcesAsync(currentProjection.SecurityId, ct).ConfigureAwait(false);
+        var dominated = SecurityMasterConflictDetection
+            .DetectFieldConflicts(currentProjection, incoming, DateTimeOffset.UtcNow, incumbentFieldSources, _assetProfileCatalog)
+            .Where(conflict => _sourceAdmissionPolicy.IncumbentOutranks(conflict.ProviderA, conflict.ProviderB))
+            .ToArray();
+        if (dominated.Length == 0)
+            return;
+
+        // The challenger's values become conflict candidates; the incumbent values stay in force.
+        if (_conflictService is not null)
+            await _conflictService.RecordFieldConflictsAsync(currentProjection, incoming, ct).ConfigureAwait(false);
+
+        var fieldPaths = dominated.Select(static conflict => conflict.FieldPath).Distinct(StringComparer.Ordinal).ToArray();
+        var held = new SecurityMasterHeldAmendment(
+            HeldAmendmentId: Guid.NewGuid(),
+            SecurityId: request.SecurityId,
+            SourceSystem: request.SourceSystem,
+            RequestJson: SecurityMasterHeldAmendmentJson.Serialize(request),
+            DominatedFieldPaths: fieldPaths,
+            ConflictIds: dominated.Select(static conflict => conflict.ConflictId).Distinct().ToArray(),
+            HeldAtVersion: currentProjection.Version,
+            HeldAt: DateTimeOffset.UtcNow,
+            Status: SecurityMasterHeldAmendmentStatus.Held);
+        if (_heldAmendments is not null)
+            await _heldAmendments.AddAsync(held, ct).ConfigureAwait(false);
+
+        _logger.LogWarning(
+            "Held amendment {HeldAmendmentId} of {SecurityId} from {SourceSystem}: outranked on {FieldPaths}",
+            held.HeldAmendmentId, request.SecurityId, request.SourceSystem, string.Join(", ", fieldPaths));
+        throw new SecurityMasterAmendmentHeldException(request.SecurityId, held.HeldAmendmentId, request.SourceSystem, fieldPaths);
+    }
+
     private async Task RecordFieldConflictsBeforePersistAsync(
         SecurityProjectionRecord previous,
         SecurityProjectionRecord incoming,

@@ -118,6 +118,9 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
             command.Parameters.AddWithValue("payload_version", payloadDescriptor.PayloadVersion);
 
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+
+            // Review A4: the change record commits with the event, from every write origin.
+            await PostgresSecurityMasterChangeOutbox.InsertAsync(connection, transaction, _options.Schema, @event, ct).ConfigureAwait(false);
         }
     }
 
@@ -551,6 +554,15 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
         }
 
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        // Migration 071 makes corporate_actions append-only. This maintenance transaction is the one
+        // sanctioned exception: the switch lets it change ONLY event_type and economic_fingerprint.
+        await using (var enable = connection.CreateCommand())
+        {
+            enable.Transaction = transaction;
+            enable.CommandText = "set local meridian.corporate_action_normalization = 'on';";
+            await enable.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+
         foreach (var rename in renames)
         {
             var actions = await LoadCorporateActionsForNormalizationAsync(

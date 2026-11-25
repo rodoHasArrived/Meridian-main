@@ -33,7 +33,20 @@ public static partial class SecurityMasterEndpoints
             {
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
+            catch (AppSecurityMaster.SecurityMasterAmendmentHeldException ex)
+            {
+                // Review A2: nothing was applied; the request is retained for governed replay.
+                return Results.Problem(
+                    ex.Message,
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: "Amendment held for review",
+                    extensions: new Dictionary<string, object?>
+                    {
+                        ["heldAmendmentId"] = ex.HeldAmendmentId,
+                        ["dominatedFieldPaths"] = ex.DominatedFieldPaths,
+                    });
+            }
         });
-        return builder.Produces(StatusCodes.Status400BadRequest);
+        return builder.Produces(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status409Conflict);
     }
 }

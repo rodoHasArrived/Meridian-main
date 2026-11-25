@@ -329,6 +329,12 @@
       "rule_id": "migration-truncate",
       "reason": "Authorized by the repository owner on 2026-11-17. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the retained recurring journal state (W10-JRNL-001); this migration executes no data truncation. Without it, a truncated table would read as unprovisioned and explicit re-initialization would start from empty state, reissuing occurrence claims and draft identities. PostgreSQL regression coverage attempts delete and truncate, requires the guard SQLSTATE 55000, and verifies the retained document is unchanged.",
       "review_after": "2027-05-17"
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/071_corporate_actions_append_only_guard.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE match is the migration's own BEFORE TRUNCATE guard trigger, which rejects truncation of declared corporate actions (Security Master review A6). The migration truncates nothing; CorporateActionsAppendOnlyGuardPostgresTests attempts truncation and verifies refusal.",
+      "review_after": "2027-05-25"
     }
   ],
   "removed_migrations": [

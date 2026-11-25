@@ -412,6 +412,10 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IUflProjectionRebuilder, UflProjectionRebuilder>();
             // Re-serializes retained snapshots through the replay decoder (ADR-024 amendment 2026-11-13, after migration 068).
             services.AddSingleton<ISecurityMasterSnapshotRegenerationService, SecurityMasterSnapshotRegenerationService>();
+            // Review A2: held ingest amendments survive restarts on the PostgreSQL composition.
+            services.AddSingleton<ISecurityMasterHeldAmendmentStore, PostgresSecurityMasterHeldAmendmentStore>();
+            // Review A4/P4: gap-safe change outbox written with every economic event append.
+            services.AddSingleton<ISecurityMasterChangeOutbox, PostgresSecurityMasterChangeOutbox>();
             services.AddSingleton<ISecurityMasterService, SecurityMasterService>();
             // Three typed write paths over one service: ISecurityMasterService is the operator-direct path
             // (refused while governed term amendments are required, by setting or by the Institutional profile), ISecurityMasterAmender
@@ -615,6 +619,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityMasterSnapshotRegenerationService, NullSecurityMasterSnapshotRegenerationService>();
         // Passport Workbench conflict-authority policy is storage-independent (pure precedence logic).
         services.TryAddSingleton<ISecurityMasterConflictAuthorityPolicy, SecurityMasterConflictAuthorityPolicy>();
+        // Golden-record write admission (review A2): per-source precedence from the same workbench
+        // ladder. With no ladder configured nothing is held, so behavior is unchanged by default.
+        services.AddOptions<SecurityMasterWorkbenchOptions>();
+        services.TryAddSingleton<ISecurityMasterSourceAdmissionPolicy, SourcePrecedenceAdmissionPolicy>();
+        services.TryAddSingleton<ISecurityMasterHeldAmendmentStore, InMemorySecurityMasterHeldAmendmentStore>();
         if (!configuration.IsConfigured(AssetOperationsStartup.ConnectionStringVariable))
         {
             services.TryAddSingleton<InMemoryAssetOperationsProjectionStore>();
