@@ -53,9 +53,6 @@ public sealed class DesktopClientRouteContractTests : EndpointIntegrationTestBas
     /// </summary>
     internal static readonly HashSet<string> KnownUnmappedDesktopRoutes = new(StringComparer.Ordinal)
     {
-        // Optional watchlist backend sync. A 404 returns false without logging and the service
-        // keeps the locally persisted watchlists, which remain the source of truth.
-        "src/Meridian.Wpf/Services/WatchlistService.cs -> /api/watchlists",
     };
 
     [Fact]
