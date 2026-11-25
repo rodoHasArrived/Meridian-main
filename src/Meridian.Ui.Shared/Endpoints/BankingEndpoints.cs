@@ -2,6 +2,8 @@ using System.Text.Json;
 using Meridian.FinancialOperations.Banking;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Banking;
+using Meridian.Contracts.Tenancy;
+using Meridian.Storage.Ledger;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,6 +48,22 @@ public static class BankingEndpoints
                 return Results.Problem("'entityId' query parameter is required.", statusCode: StatusCodes.Status400BadRequest);
             }
 
+            if (request.LedgerBookId is { } ledgerBookId)
+            {
+                // The book binding decides which shadow-mode status governs approval, so it is
+                // accepted only for a book the authenticated tenant and company own; the tenant and
+                // company bound to the intent are the server's, never the request's.
+                var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!await OwnsLedgerBookAsync(ledgerBookId, tenant, context).ConfigureAwait(false))
+                {
+                    return Results.Problem(
+                        "The requested ledger book is not accessible to the current tenant and company.",
+                        statusCode: StatusCodes.Status403Forbidden);
+                }
+
+                request = request with { BoundTenantId = tenant.TenantId, BoundCompanyId = tenant.CompanyId };
+            }
+
             try
             {
                 var pending = await service.InitiatePaymentAsync(entityId, request, context.RequestAborted).ConfigureAwait(false);
@@ -59,7 +77,8 @@ public static class BankingEndpoints
         .WithName("InitiatePayment")
         .RequirePermission(UserPermission.ManageDirectLending)
         .Produces<PendingPaymentDto>(StatusCodes.Status201Created)
-        .Produces(StatusCodes.Status400BadRequest);
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden);
 
         group.MapGet("/payments/pending", async (HttpContext context) =>
         {
@@ -424,6 +443,28 @@ public static class BankingEndpoints
 
     private static IResult ServiceUnavailable() =>
         Results.Problem("Banking service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+
+    private static async Task<bool> OwnsLedgerBookAsync(Guid ledgerBookId, WorkstationTenantContext tenant, HttpContext context)
+    {
+        if (ledgerBookId == Guid.Empty
+            || string.IsNullOrWhiteSpace(tenant.TenantId)
+            || string.IsNullOrWhiteSpace(tenant.CompanyId))
+            return false;
+
+        var ledger = context.RequestServices.GetService<ILedgerJournalStore>();
+        var registry = context.RequestServices.GetService<IFundProfileTenancyRegistry>();
+        if (ledger is null || registry is null)
+            return false;
+
+        var book = await ledger.GetLedgerBookAsync(ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+        var owner = book is null
+            ? null
+            : await registry.ResolveAsync(book.FundProfileId, context.RequestAborted).ConfigureAwait(false);
+        return owner is not null
+               && owner.IsHeldBy(tenant.TenantId)
+               && !string.IsNullOrWhiteSpace(owner.CompanyId)
+               && string.Equals(owner.CompanyId.Trim(), tenant.CompanyId.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
 
     private static IResult ToProblem(BankingException exception) =>
         Results.Problem(

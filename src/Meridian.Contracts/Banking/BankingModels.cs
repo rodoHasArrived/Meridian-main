@@ -25,7 +25,22 @@ public sealed record InitiatePaymentRequest(
     /// Recognized three-letter currency code. This trailing nullable member preserves transport
     /// compatibility with older clients; banking services require it for every new intent.
     /// </summary>
-    string? Currency = null);
+    string? Currency = null,
+    /// <summary>
+    /// Ledger book the payment is released from. When set, the server confirms the book belongs to
+    /// the authenticated tenant and company and binds the intent to it, and approval then requires
+    /// the book to be the book of record (a shadow book cannot release payments).
+    /// </summary>
+    Guid? LedgerBookId = null)
+{
+    /// <summary>Authenticated tenant the server bound the intent to; never read from the request body.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string? BoundTenantId { get; init; }
+
+    /// <summary>Authenticated company the server bound the intent to; never read from the request body.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string? BoundCompanyId { get; init; }
+}
 
 /// <summary>A payment that is awaiting an approval decision.</summary>
 public sealed record PendingPaymentDto(
@@ -51,7 +66,14 @@ public sealed record PendingPaymentDto(
     /// <summary>Retained explanation for the legacy currency repair.</summary>
     string? CurrencyRemediationReason = null,
     /// <summary>When the legacy currency repair was retained.</summary>
-    DateTimeOffset? CurrencyRemediatedAt = null);
+    DateTimeOffset? CurrencyRemediatedAt = null,
+    /// <summary>
+    /// Tenant, company and ledger book the intent is released from. All three are set together or
+    /// not at all; an unbound legacy intent cannot be checked against shadow-mode book status.
+    /// </summary>
+    string? TenantId = null,
+    string? CompanyId = null,
+    Guid? LedgerBookId = null);
 
 /// <summary>
 /// Governed repair request for a legacy Pending payment whose currency was never retained.
