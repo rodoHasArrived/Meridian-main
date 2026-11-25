@@ -268,8 +268,19 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
             }
 
             var fillQueueCapacity = Math.Max(1, _options.FillReportQueueCapacity);
-            var context = new LiveStrategyExecutionContext(_orderGateway, _feedAdapter, _portfolioState, universe);
             var restorePaused = run.TerminalStatus == Meridian.Contracts.Workstation.StrategyRunStatus.Paused;
+            // A fresh run trades against its own book: the capital it starts with (its own paper
+            // session's initial cash for a Designer paper run, otherwise the shared portfolio's
+            // value now) moved only by its own fills and charges. A restored paused run's earlier
+            // fills are not retained, so a new book would show it holding nothing it bought; it
+            // keeps the shared portfolio view, and its metrics book starts at restore.
+            var runBook = restorePaused ? null : new LiveRunBook(
+                paperOrders?.Sessions.GetSession(paperOrders.Authority.PaperSessionId)?.Summary.InitialCash
+                    ?? _portfolioState.PortfolioValue,
+                BacktestDefaults.DefaultBrokerageAccountId,
+                _orderGateway.BrokerName);
+            var context = new LiveStrategyExecutionContext(
+                _orderGateway, _feedAdapter, _portfolioState, universe, BacktestDefaults.DefaultBrokerageAccountId, runBook);
             if (restorePaused)
             {
                 strategy = new RestoredPausedLiveStrategy(strategy, context);

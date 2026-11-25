@@ -99,3 +99,73 @@ public sealed class LiveRunBookTests
     private static FillEvent Fill(string symbol, long quantity, decimal price, decimal commission = 0m)
         => new(Guid.NewGuid(), Guid.NewGuid(), symbol, quantity, price, commission, At, "acct");
 }
+
+/// <summary>A strategy launched fresh trades against its run book, not the shared portfolio.</summary>
+public sealed class LiveRunBookContextTests
+{
+    [Fact]
+    public void Context_WithARunBook_ShowsTheStrategyOnlyTheRunsOwnHoldings()
+    {
+        var shared = new Meridian.Execution.Services.PaperTradingPortfolio(100_000m);
+        shared.ApplyFill(new Meridian.Execution.Sdk.ExecutionReport
+        {
+            OrderId = "pre-run",
+            Symbol = "MSFT",
+            Side = Meridian.Execution.Sdk.OrderSide.Buy,
+            OrderQuantity = 100m,
+            FilledQuantity = 100m,
+            FillPrice = 50m,
+            OrderStatus = Meridian.Execution.Sdk.OrderStatus.Filled,
+            ReportType = Meridian.Execution.Sdk.ExecutionReportType.Fill,
+            Timestamp = DateTimeOffset.UtcNow
+        });
+        var cache = new Meridian.Execution.Adapters.LiveMarketDataCache();
+        cache.RecordTrade("AAPL", new Meridian.Contracts.Domain.Models.Trade(DateTimeOffset.UtcNow, "AAPL", 110m,
+            Size: 100, Aggressor: Meridian.Contracts.Domain.Enums.AggressorSide.Buy, SequenceNumber: 1));
+        var gateway = new Moq.Mock<Meridian.Execution.Interfaces.IOrderGateway>();
+        gateway.SetupGet(item => item.BrokerName).Returns("Paper");
+        var book = new LiveRunBook(10_000m, "acct", "Paper");
+        book.ApplyFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "AAPL", 10, 100m, 1m, DateTimeOffset.UtcNow, "acct"), 1m);
+
+        var context = new LiveStrategyExecutionContext(gateway.Object, cache, shared,
+            new HashSet<string> { "AAPL" }, "acct", book);
+
+        context.Cash.Should().Be(10_000m - 1_000m - 1m);
+        context.PortfolioValue.Should().Be(10_000m - 1m + 10m * 10m);
+        context.Positions.Should().ContainSingle().Which.Key.Should().Be("AAPL", "MSFT predates the run");
+        context.Positions["AAPL"].UnrealizedPnl.Should().Be(100m);
+        context.Portfolio.PortfolioValue.Should().Be(context.PortfolioValue);
+        context.Portfolio.Positions.Should().ContainKey("AAPL").And.NotContainKey("MSFT");
+        context.Accounts["acct"].LongMarketValue.Should().Be(1_100m);
+    }
+
+    [Fact]
+    public void Context_WithoutARunBook_StillShowsThePortfolioItWasGiven()
+    {
+        var shared = new Meridian.Execution.Services.PaperTradingPortfolio(100_000m);
+        var gateway = new Moq.Mock<Meridian.Execution.Interfaces.IOrderGateway>();
+        gateway.SetupGet(item => item.BrokerName).Returns("Paper");
+
+        var context = new LiveStrategyExecutionContext(gateway.Object,
+            new Meridian.Execution.Adapters.LiveMarketDataCache(), shared, new HashSet<string> { "AAPL" });
+
+        context.PortfolioValue.Should().Be(100_000m);
+        context.Portfolio.Should().BeSameAs(shared);
+    }
+
+    [Fact]
+    public void ClosedPosition_LeavesThePositionList_ButKeepsItsRealisedPnlInEquity()
+    {
+        var book = new LiveRunBook(10_000m, "acct", null);
+        book.ApplyFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "AAPL", 10, 100m, 0m, DateTimeOffset.UtcNow), 1m);
+        book.ApplyFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "AAPL", -10, 105m, 0m, DateTimeOffset.UtcNow), 1m);
+
+        var value = book.Value(static _ => null);
+        var state = book.AsPortfolioState(static _ => null);
+
+        value.Positions.Should().BeEmpty();
+        value.Equity.Should().Be(10_050m);
+        state.RealisedPnl.Should().Be(50m);
+        state.Positions.Should().BeEmpty();
+    }
+}

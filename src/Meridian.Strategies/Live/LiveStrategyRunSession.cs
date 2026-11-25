@@ -100,13 +100,16 @@ internal sealed class LiveStrategyRunSession
         _logger = logger;
         _useSynchronousFillFallback = useSynchronousFillFallback;
         _paperOrders = paperOrders;
-        // The run's own capital: a Designer paper run owns a paper session funded with its
-        // reviewed backtest's initial cash; any other run starts from the shared portfolio's
-        // value at launch, and from then on moves only with its own fills and charges.
-        var initialCapital = paperOrders?.Sessions.GetSession(paperOrders.Authority.PaperSessionId)?.Summary.InitialCash
-            ?? context.PortfolioValue;
-        _book = new LiveRunBook(initialCapital, BacktestDefaults.DefaultBrokerageAccountId, context.Gateway.BrokerName);
-        _metrics = new LiveRunMetricsTracker(initialCapital, DateTimeOffset.UtcNow);
+        // The run's own book, which its strategy trades against. A context without one (a
+        // restored paused run) still gets a metrics-only book: the run's own capital (a Designer
+        // paper run's session cash, otherwise the portfolio's value now) moved only by its own
+        // fills and charges.
+        _book = context.RunBook ?? new LiveRunBook(
+            paperOrders?.Sessions.GetSession(paperOrders.Authority.PaperSessionId)?.Summary.InitialCash
+                ?? context.PortfolioValue,
+            BacktestDefaults.DefaultBrokerageAccountId,
+            context.Gateway.BrokerName);
+        _metrics = new LiveRunMetricsTracker(_book.InitialCapital, DateTimeOffset.UtcNow);
         _clientOrderIdPrefix = BuildClientOrderIdPrefix(run.RunId);
         _fillReports = Channel.CreateBounded<ExecutionSdk.ExecutionReport>(new BoundedChannelOptions(fillReportQueueCapacity)
         {

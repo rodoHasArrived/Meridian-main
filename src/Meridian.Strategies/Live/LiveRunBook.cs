@@ -1,4 +1,6 @@
 using Meridian.Backtesting.Sdk;
+using Meridian.Execution.Models;
+using ExecutionSdk = Meridian.Execution.Sdk;
 
 namespace Meridian.Strategies.Live;
 
@@ -9,30 +11,40 @@ namespace Meridian.Strategies.Live;
 /// <remarks>
 /// A live or paper run trades against a portfolio shared with the rest of the host (other
 /// runs, manual orders, holdings that predate the run), so that portfolio's equity is not the
-/// run's equity. This book is the run's equity source for its metrics and snapshots. The
-/// strategy-facing context still reports the shared portfolio, so strategy behaviour is
-/// unchanged.
+/// run's equity. This book is the run's equity source for its metrics and snapshots, and,
+/// for a run launched fresh, what its strategy sees as cash, portfolio value, positions and
+/// accounts. Fills arrive on the session's event loop; lifecycle code may read the book from
+/// other threads, so every access takes the book's lock.
 /// </remarks>
 internal sealed class LiveRunBook
 {
     private readonly Dictionary<string, Holding> _holdings = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Lock _sync = new();
+    private decimal _cash;
+    private decimal _financingCharges;
     private readonly string _accountId;
     private readonly string? _institution;
 
     public LiveRunBook(decimal initialCapital, string accountId, string? institution)
     {
         InitialCapital = initialCapital;
-        Cash = initialCapital;
+        _cash = initialCapital;
         _accountId = accountId;
         _institution = institution;
     }
 
     public decimal InitialCapital { get; }
 
-    public decimal Cash { get; private set; }
+    public decimal Cash
+    {
+        get { lock (_sync) return _cash; }
+    }
 
     /// <summary>Financing charges paid from the run's cash (positive = cost).</summary>
-    public decimal FinancingCharges { get; private set; }
+    public decimal FinancingCharges
+    {
+        get { lock (_sync) return _financingCharges; }
+    }
 
     /// <param name="fill">The run's fill; a positive quantity buys, a negative one sells.</param>
     /// <param name="valueFactor">
@@ -45,23 +57,29 @@ internal sealed class LiveRunBook
         if (fill.FilledQuantity == 0)
             return;
 
-        Cash -= fill.FilledQuantity * fill.FillPrice * valueFactor;
-        Cash -= Math.Abs(fill.Commission);
-
-        if (!_holdings.TryGetValue(fill.Symbol, out var holding))
+        lock (_sync)
         {
-            holding = new Holding(valueFactor);
-            _holdings[fill.Symbol] = holding;
-        }
+            _cash -= fill.FilledQuantity * fill.FillPrice * valueFactor;
+            _cash -= Math.Abs(fill.Commission);
 
-        holding.Apply(fill.FilledQuantity, fill.FillPrice);
+            if (!_holdings.TryGetValue(fill.Symbol, out var holding))
+            {
+                holding = new Holding(valueFactor);
+                _holdings[fill.Symbol] = holding;
+            }
+
+            holding.Apply(fill.FilledQuantity, fill.FillPrice);
+        }
     }
 
     /// <summary>Pays a financing charge from the run's cash.</summary>
     public void ApplyFinancingCharge(decimal amount)
     {
-        Cash -= amount;
-        FinancingCharges += amount;
+        lock (_sync)
+        {
+            _cash -= amount;
+            _financingCharges += amount;
+        }
     }
 
     /// <summary>
@@ -70,6 +88,17 @@ internal sealed class LiveRunBook
     public LiveRunBookValuation Value(Func<string, decimal?> markPrice)
     {
         ArgumentNullException.ThrowIfNull(markPrice);
+        lock (_sync)
+        {
+            return ValueCore(markPrice);
+        }
+    }
+
+    /// <summary>The book as an execution portfolio, valued at <paramref name="markPrice"/> on each read.</summary>
+    public IPortfolioState AsPortfolioState(Func<string, decimal?> markPrice) => new PortfolioStateView(this, markPrice);
+
+    private LiveRunBookValuation ValueCore(Func<string, decimal?> markPrice)
+    {
         var positions = new Dictionary<string, Position>(StringComparer.OrdinalIgnoreCase);
         decimal longMarketValue = 0m, shortMarketValue = 0m;
         foreach (var (symbol, holding) in _holdings)
@@ -81,6 +110,8 @@ internal sealed class LiveRunBook
             else if (holding.Quantity < 0)
                 shortMarketValue += value;
 
+            if (holding.Quantity == 0)
+                continue;
             positions[symbol] = new Position(
                 symbol,
                 holding.Quantity,
@@ -89,27 +120,65 @@ internal sealed class LiveRunBook
                 holding.RealizedPnl);
         }
 
-        var equity = Cash + longMarketValue + shortMarketValue;
+        var cash = _cash;
+        var equity = cash + longMarketValue + shortMarketValue;
         var account = new FinancialAccountSnapshot(
             AccountId: _accountId,
             DisplayName: "Run Book",
             Kind: FinancialAccountKind.Brokerage,
             Institution: _institution,
-            Cash: Cash,
-            MarginBalance: Math.Min(0m, Cash),
+            Cash: cash,
+            MarginBalance: Math.Min(0m, cash),
             LongMarketValue: longMarketValue,
             ShortMarketValue: shortMarketValue,
             Equity: equity,
             Positions: positions,
             // What the book proves: borrowing when its cash is negative, shorting when it holds a short.
             Rules: new FinancialAccountRules(
-                AllowMargin: Cash < 0m,
+                AllowMargin: cash < 0m,
                 AllowShortSelling: _holdings.Values.Any(static h => h.Quantity < 0)));
         return new LiveRunBookValuation(
-            Cash,
+            cash,
             equity,
             positions,
             new Dictionary<string, FinancialAccountSnapshot>(StringComparer.OrdinalIgnoreCase) { [_accountId] = account });
+    }
+
+    /// <summary>
+    /// The book seen through <see cref="IPortfolioState"/>, the portfolio surface strategies
+    /// read. Buying power is the book's cash: the run book has no margin model of its own.
+    /// </summary>
+    private sealed class PortfolioStateView(LiveRunBook book, Func<string, decimal?> markPrice) : IPortfolioState
+    {
+        public decimal Cash => book.Cash;
+
+        public decimal PortfolioValue => book.Value(markPrice).Equity;
+
+        public decimal UnrealisedPnl => book.Value(markPrice).Positions.Values.Sum(static p => p.UnrealizedPnl);
+
+        public decimal RealisedPnl
+        {
+            get { lock (book._sync) return book._holdings.Values.Sum(static h => h.RealizedPnl); }
+        }
+
+        public IReadOnlyDictionary<string, ExecutionSdk.IPosition> Positions
+        {
+            get
+            {
+                lock (book._sync)
+                {
+                    var valued = book.ValueCore(markPrice).Positions;
+                    return valued.Values.ToDictionary(
+                        static p => p.Symbol,
+                        p => (ExecutionSdk.IPosition)new ExecutionPosition(
+                            p.Symbol, p.Quantity, p.AverageCostBasis, p.UnrealizedPnl, p.RealizedPnl)
+                        {
+                            ContractMultiplier = book._holdings[p.Symbol].ValueFactor
+                        },
+                        StringComparer.OrdinalIgnoreCase);
+                }
+            }
+        }
     }
 
     private sealed class Holding(decimal valueFactor)

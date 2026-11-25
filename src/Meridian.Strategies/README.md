@@ -44,8 +44,14 @@ The book starts with the run's capital: the paper session's initial cash for a D
 (which owns its session), otherwise the shared portfolio's value at launch. It then moves only with
 the run's fills (contract multiplier and percent-of-par sizing included), commissions and financing
 charges, and marks the run's positions at the feed price (the last fill price when the feed has
-none). Daily snapshots, positions, final equity and P&L come from the book. The strategy-facing
-context still reports the shared portfolio, so strategy decisions are unchanged.
+none). Daily snapshots, positions, final equity and P&L come from the book. A freshly launched
+run's strategy trades against the same book: `Cash`, `PortfolioValue`, `Positions`, `Accounts` and
+`IExecutionContext.Portfolio` report the run's own capital and holdings, so percent-of-capital
+sizing uses the run's capital and a holding that is not the run's is not visible to it. The run
+book's buying power is its cash; it has no margin model. A paused run restored after a host restart
+keeps the shared-portfolio view, because its earlier fills are not retained and a new book would
+show it holding nothing it bought; its metrics book starts at the restore. Order routing, pre-trade
+risk and the OMS still use the shared portfolio.
 
 Live/paper finalization records financing as `Unavailable` until an explicit complete allocation
 ties account charges to the run. The context's private ledger and an account's expense balance do

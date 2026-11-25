@@ -24,16 +24,39 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
     private readonly string _defaultAccountId;
     private readonly Meridian.Ledger.Ledger _sessionLedger = new();
 
+    /// <summary>A context whose strategy sees <paramref name="portfolio"/> directly.</summary>
     public LiveStrategyExecutionContext(
         IOrderGateway gateway,
         ILiveFeedAdapter feed,
         IPortfolioState portfolio,
         IReadOnlySet<string> universe,
         string defaultAccountId = BacktestDefaults.DefaultBrokerageAccountId)
+        : this(gateway, feed, portfolio, universe, defaultAccountId, runBook: null)
+    {
+    }
+
+    /// <param name="portfolio">
+    /// The portfolio the run trades against. Strategies see it only when no
+    /// <paramref name="runBook"/> is supplied.
+    /// </param>
+    /// <param name="runBook">
+    /// The run's own book. When supplied, strategies see the run's own cash, value, positions
+    /// and account (marked at the feed price) instead of the shared portfolio, which also holds
+    /// other runs' trades, manual orders and holdings that predate the run.
+    /// </param>
+    internal LiveStrategyExecutionContext(
+        IOrderGateway gateway,
+        ILiveFeedAdapter feed,
+        IPortfolioState portfolio,
+        IReadOnlySet<string> universe,
+        string defaultAccountId,
+        LiveRunBook? runBook)
     {
         Gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _feed = feed ?? throw new ArgumentNullException(nameof(feed));
-        _portfolio = portfolio ?? throw new ArgumentNullException(nameof(portfolio));
+        ArgumentNullException.ThrowIfNull(portfolio);
+        RunBook = runBook;
+        _portfolio = runBook is null ? portfolio : runBook.AsPortfolioState(GetLastPrice);
         Universe = universe ?? throw new ArgumentNullException(nameof(universe));
         _defaultAccountId = defaultAccountId;
         CurrentTime = DateTimeOffset.UtcNow;
@@ -101,11 +124,17 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
         return (quantity * multiplier * position.AverageCostBasis) + position.UnrealizedPnl;
     }
 
+    /// <summary>The run's own book, when strategies trade against it; otherwise null.</summary>
+    internal LiveRunBook? RunBook { get; }
+
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, FinancialAccountSnapshot> Accounts
     {
         get
         {
+            if (RunBook is { } book)
+                return book.Value(GetLastPrice).Accounts;
+
             var positions = Positions;
             var longMarketValue = 0m;
             var shortMarketValue = 0m;
