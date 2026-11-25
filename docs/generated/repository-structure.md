@@ -10251,6 +10251,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.external-gl-posting.tsx
 │   │   │   │   │   ├── accounting-screen.factor-paydown-panel.test.tsx
 │   │   │   │   │   ├── accounting-screen.factor-paydown-panel.tsx
+│   │   │   │   │   ├── accounting-screen.financial-value-states.test.ts
 │   │   │   │   │   ├── accounting-screen.fiscal-year-close.test.tsx
 │   │   │   │   │   ├── accounting-screen.fiscal-year-close.tsx
 │   │   │   │   │   ├── accounting-screen.formatting.accounting-date.test.ts
