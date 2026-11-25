@@ -27,6 +27,13 @@
 // in by rerunning with --write). Usage:
 //   - rawSelects: a hand-styled native `<select>` instead of `Select` from
 //     `@/components/ui/select`, which owns the border, chevron, focus ring and error state.
+//   - prefixedCurrency: `formatPrefixedCurrency`, which always prints "$" whatever the figure's
+//     currency. Use `formatCurrencyAmount(value, currency)`, whose currency argument is required.
+//   - assumedMoneyDefaults: a money field defaulted to a number (`balance ?? 0`, `nav || 0`) or a
+//     currency defaulted to USD (`?? "USD"`). Missing is not zero and is not dollars: keep the
+//     value null and render "Not available", or refuse to build the request.
+//   - placeholderVocabulary: ad hoc placeholder literals ("—", "Unavailable", "Not supplied",
+//     "Not recorded", "Not retained") instead of `VALUE_STATE_LABELS` from `@/lib/format`.
 //
 //   node scripts/design-system-ratchets.mjs            # report
 //   node scripts/design-system-ratchets.mjs --write    # record reductions only; never allow growth
@@ -44,6 +51,11 @@ const DIRECT_INTL = /Intl\.(?:NumberFormat|DateTimeFormat)\b|\.toLocaleString\(|
 const TO_FIXED = /\.toFixed\(/g;
 // A function or const declaration whose name marks it as a money or P&L formatter.
 const LOCAL_MONEY_FORMATTER = /\b(?:function|const)\s+(?:format|fmt)(?:Money|Currency|Pnl|PnL|Usd|Dollars?|Notional|Signed|Compact)\w*/g;
+const PREFIXED_CURRENCY = /\bformatPrefixedCurrency\b/g;
+// A money-named field or variable defaulted to a numeric literal, or any value defaulted to "USD".
+const ZERO_MONEY_DEFAULT = /\b\w*(?:balance|amount|nav|capital|contributions|distributions|gainloss|pnl|equity|variance|notional)\w*\s*(?:\?\?|\|\|)\s*-?\d+(?:\.\d+)?(?![\w.])/gi;
+const USD_DEFAULT = /(?:\?\?|\|\|)\s*["'`]USD["'`]/g;
+const PLACEHOLDER_WORDS = new Set(["—", "Unavailable", "Not supplied", "Not recorded", "Not retained"]);
 // A <table opening tag that is not styled as the table system's `dense-data-table`.
 const RAW_TABLE = /<table\b(?![^>]*\bclassName="[^"]*\bdense-data-table\b)/g;
 
@@ -156,6 +168,33 @@ export const RATCHETS = {
     description: "hand-styled native <select> elements in screens/ (use Select from @/components/ui/select)",
     count(source) {
       return [...source.matchAll(RAW_SELECT)].length;
+    }
+  },
+  prefixedCurrency: {
+    description: "formatPrefixedCurrency in screens/, which always prints \"$\" (use formatCurrencyAmount(value, currency) from @/lib/format)",
+    count(source) {
+      return [...source.matchAll(PREFIXED_CURRENCY)].length;
+    }
+  },
+  assumedMoneyDefaults: {
+    description: "money defaulted to a number or currency defaulted to \"USD\" in screens/ (keep it null and render VALUE_STATE_LABELS.unavailable)",
+    count(source) {
+      // Counts and indexes ("capitalAccountCount ?? 0") are not money; only amounts are counted.
+      const moneyDefaults = [...source.matchAll(ZERO_MONEY_DEFAULT)]
+        .filter((match) => !/(?:count|length|index|size|days)\s*(?:\?\?|\|\|)/i.test(match[0]));
+      return moneyDefaults.length + [...source.matchAll(USD_DEFAULT)].length;
+    }
+  },
+  placeholderVocabulary: {
+    description: "ad hoc placeholder literals (\"—\", \"Unavailable\", \"Not supplied\", \"Not recorded\", \"Not retained\") in screens/ (use VALUE_STATE_LABELS from @/lib/format)",
+    count(source) {
+      let total = 0;
+      for (const match of source.matchAll(STRING_LITERAL)) {
+        if (PLACEHOLDER_WORDS.has(match[1] ?? match[2] ?? match[3] ?? "")) {
+          total += 1;
+        }
+      }
+      return total;
     }
   }
 };

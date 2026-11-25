@@ -44,7 +44,7 @@ import type {
   ReconciliationBreakQueueItem,
   StatementRunSummary,
 } from "@/types";
-import { formatCount, pluralizeCount, formatPrefixedCurrency } from "@/lib/format";
+import { formatCount, pluralizeCount, formatCurrencyAmount } from "@/lib/format";
 import {
   TIE_OUT_EPSILON,
   roundMoney,
@@ -1102,7 +1102,7 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
       { label: "Updated", value: row.lastUpdatedAtLabel },
       { label: "Exception route", value: formatReconciliationMetadata(row.exceptionRoute, "Unrouted") },
       { label: "Tolerance profile", value: formatReconciliationMetadata(row.toleranceProfileId, "Unassigned") },
-      { label: "Tolerance band", value: row.toleranceBand == null ? "Policy default" : formatPrefixedCurrency(row.toleranceBand) },
+      { label: "Tolerance band", value: row.toleranceBand == null ? "Policy default" : formatCurrencyAmount(row.toleranceBand, null) },
       { label: "Priority", value: formatReconciliationMetadata(row.priority, "Normal") },
       { label: "Urgency", value: buildReconciliationExceptionUrgency(row) },
       { label: "SLA tone", value: formatReconciliationMetadata(row.slaBadgeTone, "info") },

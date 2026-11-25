@@ -1,4 +1,4 @@
-import { formatPrefixedCurrency } from "@/lib/format";
+import { formatCount, formatCurrencyAmount } from "@/lib/format";
 import type { AccountingBasisKind } from "@/types";
 import { readSourceEventIds } from "./accounting-screen.view-model";
 import type {
@@ -21,7 +21,9 @@ export function accountingBasisDisplayName(basis: AccountingBasisKind): string {
 export function buildBasisBridgeViewState(
   rows: BasisAwareLedgerTrialBalanceLine[],
   selectedBasis: AccountingBasisKind,
-  runLabel: string
+  runLabel: string,
+  /** The book's currency. Without one, amounts render bare — never with an assumed "$". */
+  currency: string | null = null
 ): AccountingBasisBridgeViewState {
   const comparisonBasis = selectedBasis === "Primary"
     ? rows.find((row) => row.accountingBasis !== "Primary")?.accountingBasis ?? "Gaap"
@@ -39,6 +41,7 @@ export function buildBasisBridgeViewState(
       toBasis: comparisonBasis,
       rows: [],
       hasRows: false,
+      summary: null,
       emptyText: "No non-primary basis rows are available for this run yet. The bridge will populate after GAAP, Cash, Tax, or Statutory journal lines are posted."
     };
   }
@@ -46,39 +49,81 @@ export function buildBasisBridgeViewState(
   const primaryByKey = new Map(primaryRows.map((row) => [basisBridgeKey(row), row]));
   const comparisonByKey = new Map(comparisonRows.map((row) => [basisBridgeKey(row), row]));
   const keys = [...new Set([...primaryByKey.keys(), ...comparisonByKey.keys()])].sort((left, right) => left.localeCompare(right));
+  const fromName = accountingBasisDisplayName("Primary");
+  const toName = accountingBasisDisplayName(comparisonBasis);
+  const money = (value: number) => formatCurrencyAmount(value, currency, { context: "accounting", parens: false });
   const bridgeRows = keys.map((key) => {
     const primary = primaryByKey.get(key) ?? null;
     const comparison = comparisonByKey.get(key) ?? null;
     const source = comparison ?? primary;
-    const primaryBalance = primary?.balance ?? 0;
-    const comparisonBalance = comparison?.balance ?? 0;
-    const variance = comparisonBalance - primaryBalance;
     const sourceLabel = buildBasisBridgeSourceLabel(source);
     const accountLabel = source?.accountName.trim() || "Unnamed account";
     const accountTypeLabel = source?.accountType.trim() || "Unclassified";
-    const varianceLabel = formatPrefixedCurrency(variance);
 
+    // An account posted on one basis only has nothing to compare against. Reading the absent side
+    // as 0 turned its whole balance into a "variance" that looked like a real basis difference.
+    if (!primary || !comparison) {
+      const presentBasis = primary ? fromName : toName;
+      const absentBasis = primary ? toName : fromName;
+      const oneSidedLabel = `Only on ${presentBasis} basis — not compared`;
+      const notOnLabel = `Not on ${absentBasis} basis`;
+      const primaryBalanceLabel = primary ? money(primary.balance) : notOnLabel;
+      const comparisonBalanceLabel = comparison ? money(comparison.balance) : notOnLabel;
+      return {
+        rowId: `${comparisonBasis}-${key}`,
+        accountLabel,
+        accountTypeLabel,
+        comparison: primary ? "primary-only" : "comparison-only",
+        variance: null,
+        primaryBalanceLabel,
+        comparisonBalanceLabel,
+        varianceLabel: oneSidedLabel,
+        varianceTone: "default",
+        sourceLabel,
+        ariaLabel: `${accountLabel} ${accountTypeLabel}. ${oneSidedLabel}. ${fromName} ${primaryBalanceLabel}. ${toName} ${comparisonBalanceLabel}.`
+      } satisfies AccountingBasisBridgeRowViewModel;
+    }
+
+    const variance = comparison.balance - primary.balance;
+    const varianceLabel = money(variance);
     return {
       rowId: `${comparisonBasis}-${key}`,
       accountLabel,
       accountTypeLabel,
-      primaryBalanceLabel: formatPrefixedCurrency(primaryBalance),
-      comparisonBalanceLabel: formatPrefixedCurrency(comparisonBalance),
+      comparison: "compared",
+      variance,
+      primaryBalanceLabel: money(primary.balance),
+      comparisonBalanceLabel: money(comparison.balance),
       varianceLabel,
       varianceTone: variance < 0 ? "danger" : variance > 0 ? "success" : "default",
       sourceLabel,
-      ariaLabel: `${accountLabel} ${accountTypeLabel}. Primary ${formatPrefixedCurrency(primaryBalance)}. ${accountingBasisDisplayName(comparisonBasis)} ${formatPrefixedCurrency(comparisonBalance)}. Variance ${varianceLabel}.`
+      ariaLabel: `${accountLabel} ${accountTypeLabel}. ${fromName} ${money(primary.balance)}. ${toName} ${money(comparison.balance)}. Variance ${varianceLabel}.`
     } satisfies AccountingBasisBridgeRowViewModel;
   });
 
+  const comparedRows = bridgeRows.filter((row) => row.comparison === "compared");
+  const comparedCount = comparedRows.length;
+  const oneSidedCount = bridgeRows.length - comparedCount;
+  const varianceTotal = comparedRows.reduce((total, row) => (row.variance === null ? total : total + row.variance), 0);
+
   return {
     title: "Basis bridge",
-    description: `${accountingBasisDisplayName(comparisonBasis)} compared with Primary for ${runLabel}, grouped by source/rule/account where lineage is available.`,
+    description: `${toName} compared with Primary for ${runLabel}, grouped by source/rule/account where lineage is available.`,
     tableLabel,
     fromBasis: "Primary",
     toBasis: comparisonBasis,
     rows: bridgeRows,
     hasRows: bridgeRows.length > 0,
+    summary: {
+      comparedCount,
+      oneSidedCount,
+      // Only compared accounts contribute; one-sided accounts are counted, never summed as variance.
+      varianceTotalLabel: comparedCount > 0 ? money(varianceTotal) : formatCurrencyAmount(null, currency),
+      countsLabel: `Compared ${formatCount(comparedCount)} · one-sided ${formatCount(oneSidedCount)}`,
+      oneSidedLabel: oneSidedCount > 0
+        ? `${formatCount(oneSidedCount)} ${oneSidedCount === 1 ? "account" : "accounts"} on one basis only`
+        : null
+    },
     emptyText: "No bridge rows matched the selected basis pair."
   };
 }

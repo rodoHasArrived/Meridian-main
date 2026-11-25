@@ -63,7 +63,7 @@ export function AmountPassportFactsView({ passport, onFollow, baseline = false }
     </p> : null}
     <PassportFacts facts={[
       ["Exact retained value", passport.exactValue], ["Currency", reference.currency ?? (reference.unit === "position units" ? "Not applicable" : null)],
-      ["Units", reference.unit], ["Origin", amountPassportStatusLabels[reference.origin]],
+      ["Units", reference.unit], ["Origin", reference.origin === "unavailable" ? "Origin unknown" : amountPassportStatusLabels[reference.origin]],
       ["Effective date", passport.effectiveDate ?? (reference.identity.subjectKind === "position-valuation" ? "See observation timestamp" : null)]
     ]} />
     <section aria-label={regionLabel("Scope")}>

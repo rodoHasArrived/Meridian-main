@@ -16,7 +16,7 @@ import {
 } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { ACTIVATION_OUTCOME_KEYS, recordActivationOutcome } from "@/lib/first-run/activation";
-import { formatCount as formatCountValue, formatCurrency, formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
+import { formatCount as formatCountValue, formatCurrency, formatPrefixedCurrency, formatSignedCurrency, formatUnknownCurrencyAmount } from "@/lib/format";
 import { formatReportPackRecipientList } from "@/lib/reporting-distributions";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { EXPORT_API_ENDPOINTS } from "@/lib/workstation-endpoints";
@@ -1865,6 +1865,10 @@ export interface AccountingBasisBridgeRowViewModel {
   rowId: string;
   accountLabel: string;
   accountTypeLabel: string;
+  /** Whether both bases carry the account; one-sided rows have no variance and are not summed. */
+  comparison: "compared" | "primary-only" | "comparison-only";
+  /** Comparison minus Primary; null when the account is on one basis only. */
+  variance: number | null;
   primaryBalanceLabel: string;
   comparisonBalanceLabel: string;
   varianceLabel: string;
@@ -1881,7 +1885,19 @@ export interface AccountingBasisBridgeViewState {
   toBasis: AccountingBasisKind;
   rows: AccountingBasisBridgeRowViewModel[];
   hasRows: boolean;
+  /** Totals over compared accounts only, with the one-sided exclusions counted. */
+  summary: AccountingBasisBridgeSummaryViewModel | null;
   emptyText: string;
+}
+
+export interface AccountingBasisBridgeSummaryViewModel {
+  comparedCount: number;
+  oneSidedCount: number;
+  varianceTotalLabel: string;
+  /** e.g. "Compared 41 · one-sided 3". */
+  countsLabel: string;
+  /** e.g. "3 accounts on one basis only"; null when every account is compared. */
+  oneSidedLabel: string | null;
 }
 
 export interface AccountingTrialBalanceViewState {
@@ -3603,7 +3619,7 @@ export function buildAccountingTrialBalanceViewState({
   const normalizedAccountFilter = normalizeLedgerAccountFilter(accountFilter);
   const normalizedRows = rows.map(normalizeTrialBalanceLine);
   const basisOptions = buildTrialBalanceBasisOptions(normalizedRows, resolvedBasis);
-  const bridge = buildBasisBridgeViewState(normalizedRows, resolvedBasis, runLabel);
+  const bridge = buildBasisBridgeViewState(normalizedRows, resolvedBasis, runLabel, currency);
   const basisRows = normalizedRows
     .filter((line) => line.accountingBasis === resolvedBasis)
     .map((line) => buildTrialBalanceRow(line, detailPanelId, currency));
@@ -3712,7 +3728,7 @@ function buildLedgerJournalEvidenceRow(
   currency: string | null = null
 ): AccountingLedgerJournalEvidenceRowViewModel {
   const dimensionLabels = buildLedgerDimensionLabels(line);
-  const money = (value: number) => (currency ? formatCurrency(value, { currency, minimumFractionDigits: 0 }) : formatPrefixedCurrency(value));
+  const money = (value: number) => (currency ? formatCurrency(value, { currency, minimumFractionDigits: 0 }) : formatUnknownCurrencyAmount(value));
   const amountLabel = `${money(line.totalDebits)} debit / ${money(line.totalCredits)} credit`;
   const lineCountLabel = line.lineCount === 1 ? "1 line" : `${formatCountValue(line.lineCount)} lines`;
 
@@ -3771,7 +3787,7 @@ function buildTrialBalanceRow(
   const basisLabel = `${basisName} basis`;
   const policyLabel = `${line.accountingPolicyId}/${line.accountingPolicyVersion}`;
   // Posted balances are in the book's base currency; the bare formatter prefixes a dollar sign.
-  const balanceLabel = currency ? formatCurrency(line.balance, { currency, minimumFractionDigits: 0 }) : formatPrefixedCurrency(line.balance);
+  const balanceLabel = currency ? formatCurrency(line.balance, { currency, minimumFractionDigits: 0 }) : formatUnknownCurrencyAmount(line.balance);
   const entryCountLabel = formatCountValue(line.entryCount);
   const securityLabel = line.security?.primaryIdentifier?.trim() || line.symbol?.trim() || line.security?.displayName.trim() || null;
   const dimensionLabels = buildLedgerDimensionLabels(line);

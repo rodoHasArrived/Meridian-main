@@ -70,7 +70,7 @@ import type {
   PrivateCapitalReportOutput,
   SecurityMasterEntry,
 } from "@/types";
-import { formatCount, formatCurrencyWithCode, formatPrefixedCurrency } from "@/lib/format";
+import { formatCount, formatCurrencyAmount, formatCurrencyWithCode, VALUE_STATE_LABELS } from "@/lib/format";
 
 const defaultManualJournalEntryWorkbenchServices: ManualJournalEntryWorkbenchServices = {
   getAssetCapabilities: getAssetAccountingDraftCapabilities,
@@ -192,7 +192,8 @@ export function useManualJournalEntryWorkbenchViewModel(
           && !!query.ledgerBookId && next.ledgerBookId?.toLowerCase() === query.ledgerBookId.toLowerCase() && item.ledgerBookId?.toLowerCase() === query.ledgerBookId.toLowerCase()
           && !!query.periodId && item.periodId?.toLowerCase() === query.periodId.toLowerCase())
         : ensureManualJournalDraftScope(
-          next.drafts[0] ?? createManualJournalEntryDraft(next.fundProfileId || query.fundProfileId || "default-fund", next.ledgerBookId ?? query.ledgerBookId ?? null), next, query);
+          next.drafts[0] ?? createManualJournalEntryDraft(next.fundProfileId || query.fundProfileId || "default-fund", next.ledgerBookId ?? query.ledgerBookId ?? null,
+            resolveLedgerBookCurrency(next, next.ledgerBookId ?? query.ledgerBookId ?? null)), next, query);
       if (!selected) throw new Error("The requested journal draft is unavailable in the selected fund, book and period.");
       const current = draftRef.current;
       if (savedSignatureRef.current !== null && buildManualJournalEditableSignature(current) !== savedSignatureRef.current) {
@@ -823,7 +824,7 @@ export function useManualJournalEntryWorkbenchViewModel(
   const canSubmit = submitDisabledReason === null;
   const blockingIssueCount = draft.validationIssues.filter((issue) => issue.severity === "Critical").length;
   const warningIssueCount = draft.validationIssues.filter((issue) => issue.severity === "Warning").length;
-  const balanceStatusLabel = Math.abs(balancedDraft.imbalance) === 0 ? "Balanced" : "Out by " + formatPrefixedCurrency(Math.abs(balancedDraft.imbalance));
+  const balanceStatusLabel = Math.abs(balancedDraft.imbalance) === 0 ? "Balanced" : "Out by " + formatCurrencyAmount(Math.abs(balancedDraft.imbalance), balancedDraft.currency);
   const saveStatusLabel = draft.assetAccountingDraft ? "Retained source draft" : saveState === "saving"
     ? "Saving draft"
     : saveState === "unsaved"
@@ -884,10 +885,10 @@ export function useManualJournalEntryWorkbenchViewModel(
     securitySearchErrorText: securitySearchError?.summary ?? null,
     securitySearchStatusText,
     attachmentDraft,
-    totalsLabel: `Debits ${formatPrefixedCurrency(balancedDraft.totalDebits)} / Credits ${formatPrefixedCurrency(balancedDraft.totalCredits)}`,
-    totalDebitsLabel: formatPrefixedCurrency(balancedDraft.totalDebits),
-    totalCreditsLabel: formatPrefixedCurrency(balancedDraft.totalCredits),
-    imbalanceLabel: `Imbalance ${formatPrefixedCurrency(balancedDraft.imbalance)}`,
+    totalsLabel: `Debits ${formatCurrencyAmount(balancedDraft.totalDebits, balancedDraft.currency)} / Credits ${formatCurrencyAmount(balancedDraft.totalCredits, balancedDraft.currency)}`,
+    totalDebitsLabel: formatCurrencyAmount(balancedDraft.totalDebits, balancedDraft.currency),
+    totalCreditsLabel: formatCurrencyAmount(balancedDraft.totalCredits, balancedDraft.currency),
+    imbalanceLabel: `Imbalance ${formatCurrencyAmount(balancedDraft.imbalance, balancedDraft.currency)}`,
     balanceStatusLabel,
     balanceStatusTone: Math.abs(balancedDraft.imbalance) === 0 ? "success" : "warning",
     balanceImpactRows,
@@ -1068,14 +1069,15 @@ function buildManualJournalPrivateCapitalActivityView(
       statusLabel: "No activity loaded",
       projectedAtLabel: "Not loaded",
       emptyText: "No private-capital fund events are retained in the manual JE workbench yet.",
+      // Nothing is loaded, so nothing is counted: every tile reads "Not available", never 0 or $0.
       summaryCards: [
-        { id: "fund-events", label: "Fund events", value: "0", detail: "No retained fund-event rows", tone: "default" },
-        { id: "capital-accounts", label: "Capital accounts", value: "0", detail: "No capital-account activity", tone: "default" },
-        { id: "ledger-impacts", label: "Ledger impacts", value: "0", detail: "No GL impact rows", tone: "default" },
-        { id: "report-outputs", label: "Report outputs", value: "0", detail: "No package candidates", tone: "default" },
-        { id: "payment-intents", label: "Payment intents", value: "0", detail: "No pre-execution cash workflow", tone: "default" },
-        { id: "net-activity", label: "Net activity", value: "$0", detail: "No balance movement", tone: "default" },
-        { id: "projection-issues", label: "Data quality issues", value: "0", detail: "No workbench warnings", tone: "success" }
+        { id: "fund-events", label: "Fund events", value: VALUE_STATE_LABELS.unavailable, detail: "Fund-event rows not loaded", tone: "default" },
+        { id: "capital-accounts", label: "Capital accounts", value: VALUE_STATE_LABELS.unavailable, detail: "Capital-account activity not loaded", tone: "default" },
+        { id: "ledger-impacts", label: "Ledger impacts", value: VALUE_STATE_LABELS.unavailable, detail: "GL impact rows not loaded", tone: "default" },
+        { id: "report-outputs", label: "Report outputs", value: VALUE_STATE_LABELS.unavailable, detail: "Package candidates not loaded", tone: "default" },
+        { id: "payment-intents", label: "Payment intents", value: VALUE_STATE_LABELS.unavailable, detail: "Cash workflow not loaded", tone: "default" },
+        { id: "net-activity", label: "Net activity", value: VALUE_STATE_LABELS.unavailable, detail: "Balance movement not loaded", tone: "default" },
+        { id: "projection-issues", label: "Data quality issues", value: VALUE_STATE_LABELS.unavailable, detail: "Workbench warnings not loaded", tone: "default" }
       ],
       fundEvents: [],
       capitalAccounts: [],
@@ -1089,7 +1091,8 @@ function buildManualJournalPrivateCapitalActivityView(
     };
   }
 
-  const currency = activity.currency || "USD";
+  // The projection's own currency; without one, amounts render bare rather than as dollars.
+  const currency = activity.currency?.trim() || null;
   const fundEvents = activity.fundEvents ?? [];
   const capitalAccounts = activity.capitalAccounts ?? [];
   const capitalAccountSubledgers = activity.capitalAccountSubledgers ?? [];
@@ -1627,12 +1630,24 @@ function manualJournalPrivateCapitalStatusTone(
   return "outline";
 }
 
+function resolveLedgerBookCurrency(workbench: ManualJournalEntryWorkbench, ledgerBookId: string | null): string {
+  const books = workbench.ledgerBooks ?? [];
+  const book = ledgerBookId
+    ? books.find((item) => item.ledgerBookId.toLowerCase() === ledgerBookId.toLowerCase())
+    : books.length === 1 ? books[0] : undefined;
+  return book?.baseCurrency?.trim().toUpperCase() ?? "";
+}
+
 function createManualJournalEntryDraft(
   fundProfileId = "default-fund",
-  ledgerBookId: string | null = null
+  ledgerBookId: string | null = null,
+  /**
+   * The selected ledger book's base currency. A draft never assumes USD: with no book selected
+   * the currency stays blank for the preparer to enter, and validation reports it as missing.
+   */
+  currency = ""
 ): ManualJournalEntryDraft {
   const now = new Date().toISOString();
-  const currency = "USD";
   return {
     journalEntryId: newClientId(),
     status: "Draft",
@@ -1785,15 +1800,15 @@ function buildManualJournalBalanceImpactRows(
         ? totals.debit - totals.credit
         : totals.credit - totals.debit;
       const direction = netEffect > 0 ? "increases" : netEffect < 0 ? "decreases" : "does not change";
-      const absoluteEffect = formatPrefixedCurrency(Math.abs(netEffect));
+      const absoluteEffect = formatCurrencyAmount(Math.abs(netEffect), draft.currency);
 
       return {
         id: accountPath,
         accountPath,
         accountName: account?.accountName ?? accountPath,
         accountType: account?.accountType ?? "Unclassified",
-        debitLabel: formatPrefixedCurrency(totals.debit),
-        creditLabel: formatPrefixedCurrency(totals.credit),
+        debitLabel: formatCurrencyAmount(totals.debit, draft.currency),
+        creditLabel: formatCurrencyAmount(totals.credit, draft.currency),
         netEffectLabel: `${netEffect >= 0 ? "+" : "-"}${absoluteEffect}`,
         balanceDirectionLabel: `This draft ${direction} the ${normalBalanceSide.toLowerCase()}-normal account balance by ${absoluteEffect}.`,
         lineCountLabel: `${totals.count} line${totals.count === 1 ? "" : "s"}`,

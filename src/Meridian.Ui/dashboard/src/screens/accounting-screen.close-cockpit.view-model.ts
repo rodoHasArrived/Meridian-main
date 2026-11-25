@@ -240,8 +240,13 @@ export function useAccountingCloseReportPackageViewModel(
     setBuildStatusText(null);
     setBuildStatusTone("neutral");
     try {
-      const request = buildAccountingReportPackageRequest(workflow, closePlan, packages[0] ?? null);
-      const bundle = await services.buildPackage(request);
+      const built = buildAccountingReportPackageRequest(workflow, closePlan, packages[0] ?? null);
+      if (built.ok === false) {
+        setBuildStatusText(built.message);
+        setBuildStatusTone("danger");
+        return;
+      }
+      const bundle = await services.buildPackage(built.request);
       setPackages((current) => [
         bundle,
         ...current.filter((item) => item.financialStatements.packageId !== bundle.financialStatements.packageId)
@@ -2355,30 +2360,71 @@ function buildAccountingReportPackageRow(
   };
 }
 
-function buildAccountingReportPackageRequest(
+export type AccountingReportPackageRequestResult =
+  | { ok: true; request: AccountingReportPackageRequest }
+  | { ok: false; missingInputs: string[]; message: string };
+
+/**
+ * Builds the close report-package request, or refuses. Amounts and the currency are financial
+ * inputs: the request never invents 0 or "USD" for one the close workflow has not supplied,
+ * because the server would certify a package against those invented figures. A refusal names
+ * every missing input so the operator knows what to load first.
+ */
+export function buildAccountingReportPackageRequest(
   workflow: OperationsContinuityWorkflow,
   closePlan: ClosePeriodPlan | null,
   seedPackage: AccountingReportPackageBundle | null
-): AccountingReportPackageRequest {
+): AccountingReportPackageRequestResult {
   const investorStatement = seedPackage?.investorCapitalStatements[0] ?? null;
+  const beginningCapital = finiteOrNull(investorStatement?.beginningCapital);
+  const contributions = finiteOrNull(investorStatement?.contributions);
+  const distributions = finiteOrNull(investorStatement?.distributions);
+  const realizedGainLoss = finiteOrNull(seedPackage?.realizedGainLoss.realizedGainLoss) ?? finiteOrNull(investorStatement?.realizedGainLoss);
+  const nav = finiteOrNull(seedPackage?.navPackage.nav) ?? finiteOrNull(investorStatement?.endingCapital);
+  const currency = seedPackage?.navPackage.currency?.trim() || investorStatement?.currency?.trim() || null;
+  const missingInputs = ([
+    ["beginning capital", beginningCapital],
+    ["contributions", contributions],
+    ["distributions", distributions],
+    ["realized gain/loss", realizedGainLoss],
+    ["NAV", nav],
+    ["currency", currency]
+  ] as const).filter(([, value]) => value === null).map(([label]) => label);
+
+  if (missingInputs.length > 0
+    || beginningCapital === null || contributions === null || distributions === null
+    || realizedGainLoss === null || nav === null || currency === null) {
+    return {
+      ok: false,
+      missingInputs,
+      message: `Report package not built: ${missingInputs.join(", ")} ${missingInputs.length === 1 ? "is" : "are"} not available for this close. Load the investor capital statement and NAV package first; Meridian does not substitute 0 or a default currency.`
+    };
+  }
 
   return {
-    fundProfileId: closePlan?.fundProfileId ?? workflow.fundAccountId,
-    ledgerBookId: closePlan?.ledgerBookId ?? seedPackage?.financialStatements.ledgerBookId ?? null,
-    periodId: closePlan?.periodId ?? workflow.periodId,
-    actor: "browser-accounting-operator",
-    closeWorkflowId: workflow.workflowId,
-    capitalAccountId: investorStatement?.capitalAccountId ?? null,
-    investorId: investorStatement?.investorId ?? null,
-    beginningCapital: investorStatement?.beginningCapital ?? 0,
-    contributions: investorStatement?.contributions ?? 0,
-    distributions: investorStatement?.distributions ?? 0,
-    realizedGainLoss: seedPackage?.realizedGainLoss.realizedGainLoss ?? investorStatement?.realizedGainLoss ?? 0,
-    nav: seedPackage?.navPackage.nav ?? investorStatement?.endingCapital ?? 0,
-    currency: seedPackage?.navPackage.currency ?? investorStatement?.currency ?? "USD",
-    evidenceLinks: collectAccountingCloseEvidenceLinks(workflow, closePlan),
-    correlationId: `browser-close-report-${workflow.workflowId}`
+    ok: true,
+    request: {
+      fundProfileId: closePlan?.fundProfileId ?? workflow.fundAccountId,
+      ledgerBookId: closePlan?.ledgerBookId ?? seedPackage?.financialStatements.ledgerBookId ?? null,
+      periodId: closePlan?.periodId ?? workflow.periodId,
+      actor: "browser-accounting-operator",
+      closeWorkflowId: workflow.workflowId,
+      capitalAccountId: investorStatement?.capitalAccountId ?? null,
+      investorId: investorStatement?.investorId ?? null,
+      beginningCapital,
+      contributions,
+      distributions,
+      realizedGainLoss,
+      nav,
+      currency,
+      evidenceLinks: collectAccountingCloseEvidenceLinks(workflow, closePlan),
+      correlationId: `browser-close-report-${workflow.workflowId}`
+    }
   };
+}
+
+function finiteOrNull(value: number | null | undefined): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
 function buildClosePlanConfigurationRequest(

@@ -15,7 +15,7 @@ import {
 } from "@/components/meridian/ui-kit-primitives";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { formatCurrency, formatMoney, formatUtcDate, formatUtcMonthYear } from "@/lib/format";
-import { formatNumber, pluralizeCount } from "@/lib/format";
+import { formatUnknownCurrencyAmount, pluralizeCount } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -593,7 +593,7 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
   // same governed debits and credits, so they carry it too rather than defaulting to dollars.
   const postedMoney = (value: number) => baseCurrency
     ? formatMoney(value, { context: "accounting", currency: baseCurrency })
-    : `${formatNumber(value)} (currency unavailable)`;
+    : formatUnknownCurrencyAmount(value);
 
   const filteredRows = useMemo(() => {
     const needle = searchText.trim().toLowerCase();

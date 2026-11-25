@@ -1,6 +1,6 @@
 // External GL / accounting-system reconciliation panel, extracted from accounting-screen.tsx.
 import { BookCheck, RefreshCcw } from "lucide-react";
-import { formatCurrency as formatCurrencyAmount, formatUtcDate, formatTimestamp } from "@/lib/format";
+import { formatCurrency as formatCurrencyAmount, formatUnknownCurrencyAmount, formatUtcDate, formatTimestamp } from "@/lib/format";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { DesignSystemStatus } from "@/design-system/status";
 import { Badge } from "@/components/ui/badge";
@@ -352,15 +352,15 @@ export function AccountingSystemReconciliationPanel({
                 ) : null}
               </TechnicalDetails>
               <div className="grid gap-3 border-t border-border/80 bg-secondary/30 px-4 py-3 text-sm sm:grid-cols-[1fr_1fr_auto]">
-                <AccountingValue label="Statement balance" value={formatGlAmount(statementBalance, rows[0]?.currency ?? "USD")} />
-                <AccountingValue label="Ledger balance" value={formatGlAmount(ledgerBalance, rows[0]?.currency ?? "USD")} />
+                <AccountingValue label="Statement balance" value={formatGlAmount(statementBalance, rows[0]?.currency ?? null)} />
+                <AccountingValue label="Ledger balance" value={formatGlAmount(ledgerBalance, rows[0]?.currency ?? null)} />
                 <div className="flex items-center justify-start sm:justify-end">
                   <Badge variant={reconciliationCleared ? "success" : "warning"} dot>
                     {reconciliationCleared
                       ? "Balanced"
                       : reconciliation.breakCount > 0
                         ? `${reconciliation.breakCount} open break${reconciliation.breakCount === 1 ? "" : "s"}`
-                        : `Out by ${formatGlAmount(Math.abs(varianceBalance), rows[0]?.currency ?? "USD")}`}
+                        : `Out by ${formatGlAmount(Math.abs(varianceBalance), rows[0]?.currency ?? null)}`}
                   </Badge>
                 </div>
               </div>
@@ -681,8 +681,9 @@ function buildExternalGlExportSafeguards(
   ];
 }
 
-function formatGlAmount(value: number, currency: string): string {
-  return formatCurrencyAmount(value, { currency });
+/** A GL amount in its statement currency; with none retained the amount renders bare, never as USD. */
+function formatGlAmount(value: number, currency: string | null): string {
+  return currency?.trim() ? formatCurrencyAmount(value, { currency }) : formatUnknownCurrencyAmount(value);
 }
 
 export function mergeExternalGlExportPackage(

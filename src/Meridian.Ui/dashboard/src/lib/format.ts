@@ -158,7 +158,13 @@ export function formatCurrency(value: NullableNumber, options: CurrencyFormatOpt
   }
 }
 
-/** Dollar amount with a hand-built prefix, e.g. "$1,234.56" / "-$1,234.56". */
+/**
+ * Dollar amount with a hand-built prefix, e.g. "$1,234.56" / "-$1,234.56".
+ *
+ * @deprecated It always prints "$", whatever currency the figure is in. Use
+ * `formatCurrencyAmount(value, currency)`, which takes the currency as a required argument and
+ * never assumes USD. The `prefixedCurrency` design-system ratchet counts the remaining callers.
+ */
 export function formatPrefixedCurrency(value: NullableNumber, options: NumberFormatOptions = {}): string {
   const { fallback = DEFAULT_FALLBACK } = options;
   if (!isRenderable(value)) {
@@ -278,13 +284,29 @@ export interface CurrencyWithCodeFormatOptions {
  * Unsigned amounts drop trailing zero cents ("€100 EUR"); `signed` pins two decimals on non-zero
  * amounts ("+€100.00 EUR") and leaves zero, including -0, unsigned ("€0 EUR"). A blank code means USD.
  */
-export function formatCurrencyWithCode(value: number, currency: string, options: CurrencyWithCodeFormatOptions = {}): string {
+export function formatCurrencyWithCode(value: number, currency: string | null | undefined, options: CurrencyWithCodeFormatOptions = {}): string {
   const { signed = false } = options;
-  const code = currency.trim().toUpperCase();
+  const code = currency?.trim().toUpperCase() ?? "";
   const normalizedValue = value === 0 ? 0 : value;
-  const amount = formatCurrency(normalizedValue, { currency: code || "USD", minimumFractionDigits: signed && normalizedValue !== 0 ? 2 : 0 });
   const prefix = signed && value > 0 && Number.isFinite(value) ? "+" : "";
-  return code && !amount.includes(code) ? `${prefix}${amount} ${code}` : `${prefix}${amount}`;
+  const minimumFractionDigits = signed && normalizedValue !== 0 ? 2 : 0;
+  if (!code) {
+    // No currency is known, so none is assumed: the amount renders bare rather than as USD.
+    return `${prefix}${formatNumber(normalizedValue, { minimumFractionDigits, maximumFractionDigits: 2 })}`;
+  }
+  const amount = formatCurrency(normalizedValue, { currency: code, minimumFractionDigits });
+  return !amount.includes(code) ? `${prefix}${amount} ${code}` : `${prefix}${amount}`;
+}
+
+/**
+ * An amount whose currency the source has not supplied: the bare number plus an explicit
+ * "(currency unavailable)", e.g. "1,250 (currency unavailable)". It is never printed as dollars.
+ */
+export function formatUnknownCurrencyAmount(value: NullableNumber): string {
+  if (!isRenderable(value)) {
+    return VALUE_STATE_LABELS.unavailable;
+  }
+  return `${formatNumber(value)} (currency unavailable)`;
 }
 
 /** Grouped count, e.g. 1234 -> "1,234"; the same output as `value.toLocaleString("en-US")`. `signed` gives "+1,234". */
@@ -432,6 +454,55 @@ export function formatMoney(value: MoneyValue, options: MoneyFormatOptions = {})
     return parens ? `(${amount})` : `${convention === "statement" ? "−" : "-"}${amount}`;
   }
   return signed ? `+${amount}` : amount;
+}
+
+/**
+ * The one placeholder vocabulary for a financial value that is not a number. Every amount on a
+ * screen is in exactly one state: a value, a confirmed zero ("0.00"), or one of these. None of
+ * them is ever rendered as 0, and none is "—", "Unavailable", "Not supplied" or "Not recorded".
+ */
+export const VALUE_STATE_LABELS = {
+  /** Not loaded, not supplied, or not retained by the source. */
+  unavailable: "Not available",
+  /** The figure has no meaning for this row (e.g. a basis the account is not on). */
+  notApplicable: "n/a",
+  /** The viewer is not permitted to read the figure. */
+  restricted: "No access"
+} as const;
+
+export type FinancialValueState = "value" | "zero" | "unavailable" | "not-applicable" | "restricted";
+
+/** The state of an amount: present, an exact zero, or missing. Missing is never zero. */
+export function financialValueState(value: MoneyValue): FinancialValueState {
+  const parsed = parseExactDecimal(value);
+  if (!parsed) return "unavailable";
+  return parsed.units === 0n ? "zero" : "value";
+}
+
+export interface CurrencyAmountFormatOptions extends Omit<MoneyFormatOptions, "currency" | "fallback"> {
+  /**
+   * Append the ISO code after the amount ("1,250.00 USD") instead of a symbol. Set it whenever
+   * more than one currency is in scope on the screen, so "$" can never be read as the wrong dollar.
+   */
+  showCode?: boolean;
+  /** @default VALUE_STATE_LABELS.unavailable */
+  fallback?: string;
+}
+
+/**
+ * Money with a required currency. A missing currency never becomes "$": the amount renders bare
+ * ("1,250.00"), so an unknown-currency figure cannot be read as dollars. A missing amount renders
+ * "Not available", never 0. Prefer this over `formatPrefixedCurrency`, which always prints "$".
+ */
+export function formatCurrencyAmount(value: MoneyValue, currency: string | null | undefined, options: CurrencyAmountFormatOptions = {}): string {
+  const { showCode = false, fallback = VALUE_STATE_LABELS.unavailable, ...moneyOptions } = options;
+  const code = currency?.trim().toUpperCase() || null;
+  if (code && showCode) {
+    const decimals = moneyOptions.decimals ?? (moneyOptions.context === "summary" ? 0 : screenCurrencyLayout(code).minorUnits);
+    const amount = formatMoney(value, { ...moneyOptions, decimals, currency: null, fallback: "" });
+    return amount ? `${amount} ${code}` : fallback;
+  }
+  return formatMoney(value, { ...moneyOptions, currency: code, fallback });
 }
 
 /** Tone of a signed P&L figure: gain, loss, or flat/unknown. */

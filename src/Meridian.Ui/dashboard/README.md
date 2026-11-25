@@ -1440,6 +1440,20 @@ not been recorded.
     `formatMoney`), and an SVG coordinate or CSS length uses the ungrouped `formatFixed`.
     `localMoneyFormatters` counts money and P&L formatters defined in a screen instead of
     imported from `@/lib/format`.
+  - *One meaning per value*: an amount is a value, a confirmed zero (`0.00`), or one of the
+    `VALUE_STATE_LABELS` states: "Not available" (not loaded or not supplied), "n/a" (not
+    applicable) or "No access" (restricted). Missing is never rendered or sent as `0`, and an
+    unknown currency is never `$` or `USD`. `formatCurrencyAmount(value, currency)` takes the
+    currency as a required argument (`null` renders a bare amount; `showCode` gives
+    `1,250.00 EUR`); `formatUnknownCurrencyAmount` gives `1,250 (currency unavailable)`.
+    `formatPrefixedCurrency`, which always prints `$`, is deprecated. Three baselined
+    ratchets count the remaining legacy uses and may only shrink: `prefixedCurrency`,
+    `assumedMoneyDefaults` (`balance ?? 0`, `?? "USD"`) and `placeholderVocabulary` (ad hoc
+    `"—"`, `"Unavailable"`, `"Not supplied"`, `"Not recorded"`, `"Not retained"`). The
+    `accounting.non-usd` scenario rebooks the accounting payload in EUR for screenshots.
+  - *Value origin*: Amount passport triggers show worded tags (Source, Calculated, Override,
+    Estimate, Zero, Stale, Blocked, No access), never `?` or abbreviations; an unknown origin
+    shows no tag and reads "Origin unknown" inside the passport.
 - **Headline figures.** `StatStrip` and `MetricCard` apply the rules in `@/lib/metric-trust`
   to every `MetricSnapshot`, so a screen cannot opt out by accident:
   - *Source*: a figure states where it comes from. `provenance` carries source, as-of time

@@ -24,6 +24,23 @@ const emptyAccountingPayload: AccountingScenarioPayload = {
   }
 };
 
+/**
+ * The populated accounting payload rebooked in EUR, so screenshots and scenario tests show a
+ * non-USD book. Any screen that still assumes "$" shows up here as a visible defect.
+ */
+function rebookPayload<T>(value: T, currency: string): T {
+  if (Array.isArray(value)) return value.map((item) => rebookPayload(item, currency)) as T;
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [
+      key,
+      (/currency$/i.test(key) || key === "unit") && item === "USD" ? currency : rebookPayload(item, currency)
+    ])) as T;
+  }
+  return value;
+}
+
+export const eurAccountingPayload: AccountingScenarioPayload = rebookPayload(accountingPayload, "EUR");
+
 function accountingScenario(
   state: string,
   response: ScenarioResponse<AccountingWorkspaceResponse | ScenarioProblem>,
@@ -56,6 +73,7 @@ export const accountingScenarios = {
   "accounting.empty": accountingScenario("empty", { status: 200, body: emptyAccountingPayload }, [
     "No reconciliation breaks in the current queue."
   ]),
+  "accounting.non-usd": accountingScenario("non-usd", { status: 200, body: eurAccountingPayload }, populatedTexts),
   "accounting.delayed": accountingScenario("delayed", { status: 200, body: accountingPayload, delayMs: 1500 }, populatedTexts),
   "accounting.forbidden": accountingScenario("forbidden", {
     status: 403,

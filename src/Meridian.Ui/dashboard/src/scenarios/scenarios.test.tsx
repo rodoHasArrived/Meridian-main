@@ -21,6 +21,7 @@ describe("shared accounting scenarios", () => {
   it.each([
     ["accounting.normal", 200],
     ["accounting.empty", 200],
+    ["accounting.non-usd", 200],
     ["accounting.delayed", 200],
     ["accounting.forbidden", 403],
     ["accounting.failed", 500]
@@ -31,6 +32,14 @@ describe("shared accounting scenarios", () => {
     const preview = new URL(scenarioPreviewUrl(scenario), "http://localhost");
     expect(preview.pathname).toBe("/workstation/accounting/reconciliation");
     expect(preview.searchParams.get("scenario")).toBe(id);
+  });
+
+  it("seeds a non-USD book with every USD currency rebooked to EUR", async () => {
+    installScenario("accounting.non-usd");
+    const workspace = await getAccountingWorkspace();
+    const serialized = JSON.stringify(workspace);
+    expect(serialized).toContain("\"EUR\"");
+    expect(serialized).not.toContain("\"USD\"");
   });
 
   it("passes the one accounting payload through the real API client and production queue card", async () => {
