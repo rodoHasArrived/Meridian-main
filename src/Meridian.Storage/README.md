@@ -1710,7 +1710,12 @@ timestamp plus a book/period helper for close-period reporting, so restart, clos
 projections can hydrate from the stored spine before running ledger-owned trial-balance or statement
 logic. `DurableAutomatedJournalPoster` implements the ledger-owned
 `IAutomatedJournalPostingTarget` contract so approved automated projector output can use the same
-target shape as in-memory backtests while still appending to the governed journal store first.
+target shape as in-memory backtests while still appending to the governed journal store first. It
+is deliberately not registered in DI: `AddLedgerJournalStore` and the host storage composition do
+not bind `IAutomatedJournalPostingTarget`, because production automated journals (for example daily
+mark-to-market) flow from `AutomatedJournalIntakeRunner` into manual journal workbench drafts, and
+the workbench lifecycle owns approval and posting. Binding a second posting path could post the same
+journal twice. The type stays as a tested durable implementation for direct construction.
 `PostgresLedgerBookService` now uses that book/period hydration path before building period-close
 trial-balance summaries, keeping UI-facing close evidence tied to `ILedgerJournalStore.QueryAsync`
 and ledger-owned balance math.
