@@ -52,6 +52,58 @@ public sealed partial class AccountingConfigurationServiceTests
         NetByAccount(posted.Lines.Concat(draft.Lines)).Should().BeEquivalentTo(NetByAccount(posted.Lines));
     }
 
+    [Fact]
+    public async Task ManualJournalRebook_EditingOnlyTheReplacementKeepsTheDraftReviewable()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var service = CreateManualJournalEntryWorkbenchService(configuration, journalStore: WritableManualJournalLedgerJournalStore.Default());
+        var posted = await PostBalancedManualJournalAsync(service);
+        var draft = (await service.ApplyLifecycleActionAsync(ManualRebookRequest(posted, []))).GeneratedJournalEntries.Single();
+        draft.ValidationIssues.Should().NotContain(issue => issue.Code == RebookInverseIssue);
+
+        var edited = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(draft with
+        {
+            Lines = draft.Lines.Select(line => line.LineId.StartsWith("rebook-replacement-", StringComparison.Ordinal)
+                ? line with { AccountPath = line.AccountPath == "Income:Interest" ? "Liabilities:Accrued Expenses" : line.AccountPath }
+                : line).ToArray()
+        }, "controller", LedgerBookId: draft.LedgerBookId));
+
+        edited.ValidationIssues.Should().NotContain(issue => issue.Code == RebookInverseIssue);
+        var submitted = await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
+            edited.JournalEntryId, edited.FundProfileId, "controller", edited.Version, LedgerBookId: edited.LedgerBookId));
+        submitted.Status.Should().Be(ManualJournalEntryStatusDto.Submitted);
+    }
+
+    [Theory]
+    [InlineData("drop-inverse")]
+    [InlineData("change-inverse-amount")]
+    public async Task ManualJournalRebook_DraftThatNoLongerReversesTheOriginalCannotBeSubmitted(string tamper)
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var service = CreateManualJournalEntryWorkbenchService(configuration, journalStore: WritableManualJournalLedgerJournalStore.Default());
+        var posted = await PostBalancedManualJournalAsync(service);
+        var draft = (await service.ApplyLifecycleActionAsync(ManualRebookRequest(posted, []))).GeneratedJournalEntries.Single();
+        IReadOnlyList<ManualJournalEntryLineDto> lines = tamper == "drop-inverse"
+            ? draft.Lines.Where(line => !line.LineId.StartsWith("rebook-inverse-", StringComparison.Ordinal)).ToArray()
+            // Shrinking an inverse leg together with its balancing leg keeps the draft balanced.
+            : draft.Lines.Select(line => line.LineId.StartsWith("rebook-inverse-", StringComparison.Ordinal)
+                ? line with { Amount = 60m } : line).ToArray();
+
+        var tampered = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
+            draft with { Lines = lines }, "controller", LedgerBookId: draft.LedgerBookId));
+
+        tampered.ValidationIssues.Should().ContainSingle(issue =>
+            issue.Code == RebookInverseIssue && issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        tampered.Status.Should().Be(ManualJournalEntryStatusDto.NeedsFix);
+        var submit = () => service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
+            tampered.JournalEntryId, tampered.FundProfileId, "controller", tampered.Version, LedgerBookId: tampered.LedgerBookId));
+        await submit.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    private const string RebookInverseIssue = "manual-je.rebook-inverse-required";
+
     private async Task<ManualJournalEntryDraftDto> PostBalancedManualJournalAsync(ManualJournalEntryWorkbenchService service)
     {
         var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(BalancedManualJournalEntry(), "ops-user"));
