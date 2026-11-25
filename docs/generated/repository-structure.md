@@ -5453,6 +5453,7 @@ Meridian-main
 │   │   │   ├── ProviderIntegrationSyncPlanningService.cs
 │   │   │   └── ProviderIntegrationTemplateCatalog.cs
 │   │   ├── Monitoring
+│   │   │   ├── ConnectionDiagnosticsHealthFeed.cs
 │   │   │   ├── DetailedHealthCheck.cs
 │   │   │   ├── ErrorLogRecorder.cs
 │   │   │   ├── PrometheusMetrics.cs
@@ -6672,6 +6673,7 @@ Meridian-main
 │   │   │   ├── BadTickFilter.cs
 │   │   │   ├── ClockSkewEstimator.cs
 │   │   │   ├── ConnectionHealthMonitor.cs
+│   │   │   ├── ConnectionHealthRegistry.cs
 │   │   │   ├── ConnectionStatusWebhook.cs
 │   │   │   ├── DataLossAccounting.cs
 │   │   │   ├── ProviderDegradationCalibration.cs
@@ -13441,6 +13443,7 @@ Meridian-main
 │   │   │   │   ├── LoggingSetupEnrichmentTests.cs
 │   │   │   │   └── LoggingSetupTests.cs
 │   │   │   ├── Monitoring
+│   │   │   │   ├── ConnectionDiagnosticsHealthFeedTests.cs
 │   │   │   │   ├── DetailedHealthCheckTests.cs
 │   │   │   │   ├── ErrorLogRecorderTests.cs
 │   │   │   │   ├── FreshnessMonitoringWorkflowTests.cs

@@ -1392,7 +1392,10 @@ Core workstation host. Do not introduce a second listener or independent monitor
   data-root disk space (`mdc_disk_*`); `ErrorLogRecorder` feeds `/api/errors` from Error/Fatal
   log events. `QualityMonitoringPublisher` also feeds the composition's `ProviderLatencyService`
   from one in sixteen timed trade/quote samples, on its consumer task rather than the publish
-  path. Shared pipeline
+  path. Without streaming failover, `CollectorModeRunner` feeds a `ConnectionHealthMonitor` from
+  the client's transport diagnostics through `ConnectionDiagnosticsHealthFeed` (only for clients
+  that report a real lifecycle) and, with or without failover, publishes the monitor through
+  `ConnectionHealthRegistry`. Shared pipeline
   composition records live price/order-book ingress in `DataFreshnessSlaMonitor`, independent of
   storage acceptance and the bounded quality-sample queue. Configured enabled symbols start with
   one freshness threshold of grace; missing first events then violate the SLA. Subscription

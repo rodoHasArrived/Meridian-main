@@ -269,7 +269,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   `Monitoring/ClockSkewEstimator.cs`, `Monitoring/SpreadMonitor.cs`,
   `Monitoring/DataLossAccounting.cs`, `Monitoring/SchemaValidationService.cs`,
   `Monitoring/ProviderLatencyService.cs`, `Monitoring/ProviderMetricsStatus.cs`,
-  `Monitoring/ConnectionHealthMonitor.cs`, `Monitoring/ConnectionStatusWebhook.cs`,
+  `Monitoring/ConnectionHealthMonitor.cs`, `Monitoring/ConnectionHealthRegistry.cs` (process-wide
+  hand-off of the streaming collector's monitor to the API host), `Monitoring/ConnectionStatusWebhook.cs`,
   `Monitoring/ProviderDegradationScorer.cs`,
   `Monitoring/ProviderDegradationConfig.cs`, and
   `Monitoring/ProviderDegradationCalibration.cs` - provider data-quality validation filters,

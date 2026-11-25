@@ -244,9 +244,9 @@ Declared public members:
 | <code>public const string LocalShutdownTokenHeader = &quot;X-Meridian-Shutdown-Token&quot;;</code> | [src/Meridian/UiServer.cs:61](../../../../src/Meridian/UiServer.cs#L61) |  |
 | <code>public const string ExecutionBrokerageSectionKey = &quot;Execution:Brokerage&quot;;</code> | [src/Meridian/UiServer.cs:65](../../../../src/Meridian/UiServer.cs#L65) | Configuration section that binds BrokerageConfiguration for the host. |
 | <code>public UiServer(string configPath, int port = 8080, IApplicationLifecycleCoordinator? lifecycle = null, ApiHostOptions? apiHostOptions = null) : this(configPath, port, lifecycle?? ApplicationLifecycleCoordinator.Create(Serilog.Log.Logger), ownsLifecycle : lifecycle is null, apiHostOptions : apiHostOptions);</code> | [src/Meridian/UiServer.cs:93](../../../../src/Meridian/UiServer.cs#L93) | Creates a new UiServer using the centralized ServiceCompositionRoot. |
-| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian/UiServer.cs:1289](../../../../src/Meridian/UiServer.cs#L1289) |  |
-| <code>public async Task StopAsync(CancellationToken ct = default);</code> | [src/Meridian/UiServer.cs:1430](../../../../src/Meridian/UiServer.cs#L1430) |  |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian/UiServer.cs:1448](../../../../src/Meridian/UiServer.cs#L1448) |  |
+| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian/UiServer.cs:1292](../../../../src/Meridian/UiServer.cs#L1292) |  |
+| <code>public async Task StopAsync(CancellationToken ct = default);</code> | [src/Meridian/UiServer.cs:1433](../../../../src/Meridian/UiServer.cs#L1433) |  |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian/UiServer.cs:1451](../../../../src/Meridian/UiServer.cs#L1451) |  |
 
 ## WorkstationAssetTree
 

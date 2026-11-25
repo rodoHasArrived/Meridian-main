@@ -207,6 +207,11 @@ public sealed class CollectorModeRunner
         }
 
         using var failoverResources = new FailoverResourceLease(failoverService, healthMonitor);
+        // Failover feeds its own monitor; publish it so the API host can serve connection health.
+        // Declared after the lease so it is withdrawn before the monitor is disposed.
+        using var failoverHealthPublication = healthMonitor is null
+            ? null
+            : ConnectionHealthRegistry.Process.Publish(healthMonitor);
         // Declared after the resource lease so it is released first: endpoints stop seeing the
         // coordinator and saves stop applying live before the coordinator is disposed.
         using var liveRuntime = PublishLiveRuntime(hostStartup, ctx.ConfigPath, failoverService, providerReconciler);
@@ -219,6 +224,10 @@ public sealed class CollectorModeRunner
         }
         using var activation = new StreamingProviderActivation(ctx.ConfigPath, providerMap, startupFailures,
             failoverClient, failoverService);
+        // Without failover nothing monitors the single connection; this lease starts a monitor fed
+        // from the client's transport diagnostics once it connects. Declared after the client so
+        // it stops (and unsubscribes) before the client is disposed.
+        using var singleProviderHealth = new SingleProviderHealthLease();
 
         // The failover wrapper is not itself a gap source; its inner clients were captured
         // above. In single-provider (or failover-fallback) mode the client is captured here.
@@ -264,6 +273,8 @@ public sealed class CollectorModeRunner
             connectTimeoutCts.CancelAfter(TimeSpan.FromSeconds(30));
             await dataClient.ConnectAsync(connectTimeoutCts.Token);
             activation.MarkConnected();
+            if (failoverClient is null)
+                singleProviderHealth.Start(dataClient, ctx.Config.DataSource.ToString(), _log);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -497,6 +508,43 @@ public sealed class CollectorModeRunner
         catch (Exception ex)
         {
             _log.Warning(ex, "Streaming provider client raised an error during failed failover construction cleanup");
+        }
+    }
+
+    /// <summary>
+    /// Owns the monitor, diagnostics feed and registry publication for a collector streaming from
+    /// one provider without failover.
+    /// </summary>
+    private sealed class SingleProviderHealthLease : IDisposable
+    {
+        private ConnectionHealthMonitor? _monitor;
+        private ConnectionDiagnosticsHealthFeed? _feed;
+        private IDisposable? _publication;
+
+        public void Start(IMarketDataClient client, string providerName, ILogger log)
+        {
+            var connectionId = ProviderIdentity.NormalizeId(providerName);
+            var monitor = new ConnectionHealthMonitor();
+            var feed = ConnectionDiagnosticsHealthFeed.TryStart(client, monitor, connectionId, providerName);
+            if (feed is null)
+            {
+                monitor.Dispose();
+                log.Information(
+                    "Connection health is not tracked for {Provider}: its client does not report connection lifecycle diagnostics",
+                    providerName);
+                return;
+            }
+
+            _monitor = monitor;
+            _feed = feed;
+            _publication = ConnectionHealthRegistry.Process.Publish(monitor);
+        }
+
+        public void Dispose()
+        {
+            _publication?.Dispose();
+            _feed?.Dispose();
+            _monitor?.Dispose();
         }
     }
 

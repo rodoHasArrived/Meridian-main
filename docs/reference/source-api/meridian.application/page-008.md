@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionProposal
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionProposal</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:27](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L27).
+
+One normalized corporate-action announcement with its cross-provider consensus evidence.
+
+```csharp
+public sealed record CorporateActionProposal(Guid SecurityId, string Ticker, string ActionType, DateOnly ExDate, DateOnly? RecordDate, DateOnly? PayableDate, decimal? Amount, string? Currency, decimal? SplitFromFactor, decimal? SplitToFactor, string WinningSource, IReadOnlyList<string> AgreeingSources, IReadOnlyList<string> DissentingSources, bool AutoApplied, Guid? ProposalId = null, long? Version = null, string? ProposalState = null, CorporateActionSourceProposalActionAvailabilityDto? ActionAvailability = null, string? ObservationSource = null, string? ObservationDescription = null, string? SourceEventId = null, string? SourceEventVersion = null, DateTimeOffset? ObservationObservedAtUtc = null, string? EvidenceHash = null, string? EvidenceReference = null, IReadOnlyList<CorporateActionDissentFieldDto>? DissentingFields = null, CorporateActionProviderReleaseStatusDto ProviderReleaseStatus = CorporateActionProviderReleaseStatusDto.ReviewOnly)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public JsonElement? Payload { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:56](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L56) |  |
+| <code>public decimal? DistributionRatio { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:58](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L58) |  |
+| <code>public decimal? ExchangeRatio { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:60](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L60) |  |
+| <code>public CorporateActionRetainedSourceEvidenceDto? SourceEvidence { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:62](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L62) |  |
+
 ## CorporateActionProposalMapper
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionProposalMapper</code>. Kind: `class`.
@@ -939,22 +960,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public LedgerBookAffectedResolver(ILogger&lt;LedgerBookAffectedResolver&gt; logger, ILedgerJournalStore? journalStore = null);</code> | [src/Meridian.Application/SecurityMaster/IAffectedLedgerBookResolver.cs:51](../../../../src/Meridian.Application/SecurityMaster/IAffectedLedgerBookResolver.cs#L51) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;Guid&gt;&gt; ResolveAsync(SecurityMasterDownstreamImpactDto impact, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IAffectedLedgerBookResolver.cs:59](../../../../src/Meridian.Application/SecurityMaster/IAffectedLedgerBookResolver.cs#L59) |  |
-
-## LedgerPeriodLockReader
-
-Qualified name: <code>Meridian.Application.SecurityMaster.LedgerPeriodLockReader</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs:38](../../../../src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs#L38).
-
-Default ILedgerPeriodLockReader over ILedgerJournalStore, applying the default-deny posture on any indeterminate state.
-
-```csharp
-public sealed class LedgerPeriodLockReader : ILedgerPeriodLockReader
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerPeriodLockReader(ILogger&lt;LedgerPeriodLockReader&gt; logger, ILedgerJournalStore? journalStore = null);</code> | [src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs:43](../../../../src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs#L43) |  |
-| <code>public async Task&lt;LedgerPeriodStatusDto&gt; GetPeriodStatusAsync(Guid ledgerBookId, DateOnly date, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs:51](../../../../src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs#L51) |  |

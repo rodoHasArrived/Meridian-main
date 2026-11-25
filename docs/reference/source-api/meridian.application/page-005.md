@@ -661,6 +661,26 @@ Declared public members:
 | <code>public ProviderIntegrationManifestDto? GetManifest(string manifestId);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs:47](../../../../src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs#L47) |  |
 | <code>public ProviderIntegrationManifestDto? GetManifest(string manifestId, int manifestVersion);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs:55](../../../../src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs#L55) | Version-pinned lookup preserves the original template when reviewing retained imports. |
 
+## ConnectionDiagnosticsHealthFeed
+
+Qualified name: <code>Meridian.Application.Monitoring.ConnectionDiagnosticsHealthFeed</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Monitoring/ConnectionDiagnosticsHealthFeed.cs:23](../../../../src/Meridian.Application/Monitoring/ConnectionDiagnosticsHealthFeed.cs#L23).
+
+Feeds a ConnectionHealthMonitor from a streaming client&#x27;s transport diagnostics, for a collector running without streaming failover (which feeds its own monitor).
+
+```csharp
+public sealed class ConnectionDiagnosticsHealthFeed : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly TimeSpan DefaultPollInterval = TimeSpan.FromSeconds(15);</code> | [src/Meridian.Application/Monitoring/ConnectionDiagnosticsHealthFeed.cs:26](../../../../src/Meridian.Application/Monitoring/ConnectionDiagnosticsHealthFeed.cs#L26) | Default poll interval: a quarter of the monitor&#x27;s default 60-second heartbeat timeout. |
+| <code>public static ConnectionDiagnosticsHealthFeed? TryStart(IMarketDataClient client, ConnectionHealthMonitor monitor, string connectionId, string providerName, TimeSpan? pollInterval = null);</code> | [src/Meridian.Application/Monitoring/ConnectionDiagnosticsHealthFeed.cs:58](../../../../src/Meridian.Application/Monitoring/ConnectionDiagnosticsHealthFeed.cs#L58) | Starts feeding monitor for client, or returns null when the client does not supervise its connection lifecycle and so cannot be monitored truthfully. Call after the client has connected. |
+| <code>public void Dispose();</code> | [src/Meridian.Application/Monitoring/ConnectionDiagnosticsHealthFeed.cs:125](../../../../src/Meridian.Application/Monitoring/ConnectionDiagnosticsHealthFeed.cs#L125) |  |
+
 ## DependencyRecoveredEvent
 
 Qualified name: <code>Meridian.Application.Monitoring.DependencyRecoveredEvent</code>. Kind: `record struct`.
@@ -996,22 +1016,3 @@ Declared public members:
 | <code>public long TotalPersisted { get; init; }</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:270](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L270) | Rejected events durably written to the dead-letter file. |
 | <code>public long PendingRetry { get; init; }</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:273](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L273) | Rejected events held in memory awaiting a successful write. |
 | <code>public long TotalLost { get; init; }</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:276](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L276) | Rejected events that could not be written and were discarded. |
-
-## DedupLookupScope
-
-Qualified name: <code>Meridian.Application.Pipeline.DedupLookupScope</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Pipeline/DedupReservation.cs:17](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L17).
-
-Trust scope for a dedup identity lookup.
-
-```csharp
-public enum DedupLookupScope
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>LiveIngress = 0</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:23](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L23) | Live-ingress admission. Any unexpired committed entry (version 1 or version 2) suppresses the event as a duplicate. |
-| <code>WalRecovery = 1</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:30](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L30) | WAL recovery replay. Only durability-confirmed (version 2) entries suppress the replay. Legacy version-1 entries are untrusted here: the WAL record must be replayed to the sink, after which committing the reservation upgrades the identity to version 2. |

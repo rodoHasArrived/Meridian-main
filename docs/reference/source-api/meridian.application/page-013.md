@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IWizardStep
+
+Qualified name: <code>Meridian.Application.Wizard.Core.IWizardStep</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/Wizard/Core/IWizardStep.cs:9](../../../../src/Meridian.Application/Wizard/Core/IWizardStep.cs#L9).
+
+Contract that every wizard step must implement. Steps are independent units: each one reads from and writes to WizardContext, then returns a WizardStepResult that tells the WizardCoordinator what to do next.
+
+```csharp
+public interface IWizardStep
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>WizardStepId StepId { get; }</code> | [src/Meridian.Application/Wizard/Core/IWizardStep.cs:12](../../../../src/Meridian.Application/Wizard/Core/IWizardStep.cs#L12) | The unique identifier of this step in the workflow graph. |
+| <code>Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Core/IWizardStep.cs:19](../../../../src/Meridian.Application/Wizard/Core/IWizardStep.cs#L19) | Executes the step. Implementations should not throw for user-facing cancellations — return WizardStepResult.Cancelled instead. |
+
 ## WizardContext
 
 Qualified name: <code>Meridian.Application.Wizard.Core.WizardContext</code>. Kind: `class`.
