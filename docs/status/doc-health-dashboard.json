@@ -1,16 +1,18 @@
 {
-  "total_files": 1301,
-  "orphaned_count": 392,
+  "total_files": 1303,
+  "orphaned_count": 394,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:1e157162b5ad1bea9c99d07749c05ca14b689933baf192285b4ab7dd5a48fd69",
+  "signal_digest": "sha256:82250b79f0fb117914d928dfefcf0e8a4cb783bfe1537d8d16a2b11eddab3461",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
     ".agents/skills/meridian-brainstorm/SKILL.md",
     ".agents/skills/meridian-browser-workstation/SKILL.md",
+    ".agents/skills/meridian-ci-cd/SKILL.md",
+    ".agents/skills/meridian-ci-cd/references/workflow-inventory.md",
     ".agents/skills/meridian-cleanup/SKILL.md",
     ".agents/skills/meridian-docs/SKILL.md",
     ".agents/skills/meridian-implementation-assurance/SKILL.md",
@@ -742,6 +744,20 @@
     },
     {
       "path": ".agents/skills/meridian-browser-workstation/SKILL.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-ci-cd/references/workflow-inventory.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-ci-cd/SKILL.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

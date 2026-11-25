@@ -79,8 +79,6 @@ handling, and broad scheduled jobs was removed because it either duplicated CI, 
 obsolete project assumptions, or performed automation outside the current build/test/publish/docs
 scope.
 
-## Active Workflows
-
 ## Dependency caches and artifacts
 
 `meridian-ci.yml` caches NuGet packages using project files, nested shared build/package
@@ -96,7 +94,9 @@ and restores that same NuGet cache key. Workflows whose setup is exactly that ad
 after `actions/checkout`; a step `id: nuget` still exposes `outputs.cache-hit`. `meridian-ci.yml`
 and workflows with interleaved steps, `dotnet-version` inputs, conditions, or no cache keep their
 inline steps, so the inline key must change together with the composite action's key.
-Workflow hygiene applies the same SHA-pin rule to external actions inside local composite actions.
+Workflow hygiene applies the same SHA-pin rule to external actions inside local composite actions,
+and rejects an action repository pinned to more than one commit across workflows and composite
+actions. Dependabot updates both locations in one grouped pull request.
 
 Browser CI reads its supported Node version from `.nvmrc`, which the doctor prerequisite checker
 also uses. Every local CI lane runs the shared `build/python/prerequisites.py` preflight before
@@ -162,10 +162,22 @@ run unless the lane reported for one commit, ran every default roster entry exac
 entry failed. It publishes `meridian-ci-dotnet-<run>-<attempt>`. A local or unsharded run still
 executes the whole lane.
 
-`verify-dotnet` also classifies the pull request itself with `detect-dotnet-changes.py`, so it
-does not queue behind the `changes` job. On a docs-only PR it runs, skips its .NET steps and
-reports success; `quality-gate` fails unless its decision equals the `changes` job's decision.
-`changes` still feeds `service-backed-integrations` and `integration-gate`.
+`verify-dotnet` also classifies the pull request itself with `detect-dotnet-changes.py`; there is
+no separate `changes` job for any lane to queue behind. On a docs-only PR it runs, skips its .NET
+steps and reports success, and `quality-gate` requires its decision to be `true` or `false`. The
+reusable integration job classifies the same way when Meridian CI passes
+`skip-when-docs-only: true`, and `integration-gate` fails unless the two lanes' decisions agree.
+Production Certification never passes that input, so it always runs the suite.
+
+Pushes to `main` never cancel a running Meridian CI run, so every merge gets a completed
+`quality-gate`; GitHub keeps only the newest pending run per concurrency group. Pull request
+and merge-group runs still cancel superseded work.
+
+CodeQL, legacy CI's `Secret Scan`, Windows Desktop Build and Roadmap Source Docs skip draft pull
+requests and run on `ready_for_review`. A draft cannot merge, so the required `Secret Scan` and
+`Analyze <language>` contexts are produced by the ready-for-review run; until then a draft shows
+`Secret Scan` as skipped and the CodeQL contexts as expected. Meridian CI and Generated Repair
+still run on drafts.
 
 `verify-browser` sets `MERIDIAN_CI_BROWSER_SHARD=1/1`, runs install, UI contract generation,
 lint, the strict typecheck, the test files (`run-vitest-stable.mjs`), the production bundle and
@@ -219,6 +231,8 @@ cancellation, an unexpected skip or an unknown event fails it. Uploaded harness 
 diagnostic evidence, not a substitute for that final gate. These scheduling changes require
 human governance review. Compare hosted job timings separately from runner queue delays before
 claiming a speedup.
+
+## Active Workflows
 
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
@@ -463,6 +477,8 @@ python3 build/scripts/docs/generate-workflow-manifest.py
 
 - All workflows use repository-relative paths.
 - Default token permissions are read-only.
+- Every job declares `timeout-minutes`; workflow hygiene rejects one that does not. A job that only
+  calls a reusable workflow is exempt because the called jobs carry their own limits.
 - Manual screenshot-capture workflows never push commits directly; any repository write is proposed
   through a reviewed `peter-evans/create-pull-request` PR (for the web capture when `create_pr: true`, and for the
   desktop capture only when dispatched with `commit: true`).
