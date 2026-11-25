@@ -6,10 +6,34 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-20
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Ui.Shared
+
+## Cancel-all incident reads
+
+`GET /api/execution/cancel-incidents?fundAccountId=...` lists recent retained incident summaries;
+`GET /api/execution/cancel-incidents/{incidentId}?fundAccountId=...` reopens every retained order
+attributed to that account. Both require global and scoped trading-read authority, a concrete
+tenant/company, and authoritative ownership of the account's fund. Administrator access does not
+override tenant ownership. Missing storage is unavailable, not an empty history. List limits apply
+to incidents, never to an incident's order rows; exact-ID reads remain available for older incidents.
+The incident order table registers saved table views under `ViewTrades`, matching these routes;
+layout access does not replace the incident reads' account and tenant ownership checks.
+
+The HTTP projection separates evidence completion from cancellation success, preserves unknown
+quantities as null, and emits financial quantities as exact decimal strings. Raw broker-wide errors
+and local storage paths remain internal. Generic audit feeds expose safe cancel-all summaries;
+the account-authorized incident is the order-detail authority. These reads do not contact the broker,
+resume execution, post journals, or establish current exposure. Focused coverage lives in
+`ExecutionCancelIncidentEndpointsTests`.
+
+Hosted scoped Designer backtests publish their immutable executable artifact before retaining the
+first run. The shared service composes `StrategyArtifactRegistry` and binds its ID through the
+existing account/evidence run hash. Repeated historical experiments keep separate input hashes
+while the unchanged executable can share an artifact. The scoped draft/version, simulated
+provenance and paper-only review rules continue to apply; see `DesignerPaperRehearsalTests`.
 
 Asset Detail reads full canonical terms through `SecurityInstrumentTermsEndpoints` and
 `SecurityInstrumentTermsReadService`. The schema-guided read preserves exact scalar JSON text,
@@ -49,6 +73,15 @@ enable the unsupported canonical paper-bond path. See the
 
 Provider quota responses preserve the runtime's explicit credits/request unit and daily usage,
 cap and reset-policy evidence. They do not infer fundamentals entitlement from available credits.
+
+The Data workspace and its shared provider counts can use the retained records when readiness
+repositories or the provider credential vault are unavailable. Affected rows report unavailable
+readiness evidence, and a failed vault read leaves the credential summary unavailable. Provider
+health returns connection state separately from performance measurements. Absent measurements
+are null, and measured average latency includes its observation timestamp.
+Data keeps independent records available when the backfill receipt store cannot be read.
+Retained backfill runs require a receipt visible to the requesting tenant. The legacy summary
+is available only from a snapshot written without provenance.
 
 `IntercompanyObligationEndpoints` adds an owned-book advisory monitor at
 `/api/ledger/intercompany/obligations` and dates-only native agreement `/{id}/schedule` reads.

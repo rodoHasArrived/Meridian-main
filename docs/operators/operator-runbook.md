@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-01
+**Reviewed:** 2026-11-25
 
 This page is the canonical response procedure for every Meridian alert. Each section below is the
 link target of a Prometheus `runbook_url` annotation and of an `AlertRunbookEntry` in
@@ -389,10 +389,37 @@ For problems that did not arrive as an alert:
 | Report pack will not release | [Governed Reporting Operations](./governed-reporting-operations.md) |
 | Provider credentials rejected | [Provider Credentials and Access](./provider-credentials.md) |
 | Backfill gaps remain after recovery | [Provider Backfill Operations](./provider-backfill-operations.md) |
+| Need to review what a cancel-all or kill-switch sweep did | [Cancel-all incident review](#cancel-all-incident-review) |
+
+## Cancel-all incident review
+
+Every OMS cancel-all sweep (including kill-switch sweeps) is assigned an incident ID and its
+evidence is retained in the execution audit WAL. Use this when you need to know what a sweep
+actually observed, not what the book looks like now.
+
+1. Open **Trading → Risk** and select the execution fund account. Recent incidents are listed for
+   that account; use the exact-ID lookup for older records.
+2. Review each order's cancellation outcome, observed fills, possible remaining quantity,
+   unconfirmed replacements, and valuation coverage.
+3. Read the result conservatively:
+   - Quantities are historical observations at the recorded time, not current exposure. Confirm
+     current positions separately before acting.
+   - Unknown or missing broker quantities stay unknown; they are never shown as zero.
+   - A completed evidence record does not mean the book was fully cancelled. Incomplete broker
+     coverage remains unresolved.
+   - If the sweep reports `EvidenceRetained=false`, cancellation still ran but retention failed;
+     record the `EvidenceError` in the incident notes.
+4. The view is account-scoped and requires trade-view access. Other accounts and unattributed
+   broker-only orders are excluded from the projection. Reopening an incident never contacts or
+   acts on the broker.
+
+The same data is available from `GET /api/execution/cancel-incidents?fundAccountId=<id>` and
+`GET /api/execution/cancel-incidents/{incidentId}?fundAccountId=<id>`. Implementation details are
+in the [Execution README](../../src/Meridian.Execution/README.md#retained-cancel-all-incidents).
 
 ## Related
 
 - [Service Level Objectives](./service-level-objectives.md) — objectives, thresholds, RTO/RPO.
 - [Failover and Recovery](./failover-and-recovery.md) — recovery procedure and drill evidence.
 - [Operator Preflight Checklist](./preflight-checklist.md) — readiness gate before a release.
-- [Live Execution Controls](../operations/live-execution-controls.md) — execution kill-switch posture.
+- [Live execution manual override routes](../reference/provider-capability-matrix.md#live-execution-manual-override-routes) — execution override and kill-switch routes.

@@ -11,6 +11,20 @@ last_reviewed: 2026-11-23
 
 # src/Meridian.Ui/dashboard
 
+## Cancel-all incident history
+
+Trading → Risk includes account-scoped retained cancel-all history, with recent incident selection
+and an exact-ID lookup for older records. Each incident shows all attributed orders, observed fills,
+possible remaining quantities, cancellation outcomes, unconfirmed replacements and valuation
+coverage. Evidence completion does not imply a fully cancelled book. Broker coverage, interrupted
+retention, missing quantities, empty history and unavailable reads remain distinct.
+
+Financial quantities retain the server's exact decimal text; unknown exposure is never zero-filled.
+Scope and incident changes abort pending reads and discard late responses. Order observations keep
+their timestamps and do not claim current exposure. The panel uses the standard table workbench,
+including scoped export context and keyboard-operable observation disclosures. The authoritative
+incident API disables development fallback. Focused tests: `trading-screen.cancel-incidents.test.tsx`.
+
 ## Asset Detail
 
 Asset Detail separates reference data, holdings/local lots, event evidence, trading parameters,
@@ -1302,6 +1316,11 @@ The stable test runner retains eight files per batch, two Vitest workers and pro
 Fresh JSON test evidence is written under `artifacts/test-results/browser/` at repository root.
 Missing results, zero passing discovery or missing selected files fail the run. Counts, skips,
 durations and stable test identity digests support the manual CI concurrency benchmark.
+`npm run test -- --shard K/N` runs a deterministic share of the test files; hosted CI uses it
+for its `browser-shard` jobs. `scripts/vitest-files.mjs` is the single definition of the
+test-file roster and of how files are dealt to shards, and `scripts/merge-vitest-shards.mjs`
+is the lane's verdict: it rejects a run unless the shards together ran every test file in the
+checkout exactly once with no failure.
 
 `AmountPassportTrigger` opens the shared Amount passport rail from Ledger Explorer, posted journal
 detail, retained brokerage positions, and retained trial-balance amounts in governed reports. Each
