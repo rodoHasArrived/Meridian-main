@@ -1,4 +1,5 @@
 import { PageHeading } from "@/components/ui/page-heading";
+import { useSignedInUsername } from "@/hooks/use-signed-in-username";
 import {
   CheckCircle2,
   DatabaseZap,
@@ -268,7 +269,10 @@ function DataScreenContent({
     providerRoutingRefreshing,
     providerRoutingTrustSnapshots
   ]);
-  const operatorIdentity = session?.displayName.trim() || null;
+  // Who is acting: the signed-in username, not the session displayName (a desk label that changes with
+  // the latest strategy run and would drop identity-keyed recovery drafts). The server still derives the
+  // recorded actor itself; this only keys browser-side state and fills request hints.
+  const operatorIdentity = useSignedInUsername();
   // Provider status belongs to the header Refresh; routing evidence is re-read with it on the provider route.
   const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence, operatorIdentity);
   useOnGlobalRefresh(() => { if (vm.workstream === "providers") void onProviderRoutingRefresh?.(); });

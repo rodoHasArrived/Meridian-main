@@ -3,6 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { vi } from "vitest";
 import * as api from "@/lib/api";
+import * as authApi from "@/lib/api/auth.api";
+import { resetSignedInUsernameCache } from "@/hooks/use-signed-in-username";
 import * as templateApi from "@/lib/api/provider-connection-templates.api";
 import * as dataOpsApi from "@/lib/api/data-operations-assurance.api";
 import * as plaidLink from "@/lib/plaid-link";
@@ -901,6 +903,9 @@ describe("DataScreen", () => {
       requestId: "req-exchange"
     });
 
+    // The session label is a desk name, not the person: requests carry the signed-in username.
+    resetSignedInUsernameCache();
+    const signedIn = vi.spyOn(authApi, "getSignedInUsername").mockResolvedValue("avery.chen");
     const session: SessionInfo = {
       displayName: "Avery Chen",
       role: "Fund operations",
@@ -909,6 +914,7 @@ describe("DataScreen", () => {
       commandCount: 3
     };
     renderWithRouter(<DataScreen data={data} session={session} />, { initialEntries: ["/data/providers"] });
+    await waitFor(() => expect(signedIn).toHaveBeenCalled());
 
     await user.click(screen.getByRole("button", { name: /configure a new data provider/i }));
     await user.click(screen.getByRole("button", { name: "Configure manually" }));
@@ -946,7 +952,7 @@ describe("DataScreen", () => {
     await user.click(screen.getByRole("button", { name: "Open secure bank connection for Chase" }));
 
     await waitFor(() => expect(createPlaidLinkToken).toHaveBeenCalledWith(expect.objectContaining({
-      userId: "Avery Chen",
+      userId: "avery.chen",
       institutionId: "ins_3",
       institutionName: "Chase",
       products: ["Transactions", "Auth", "Identity", "Investments"],
@@ -957,7 +963,7 @@ describe("DataScreen", () => {
       publicToken: "public-sandbox-token",
       institutionId: "ins_3",
       institutionName: "Chase",
-      requestedBy: "Avery Chen",
+      requestedBy: "avery.chen",
       accounts: [
         expect.objectContaining({
           plaidAccountId: "plaid-account-1",

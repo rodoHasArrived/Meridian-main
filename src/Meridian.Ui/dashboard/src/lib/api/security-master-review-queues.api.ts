@@ -9,7 +9,8 @@
 
 import { apiGetJson, apiPostJson } from "@/lib/api";
 import { isApiError } from "@/lib/api-errors";
-import { UI_API_ROUTES } from "@/lib/ui-api-routes.generated";
+
+export { getSignedInUsername } from "@/lib/api/auth.api";
 import {
   securityMasterExceptionCaseAssignEndpoint,
   securityMasterExceptionCasesEndpoint,
@@ -85,24 +86,6 @@ export function listSecurityMasterExceptionCases(
   signal?: AbortSignal
 ): Promise<SecurityMasterExceptionCaseQueueItem[]> {
   return apiGetJson<SecurityMasterExceptionCaseQueueItem[]>(securityMasterExceptionCasesEndpoint(status), { signal });
-}
-
-/**
- * The signed-in operator's username from `/api/auth/me`, the same principal the server records as the
- * actor of a governed write and the desktop pre-fills as the assignee. Null without a named session
- * (401, or an anonymous development host), so callers simply leave the field empty.
- *
- * The workstation session's `displayName` is not used: the server fills it with a desk label
- * ("Meridian Operator", "<strategy> Desk"), not the person.
- */
-export async function getSignedInUsername(signal?: AbortSignal): Promise<string | null> {
-  try {
-    const caller = await apiGetJson<{ username?: unknown }>(UI_API_ROUTES.AuthApiMe, { signal });
-    return typeof caller.username === "string" && caller.username.trim() ? caller.username.trim() : null;
-  } catch (error: unknown) {
-    if (isApiError(error) && (error.status === 401 || error.status === 403 || error.status === 404)) return null;
-    throw error;
-  }
 }
 
 /** Reconciles open cases with the current conflicts, identifier ambiguities and violations. */
