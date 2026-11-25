@@ -36,6 +36,7 @@
     <Compile Include="../Meridian.Tests/Storage/AtomicSnapshotTestWriter.cs" Link="Support/AtomicSnapshotTestWriter.cs" />
     <Compile Include="../Meridian.Tests/Testing/TestArtifactDirectory.cs" Link="Support/TestArtifactDirectory.cs" />
     <Compile Include="../Meridian.Tests/Infrastructure/Shared/TempDirectoryFixture.cs" Link="Support/TempDirectoryFixture.cs" />
+    <Compile Include="../Meridian.Tests/Infrastructure/Shared/DirectorySyncFaults.cs" Link="Support/DirectorySyncFaults.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="../Meridian.Tests/TestCollections.cs" Link="Support/TestCollections.cs" />

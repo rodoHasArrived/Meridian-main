@@ -255,7 +255,8 @@ public sealed class FileEvidenceArtifactStoreExportTests : IDisposable
 
         File.Exists(indexPath).Should().BeTrue();
         File.Exists(manifestPath).Should().BeTrue();
-        File.Exists(Path.Combine(vaultDirectory, vaultId, "owned.dat")).Should().BeTrue();
+        Directory.EnumerateFiles(Path.Combine(vaultDirectory, vaultId), "owned.dat", SearchOption.AllDirectories)
+            .Should().ContainSingle();
     }
 
     [Fact]
