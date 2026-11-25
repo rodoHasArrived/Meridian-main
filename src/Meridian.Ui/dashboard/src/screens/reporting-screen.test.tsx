@@ -2582,9 +2582,9 @@ describe("ReportingScreen", () => {
       getData: vi.fn((type: string) => transferStore.get(type) ?? "")
     };
     fireEvent.dragStart(within(sourceFields).getByText("Strategy").closest("[role='listitem']")!, { dataTransfer });
-    fireEvent.drop(within(grid).getByRole("list", { name: "Custom report 1 Rows" }), { dataTransfer });
+    fireEvent.drop(within(grid).getByRole("group", { name: "Custom report 1 Rows drop zone" }), { dataTransfer });
     fireEvent.dragStart(within(sourceFields).getByText("Gross exposure").closest("[role='listitem']")!, { dataTransfer });
-    fireEvent.drop(within(grid).getByRole("list", { name: "Custom report 1 Metrics" }), { dataTransfer });
+    fireEvent.drop(within(grid).getByRole("group", { name: "Custom report 1 Metrics drop zone" }), { dataTransfer });
 
     await user.click(within(grid).getByRole("button", { name: "Save Custom report 1 as report template draft" }));
 

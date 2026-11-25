@@ -1944,15 +1944,21 @@ function ReportWriterDropZoneView({
   onTokenMove
 }: ReportWriterDropZoneViewProps) {
   return (
+    // The zone is a labelled drop target; its tokens form a list only when there are tokens, so
+    // an empty zone is not announced as a list with no items (axe aria-required-children).
     <div
-      role="list"
-      aria-label={`${grid.title} ${label}`}
+      role="group"
+      aria-label={`${grid.title} ${label} drop zone`}
       className="min-h-24 rounded-md border border-dashed border-border/70 bg-background/25 px-2.5 py-2"
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => onZoneDrop(event, grid, zone)}
     >
       <div className={cn("mb-2 text-xs text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</div>
-      <div className="flex flex-wrap gap-1.5">
+      <div
+        className="flex flex-wrap gap-1.5"
+        role={tokens.length > 0 ? "list" : undefined}
+        aria-label={tokens.length > 0 ? `${grid.title} ${label}` : undefined}
+      >
         {tokens.length > 0 ? tokens.map((token, tokenIndex) => (
           <ReportWriterTokenChip
             key={token.id}

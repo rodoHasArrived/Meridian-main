@@ -209,14 +209,21 @@ describe("report-writer auto preview", () => {
 
   it("announces preview status through an accessible live region", async () => {
     renderMock.mockResolvedValue(buildResponse(1));
-    render(<Harness grid={buildNewCustomReportWriterGrid(1, null, null)} />);
+    const { container } = render(<Harness grid={buildNewCustomReportWriterGrid(1, null, null)} />);
     editFormula("{pnl}");
     await screen.findByText("Preview up to date");
 
     const status = screen.getByRole("status", { name: "Custom report 1 preview status" });
     expect(status).toHaveAttribute("aria-live", "polite");
-    // Scoped to the new status/toggle/preview actions row; empty drop zones elsewhere in the
-    // designer carry a separate, pre-existing list-role finding.
-    expect((await axe(status.parentElement!)).violations).toHaveLength(0);
+    expect((await axe(container)).violations).toEqual([]);
+  });
+
+  it("does not announce empty drop zones as lists", async () => {
+    const { container } = render(<Harness grid={buildNewCustomReportWriterGrid(1, null, null)} />);
+
+    const rows = screen.getByRole("group", { name: "Custom report 1 Rows drop zone" });
+    expect(within(rows).queryByRole("list")).not.toBeInTheDocument();
+    expect(within(rows).getByText("No fields")).toBeInTheDocument();
+    expect((await axe(container)).violations.map((violation) => violation.id)).not.toContain("aria-required-children");
   });
 });
