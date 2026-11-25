@@ -5315,6 +5315,7 @@ Meridian-main
 │   │   │   ├── AccrualLedgerService.cs
 │   │   │   ├── DailyAccrualWorker.cs
 │   │   │   ├── DirectLendingEventRebuilder.cs
+│   │   │   ├── DirectLendingEventRebuilder.Lifecycle.cs
 │   │   │   ├── DirectLendingJournalLines.cs
 │   │   │   ├── DirectLendingJournalLines.Events.cs
 │   │   │   ├── DirectLendingOutboxDispatcher.cs
@@ -5336,6 +5337,7 @@ Meridian-main
 │   │   │   ├── LoanAccountingProjector.cs
 │   │   │   ├── LoanPortfolioSummaryBuilder.cs
 │   │   │   ├── PostgresDirectLendingCommandService.cs
+│   │   │   ├── PostgresDirectLendingCommandService.LifecycleReplay.cs
 │   │   │   ├── PostgresDirectLendingCommandService.ServicingSchedules.cs
 │   │   │   ├── PostgresDirectLendingQueryService.cs
 │   │   │   └── PostgresDirectLendingService.cs
@@ -7361,6 +7363,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaCorporateActionProvider.AdditionalMappings.cs
 │   │   │   │   ├── AlpacaCorporateActionProvider.cs
 │   │   │   │   ├── AlpacaCorporateActionProvider.Mapping.cs
+│   │   │   │   ├── AlpacaHistoricalDataProvider.Accounting.cs
 │   │   │   │   ├── AlpacaHistoricalDataProvider.cs
 │   │   │   │   ├── AlpacaMarketDataClient.cs
 │   │   │   │   ├── AlpacaOptionsChainProvider.cs
@@ -7392,6 +7395,7 @@ Meridian-main
 │   │   │   │   ├── SymbolResolution
 │   │   │   │   │   ├── CanonicalRegistrySymbolResolver.cs
 │   │   │   │   │   └── ISymbolResolver.cs
+│   │   │   │   ├── AccountingClosePrice.cs
 │   │   │   │   ├── BackfillBarValidation.cs
 │   │   │   │   ├── BackfillProgressTracker.cs
 │   │   │   │   ├── BackfillProviderRuntimeOptions.cs
@@ -13064,6 +13068,7 @@ Meridian-main
 │   │   ├── DirectLendingDatabaseFactAttribute.cs
 │   │   ├── DirectLendingPostgresIntegrationTests.cs
 │   │   ├── DirectLendingPostgresTestDatabase.cs
+│   │   ├── DirectLendingRestructuringTests.cs
 │   │   ├── DirectLendingServiceTests.cs
 │   │   ├── DirectLendingServicingSchedulePostgresTests.cs
 │   │   ├── DirectLendingServicingScheduleScenarioTests.cs
@@ -13201,6 +13206,7 @@ Meridian-main
 │   │   │   └── LotQuantityBasisRulesTests.cs
 │   │   ├── Application
 │   │   │   ├── Accounting
+│   │   │   │   ├── AccountingCloseMarkPriceSourceTests.cs
 │   │   │   │   ├── DailyMarkToMarketServiceTests.cs
 │   │   │   │   ├── DailyValuationPolicyTests.cs
 │   │   │   │   ├── SyntheticMarkProvenanceTests.cs
@@ -13344,6 +13350,8 @@ Meridian-main
 │   │   │   │   ├── DirectLendingExcessBalancesCompatibilityTests.cs
 │   │   │   │   ├── DirectLendingExcessRoutingParityTests.cs
 │   │   │   │   ├── DirectLendingJournalLinesTests.cs
+│   │   │   │   ├── DirectLendingLifecycleReplayTests.cs
+│   │   │   │   ├── DirectLendingLifecycleReplayTests.Inventory.cs
 │   │   │   │   ├── DirectLendingOutboxDispatcherTests.cs
 │   │   │   │   ├── DirectLendingOutboxFailureTests.cs
 │   │   │   │   ├── DirectLendingPrepaidInterestConsumptionTests.cs
@@ -13355,6 +13363,11 @@ Meridian-main
 │   │   │   │   ├── ManualPaymentResolutionTests.cs
 │   │   │   │   ├── PostgresDirectLendingCommandServiceTests.CapabilityFloor.cs
 │   │   │   │   ├── PostgresDirectLendingCommandServiceTests.cs
+│   │   │   │   ├── PostgresDirectLendingCommandServiceTests.LifecyclePersistenceRace.cs
+│   │   │   │   ├── PostgresDirectLendingCommandServiceTests.LifecycleReplay.cs
+│   │   │   │   ├── PostgresDirectLendingCommandServiceTests.LifecycleRetry.cs
+│   │   │   │   ├── PostgresDirectLendingCommandServiceTests.Restructuring.cs
+│   │   │   │   ├── PostgresDirectLendingCommandServiceTests.RestructuringPostgres.cs
 │   │   │   │   ├── PostgresDirectLendingProjectionCharacterizationTests.cs
 │   │   │   │   └── RateUnitNormalizerTests.cs
 │   │   │   ├── FundStructure
@@ -14081,6 +14094,7 @@ Meridian-main
 │   │   │   │   │       ├── polygon-recorded-session-nvda-multi-batch.json
 │   │   │   │   │       ├── polygon-recorded-session-spy-etf.json
 │   │   │   │   │       └── polygon-recorded-session-tsla-opening-cross.json
+│   │   │   │   ├── AlpacaAccountingClosePriceTests.cs
 │   │   │   │   ├── AlpacaAssetStreamRoutingTests.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.AccountIdentity.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.Amendments.cs
