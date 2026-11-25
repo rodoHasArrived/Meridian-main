@@ -6,6 +6,71 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IProviderModuleSetupService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IProviderModuleSetupService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:6](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L6).
+
+Manages provider module configuration lifecycle: discovery, upsert, enable/disable, remove, and connectivity test.
+
+```csharp
+public interface IProviderModuleSetupService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;ProviderModuleStatusDto&gt;&gt; GetConfiguredModulesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:9](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L9) | Returns status of all currently configured provider modules. |
+| <code>IReadOnlyList&lt;ProviderModuleCatalogueEntry&gt; GetDiscoveredModuleCatalogue();</code> | [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:12](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L12) | Returns all discoverable provider module types with capability and credential metadata. |
+| <code>Task&lt;ProviderModuleSetupResult&gt; UpsertModuleAsync(UpsertProviderModuleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:15](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L15) | Creates or updates a provider module configuration and persists credentials to the credential store. |
+| <code>Task&lt;ProviderModuleSetupResult&gt; SetEnabledAsync(string moduleId, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:18](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L18) | Toggles a module&#x27;s enabled state. Applied live via ProviderRegistry; also persisted to config. |
+| <code>Task&lt;ProviderModuleSetupResult&gt; RemoveModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:21](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L21) | Removes a module&#x27;s configuration from config and its credentials from the credential store. |
+| <code>Task&lt;ProviderModuleTestResult&gt; TestModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:27](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L27) | Validates stored credentials and optionally probes the live connection. Always runs ValidateAsync; calls ProbeConnectionAsync if the module implements IProviderModuleConnectionProbe. |
+
+## IRecurringJournalCalculation
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IRecurringJournalCalculation</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:77](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L77).
+
+A posting calculation the recurring-journal runner can run for a calculated template. An implementation reads authoritative inputs, returns one balanced draft (or nothing due), and throws InvalidOperationException to block the occurrence when an input is missing. It never submits, approves or posts.
+
+```csharp
+public interface IRecurringJournalCalculation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string Kind { get; }</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:79](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L79) |  |
+| <code>bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:87](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L87) | True when the amount depends on what earlier occurrences posted (a balance, net assets or a carrying value). The runner then calculates an occurrence only after the previous one is posted, rejected or needed no draft, so two periods that come due together cannot both be measured against a ledger that holds neither. |
+| <code>bool ReadsClosingState =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:94](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L94) | True when the amount is measured from balances or holdings at the close of the effective date. Such an occurrence is calculated only after that day has ended, so journals posted later the same day are not left out of an amount that is then never recalculated. |
+| <code>IReadOnlyList&lt;string&gt; RequiredInputs =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:97](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L97) | Template inputs this calculation cannot run without; checked when a schedule is registered. |
+| <code>Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:99](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L99) |  |
+
+## IRecurringJournalCalculationInputs
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IRecurringJournalCalculationInputs</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:103](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L103).
+
+Authoritative ledger reads for posting calculations.
+
+```csharp
+public interface IRecurringJournalCalculationInputs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyLedger&gt; HydrateLedgerAsOfAsync(RecurringJournalScope scope, DateOnly asOf, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:106](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L106) | The scope&#x27;s ledger book including everything recorded through the end of asOf. |
+| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLot&gt;&gt; ListOpenLotsAsync(RecurringJournalScope scope, LedgerAccount account, Guid securityId, Guid? bookPositionId, DateOnly asOf, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:113](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L113) | Face-value lots of securityId open at the end of asOf. With a book position the quantities are reconstructed for that date; without one only today&#x27;s lot state is known, so a date in the past is refused. |
+| <code>Task&lt;IReadOnlyList&lt;FaceValueAccrualHolding&gt;&gt; ListAccrualHoldingsAsync(RecurringJournalScope scope, Guid securityId, Guid bookPositionId, DateOnly from, DateOnly through, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:120](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L120) | Retained daily face and factor evidence, including interest earned through a full paydown. The caller reads from the coupon start so cumulative rounding is stable across windows. |
+
 ## IRecurringJournalPeriodAuthority
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IRecurringJournalPeriodAuthority</code>. Kind: `interface`.
@@ -868,75 +933,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:29](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L29) |  |
-
-## LiveBrokeragePortfolioSyncService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LiveBrokeragePortfolioSyncService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.ContractMultipliers.cs:6](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.ContractMultipliers.cs#L6).
-
-```csharp
-public sealed partial class LiveBrokeragePortfolioSyncService
-```
-
-Source: [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:38](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L38).
-
-Publishes a live account only after complete portfolio evidence and OMS reconciliation agree. Restart, disconnect, stale evidence, and subsequent order/fill changes require a fresh sync. No cached snapshot is restored as trading authority after a restart.
-
-```csharp
-public sealed partial class LiveBrokeragePortfolioSyncService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LiveBrokeragePortfolioSyncService(Func&lt;IBrokerageGateway?&gt; gatewayAccessor, Func&lt;IOrderManager?&gt; orderManagerAccessor, BrokerageExecutionReconciliationService reconciliation, TimeProvider? timeProvider = null, TimeSpan? maxAge = null, ISecurityMasterQueryService? securityMaster = null);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:50](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L50) |  |
-| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:67](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L67) |  |
-| <code>public TimeSpan MaximumAge =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:69](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L69) |  |
-| <code>public void InvalidateAccountBinding(Guid fundAccountId, string providerId, string externalAccountId);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:71](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L71) |  |
-| <code>public IReadOnlyList&lt;LiveBrokeragePortfolioStatus&gt; GetStatuses() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:89](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L89) |  |
-| <code>public BrokeragePortfolioSnapshotDto? GetRiskSnapshot(Guid fundAccountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:92](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L92) |  |
-| <code>public IReadOnlyList&lt;OrderState&gt; GetExposureReservingOrders(Guid fundAccountId);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:99](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L99) | Keeps the last reconciled unfilled reservation until holdings are refreshed. Retiring it from a new fill while retaining old broker holdings would briefly lose that fill&#x27;s exposure. |
-| <code>public LiveBrokeragePortfolioStatus GetStatus(Guid fundAccountId);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:139](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L139) |  |
-| <code>public async Task&lt;LiveBrokeragePortfolioStatus&gt; SynchronizeAsync(Guid fundAccountId, string externalAccountId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:178](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L178) |  |
-
-## LoanAccountingSourceReader
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LoanAccountingSourceReader</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:219](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L219).
-
-Uses retained loan history and the same impact kernel as originating loan posting.
-
-```csharp
-public sealed class LoanAccountingSourceReader(IDirectLendingStateStore store, ILedgerJournalStore journals) : ILedgerAccountingSourceReader
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerAccountingSourceKind SourceKind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:221](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L221) |  |
-| <code>public async Task&lt;LedgerAccountingSourcePopulation&gt; ReadAsync(LedgerAccountingCompletenessQuery query, LedgerAccountingPeriod period, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:223](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L223) |  |
-
-## ManagementFeeAccrualCalculation
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ManagementFeeAccrualCalculation</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:205](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L205).
-
-Day-weighted management fee on the net assets the ledger held at the close of the day before the accrual window. Terms: annualRate, yearBasisDays.
-
-```csharp
-public sealed class ManagementFeeAccrualCalculation(IRecurringJournalCalculationInputs inputs) : IRecurringJournalCalculation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string CalculationKind = &quot;management-fee-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:207](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L207) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:209](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L209) |  |
-| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:211](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L211) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:213](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L213) |  |

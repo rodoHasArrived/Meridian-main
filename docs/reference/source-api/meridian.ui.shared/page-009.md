@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ApprovalPolicy
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ApprovalPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:65](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L65).
+
+```csharp
+public sealed record ApprovalPolicy(decimal DualControlThreshold, IReadOnlyDictionary<string, decimal> CurrencyThresholds, IReadOnlyDictionary<string, decimal> AccountThresholds, IReadOnlySet<string> HighRiskCounterparties);
+```
+
+## ApprovalStep
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ApprovalStep</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:57](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L57).
+
+```csharp
+public sealed record ApprovalStep(string StepId, string Role, string Approver, bool IsRequired, bool IsApproved, DateTimeOffset? DecidedAt);
+```
+
+## AssetAccountingSourceReader
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AssetAccountingSourceReader</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:392](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L392).
+
+Enumerates the independently retained asset-event spine for the exact book and period.
+
+```csharp
+public sealed class AssetAccountingSourceReader(IAssetAccountingEventProjectionStore store) : ILedgerAccountingSourceReader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerAccountingSourceKind SourceKind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:394](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L394) |  |
+| <code>public async Task&lt;LedgerAccountingSourcePopulation&gt; ReadAsync(LedgerAccountingCompletenessQuery query, LedgerAccountingPeriod period, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:396](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L396) |  |
+
 ## AuditTrailExplorerService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.AuditTrailExplorerService</code>. Kind: `class`.
@@ -936,91 +975,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static BrokeragePortfolioSyncOptions Default { get; } = new (RootDirectory : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), &quot;Meridian&quot;, &quot;workstation&quot;, &quot;brokerage-sync&quot;), StaleAfter : TimeSpan.FromMinutes(30), DefaultProviderId : &quot;alpaca&quot;);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:25](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L25) |  |
-
-## BrokeragePortfolioSyncService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.BrokeragePortfolioSyncService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.AmountPassport.cs:11](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.AmountPassport.cs#L11).
-
-```csharp
-public sealed partial class BrokeragePortfolioSyncService
-```
-
-Source: [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:40](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L40).
-
-Pulls read-only broker account, portfolio, order, fill, and cash activity snapshots into a durable workstation projection. This service is operator-triggered and intentionally avoids live-trading readiness decisions.
-
-```csharp
-public sealed partial class BrokeragePortfolioSyncService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public BrokeragePortfolioSyncService(BrokeragePortfolioSyncOptions options, IEnumerable&lt;IBrokerageAccountCatalog&gt; catalogs, IEnumerable&lt;IBrokeragePortfolioSync&gt; portfolioAdapters, IEnumerable&lt;IBrokerageActivitySync&gt; activityAdapters, IServiceProvider services, ILogger&lt;BrokeragePortfolioSyncService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:63](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L63) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;WorkstationBrokerageAccountDto&gt;&gt; DiscoverAccountsAsync(Func&lt;IReadOnlyCollection&lt;Guid&gt;, CancellationToken, Task&lt;IReadOnlySet&lt;Guid&gt;&gt;&gt; authorizeFundAccounts, bool includeUnlinkedAccounts = false, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:86](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L86) |  |
-| <code>public async Task&lt;WorkstationBrokerageSyncStatusDto&gt; GetStatusAsync(Guid fundAccountId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:140](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L140) |  |
-| <code>public async Task&lt;WorkstationBrokerageSyncStatusDto&gt; RunSyncAsync(Guid fundAccountId, WorkstationBrokerageSyncRunRequestDto? request = null, CancellationToken ct = default, string? passportTenantId = null, string? passportCompanyId = null);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:179](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L179) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;FundAccountBrokeragePositionDto&gt;&gt; GetPositionsAsync(Guid fundAccountId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:398](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L398) |  |
-| <code>public async Task&lt;FundAccountBrokerageSyncActivityDto?&gt; GetActivityAsync(Guid fundAccountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:406](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L406) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;FundAccountBrokerageCashTransactionDto&gt;&gt; GetCashTransactionHistoryAsync(Guid fundAccountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:415](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L415) | Every cash transaction a sync has observed for the account, deduplicated by provider transaction id and ordered by posting time. Unlike the current projection, which holds only the latest activity snapshot, this history keeps rows that later syncs no longer return. Empty when no activity has been retained or the history file cannot be read. |
-| <code>public async Task&lt;FundAccountBrokerageSyncActivityDto?&gt; GetActivityForActiveLinkAsync(Guid fundAccountId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:426](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L426) | The current projection only when it was synced from the external account the fund account is linked to now. A relink updates the link at once but leaves the previous account&#x27;s projection in place until the next sync, and that projection is not evidence about the newly linked account. |
-| <code>public async Task&lt;IReadOnlyList&lt;FundAccountBrokerageFillDto&gt;&gt; GetFillHistoryAsync(Guid fundAccountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:445](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L445) | Every fill a sync has observed for the account, deduplicated by provider fill id. |
-| <code>public async Task&lt;FundAccountBrokerageSyncActivityDto?&gt; GetViewAsync(Guid fundAccountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:476](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L476) |  |
-| <code>public async Task&lt;WorkstationBrokerageAccountLinkDto?&gt; LinkAccountAsync(Guid fundAccountId, BrokerageAccountLinkRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:479](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L479) |  |
-| <code>public async Task&lt;BrokerageCashFlowSummaryDto&gt; GetCashFlowAsync(Guid fundAccountId, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:520](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L520) |  |
-| <code>public async Task&lt;BrokerageHouseholdPortfolioDto&gt; GetHouseholdAsync(string? providerId, Func&lt;IReadOnlyCollection&lt;Guid&gt;, CancellationToken, Task&lt;IReadOnlySet&lt;Guid&gt;&gt;&gt; authorizeFundAccounts, CancellationToken ct = default, string? passportTenantId = null, string? passportCompanyId = null);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:556](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L556) |  |
-
-Source: [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.Performance.cs:9](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.Performance.cs#L9).
-
-```csharp
-public sealed partial class BrokeragePortfolioSyncService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;BrokeragePortfolioPerformanceDto&gt; GetPerformanceAsync(Guid fundAccountId, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.Performance.cs:11](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.Performance.cs#L11) |  |
-
-## BrokerageSyncActualCashActivitySource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.BrokerageSyncActualCashActivitySource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/BrokerageSyncActualCashActivitySource.cs:17](../../../../src/Meridian.Ui.Shared/Services/BrokerageSyncActualCashActivitySource.cs#L17).
-
-Reads the income and principal cash a brokerage reported for held securities from the retained brokerage sync projection, so expected coupons and paydowns reconcile against broker evidence.
-
-```csharp
-public sealed class BrokerageSyncActualCashActivitySource : ISecurityActualCashActivitySource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string SourceName = &quot;brokerage-sync&quot;;</code> | [src/Meridian.Ui.Shared/Services/BrokerageSyncActualCashActivitySource.cs:19](../../../../src/Meridian.Ui.Shared/Services/BrokerageSyncActualCashActivitySource.cs#L19) |  |
-| <code>public BrokerageSyncActualCashActivitySource(Func&lt;Guid, CancellationToken, Task&lt;FundAccountBrokerageSyncActivityDto?&gt;&gt; loadActivity, Func&lt;Guid, CancellationToken, Task&lt;IReadOnlyList&lt;FundAccountBrokerageCashTransactionDto&gt;&gt;&gt;? loadCashHistory = null);</code> | [src/Meridian.Ui.Shared/Services/BrokerageSyncActualCashActivitySource.cs:31](../../../../src/Meridian.Ui.Shared/Services/BrokerageSyncActualCashActivitySource.cs#L31) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;SecurityActualCashActivity&gt;&gt; GetActualActivityAsync(IReadOnlyList&lt;SecurityMasterAccountingPosition&gt; positions, DateOnly periodStart, DateOnly periodEnd, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokerageSyncActualCashActivitySource.cs:40](../../../../src/Meridian.Ui.Shared/Services/BrokerageSyncActualCashActivitySource.cs#L40) |  |
-
-## CanonicalOpenLotSuccessorEvidence
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CanonicalOpenLotSuccessorEvidence</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs:140](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs#L140).
-
-Reconciles immutable posted successor snapshots with the approved plan before Reporting retains them. Current open lots are deliberately never consulted: subsequent disposal cannot rewrite the basis, acquisition FX, holding period or Schedule D evidence of an earlier report.
-
-```csharp
-public static class CanonicalOpenLotSuccessorEvidence
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string InstructionFingerprintTag = OpenLotSuccessors.JournalFingerprintTag;</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs:142](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs#L142) |  |
-| <code>public static void Validate(AtomicTaxLotJournalResult batch, LedgerJournalEntryRecord journal, Guid ledgerBookId, string functionalCurrency);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs:144](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs#L144) |  |
-| <code>public static string Serialize(AtomicTaxLotJournalResult batch) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs:256](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs#L256) |  |
