@@ -3933,3 +3933,12 @@ physical source line is labelled unavailable rather than inferred from normalize
 
 For the coordinated implementation and validation record, see
 [Browser workstation UX implementation](../../../docs/engineering/plans/browser-workstation-ux-roadmap-2026-11.md).
+
+## Security Master review inbox
+
+`components/meridian/security-master-review-inbox.tsx`, mounted on the Accounting screen, lists
+pending Security Master workbench revisions from `listPendingSecurityMasterRevisions`. An operator
+can discard a revision through `discardSecurityMasterRevision`. Both functions are in
+`lib/api/security-master-workbench.api.ts` and use endpoint helpers in `workstation-endpoints.ts`.
+The passport editor's banner view model names the first stager when the server refuses with
+`field-already-staged`.

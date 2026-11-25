@@ -38,6 +38,9 @@ through linked compile items; schema versions, SQL migrations and output paths r
 ## Key folders and files
 
 - `Meridian.Storage.Accounting.csproj` declares linked source ownership and migration content.
+  Its content items also copy the entity-master migration set
+  (`../Meridian.Storage/EntityMaster/Migrations/*.sql`) to the output, next to the Security Master
+  migrations ([ADR-033](../../docs/adr/033-entity-master-bounded-context.md)).
 - `../Meridian.Storage/Ledger/` and `../Meridian.Storage/Reporting/` hold accounting adapters.
 - `Export/` owns ledger-specific requests and the `ExportLedgerAsync` extension over the generic
   `AnalysisExportService` text-table writer. Consumers keep the `Meridian.Storage.Export` namespace;

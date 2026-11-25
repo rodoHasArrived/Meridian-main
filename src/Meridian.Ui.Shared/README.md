@@ -4323,6 +4323,27 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 | `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
+## Security Master review-backlog routes (2026-11-25)
+
+Added by PR #3736. Mutating routes declare `ModifySecurityMaster`. Read routes declare View or Modify
+access.
+
+- **Workbench:**
+  - `GET /api/security-master/workbench/revisions` is the pending-revision inbox.
+  - A second open revision staging the same field returns 409 `field-already-staged`.
+- **Held amendments** (`SecurityMasterEndpoints.HeldAmendments.cs`): lists held amendments and
+  discards a held one. An amendment that gets held is answered with 409.
+- **Merge:** `POST /api/security-master/{securityId}/merge`.
+- **Import dry run:** `POST /api/security-master/import/plan`.
+- **Valid time:** `GET /api/security-master/{securityId}/terms-as-of?validAt=&knownAt=`.
+- **Exception queue** (`SecurityMasterEndpoints.ExceptionCases.cs`): list, sync and assign.
+- **Cash-flow engine comparison:** `POST /api/security-master/cash-flows/shadow-compare`.
+- **Factor observations:** `GET` and `POST /api/security-master/{securityId}/factor-observations`.
+  Factor history reads observations first.
+- **Entity master** (`SecurityMasterEndpoints.EntityMaster.cs`): `/api/entity-master/...`, with
+  endpoint names prefixed `EntityMaster`.
+- **Status codes:** DirectLending maps `NegativeInterestUnsupported` to 422.
+
 ## TODO checklist
 
 <!-- source-todos:begin module=SRC-UI-SHARED -->

@@ -91,6 +91,13 @@ sign policy) and no accrual or coupon receipt is generated; the retired `> 1 mea
 gone. Accounting-slice membership comes from the catalog's explicit disposition, so StructuredNote,
 which is outside the slice, cannot reach bond posting through its `FixedIncome` taxonomy.
 
+The declared coupon type dispatches through `SecurityEconomicDispositions` (Contracts) under its
+accounting-accrual consumer (review A3, 2026-11-25). A structure the table blocks, such as floating
+without reset terms, step, inflation-linked, or a type the table does not list, raises that row's
+typed High issue (`SM_COUPON_STRUCTURE_UNSUPPORTED` for step, inflation-linked and unlisted
+types), and no accrual or receipt is generated. Previously only floating coupons were refused, and other unsupported types could pass
+coverage and then accrue zero.
+
 ## Reconciliation source lineage
 
 The durable break queue retains successful complete statement comparisons separately from governed
