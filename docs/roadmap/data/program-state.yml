@@ -7,40 +7,38 @@ program:
   id: meridian-program
   title: Meridian Financial Operations, Order Management, and Strategy Execution
   owner: Core Team
-  snapshot_date: 2026-11-12
+  snapshot_date: 2026-11-25
   status: active
   active_scope:
     roadmap_items:
-    - W1-DATA-001
+    - W1-DATA-PROVCFG-001
+    - W10-BOND-001
+    - W10-CONSOL-001
     - W10-JRNL-001
     - W10-LOT-002
     - W10-MARK-001
+    - W10-PERF-001
     - W10-PROV-001
     - W10-RECON-001
     - W10-SEAM-001
+    - W11-SHADOW-001
+    - W12-CAPITAL-001
+    - W12-EXTGL-001
+    - W12-ICACCRUAL-001
+    - W12-ICCOMPOUND-001
+    - W12-ICCONFIRM-001
+    - W12-ICFEE-001
+    - W12-ICFLOAT-001
+    - W12-ICSCHEDULE-001
+    - W12-YEND-001
     - W13-OMS-001
     - W13-STRAT-001
     - W14-ATTEST-001
-    - W2-PROMO-001
-    - W2-TRD-001
-    - W3-CONT-001
-    - W4-RECON-001
-    - W4-RPT-001
-    - W5-ACCT-001
-    - W5-MASSET-001
-    - W5X-CONNECT-001
-    - W5X-EVIDENCE-001
-    - W5X-FINOPS-001
-    - W5X-FREX-001
-    - W5X-STMT-ONBOARD-001
-    - W6-BTSTUDIO-001
-    - W7-LIVE-001
     - W8-UX-CONSOL-001
+    - W8-UX-TRUST-001
     - W8-WPF-PARITY-001
     - W9-ALPACA-004
-    - W9-ASSET-010
     - W9-CORPACT-011
-    - W9-DEMO-002
     - W9-GOV-008
     - W9-INGEST-009
     - W9-NAV-006
@@ -51,6 +49,8 @@ program:
     decision_ids:
     - DEC-SINGLE-PRINCIPAL-001
     - DEC-TRADING-STRATEGY-DIRECTION-001
+    - DEC-UI-LANE-003
+    - DEC-W13-STATUS-001
     - DEC-W9-ACCEPTANCE-001
     - DEC-W9-ACCEPTANCE-002
     - DEC-W9-ACCEPTANCE-003
@@ -125,7 +125,7 @@ program:
     - Paper-first live-readiness governance for paper-to-live promotion evidence, overrides, controls, and audit retention
     - Ranked W9 first-order improvement slate - truthful simulation posture, seeded demo evaluation, paper-trading realism, live fill streaming, client-grade reporting, fund economics, execution safety, governance hardening, and institutional statement ingestion
     - W10 depth slate - fail-closed valuation freshness, durable break lineage, amount-level provenance behind one shared proof drawer, one close-readiness projection consumed by both workstation lanes, reconciliation break economics, durable recurring journals, tax-character surfacing, return measurement, and consolidated-view elimination
-    - Adopted planned W13 direction under DEC-TRADING-STRATEGY-DIRECTION-001 - strategy formulation, reproducible research/backtesting, governed promotion and execution, and order management through the canonical OMS; no delivery rank, due date, implementation completion, or operational acceptance is adopted
+    - W13 direction under DEC-TRADING-STRATEGY-DIRECTION-001 - strategy formulation, reproducible research/backtesting, governed promotion and execution, and order management through the canonical OMS; bounded slices are in progress under accepted DEC-W13-STATUS-001, and no delivery rank, due date, implementation completion, operational acceptance, or live activation authority is adopted
     - W14 development in progress under the 2026-11-12 owner instruction following DEC-SINGLE-PRINCIPAL-001 - default-off B evidence/draft assertions and selected option-2 native regular mandatory USD dividend recognition, with explicit existing account/rule binding and USD 10000 related-event and USD 100000 selected-book/source-ex-date-calendar-month gross caps; preparer decisions remain separate from ordinary approval and financial Verified Coverage, and no rank, envelope change, operational acceptance or release is adopted
     - Define explicit manual-order intent and execution-account authority before manual live productization; preserve the current promoted-run, FundAccountId, risk, readiness, and audit gates until a reviewed equivalent path exists
   production_readiness:
