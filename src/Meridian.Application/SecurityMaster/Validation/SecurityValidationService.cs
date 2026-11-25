@@ -665,16 +665,13 @@ public sealed class SecurityValidationService : ISecurityValidationService
     }
 
     /// <summary>
-    /// FX pair fields checked against ISO 4217 per asset class. CryptoCurrency pairs are deliberately
-    /// absent: their base and quote are crypto tickers, not ISO codes.
+    /// Top-level term keys that hold a currency code wherever a class's schema declares them (FX and
+    /// NDF pairs, NDF settlement, a fund's NAV currency).
     /// </summary>
-    private static readonly IReadOnlyDictionary<string, string[]> CurrencyPairFields =
-        new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["FxSpot"] = ["baseCurrency", "quoteCurrency"],
-            ["FxForward"] = ["baseCurrency", "quoteCurrency"],
-            ["NonDeliverableForward"] = ["baseCurrency", "quoteCurrency", "settlementCurrency"]
-        };
+    private static readonly string[] CurrencyTermKeys = ["baseCurrency", "quoteCurrency", "settlementCurrency", "navCurrency"];
+
+    /// <summary>Pair keys a class may declare as asset tickers instead of currencies.</summary>
+    private static readonly string[] PairTermKeys = ["baseCurrency", "quoteCurrency"];
 
     /// <summary>
     /// Reports currency codes that are not ISO 4217 (or an accepted market extension) as a Warning,
@@ -690,30 +687,42 @@ public sealed class SecurityValidationService : ISecurityValidationService
         }
 
         var terms = record.AssetSpecificTerms;
-        if (CurrencyPairFields.TryGetValue(record.AssetClass, out var pairFields))
+        var pairsAreTickers = SecurityAssetClassCatalog.TryGet(record.AssetClass, out var descriptor) && descriptor.PairCurrenciesAreAssetTickers;
+        foreach (var field in CurrencyTermKeys)
         {
-            foreach (var field in pairFields)
+            if (SecurityAssetTermsSchema.Field(record.AssetClass, field) is null
+                || (pairsAreTickers && PairTermKeys.Contains(field, StringComparer.Ordinal)))
             {
-                if (JsonValidationReader.TryGetAssetTermString(terms, field, record.AssetClass, out var code)
-                    && !Iso4217Currencies.IsRecognized(code))
-                {
-                    affected.Add($"assetSpecificTerms.{field}");
-                }
+                continue;
+            }
+
+            if (JsonValidationReader.TryGetAssetTermString(terms, field, record.AssetClass, out var code)
+                && !Iso4217Currencies.IsRecognized(code))
+            {
+                affected.Add($"assetSpecificTerms.{field}");
             }
         }
 
-        if (string.Equals(record.AssetClass, "Swap", StringComparison.OrdinalIgnoreCase)
-            && JsonValidationReader.TryGetAssetTermProperty(terms, "legs", record.AssetClass, out var legs)
-            && legs.ValueKind == JsonValueKind.Array)
+        // Array elements that declare a currency (swap legs) are checked through the schema too.
+        foreach (var arrayField in SecurityAssetTermsSchema.Fields(record.AssetClass)
+                     .Where(static field => field.Type == SecurityAssetTermFieldType.Array))
         {
-            var index = 0;
-            foreach (var leg in legs.EnumerateArray())
+            if (!SecurityAssetTermsSchema.ElementFields(record.AssetClass, arrayField.Key)
+                    .Any(static element => element.Key.Equals("currency", StringComparison.OrdinalIgnoreCase))
+                || !JsonValidationReader.TryGetAssetTermProperty(terms, arrayField.Key, record.AssetClass, out var items)
+                || items.ValueKind != JsonValueKind.Array)
             {
-                if (JsonValidationReader.TryGetElementTermProperty(leg, record.AssetClass, "legs", "currency", out var currency)
+                continue;
+            }
+
+            var index = 0;
+            foreach (var item in items.EnumerateArray())
+            {
+                if (JsonValidationReader.TryGetElementTermProperty(item, record.AssetClass, arrayField.Key, "currency", out var currency)
                     && JsonValidationReader.HasNonBlankString(currency)
                     && !Iso4217Currencies.IsRecognized(currency.GetString()))
                 {
-                    affected.Add($"assetSpecificTerms.legs.{index}.currency");
+                    affected.Add($"assetSpecificTerms.{arrayField.Key}.{index}.currency");
                 }
 
                 index++;

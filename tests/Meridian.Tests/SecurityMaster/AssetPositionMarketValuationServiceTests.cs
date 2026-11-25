@@ -93,6 +93,20 @@ public sealed class AssetPositionMarketValuationServiceTests
     }
 
     [Theory]
+    [InlineData("Deposit")]
+    [InlineData("Repo")]
+    public async Task BalanceQuotedClasses_AreNotPricedFromAQuote(string assetClass)
+    {
+        // Deposit and Repo are valued at balance plus accrued (quote convention Balance); the kernel
+        // has no balance adapter, so it must not fall back to percent-of-par price arithmetic.
+        var f = new AssetPositionValuationFixture();
+        f.Security = f.Security with { AssetClass = assetClass };
+        var result = await f.ValueAsync();
+        result.Blockers.Should().Contain(blocker => blocker.Code == "BalanceValuationUnavailable");
+        result.MarketValue.Should().BeNull();
+    }
+
+    [Theory]
     [InlineData("stale")]
     [InlineData("missing-receipt")]
     [InlineData("changed-receipt")]

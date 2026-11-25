@@ -34,7 +34,8 @@ public readonly record struct LotQuantity(decimal Amount, SecurityLotUnitKind Un
     /// this conversion a second time.
     /// <para>
     /// The unit-kind default and the catalog's declared <see cref="SecurityAssetClassDescriptor.QuoteConvention"/>
-    /// agree for every catalogued class today (pinned by <c>SecurityQuoteConventionCoverageTests</c>).
+    /// agree for every catalogued class except Deposit and Repo, which declare
+    /// <see cref="SecurityQuoteConvention.Balance"/> (pinned by <c>SecurityQuoteConventionCoverageTests</c>).
     /// A class-aware caller pricing a class that declares a different convention uses
     /// <see cref="ValueAtPrice(decimal, SecurityQuoteConvention)"/> with
     /// <see cref="QuoteConventionFor(string?)"/> instead of this overload.
@@ -45,12 +46,22 @@ public readonly record struct LotQuantity(decimal Amount, SecurityLotUnitKind Un
             ? SecurityQuoteConvention.PercentOfPar
             : SecurityQuoteConvention.PerUnit);
 
-    /// <summary>Value at a raw unit quote under a declared quote convention.</summary>
+    /// <summary>
+    /// Value at a raw unit quote under a declared quote convention. A <see cref="SecurityQuoteConvention.Balance"/>
+    /// position is valued at its outstanding balance (its economic units) whatever quote is passed;
+    /// accrued interest is not part of this value.
+    /// </summary>
     public decimal ValueAtPrice(decimal price, SecurityQuoteConvention quoteConvention)
     {
         if (!Enum.IsDefined(UnitKind) || Multiplier <= 0m)
             throw new InvalidOperationException("A defined lot unit and positive multiplier are required for pricing.");
-        return EconomicUnits * price / (quoteConvention == SecurityQuoteConvention.PercentOfPar ? 100m : 1m);
+        return quoteConvention switch
+        {
+            SecurityQuoteConvention.Balance => EconomicUnits,
+            SecurityQuoteConvention.PercentOfPar => EconomicUnits * price / 100m,
+            SecurityQuoteConvention.PerUnit => EconomicUnits * price,
+            _ => throw new ArgumentOutOfRangeException(nameof(quoteConvention), quoteConvention, "Unknown quote convention.")
+        };
     }
 
     /// <summary>

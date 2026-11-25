@@ -229,7 +229,9 @@ public static class SecurityAssetClassCatalog
                 new(SecurityCashFlowTermRole.DayCount, "dayCount")
             ],
             StampFloor = 1,
-            AccountingOutsideSlice = true
+            AccountingOutsideSlice = true,
+            // A deposit is held at its balance, not quoted against par (slice 8, decided 2026-11-25).
+            QuoteConvention = SecurityQuoteConvention.Balance
         },
         new(
             AssetClass: SecurityAssetClassNames.MoneyMarketFund,
@@ -378,7 +380,9 @@ public static class SecurityAssetClassCatalog
                 new(SecurityCashFlowTermRole.CouponRate, "repoRate")
             ],
             StampFloor = 1,
-            AccountingOutsideSlice = true
+            AccountingOutsideSlice = true,
+            // A repo is a financing balance, not a quoted security (slice 8, decided 2026-11-25).
+            QuoteConvention = SecurityQuoteConvention.Balance
         },
         new(
             AssetClass: SecurityAssetClassNames.CashSweep,
@@ -677,7 +681,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Ric,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]) { AccountingOutsideSlice = true },
+            ]) { AccountingOutsideSlice = true, PairCurrenciesAreAssetTickers = true },
         new(
             AssetClass: SecurityAssetClassNames.Cfd,
             TradesAsBilateralContract: true,
@@ -1454,6 +1458,13 @@ public sealed record SecurityAssetClassDescriptor(
     /// marker (review D10, slice 4), so an outside-slice class is distinguishable from a missing mapping.
     /// </summary>
     public bool AccountingOutsideSlice { get; init; }
+
+    /// <summary>
+    /// Whether the class's <c>baseCurrency</c> and <c>quoteCurrency</c> terms name traded assets
+    /// (crypto tickers such as BTC or USDT) rather than ISO 4217 currencies, so the ISO 4217 currency
+    /// check skips them. The record's own currency is still checked.
+    /// </summary>
+    public bool PairCurrenciesAreAssetTickers { get; init; }
 
     /// <summary>
     /// Explicit valuation treatment, separate from admission to the coupon/accrual event slice.
