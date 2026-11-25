@@ -1304,10 +1304,14 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 item.Line.SecurityId.HasValue ||
                 item.Line.Dimensions?.InstrumentId.HasValue == true ||
                 !string.IsNullOrWhiteSpace(item.Line.LedgerAccountSymbol) ||
+                item.Line.LedgerAccountSecurityId.HasValue ||
                 !string.IsNullOrWhiteSpace(item.Account?.Symbol))
             .ToArray();
         if (instrumentLines.Length == 0)
             return null;
+
+        if (FindLedgerAccountSecurityMismatch(draft) is { } mismatch)
+            throw new InvalidOperationException(mismatch);
 
         if (instrumentLines.Any(item => (item.Line.SecurityId ?? item.Line.Dimensions?.InstrumentId).GetValueOrDefault() == Guid.Empty))
             throw new InvalidOperationException("Every instrument-bearing opening line requires its own resolved Security Master identity before posting.");
@@ -1411,6 +1415,31 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             financialAccounts.Length == 1 ? financialAccounts[0] : null,
             provenance,
             lineage);
+    }
+
+    /// <summary>
+    /// Security Master review F2: a line's ledger account key (<c>LedgerAccountSecurityId</c>, carried
+    /// from the posted line through reversal, rebook and correction drafts) must name the same security
+    /// as the line's instrument. Otherwise an edited correction line would post to one security's
+    /// account while claiming another's instrument.
+    /// </summary>
+    internal static string? FindLedgerAccountSecurityMismatch(ManualJournalEntryDraftDto draft)
+    {
+        ArgumentNullException.ThrowIfNull(draft);
+        foreach (var line in draft.Lines)
+        {
+            if (line.LedgerAccountSecurityId is not { } accountSecurityId)
+                continue;
+            if (accountSecurityId == Guid.Empty)
+                return $"Manual journal entry line '{line.LineId}' carries an empty ledger account Security Master identity.";
+            var instrument = line.SecurityId ?? line.Dimensions?.InstrumentId;
+            if (instrument is null)
+                return $"Manual journal entry line '{line.LineId}' is keyed to Security Master identity {accountSecurityId:D} but names no instrument; restore the line's security.";
+            if (instrument.Value != accountSecurityId)
+                return $"Manual journal entry line '{line.LineId}' is keyed to Security Master identity {accountSecurityId:D} but names instrument {instrument.Value:D}; corrections keep the posted line's account identity.";
+        }
+
+        return null;
     }
 
     private static bool SecurityMasterRecordContainsSymbol(SecurityDetailDto security, string symbol)

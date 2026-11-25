@@ -138,6 +138,10 @@ therefore keeps one account history.
   (`V_ledger_083__security_id_account_keys`) on journal legs, tax lots, tax-lot policies, balance
   checkpoint rows and wash-sale deferrals. Account-identity predicates and indexes use
   `coalesce(account_security_id::text, symbol, '')`.
+- **Manual journal corrections.** Reversal, rebook and correction-inverse drafts keep each posted
+  line's `LedgerAccountSecurityId`; the browser and WPF clients send it back unchanged. A line whose
+  account SecurityId disagrees with its instrument is refused. Corrections are never re-keyed, so a
+  pre-F2 ticker-keyed entry reverses on its own account.
 - **Readers.** Mark-to-market carrying value reads the SecurityId account plus any legacy ticker
   account for the same ticker until a reclass has moved it. Posted-ledger reconciliation groups
   rows by SecurityId and labels them with the broker symbol for the same security.

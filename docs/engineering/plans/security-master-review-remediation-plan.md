@@ -715,6 +715,12 @@ Implemented together, so no holding is split between a ticker key and a Security
   - portfolio openings (canonical resolution), amortization bridge, fixed-income accrual, daily
     pricing and structured notes, automated journal drafts, book FX settlement;
   - manual journals and paper-session persistence round-trip the key.
+- UI correction flows carry the account key. `ManualJournalEntryLineDto.LedgerAccountSecurityId`
+  is copied into server-built reversal, rebook and correction-inverse lines. The browser
+  (`ledgerAccountSecurityId`) and WPF rebook builders send posted lines back unchanged. Posting
+  refuses a line whose account SecurityId names a different instrument than the line, or no
+  instrument. Correction lines are never re-keyed automatically, so reversing an entry retained
+  before F2 still hits its ticker-keyed account.
 - Postgres migration `V_ledger_083` and SecurityId-aware account predicates.
 - Retained journals keep their keys. `LedgerSecurityKeyMigration` reports old ticker keys mapped
   to SecurityId and proposes a governed reclass.
@@ -745,7 +751,5 @@ Known follow-ups:
 
 - A legacy account with an open lot that has no book position, or whose instrument is not the
   resolved SecurityId, is listed as blocked by `LedgerSecurityKeyRekeyService`.
-- The UI correction flows and `LedgerPeriodTrialBalanceLineDto` do not yet carry the account
-  SecurityId.
-- The generated `database/manifest/catalog.json` and `schemas/` need regeneration against live
-  PostgreSQL.
+- `LedgerPeriodTrialBalanceLineDto` does not yet carry the account SecurityId. Period-close
+  closing entries only touch revenue and expense accounts, which are not per-security.

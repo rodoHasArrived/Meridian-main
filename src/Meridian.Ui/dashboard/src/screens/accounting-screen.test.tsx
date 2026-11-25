@@ -4191,6 +4191,9 @@ describe("AccountingScreen", () => {
 
   it("rebooks a posted manual journal entry through the shared lifecycle endpoint", async () => {
     const user = userEvent.setup();
+    // Security Master review F2: a posted per-security line is keyed by SecurityId; the rebook must
+    // carry that account identity back unchanged.
+    const keyedSecurityId = "f2f2f2f2-0000-4000-8000-0000000000b1";
     const postedDraft: ManualJournalEntryDraft = {
       ...manualJournalDraft,
       status: "Posted",
@@ -4200,7 +4203,10 @@ describe("AccountingScreen", () => {
       approvedAtUtc: "2026-06-30T01:05:00Z",
       approvedBy: "browser-user",
       postedAtUtc: "2026-06-30T01:10:00Z",
-      postedBy: "browser-user"
+      postedBy: "browser-user",
+      lines: manualJournalDraft.lines.map((line, index) => index === 0
+        ? { ...line, securityId: keyedSecurityId, ledgerAccountSymbol: "META", ledgerAccountSecurityId: keyedSecurityId }
+        : line)
     };
     const rebookDraft: ManualJournalEntryDraft = {
       ...manualJournalDraft,
@@ -4269,6 +4275,11 @@ describe("AccountingScreen", () => {
       periodIsLocked: false,
       rebookLines: postedDraft.lines
     }));
+    const rebookRequest = vi.mocked(api.applyManualJournalEntryLifecycleAction).mock.calls.at(-1)![0];
+    expect(rebookRequest.rebookLines?.[0]).toMatchObject({
+      ledgerAccountSymbol: "META",
+      ledgerAccountSecurityId: keyedSecurityId
+    });
   });
 
   it("close-locks a posted manual journal entry through the shared lifecycle endpoint", async () => {
