@@ -548,3 +548,22 @@ decisions:
       - W13-STRAT-001
       - W13-OMS-001
       - W10-CONSOL-001
+  - id: DEC-PACK-SPLIT-001
+    title: Split W11-PACK-001 into generated class plumbing and runtime governance for profile-backed packs
+    status: accepted
+    decided_on: 2026-11-25
+    owner_lane: Accounting and Ledger
+    summary: >-
+      Item E2 of the 2026-11-24 Security Master architecture review challenged W11-PACK-001. Adding a
+      compiled Security Master class takes about 18 to 20 hand-edited files, and two classification
+      tables (the F# AssetClassRegistry and the C# SecurityAssetClassCatalog) are kept equal only by
+      tests. The repository owner directed the split on 2026-11-25. W11-PACK-002 (new, wave W11
+      sequence 7) generates the mechanical class plumbing from one declaration built on
+      SecurityAssetTermsCodecBindings and the catalog. W11-PACK-001 keeps its rank and narrows to
+      runtime pack governance for profile-backed (CustomAsset-style) classes only. The owner chose
+      prototype only for W11-PACK-002. The generator and its equivalence test live in the test
+      project, the hand-written source remains the source of truth, and switching to generated code
+      needs a later recorded decision. No existing rank changes. No acceptance or release is claimed.
+    related_roadmap_items:
+      - W11-PACK-001
+      - W11-PACK-002

@@ -2475,7 +2475,7 @@ W11-SHADOW-001: in_progress; health green; evidence in_progress. Shadow onboardi
 - `SRC-CONTRACTS`
 - `SRC-UI-SHARED`
 
-## W11-PACK-001 - Governed contract-pack lifecycle on the Security Master asset-class registry
+## W11-PACK-001 - Runtime contract-pack governance for profile-backed Security Master classes
 | Field | Value |
 | --- | --- |
 | Wave | W11 |
@@ -2484,27 +2484,28 @@ W11-SHADOW-001: in_progress; health green; evidence in_progress. Shadow onboardi
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | planned_evidence |
-| Last reviewed | 2026-10-16 |
+| Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
-W11-PACK-001: planned; health green; evidence planned_evidence. Govern asset-class contract packs from the existing registry; planned scope retains the recorded migration and acceptance requirements.
+W11-PACK-001: planned; health green; evidence planned_evidence. Narrowed under DEC-PACK-SPLIT-001 to runtime packs for profile-backed (CustomAsset-style) classes. Compiled-class plumbing moved to W11-PACK-002. Planned; no implementation is claimed.
 
 ### Status References
 
-- Decisions: DEC-CHARTER-DIRECTION-001
+- Decisions: DEC-CHARTER-DIRECTION-001, DEC-PACK-SPLIT-001
 - PR references (not inferred acceptance): none recorded
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W11-PACK-001.md)
 - Evidence: [docs/product/meridian-design-document.md](../../product/meridian-design-document.md)
-- Evidence: [docs/architecture/security-master-extensibility-review.md](../../architecture/security-master-extensibility-review.md)
+- Evidence: [docs/engineering/plans/security-master-class-plumbing-codegen.md](../../engineering/plans/security-master-class-plumbing-codegen.md)
 
 
 ### Exit Criteria
 
-- A contract pack is a versioned, content-hashed unit that declares its asset class, term schema, lifecycle events, cash-flow behavior, valuation methods, accounting rule bindings, validations, and reporting taxonomy, and the existing asset-class registry is its first source.
+- A contract pack is a versioned, content-hashed unit for a profile-backed (CustomAsset-style) class. It declares the term schema, lifecycle events, cash-flow behavior, valuation methods, accounting rule bindings, validations and reporting taxonomy, and the existing custom-profile and asset-pack registries are its first source.
 - A pack moves through Draft, Tested, Reviewed, Approved, Active, Superseded, and Retired, and activation requires passing pack tests and a recorded approval.
 - Records keep the pack version they were created under, so activating a new version never silently reinterprets existing terms; migrating records to a new version is an explicit, audited operation.
-- The coverage tests that lock the registry to the F# SecurityKind union, validators, and storage writers extend to every active pack.
+- Compiled SecurityKind classes are out of scope. They change through code review and the class plumbing tracked by W11-PACK-002, not through runtime activation, and a pack cannot claim a compiled class.
+- The coverage tests that lock profile-backed packs to validators and storage writers extend to every active pack.
 - Roadmap status remains planned until this item links the pack contract, the lifecycle, the version-pinning behavior, and the activation and reinterpretation tests.
 
 ### Source Modules
@@ -2553,6 +2554,46 @@ W11-EXEC-001: planned; health green; evidence planned_evidence. Record canonical
 - `SRC-STRATEGIES`
 - `SRC-BACKTESTING`
 - `SRC-CONTRACTS`
+
+## W11-PACK-002 - Generated Security Master class plumbing from one declaration
+| Field | Value |
+| --- | --- |
+| Wave | W11 |
+| Status | in_progress |
+| Health | green |
+| Priority | medium |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-25 |
+
+### Current Summary
+
+W11-PACK-002: in_progress; health green; evidence in_progress. Prototype only. A test-project generator emits seven per-class plumbing sites from one declaration plus the codec bindings and catalog, and an equivalence test holds them to the hand-written source. Switching src/ to generated code is not decided.
+
+### Status References
+
+- Decisions: DEC-PACK-SPLIT-001
+- PR references (not inferred acceptance): none recorded
+- [Retained implementation detail and boundaries](../../engineering/plans/security-master-class-plumbing-codegen.md)
+- Evidence: [docs/engineering/plans/security-master-class-plumbing-codegen.md](../../engineering/plans/security-master-class-plumbing-codegen.md)
+- Evidence: [tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingGenerationTests.cs](../../../tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingGenerationTests.cs)
+- Evidence: [tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingGenerator.cs](../../../tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingGenerator.cs)
+- Evidence: [tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingDeclaration.cs](../../../tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingDeclaration.cs)
+
+
+### Exit Criteria
+
+- One declaration per class, built on SecurityAssetTermsCodecBindings and SecurityAssetClassCatalog, generates the F# plumbing (SecurityKind union cases, AssetClassRegistry key arms and classification rows, flat-writer dispatch) and the C# plumbing (ToSecurityKind decode dispatch, SecurityAssetClassNames constants, catalog row heads).
+- An equivalence test regenerates every covered site and fails when the hand-written source differs.
+- The repository owner records whether src/ switches to generated code. Until then the hand-written source is the source of truth, and this item generates nothing under src/.
+- If the owner chooses to switch, generated files follow the generated-output delivery rules, a drift check fails on stale output, the catalog-order question is decided, and each remaining per-class site is either generated or listed as a deliberate semantic edit.
+- Roadmap status stays in_progress until that decision is recorded and the chosen outcome is linked.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-FSHARP`
+- `SRC-APP`
 
 ## W12-BOOK-001 - Accounting book, basis, and FX control workbench
 | Field | Value |
