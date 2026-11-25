@@ -78,7 +78,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     /// Fsyncs the ledger directory so a newly created or renamed ledger file survives power loss.
     /// Replaceable by tests to inject failures or record ordering.
     /// </summary>
-    internal Func<string, CancellationToken, Task> SyncLedgerDirectory { get; set; } = AtomicFileWriter.SyncDirectoryAsync;
+    internal Func<string, CancellationToken, Task> SyncLedgerDirectory { get; set; } = AtomicFileWriter.SyncDirectoryOrThrowAsync;
 
     // Automatic compaction. Every admitted identity appends a line, so without compaction the
     // file grows for the life of the deployment and each startup re-reads all of it. The fields
@@ -284,8 +284,8 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         }
 
         // The SyncDirectoryAsync helper completes synchronously; this load path cannot await.
-        AtomicFileWriter.SyncDirectoryAsync(_ledgerDirectory).GetAwaiter().GetResult();
-        AtomicFileWriter.SyncDirectoryAsync(_legacyLedgerDirectory).GetAwaiter().GetResult();
+        AtomicFileWriter.SyncDirectoryOrThrowAsync(_ledgerDirectory).GetAwaiter().GetResult();
+        AtomicFileWriter.SyncDirectoryOrThrowAsync(_legacyLedgerDirectory).GetAwaiter().GetResult();
         _log.Information("Adopted legacy dedup ledger {LegacyPath} into {LedgerPath}", legacyPath, _ledgerPath);
     }
 

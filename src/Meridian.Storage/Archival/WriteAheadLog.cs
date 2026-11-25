@@ -752,7 +752,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
                         // Persist the archive rename and verify the archive actually landed before
                         // deleting the only remaining copy of the records.
-                        await AtomicFileWriter.SyncDirectoryAsync(archiveDir, ct);
+                        await AtomicFileWriter.SyncDirectoryOrThrowAsync(archiveDir, ct);
 
                         var archiveInfo = new FileInfo(archivePath);
                         if (!archiveInfo.Exists || archiveInfo.Length == 0)
@@ -918,7 +918,9 @@ public sealed class WriteAheadLog : IAsyncDisposable
             // post-create, so it must not observe cancellation.
             await _currentWalFile.FlushAsync(CancellationToken.None).ConfigureAwait(false);
             _currentWalFile.Flush(flushToDisk: true);
-            await AtomicFileWriter.SyncDirectoryAsync(_walDirectory, CancellationToken.None).ConfigureAwait(false);
+            // Strict: records are acknowledged against this segment, so an unconfirmed entry must
+            // fault it (rotation/fault recovery then delete the stub and retry) rather than pass.
+            await AtomicFileWriter.SyncDirectoryOrThrowAsync(_walDirectory, CancellationToken.None).ConfigureAwait(false);
 
             if (_walDirectoryCreated && !_walDirectoryParentSynced)
             {
@@ -926,7 +928,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
                 // treatment or the whole directory can vanish.
                 var parent = Path.GetDirectoryName(Path.GetFullPath(_walDirectory));
                 if (!string.IsNullOrEmpty(parent))
-                    await AtomicFileWriter.SyncDirectoryAsync(parent, CancellationToken.None).ConfigureAwait(false);
+                    await AtomicFileWriter.SyncDirectoryOrThrowAsync(parent, CancellationToken.None).ConfigureAwait(false);
                 _walDirectoryParentSynced = true;
             }
         }
@@ -1600,8 +1602,8 @@ public sealed class WriteAheadLog : IAsyncDisposable
         if (moved > 0)
         {
             // Both directory entries changed; make the move durable before recovering from it.
-            await AtomicFileWriter.SyncDirectoryAsync(_walDirectory, CancellationToken.None).ConfigureAwait(false);
-            await AtomicFileWriter.SyncDirectoryAsync(legacyDirectory, CancellationToken.None).ConfigureAwait(false);
+            await AtomicFileWriter.SyncDirectoryOrThrowAsync(_walDirectory, CancellationToken.None).ConfigureAwait(false);
+            await AtomicFileWriter.SyncDirectoryOrThrowAsync(legacyDirectory, CancellationToken.None).ConfigureAwait(false);
             _log.Information(
                 "Adopted {Count} WAL segments from legacy directory {LegacyDirectory} into {WalDirectory}",
                 moved,

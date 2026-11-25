@@ -348,6 +348,31 @@ public sealed class PersistentDedupLedgerTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task CommitDurableAsync_ByDefault_FailsClosedWhenTheDirectoryCannotBeSynced()
+    {
+        var evt = CreateTradeEvent("SPY", 1);
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory);
+        await _firstLedger.InitializeAsync();
+        var reserved = await _firstLedger.TryReserveAsync(evt, DedupLookupScope.WalRecovery);
+
+        Meridian.Storage.Archival.AtomicFileWriter.DirectorySyncFaultInjector.Value =
+            dir => dir == _ledgerDirectory ? ("fsync", 5) : null;
+        try
+        {
+            var commit = () => _firstLedger.CommitDurableAsync([reserved.Reservation]);
+            await commit.Should().ThrowAsync<Meridian.Storage.Archival.DirectorySyncException>();
+        }
+        finally
+        {
+            Meridian.Storage.Archival.AtomicFileWriter.DirectorySyncFaultInjector.Value = null;
+        }
+
+        await _firstLedger.CommitDurableAsync([reserved.Reservation]);
+        (await _firstLedger.TryReserveAsync(evt, DedupLookupScope.WalRecovery)).Status
+            .Should().Be(DedupReservationStatus.Duplicate, "the retried commit publishes once the directory syncs");
+    }
+
+    [Fact]
     public async Task Compaction_FsyncsDirectoryAfterTheRename()
     {
         const int identities = 4;

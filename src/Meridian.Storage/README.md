@@ -342,7 +342,15 @@ the truncate lock, and every segment listing sorts ordinally. A WAL directory ha
 `WalDirectoryInUseException` when another process, or another instance in the same process, holds
 it; constructing a WAL takes no lock, and a crashed owner releases with its handles.
 `WalOptions.LegacySegmentDirectory` moves `*.wal` segments left in an older shared directory into
-the owned one, under that directory's lock, before recovery. `AtomicFileWriter.AppendAsync`
+the owned one, under that directory's lock, before recovery.
+
+`AtomicFileWriter.SyncDirectoryAsync` is best effort for operations that have already committed:
+a failed directory open or fsync is retried once for `EINTR`/`EMFILE`/`ENFILE`, then logged at Error
+and counted in `mdc_storage_directory_fsync_failures_total` (label `operation`), but not thrown. `SyncDirectoryOrThrowAsync` throws `DirectorySyncException` instead and guards steps
+that acknowledge data or delete the only other copy: WAL segment creation, archiving before
+truncation and legacy adoption, `JsonlStorageSink` flushes of new files, dedup-ledger commits, tier
+migration and JSONL archiving before deleting the source. Filesystems that cannot fsync a directory
+at all (`EINVAL`, `EBADF`, `ENOTSUP`) are counted as `fsync_unsupported` and never thrown. `AtomicFileWriter.AppendAsync`
 serializes appends to one path within the process, so concurrent copy-on-write appends keep
 every line.
 

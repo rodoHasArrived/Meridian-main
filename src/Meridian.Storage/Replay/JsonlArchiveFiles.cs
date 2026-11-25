@@ -171,7 +171,8 @@ internal static class JsonlArchiveFiles
         }
 
         var directory = Path.GetDirectoryName(Path.GetFullPath(sourcePath))!;
-        await AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).ConfigureAwait(false);
+        // Strict: the plain source is deleted next, so the archive's entry must be confirmed durable.
+        await AtomicFileWriter.SyncDirectoryOrThrowAsync(directory, CancellationToken.None).ConfigureAwait(false);
         File.Delete(sourcePath);
         File.Delete(sourcePath + ".sha256");
         await AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).ConfigureAwait(false);
