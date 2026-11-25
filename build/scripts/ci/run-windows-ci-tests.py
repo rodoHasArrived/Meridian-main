@@ -83,9 +83,6 @@ def main() -> int:
     parser.add_argument("--slice", action="append", default=[])
     parser.add_argument("--filter")
     parser.add_argument("--build-only", action="store_true")
-    parser.add_argument("--parallel-build", action="store_true",
-                        help="Let MSBuild use every core for the shared graph (hosted runners); "
-                             "the default stays serial to avoid local lock contention.")
     parser.add_argument("--results-dir", type=Path, default=Path("artifacts/wpf-validation/windows-desktop-build"))
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
@@ -101,7 +98,7 @@ def main() -> int:
     # One key and graph for all roots; do not override the distinct WPF/setup TFMs.
     properties = ["/p:EnableWindowsTargeting=true", "/p:EnableFullWpfBuild=true",
                   "/p:WindowsPackageType=None", f"/p:MeridianBuildIsolationKey=windows-ci-{uuid.uuid4().hex[:12]}",
-                  "/m" if args.parallel_build else "/m:1", "/nr:false", "/p:UseSharedCompilation=false"]
+                  "/m:1", "/nr:false", "/p:UseSharedCompilation=false"]
     builds = []
     for verb, extra in (("restore", []), ("build", ["-c", "Release", "--no-restore"])):
         command = ["dotnet", verb, str(slnf), *extra, *properties]
