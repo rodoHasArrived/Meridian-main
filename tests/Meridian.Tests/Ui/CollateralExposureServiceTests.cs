@@ -30,7 +30,8 @@ public sealed class CollateralExposureServiceTests
     {
         var buffer = new CollateralIngestionBuffer();
 
-        for (var index = 0; index < 20_050; index++)
+        PrefillWithDistinctObservations(buffer, count: SingleDeliveryStart);
+        for (var index = SingleDeliveryStart; index < 20_050; index++)
         {
             buffer.IngestBatch(Scope, [Row(index)]);
         }
@@ -53,10 +54,7 @@ public sealed class CollateralExposureServiceTests
     {
         var buffer = new CollateralIngestionBuffer();
 
-        for (var index = 0; index < 5_010; index++)
-        {
-            buffer.IngestBatch(Scope, [Row(index)]);
-        }
+        PrefillWithDistinctObservations(buffer, count: 5_010);
 
         // Every retained row is a live exposure and BuildSnapshots treats its input as the complete
         // set, so a read limit below the window is a silent truncation: counterparties past it would
@@ -290,7 +288,10 @@ public sealed class CollateralExposureServiceTests
             new CollateralInputRow(DateTimeOffset.UnixEpoch, "CPTY-PAIR", "repo", 1m, 13m, 1m, "cash", 1m, 0m)
         ]);
 
-        for (var index = 0; index < 20_000; index++)
+        // The pair occupies two rows, so the prefill stops two observations short of the other tests'
+        // and the window still fills -- and evicts the pair -- under single-row deliveries.
+        PrefillWithDistinctObservations(buffer, count: SingleDeliveryStart - 2);
+        for (var index = SingleDeliveryStart - 2; index < 20_000; index++)
         {
             buffer.IngestBatch(Scope, [Row(index)]);
         }
@@ -592,7 +593,8 @@ public sealed class CollateralExposureServiceTests
         // Capacity spread across many identities still evicts the oldest and accepts the newest --
         // refusing there would freeze exposure at whatever the deployment saw first.
         var buffer = new CollateralIngestionBuffer();
-        for (var index = 0; index < CollateralIngestionBuffer.MaxBufferedRows; index++)
+        PrefillWithDistinctObservations(buffer, count: SingleDeliveryStart);
+        for (var index = SingleDeliveryStart; index < CollateralIngestionBuffer.MaxBufferedRows; index++)
         {
             buffer.IngestBatch(Scope, [Row(index)]).Should().Be(CollateralIngestOutcome.Retained);
         }
@@ -603,6 +605,33 @@ public sealed class CollateralExposureServiceTests
     }
 
     private static readonly CollateralTenantScope Scope = CollateralTenantScope.Unscoped;
+
+    // Every IngestBatch call copies and re-keys the whole retained window, so filling 20,000 rows one
+    // delivery at a time is quadratic and took about 30 s per capacity test. The capacity tests
+    // prefill in multi-row deliveries until 200 rows short of the window, then switch to the
+    // single-row deliveries they are about: every delivery that reaches, crosses or evicts at the
+    // cap is still a single row.
+    private const int SingleDeliveryStart = CollateralIngestionBuffer.MaxBufferedRows - 200;
+    private const int PrefillDeliveryRows = 1_000;
+
+    /// <summary>
+    /// Ingests <c>Row(0)</c> .. <c>Row(count - 1)</c> in multi-row deliveries while the buffer stays
+    /// below capacity. Each row is its own identity at its own <c>AsOf</c>, so nothing restates,
+    /// continues or is evicted, and the retained rows and their order are exactly what the same rows
+    /// delivered one at a time would leave.
+    /// </summary>
+    private static void PrefillWithDistinctObservations(CollateralIngestionBuffer buffer, int count)
+    {
+        count.Should().BeLessThanOrEqualTo(CollateralIngestionBuffer.MaxBufferedRows - buffer.BufferedCount(Scope));
+        var before = buffer.BufferedCount(Scope);
+        for (var start = 0; start < count; start += PrefillDeliveryRows)
+        {
+            var rows = Enumerable.Range(start, Math.Min(PrefillDeliveryRows, count - start)).Select(Row).ToArray();
+            buffer.IngestBatch(Scope, rows).Should().Be(CollateralIngestOutcome.Retained);
+        }
+
+        buffer.BufferedCount(Scope).Should().Be(before + count, "a prefill below capacity evicts nothing");
+    }
 
     private static CollateralInputRow Row(int index)
         => new(DateTimeOffset.UnixEpoch.AddSeconds(index), $"CPTY-{index}", "repo", 1m, 1m, 1m, "cash", 1m, 0m);
