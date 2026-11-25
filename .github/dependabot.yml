@@ -189,9 +189,12 @@ updates:
       - dependency-name: "Microsoft.EntityFrameworkCore*"
         update-types: ["version-update:semver-major"]
 
-  # GitHub Actions
+  # GitHub Actions: workflows plus the local composite actions, so one grouped update moves
+  # every pin of an action together (workflow hygiene rejects mixed pins).
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories:
+      - "/"
+      - "/.github/actions/*"
     schedule:
       interval: "weekly"
       day: "monday"

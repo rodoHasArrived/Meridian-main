@@ -10,7 +10,7 @@
     "id": "meridian.stale-source-docs",
     "version": "1.0.0"
   },
-  "source_hash_manifest": "docs/source/generated/source-hash-manifest.json",
+  "source_hash_manifest": "docs/source/generated/source-hashes",
   "stale_count": 0,
   "stale_modules": []
 }

@@ -601,33 +601,6 @@ Declared public members:
 | <code>Task&lt;IReadOnlyList&lt;StructuredCreditFactorPointDto&gt;&gt; GetFactorScheduleAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Instruments/AssetOperations/IStructuredCreditReferenceService.cs:17](../../../../src/Meridian.Instruments/AssetOperations/IStructuredCreditReferenceService.cs#L17) |  |
 | <code>Task&lt;StructuredCreditFactorPointDto?&gt; GetFactorAsOfAsync(Guid securityId, DateOnly asOfDate, CancellationToken ct = default);</code> | [src/Meridian.Instruments/AssetOperations/IStructuredCreditReferenceService.cs:23](../../../../src/Meridian.Instruments/AssetOperations/IStructuredCreditReferenceService.cs#L23) | The factor effective on asOfDate — the latest dated point on or before it — or null when the schedule starts later or is empty. |
 
-## LegacyPortfolioCashLadderEngine
-
-Qualified name: <code>Meridian.Instruments.AssetOperations.LegacyPortfolioCashLadderEngine</code>. Kind: `class`.
-
-Source: [src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs:7](../../../../src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs#L7).
-
-```csharp
-public static class LegacyPortfolioCashLadderEngine
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string EngineVersion = &quot;portfolio-cash-ladder-v1&quot;;</code> | [src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs:9](../../../../src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs#L9) |  |
-| <code>public const string BaseScenarioId = &quot;base&quot;;</code> | [src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs:11](../../../../src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs#L11) |  |
-| <code>public const string RatesUpScenarioId = &quot;rates-up-100bp&quot;;</code> | [src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs:12](../../../../src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs#L12) |  |
-| <code>public const string RatesDownScenarioId = &quot;rates-down-100bp&quot;;</code> | [src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs:13](../../../../src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs#L13) |  |
-| <code>public const string EarlyCallScenarioId = &quot;early-call&quot;;</code> | [src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs:14](../../../../src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs#L14) |  |
-| <code>public const string RedemptionWaveScenarioId = &quot;redemption-wave-20&quot;;</code> | [src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs:15](../../../../src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs#L15) |  |
-| <code>public const string FxAdverseScenarioId = &quot;fx-adverse-10&quot;;</code> | [src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs:16](../../../../src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs#L16) |  |
-| <code>public static IReadOnlyList&lt;PortfolioCashScenarioDto&gt; ScenarioCatalog { get; } = [new (BaseScenarioId, &quot;Base projection&quot;, &quot;Contractual flows from retained Security Master terms with no stress applied.&quot;, [&quot;Instrument flows exactly as projected from retained terms.&quot;, &quot;Capital activity exactly as scheduled.&quot;], [&quot;Non-base-currency amounts are aggregated 1:1 into the base currency (no FX conversion).&quot;]), new (RatesUpScenarioId, &quot;Rates +100bp&quot;, &quot;Parallel 100bp upward shift applied to retained floating-rate flows only.&quot;, [&quot;Floating-rate coupon and interest flows reprice by scaling to the shifted rate.&quot;], [&quot;Fixed-coupon flows are contractual and remain unchanged.&quot;, &quot;Flows are treated as floating only when the retained terms or flow payload identify a floating rate.&quot;, &quot;No reinvestment, prepayment-speed, or valuation effects are modeled.&quot;]), new (RatesDownScenarioId, &quot;Rates -100bp&quot;, &quot;Parallel 100bp downward shift applied to retained floating-rate flows only.&quot;, [&quot;Floating-rate coupon and interest flows reprice by scaling to the shifted rate (floored at 0%).&quot;], [&quot;Fixed-coupon flows are contractual and remain unchanged.&quot;, &quot;Flows are treated as floating only when the retained terms or flow payload identify a floating rate.&quot;, &quot;No reinvestment, prepayment-speed, or valuation effects are modeled.&quot;]), new (EarlyCallScenarioId, &quot;Early call&quot;, &quot;Every security with a retained call date inside the horizon is assumed called on that date.&quot;, [&quot;Coupons due after the call date are removed.&quot;, &quot;Principal otherwise returned after the call date is pulled forward to the call date.&quot;], [&quot;100% exercise at the first retained call date, at par, with no call premium.&quot;, &quot;Securities without a retained call date are unchanged.&quot;]), new (RedemptionWaveScenarioId, &quot;Redemption wave 20%&quot;, &quot;Investor redemption outflow of 20% of opening cash, settling after a 30-day notice period.&quot;, [&quot;A single capital outflow is added at as-of + 30 days sized from opening cash.&quot;], [&quot;Redemption is proxied on opening cash, not NAV; NAV-based sizing is not modeled.&quot;, &quot;Gating, side pockets, and staggered settlement are not modeled.&quot;]), new (FxAdverseScenarioId, &quot;FX adverse 10%&quot;, &quot;Worst-case parallel 10% FX move applied to every non-base-currency flow.&quot;, [&quot;Non-base-currency inflows are reduced 10%; non-base-currency outflows are increased 10%.&quot;], [&quot;A single adverse parallel move is applied; correlations and hedges are not modeled.&quot;, &quot;Base-currency flows are unchanged.&quot;])];</code> | [src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs:31](../../../../src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs#L31) |  |
-| <code>public static IEnumerable&lt;string&gt; GetContributionCurrencies(PortfolioCashLadderInputs inputs, string? scenarioId = null);</code> | [src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs:95](../../../../src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs#L95) | Returns the raw currencies of selected inputs before amount scaling or scenario arithmetic. Uses the same run, position, scenario, and capital-kind selection as the ladder itself. |
-| <code>public static PortfolioCashLadderDto Build(PortfolioCashLadderInputs inputs, string? scenarioId = null);</code> | [src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs:130](../../../../src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs#L130) |  |
-| <code>public static PortfolioCashLadderDto BuildFromRetainedContributions(DateOnly startDate, DateOnly endDate, string baseCurrency, decimal openingCash, IReadOnlyList&lt;PortfolioCashLadderContributionDto&gt; contributions, decimal minimumCashThreshold, int bucketDays, DateTimeOffset generatedAt, IReadOnlyList&lt;string&gt; blockingReasons);</code> | [src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs:267](../../../../src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs#L267) | Buckets already validated, account-scoped cash contributions through the shared ladder. Amounts must already be in the declared base currency; original observations remain in the owning account forecast snapshot. The end date is inclusive. |
-| <code>public static decimal GetSignedInstrumentAmount(AssetProjectedCashFlowDto flow, decimal heldQuantity);</code> | [src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs:363](../../../../src/Meridian.Instruments/AssetOperations/LegacyPortfolioCashLadderEngine.cs#L363) | Uses the same held-quantity and cash-direction semantics for account forecasts. |
-
 ## NullDirectLoanReferenceService
 
 Qualified name: <code>Meridian.Instruments.AssetOperations.NullDirectLoanReferenceService</code>. Kind: `class`.
@@ -1096,3 +1069,23 @@ Declared public members:
 | <code>public EquityProjectionService(ISecurityMasterStore securityMasterStore, IEquityReferenceProjectionStore projectionStore) : base(securityMasterStore);</code> | [src/Meridian.Instruments/Equity/EquityProjectionService.cs:14](../../../../src/Meridian.Instruments/Equity/EquityProjectionService.cs#L14) |  |
 | <code>public Task&lt;IReadOnlyList&lt;EquityReferenceDto&gt;&gt; GetByExchangeAsync(string exchangeCode, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Instruments/Equity/EquityProjectionService.cs:27](../../../../src/Meridian.Instruments/Equity/EquityProjectionService.cs#L27) |  |
 | <code>public Task&lt;IReadOnlyList&lt;EquityReferenceDto&gt;&gt; GetByIssuerAsync(string issuerName, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Instruments/Equity/EquityProjectionService.cs:30](../../../../src/Meridian.Instruments/Equity/EquityProjectionService.cs#L30) |  |
+
+## IEquityReferenceService
+
+Qualified name: <code>Meridian.Instruments.Equity.IEquityReferenceService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Instruments/Equity/IEquityReferenceService.cs:8](../../../../src/Meridian.Instruments/Equity/IEquityReferenceService.cs#L8).
+
+Queries equity reference data by security identifier and supported asset-specific filters.
+
+```csharp
+public interface IEquityReferenceService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;EquityReferenceDto?&gt; GetReferenceAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Instruments/Equity/IEquityReferenceService.cs:10](../../../../src/Meridian.Instruments/Equity/IEquityReferenceService.cs#L10) |  |
+| <code>Task&lt;IReadOnlyList&lt;EquityReferenceDto&gt;&gt; GetByExchangeAsync(string exchangeCode, CancellationToken ct = default);</code> | [src/Meridian.Instruments/Equity/IEquityReferenceService.cs:11](../../../../src/Meridian.Instruments/Equity/IEquityReferenceService.cs#L11) |  |
+| <code>Task&lt;IReadOnlyList&lt;EquityReferenceDto&gt;&gt; GetByIssuerAsync(string issuerName, CancellationToken ct = default);</code> | [src/Meridian.Instruments/Equity/IEquityReferenceService.cs:12](../../../../src/Meridian.Instruments/Equity/IEquityReferenceService.cs#L12) |  |

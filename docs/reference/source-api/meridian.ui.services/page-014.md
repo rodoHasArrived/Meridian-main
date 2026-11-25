@@ -623,7 +623,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.SessionState</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:112](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L112).
+Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:105](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L105).
 
 Session state for restore.
 
@@ -635,17 +635,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string ActivePageTag { get; set; } = &quot;Dashboard&quot;;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:114](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L114) |  |
-| <code>public List&lt;WorkspacePage&gt; OpenPages { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:115](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L115) |  |
-| <code>public List&lt;string&gt; RecentPages { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:116](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L116) |  |
-| <code>public Dictionary&lt;string, WidgetPosition&gt; WidgetLayout { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:117](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L117) |  |
-| <code>public Dictionary&lt;string, string&gt; ActiveFilters { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:118](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L118) |  |
-| <code>public Dictionary&lt;string, string&gt; WorkspaceContext { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:119](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L119) |  |
-| <code>public WindowBounds? WindowBounds { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:120](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L120) |  |
-| <code>public DateTime SavedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:121](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L121) |  |
-| <code>public string? ActiveWorkspaceId { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:122](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L122) |  |
-| <code>public WorkstationLayoutState? WorkstationLayout { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:123](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L123) |  |
-| <code>public WorkspaceSummaryStats? CachedSummaryStats { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:126](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L126) |  |
+| <code>public string ActivePageTag { get; set; } = &quot;Dashboard&quot;;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:107](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L107) |  |
+| <code>public List&lt;WorkspacePage&gt; OpenPages { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:108](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L108) |  |
+| <code>public List&lt;string&gt; RecentPages { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:109](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L109) |  |
+| <code>public Dictionary&lt;string, WidgetPosition&gt; WidgetLayout { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:110](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L110) |  |
+| <code>public Dictionary&lt;string, string&gt; ActiveFilters { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:111](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L111) |  |
+| <code>public Dictionary&lt;string, string&gt; WorkspaceContext { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:112](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L112) |  |
+| <code>public WindowBounds? WindowBounds { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:113](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L113) |  |
+| <code>public DateTime SavedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:114](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L114) |  |
+| <code>public string? ActiveWorkspaceId { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:115](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L115) |  |
+| <code>public WorkstationLayoutState? WorkstationLayout { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:116](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L116) |  |
+| <code>public WorkspaceSummaryStats? CachedSummaryStats { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:119](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L119) |  |
 
 ## SetupPreset
 

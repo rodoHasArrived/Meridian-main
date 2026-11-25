@@ -19,7 +19,7 @@ namespace Meridian.Wpf.Tests.Features.Strategy;
 public sealed class StrategyFeatureServiceRegistrationTests
 {
     [Fact]
-    public async Task Register_WithBothSecurityMasterContractFamilies_ResolvesOneCanonicalAdjustmentService()
+    public async Task Register_WithSecurityMasterContracts_ResolvesOneCanonicalAdjustmentService()
     {
         using var env = new EnvironmentVariableScope()
             .Set("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", "Host=localhost;Database=unused");
@@ -39,10 +39,10 @@ public sealed class StrategyFeatureServiceRegistrationTests
         services.AddSingleton<ILogger<CorporateActionAdjustmentService>>(NullLogger<CorporateActionAdjustmentService>.Instance);
         using var provider = services.BuildServiceProvider();
 
-        // Both public four-argument constructors remain usable for compiled callers, and
-        // both families are resolvable after the module adds its compatibility aliases.
+        // The single public constructor takes Contracts-owned types, and every parameter is
+        // resolvable after the module registers its services.
         var constructors = typeof(CorporateActionAdjustmentService).GetConstructors();
-        constructors.Should().HaveCount(2);
+        constructors.Should().ContainSingle();
         foreach (var parameter in constructors.SelectMany(constructor => constructor.GetParameters()))
             provider.GetService(parameter.ParameterType).Should().NotBeNull();
 

@@ -12,7 +12,7 @@ Active architectural decisions are routed through:
 
 Historical ADRs 001–016 were migrated to the archive during the documentation rebuild. The
 eleven historical records still referenced by source attributes are available in the
-[local ADR archive](../../archive/docs/adr/README.md), with their original decision status,
+[local ADR archive](historical/README.md), with their original decision status,
 date, and pinned provenance. Other historical records remain available in the complete snapshot:
 
 - [ADR archive index](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/README.md)

@@ -23,21 +23,23 @@ its reason rather than dropped.
 
 | Metric | Count |
 | --- | ---: |
-| Mapped backend routes (path + verb) | 1178 |
-| Wired — called by a dashboard module | 505 |
-| Registry-only — declared in the endpoint registry, no caller | 96 |
-| Unwired — no dashboard reference at all | 577 |
-| Actionable (unwired or registry-only, not excluded by design) | 621 |
-| Excluded by design (probes, webhooks, tombstones, desktop-only) | 52 |
+| Mapped backend routes (path + verb) | 1564 |
+| Wired — called by a dashboard module | 733 |
+| Registry-only — declared in the endpoint registry, no caller | 97 |
+| Unwired — no dashboard reference at all | 734 |
+| Actionable (unwired or registry-only, not excluded by design) | 785 |
+| Excluded by design (probes, webhooks, tombstones, desktop-only) | 46 |
 
 ## Actionable routes
 
-### `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs` (56)
+### `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs` (63)
 
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
 | POST | `/api/journals/{journalEntryId:guid}/post` | unwired | — |
 | POST | `/api/loans/` | unwired | — |
+| GET | `/api/loans/index-fixings` | unwired | — |
+| POST | `/api/loans/index-fixings` | unwired | — |
 | GET | `/api/loans/operations` | unwired | called by WPF |
 | POST | `/api/loans/rebuild-all` | unwired | — |
 | GET | `/api/loans/rebuild-checkpoints` | unwired | — |
@@ -64,6 +66,7 @@ its reason rather than dropped.
 | POST | `/api/loans/{loanId:guid}/payments` | unwired | — |
 | POST | `/api/loans/{loanId:guid}/payments/principal` | unwired | — |
 | POST | `/api/loans/{loanId:guid}/pik` | unwired | — |
+| POST | `/api/loans/{loanId:guid}/pik/capitalizations` | unwired | — |
 | POST | `/api/loans/{loanId:guid}/prepayment-penalties` | unwired | — |
 | POST | `/api/loans/{loanId:guid}/prepayment-penalty` | unwired | — |
 | GET | `/api/loans/{loanId:guid}/projections` | unwired | — |
@@ -75,14 +78,18 @@ its reason rather than dropped.
 | GET | `/api/loans/{loanId:guid}/projections/servicing` | unwired | — |
 | GET | `/api/loans/{loanId:guid}/projections/terms-versions` | unwired | — |
 | POST | `/api/loans/{loanId:guid}/rate-resets` | unwired | — |
+| POST | `/api/loans/{loanId:guid}/rate-resets/scheduled` | unwired | — |
 | POST | `/api/loans/{loanId:guid}/rebuild-state` | unwired | — |
 | POST | `/api/loans/{loanId:guid}/reconcile` | unwired | — |
 | GET | `/api/loans/{loanId:guid}/reconciliation-runs` | unwired | — |
 | POST | `/api/loans/{loanId:guid}/restructures` | unwired | — |
+| GET | `/api/loans/{loanId:guid}/schedules/servicing` | unwired | — |
 | GET | `/api/loans/{loanId:guid}/servicing-state` | unwired | called by WPF |
 | POST | `/api/loans/{loanId:guid}/status-transitions` | unwired | — |
 | PUT | `/api/loans/{loanId:guid}/terms` | unwired | — |
 | GET | `/api/loans/{loanId:guid}/terms-versions` | unwired | — |
+| POST | `/api/loans/{loanId:guid}/unapplied-cash/apply` | unwired | — |
+| POST | `/api/loans/{loanId:guid}/unapplied-cash/refund` | unwired | — |
 | POST | `/api/loans/{loanId:guid}/writeoffs` | unwired | — |
 | GET | `/api/projections/{projectionRunId:guid}/flows` | unwired | — |
 | GET | `/api/reconciliation/exceptions` | unwired | — |
@@ -93,17 +100,53 @@ its reason rather than dropped.
 | GET | `/api/servicer-reports/{batchId:guid}/position-lines` | unwired | — |
 | GET | `/api/servicer-reports/{batchId:guid}/transaction-lines` | unwired | — |
 
-### `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs` (32)
+### `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs` (35)
 
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
-| GET | `/api/fund-accounts/` | unwired | — |
-| POST | `/api/fund-accounts/` | unwired | — |
+| GET | `/api/security-master/asset-classes` | unwired | — |
+| GET | `/api/security-master/asset-classes/{assetClass}` | registry-only | called by WPF |
+| GET | `/api/security-master/asset-profiles/promotion-candidates` | unwired | — |
+| GET | `/api/security-master/coverage/draft/{symbol}` | registry-only | — |
+| GET | `/api/security-master/data-entitlements` | unwired | — |
+| POST | `/api/security-master/data-entitlements` | unwired | — |
+| GET | `/api/security-master/data-entitlements/expiring` | unwired | — |
+| DELETE | `/api/security-master/data-entitlements/{entitlementId:guid}` | unwired | — |
+| POST | `/api/security-master/deactivate` | unwired | — |
+| METHODS | `/api/security-master/equities/{securityId:guid}/preferred-terms` | unwired | — |
+| GET | `/api/security-master/exceptions/aging` | unwired | — |
+| POST | `/api/security-master/import` | unwired | — |
+| GET | `/api/security-master/ingest/status` | unwired | called by WPF |
+| POST | `/api/security-master/profile-promotion/{profileId}/report` | unwired | — |
+| POST | `/api/security-master/quality-report/run` | unwired | — |
+| POST | `/api/security-master/resolve` | unwired | — |
+| POST | `/api/security-master/search` | unwired | dashboard tests only |
+| GET | `/api/security-master/{securityId:guid}` | unwired | dashboard tests only |
+| GET | `/api/security-master/{securityId:guid}/convertible-equity-terms` | unwired | — |
+| PATCH | `/api/security-master/{securityId:guid}/convertible-equity-terms` | unwired | — |
+| GET | `/api/security-master/{securityId:guid}/factor-history` | unwired | — |
+| GET | `/api/security-master/{securityId:guid}/field-provenance` | unwired | — |
+| GET | `/api/security-master/{securityId:guid}/history` | unwired | — |
+| GET | `/api/security-master/{securityId:guid}/income-cash-flows` | unwired | — |
+| POST | `/api/security-master/{securityId:guid}/operator-overrides/decision` | unwired | called by WPF |
+| GET | `/api/security-master/{securityId:guid}/preferred-equity-terms` | unwired | — |
+| PATCH | `/api/security-master/{securityId:guid}/preferred-equity-terms` | unwired | — |
+| GET | `/api/security-master/{securityId:guid}/price-comparison` | unwired | — |
+| GET | `/api/security-master/{securityId:guid}/price-golden-copy` | unwired | — |
+| POST | `/api/security-master/{securityId:guid}/raw-price` | unwired | — |
+| PUT | `/api/security-master/{securityId:guid}/terms/{blockKey}` | unwired | — |
+| GET | `/api/security-master/{securityId:guid}/underlyings` | unwired | — |
+| POST | `/api/security-master/{securityId:guid}/underlyings` | unwired | — |
+| DELETE | `/api/security-master/{securityId:guid}/underlyings/{linkId:guid}` | unwired | — |
+| GET | `/api/security-master/{securityId:guid}/validation` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs` (28)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
 | GET | `/api/fund-accounts/brokerage-sync/accounts` | unwired | called by WPF, dashboard tests only |
 | GET | `/api/fund-accounts/fund/{fundId:guid}` | unwired | — |
 | GET | `/api/fund-accounts/reconciliation-runs/{runId:guid}/results` | unwired | — |
-| DELETE | `/api/fund-accounts/{accountId:guid}` | unwired | — |
-| GET | `/api/fund-accounts/{accountId:guid}` | unwired | — |
 | GET | `/api/fund-accounts/{accountId:guid}/balance-snapshots` | unwired | — |
 | POST | `/api/fund-accounts/{accountId:guid}/balance-snapshots` | unwired | — |
 | GET | `/api/fund-accounts/{accountId:guid}/balance-snapshots/latest` | unwired | — |
@@ -130,43 +173,7 @@ its reason rather than dropped.
 | GET | `/api/fund-accounts/{accountId:guid}/sync-history` | unwired | — |
 | GET | `/api/funds/{fundId:guid}/accounts` | unwired | — |
 
-### `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs` (31)
-
-| Method | Route | State | Notes |
-| --- | --- | --- | --- |
-| GET | `/api/security-master/asset-profiles/promotion-candidates` | unwired | — |
-| GET | `/api/security-master/coverage/draft/{symbol}` | registry-only | — |
-| GET | `/api/security-master/data-entitlements` | unwired | — |
-| POST | `/api/security-master/data-entitlements` | unwired | — |
-| GET | `/api/security-master/data-entitlements/expiring` | unwired | — |
-| DELETE | `/api/security-master/data-entitlements/{entitlementId:guid}` | unwired | — |
-| POST | `/api/security-master/deactivate` | unwired | — |
-| METHODS | `/api/security-master/equities/{securityId:guid}/preferred-terms` | unwired | — |
-| GET | `/api/security-master/exceptions/aging` | unwired | — |
-| POST | `/api/security-master/import` | unwired | — |
-| GET | `/api/security-master/ingest/status` | unwired | called by WPF |
-| POST | `/api/security-master/quality-report/run` | unwired | — |
-| POST | `/api/security-master/resolve` | unwired | — |
-| POST | `/api/security-master/search` | unwired | dashboard tests only |
-| GET | `/api/security-master/{securityId:guid}` | unwired | dashboard tests only |
-| GET | `/api/security-master/{securityId:guid}/cashflow-projections` | unwired | — |
-| GET | `/api/security-master/{securityId:guid}/cashflow-source` | unwired | — |
-| PUT | `/api/security-master/{securityId:guid}/cashflow-source` | unwired | — |
-| GET | `/api/security-master/{securityId:guid}/convertible-equity-terms` | unwired | — |
-| PATCH | `/api/security-master/{securityId:guid}/convertible-equity-terms` | unwired | — |
-| GET | `/api/security-master/{securityId:guid}/field-provenance` | unwired | — |
-| GET | `/api/security-master/{securityId:guid}/history` | unwired | — |
-| POST | `/api/security-master/{securityId:guid}/operator-overrides/decision` | unwired | called by WPF |
-| GET | `/api/security-master/{securityId:guid}/preferred-equity-terms` | unwired | — |
-| PATCH | `/api/security-master/{securityId:guid}/preferred-equity-terms` | unwired | — |
-| GET | `/api/security-master/{securityId:guid}/price-comparison` | unwired | — |
-| GET | `/api/security-master/{securityId:guid}/price-golden-copy` | unwired | — |
-| GET | `/api/security-master/{securityId:guid}/pricing-hierarchy` | unwired | — |
-| PUT | `/api/security-master/{securityId:guid}/pricing-hierarchy` | unwired | — |
-| POST | `/api/security-master/{securityId:guid}/raw-price` | unwired | — |
-| GET | `/api/security-master/{securityId:guid}/validation` | unwired | — |
-
-### `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs` (28)
+### `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs` (25)
 
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
@@ -177,10 +184,7 @@ its reason rather than dropped.
 | GET | `/api/fund-structure/businesses/{businessId:guid}/fund-view` | unwired | — |
 | GET | `/api/fund-structure/cash-flow-view` | unwired | — |
 | POST | `/api/fund-structure/clients` | unwired | — |
-| POST | `/api/fund-structure/entities` | unwired | — |
-| PUT | `/api/fund-structure/entities/{entityId:guid}` | unwired | — |
 | POST | `/api/fund-structure/funds` | unwired | — |
-| GET | `/api/fund-structure/graph` | unwired | — |
 | POST | `/api/fund-structure/investment-portfolios` | unwired | — |
 | GET | `/api/fund-structure/legacy-graph` | unwired | — |
 | POST | `/api/fund-structure/links` | unwired | — |
@@ -253,12 +257,33 @@ its reason rather than dropped.
 | GET | `/api/storage/tiers/plan` | unwired | — |
 | GET | `/api/storage/tiers/statistics` | unwired | — |
 
-### `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs` (19)
+### `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs` (18)
 
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
-| GET | `/api/security-master/corporate-actions/cases` | unwired | — |
-| GET | `/api/security-master/corporate-actions/cases/{caseId:guid}` | unwired | — |
+| GET | `/api/accounting/onboarding/workspaces/{workspaceId:guid}` | unwired | — |
+| POST | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/certificates` | unwired | — |
+| GET | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/certificates/{certificateId:guid}` | unwired | — |
+| POST | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/comparisons` | unwired | — |
+| POST | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/comparisons/{comparisonId}/replay` | unwired | — |
+| POST | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/criteria` | unwired | — |
+| POST | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/differences/{differenceKey}/assignment` | unwired | — |
+| POST | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/differences/{differenceKey}/explanation` | unwired | — |
+| POST | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/opening-balances` | unwired | — |
+| GET | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/opening-balances/report` | unwired | — |
+| POST | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets` | unwired | — |
+| GET | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets/{packetId:guid}` | unwired | — |
+| GET | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets/{packetId:guid}/download` | unwired | — |
+| POST | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/promotion` | unwired | — |
+| POST | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/reviews` | unwired | — |
+| POST | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/shadow-designation` | unwired | — |
+| POST | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/shadow-designation/withdraw` | unwired | — |
+| GET | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/sources` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs` (17)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
 | POST | `/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-approval` | unwired | — |
 | POST | `/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-posting` | unwired | — |
 | POST | `/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-projection` | unwired | — |
@@ -318,24 +343,45 @@ its reason rather than dropped.
 | POST | `/api/diagnostics/validate-config` | registry-only | — |
 | POST | `/api/diagnostics/validate-credentials` | registry-only | — |
 
-### `src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs` (14)
+### `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingGovernance.cs` (15)
 
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
-| POST | `/api/backfill/gap-fill` | unwired | — |
-| GET | `/api/backfill/health` | unwired | — |
-| GET | `/api/backfill/presets` | unwired | — |
-| GET | `/api/backfill/resolve/{symbol}` | unwired | — |
-| GET | `/api/backfill/schedules` | unwired | — |
-| POST | `/api/backfill/schedules` | unwired | — |
-| GET | `/api/backfill/schedules/templates` | unwired | — |
-| DELETE | `/api/backfill/schedules/{id}` | unwired | — |
-| GET | `/api/backfill/schedules/{id}` | unwired | — |
-| POST | `/api/backfill/schedules/{id}/disable` | unwired | — |
-| POST | `/api/backfill/schedules/{id}/enable` | unwired | — |
-| GET | `/api/backfill/schedules/{id}/history` | unwired | — |
-| POST | `/api/backfill/schedules/{id}/run` | unwired | — |
-| GET | `/api/backfill/statistics` | unwired | — |
+| GET | `/api/fund-structure/reporting/runs/restatement-requests/{requestId}` | unwired | — |
+| POST | `/api/fund-structure/reporting/runs/restatement-requests/{requestId}/approve` | unwired | called by WPF |
+| GET | `/api/fund-structure/reporting/runs/{runId}` | unwired | called by WPF |
+| GET | `/api/fund-structure/reporting/runs/{runId}/amounts` | unwired | called by WPF |
+| POST | `/api/fund-structure/reporting/runs/{runId}/approve` | unwired | called by WPF |
+| GET | `/api/fund-structure/reporting/runs/{runId}/artifacts` | unwired | — |
+| GET | `/api/fund-structure/reporting/runs/{runId}/artifacts/{artifactId}` | unwired | — |
+| POST | `/api/fund-structure/reporting/runs/{runId}/govern` | unwired | called by WPF |
+| POST | `/api/fund-structure/reporting/runs/{runId}/release` | unwired | called by WPF |
+| GET | `/api/fund-structure/reporting/runs/{runId}/restatement-requests` | unwired | called by WPF |
+| POST | `/api/fund-structure/reporting/runs/{runId}/restatement-requests` | unwired | called by WPF |
+| GET | `/api/fund-structure/reporting/runs/{runId}/review` | unwired | — |
+| GET | `/api/fund-structure/reporting/runs/{runId}/review/{reviewId}` | unwired | — |
+| POST | `/api/fund-structure/reporting/runs/{runId}/submit` | unwired | called by WPF |
+| POST | `/api/fund-structure/reporting/runs/{runId}/validate` | unwired | called by WPF |
+
+### `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs` (15)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-accounting/coupon-prepare` | unwired | — |
+| POST | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-accounting/coupon-preview` | unwired | — |
+| POST | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-accounting/prepare` | unwired | — |
+| POST | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-accounting/preview` | unwired | — |
+| POST | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-comparisons` | unwired | — |
+| GET | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-comparisons/{runId}` | unwired | — |
+| POST | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-holdings/import` | unwired | — |
+| POST | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-income/preview` | unwired | — |
+| GET | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-monitoring` | unwired | — |
+| POST | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-monitoring` | unwired | — |
+| POST | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-performance` | unwired | — |
+| POST | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-performance/transactions/import` | unwired | — |
+| POST | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-risk` | unwired | — |
+| GET | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-risk/{runId}` | unwired | — |
+| POST | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-workflows/{securityId:guid}` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/EnvironmentDesignerEndpoints.cs` (14)
 
@@ -356,22 +402,23 @@ its reason rather than dropped.
 | GET | `/api/environment-designer/versions/{versionId:guid}` | unwired | — |
 | POST | `/api/environment-designer/versions/{versionId:guid}/rollback` | unwired | — |
 
-### `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingGovernance.cs` (12)
+### `src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs` (13)
 
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
-| GET | `/api/fund-structure/reporting/runs/restatement-requests/{requestId}` | unwired | — |
-| POST | `/api/fund-structure/reporting/runs/restatement-requests/{requestId}/approve` | unwired | called by WPF |
-| GET | `/api/fund-structure/reporting/runs/{runId}` | unwired | called by WPF |
-| POST | `/api/fund-structure/reporting/runs/{runId}/approve` | unwired | called by WPF |
-| GET | `/api/fund-structure/reporting/runs/{runId}/artifacts` | unwired | — |
-| GET | `/api/fund-structure/reporting/runs/{runId}/artifacts/{artifactId}` | unwired | — |
-| POST | `/api/fund-structure/reporting/runs/{runId}/govern` | unwired | called by WPF |
-| POST | `/api/fund-structure/reporting/runs/{runId}/release` | unwired | called by WPF |
-| GET | `/api/fund-structure/reporting/runs/{runId}/restatement-requests` | unwired | called by WPF |
-| POST | `/api/fund-structure/reporting/runs/{runId}/restatement-requests` | unwired | called by WPF |
-| POST | `/api/fund-structure/reporting/runs/{runId}/submit` | unwired | called by WPF |
-| POST | `/api/fund-structure/reporting/runs/{runId}/validate` | unwired | called by WPF |
+| POST | `/api/backfill/gap-fill` | unwired | — |
+| GET | `/api/backfill/health` | unwired | — |
+| GET | `/api/backfill/presets` | unwired | — |
+| GET | `/api/backfill/resolve/{symbol}` | unwired | — |
+| GET | `/api/backfill/schedules/templates` | unwired | — |
+| DELETE | `/api/backfill/schedules/{id}` | unwired | — |
+| GET | `/api/backfill/schedules/{id}` | unwired | — |
+| POST | `/api/backfill/schedules/{id}/disable` | unwired | — |
+| POST | `/api/backfill/schedules/{id}/enable` | unwired | — |
+| GET | `/api/backfill/schedules/{id}/history` | unwired | — |
+| PUT | `/api/backfill/schedules/{id}/preferred-providers` | unwired | — |
+| POST | `/api/backfill/schedules/{id}/run` | unwired | — |
+| GET | `/api/backfill/statistics` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs` (12)
 
@@ -390,6 +437,23 @@ its reason rather than dropped.
 | GET | `/api/providers/metrics` | registry-only | — |
 | GET | `/api/providers/metrics/{providerId}` | unwired | — |
 
+### `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs` (12)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/security-master/otc/collateral-agreements` | unwired | — |
+| GET | `/api/security-master/otc/collateral-agreements/{collateralAgreementId:guid}` | unwired | — |
+| POST | `/api/security-master/otc/contracts` | unwired | — |
+| GET | `/api/security-master/otc/contracts/{contractId:guid}` | unwired | — |
+| GET | `/api/security-master/otc/contracts/{contractId:guid}/lifecycle` | unwired | — |
+| POST | `/api/security-master/otc/contracts/{contractId:guid}/lifecycle` | unwired | — |
+| GET | `/api/security-master/otc/master-agreements` | unwired | — |
+| POST | `/api/security-master/otc/master-agreements` | unwired | — |
+| GET | `/api/security-master/otc/master-agreements/{agreementId:guid}` | unwired | — |
+| POST | `/api/security-master/otc/netting-sets` | unwired | — |
+| GET | `/api/security-master/otc/netting-sets/{nettingSetId:guid}` | unwired | — |
+| GET | `/api/security-master/{securityId:guid}/contracts` | unwired | — |
+
 ### `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs` (12)
 
 | Method | Route | State | Notes |
@@ -406,22 +470,6 @@ its reason rather than dropped.
 | GET | `/api/symbols/{symbol}/status` | unwired | — |
 | GET | `/api/symbols/{symbol}/trades` | unwired | — |
 | POST | `/api/symbols/{symbol}/update` | unwired | — |
-
-### `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` (11)
-
-| Method | Route | State | Notes |
-| --- | --- | --- | --- |
-| GET | `/api/execution/accounts` | unwired | — |
-| GET | `/api/execution/accounts/{accountId}` | unwired | called by WPF |
-| GET | `/api/execution/accounts/{accountId}/positions` | unwired | — |
-| GET | `/api/execution/capabilities` | unwired | — |
-| GET | `/api/execution/orders` | unwired | — |
-| GET | `/api/execution/orders/{orderId}` | unwired | — |
-| GET | `/api/execution/portfolio` | unwired | — |
-| GET | `/api/execution/portfolio/aggregate` | unwired | — |
-| GET | `/api/execution/positions` | unwired | — |
-| POST | `/api/execution/positions/{symbol}/close` | unwired | — |
-| GET | `/api/execution/sessions/{sessionId}/tca` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs` (11)
 
@@ -486,19 +534,62 @@ its reason rather than dropped.
 | GET | `/api/analytics/rate-limits` | unwired | — |
 | GET | `/api/analytics/throughput` | unwired | — |
 
-### `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs` (9)
+### `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs` (10)
 
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
-| GET | `/api/providers/capabilities` | registry-only | — |
-| GET | `/api/providers/dashboard` | registry-only | — |
-| GET | `/api/providers/failover` | registry-only | — |
-| GET | `/api/providers/failover-thresholds` | registry-only | — |
-| POST | `/api/providers/failover/reset` | unwired | — |
-| POST | `/api/providers/failover/trigger` | unwired | — |
-| POST | `/api/providers/switch` | registry-only | — |
-| GET | `/api/providers/{providerName}` | registry-only | — |
-| GET | `/api/providers/{providerName}/rate-limit-history` | unwired | — |
+| POST | `/api/ledger/journal-automation/capital-call-default-interest-intake` | unwired | — |
+| POST | `/api/ledger/journal-automation/capital-call-funding-intake` | unwired | — |
+| POST | `/api/ledger/journal-automation/daily-mark-to-market-intake` | unwired | — |
+| POST | `/api/ledger/journal-automation/distribution-intake` | unwired | — |
+| POST | `/api/ledger/journal-automation/dividend-intake` | unwired | — |
+| POST | `/api/ledger/journal-automation/fee-accrual-intake` | unwired | — |
+| GET | `/api/ledger/journal-automation/monthly-schedules` | unwired | — |
+| POST | `/api/ledger/journal-automation/monthly-schedules` | unwired | — |
+| POST | `/api/ledger/journal-automation/monthly-schedules/run-due` | unwired | — |
+| POST | `/api/ledger/journal-automation/period-close-intake` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` (9)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/execution/accounts` | unwired | — |
+| GET | `/api/execution/accounts/{accountId}` | unwired | called by WPF |
+| GET | `/api/execution/accounts/{accountId}/positions` | unwired | — |
+| GET | `/api/execution/capabilities` | unwired | — |
+| GET | `/api/execution/orders/{orderId}` | unwired | — |
+| GET | `/api/execution/portfolio` | unwired | — |
+| GET | `/api/execution/portfolio/aggregate` | unwired | — |
+| GET | `/api/execution/positions` | unwired | — |
+| POST | `/api/execution/positions/{symbol}/close` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PrivateCapital.cs` (9)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/ledger/private-capital/bank-observations` | unwired | dashboard tests only |
+| POST | `/api/ledger/private-capital/calls` | unwired | dashboard tests only |
+| POST | `/api/ledger/private-capital/calls/preview` | unwired | — |
+| POST | `/api/ledger/private-capital/calls/{callId}/funding-intake` | unwired | — |
+| POST | `/api/ledger/private-capital/calls/{callId}/intake` | unwired | — |
+| POST | `/api/ledger/private-capital/calls/{callId}/investors/{investorId}/notice` | unwired | — |
+| POST | `/api/ledger/private-capital/commitments` | unwired | — |
+| POST | `/api/ledger/private-capital/commitments/{commitmentId}/approve` | unwired | — |
+| GET | `/api/ledger/private-capital/workbench` | unwired | dashboard tests only |
+
+### `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs` (9)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/security-master/otc/collateral-agreements/{collateralAgreementId:guid}/collateral-balances` | unwired | — |
+| POST | `/api/security-master/otc/collateral-balances` | unwired | — |
+| GET | `/api/security-master/otc/exposure-snapshots/{snapshotId:guid}` | unwired | — |
+| POST | `/api/security-master/otc/margin-calls` | unwired | — |
+| GET | `/api/security-master/otc/margin-calls/{callId:guid}` | unwired | — |
+| POST | `/api/security-master/otc/margin-calls/{callId:guid}/transition` | unwired | — |
+| GET | `/api/security-master/otc/netting-sets/{nettingSetId:guid}/exposure-snapshots` | unwired | — |
+| POST | `/api/security-master/otc/netting-sets/{nettingSetId:guid}/exposure-snapshots` | unwired | — |
+| GET | `/api/security-master/otc/netting-sets/{nettingSetId:guid}/margin-calls` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs` (8)
 
@@ -526,28 +617,28 @@ its reason rather than dropped.
 | POST | `/api/config/symbols` | unwired | — |
 | DELETE | `/api/config/symbols/{symbol}` | unwired | — |
 
-### `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs` (8)
+### `src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs` (8)
 
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
-| POST | `/api/ledger/journal-automation/capital-call-funding-intake` | unwired | — |
-| POST | `/api/ledger/journal-automation/daily-mark-to-market-intake` | unwired | — |
-| POST | `/api/ledger/journal-automation/dividend-intake` | unwired | — |
-| POST | `/api/ledger/journal-automation/fee-accrual-intake` | unwired | — |
-| GET | `/api/ledger/journal-automation/monthly-schedules` | unwired | — |
-| POST | `/api/ledger/journal-automation/monthly-schedules` | unwired | — |
-| POST | `/api/ledger/journal-automation/monthly-schedules/run-due` | unwired | — |
-| POST | `/api/ledger/journal-automation/period-close-intake` | unwired | — |
+| GET | `/api/accounting-system/posting/{fundProfileId}/{ledgerBookId:guid}/mapping-profiles` | unwired | — |
+| GET | `/api/accounting-system/posting/{fundProfileId}/{ledgerBookId:guid}/policy` | unwired | — |
+| POST | `/api/accounting-system/posting/{fundProfileId}/{ledgerBookId:guid}/policy` | unwired | — |
+| GET | `/api/accounting-system/posting/{fundProfileId}/{ledgerBookId:guid}/{periodId:guid}/packages` | unwired | — |
+| POST | `/api/accounting-system/posting/{fundProfileId}/{ledgerBookId:guid}/{periodId:guid}/packages` | unwired | — |
+| GET | `/api/accounting-system/posting/{fundProfileId}/{ledgerBookId:guid}/{periodId:guid}/packages/{packageId}` | unwired | — |
+| GET | `/api/accounting-system/posting/{fundProfileId}/{ledgerBookId:guid}/{periodId:guid}/packages/{packageId}/audit` | unwired | — |
+| POST | `/api/accounting-system/posting/{fundProfileId}/{ledgerBookId:guid}/{periodId:guid}/packages/{packageId}/decision` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs` (8)
 
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
 | GET | `/api/ledger/aggregates/{aggregateId:guid}/journal-entries` | unwired | — |
-| POST | `/api/ledger/books/rollout-assessment` | unwired | — |
-| GET | `/api/ledger/books/{ledgerBookId:guid}` | unwired | — |
+| POST | `/api/ledger/books/rollout-assessment` | unwired | dashboard tests only |
 | POST | `/api/ledger/close-management/period-reopen` | unwired | — |
 | POST | `/api/ledger/periods/{periodId:guid}/close` | unwired | — |
+| GET | `/api/ledger/periods/{periodId:guid}/journal-entries` | registry-only | called by WPF |
 | GET | `/api/ledger/periods/{periodId:guid}/trial-balance-report` | unwired | — |
 | GET | `/api/ledger/reports/pnl-summary` | unwired | — |
 | GET | `/api/ledger/reports/trial-balance` | unwired | — |
@@ -565,6 +656,19 @@ its reason rather than dropped.
 | POST | `/api/security-master/money-market-funds/{securityId:guid}/rebuild` | unwired | — |
 | GET | `/api/security-master/money-market-funds/{securityId:guid}/sweep-profile` | unwired | — |
 
+### `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionTemplateEndpoints.cs` (8)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/provider-routing/templates` | unwired | — |
+| POST | `/api/provider-routing/templates` | unwired | — |
+| GET | `/api/provider-routing/templates/export` | unwired | — |
+| POST | `/api/provider-routing/templates/import` | unwired | — |
+| POST | `/api/provider-routing/templates/setups` | unwired | — |
+| DELETE | `/api/provider-routing/templates/setups/{setupId}` | unwired | — |
+| POST | `/api/provider-routing/templates/setups/{setupId}` | unwired | — |
+| POST | `/api/provider-routing/templates/setups/{setupId}/test` | unwired | — |
+
 ### `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` (8)
 
 | Method | Route | State | Notes |
@@ -572,8 +676,8 @@ its reason rather than dropped.
 | GET | `/api/workstation/data-operations` | unwired | dashboard tests only |
 | GET | `/api/workstation/data/replacement-cost` | unwired | — |
 | GET | `/api/workstation/governance` | unwired | dashboard tests only |
+| GET | `/api/workstation/kpi-definitions` | unwired | — |
 | GET | `/api/workstation/portfolio/summary` | registry-only | dashboard tests only |
-| GET | `/api/workstation/reconciliation/break-queue/bulk/{bulkActionId}/result` | registry-only | dashboard tests only |
 | GET | `/api/workstation/research` | unwired | dashboard tests only |
 | GET | `/api/workstation/research/briefing` | unwired | — |
 | GET | `/api/workstation/runs/lineage-timeline` | unwired | — |
@@ -590,42 +694,6 @@ its reason rather than dropped.
 | POST | `/api/maintenance/schedules/{scheduleId}/trigger` | unwired | — |
 | POST | `/api/maintenance/validate-cron` | unwired | — |
 
-### `src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs` (7)
-
-| Method | Route | State | Notes |
-| --- | --- | --- | --- |
-| GET | `/api/backfill/providers` | unwired | — |
-| GET | `/api/backfill/providers/audit` | unwired | — |
-| POST | `/api/backfill/providers/dry-run-plan` | unwired | — |
-| GET | `/api/backfill/providers/fallback-chain` | unwired | — |
-| GET | `/api/backfill/providers/metadata` | unwired | — |
-| GET | `/api/backfill/providers/statuses` | unwired | — |
-| GET | `/api/backfill/status` | unwired | — |
-
-### `src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs` (7)
-
-| Method | Route | State | Notes |
-| --- | --- | --- | --- |
-| GET | `/api/failover/config` | unwired | — |
-| POST | `/api/failover/config` | unwired | — |
-| POST | `/api/failover/force/{ruleId}` | unwired | — |
-| GET | `/api/failover/health` | unwired | — |
-| GET | `/api/failover/rules` | unwired | — |
-| POST | `/api/failover/rules` | unwired | — |
-| DELETE | `/api/failover/rules/{id}` | unwired | — |
-
-### `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs` (7)
-
-| Method | Route | State | Notes |
-| --- | --- | --- | --- |
-| GET | `/api/ingestion/jobs` | unwired | — |
-| POST | `/api/ingestion/jobs` | unwired | — |
-| GET | `/api/ingestion/jobs/resumable` | unwired | — |
-| DELETE | `/api/ingestion/jobs/{jobId}` | unwired | — |
-| GET | `/api/ingestion/jobs/{jobId}` | unwired | — |
-| POST | `/api/ingestion/jobs/{jobId}/transition` | unwired | — |
-| GET | `/api/ingestion/summary` | unwired | — |
-
 ### `src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs` (7)
 
 | Method | Route | State | Notes |
@@ -637,6 +705,39 @@ its reason rather than dropped.
 | GET | `/api/options/strikes/{underlyingSymbol}/{expiration}` | unwired | — |
 | GET | `/api/options/summary` | unwired | — |
 | GET | `/api/options/underlyings` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs` (6)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/banking/payments` | unwired | dashboard tests only |
+| GET | `/api/banking/payments/pending` | registry-only | dashboard tests only |
+| POST | `/api/banking/payments/{pendingPaymentId:guid}/approve` | registry-only | dashboard tests only |
+| POST | `/api/banking/payments/{pendingPaymentId:guid}/bank-evidence` | unwired | — |
+| POST | `/api/banking/payments/{pendingPaymentId:guid}/currency-remediation` | unwired | — |
+| POST | `/api/banking/payments/{pendingPaymentId:guid}/reject` | registry-only | dashboard tests only |
+
+### `src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.SinglePrincipalAttestation.cs` (6)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/workstation/evidence/attestations/declaration` | unwired | called by WPF |
+| GET | `/api/workstation/evidence/attestations/drafts/{securityId:guid}/{runId:guid}` | unwired | called by WPF, dashboard tests only |
+| POST | `/api/workstation/evidence/attestations/receipts` | unwired | called by WPF, dashboard tests only |
+| GET | `/api/workstation/evidence/attestations/receipts/{receiptId:guid}/export` | unwired | called by WPF |
+| POST | `/api/workstation/evidence/attestations/revocations` | unwired | called by WPF |
+| GET | `/api/workstation/evidence/attestations/subjects` | unwired | called by WPF, dashboard tests only |
+
+### `src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs` (6)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/fund-structure/intercompany-agreements/{id:guid}` | unwired | — |
+| GET | `/api/fund-structure/intercompany-agreements/{id:guid}/history` | unwired | — |
+| GET | `/api/fund-structure/intercompany-agreements/{id:guid}/journal-lines` | unwired | — |
+| POST | `/api/fund-structure/intercompany-agreements/{id:guid}/proposals` | unwired | — |
+| PUT | `/api/fund-structure/intercompany-agreements/{id:guid}/proposals/{proposalId:guid}` | unwired | — |
+| GET | `/api/fund-structure/intercompany-agreements/{id:guid}/versions/{version:int}` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs` (6)
 
@@ -671,6 +772,17 @@ its reason rather than dropped.
 | POST | `/api/oms/ingest` | unwired | — |
 | GET | `/api/oms/messages` | unwired | — |
 
+### `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs` (6)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/security-master/{securityId:guid}/cashflow-projections` | unwired | — |
+| GET | `/api/security-master/{securityId:guid}/cashflow-source` | unwired | — |
+| PUT | `/api/security-master/{securityId:guid}/cashflow-source` | unwired | — |
+| GET | `/api/security-master/{securityId:guid}/exercise-notices` | unwired | — |
+| POST | `/api/security-master/{securityId:guid}/exercise-notices` | unwired | — |
+| POST | `/api/security-master/{securityId:guid}/exercise-notices/{noticeId:guid}/decision` | unwired | — |
+
 ### `src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs` (6)
 
 | Method | Route | State | Notes |
@@ -682,15 +794,27 @@ its reason rather than dropped.
 | GET | `/api/providers/latency` | registry-only | — |
 | GET | `/health/detailed` | unwired | — |
 
-### `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs` (5)
+### `src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs` (6)
 
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
-| GET | `/api/reference-data/bonds/issuer-ladder` | registry-only | — |
-| GET | `/api/reference-data/bonds/maturity-ladder` | registry-only | — |
-| GET | `/api/reference-data/bonds/{securityId:guid}` | registry-only | — |
-| GET | `/api/reference-data/bonds/{securityId:guid}/accrual-convention` | registry-only | — |
-| GET | `/api/reference-data/bonds/{securityId:guid}/lifecycle` | registry-only | — |
+| GET | `/api/symbols/mappings/csv/export` | unwired | — |
+| POST | `/api/symbols/mappings/import` | unwired | — |
+| DELETE | `/api/symbols/mappings/{symbol}` | unwired | — |
+| GET | `/api/symbols/mappings/{symbol}` | unwired | — |
+| DELETE | `/api/symbols/mappings/{symbol}/providers/{provider}` | unwired | — |
+| PUT | `/api/symbols/mappings/{symbol}/providers/{provider}` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Ledger.cs` (6)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/workstation/runs/{runId}/ledger/accounts` | unwired | — |
+| GET | `/api/workstation/runs/{runId}/ledger/entries` | unwired | — |
+| GET | `/api/workstation/runs/{runId}/ledger/integrity` | unwired | — |
+| GET | `/api/workstation/runs/{runId}/ledger/running-balance` | unwired | — |
+| GET | `/api/workstation/runs/{runId}/ledger/symbols/{symbol}` | unwired | — |
+| GET | `/api/workstation/runs/{runId}/ledger/trial-balance/as-of` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/CredentialEndpoints.cs` (5)
 
@@ -722,6 +846,46 @@ its reason rather than dropped.
 | GET | `/api/historical/symbols` | unwired | — |
 | GET | `/api/historical/{symbol}/daterange` | unwired | — |
 
+### `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs` (5)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/ingestion/jobs` | unwired | — |
+| POST | `/api/ingestion/jobs` | unwired | — |
+| GET | `/api/ingestion/jobs/resumable` | unwired | — |
+| GET | `/api/ingestion/jobs/{jobId}` | unwired | — |
+| GET | `/api/ingestion/summary` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/IntercompanyAccountingArrangementEndpoints.cs` (5)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/ledger/intercompany-accounting-arrangements/legal-agreements` | unwired | — |
+| GET | `/api/ledger/intercompany-accounting-arrangements/{id:guid}` | unwired | — |
+| GET | `/api/ledger/intercompany-accounting-arrangements/{id:guid}/history` | unwired | — |
+| POST | `/api/ledger/intercompany-accounting-arrangements/{id:guid}/revisions` | unwired | — |
+| POST | `/api/ledger/intercompany-accounting-arrangements/{id:guid}/{action}` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.EntityControls.cs` (5)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/fund-structure/entities/{entityId:guid}/lifecycle/history` | unwired | — |
+| POST | `/api/fund-structure/entities/{entityId:guid}/lifecycle/review-preview` | unwired | — |
+| POST | `/api/fund-structure/entities/{entityId:guid}/lifecycle/revisions` | unwired | — |
+| POST | `/api/ledger/books/{bookId:guid}/controls/activate` | unwired | — |
+| POST | `/api/ledger/books/{bookId:guid}/controls/preflight` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs` (5)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/ledger/fixed-assets` | unwired | — |
+| POST | `/api/ledger/fixed-assets` | unwired | — |
+| POST | `/api/ledger/journal-automation/recurring/initialize` | unwired | — |
+| POST | `/api/ledger/journal-automation/recurring/restore-definitions` | unwired | — |
+| POST | `/api/ledger/journal-automation/recurring/schedules` | unwired | — |
+
 ### `src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs` (5)
 
 | Method | Route | State | Notes |
@@ -732,15 +896,24 @@ its reason rather than dropped.
 | POST | `/api/plaid/transfers/sandbox` | unwired | — |
 | POST | `/api/plaid/webhook` | unwired | — |
 
-### `src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs` (5)
+### `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs` (5)
 
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
-| GET | `/api/symbols/mappings` | registry-only | — |
-| POST | `/api/symbols/mappings` | registry-only | — |
-| POST | `/api/symbols/mappings/import` | unwired | — |
-| DELETE | `/api/symbols/mappings/{symbol}` | unwired | — |
-| GET | `/api/symbols/mappings/{symbol}` | unwired | — |
+| GET | `/api/providers/dashboard` | registry-only | — |
+| GET | `/api/providers/failover` | registry-only | — |
+| GET | `/api/providers/failover-thresholds` | registry-only | — |
+| POST | `/api/providers/failover/trigger` | unwired | — |
+| POST | `/api/providers/switch` | registry-only | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs` (4)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/backfill/receipts/{receiptId:guid}` | unwired | — |
+| GET | `/api/backfill/receipts/{receiptId:guid}/clone` | registry-only | — |
+| POST | `/api/backfill/receipts/{receiptId:guid}/clone` | registry-only | — |
+| GET | `/api/backfill/status` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/BackfillValidationEndpoints.cs` (4)
 
@@ -750,6 +923,15 @@ its reason rather than dropped.
 | GET | `/api/backfill/gaps` | unwired | — |
 | GET | `/api/backfill/validation` | unwired | — |
 | GET | `/api/backfill/validation/{symbol}` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs` (4)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/reference-data/bonds/issuer-ladder` | registry-only | — |
+| GET | `/api/reference-data/bonds/maturity-ladder` | registry-only | — |
+| GET | `/api/reference-data/bonds/{securityId:guid}/accrual-convention` | registry-only | — |
+| GET | `/api/reference-data/bonds/{securityId:guid}/lifecycle` | registry-only | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs` (4)
 
@@ -787,6 +969,15 @@ its reason rather than dropped.
 | GET | `/api/reference-data/futures/front-month` | registry-only | — |
 | GET | `/api/reference-data/futures/{securityId:guid}` | registry-only | — |
 
+### `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationFx.cs` (4)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/ledger/consolidation/fx/books/{bookId:guid}/configuration/approve` | unwired | — |
+| GET | `/api/ledger/consolidation/fx/books/{bookId:guid}/configuration/{revision:int}` | unwired | — |
+| POST | `/api/ledger/consolidation/fx/rate-sets/approve` | unwired | dashboard tests only |
+| GET | `/api/ledger/consolidation/fx/rate-sets/{rateSetId:guid}/revisions/{revision:int}` | unwired | — |
+
 ### `src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs` (4)
 
 | Method | Route | State | Notes |
@@ -822,22 +1013,6 @@ its reason rather than dropped.
 | GET | `/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}` | unwired | — |
 | GET | `/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}/artifacts/{artifactId}` | unwired | — |
 | POST | `/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}/resume` | unwired | — |
-
-### `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs` (3)
-
-| Method | Route | State | Notes |
-| --- | --- | --- | --- |
-| POST | `/api/auth/login` | unwired | called by WPF |
-| POST | `/api/auth/logout` | unwired | — |
-| GET | `/api/auth/me` | unwired | — |
-
-### `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs` (3)
-
-| Method | Route | State | Notes |
-| --- | --- | --- | --- |
-| POST | `/api/banking/payments` | unwired | — |
-| POST | `/api/banking/payments/{pendingPaymentId:guid}/bank-evidence` | unwired | — |
-| POST | `/api/banking/payments/{pendingPaymentId:guid}/currency-remediation` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/CalendarEndpoints.cs` (3)
 
@@ -887,6 +1062,22 @@ its reason rather than dropped.
 | GET | `/api/reference-data/equities/by-issuer` | registry-only | — |
 | GET | `/api/reference-data/equities/{securityId:guid}` | registry-only | — |
 
+### `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.ThreeWayReconciliation.cs` (3)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/fund-accounts/{accountId:guid}/brokerage-sync/reconcile-three-way` | unwired | — |
+| POST | `/api/fund-accounts/{accountId:guid}/brokerage-sync/three-way-reconciliation/adjustments/prepare` | unwired | — |
+| GET | `/api/fund-accounts/{accountId:guid}/brokerage-sync/three-way-reconciliation/latest` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingIncomeComparison.cs` (3)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/fund-structure/reporting/comparisons/candidates` | unwired | — |
+| GET | `/api/fund-structure/reporting/comparisons/{comparisonId}` | unwired | — |
+| GET | `/api/fund-structure/reporting/comparisons/{comparisonId}/contributions/{contributionId}` | unwired | — |
+
 ### `src/Meridian.Ui.Shared/Endpoints/FxSpotReferenceEndpoints.cs` (3)
 
 | Method | Route | State | Notes |
@@ -902,6 +1093,22 @@ its reason rather than dropped.
 | GET | `/api/providers/ib/error-codes` | unwired | — |
 | GET | `/api/providers/ib/limits` | unwired | — |
 | GET | `/api/providers/ib/status` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.CloseSnapshots.cs` (3)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/ledger/period-adjustments/prepare` | unwired | — |
+| POST | `/api/ledger/period-adjustments/schedule-mark-reversal` | unwired | — |
+| GET | `/api/ledger/periods/{periodId:guid}/close-snapshot` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationTransitions.cs` (3)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/ledger/consolidation/transitions/activate` | unwired | dashboard tests only |
+| POST | `/api/ledger/consolidation/transitions/preview` | unwired | — |
+| GET | `/api/ledger/consolidation/transitions/previews/{previewId:guid}` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs` (3)
 
@@ -919,6 +1126,14 @@ its reason rather than dropped.
 | POST | `/api/packaging/import` | registry-only | — |
 | DELETE | `/api/packaging/{fileName}` | registry-only | — |
 
+### `src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs` (3)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/security-master/money-market-funds/` | unwired | — |
+| GET | `/api/security-master/money-market-funds/comparison` | unwired | — |
+| GET | `/api/security-master/money-market-funds/scenarios` | unwired | — |
+
 ### `src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs` (3)
 
 | Method | Route | State | Notes |
@@ -926,6 +1141,14 @@ its reason rather than dropped.
 | GET | `/api/admin/retention/compliance-report` | unwired | — |
 | POST | `/api/backfill/cost-estimate` | unwired | — |
 | GET | `/api/resilience/circuit-breakers` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashDividendAttestation.cs` (3)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/security-master/corporate-actions/cases/{caseId:guid}/cash-dividend-attestation/attest` | unwired | dashboard tests only |
+| POST | `/api/security-master/corporate-actions/cases/{caseId:guid}/cash-dividend-attestation/declaration` | unwired | — |
+| POST | `/api/security-master/corporate-actions/cases/{caseId:guid}/cash-dividend-attestation/post` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs` (3)
 
@@ -943,6 +1166,14 @@ its reason rather than dropped.
 | GET | `/api/reference-data/swaps/maturing-before` | registry-only | — |
 | GET | `/api/reference-data/swaps/{securityId:guid}` | registry-only | — |
 
+### `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ApprovalCollaboration.cs` (3)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/workstation/operations/continuity/{workflowId:guid}/approval/collaboration` | unwired | — |
+| POST | `/api/workstation/operations/continuity/{workflowId:guid}/approval/comments` | unwired | — |
+| POST | `/api/workstation/operations/continuity/{workflowId:guid}/approval/reviewer` | unwired | — |
+
 ### `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FamilyOffice.cs` (3)
 
 | Method | Route | State | Notes |
@@ -951,12 +1182,33 @@ its reason rather than dropped.
 | GET | `/api/workstation/family-office/entities` | unwired | — |
 | GET | `/api/workstation/family-office/ownership-graph` | unwired | — |
 
+### `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs` (2)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/auth/login` | unwired | called by WPF |
+| POST | `/api/auth/logout` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs` (2)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/reference-data/bonds/comparisons/preview` | unwired | — |
+| GET | `/api/reference-data/bonds/provider-responses/{contentSha256}` | unwired | — |
+
 ### `src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs` (2)
 
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
 | POST | `/api/schedules/cron/next-runs` | unwired | — |
 | POST | `/api/schedules/cron/validate` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Sessions.cs` (2)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/execution/sessions/{sessionId}/financing` | unwired | — |
+| GET | `/api/execution/sessions/{sessionId}/tca` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/InitialAccountBootstrapEndpoints.cs` (2)
 
@@ -965,6 +1217,20 @@ its reason rather than dropped.
 | POST | `/api/auth/bootstrap` | unwired | — |
 | GET | `/setup/account` | unwired | — |
 
+### `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AutomatedPostingGrants.cs` (2)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/ledger/automation/grants/{grantId:guid}` | unwired | — |
+| POST | `/api/ledger/automation/grants/{grantId:guid}/revoke` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BookFxSettlement.cs` (2)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/ledger/book-fx-settlement-sets` | unwired | — |
+| POST | `/api/ledger/book-fx-settlement-sets/{setId:guid}/capture` | unwired | — |
+
 ### `src/Meridian.Ui.Shared/Endpoints/OptionChainEndpoints.cs` (2)
 
 | Method | Route | State | Notes |
@@ -972,12 +1238,12 @@ its reason rather than dropped.
 | POST | `/api/reference-data/options/chains/import` | registry-only | dashboard tests only |
 | GET | `/api/reference-data/options/chains/snapshot` | registry-only | — |
 
-### `src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs` (2)
+### `src/Meridian.Ui.Shared/Endpoints/PortfolioImportEndpoints.cs` (2)
 
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
-| GET | `/api/security-master/money-market-funds/` | unwired | — |
-| GET | `/api/security-master/money-market-funds/scenarios` | unwired | — |
+| POST | `/api/portfolio/import-runs` | unwired | — |
+| GET | `/api/portfolio/import-runs/{runId:guid}` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/ProviderCredentialEndpoints.cs` (2)
 
@@ -986,6 +1252,13 @@ its reason rather than dropped.
 | POST | `/api/providers/{provider}/test-connection` | unwired | — |
 | POST | `/api/providers/{provider}/validate-credentials` | unwired | — |
 
+### `src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs` (2)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/providers/{providerName}/validation-profile` | unwired | — |
+| PUT | `/api/providers/{providerName}/validation-profile` | unwired | — |
+
 ### `src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs` (2)
 
 | Method | Route | State | Notes |
@@ -993,12 +1266,47 @@ its reason rather than dropped.
 | GET | `/api/replay/preview` | unwired | — |
 | GET | `/api/replay/stats` | unwired | — |
 
+### `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs` (2)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/security-master/curves/{curveId:guid}` | unwired | — |
+| GET | `/api/security-master/curves/{curveId:guid}/versions/{version:long}` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Reclassification.cs` (2)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/security-master/classification-drift/report` | unwired | — |
+| POST | `/api/security-master/structured-credit-reclassification/report` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.Rollout.cs` (2)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/symbols/mappings/rollout` | unwired | — |
+| PUT | `/api/symbols/mappings/rollout/{provider}` | unwired | — |
+
 ### `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Collateral.cs` (2)
 
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
 | GET | `/api/workstation/collateral/exposure` | unwired | — |
 | POST | `/api/workstation/collateral/ingest` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorTriage.cs` (2)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/workstation/operator/triage/bulk` | unwired | — |
+| POST | `/api/workstation/operator/triage/{workItemId}/actions` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementImportReview.cs` (2)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/workstation/reconciliation/statement-imports/reviews/{reviewId}/outcomes` | unwired | — |
+| GET | `/api/workstation/reconciliation/statement-imports/reviews/{reviewId}/rows` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs` (2)
 
@@ -1013,11 +1321,23 @@ its reason rather than dropped.
 | --- | --- | --- | --- |
 | POST | `/api/accounting-system/migration-runs` | unwired | — |
 
+### `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs` (1)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/reference-data/bonds/{securityId:guid}/exercise-notices` | unwired | — |
+
 ### `src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs` (1)
 
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
 | GET | `/api/backfill/checkpoints/{jobId}` | registry-only | dashboard tests only |
+
+### `src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs` (1)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/failover/health` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingCompatibility.cs` (1)
 
@@ -1030,6 +1350,54 @@ its reason rather than dropped.
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
 | GET | `/portal/reporting/packages/{packageId}` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs` (1)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/ledger/intercompany/accrual-schedules/{confirmationId:guid}/actions` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs` (1)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/fund-structure/intercompany-agreements/{id:guid}/schedule` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs` (1)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/ledger/intercompany/balance-schedule` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ClosePreparation.cs` (1)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/ledger/close-management/templates/{templateId:guid}` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Completeness.cs` (1)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/ledger/books/{ledgerBookId:guid}/periods/{periodId:guid}/completeness` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Export.cs` (1)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/ledger/periods/{periodId:guid}/journal-export` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.LegacyIntercompanyAttributions.cs` (1)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/ledger/intercompany/legacy-attributions/candidates` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PeriodComparison.cs` (1)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/ledger/books/{ledgerBookId:guid}/periods/{periodId:guid}/comparison` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/MaintenanceScheduleEndpoints.cs` (1)
 
@@ -1048,6 +1416,12 @@ its reason rather than dropped.
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
 | GET | `/api/providers/data-projection` | registry-only | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.RegistryProjections.cs` (1)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/security-master/projections/{assetClass}/{securityId:guid}` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs` (1)
 
@@ -1151,14 +1525,8 @@ its reason rather than dropped.
 | GET | `/api/v1/risk/rules/{ruleName}/config` | Versioned alias of an /api route the workstation already calls. |
 | PUT | `/api/v1/risk/rules/{ruleName}/config` | Versioned alias of an /api route the workstation already calls. |
 | GET | `/api/v1/risk/rules/{ruleName}/status` | Versioned alias of an /api route the workstation already calls. |
-| POST | `/api/workstation/reconciliation/statement-to-report` | Superseded contract retained behind a CS0618 suppression: Endpoint metadata intentionally retains the pre-rename contract. |
-| GET | `/api/workstation/reconciliation/statement-to-report/{workflowId}` | Superseded contract retained behind a CS0618 suppression: Endpoint metadata intentionally retains the pre-rename contract. |
-| GET | `/api/workstation/reconciliation/statement-to-report/{workflowId}/artifacts/{artifactId}` | Superseded contract retained behind a CS0618 suppression: Endpoint metadata intentionally retains the pre-rename contract. |
-| POST | `/api/workstation/reconciliation/statement-to-report/{workflowId}/resume` | Superseded contract retained behind a CS0618 suppression: Endpoint metadata intentionally retains the pre-rename contract. |
 | POST | `/hooks/reporting/distribution/{transportId}/deliveries/{jobId}/receipts` | Inbound provider callback authenticated by signature, never called by a browser. |
-| GET | `/workstation/evidence/vault/{vaultId}` | Static workstation asset route served by the host. |
 | GET | `/workstation/evidence/{subjectKind}/{subjectId}/{fileName}` | Static workstation asset route served by the host. |
-| GET | `/workstation/{*path}` | Static workstation asset route served by the host. |
 
 ## Unresolved endpoint-registry helpers
 
@@ -1167,6 +1535,7 @@ may be listed as actionable even though a screen calls them.
 
 - `reporting-governance-routes.ts::governedReportingRestatementApprovalPath`
 - `reporting-governance-routes.ts::governedReportingRestatementRequestPath`
+- `reporting-governance-routes.ts::governedReportingRunAmountsPath`
 - `reporting-governance-routes.ts::governedReportingRunPath`
 - `reporting-governance-routes.ts::governedReportingTransitionPath`
 - `reporting-governance-routes.ts::secureReportingAccessGrantHistoryPath`
@@ -1177,11 +1546,15 @@ may be listed as actionable even though a screen calls them.
 - `reporting-governance-routes.ts::secureReportingDeliveryPath`
 - `reporting-governance-routes.ts::secureReportingDeliveryQueuePath`
 - `reporting-governance-routes.ts::secureReportingTransportCapabilitiesPath`
+- `workstation-endpoints.ts::backfillCloneEndpoint`
+- `workstation-endpoints.ts::ledgerPeriodJournalEntriesEndpoint`
 - `workstation-endpoints.ts::portfolioSymbolExposureEndpoint`
 - `workstation-endpoints.ts::reportingRunReportWriterGridEndpoint`
 - `workstation-endpoints.ts::reportingTemplateApproveEndpoint`
 - `workstation-endpoints.ts::reportingTemplateRejectEndpoint`
 - `workstation-endpoints.ts::reportingTemplateSubmitEndpoint`
+- `workstation-endpoints.ts::routeWithParam`
+- `workstation-endpoints.ts::securityMasterAssetClassDefinitionEndpoint`
 - `workstation-endpoints.ts::securityMasterCorporateActionCaseConflictEndpoint`
 - `workstation-endpoints.ts::securityMasterCorporateActionCaseConflictsEndpoint`
 - `workstation-endpoints.ts::securityMasterCorporateActionSourceProposalAcceptEndpoint`
@@ -1194,4 +1567,8 @@ Map calls whose route argument the analyzer could not fold to a literal.
 
 | Source | Method | Expression |
 | --- | --- | --- |
+| `src/Meridian.Ui.Shared/Endpoints/ContractualCashFlowRunEndpoints.cs` | POST | `path` |
+| `src/Meridian.Ui.Shared/Endpoints/ContractualCashFlowRunEndpoints.cs` | GET | `path + "/{runId:guid}"` |
+| `src/Meridian.Ui.Shared/Endpoints/ContractualCashFlowRunEndpoints.cs` | GET | `path + "/{runId:guid}/compare/{otherRunId:guid}"` |
+| `src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs` | POST | `"/{id:guid}/proposals/{proposalId:guid}/" + transition` |
 | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Reconciliation.cs` | POST | `WorkstationSubroute(UiApiRoutes.ReconciliationBreakQueue) + "/bulk"` |
