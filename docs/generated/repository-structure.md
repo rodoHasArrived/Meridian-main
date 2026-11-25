@@ -46,6 +46,13 @@ Meridian-main
 │       │   ├── agents
 │       │   │   └── openai.yaml
 │       │   └── SKILL.md
+│       ├── meridian-ci-cd
+│       │   ├── assets
+│       │   │   ├── pr-workflow.yml
+│       │   │   └── scheduled-workflow.yml
+│       │   ├── references
+│       │   │   └── workflow-inventory.md
+│       │   └── SKILL.md
 │       ├── meridian-cleanup
 │       │   └── SKILL.md
 │       ├── meridian-code-review
@@ -226,6 +233,13 @@ Meridian-main
 │   │   ├── meridian-browser-workstation
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   └── SKILL.md
+│   │   ├── meridian-ci-cd
+│   │   │   ├── assets
+│   │   │   │   ├── pr-workflow.yml
+│   │   │   │   └── scheduled-workflow.yml
+│   │   │   ├── references
+│   │   │   │   └── workflow-inventory.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-cleanup
 │   │   │   └── SKILL.md
@@ -2907,8 +2921,6 @@ Meridian-main
 │   │   ├── pilot-readiness-dashboard.md
 │   │   ├── provider-validation-matrix.md
 │   │   ├── README.md
-│   │   ├── ROADMAP.md
-│   │   ├── ROADMAP_SUMMARY.md
 │   │   ├── rules-report.md
 │   │   ├── run-contract.schema.json
 │   │   ├── ui-route-wiring-report.json
@@ -10883,6 +10895,7 @@ Meridian-main
 │   │   │   │   │   ├── cash-dividend-attestation-fixtures.ts
 │   │   │   │   │   ├── fixtures.ts
 │   │   │   │   │   ├── ledger-amount-proof-fixtures.ts
+│   │   │   │   │   ├── narrow-workbench.ts
 │   │   │   │   │   ├── render.tsx
 │   │   │   │   │   ├── reporting-income-comparison-fixtures.ts
 │   │   │   │   │   ├── scenarios.ts
@@ -15305,6 +15318,7 @@ Meridian-main
 │   │   │   ├── MarketScenarioBuilder.cs
 │   │   │   ├── PolygonStubClient.cs
 │   │   │   ├── RecordingLogger.cs
+│   │   │   ├── RepositoryFileWalker.cs
 │   │   │   ├── SecurityMasterTestCapabilityFloor.cs
 │   │   │   ├── SignalingMarketEventPublisher.cs
 │   │   │   ├── StubHttpMessageHandler.cs
@@ -16367,6 +16381,7 @@ Meridian-main
 │   │   ├── test_msix_predecessor_workflow.py
 │   │   ├── test_nullable_warning_ratchet.py
 │   │   ├── test_postgresql_payload.py
+│   │   ├── test_pr_draft_gating.py
 │   │   ├── test_prepare_dk1_operator_signoff.py
 │   │   ├── test_production_certification_workflow.py
 │   │   ├── test_production_readiness_registry.py
