@@ -1,3 +1,4 @@
+using System.Globalization;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Sdk;
 using ExecutionOrderSide = Meridian.Execution.Sdk.OrderSide;
@@ -63,6 +64,46 @@ internal static class IBCanonicalPayloadMapper
 
     public static Meridian.Execution.Sdk.OrderSide ParseSide(string? action, IReadOnlyDictionary<string, string>? metadata = null)
         => TryMap(SideMap, action, "side", Meridian.Execution.Sdk.OrderSide.Buy, metadata);
+
+    /// <summary>
+    /// Parses an Interactive Brokers execution time. IB reports <c>yyyyMMdd-HH:mm:ss</c> in UTC,
+    /// or <c>yyyyMMdd HH:mm:ss</c> followed by the TWS time zone name (for example
+    /// <c>US/Eastern</c>). A time with no zone is in the TWS login's local time zone, which the API
+    /// does not report, so it is not placed on the timeline and the caller keeps its fallback.
+    /// </summary>
+    internal static bool TryParseExecutionTime(string? value, out DateTimeOffset executedAt)
+    {
+        executedAt = default;
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        var text = value.Trim();
+        if (DateTime.TryParseExact(text, "yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var utc))
+        {
+            executedAt = new DateTimeOffset(utc, TimeSpan.Zero);
+            return true;
+        }
+
+        var parts = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length != 3 ||
+            !DateTime.TryParseExact($"{parts[0]} {parts[1]}", "yyyyMMdd HH:mm:ss", CultureInfo.InvariantCulture,
+                DateTimeStyles.None, out var local))
+            return false;
+
+        TimeZoneInfo zone;
+        try
+        {
+            zone = TimeZoneInfo.FindSystemTimeZoneById(parts[2]);
+        }
+        catch (Exception ex) when (ex is TimeZoneNotFoundException or InvalidTimeZoneException)
+        {
+            return false;
+        }
+
+        executedAt = new DateTimeOffset(local, zone.GetUtcOffset(local)).ToUniversalTime();
+        return true;
+    }
 
     internal static bool TryParseKnownSide(string? action, out ExecutionOrderSide side)
         => TryGetKnown(SideMap, action, out side);

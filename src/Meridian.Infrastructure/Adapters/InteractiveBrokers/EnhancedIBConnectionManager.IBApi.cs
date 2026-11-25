@@ -1715,7 +1715,10 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     {
         RecordMessageReceived();
 
-        var executedAt = DateTimeOffset.TryParse(execution.Time, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsed)
+        // IB's execution-time formats are not ones DateTimeOffset.TryParse accepts, so a generic
+        // parse always fell back to receipt time. Receipt time remains the fallback only for a
+        // zone-less local time, which cannot be placed on the timeline.
+        var executedAt = IBCanonicalPayloadMapper.TryParseExecutionTime(execution.Time, out var parsed)
             ? parsed
             : DateTimeOffset.UtcNow;
 

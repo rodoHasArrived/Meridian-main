@@ -188,9 +188,23 @@ public sealed record PaperSessionFillRecord(
     /// The full payload hash remains a separate conflict detector so changed non-identity
     /// content cannot silently reuse this id.
     /// </summary>
+    /// <remarks>
+    /// A fill that carries the broker's own <see cref="ExecutionReport.ExecutionId"/> is identified
+    /// by it alone: Meridian order ids, symbol mapping and timestamps can differ for the same
+    /// execution (for example across a restart), while two executions with identical economics are
+    /// still different fills. Reusing the id with different content fails closed through the content
+    /// hash. Fills without an execution id keep the original content-derived identity unchanged, so
+    /// every retained record still validates.
+    /// </remarks>
     public static Guid ComputeCanonicalFillId(ExecutionReport fill)
     {
         ArgumentNullException.ThrowIfNull(fill);
+
+        if (!string.IsNullOrWhiteSpace(fill.ExecutionId))
+        {
+            var executionIdentity = BrokerExecutionIdentityPrefix + EncodeIdentityPart(fill.ExecutionId.Trim());
+            return new Guid(Sha256Digest.ComputeBytesUtf8(executionIdentity).AsSpan(0, 16));
+        }
 
         var canonicalIdentity = string.Join(
             "|",
@@ -250,6 +264,8 @@ public sealed record PaperSessionFillRecord(
 
         return this;
     }
+
+    private const string BrokerExecutionIdentityPrefix = "broker-execution-v1|";
 
     private static string EncodeIdentityPart(string? value)
         => value is null
