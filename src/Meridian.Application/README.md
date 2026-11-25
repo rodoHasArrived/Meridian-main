@@ -214,6 +214,19 @@ Unknown roles, unbalanced projections, missing required amounts and negative sou
 before posting or draft creation. Public compatibility line helpers use registry definitions without
 inventing a posting scope; zero-line filtering cannot discard a malformed monetary component.
 
+Loan restructuring uses shared haircut validation against outstanding principal in both the in-memory
+and PostgreSQL command paths. Null means zero; a negative amount or one above outstanding principal
+is rejected before terms, state or history changes. The admitted amount reduces principal and
+drawdown lots using the existing earliest-drawdown policy and supplies the restructuring journal.
+The event retains `appliedPrincipalHaircut`, matching journal amount aliases, and the exact new
+terms version and servicing revision. `DirectLendingEventRebuilder` restores these facts, including
+their recorded timestamps, and rejects inconsistent amounts or projection evidence. Older events
+without embedded revisions use their retained event timestamp. Identical command retries reuse
+the committed restructuring, including after a full haircut; altered requests under the same
+command ID conflict. Restructuring outbox messages use the retained event ID in their duplicate
+key so earlier loan events cannot suppress their publication. Rebuilding state leaves retained
+events and posted journals unchanged.
+
 Backfill diagnostics render date ranges invariantly and encode line breaks in untrusted log fields.
 Provider requests and coverage checkpoints retain the original symbol identities.
 

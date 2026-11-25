@@ -1284,17 +1284,27 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             return DirectLendingCommandResult<LoanContractDetailDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
         }
 
+        var replay = await TryReplayCommittedRestructuringAsync(loanId, request, metadata, ct).ConfigureAwait(false);
+        if (replay is not null)
+        {
+            return replay;
+        }
+
+        var validationError = DirectLendingServiceSupport.ValidateRestructuringRequest(
+            request, stored.Servicing.Balances.PrincipalOutstanding);
+        if (validationError is not null)
+        {
+            return new DirectLendingCommandResult<LoanContractDetailDto>(null, validationError);
+        }
+
+        var appliedHaircut = request.HaircutAmount ?? 0m;
+        var recordedAt = DateTimeOffset.UtcNow;
         var termsVersions = stored.Contract.TermsVersions.ToList();
         var currentTerms = stored.Contract.CurrentTerms;
         var currentTermsVersion = stored.Contract.CurrentTermsVersion;
+        LoanTermsVersionDto? newTermsVersion = null;
         if (request.NewTerms is not null)
         {
-            var validationError = DirectLendingServiceSupport.ValidateTerms(request.NewTerms);
-            if (validationError is not null)
-            {
-                return new DirectLendingCommandResult<LoanContractDetailDto>(null, validationError);
-            }
-
             if (_options.RequireSecurityMasterReferenceForDurableWrites)
             {
                 validationError = DirectLendingServiceSupport.ValidateSecurityMasterReferenceRequired(request.NewTerms);
@@ -1308,16 +1318,15 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
                 ? 1
                 : termsVersions.Max(static version => version.VersionNumber) + 1;
             currentTerms = request.NewTerms;
-            termsVersions.Add(DirectLendingServiceSupport.CreateTermsVersion(
+            newTermsVersion = DirectLendingServiceSupport.CreateTermsVersion(
                 currentTermsVersion,
                 request.NewTerms,
                 "loan.restructured",
                 request.Reason,
-                DateTimeOffset.UtcNow));
+                recordedAt);
+            termsVersions.Add(newTermsVersion);
         }
 
-        var haircutAmount = Math.Max(0m, request.HaircutAmount ?? 0m);
-        var principalOutstanding = Math.Max(0m, stored.Servicing.Balances.PrincipalOutstanding - haircutAmount);
         var contract = stored.Contract with
         {
             Status = LoanStatus.Workout,
@@ -1327,15 +1336,18 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
                 .OrderBy(static item => item.VersionNumber)
                 .ToArray()
         };
-        var servicing = AddRevision(
-            stored.Servicing with
-            {
-                Status = LoanStatus.Workout,
-                Balances = stored.Servicing.Balances with { PrincipalOutstanding = principalOutstanding }
-            },
+        var servicingRevision = new ServicingRevisionDto(
+            stored.Servicing.ServicingRevision + 1,
             "Restructuring",
             request.EffectiveDate,
+            recordedAt,
             request.Reason);
+        var servicing = DirectLendingServiceSupport.ApplyRestructuringHaircut(stored.Servicing, appliedHaircut) with
+        {
+            Status = LoanStatus.Workout,
+            ServicingRevision = servicingRevision.RevisionNumber,
+            RevisionHistory = new[] { servicingRevision }.Concat(stored.Servicing.RevisionHistory).ToArray()
+        };
 
         using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
         {
@@ -1344,23 +1356,73 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             request.Reason,
             request.EffectiveDate,
             request.NewTerms,
-            HaircutAmount = haircutAmount,
-            PrincipalHaircut = haircutAmount
+            HaircutAmount = appliedHaircut,
+            PrincipalHaircut = appliedHaircut,
+            AppliedPrincipalHaircut = appliedHaircut,
+            NewTermsVersion = newTermsVersion,
+            ServicingRevision = servicingRevision
         });
 
-        await SaveAsync(
-            loanId,
-            stored.AggregateVersion,
-            stored.AggregateVersion + 1,
-            contract,
-            servicing,
-            eventType: "loan.restructured",
-            effectiveDate: request.EffectiveDate,
-            payload,
-            metadata,
-            ct: ct).ConfigureAwait(false);
+        try
+        {
+            await SaveAsync(
+                loanId,
+                stored.AggregateVersion,
+                stored.AggregateVersion + 1,
+                contract,
+                servicing,
+                eventType: "loan.restructured",
+                effectiveDate: request.EffectiveDate,
+                payload,
+                metadata,
+                ct: ct).ConfigureAwait(false);
+        }
+        catch (DirectLendingCommandException ex) when (ex.Error.Code is DirectLendingErrorCode.Conflict or DirectLendingErrorCode.ConcurrencyConflict)
+        {
+            // A concurrent retry can have captured different projection timestamps before the first
+            // request committed. Only the same retained command request may resolve that conflict.
+            replay = await TryReplayCommittedRestructuringAsync(loanId, request, metadata, ct).ConfigureAwait(false);
+            if (replay is not null)
+            {
+                return replay;
+            }
+
+            throw;
+        }
 
         return DirectLendingCommandResult<LoanContractDetailDto>.Success(contract);
+    }
+
+    private async Task<DirectLendingCommandResult<LoanContractDetailDto>?> TryReplayCommittedRestructuringAsync(
+        Guid loanId,
+        RestructureLoanRequest request,
+        DirectLendingCommandMetadataDto? metadata,
+        CancellationToken ct)
+    {
+        if (metadata?.CommandId is not Guid commandId || commandId == Guid.Empty)
+        {
+            return null;
+        }
+
+        var history = await _queryService.GetHistoryAsync(loanId, ct).ConfigureAwait(false);
+        var match = DirectLendingServiceSupport.FindCommittedRestructuringCommand(history, commandId, request);
+        if (match == CommittedCommandMatch.Conflict)
+        {
+            return DirectLendingCommandResult<LoanContractDetailDto>.Failure(
+                DirectLendingErrorCode.Conflict,
+                $"Direct lending command id {commandId} was already used for a different mutation on loan {loanId}.");
+        }
+
+        if (match != CommittedCommandMatch.Replay)
+        {
+            return null;
+        }
+
+        var committed = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        return committed is not null
+            ? DirectLendingCommandResult<LoanContractDetailDto>.Success(committed.Contract)
+            : DirectLendingCommandResult<LoanContractDetailDto>.Failure(
+                DirectLendingErrorCode.Conflict, "The committed restructuring state is unavailable; retry after recovery.");
     }
 
     public async Task<DirectLendingCommandResult<LoanServicingStateDto>> AmortizeDiscountPremiumAsync(Guid loanId, AmortizeDiscountPremiumRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
