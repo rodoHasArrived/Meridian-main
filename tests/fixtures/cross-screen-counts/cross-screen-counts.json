@@ -11,6 +11,25 @@
     },
     { "name": "status matching ignores case and surrounding space", "statuses": [" healthy ", "HEALTHY", "Unknown"], "healthy": 2, "total": 3 }
   ],
+  "providerStatus": [
+    { "name": "no readiness row keeps the listed status", "listed": "Healthy", "readiness": null, "status": "Healthy" },
+    { "name": "no readiness row keeps an unrecognised listed status as sent", "listed": "Unknown", "readiness": null, "status": "Unknown" },
+    { "name": "ready readiness and a healthy listing are healthy", "listed": "Healthy", "readiness": "Ready", "status": "Healthy" },
+    { "name": "ready readiness never hides a listed warning", "listed": "Warning", "readiness": "Ready", "status": "Warning" },
+    { "name": "blocked readiness outranks a healthy listing", "listed": "Healthy", "readiness": "Blocked", "status": "Blocked" },
+    { "name": "degraded readiness outranks a listed warning", "listed": "Warning", "readiness": "Degraded", "status": "Degraded" },
+    { "name": "a listed block outranks degraded readiness", "listed": "Blocked", "readiness": "Degraded", "status": "Blocked" },
+    { "name": "review readiness is a warning", "listed": "Healthy", "readiness": "Review", "status": "Warning" },
+    { "name": "unknown readiness is a warning", "listed": "Healthy", "readiness": "Unknown", "status": "Warning" },
+    { "name": "an unrecognised listed status beside readiness is a warning", "listed": "Connecting", "readiness": "Ready", "status": "Warning" }
+  ],
+  "providerEvidenceStaleness": [
+    { "name": "healthy on evidence within three days stays healthy", "status": "Healthy", "now": "2026-06-05T12:00:00Z", "observedAt": ["2026-06-02T12:00:00Z", null], "capped": "Healthy" },
+    { "name": "healthy on evidence older than three days is a warning", "status": "Healthy", "now": "2026-06-05T12:00:01Z", "observedAt": ["2026-06-02T12:00:00Z"], "capped": "Warning" },
+    { "name": "the newest evidence decides", "status": "Healthy", "now": "2026-06-10T00:00:00Z", "observedAt": ["2026-05-01T00:00:00Z", "2026-06-09T00:00:00Z"], "capped": "Healthy" },
+    { "name": "no timestamped evidence is unknown, not stale", "status": "Healthy", "now": "2026-06-10T00:00:00Z", "observedAt": [null], "capped": "Healthy" },
+    { "name": "only a healthy status is capped", "status": "Blocked", "now": "2026-06-10T00:00:00Z", "observedAt": ["2026-01-01T00:00:00Z"], "capped": "Blocked" }
+  ],
   "openBreaks": [
     { "name": "empty queue", "statuses": [], "open": 0 },
     { "name": "open and in review are open", "statuses": ["Open", "InReview"], "open": 2 },

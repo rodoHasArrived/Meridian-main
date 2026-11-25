@@ -303,7 +303,7 @@ try {
   await page.getByRole('button').first().focus(); await page.keyboard.press('Space');
   assert.equal((await page.evaluate(() => window.events)).length, 1);
   await mount('correlation');
-  assert.equal(await page.getByRole('grid').getByRole('row').count(), 3);
+  assert.equal(await page.getByRole('table', {name:'Correlation matrix'}).getByRole('row').count(), 3);
   assert(!/Infinity|NaN/.test(await page.locator('#fixture').innerHTML()));
   await mount('timeframe', { value: '1D' });
   assert.equal(await page.getByRole('radio').evaluateAll(nodes => nodes.filter(node => node.tabIndex === 0).length), 1);

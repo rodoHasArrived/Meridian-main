@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
@@ -80,14 +81,15 @@ function CapitalBookWorkbench({ bookId, onLockedChange }: { bookId: string; onLo
   const [uncertain, setUncertain] = useState(false);
   const [result, setResult] = useState<CapitalCallIssuanceIntakeRunResult | null>(null);
   const [selectedCall, setSelectedCall] = useState("");
+  const [planFormKey, setPlanFormKey] = useState("");
   const reads = useRef<AbortController | null>(null);
   const writes = useRef<AbortController | null>(null);
   const pending = useRef<{ label: string; action: (signal: AbortSignal) => Promise<unknown>; refresh: boolean } | null>(null);
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (keep = false) => { // keep: a header refresh re-reads without blanking the workbench or remounting the plan form.
     reads.current?.abort(); const controller = new AbortController(); reads.current = controller;
-    setLoading(true); setWorkbench(null); setError("");
+    setLoading(true); if (!keep) { setWorkbench(null); setError(""); }
     try { const value = await api.getPrivateCapitalWorkbench(bookId, { signal: controller.signal });
-      if (!controller.signal.aborted) setWorkbench(value);
+      if (!controller.signal.aborted) { setWorkbench(value); if (keep) setError(""); else setPlanFormKey(value.generatedAtUtc); }
     } catch (cause) { if (!controller.signal.aborted) setError(describeApiError(cause, "Capital authority could not load.").summary);
     } finally { if (!controller.signal.aborted) setLoading(false); }
   }, [bookId]);
@@ -118,7 +120,7 @@ function CapitalBookWorkbench({ bookId, onLockedChange }: { bookId: string; onLo
   return <div className="space-y-4">
     <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">{workbench ? `Retained capital activity · ${workbench.scope.currency}` : "Loading book authority"}</p>
       {workbench ? <TechnicalDetails label="Operating authority"><p className="break-all text-xs">Fund {workbench.scope.fundProfileId} · Entity {workbench.scope.entityId} · Book {workbench.scope.ledgerBookId}</p></TechnicalDetails> : null}
-      <Button variant="outline" disabled={loading || !!busy} onClick={() => void refresh()}>Refresh retained records</Button></div>
+      <PanelReload reload={() => { if (!loading && !busy) void refresh(true); }} failed={!loading && !workbench} busy={!!busy} what="retained capital records" /></div>
     {loading ? <p role="status">Loading commitment and posting authority…</p> : null}
     {busy ? <p role="status" className="text-sm">{busy} is in progress…</p> : null}
     {error ? <StatusBanner role="alert" tone="danger" title="Capital activity unavailable" detail={error} /> : null}
@@ -131,7 +133,7 @@ function CapitalBookWorkbench({ bookId, onLockedChange }: { bookId: string; onLo
     {workbench ? <>
       <CapitalCommitmentForm bookId={bookId} locked={locked} mutate={mutate} />
       <CommitmentRegister rows={workbench.commitments} currency={workbench.scope.currency} bookId={bookId} locked={locked} mutate={mutate} />
-      <CapitalCallPlanForm key={workbench.generatedAtUtc} bookId={bookId} commitments={workbench.commitments} locked={locked} mutate={mutate} onRetained={setSelectedCall} />
+      <CapitalCallPlanForm key={planFormKey} bookId={bookId} commitments={workbench.commitments} locked={locked} mutate={mutate} onRetained={setSelectedCall} />
       <Card><CardHeader><CardTitle>Retained calls</CardTitle><CardDescription>Plans reserve no posted cash. Posted issuance creates the receivable; posted funding reduces it.</CardDescription></CardHeader><CardContent className="space-y-3">
         {workbench.calls.length === 0 ? <p className="text-sm" role="status">No capital calls retained for this book.</p> : <div className="flex flex-wrap gap-2">{workbench.calls.map(row =>
           <Button key={row.callId} variant={selectedCall === row.callId ? "default" : "outline"} disabled={locked} onClick={() => setSelectedCall(row.callId)}>{row.callId} · {capitalAmount(row.amountToCall, row.scope.currency)}{capitalCallIsOverdue(row, workbench.generatedAtUtc) ? <Badge variant="warning">Overdue receivable</Badge> : null}</Button>)}</div>}
@@ -183,7 +185,7 @@ function CallDetail({ call, generatedAtUtc, notices, locked, mutate }: { call: P
     </div>
     <CapitalFundingForm call={call} locked={locked} mutate={mutate} />
     <section className="space-y-2" aria-label="Investor notices"><h3 className="text-sm font-semibold">Investor notices</h3>
-      <p className="text-sm text-muted-foreground">Generate a draft notice from posted issuance. Regenerate creates a new notice run; retrying an unconfirmed request recovers its original run. Release and delivery use the governed Reporting workflow and remain separate from cash.</p>
+      <p className="text-sm text-muted-foreground">Generate a draft notice from posted issuance. Regenerate creates a new notice run; retrying an unconfirmed request recovers its original run. Release and delivery use the Reporting workflow and remain separate from cash.</p>
       {call.lines.map(line => {
         const installmentNotices = callNotices.filter(notice => notice.investorId === line.investorId && notice.commitmentId === line.commitmentId);
         const investorInstallmentCount = call.lines.filter(candidate => candidate.investorId === line.investorId).length;

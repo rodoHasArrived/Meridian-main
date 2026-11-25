@@ -1,15 +1,17 @@
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { formatNumber, formatCurrency } from "@/lib/format";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
-import { RefreshCw, ShieldAlert } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
+import { ShieldAlert } from "lucide-react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PanelSurface } from "@/components/ui/panel-surface";
 import { certifyMarginSnapshot, getMarginControlCenter } from "@/lib/api";
 import type { MarginControlAccount, MarginControlCenter } from "@/types";
+import { MarginComparisonOverview, marginAccountAnchor, marginAccountKey } from "@/screens/margin-comparison-overview";
 import { cn } from "@/lib/utils";
 import { usesTrackedCaps } from "@/design-system/label-case";
 
@@ -17,16 +19,20 @@ export function MarginControlCenterScreen() {
   const [data, setData] = useState<MarginControlCenter | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const loadGeneration = useRef(0);
 
   const load = useCallback(async (signal?: AbortSignal) => {
+    const generation = ++loadGeneration.current;
     setLoading(true);
     setError(null);
     try {
-      setData(await getMarginControlCenter({ signal }));
+      const next = await getMarginControlCenter({ signal });
+      if (!signal?.aborted && generation === loadGeneration.current) setData(next);
     } catch (reason) {
-      if (!signal?.aborted) setError(reason instanceof Error ? reason.message : "Margin control data could not be loaded.");
+      if (!signal?.aborted && generation === loadGeneration.current) setError(reason instanceof Error ? reason.message : "Margin control data could not be loaded.");
     } finally {
-      if (!signal?.aborted) setLoading(false);
+      if (!signal?.aborted && generation === loadGeneration.current) setLoading(false);
     }
   }, []);
 
@@ -49,15 +55,13 @@ export function MarginControlCenterScreen() {
             remain authoritative; this workspace never liquidates positions or changes orders.
           </p>
         </div>
-        <Button size="sm" variant="outline" onClick={() => void load()} busy={loading} busyLabel="Refreshing…">
-          <RefreshCw className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-          Refresh
-        </Button>
+        <PanelReload reload={() => load()} failed={error !== null} busy={loading} what="margin control data" />
       </PanelSurface>
 
       {error ? (
         <div className="rounded-[2px] border border-destructive/40 bg-destructive/5 p-3 text-xs text-destructive" role="alert">
           {error}
+          {data ? " Last successfully loaded snapshots remain visible; the refresh failed." : ""}
         </div>
       ) : null}
 
@@ -68,10 +72,16 @@ export function MarginControlCenterScreen() {
           <div className="rounded-[2px] border border-amber-300/70 bg-amber-50 p-3 text-xs leading-5 text-amber-950">
             {data.authorityNote} <span className="font-medium">Next:</span> {data.nextAction}
           </div>
+          <MarginComparisonOverview accounts={data.accounts} selectedId={selectedId} onSelect={(account) => {
+            setSelectedId(marginAccountKey(account));
+            const evidence = document.getElementById(marginAccountAnchor(account));
+            evidence?.focus();
+            evidence?.scrollIntoView?.({ block: "start", behavior: "auto" });
+          }} />
           <PrimeTable data={data} />
           <AlertPanel data={data} />
           <div className="flex flex-col gap-3">
-            {data.accounts.map((account) => <AccountMarginCard key={`${account.providerId}:${account.accountId}`} account={account} onCertified={() => void load()} />)}
+            {data.accounts.map((account) => <div id={marginAccountAnchor(account)} key={marginAccountKey(account)} tabIndex={-1} className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" aria-label={`Margin evidence ${account.providerId} ${account.accountId}`}><AccountMarginCard account={account} onCertified={() => void load()} /></div>)}
           </div>
         </>
       ) : null}
@@ -91,7 +101,7 @@ function SummaryCards({ data, loading }: { data: MarginControlCenter | null; loa
       {items.map(([label, value]) => (
         <Card key={label}>
           <CardContent className="p-4">
-            <p className={cn("text-[0.6875rem] font-medium text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</p>
+            <p className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</p>
             <p className="mt-2 font-mono text-xl font-semibold tabular-nums">{loading ? "—" : value ?? 0}</p>
           </CardContent>
         </Card>
@@ -130,7 +140,7 @@ function AlertPanel({ data }: { data: MarginControlCenter }) {
           <div key={`${alert.providerId}:${alert.accountId}:${alert.code}:${index}`} className="rounded-[2px] border border-border p-3 text-xs">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant={alert.severity === "Critical" ? "danger" : alert.severity === "Warning" ? "warning" : "outline"}>{alert.severity}</Badge>
-              <span className="font-mono text-[0.6875rem] text-muted-foreground">{alert.code}</span>
+              <span className="font-mono text-xs text-muted-foreground">{alert.code}</span>
               <span className="font-medium">{alert.providerId} · {alert.accountId}</span>
             </div>
             <p className="mt-2">{alert.message}</p>
@@ -227,7 +237,7 @@ function Comparison({ label, initial, maintenance, excess, currency }: { label: 
   return <div className="rounded-[2px] border border-border p-3"><p className="text-xs font-semibold">{label}</p><dl className="mt-2 grid grid-cols-3 gap-2 text-xs"><div><dt className="text-muted-foreground">Initial</dt><dd className="mt-1 font-mono">{money(initial, currency)}</dd></div><div><dt className="text-muted-foreground">Maintenance</dt><dd className="mt-1 font-mono">{money(maintenance, currency)}</dd></div><div><dt className="text-muted-foreground">Excess</dt><dd className="mt-1 font-mono">{money(excess, currency)}</dd></div></dl></div>;
 }
 
-function Metric({ label, value }: { label: string; value: string }) { return <div><p className={cn("text-[0.6875rem] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</p><p className="mt-1 font-mono text-sm font-semibold tabular-nums">{value}</p></div>; }
+function Metric({ label, value }: { label: string; value: string }) { return <div><p className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</p><p className="mt-1 font-mono text-sm font-semibold tabular-nums">{value}</p></div>; }
 function number(value: number) { return formatNumber(value, { maximumFractionDigits: 4 }); }
 function money(value: number | null | undefined, currency?: string) { return value == null ? "—" : currency ? formatCurrency(value, { currency, maximumFractionDigits: 2 }) : "Currency unavailable"; }
 function dateTime(value: string) { return formatDateTimeLabel(value); }

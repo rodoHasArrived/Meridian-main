@@ -324,8 +324,18 @@ This integration-manifest boundary is independent of provider composition work i
 [#3066](https://github.com/rodoHasArrived/Meridian-main/pull/3066). Those changes own provider-family
 aliases, capability factories, module registration, and readiness projections. Integration manifest
 ids remain configuration identities; ProviderSdk capability-registration manifests do not replace
-these retained mapping revisions. Catalog and broader metadata/lineage acceptance under
-`PRD-102` remain separate work.
+these retained mapping revisions.
+
+Storage catalogs now retain content-addressed immutable revisions containing both manifest and
+complete directory-index snapshots. The compatible current manifest pins its revision digest;
+publishing compares the observed current generation under a cross-process lease. Candidates and
+loose directory exports cannot supersede the last successfully published snapshot after interruption.
+Restart verifies exact referenced content; corrupt current references and missing revisions fail
+closed. Legacy migration preserves the complete surviving catalog without inventing earlier history.
+Catalog readers receive detached snapshots, and integrity verification refuses to certify a successor
+generation. Lineage and metadata mutations reload retained state under a cross-process file lease,
+commit before publication, and explicitly reject damaged snapshots rather than replace them with
+empty history. This local file-store evidence does not certify an entire production release.
 
 ## Manifest Shape
 

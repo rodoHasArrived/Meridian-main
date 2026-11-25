@@ -23,13 +23,13 @@ public sealed class ProviderAccountingViewModelTests
             .Which.Error.Should().Be("InvalidOperationException: Provider construction failed.");
         viewModel.RateLimits.Should().ContainSingle();
         var rateLimit = viewModel.RateLimits[0];
-        rateLimit.RequestUsage.Should().Be("8 / 10");
-        rateLimit.Remaining.Should().Be("2");
+        rateLimit.RequestUsage.Should().Be("8 / 10 requests");
+        rateLimit.Remaining.Should().Be("2 requests");
         rateLimit.ResetCountdown.Should().Be("1m 5s");
         rateLimit.FailureReason.Should().Be("Current rate-limit reason: provider response.");
         rateLimit.RetryPosture.Should().Be("Retry after 1m 5s.");
         rateLimit.ConnectionPosture.Should().Be("Unknown — reachability unavailable; no runtime diagnostics.");
-        viewModel.HistoryPosture.Should().Contain("not retained");
+        viewModel.HistoryPosture.Should().Contain("seven UTC days");
     }
 
     [Fact]
@@ -81,12 +81,12 @@ public sealed class ProviderAccountingViewModelTests
             BuildConnectionHealth(false).Providers[0]);
 
         row.Status.Should().Be("State unavailable");
-        row.RequestUsage.Should().Be("Unavailable / 10");
+        row.RequestUsage.Should().Be("Unavailable / 10 requests");
         row.Remaining.Should().Be("Unavailable");
-        row.FailureReason.Should().Contain("history is not retained");
+        row.FailureReason.Should().Contain("No current failure reported");
         row.RetryPosture.Should().Contain("unavailable");
         row.ConnectionPosture.Should().Be("Disconnected — runtime probe reports unreachable (socket closed).");
-        row.HistoryPosture.Should().Contain("not retained");
+        row.HistoryPosture.Should().Contain("seven UTC days");
     }
 
     [Theory]

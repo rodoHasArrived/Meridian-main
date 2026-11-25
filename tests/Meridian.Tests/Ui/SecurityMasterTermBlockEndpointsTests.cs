@@ -29,7 +29,7 @@ public sealed class SecurityMasterTermBlockEndpointsTests
     private const string SignedInOperator = "casey.doyle";
 
     [Theory]
-    [InlineData("Bond", 3)]
+    [InlineData("Bond", 5)]
     [InlineData("CertificateOfDeposit", 5)]
     [InlineData("StructuredCredit", 6)]
     public async Task PutScheduleConventions_OnAWritableClass_DelegatesValidationWithTheSessionActor(
@@ -62,9 +62,9 @@ public sealed class SecurityMasterTermBlockEndpointsTests
     }
 
     [Theory]
-    [InlineData("Bond", "callSchedule", 3, """[{"callDate":"2030-06-15","callPrice":101,"exerciseStyle":"European"}]""")]
-    [InlineData("Bond", "callSchedule", 3, "[]")]
-    [InlineData("Bond", "putSchedule", 3, """[{"putDate":"2029-06-15","exerciseStyle":"European"}]""")]
+    [InlineData("Bond", "callSchedule", 5, """[{"callDate":"2030-06-15","callPrice":101,"exerciseStyle":"European"}]""")]
+    [InlineData("Bond", "callSchedule", 5, "[]")]
+    [InlineData("Bond", "putSchedule", 5, """[{"putDate":"2029-06-15","exerciseStyle":"European"}]""")]
     [InlineData("CertificateOfDeposit", "callSchedule", 5, """[{"callDate":"2026-09-30","exerciseStyle":"European"}]""")]
     [InlineData("CertificateOfDeposit", "putSchedule", 5, """[{"putDate":"2026-09-30","exerciseStyle":"European"}]""")]
     [InlineData("StructuredCredit", "callSchedule", 6, """[{"callDate":"2030-06-15","callPrice":101,"exerciseStyle":"European"}]""")]

@@ -30,6 +30,43 @@ public sealed class PaperGatewayLiveFeedPricingTests
         return cache;
     }
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(10000)]
+    public async Task ExecutionGateway_MarketOrder_CannotOverrideObservedPriceWithLimit(decimal callerPrice)
+    {
+        var cache = CreateCacheWithTrade("SPY", 100m);
+        await using var gateway = new ExecutionGateway(NullLogger<ExecutionGateway>.Instance, liveFeed: cache);
+        var report = await gateway.SubmitOrderAsync(new OrderRequest
+        {
+            Symbol = "SPY",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1m,
+            LimitPrice = callerPrice
+        });
+
+        report.OrderStatus.Should().Be(OrderStatus.Filled);
+        report.FillPrice.Should().Be(100m);
+    }
+
+    [Fact]
+    public async Task ExecutionGateway_MarketOrder_CallerLimitWithoutFeedStillRejects()
+    {
+        await using var gateway = new ExecutionGateway(NullLogger<ExecutionGateway>.Instance);
+        var report = await gateway.SubmitOrderAsync(new OrderRequest
+        {
+            Symbol = "SPY",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1m,
+            LimitPrice = 1m
+        });
+
+        report.OrderStatus.Should().Be(OrderStatus.Rejected);
+        report.FillPrice.Should().BeNull();
+    }
+
     [Fact]
     public async Task AdapterGateway_MarketOrder_FillsAtLastTradePriceFromFeed()
     {
@@ -194,10 +231,10 @@ public sealed class PaperGatewayLiveFeedPricingTests
     }
 
     [Fact]
-    public async Task ExecutionGateway_MarketOrder_CallerProvidedSimulatedPriceStillWins()
+    public async Task ExecutionGateway_MarketSell_CallerLimitCannotImproveObservedPrice()
     {
         var cache = CreateCacheWithTrade("SPY", 512.25m);
-        var gateway = new ExecutionGateway(
+        await using var gateway = new ExecutionGateway(
             NullLogger<ExecutionGateway>.Instance,
             securityMaster: null,
             options: null,
@@ -206,12 +243,12 @@ public sealed class PaperGatewayLiveFeedPricingTests
         var report = await gateway.SubmitOrderAsync(new OrderRequest
         {
             Symbol = "SPY",
-            Side = OrderSide.Buy,
+            Side = OrderSide.Sell,
             Type = OrderType.Market,
             Quantity = 3m,
-            LimitPrice = 500m
+            LimitPrice = 600m
         });
 
-        report.FillPrice.Should().Be(500m, "an explicit caller-simulated price must take precedence over the feed");
+        report.FillPrice.Should().Be(512.25m, "a Market sell must use observed execution evidence");
     }
 }

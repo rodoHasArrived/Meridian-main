@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using FluentAssertions;
 using Meridian.Core.Exceptions;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Tests.TestHelpers;
 
@@ -15,6 +16,48 @@ namespace Meridian.Tests.Infrastructure.Providers;
 public sealed class FredHistoricalDataProviderTests
 {
     private const string ApiKey = "test-fred-key";
+
+    [Fact]
+    public async Task GetRateObservationsAsync_PreservesProviderUnitsVintageAndOriginalPrecision_WithoutOhlc()
+    {
+        var paths = new List<string>();
+        using var handler = new StubHttpMessageHandler(request =>
+        {
+            paths.Add(request.RequestUri!.PathAndQuery);
+            return request.RequestUri.AbsolutePath.EndsWith("/series", StringComparison.Ordinal)
+                ? JsonResponse("""{ "seriess": [{ "units": "Percent" }] }""")
+                : JsonResponse("""
+                  { "observations": [
+                    { "date": "2024-01-02", "value": "5.12345678901234567890123456", "realtime_start": "2024-01-03", "realtime_end": "9999-12-31" },
+                    { "date": "2024-01-03", "value": ".", "realtime_start": "2024-01-04", "realtime_end": "9999-12-31" }
+                  ] }
+                  """);
+        });
+        using var httpClient = new HttpClient(handler);
+        using var provider = new FredHistoricalDataProvider(ApiKey, httpClient);
+        var rows = await provider.GetRateObservationsAsync("SOFR", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 3));
+        rows.Should().ContainSingle();
+        rows[0].Value.Should().Be(5.12345678901234567890123456m);
+        rows[0].OriginalValue.Should().Be("5.12345678901234567890123456");
+        rows[0].Unit.Should().Be(SecurityRateUnit.Percent);
+        rows[0].Kind.Should().Be(SecurityRateObservationKind.ObservedFixing);
+        rows[0].PublishedAt.Should().BeNull("FRED realtime_start is a vintage, not a publication timestamp");
+        rows[0].VintageDate.Should().Be(new DateOnly(2024, 1, 3));
+        rows[0].VintageEndDate.Should().Be(new DateOnly(9999, 12, 31));
+        rows[0].Currency.Should().Be("USD");
+        paths.Should().Contain(path => path.Contains("units=lin", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task GetRateObservationsAsync_RefusesUnrecognizedEconomicUnits()
+    {
+        using var handler = new StubHttpMessageHandler(_ => JsonResponse("""{ "seriess": [{ "units": "Billions of Dollars" }] }"""));
+        using var httpClient = new HttpClient(handler);
+        using var provider = new FredHistoricalDataProvider(ApiKey, httpClient);
+        Func<Task> act = () => provider.GetRateObservationsAsync("GDP", null, null);
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*units*not a supported rate*");
+        handler.CallCount.Should().Be(1);
+    }
 
     private static readonly string ObservationsResponse = """
         {

@@ -1,11 +1,16 @@
 using Meridian.Identity.Auth;
 using System.Text.Json;
+using Meridian.Application.Backfill;
+using Meridian.Application.Composition.Startup;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Lifecycle;
+using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
+using CoreConfigStore = Meridian.Application.UI.ConfigStore;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -19,6 +24,27 @@ public static class ProviderModuleEndpoints
     {
         var group = app.MapGroup("").WithTags("Provider Setup");
         group.RequireWorkstationTenantScope();
+
+        group.MapGet("/api/providers/activation", (
+            HttpContext context,
+            CoreConfigStore store,
+            [FromServices] BackfillRoutingRuntime? backfill,
+            [FromServices] ProviderRegistry? registry,
+            [FromServices] IRuntimeLifecycleControlPlane? lifecycle,
+            [FromServices] RuntimeSupervisorConnection? supervisor) =>
+        {
+            var registered = registry?.GetAllProviders().Where(provider => provider.IsEnabled)
+                .Select(provider => ProviderIdentity.NormalizeId(provider.Name))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase) ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var mayRestart = EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance)
+                && EndpointAuthorization.TryResolveActor(context, out _);
+            return Results.Json(ProviderActivationProjection.Read(store, backfill?.Current, registered, lifecycle?.Snapshot,
+                supervisor?.IsConfirmed == true, mayRestart),
+                jsonOptions);
+        })
+        .WithName("GetProviderActivation")
+        .RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
+        .Produces<ProviderActivationResponse>(200);
 
         // GET /api/providers/modules — all configured modules with credential status
         group.MapGet(UiApiRoutes.ProviderModules, async (
@@ -132,7 +158,7 @@ public static class ProviderModuleEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        // PUT /api/providers/modules/{moduleId}/enabled — live enable/disable toggle
+        // PUT /api/providers/modules/{moduleId}/enabled — persist the enabled state
         group.MapPut(UiApiRoutes.ProviderModuleEnabled, async (
             HttpContext context,
             [FromServices] IProviderModuleSetupService setupService,
@@ -149,7 +175,7 @@ public static class ProviderModuleEndpoints
                 : Results.BadRequest(result);
         })
         .WithName("SetProviderModuleEnabled").RequirePermission(UserPermission.ManageProviders)
-        .WithDescription("Enables or disables a provider module. Applied live without restart; also persisted to config.")
+        .WithDescription("Saves a provider module's enabled state and returns its configuration activation status.")
         .Produces(200)
         .Produces(400)
         .Produces(StatusCodes.Status403Forbidden)
@@ -182,7 +208,11 @@ public static class ProviderModuleEndpoints
             if (!EndpointAuthorization.HasPermission(context, Identity.Auth.UserPermission.ManageProviders))
                 return EndpointHelpers.Forbidden();
 
-            return Results.Json(matrixService.GetMatrix(), jsonOptions);
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (!tenant.HasTenantScope)
+                return EndpointHelpers.Forbidden();
+
+            return Results.Json(matrixService.GetMatrixForTenant(tenant.TenantId!), jsonOptions);
         })
         .WithName("GetProviderCapabilityMatrix").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Returns the provider × instrument-type capability matrix with data-source discovery failures.")
@@ -190,19 +220,39 @@ public static class ProviderModuleEndpoints
         .Produces(StatusCodes.Status403Forbidden);
 
         // POST /api/providers/restart — graceful restart to apply config changes
-        group.MapPost(UiApiRoutes.ProviderRestart, (
+        group.MapPost(UiApiRoutes.ProviderRestart, async (
             HttpContext context,
-            [FromServices] IHostApplicationLifetime lifetime) =>
+            [FromServices] IRuntimeLifecycleControlPlane? lifecycle,
+            [FromServices] RuntimeSupervisorConnection? supervisor,
+            CancellationToken ct) =>
         {
-            if (!EndpointAuthorization.HasPermission(context, Identity.Auth.UserPermission.ManageProviders))
+            if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance) ||
+                !EndpointAuthorization.TryResolveActor(context, out var actor))
                 return EndpointHelpers.Forbidden();
 
-            lifetime.StopApplication();
-            return Results.Ok(new { restarting = true, message = "Application restart initiated. Reconnect in a few seconds." });
+            if (lifecycle is null || supervisor?.IsConfirmed != true)
+                return ApiProblemDetails.Conflict(context,
+                    "Restart Meridian using its launcher or the process manager that started it.");
+            if (!ProviderActivationProjection.IsReady(lifecycle.Snapshot) &&
+                lifecycle.ActiveShutdownOperation is not { Reason: LifecycleShutdownReason.Restart })
+                return ApiProblemDetails.Conflict(context, "Meridian is already stopping or still starting.");
+
+            var accepted = await lifecycle.RequestShutdownAsync(new LifecycleShutdownRequestDto
+            {
+                Reason = LifecycleShutdownReason.Restart,
+                Detail = "Operator requested a restart to apply provider configuration.",
+                RequestedBy = actor
+            }, ct).ConfigureAwait(false);
+            if (lifecycle.ActiveShutdownOperation is not { Reason: LifecycleShutdownReason.Restart })
+                return ApiProblemDetails.Conflict(context, "Another shutdown is already in progress.");
+
+            context.Response.Headers.Location = accepted.OperationUri;
+            return Results.Json(accepted, jsonOptions, statusCode: StatusCodes.Status202Accepted);
         })
-        .WithName("RestartProviderHost").RequirePermission(UserPermission.ManageProviders)
+        .WithName("RestartProviderHost").RequirePermission(UserPermission.AdminMaintenance)
         .WithDescription("Triggers a graceful application restart to apply provider configuration changes that require a reload.")
-        .Produces(200)
+        .Produces<LifecycleShutdownAcceptedDto>(StatusCodes.Status202Accepted)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status403Forbidden)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }

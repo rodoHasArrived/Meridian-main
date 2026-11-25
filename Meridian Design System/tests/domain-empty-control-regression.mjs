@@ -78,7 +78,7 @@ try {
   await check(['CoverageMatrix'], 'Read-only coverage retains exact hover evidence, scroll focus and no cell activation', ['read-only', 'focus', 'hover', 'evidence'], async () => {
     await mount('matrix', { readOnly: true }); assert.equal(await page.locator('#fixture button').count(), 0);
     const scroll = page.getByRole('region', { name: 'Coverage matrix scroll area' }); await scroll.focus(); assert(await scroll.evaluate(node => node === document.activeElement));
-    const cell = page.getByRole('gridcell', { name: 'Synthetic instrument · July 1 · Partial (2/4 observed bars)', exact: true });
+    const cell = page.getByRole('cell', { name: 'Synthetic instrument · July 1 · Partial (2/4 observed bars)', exact: true });
     assert.equal(await cell.getAttribute('tabindex'), null); await cell.hover(); assert.equal(await page.locator('.mds-covm__readout').textContent(), 'Synthetic instrument · July 1 · Partial (2/4 observed bars)');
     await cell.click(); assert.deepEqual(await events(), []); await page.locator('#outside').hover(); assert.match(await page.locator('.mds-covm__readout').textContent(), /Hover a cell/);
   });

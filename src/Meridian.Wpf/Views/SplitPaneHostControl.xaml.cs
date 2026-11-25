@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Navigation;
 using Meridian.Wpf.Models;
+using WpfNavigationService = Meridian.Wpf.Services.NavigationService;
 
 namespace Meridian.Wpf.Views;
 
@@ -64,6 +66,9 @@ public partial class SplitPaneHostControl : UserControl
                 NavigationUIVisibility = NavigationUIVisibility.Hidden,
                 Background = new SolidColorBrush(Colors.Transparent)
             };
+            AutomationProperties.SetAutomationId(frame, $"WorkspacePane{i}");
+            frame.Navigated += (_, _) => AutomationProperties.SetItemStatus(
+                frame, WpfNavigationService.GetContentPageTag(frame.Content) ?? string.Empty);
             Grid.SetColumn(frame, ContentGrid.ColumnDefinitions.Count - 1);
             ContentGrid.Children.Add(frame);
             _paneFrames.Add(frame);

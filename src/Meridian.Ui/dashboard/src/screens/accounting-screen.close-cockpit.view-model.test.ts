@@ -1166,7 +1166,7 @@ describe("accounting-screen close-cockpit view model", () => {
       expect.objectContaining({
         id: "checklist-signoff",
         label: "Checklist sign-off",
-        value: "0/1",
+        value: "0 of 1 close task",
         detail: "1 close task still requires retained sign-off evidence.",
         tone: "warning"
       }),
@@ -1187,7 +1187,7 @@ describe("accounting-screen close-cockpit view model", () => {
       expect.objectContaining({
         id: "export-certification",
         label: "Export certification",
-        value: "1/2",
+        value: "1 of 2 exports",
         detail: "1 export artifact remains ready for review.",
         tone: "warning"
       }),
@@ -2571,8 +2571,12 @@ describe("accounting-screen close-cockpit view model", () => {
       statusLabel: "Blocked",
       statusTone: "danger",
       periodLabel: "2026-05",
-      fundAccountLabel: "fund-alpha"
+      fundAccountLabel: "Selected fund account"
     });
+    expect(state.technicalDetails).toEqual(expect.arrayContaining([
+      { label: "Fund account ID", value: closeWorkflow.fundAccountId },
+      { label: "Workflow ID", value: closeWorkflow.workflowId }
+    ]));
     expect(state.metricRows).toEqual(expect.arrayContaining([
       // Counted once from the break queue (A3); the workflow's own break case is named in the detail, not added.
       expect.objectContaining({ id: "breaks", value: "1", tone: "warning", detail: expect.stringContaining("also tracks 1 break case") }),
@@ -3138,6 +3142,27 @@ describe("accounting-screen close-cockpit view model", () => {
         sourceRecordIds: ["evidence-1", "evidence-2"], detail: expect.stringContaining("Count: 2") });
       expect(buildCloseCommandCenterViewState(input).status).toBe("ready");
     }
+  });
+  it("routes a shadow-agreement blocker to the onboarding workspace under External GL evidence", () => {
+    const commandCenter: FinancialOperationsCommandCenter = {
+      generatedAtUtc: new Date().toISOString(), fundProfileId: "fund-alpha", ledgerBookId: "book",
+      fundAccountId: "account", periodId: "period", status: "Blocked", isReadyToComplete: false,
+      summary: "Shadow book.", activeItemCount: 0, blockedItemCount: 1, reviewItemCount: 0,
+      metrics: [], queueRows: [], closeReadiness: {
+        scope: { fundProfileId: "fund-alpha", ledgerBookId: "book", fundAccountId: "account", entityId: "entity", periodId: "period" },
+        evaluatedAtUtc: new Date().toISOString(), status: "Blocked", isComplete: true, isReadyToClose: false,
+        contributors: [],
+        blockers: [{ code: "close.shadow-agreement.blocked", contributorId: "shadow-agreement", type: "Blocked", count: 1,
+          severity: "Critical", owner: "Onboarding",
+          message: "The ledger book is a shadow book in parallel run: 1 of 2 required period(s) reconcile cleanly.",
+          recordIds: ["workspace-1"] }]
+      }
+    };
+    const view = buildCloseCommandCenterViewState({ data: accountingWorkspace, commandCenter, workflow: closeWorkflow,
+      workflowLoading: false, workflowError: null, accountingSystemProviders: [], accountingSystemImport: null,
+      accountingSystemReconciliation: null, multiAssetCoverage: null });
+    expect(view.status).toBe("blocked");
+    expect(view.blockerRows[0]).toMatchObject({ ownerLabel: "Onboarding", href: "/accounting/reconciliation/external-gl" });
   });
 
 });

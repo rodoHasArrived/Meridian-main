@@ -213,17 +213,32 @@ class Component extends DCLogic {
   }
 
   componentDidMount() {
-    const I = window.MeridianInstructions;
-    if (I) { this.setState({ instructions: I.list() }); this.unsub = I.subscribe((l) => this.setState({ instructions: l })); }
+    // The scaffold loads the shared read model and instruction store after the
+    // host may already have mounted this screen. Finish boot when both arrive;
+    // a loading render must not require a manual prop change to recover. The DC
+    // host can republish a spine module, so keep the current store authoritative.
+    this.bindDependencies = () => {
+      const B = window.MeridianBooks, I = window.MeridianInstructions;
+      if (!B || !I || (this.booksModel === B && this.instructionStore === I)) return;
+      this.booksModel = B;
+      if (this.instructionStore !== I) {
+        if (this.unsub) this.unsub();
+        this.instructionStore = I;
+        this.unsub = I.subscribe((l) => { if (this.instructionStore === I) this.setState({ instructions: l }); });
+      }
+      this.setState({ instructions: I.list() });
+      this.nameCrumbs();
+    };
+    document.addEventListener("load", this.bindDependencies, true);
+    this.bindDependencies();
     this.syncEnv();
-    this.nameCrumbs();
   }
   componentDidUpdate(prev) {
     this.syncEnv();
     if (prev.startView !== this.props.startView) this.setState({ view: this.props.startView || "tieout" });
     if (prev.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false });
   }
-  componentWillUnmount() { if (this.unsub) this.unsub(); if (this.timer) clearTimeout(this.timer); }
+  componentWillUnmount() { document.removeEventListener("load", this.bindDependencies, true); this.instructionStore = null; if (this.unsub) this.unsub(); if (this.timer) clearTimeout(this.timer); }
 
   syncEnv() {
     const prefs = window.MeridianPrefs;

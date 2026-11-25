@@ -6,6 +6,18 @@ Semver from here forward: **MAJOR** = breaking component API or token removal ·
 
 ## [Unreleased] — increment A · semantic safety
 
+### Fixed — public API review completion (#3520)
+- **`ActionQueue` / `ActionEnvelopeProvider`** — a queue retry binds to the selected instruction, retaining its key, payload and next attempt. Action-only consumers keep their existing behavior; duplicate retries share one dispatch.
+- **`DatePicker` / `DateRangePicker`** — calendar navigation stays within day cells while Tab reaches month, preset and footer controls. Month changes preserve control focus and an enabled day at date bounds; Escape closes and restores trigger focus.
+- **`DataGrid`** — valid decimal strings, including committed edits, participate in proofs, totals and group subtotals. Missing, invalid and nonfinite evidence still withholds a proof or total.
+- **`EditableCell`** — a pending inline edit is canceled when the cell becomes disabled; a later blur cannot commit it. The existing table regression now also runs in `test:patches`.
+- Added source-based Chromium regressions for the three #3520 repairs and included them in `test:patches`; checked bound-control focus on the CI-pinned Chromium browser.
+
+### Fixed — signal wash token and stale identity guidance
+- **`tokens/colors.css`** — `--brand-signal-a10` was a terracotta `rgba()` literal, so it followed neither a brand nor dark mode; it now aliases `--accent-a10` like the rest of the `--brand-signal-*` names.
+- **`BRAND_GUIDELINES.md`** — no longer says `data-brand="steel"` is selectable (4.3.0 has no such preset), and its colour, type and usage guidance state the 4.3.0 values instead of the v2.0 copper palette.
+- **`VISUAL_FOUNDATIONS.md`** · **`guidelines/VISUAL_FOUNDATIONS.md`** — one text in both copies, matching the 4.3.0 tokens. The root copy still described the v2.0 copper identity; the guidelines copy had the palette but named the wrong pending colour, primary-button states, chart ink and type ramp.
+
 ### Fixed — consuming-workstation component review
 - **`ScenarioSelector`** — native button radios support Space/Enter; arrows and Home/End move focus with selection. A missing saved selection leaves a reachable first option without changing the caller's value; read-only choices remain disabled.
 - **`OptimisticProvider`** — observer exceptions no longer reinterpret successful writes or compensating writes as transport failures, interrupt dispatch, or stop subsequent batch notifications. Observer errors remain visible in the console. Source-level Chromium regressions cover both repairs.

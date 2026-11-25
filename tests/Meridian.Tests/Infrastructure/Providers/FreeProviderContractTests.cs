@@ -1,3 +1,4 @@
+using Meridian.Tests.TestHelpers;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Infrastructure.Adapters.Fred;
@@ -72,7 +73,7 @@ public sealed class FredProviderContractTests : HistoricalDataProviderContractTe
 public sealed class TwelveDataProviderContractTests : HistoricalDataProviderContractTests<TwelveDataHistoricalDataProvider>
 {
     protected override TwelveDataHistoricalDataProvider CreateProvider()
-        => new(apiKey: "stub-key");
+        => new(apiKey: "stub-key", rateLimiterRegistry: TwelveDataTestBudget.Create());
 }
 
 /// <summary>

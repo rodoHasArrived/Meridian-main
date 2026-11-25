@@ -11,6 +11,10 @@ last_reviewed: 2026-09-28
 
 # src/Meridian.ProviderSdk
 
+`ProviderRateLimitDiagnosticSnapshot.QuotaUnit` identifies weighted credits versus requests.
+Optional daily usage, maximum, reset time and reset-policy fields preserve vendor account semantics
+alongside compatibility counters. Numeric request-named counters must be labeled with `QuotaUnit`.
+
 `Backfill/IBackfillBarWriter.cs` is the provider-facing persistence port for one historical-bar
 session batch. Storage implements it; application composition supplies it to the backfill worker.
 
@@ -21,6 +25,11 @@ posting method and does not grant external posting capability.
 Connection verification results can carry an opaque expected credential generation.
 The shared lifecycle uses it to reject stale results after concurrent credential
 replacement without exposing credential values to operator responses.
+
+`AccountingSystem/IExternalGlPostingProvider.cs` defines the provider write and receipt lookup
+boundary for certified journal exports. The provider receives an exact owned destination and
+balanced document with a retained Meridian idempotency key. Lookup can authorize a replay only
+after a conclusive absence check and with the same document identity.
 
 ## Purpose
 

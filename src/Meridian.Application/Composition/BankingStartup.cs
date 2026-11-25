@@ -6,6 +6,10 @@ namespace Meridian.Application.Composition;
 
 internal static class BankingStartup
 {
+    // Retain the established migration sequence across every host.
+    internal static DatabaseStartupStep StartupStep { get; } =
+        new("banking", ["fund-structure"], EnsureDatabaseReadyAsync);
+
     internal const string ConnectionStringVariable = "MERIDIAN_BANKING_CONNECTION_STRING";
     internal const string SchemaVariable = "MERIDIAN_BANKING_SCHEMA";
     internal const string DefaultSchema = "banking";

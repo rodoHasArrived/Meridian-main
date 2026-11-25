@@ -2,10 +2,17 @@
 
 **Status:** supporting-generated
 **Owner:** core-team
-**Reviewed:** 2026-10-28
+**Reviewed:** 2026-11-21
 
 This folder stores maintained screenshot references used by documentation and
 workflow evidence.
+
+The maintained capture plan covers **211 PNGs**: 86 browser captures, 98 native WPF catalog
+screens, and 27 native desktop manual frames. [Capture provenance](capture-manifest.json) records
+the retained file hashes, source commits, browser paths, native page observations, actual capture
+intervals, and Windows Actions artifact identities. The images use synthetic fixtures. The browser set includes three 1024px variants of existing routes.
+
+The browser catalog was refreshed locally on 2026-11-21 from `50bef8a8f01e`. [Its original raw capture manifest](provenance/web-2026-11-21-manifest.json) records successful route observations and the capture interval; [a separate same-environment runtime observation](provenance/web-2026-11-21-runtime.json) records installed Playwright and Chromium versions. The current native catalog is byte-bound to its Windows Actions artifact and logged request/save intervals, but its raw observed-page/frame records were not retained. Manual frames retain their original raw workflow observations. These gaps are explicit in the provenance manifest; retained PNGs alone do not establish route/state acceptance.
 
 Generated local screenshot runs should stay under ignored artifact locations
 unless a reviewer explicitly chooses a new screenshot as durable documentation
@@ -29,6 +36,16 @@ matching route/page manifest entry fails validation instead of being accepted as
 unproven capture. Manifest capture paths must also resolve to the requested output PNG, so an older
 or different run cannot satisfy the evidence gate by reusing the expected filename.
 
+Native readiness also requires the selected visible frame's content-derived page tag to match
+the canonical shell tag. A compatibility fallback created after a page-construction failure does
+not satisfy that check. Native capture times in the provenance manifest are the original
+workflow-step intervals; an exact screenshot instant is not separately recorded.
+
+Native evidence covers registered page identity and the captured viewport. Original frames retain
+current offline, unselected, loading, and unavailable states. The default Windows viewport clips
+some lower content and includes bottom capture bands; the provenance manifest records the
+reviewed limitations.
+
 The maintained browser catalog in `scripts/dev/web-screenshot-routes.json` is expected to cover the
 active workstation page surface: every non-legacy path in `WORKSTATION_ROUTE_CATALOG`, the
 workstation root route, and every explicit non-redirect `<Route>` in the dashboard app shell. The
@@ -40,8 +57,10 @@ fixture-backed wait evidence together when adding a new browser page.
 Run **Web Screenshot Capture** from GitHub Actions to refresh the full browser catalog.
 Dispatch captures the default branch; pull requests that change the dashboard or capture harness
 render the proposed head commit without publishing. Set `create_pr` to `false` for an artifact-only
-manual run. Its default is `true`, which opens or updates `automation/web-screenshot-capture` only
-after capture and image validation both pass. A failure to open the refresh PR fails the job.
+manual run. Its default is `true`, which opens a refresh PR on a per-run
+`automation/web-screenshot-capture-<run>-<attempt>` branch only after capture and image validation
+both pass, then closes older open refresh PRs. Repository rules forbid force-pushes, so a run never
+reuses an existing branch. A failure to open the refresh PR fails the job.
 
 Each job retains one 14-day archive containing `captures/*.png`, `manifest.json`, and `summary.md`.
 The Actions job summary reports capture, validation, and refresh-PR outcomes, the checked-out commit,
@@ -49,6 +68,24 @@ per-route attempts, and failures. Artifact names include the run attempt so reru
 Captures go into ignored `artifacts/web-screenshots/captures`; setup failures cannot upload the
 committed catalog as newly rendered evidence. Only a fully validated run copies images into the
 requested catalog directory under `docs/screenshots/web` for the refresh PR.
+
+Both jobs capture with two workers sharing one Chromium process and dev server. Each attempt still
+uses a fresh browser context and fixture resolver. Manifest checkpoints are serialized and retain
+completed routes in catalog order, with failed and unattempted counts. Local runs default to one worker; pass
+`--workers 2` to match CI, or benchmark up to eight workers against the available CPU and memory.
+Readiness requires the configured content and selectors, absent transitional text, completed API
+requests, loaded fonts and images, and a stable rendered layout rather than waiting for all network
+activity to become idle. Populated captures must name loaded fixture content: the ledger and trial
+balance contracts wait for posted journal rows and account detail, since headings can render before
+chained data requests begin. Data captures also wait for secondary remediation, quality-watch and
+maintenance reads to settle. Unsupported reads in the current fixtures retain their explicit
+unavailable state rather than being captured as an in-progress load.
+
+Dependency installation remains lockfile-pinned with optional native packages and vulnerability
+auditing. npm prefers cached downloads and emits install timing data. The browser cache uses the
+runner OS, architecture and installed Playwright version; the headless shell is saved immediately
+after a successful browser install so a later capture failure does not discard the cache. System
+libraries are installed separately, and the browser install is checked even when the cache hits.
 
 The capture script also reads each route's rendered main content and fails the route when it shows
 any of these (`findCaptureContentIssues`):
@@ -58,12 +95,20 @@ any of these (`findCaptureContentIssues`):
 | `opaque-identifier` | a GUID-shaped identifier |
 | `singular-count-plural-noun` | a count of one before a phrase-ending plural noun ("1 rows") |
 | `api-path` | a request path such as `/api/ledger/...` |
+| `article-before-vowel` | "a" before a vowel sound ("a Operator session"); "a user" and "a one-time" pass |
 | `internal-term` | "lane", "payload", "mutation" or "caller-visible" |
 | `slug-identifier` | a slug-shaped record identifier (`run-dev-1`, `default-fund`, `entity-fund-alpha`); ordinary compounds such as "as-of" and "read-only" pass |
+| `latency-not-duration` | a `Latency` label followed by a clock time or "Never" |
+| `unavailable-placeholder` | "Basis unavailable" or "Saved views unavailable" |
 | `disabled-primary-without-reason` | a visible disabled primary button with no `title` or description saying why |
 | `status-contradiction` | a status bar that says "up to date" while the page's posture strip says its freshness needs review or is blocked |
 
-The first five read the rendered text; the last two read the DOM. Collapsed technical details,
+After all routes are captured, the script also compares totals on each page (`checkHoldingsTotals`):
+where a holdings table shows every loaded row, the sum of its row exposures must equal both the
+table's own total line and the page's "Total exposure" headline figure. A disagreement fails the
+run and is recorded under `holdingsTotals` in the manifest. A table narrowed by a filter is skipped.
+
+The first seven read the rendered text; the last two read the DOM. Collapsed technical details,
 `title` attributes and form-field values are not rendered text, so identifiers and request paths
 kept there pass. A route that cannot comply yet lists the rule with a `reason` under
 `allowedContentIssues` in `scripts/dev/web-screenshot-routes.json`; an entry without a reason
@@ -79,9 +124,9 @@ and, for browser captures, report `status: passed`.
 For a local full-catalog run using the same artifact layout:
 
 ```bash
-npm ci --prefix src/Meridian.Ui/dashboard --include=optional
-npx --prefix src/Meridian.Ui/dashboard playwright install chromium
-node scripts/dev/capture-web-screenshots.mjs --output-dir artifacts/web-screenshots/captures
+npm ci --prefix src/Meridian.Ui/dashboard --include=optional --prefer-offline --no-fund --timing
+npx --prefix src/Meridian.Ui/dashboard playwright install chromium --only-shell
+node scripts/dev/capture-web-screenshots.mjs --output-dir artifacts/web-screenshots/captures --workers 2
 python scripts/dev/validate-screenshot-captures.py --surface web --output-dir artifacts/web-screenshots/captures --manifest artifacts/web-screenshots/manifest.json --require-fresh
 python scripts/dev/summarize-web-screenshots.py
 ```
@@ -109,4 +154,5 @@ The maintained desktop WPF coverage index lives at
 [`docs/screenshots/desktop/README.md`](desktop/README.md). It maps retained registered WPF page
 tags to committed screenshot paths, fixture/data mode, refresh dates, and TBI coverage gaps.
 The generated WPF development tracker consumes that index at
-[`docs/status/wpf-screen-development-tracker.md`](../status/wpf-screen-development-tracker.md).
+`docs/status/wpf-screen-development-tracker.md`, a gitignored local output of
+`npm run generate-wpf-screen-tracker`.

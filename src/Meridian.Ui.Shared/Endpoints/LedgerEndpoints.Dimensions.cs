@@ -39,9 +39,23 @@ public static partial class LedgerEndpoints
             filter.ProjectId ?? string.Empty,
             string.Join(";", externalGl));
 
-        return filter.PositionId is not null
-            ? $"{signature}|positionId={filter.PositionId}"
-            : signature;
+        if (filter.PositionId is not null)
+            signature += $"|positionId={filter.PositionId}";
+        if (filter.IntercompanyAgreementId is not null)
+            signature += $"|intercompanyAgreementId={filter.IntercompanyAgreementId}";
+        if (filter.IntercompanyAgreementVersion is not null)
+            signature += $"|intercompanyAgreementVersion={filter.IntercompanyAgreementVersion}";
+        if (filter.AccountingArrangementId is not null)
+            signature += "|accountingArrangementId=" + Uri.EscapeDataString(filter.AccountingArrangementId);
+        if (filter.AccountingArrangementRevisionId is not null)
+            signature += "|accountingArrangementRevisionId=" + Uri.EscapeDataString(filter.AccountingArrangementRevisionId);
+        if (filter.ChartAccountNodeId is not null)
+            signature += "|chartAccountNodeId=" + Uri.EscapeDataString(filter.ChartAccountNodeId);
+        if (filter.AccountBindingRevisionId is not null)
+            signature += "|accountBindingRevisionId=" + Uri.EscapeDataString(filter.AccountBindingRevisionId);
+        if (filter.IntercompanyTransactionId is not null)
+            signature += "|intercompanyTransactionId=" + Uri.EscapeDataString(filter.IntercompanyTransactionId);
+        return signature;
     }
 
     private static string BuildDimensionSignature(LedgerDimensionSetDto? dimensions)
@@ -76,9 +90,11 @@ public static partial class LedgerEndpoints
             dimensions.ProjectId ?? string.Empty,
             string.Join(";", externalGl));
 
-        return dimensions.PositionId.HasValue
+        var withPosition = dimensions.PositionId.HasValue
             ? $"{signature}|positionId={dimensions.PositionId.Value:D}"
             : signature;
+        return LedgerAccountingArrangementDimensions.AppendSignature(
+            LedgerAgreementDimensions.AppendSignature(withPosition, dimensions.IntercompanyAgreementId, dimensions.IntercompanyAgreementVersion, "|"), dimensions);
     }
 
     private static LedgerDimensionReportFilter BuildDimensionReportFilter(IQueryCollection query)
@@ -126,7 +142,16 @@ public static partial class LedgerEndpoints
             CustomerId: NormalizeOptional(GetFirstQueryValue(query, "dimensionCustomerId", "customerId")),
             VendorId: NormalizeOptional(GetFirstQueryValue(query, "dimensionVendorId", "vendorId")),
             ProjectId: NormalizeOptional(GetFirstQueryValue(query, "dimensionProjectId", "projectId")),
-            ExternalGlDimensions: externalGlDimensions));
+            ExternalGlDimensions: externalGlDimensions)
+        {
+            AccountingArrangementId = NormalizeOptional(GetFirstQueryValue(query, "dimensionAccountingArrangementId", "accountingArrangementId")),
+            AccountingArrangementRevisionId = NormalizeOptional(GetFirstQueryValue(query, "dimensionAccountingArrangementRevisionId", "accountingArrangementRevisionId")),
+            ChartAccountNodeId = NormalizeOptional(GetFirstQueryValue(query, "dimensionChartAccountNodeId", "chartAccountNodeId")),
+            AccountBindingRevisionId = NormalizeOptional(GetFirstQueryValue(query, "dimensionAccountBindingRevisionId", "accountBindingRevisionId")),
+            IntercompanyTransactionId = NormalizeOptional(GetFirstQueryValue(query, "dimensionIntercompanyTransactionId", "intercompanyTransactionId")),
+            IntercompanyAgreementId = NormalizeOptional(GetFirstQueryValue(query, "dimensionIntercompanyAgreementId", "intercompanyAgreementId")),
+            IntercompanyAgreementVersion = NormalizeOptional(GetFirstQueryValue(query, "dimensionIntercompanyAgreementVersion", "intercompanyAgreementVersion"))
+        });
     }
 
     private static IReadOnlyDictionary<string, string> NormalizeExternalGlDimensions(

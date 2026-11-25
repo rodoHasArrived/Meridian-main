@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using Meridian.Contracts.Catalog;
 using Meridian.Domain.Events;
 using Meridian.Storage.Interfaces;
+using Meridian.Storage.Replay;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -20,6 +21,8 @@ public sealed class CatalogSyncSink : IStorageSink
     private readonly IStoragePolicy _policy;
     private readonly string _rootPath;
     private readonly ILogger<CatalogSyncSink> _logger;
+    private readonly SemaphoreSlim _gate = new(1, 1);
+    private bool _catalogSavePending;
 
     /// <summary>
     /// Tracks per-file write metadata accumulated between flushes.
@@ -42,65 +45,86 @@ public sealed class CatalogSyncSink : IStorageSink
 
     public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
     {
-        // Delegate the actual write to the inner sink
-        await _inner.AppendAsync(evt, ct).ConfigureAwait(false);
-
-        // Track metadata for this file path
-        var path = _policy.GetPath(evt);
-        var tracker = _dirty.GetOrAdd(path, _ => new FileWriteTracker());
-        tracker.RecordEvent(evt);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await _inner.AppendAsync(evt, ct).ConfigureAwait(false);
+            var path = _policy.GetPath(evt);
+            _dirty.GetOrAdd(path, _ => new FileWriteTracker()).RecordEvent(evt);
+        }
+        finally
+        {
+            _gate.Release();
+        }
     }
 
     public async Task FlushAsync(CancellationToken ct = default)
     {
-        // Flush the inner sink first so data is on disk
-        await _inner.FlushAsync(ct).ConfigureAwait(false);
-
-        // Now sync dirty paths to the catalog
-        await SyncDirtyPathsAsync(ct).ConfigureAwait(false);
+        // Admission and sync share a gate. A flush snapshot must not include metadata for
+        // an append that has not crossed the inner sink's durability barrier yet.
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await _inner.FlushAsync(ct).ConfigureAwait(false);
+            await SyncDirtyPathsAsync(ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
-        // Final sync before disposal
         try
         {
-            await SyncDirtyPathsAsync(CancellationToken.None).ConfigureAwait(false);
+            await FlushAsync(CancellationToken.None).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Final catalog sync during disposal failed");
         }
-
         await _inner.DisposeAsync().ConfigureAwait(false);
     }
 
     private async Task SyncDirtyPathsAsync(CancellationToken ct)
     {
-        if (_dirty.IsEmpty)
+        if (_dirty.IsEmpty && !_catalogSavePending)
             return;
 
-        // Snapshot and clear dirty set atomically per-key
-        var snapshot = new List<KeyValuePair<string, FileWriteTracker>>();
-        foreach (var key in _dirty.Keys.ToArray())
-        {
-            if (_dirty.TryRemove(key, out var tracker))
-            {
-                snapshot.Add(new KeyValuePair<string, FileWriteTracker>(key, tracker));
-            }
-        }
-
-        foreach (var (path, tracker) in snapshot)
+        foreach (var (path, tracker) in _dirty.ToArray())
         {
             try
             {
                 var fullPath = Path.IsPathRooted(path) ? path : Path.Combine(_rootPath, path);
                 var relativePath = Path.GetRelativePath(_rootPath, fullPath);
 
-                if (!File.Exists(fullPath))
+                if (!JsonlArchiveFiles.Exists(fullPath))
                 {
                     _logger.LogDebug("Skipping catalog sync for missing file {Path}", relativePath);
                     continue;
+                }
+
+                // A late JSONL append may extend the published gzip instead of recreating
+                // the policy's plain path. Resolve through the same retained-generation
+                // reader used by replay, including interrupted compression cleanup checks.
+                await using var retainedFile = await JsonlArchiveFiles.OpenReadAsync(fullPath, ct).ConfigureAwait(false);
+                fullPath = retainedFile.Name;
+                relativePath = Path.GetRelativePath(_rootPath, fullPath);
+                var logicalPath = JsonlArchiveFiles.LogicalPath(relativePath);
+                var priorRepresentations = _catalog.GetFilesForSymbol(tracker.Symbol ?? string.Empty)
+                    .Where(entry => string.Equals(JsonlArchiveFiles.LogicalPath(entry.RelativePath),
+                        logicalPath, StringComparison.OrdinalIgnoreCase)).ToArray();
+
+                if (!tracker.BaselineLoaded)
+                {
+                    // Seed from the retained catalog, including after a process restart. Keep
+                    // this baseline on failure: UpdateFileEntryAsync may publish its in-memory
+                    // entry before persistence fails, so adding the delta again would overcount.
+                    var previous = priorRepresentations.FirstOrDefault(entry =>
+                            string.Equals(entry.RelativePath, relativePath, StringComparison.OrdinalIgnoreCase))
+                        ?? priorRepresentations.FirstOrDefault();
+                    tracker.IncludeBaseline(previous);
                 }
 
                 var fileInfo = new FileInfo(fullPath);
@@ -133,13 +157,22 @@ public sealed class CatalogSyncSink : IStorageSink
                 // Try to parse date from the path
                 TryExtractDate(relativePath, entry);
 
+                _catalogSavePending = true;
                 await _catalog.UpdateFileEntryAsync(entry, ct).ConfigureAwait(false);
+                // Publish the surviving generation before retiring metadata for a name
+                // compression removed, so a failed retry never loses its baseline counts.
+                foreach (var previous in priorRepresentations)
+                {
+                    if (!string.Equals(previous.RelativePath, relativePath, StringComparison.OrdinalIgnoreCase) &&
+                        !File.Exists(Path.Combine(_rootPath, previous.RelativePath)))
+                        await _catalog.RemoveFileEntryAsync(previous.RelativePath, ct).ConfigureAwait(false);
+                }
+                _dirty.TryRemove(path, out _);
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Failed to sync catalog for path {Path}", path);
-                // Re-add tracker so we retry on next flush
-                _dirty.TryAdd(path, tracker);
+                // Retain the same cumulative tracker for an idempotent retry on next flush.
             }
         }
 
@@ -147,6 +180,7 @@ public sealed class CatalogSyncSink : IStorageSink
         try
         {
             await _catalog.SaveCatalogAsync(ct).ConfigureAwait(false);
+            _catalogSavePending = false;
         }
         catch (Exception ex)
         {
@@ -185,6 +219,25 @@ public sealed class CatalogSyncSink : IStorageSink
     private sealed class FileWriteTracker
     {
         private long _eventCount;
+        public bool BaselineLoaded { get; private set; }
+
+        public void IncludeBaseline(IndexedFileEntry? previous)
+        {
+            if (previous is not null)
+            {
+                Interlocked.Add(ref _eventCount, previous.EventCount);
+                if (previous.FirstTimestamp is { } first)
+                    InterlockedMin(ref _firstTimestampTicks, first.Ticks);
+                if (previous.LastTimestamp is { } last)
+                    InterlockedMax(ref _lastTimestampTicks, last.Ticks);
+                if (previous.FirstSequence is { } firstSequence)
+                    InterlockedMin(ref _firstSequence, firstSequence);
+                if (previous.LastSequence is { } lastSequence)
+                    InterlockedMax(ref _lastSequence, lastSequence);
+            }
+            BaselineLoaded = true;
+        }
+
         private long _firstSequence = long.MaxValue;
         private long _lastSequence = long.MinValue;
         private long _firstTimestampTicks = long.MaxValue;

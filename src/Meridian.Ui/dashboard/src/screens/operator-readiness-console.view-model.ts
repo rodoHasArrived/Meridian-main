@@ -1,4 +1,5 @@
 import { isOpenBreakStatus } from "@/lib/cross-screen-counts";
+import { caseVarianceLabel } from "./reconciliation-case-values";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getOperatorInbox, getTradingReadiness, type ApiRequestOptions } from "@/lib/api";
 import { formatCurrency, pluralizeCount } from "@/lib/format";
@@ -11,7 +12,7 @@ import {
 import { normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
-  formatReadinessUtcMinute,
+  formatReadinessMinute,
   levelFromReadiness,
   levelFromTone,
   sentence,
@@ -163,8 +164,6 @@ export interface ReadinessConsoleState {
   inboxSummary: string;
   inboxLoadingLabel: string | null;
   inboxErrorText: string | null;
-  inboxRefreshLabel: string;
-  inboxRefreshAriaLabel: string;
   inboxRefreshDisabled: boolean;
   inboxRefreshDisabledReason: string | null;
   inboxRefreshBusy: boolean;
@@ -473,11 +472,11 @@ export function buildOperatorReadinessConsoleState({
         ? "Readiness unavailable"
         : "No readiness data";
   const overallLabel = formatEffectiveOverallLabel(readinessStatusLabel, overallLevel);
-  const asOf = formatReadinessUtcMinute(operatorInbox?.asOf ?? readiness?.asOf ?? null, "Unavailable");
+  const asOf = formatReadinessMinute(operatorInbox?.asOf ?? readiness?.asOf ?? null, "Unavailable");
 
   return {
     title: "Operator Readiness Console",
-    subtitle: "Runs, paper sessions, provider trust, reconciliation, promotion, and report-pack posture from shared readiness data.",
+    subtitle: "Readiness of runs, paper sessions, provider trust, reconciliation, promotion, and report packs from shared readiness data.",
     overallLabel,
     overallDetail: buildOverallDetail({
       readiness,
@@ -492,10 +491,6 @@ export function buildOperatorReadinessConsoleState({
     inboxSummary: operatorInbox?.summary ?? "Operator inbox not loaded; using workstation data where available.",
     inboxLoadingLabel: inboxLoading ? "Loading operator inbox..." : null,
     inboxErrorText: inboxError,
-    inboxRefreshLabel: inboxLoading ? "Refreshing inbox" : "Refresh inbox",
-    inboxRefreshAriaLabel: inboxLoading
-      ? "Refreshing operator inbox work items"
-      : "Refresh operator inbox work items",
     inboxRefreshDisabled: inboxLoading,
     inboxRefreshDisabledReason: inboxLoading ? "Operator inbox is already refreshing." : null,
     inboxRefreshBusy: inboxLoading,
@@ -759,7 +754,7 @@ function buildActiveSessionFacts(readiness: TradingOperatorReadiness | null): Re
       label: "Paper portfolio value",
       value: session.portfolioValue === null || session.portfolioValue === undefined ? "Unavailable" : formatCurrency(session.portfolioValue),
       detail: `Initial cash ${formatCurrency(session.initialCash)}`,
-      meta: `Created ${formatReadinessUtcMinute(session.createdAt, "timestamp unavailable")}`,
+      meta: `Created ${formatReadinessMinute(session.createdAt, "timestamp unavailable")}`,
       level: session.portfolioValue === null || session.portfolioValue === undefined ? "review" : "ready"
     },
     {
@@ -869,7 +864,7 @@ function buildBreakQueueRow(item: ReconciliationBreakQueueItem): ReadinessConsol
     label: item.strategyName,
     value: item.status,
     detail: item.reason,
-    meta: `${item.category} - variance ${formatCurrency(item.variance)}`,
+    meta: `${item.category} - variance ${caseVarianceLabel(item)}`,
     level: item.status === "Open" ? "blocked" : "review"
   };
 }
@@ -944,7 +939,7 @@ function buildReportPackFacts(reportingPayload: AccountingReportingSummary | nul
       id: "reporting-profiles",
       label: "Recommended profiles",
       value: reporting.recommendedProfiles.join(", ") || "None",
-      detail: "Profiles with loader scripts or data dictionaries are preferred for governed output review.",
+      detail: "Profiles with loader scripts or data dictionaries are preferred for report output review.",
       meta: `${reporting.profiles.filter((profile) => profile.dataDictionary).length} data dictionaries`,
       level: reporting.recommendedProfiles.length > 0 ? "ready" : "review"
     }
@@ -1075,7 +1070,7 @@ function buildCockpitGateRows({
       id: "brokerage-sync",
       label: "Brokerage sync healthy",
       fallbackValue: brokerage?.health ?? "Unavailable",
-      fallbackDetail: brokerageRow?.detail ?? "No account-scoped brokerage sync posture is attached to readiness.",
+      fallbackDetail: brokerageRow?.detail ?? "No account-scoped brokerage sync status is attached to readiness.",
       fallbackMeta: brokerage
         ? [brokerage.fundAccountId, brokerage.providerId, brokerage.externalAccountId].filter(Boolean).join(" - ") || "No provider linked"
         : "No brokerage sync data",
@@ -1135,7 +1130,7 @@ function buildCockpitGateRows({
       label: "Report pack approval ready",
       fallbackValue: reportPackReviewCount === 0 ? "Ready" : `${reportPackReviewCount} review`,
       fallbackDetail: reportPackReviewCount === 0
-        ? "Governed report-pack recipients and recommended profiles are available."
+        ? "Report-pack recipients and recommended profiles are available."
         : "Report-pack recipients or recommended profiles are incomplete.",
       fallbackMeta: reportPackFacts[0]?.meta ?? "Reporting data unavailable",
       fallbackLevel: reportPackReviewCount === 0 ? "ready" : "review",
@@ -1251,7 +1246,7 @@ function prioritizeWorkItems(workItems: OperatorWorkItem[]): OperatorWorkItem[] 
 
 function buildWorkItemRow(item: OperatorWorkItem, includeAction: boolean): ReadinessConsoleRowBase {
   const action = includeAction ? buildWorkItemAction(item) : null;
-  const createdAtLabel = formatReadinessUtcMinute(item.createdAt, "Timestamp unavailable");
+  const createdAtLabel = formatReadinessMinute(item.createdAt, "Timestamp unavailable");
   const signoffSummary = buildSignoffSummary(item);
 
   return {
@@ -1770,7 +1765,7 @@ function buildApiSources({
     },
     {
       id: "data-confidence",
-      label: "Provider posture",
+      label: "Provider health",
       endpoint: WORKSTATION_API_ENDPOINTS.data,
       status: data ? `${data.providers.length} providers` : "Unavailable",
       level: data ? "ready" : "review"
@@ -1865,7 +1860,7 @@ function buildOverallDetail({
     return `${reviewCount} operator review item(s), ${blockedGateCount} blocked checkpoint(s), and ${reviewGateCount} review checkpoint(s) still need attention.`;
   }
 
-  return `${reviewCount} operator review item(s), all full-console checkpoints, and governed report-pack readiness are clear in the web console.`;
+  return `${reviewCount} operator review item(s), all full-console checkpoints, and report-pack readiness are clear in the web console.`;
 }
 
 function buildStatusAnnouncement(

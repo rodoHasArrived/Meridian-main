@@ -6,20 +6,123 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Infrastructure
 
+Host backfill routing retains throttle and rotation counts by provider and UTC date beneath
+`DataRoot/_meta`. It writes the last seven UTC dates atomically and keeps recent individual
+observations in memory. Durable history records route observations independently of the shared
+admission budget and its vendor reset policy.
+
+NYSE direct data sources and unified streaming refuse activation in production, packaged and
+customer builds until their provider-wide credential path supports retained tenant/account
+ownership. Final host posture and direct-construction environment flags are checked before
+credential configuration is read or a client is created. Development compatibility is retained;
+this refusal is covered by synthetic fixtures and does not establish live-provider compatibility.
+Protected hosts expose only a credential-free unavailable NYSE diagnostic source, so enumerating
+provider quotas cannot activate NYSE or prevent diagnostics for other providers.
+
+Historical adapter factories apply catalog-backed priorities and request caps when constructing the
+provider and limiter. Twelve Data capabilities share weighted/daily limits and the stricter
+physical-request spacing from the editor; changed limits require a host restart. OpenFIGI
+uses the same catalog and retains a maximum 25/minute when credentials resolve dynamically.
+
+Twelve Data daily history retrieves overlapping windows of at most 5,000 calendar days and
+withholds the aggregate until all requested windows succeed. Body-level quota, entitlement and
+upstream errors remain distinct from an unknown symbol or a valid empty date window. History
+retains the shared credential request budget and the current historical HTTP retry owner.
+These behaviors are synthetic-verified and live-untested.
+
+`BaseSymbolSearchProvider.SearchAuthoritativeAsync` preserves HTTP, transport, credential and
+throttling failures for explicit candidate review. Alpaca also rejects malformed responses and
+missing asset identity or filter facts; those failures cannot become successful empty lookups.
+Existing autocomplete keeps its best-effort behavior. Alpaca bond discovery uses the retained `fixed_income` filter; evidence is
+synthetic-verified in tests and live-untested without a configured provider run.
+Disposing a symbol-search provider cancels its queued quota waits and in-flight requests while
+preserving the shared credential budget for replacement instances.
+Authoritative decoding requires asset names because issuer matching depends on them, and refuses
+partial HTTP responses and content ranges. Providers must
+implement the strict decoder explicitly; its default refuses unsupported authoritative lookups.
+Unknown raw asset classes cannot establish complete search evidence. The authoritative decoder
+recognizes Alpaca's documented response classes independently of supported query filters, and maps
+`treasury` and `corporate` responses to fixed-income candidates. Ordinary decoding stays tolerant.
+
+Bond identifier discovery uses `OpenFigiClient.LookupBondIdentifierAsync`: ISIN/CUSIP lookups no
+longer assume Equity, competing bond FIGIs remain unresolved candidates, and equity ticker
+resolution keeps its existing scope. Broker snapshots retain accrued interest and valuation basis;
+IB's average-cost placeholders are `CostDerived`, while Alpaca marks are `ProviderReported`.
+
+FRED's `GetEconomicObservationsAsync` is a separate typed, vintage-bound path for explicitly
+mapped rate/index series alongside the legacy synthetic-bar compatibility API. Fixed-income
+ingestion preserves original decimal text, provider units, observation date, publication
+(unknown when unavailable), vintage interval, retrieval time and transformation metadata.
+Constant-maturity Treasury yields are labeled par-curve observations and are never silently treated
+as zero rates or discount factors. Missing observations remain missing, malformed/truncated
+populations refuse, and source evidence never includes credentials. Provider verification here is
+synthetic; live FRED access remains untested.
+
+Gap inventory preserves date-only records as calendar dates before attempting timestamp parsing.
+Actual timestamp records still use their UTC date, regardless of the collector host's time zone.
+
+Standalone HTTP resilience applies a fresh timeout to each attempt inside the total operation budget.
+Historical requests keep bounded network attempts while quota and `Retry-After` waits remain
+cancellable by the caller or provider disposal, without consuming an HTTP deadline.
+Quota responses (HTTP 429) pass straight through to provider handling, retaining `Retry-After`
+for the quota-aware backfill scheduler; they are neither generic retries nor circuit-breaker
+failures. Caller cancellation is also excluded from circuit-breaker failures.
+
 The queued backfill worker fetches and stores daily bars only. A request for any other granularity fails without fetching or writing, instead of storing daily bars under that granularity's file prefix where gap analysis counted them as coverage. `DataGapAnalyzer` reads `bar_15min` files as 15-minute data, not 5-minute.
 
 `BackfillJobManager` applies request-progress updates and serializes the job under one lock, so parallel request workers cannot corrupt progress or fail a succeeded request. `GapsFilled` counts each filled date once.
+
+The active backfill route shares per-vendor admission, cooldown, and health across direct and queued jobs.
+The worker records a vendor attempt when it calls that adapter, retains provider attribution and fixed
+fallback codes, and counts a session as filled after its canonical-symbol bars reach storage.
 
 Alpaca streaming trade deduplication keys on trade id and venue as well as symbol, price, size and timestamp, so distinct prints with identical content are kept while a re-delivered message is still suppressed.
 
 The backfill worker's connectivity handler is documented as logging only; offline-queued requests resume on the worker's next poll (at most `EmptyPollMaxDelay`).
 
 `RateLimiter` serialises its expired-timestamp cleanup, so concurrent callers cannot dequeue a fresh timestamp and undercount the window.
+
+Historical HTTP requests use the base provider as their retry owner. Each send attempt acquires
+capacity, including retries; the named-client retry policy yields to these requests. This includes
+FRED's `GetRateObservationsAsync` series metadata and observation requests and
+`GetEconomicObservationsAsync`, without changing their units, vintage handling or response parsing. The network
+attempt timeout starts after quota acquisition, so waiting for pacing or a cooldown does not
+consume the request's network timeout. Throttling
+responses publish a cooldown even when returned to the caller, and `Retry-After` delays subsequent
+attempts. Historical adapters record each HTTP 429 in the bounded quota history for their request.
+Pinned and composite routes retain the original observation when an adapter translates it to a
+typed failure. Composite routing also records the next provider as a distinct rotation. A host's
+data root retains daily throttle and rotation totals across restarts. Vendor body-level quota
+denials have no HTTP 429 status. This evidence is synthetic-verified and live-untested.
+Twelve Data history, symbol search and corporate actions share the `api-requests` budget
+for the same API credential; different credentials and vendor quota groups retain separate budgets.
+Provider disposal does not discard a shared budget. Credential values are hashed in registry keys.
+Twelve Data counts credits: history/search cost one per request, while each dividends and splits
+request costs 20 per symbol. Its default Basic profile allows eight credits per minute and 800
+per UTC day, and refuses fundamentals before HTTP until `FundamentalsEntitled` is explicitly set.
+`ProviderQuotas:TwelveData` declares account limits separately from entitlement; `NoDailyLimit`
+must be explicit for an uncapped paid account. Numeric capacity never grants paid access.
+Alpha Vantage history/search/corporate actions share five requests per minute and a conservative
+25-request rolling 24-hour cap by default; its published daily limit names no reset boundary.
+`ProviderQuotas:AlphaVantage` can declare the actual account limits and `NoDailyLimit`.
+Short and daily admission charge the full cost atomically; cancelled waits charge neither.
+A backfill waiting for capacity releases its admission slot so other calls can use reserved quota.
+Pacing rounds positive waits up to milliseconds, including nonintegral paid-plan intervals.
+Effective account profiles cannot differ across capabilities sharing a credential and quota group.
+Registry state survives provider recreation/disposal within the process. It is not persisted across
+process restart and cannot coordinate another Meridian process or requests from another application;
+vendor responses remain authoritative. Other provider families retain their existing capability budgets.
+These paths use synthetic regression tests; live provider compatibility remains live-untested.
+
+Vendor references checked 2026-11-13: [Twelve Data credits](https://support.twelvedata.com/en/articles/5615854-credits),
+[dividends](https://twelvedata.com/docs/fundamentals/dividends/),
+[splits](https://twelvedata.com/docs/fundamentals/splits/), and
+[Alpha Vantage support](https://www.alphavantage.co/support/).
 
 IB historical requests ask for epoch-second bar times (`formatDate = 2`) and send UTC, culture-invariant end times; a zone-less TWS-local timestamp is refused rather than read as UTC. `IBDurableResultStore` publishes an update to memory only after the fsynced atomic file replace succeeds. `ProviderRegistry` availability probes rethrow caller cancellation.
 
@@ -48,14 +151,32 @@ The Alpaca gateway identifies the account by its account number, the identifier 
 verification records; the internal UUID from the same response is accepted as an alias on requests,
 answered under the name the caller used, declared as an alias on the catalog entry, and still
 forms the gateway's durable scope identity (trade-update inbox and OMS recovery journal).
-Alpaca corporate actions are read from the Market Data `v1/corporate-actions` endpoint (cash
-dividends and forward/reverse splits, paged, no currency); a refused or partly failed fetch returns
+Alpaca corporate actions are read from all 16 documented Market Data `v1/corporate-actions`
+families: cash/stock dividends, forward/reverse/unit splits, spin-offs, cash/stock/mixed mergers,
+redemptions, name changes, worthless removals, rights distributions, partial calls, reorganizations
+and capital-gains distributions. Multi-security allocations and separate capital-gain components
+are retained in typed source payloads; types without an economic date explicitly identify their
+process-date staging placeholder and missing economic date. Stock dividends
+retain additional shares per held share; merger effective dates remain explicitly identified.
+Recipient symbols are source terms awaiting mastered-security resolution, never invented IDs.
+Native IDs plus family and canonical payload hashes identify observed revisions, and each staged
+proposal retains the original JSON record and its exact UTF-8 digest. Mapping version v2 appends
+new evidence-bearing revisions without rewriting historical proposals. Explicit currency is retained;
+unknown currency stays unknown. A refused or partly failed fetch returns
 nothing rather than a partial history. `FetchWithOutcomeAsync` reports that case as `Unavailable`
 (no credentials, or the first page failed) or `Incomplete` (a later page failed, a page token
 repeated, or the page limit was exceeded) so ingest can tell it from a provider with no actions;
-other corporate-action providers use the interface default, which reports whatever `FetchAsync`
-returns as complete. The provider is review-only: its records are staged for
-review and never applied automatically. Alpaca historical quotes, trades and auctions always use the
+Alpha Vantage, Finnhub, Nasdaq Data Link, Tiingo and Twelve Data also report explicit HTTP,
+credential, decoding and record-level coverage outcomes. Legacy collection-only implementations
+report unknown coverage, which cannot certify that no actions exist. Alpaca coverage lists all 16
+requested and mapped endpoint families and the US/complete-data/process-date
+query window. REST snapshots cannot establish cancellation history, complete amendment history or
+announcement timeliness. Same-ID conflicting revisions within one traversal fail closed. The provider
+is review-only: its records are staged for review and never applied automatically. Broker corporate-action
+quantities preserve source signs, including removals and reversals without a trade side. Public-schema
+examples, independent issuer/exchange facts and synthetic broker activities are covered by
+[the corporate-action comparison tests](../../docs/testing/alpaca-corporate-action-coverage.md);
+live provider and account compatibility remain live-untested. Alpaca historical quotes, trades and auctions always use the
 symbol-keyed routes, accept numeric trade ids, treat a caller's limit as a bound on the result, and
 send no feed for auctions, which exist only on SIP. Tick windows are sent as UTC instants, and an
 auction range ends on the requested date, which Alpaca treats as inclusive. Order and
@@ -107,6 +228,10 @@ host-owned OAuth token for each request, including connection, rotation, and rev
 distinguishes lifetime cancellation from request timeouts and retains authentication, throttling,
 and outage classifications for failed batches.
 
+Robinhood `GetPositionsAsync` fails when options positions cannot be read rather than returning
+equities alone, and still reads options when there are no equity positions. `GetAccountInfoAsync`
+refuses an empty account list instead of reporting an "unknown" active account with zero balances.
+
 Alpha Vantage adjusted OHLC uses the adjusted-close/raw-close ratio independently of the session's
 split coefficient. Yahoo daily history includes boundary padding and uses historical exchange
 timezone rules for session dates, falling back to the supplied offset and then UTC when absent.
@@ -144,6 +269,28 @@ establish clearing. The optional fields preserve legacy artifact hashes when abs
 
 ## Purpose
 
+`Backfill.ValidationProfiles` holds each provider's calendar-day tolerance for daily-bar recency.
+The composite resolves each candidate through the shared provider lookup. Workstation jobs load
+the saved tolerance on start. At host startup, the factory captures the future-skew, stale-event,
+and latency tolerances used by Alpaca, Polygon, and Robinhood. Changes to those live thresholds
+take effect after restart. A null stale-event threshold or zero maximum latency disables that check.
+
+`StreamingFailoverService.ApplyConfiguration` swaps edited rule thresholds and backup lists (limited
+to providers with a live client) and the health-check interval without a restart, keeping each
+rule's active provider; new rules and removal of a rule a runtime drives are reported as deferred.
+`SetProviderEnabled` excludes a provider from failover selection and recovery, and
+`MoveOffDisabledProviderAsync` hands a rule off a disabled active provider through the normal
+two-phase transition. `CrossProviderValidator` (backfill cross-validation, still off by default)
+uses the configured tolerance policy's bar count and close tolerance.
+
+Composite provider rotation retains the latest 1,024 quota observations across providers in
+process memory. The existing rate-limit history API exposes observed throttles and the next
+provider actually attempted, with known HTTP 429 status, request usage and reset time.
+Restart clears this bounded history; it is diagnostic evidence rather than a durable audit.
+Adjusted-history requests run the same provider-specific recency check and fail closed when
+adjusted coverage is unavailable. They do not substitute raw bars; a chain containing real
+providers cannot conceal unavailable adjusted coverage with synthetic prices.
+
 Infrastructure contains provider adapters, HTTP integration, ETL adapters, resilience helpers, and concrete data-source implementations.
 
 ## Layer responsibility
@@ -159,6 +306,17 @@ This layer owns external integration details while depending on lower contracts 
 
 ## Important workflows
 
+### Alpaca execution workflow evidence
+
+Alpaca maps explicit equity session intent to `extended_hours`, exposes broker `last_equity` as nullable prior-close evidence, and supplies activity completeness cursors only after successful pagination. Canonical activity metadata distinguishes day precision from an exact transaction time. Existing execution envelope hashes remain unchanged. See [execution workflows](../../docs/engineering/execution-workflows.md) for reconciliation and the separately enabled paper probe.
+
+Historical Alpaca, Polygon Security Master ingest, and Robinhood option-contract pagination
+reject repeated continuation cursors. Failed Polygon ingest and Robinhood contract pages propagate
+failure rather than publishing partial data as a complete response. Continuation URLs are validated
+against the provider's HTTPS origin before credentials or rate-limit admission; Robinhood requests
+are paced and dispose their responses. Registry updates apply new provider limits to the existing
+limiter while retaining its current request history.
+
 Provider construction preserves the credential resolver's selected record, including missing,
 removed and deleted fields. Stored records cannot be overlaid by module settings; selected module
 sidecars cannot borrow missing fields from environment mappings. Alpaca historical, streaming,
@@ -167,6 +325,10 @@ and trade-update reconnects share the resolved credential snapshot and its retai
 Corporate-action adapters receive the resolved context explicitly, while legacy direct construction
 still supports environment lookup. `ProviderFactoryCredentialIsolationTests` exercises actual
 adapter construction and outbound request credentials across rotation, deletion and owner scopes.
+
+Hosted OpenFIGI resolution/search and Polygon corporate-action requests resolve the selected
+credential owner for outbound requests. Rotation takes effect on the next request; a deleted or
+incomplete selected record cannot borrow a key from configuration, environment or another owner.
 
 Tracked HTTP clients resolve circuit-breaker callbacks through their owning service provider.
 Each named breaker is a provider-local singleton, retaining state across requests and handler
@@ -289,6 +451,15 @@ for multi-capability adapters and isolates construction failures from other prov
 Options enumeration reuses successfully constructed module entries rather than retrying failed
 factories during catalog reads.
 `FredProviderModuleCompositionTests` and `ProviderModuleCompositionTests` cover these seams.
+`YahooFinanceProviderModule` owns Yahoo's historical registration, construction, and descriptor
+through the same module mechanism. Yahoo remains enabled without backfill configuration and
+requires no credentials; either the family switch or `Backfill.Providers.Yahoo.Enabled=false`
+keeps it unavailable. Its late availability check reads the final host configuration without
+network requests. Hosted consumers share the container-owned historical singleton, including its
+intraday aggregate interface, while standalone `ProviderFactory` calls delegate to the same local
+factory. The adapter's existing priority, rate limits, coverage, and HTTP behavior are retained.
+`YahooFinanceProviderModuleCompositionTests` covers default and disabled configurations,
+final host configuration, lifetime ownership, catalog inventory, and standalone compatibility.
 OpenFIGI's `ISymbolResolver` remains in the adapter inventory, while the operator matrix
 projects only its six supported surfaces and omits resolver-only rows. Streaming instrument coverage is independently
 declared, so Polygon's Forex/Crypto/Index historical coverage does not advertise unsupported
@@ -605,3 +776,8 @@ Do not add an Infrastructure to Application dependency. Provider abstractions sh
 - `docs/providers/`
 - `docs/architecture/module-map.md`
 - `docs/status/provider-validation-matrix.md`
+
+Alpaca statement activity snapshots retain a completeness cursor after successful pagination,
+including newest activity ID, timestamp watermark, page count and retained record count. Failed or
+repeated pagination tokens cannot produce a complete cursor. Broker statement imports continue
+through the governed durable statement intake and recovery pipeline using external activity IDs.

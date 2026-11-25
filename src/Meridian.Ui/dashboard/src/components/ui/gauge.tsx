@@ -61,7 +61,7 @@ export function Gauge({
             </div>
           ) : null}
           {label ? (
-            <div className={cn("mt-1 text-[9px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "font-mono uppercase tracking-[0.14em]")}>
+            <div className={cn("mt-1 text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>
               {label}
             </div>
           ) : null}
@@ -103,7 +103,7 @@ export function LinearGauge({
       {label || showValue ? (
         <div className="flex items-baseline justify-between">
           {label ? (
-            <span className={cn("text-[9px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "font-mono uppercase tracking-[0.14em]")}>{label}</span>
+            <span className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</span>
           ) : null}
           {showValue ? (
             <span className="font-mono text-sm font-semibold tabular-nums text-foreground">{Math.round(percent)}%</span>

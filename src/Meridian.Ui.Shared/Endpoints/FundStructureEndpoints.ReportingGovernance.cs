@@ -94,6 +94,32 @@ public static partial class FundStructureEndpoints
                 UserPermission.DeliverReporting,
                 UserPermission.AdminMaintenance);
 
+        group.MapGet("/{runId}/review", (string runId, HttpContext context) =>
+                ExecuteGovernanceAsync(context, runId,
+                    async (coordinator, caller, id, ct) =>
+                    {
+                        var service = context.RequestServices.GetService<ReportingRunReviewService>()
+                            ?? throw new IOException("Report review evidence service is unavailable.");
+                        return (await service.PrepareAsync(coordinator, id, caller, ct).ConfigureAwait(false)).Review;
+                    },
+                    static (review, _) => review, StatusCodes.Status200OK, ReportingRunReviewJsonContext.Default.Options))
+            .WithName("GetGovernedReportingRunReview")
+            .RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting,
+                UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance);
+
+        group.MapGet("/{runId}/review/{reviewId}", (string runId, string reviewId, HttpContext context) =>
+                ExecuteGovernanceAsync(context, runId,
+                    (coordinator, caller, id, ct) =>
+                    {
+                        var service = context.RequestServices.GetService<ReportingRunReviewService>()
+                            ?? throw new IOException("Report review evidence service is unavailable.");
+                        return service.ReadAsync(coordinator, id, reviewId, caller, ct);
+                    },
+                    static (review, _) => review, StatusCodes.Status200OK, ReportingRunReviewJsonContext.Default.Options))
+            .WithName("GetRetainedGovernedReportingRunReview")
+            .RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting,
+                UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance);
+
         group.MapGet("/{runId}/amounts", (string runId, HttpContext context) =>
                 ListGovernedReportingAmountsAsync(runId, context, jsonOptions))
             .WithName("ListGovernedReportingAmounts")
@@ -477,8 +503,19 @@ public static partial class FundStructureEndpoints
             ? ExecuteGovernanceAsync(
                 context,
                 runId,
-                (coordinator, caller, id, ct) =>
-                    coordinator.ApproveAsync(id, request.ExpectedVersion, request.DecisionNote.Trim(), caller, ct),
+                async (coordinator, caller, id, ct) =>
+                {
+                    var note = request.DecisionNote.Trim();
+                    if (!string.IsNullOrWhiteSpace(request.ReviewEvidenceId))
+                    {
+                        var service = context.RequestServices.GetService<ReportingRunReviewService>()
+                            ?? throw new IOException("Report review evidence service is unavailable.");
+                        var evidence = await service.VerifyAndRetainAsync(coordinator, id, request.ExpectedVersion,
+                            request.ReviewEvidenceId, caller, ct).ConfigureAwait(false);
+                        note = $"{note}\n{evidence}";
+                    }
+                    return await coordinator.ApproveAsync(id, request.ExpectedVersion, note, caller, ct).ConfigureAwait(false);
+                },
                 ReportingGovernanceApiProjector.ProjectRun,
                 StatusCodes.Status200OK,
                 jsonOptions)
@@ -632,7 +669,7 @@ public static partial class FundStructureEndpoints
         }
     }
 
-    private static bool TryResolveReportingGovernanceCaller(
+    internal static bool TryResolveReportingGovernanceCaller(
         HttpContext context,
         out ReportingGovernanceCallerContext? caller,
         out IResult? error)

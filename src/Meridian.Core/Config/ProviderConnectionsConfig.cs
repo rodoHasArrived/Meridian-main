@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+using Meridian.Contracts.Api;
 using Meridian.ProviderSdk;
 
 namespace Meridian.Core.Config;
@@ -20,10 +22,24 @@ public sealed record ProviderConnectionsConfig(
     /// <summary>Retains the ownership boundary after deletion; removing a connection cannot restore legacy fallback.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public string[]? OwnershipRequiredProviders { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public OwnedProviderTemplateConfig[]? Templates { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ProviderTemplateSetupConfig[]? TemplateSetups { get; init; }
 }
 
 /// <summary>A host-selected provider connection; never a credential value or provider-wide fallback.</summary>
-public sealed record ProviderRuntimeCredentialBinding(string ProviderId, string TenantId, string ConnectionId);
+public sealed record ProviderRuntimeCredentialBinding(string ProviderId, string TenantId, string ConnectionId,
+    string? ExternalAccountId = null, string? Environment = null, string? SelectionId = null);
+
+public sealed record OwnedProviderTemplateConfig(string TenantId, ProviderConnectionTemplateDto Template);
+
+/// <summary>The draft is outside the retained connection list until the operator saves it.</summary>
+public sealed record ProviderTemplateSetupConfig(Guid SetupId, string ConnectionId, string TenantId, string Actor,
+    string ExternalAccountId, string Revision, DateTimeOffset ExpiresAt, ProviderConnectionTemplateDto Template,
+    string? TestedCredentialGeneration = null);
 
 /// <summary>
 /// One credentialed provider relationship.
@@ -44,7 +60,14 @@ public sealed record ProviderConnectionConfig(
     bool ProductionReady = false,
     string? TenantId = null,
     string? CredentialEnvironment = null
-);
+)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ProviderConnectionTemplateDto? SetupTemplate { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? TemplateSetupId { get; init; }
+}
 
 /// <summary>
 /// Capability binding targeting one connection and one scope.

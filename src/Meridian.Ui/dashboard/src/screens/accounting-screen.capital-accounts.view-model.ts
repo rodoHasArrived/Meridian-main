@@ -5,7 +5,6 @@ import {
 } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import {
-  formatCurrencyWithCode,
   formatDateTimeLabel,
 } from "./accounting-screen.formatting";
 import {
@@ -31,7 +30,7 @@ import type {
 import type {
   CapitalAccountWorkbench,
 } from "@/types";
-import { formatCount } from "@/lib/format";
+import { formatCount, formatCurrencyWithCode } from "@/lib/format";
 import { formatMoney } from "@/components/accounting/money";
 import {
   proveRollforward,
@@ -233,7 +232,7 @@ function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | n
         id: "investor-accounts",
         label: "Investor accounts",
         value: formatCount(workbench.investorAccountCount),
-        detail: `${formatCurrencyWithCode(workbench.netCapitalActivity, workbench.currency, true)} net activity`,
+        detail: `${formatCurrencyWithCode(workbench.netCapitalActivity, workbench.currency, { signed: true })} net activity`,
         tone: workbench.investorAccountCount > 0 ? "success" : "warning"
       },
       {
@@ -349,8 +348,8 @@ export function buildCapitalAccountRollforward(
     currency: account.currency,
     movements,
     openingDerivation: itemised
-      ? "Opening is derived by the capital-account projection from the subledger's running net activity; it is not a separately stated opening balance."
-      : "Opening is set by the capital-account projection with no subledger entries behind it; it is not a separately stated opening balance.",
+      ? "Opening is derived by the capital-account summary from the subledger's running net activity; it is not a separately stated opening balance."
+      : "Opening is set by the capital-account summary with no subledger entries behind it; it is not a separately stated opening balance.",
     ...(itemised ? {} : { unsupportedReason: CAPITAL_ACCOUNT_ROLLFORWARD_NOT_ITEMISED_REASON }),
     verdict,
     verdictLabel: verdict === "out"
@@ -377,8 +376,8 @@ function buildCapitalAccountInvestorAccountRow(
     subtitle: `${formatCapitalAccountPartyLabel(account.investorId)} / ${account.currency}`,
     statusLabel: paymentEvidence.tone === "success" ? account.readinessLabel || account.readiness : "Cash support review",
     statusTone: paymentEvidence.tone === "success" ? capitalAccountReadinessTone(account.readiness) : "warning",
-    netActivityLabel: formatCurrencyWithCode(account.netCapitalActivity, account.currency, true),
-    rollForwardLabel: `${formatCurrencyWithCode(account.openingNetActivity, account.currency, true)} opening -> ${formatCurrencyWithCode(account.endingNetActivity, account.currency, true)} ending`,
+    netActivityLabel: formatCurrencyWithCode(account.netCapitalActivity, account.currency, { signed: true }),
+    rollForwardLabel: `${formatCurrencyWithCode(account.openingNetActivity, account.currency, { signed: true })} opening → ${formatCurrencyWithCode(account.endingNetActivity, account.currency, { signed: true })} ending`,
     activityMixLabel: [
       `Contributions ${formatCurrencyWithCode(account.contributions, account.currency)}`,
       `Distributions ${formatCurrencyWithCode(account.distributions, account.currency)}`,
@@ -456,14 +455,14 @@ function buildCapitalAccountRestatementChangedLineRow(
   return {
     id: line.lineKey,
     lineKey: line.lineKey,
-    valueLabel: `${line.previousValue} -> ${line.currentValue}`,
+    valueLabel: `${line.previousValue} → ${line.currentValue}`,
     evidenceLabel: `${formatCount(line.evidenceLinkCount)} changed-line evidence`
   };
 }
 
 function formatCapitalAccountEffectiveWindow(from?: string | null, to?: string | null): string {
   if (from && to) {
-    return `${from} -> ${to}`;
+    return `${from} → ${to}`;
   }
 
   if (from) {
@@ -487,7 +486,7 @@ function formatAllocationInputSummary(
   const preview = inputs.slice(0, 3).map((input) => {
     const amount = input.amount == null
       ? "no amount"
-      : formatCurrencyWithCode(input.amount, input.currency ?? "USD", true);
+      : formatCurrencyWithCode(input.amount, input.currency ?? "USD", { signed: true });
     return `${input.kind} ${input.sourceId} ${amount}`;
   });
   const remaining = inputs.length > preview.length

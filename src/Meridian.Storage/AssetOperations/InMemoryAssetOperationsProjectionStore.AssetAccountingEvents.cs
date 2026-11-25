@@ -49,6 +49,24 @@ public sealed partial class InMemoryAssetOperationsProjectionStore
         }
     }
 
+    public Task<IReadOnlyList<AssetAccountingEventProjectionRecord>> ListByBookPeriodAsync(
+        Guid ledgerBookId, Guid periodId, CancellationToken ct = default)
+    {
+        if (ledgerBookId == Guid.Empty || periodId == Guid.Empty)
+            throw new ArgumentException("Exact asset-event book and period identities are required.");
+        ct.ThrowIfCancellationRequested();
+        lock (_gate)
+        {
+            IReadOnlyList<AssetAccountingEventProjectionRecord> records = _assetAccountingEvents.Values
+                .Where(item => item.Projection.Scope.LedgerBookId == ledgerBookId && item.Projection.Scope.PeriodId == periodId)
+                .GroupBy(item => (item.Projection.EventId, item.Projection.EventVersion))
+                .Select(group => group.OrderByDescending(item => item.Projection.SpineVersion).First())
+                .OrderBy(item => item.Projection.EventId).ThenBy(item => item.Projection.EventVersion)
+                .Select(AssetAccountingEventProjectionRules.Clone).ToArray();
+            return Task.FromResult(records);
+        }
+    }
+
     public async Task<AssetAccountingEventAppendResult> AppendAsync(
         AssetAccountingEventSpineDto projection,
         long expectedSpineVersion,

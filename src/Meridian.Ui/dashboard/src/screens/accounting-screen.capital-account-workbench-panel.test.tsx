@@ -145,7 +145,7 @@ describe("CapitalAccountWorkbenchPanel rollforward proof", () => {
     ]);
 
     // Existing labels are untouched.
-    expect(screen.getByText("+$100.00 USD opening -> +$180.00 USD ending")).toBeInTheDocument();
+    expect(screen.getByText("+$100.00 USD opening → +$180.00 USD ending")).toBeInTheDocument();
     expect(screen.getByText(/Contributions \$125 USD \/ Distributions \$0 USD/)).toBeInTheDocument();
 
     const proof = proofFor("LP 1 capital account");
@@ -167,7 +167,7 @@ describe("CapitalAccountWorkbenchPanel rollforward proof", () => {
     expect(within(proof).getByText("Ending net activity")).toBeInTheDocument();
     expect(within(proof).getByText("$180.00")).toBeInTheDocument();
     expect(within(proof).getByText("Opening + movements = closing · 2 movements")).toBeInTheDocument();
-    expect(within(proof).getByText(/Opening is derived by the capital-account projection/)).toBeInTheDocument();
+    expect(within(proof).getByText(/Opening is derived by the capital-account summary/)).toBeInTheDocument();
   });
 
   it("opens the proof and prints the out-by amount when the ending does not tie", async () => {
@@ -201,7 +201,7 @@ describe("CapitalAccountWorkbenchPanel rollforward proof", () => {
     expect(proof).toHaveAttribute("open");
     const reason = within(proof).getByText(/Not proved — no subledger entries are loaded for this account/);
     expect(reason).toBeVisible();
-    expect(within(proof).getByText(/Opening is set by the capital-account projection with no subledger entries behind it/)).toBeVisible();
+    expect(within(proof).getByText(/Opening is set by the capital-account summary with no subledger entries behind it/)).toBeVisible();
     // The single net movement row the trace always shows for this case is still there.
     expect(within(proof).getByText("Net capital activity")).toBeVisible();
     expect(within(proof).getAllByText("$125.00")).toHaveLength(2);

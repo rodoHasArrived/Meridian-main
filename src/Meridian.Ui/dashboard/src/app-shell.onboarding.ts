@@ -30,11 +30,11 @@ export const ONBOARDING_JOURNEYS: readonly OnboardingJourneyDefinition[] = [
     label: "Financial operations",
     description: "Move source records through validation, reconciliation, approval, and reporting.",
     steps: [
-      { id: "financial-operations:import", title: "Import source records", description: "Bring a statement into the governed intake workflow.", href: WORKSTATION_ROUTE_CATALOG.accountingStatementImport, matchPath: WORKSTATION_ROUTE_CATALOG.accountingStatementImport, actionLabel: "Open statement import" },
+      { id: "financial-operations:import", title: "Import source records", description: "Bring a statement into the intake workflow.", href: WORKSTATION_ROUTE_CATALOG.accountingStatementImport, matchPath: WORKSTATION_ROUTE_CATALOG.accountingStatementImport, actionLabel: "Open statement import" },
       { id: "financial-operations:validate", title: "Validate the ledger", description: "Trace balances and inspect the records behind them.", href: WORKSTATION_ROUTE_CATALOG.accountingLedger, matchPath: WORKSTATION_ROUTE_CATALOG.accountingLedger, actionLabel: "Open ledger" },
       { id: "financial-operations:reconcile", title: "Reconcile breaks", description: "Match source activity and investigate unresolved differences.", href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation, matchPath: WORKSTATION_ROUTE_CATALOG.accountingReconciliation, actionLabel: "Open reconciliation" },
       { id: "financial-operations:approve", title: "Review approvals", description: "Resolve controlled decisions before downstream publication.", href: WORKSTATION_ROUTE_CATALOG.accountingApprovals, matchPath: WORKSTATION_ROUTE_CATALOG.accountingApprovals, actionLabel: "Open approvals" },
-      { id: "financial-operations:report", title: "Review report packs", description: "Validate the governed output and its supporting evidence.", href: WORKSTATION_ROUTE_CATALOG.reportingReportPacks, matchPath: WORKSTATION_ROUTE_CATALOG.reportingReportPacks, actionLabel: "Open report packs" }
+      { id: "financial-operations:report", title: "Review report packs", description: "Validate the report output and its supporting evidence.", href: WORKSTATION_ROUTE_CATALOG.reportingReportPacks, matchPath: WORKSTATION_ROUTE_CATALOG.reportingReportPacks, actionLabel: "Open report packs" }
     ]
   },
   {
@@ -43,7 +43,7 @@ export const ONBOARDING_JOURNEYS: readonly OnboardingJourneyDefinition[] = [
     description: "Establish data trust, review readiness, and follow activity into portfolio records.",
     steps: [
       { id: "trading-portfolio:quotes", title: "Check market data", description: "Confirm a live quote and the provider behind it.", href: workstationRouteWithQuery("dataQuotes", { symbol: "AAPL" }), matchPath: WORKSTATION_ROUTE_CATALOG.dataQuotes, actionLabel: "Open quotes" },
-      { id: "trading-portfolio:providers", title: "Review provider posture", description: "Check connectivity and data-quality evidence.", href: WORKSTATION_ROUTE_CATALOG.dataProviders, matchPath: WORKSTATION_ROUTE_CATALOG.dataProviders, actionLabel: "Open providers" },
+      { id: "trading-portfolio:providers", title: "Review provider health", description: "Check connectivity and data-quality evidence.", href: WORKSTATION_ROUTE_CATALOG.dataProviders, matchPath: WORKSTATION_ROUTE_CATALOG.dataProviders, actionLabel: "Open providers" },
       { id: "trading-portfolio:trading", title: "Open the trading workspace", description: "Review current readiness and controlled actions.", href: WORKSTATION_ROUTE_CATALOG.trading, matchPath: WORKSTATION_ROUTE_CATALOG.trading, actionLabel: "Open trading" },
       { id: "trading-portfolio:portfolio", title: "Trace portfolio impact", description: "Follow activity into positions and portfolio evidence.", href: WORKSTATION_ROUTE_CATALOG.portfolio, matchPath: WORKSTATION_ROUTE_CATALOG.portfolio, actionLabel: "Open portfolio" }
     ]
@@ -51,7 +51,7 @@ export const ONBOARDING_JOURNEYS: readonly OnboardingJourneyDefinition[] = [
   {
     id: "strategy-research",
     label: "Strategy and research",
-    description: "Design, test, and promote a strategy through governed evidence gates.",
+    description: "Design, test, and promote a strategy through its evidence gates.",
     steps: [
       { id: "strategy-research:design", title: "Design a strategy", description: "Start with a transparent, reviewable strategy definition.", href: WORKSTATION_ROUTE_CATALOG.strategyDesigner, matchPath: WORKSTATION_ROUTE_CATALOG.strategyDesigner, actionLabel: "Open designer" },
       { id: "strategy-research:test", title: "Run the strategy lab", description: "Evaluate the strategy with reproducible inputs.", href: WORKSTATION_ROUTE_CATALOG.strategyLab, matchPath: WORKSTATION_ROUTE_CATALOG.strategyLab, actionLabel: "Open strategy lab" },
@@ -65,7 +65,7 @@ export const ONBOARDING_JOURNEYS: readonly OnboardingJourneyDefinition[] = [
     steps: [
       { id: "administration:providers", title: "Configure providers", description: "Connect and verify an operational data provider.", href: WORKSTATION_ROUTE_CATALOG.settingsProviders, matchPath: WORKSTATION_ROUTE_CATALOG.settingsProviders, actionLabel: "Open provider settings" },
       { id: "administration:access", title: "Review access", description: "Inspect the controls governing operator access.", href: WORKSTATION_ROUTE_CATALOG.settingsAccess, matchPath: WORKSTATION_ROUTE_CATALOG.settingsAccess, actionLabel: "Open access settings" },
-      { id: "administration:accounting", title: "Connect accounting systems", description: "Configure the governed downstream accounting connection.", href: WORKSTATION_ROUTE_CATALOG.settingsAccountingSystems, matchPath: WORKSTATION_ROUTE_CATALOG.settingsAccountingSystems, actionLabel: "Open accounting systems" },
+      { id: "administration:accounting", title: "Connect accounting systems", description: "Configure the downstream accounting connection.", href: WORKSTATION_ROUTE_CATALOG.settingsAccountingSystems, matchPath: WORKSTATION_ROUTE_CATALOG.settingsAccountingSystems, actionLabel: "Open accounting systems" },
       { id: "administration:diagnostics", title: "Learn recovery diagnostics", description: "Find actionable health and recovery evidence.", href: WORKSTATION_ROUTE_CATALOG.settingsDiagnostics, matchPath: WORKSTATION_ROUTE_CATALOG.settingsDiagnostics, actionLabel: "Open diagnostics" }
     ]
   }

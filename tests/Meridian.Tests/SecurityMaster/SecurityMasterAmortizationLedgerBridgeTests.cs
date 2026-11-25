@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Xunit;
@@ -157,6 +158,60 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
         firstPass.Should().Be(2);
         secondPass.Should().Be(0);
         ledger.Journal.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task PostProjectedCashFlowsAsync_WhenCouponIsCorrected_KeepsOriginalAccrual()
+    {
+        var asOf = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var originalTerms = TermsWith(maturity: new DateOnly(2028, 1, 1), dayCount: "30/360") with
+        {
+            IssueDate = DateOnly.FromDateTime(asOf.UtcDateTime),
+            PrincipalFace = 1_000m,
+            CouponKind = SecurityCouponKind.Fixed,
+            CouponRate = 5.00m,
+            CouponRateUnit = SecurityCouponRateUnit.Percent,
+            PaymentFrequency = "Annual",
+        };
+        var couponPeriod = Period(2027, 1, 1, interest: 50.00m);
+        var originalProjection = Projection(originalTerms, couponPeriod) with { AsOf = asOf };
+        var correctedProjection = originalProjection with
+        {
+            TermsUsed = originalTerms with { CouponRate = 4.75m },
+            Schedule = [couponPeriod with { InterestAmount = 47.50m }],
+        };
+        var service = CashFlowServiceWith(originalProjection);
+        var logger = Substitute.For<ILogger<SecurityMasterAmortizationLedgerBridge>>();
+        var bridge = new SecurityMasterAmortizationLedgerBridge(service, logger);
+        var ledger = new DomainLedger();
+        var interestReceivable = LedgerAccounts.AccruedInterestReceivable(Ticker);
+
+        (await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger)).Should().Be(1);
+        var originalJournal = ledger.Journal.Should().ContainSingle().Which;
+        var originalLines = originalJournal.Lines.ToArray();
+        originalJournal.IsBalanced.Should().BeTrue();
+        ledger.GetBalance(interestReceivable).Should().Be(50.00m);
+        ledger.GetBalance(LedgerAccounts.CouponIncome).Should().Be(50.00m);
+
+        service.GetProjectionAsync(SecurityId, StructuredCashFlowScenario.Base, Arg.Any<CancellationToken>())
+            .Returns(correctedProjection);
+        logger.ClearReceivedCalls();
+
+        // Characterize the current silent skip when a correction reaches an already posted date.
+        (await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger)).Should().Be(0);
+        var replayedJournal = ledger.Journal.Should().ContainSingle().Which;
+        replayedJournal.JournalEntryId.Should().Be(originalJournal.JournalEntryId);
+        replayedJournal.Lines.Should().Equal(originalLines);
+        ledger.GetBalance(interestReceivable).Should().Be(50.00m);
+        ledger.GetBalance(LedgerAccounts.CouponIncome).Should().Be(50.00m);
+        logger.ReceivedCalls().Should().NotContain(call => call.GetMethodInfo().Name == "Log"
+            && (LogLevel)call.GetArguments()[0]! == LogLevel.Warning);
+
+        var freshLedger = new DomainLedger();
+        (await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, freshLedger)).Should().Be(1);
+        freshLedger.Journal.Should().ContainSingle().Which.IsBalanced.Should().BeTrue();
+        freshLedger.GetBalance(interestReceivable).Should().Be(47.50m);
+        freshLedger.GetBalance(LedgerAccounts.CouponIncome).Should().Be(47.50m);
     }
 
     [Fact]
@@ -434,5 +489,101 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
 
         // Cumulative 3.18 through 28 February less 1.64 through 31 January.
         ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-1.54m);
+    }
+
+    [Theory]
+    [InlineData(SecurityLotUnitKind.FaceValue, 1, 1000, 100)]
+    [InlineData(SecurityLotUnitKind.FaceValue, 100, 10, 100)]
+    [InlineData(SecurityLotUnitKind.CurrencyAmount, 1, 1000, 1)]
+    [InlineData(SecurityLotUnitKind.Notional, 1, 1000, 1)]
+    public async Task AccrualWindow_ScalesCouponBySharedLotExposure(
+        SecurityLotUnitKind unit, int multiplier, int quantity, int unitCost)
+    {
+        var period = Period(2026, 2, 1, interest: 310m) with
+        {
+            InterestMeasuredFrom = new DateOnly(2026, 1, 1),
+            InterestMeasuredTo = new DateOnly(2026, 2, 1),
+        };
+        var bridge = BuildBridge(CashFlowServiceWith(Projection(TermsWith(new DateOnly(2026, 2, 1)), period)));
+        var ledger = new DomainLedger();
+        var lot = new LedgerTaxLot("held", new DateOnly(2026, 1, 1), quantity, unitCost, SecurityId)
+        {
+            UnitKind = unit,
+            Multiplier = multiplier,
+        };
+
+        await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger, new AmortizationLedgerPostingContext(
+            OpenLots: [lot], CouponPrincipalBasis: 10_000m,
+            AccrualWindow: new(new DateOnly(2026, 1, 1), new DateOnly(2026, 2, 1))));
+
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(31m);
+        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(0m);
+        ledger.Journal.Should().ContainSingle().Which.IsBalanced.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task AccrualWindow_UsesRemainingFaceAndAcquisitionDateExactlyOnce()
+    {
+        var period = Period(2026, 2, 1, interest: 310m) with
+        {
+            InterestMeasuredFrom = new DateOnly(2026, 1, 1),
+            InterestMeasuredTo = new DateOnly(2026, 2, 1),
+            Factor = 0.5m,
+        };
+        var ledger = new DomainLedger();
+        var bridge = BuildBridge(CashFlowServiceWith(Projection(period)));
+        // The shared lot already holds 500 of remaining face after its paydown.
+        var lot = new LedgerTaxLot("pool", new DateOnly(2026, 1, 16), 500m, 100m, SecurityId)
+        {
+            UnitKind = SecurityLotUnitKind.FaceValue,
+            Multiplier = 1m,
+        };
+
+        await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger, new AmortizationLedgerPostingContext(
+            OpenLots: [lot], CouponPrincipalBasis: 10_000m,
+            AccrualWindow: new(new DateOnly(2026, 1, 1), new DateOnly(2026, 2, 1))));
+
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(8m);
+    }
+
+    [Theory]
+    [InlineData(SecurityQuoteConvention.PercentOfPar, 102)]
+    [InlineData(SecurityQuoteConvention.PerUnit, 1.02)]
+    public async Task Amortization_UsesSharedFaceAndDeclaredQuote(
+        SecurityQuoteConvention quote, double price)
+    {
+        var bridge = BuildBridge(CashFlowServiceWith(Projection(
+            TermsWith(new DateOnly(2026, 2, 1)), Period(2026, 2, 1, interest: 0m))));
+        var ledger = new DomainLedger();
+        var lot = new LedgerTaxLot("canonical", new DateOnly(2026, 1, 1), 1000m, (decimal)price, SecurityId)
+        {
+            UnitKind = SecurityLotUnitKind.FaceValue,
+            Multiplier = 1m,
+        };
+
+        await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger,
+            new AmortizationLedgerPostingContext(OpenLots: [lot], QuoteConvention: quote));
+
+        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-20m);
+        ledger.Journal.Should().ContainSingle().Which.IsBalanced.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EmptyBlockedProjection_ReportsTheBlockBeforeNothingToPost()
+    {
+        const string reason = "Negative interest is unsupported.";
+        var logger = Substitute.For<ILogger<SecurityMasterAmortizationLedgerBridge>>();
+        var bridge = new SecurityMasterAmortizationLedgerBridge(
+            CashFlowServiceWith(Projection() with { BlockedReason = reason }), logger);
+        var ledger = new DomainLedger();
+
+        (await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger)).Should().Be(0);
+
+        ledger.Journal.Should().BeEmpty();
+        logger.ReceivedCalls().Should().Contain(call => call.GetMethodInfo().Name == "Log"
+            && (LogLevel)call.GetArguments()[0]! == LogLevel.Warning
+            && call.GetArguments()[2]!.ToString()!.Contains(reason));
+        logger.ReceivedCalls().Should().NotContain(call => call.GetMethodInfo().Name == "Log"
+            && (LogLevel)call.GetArguments()[0]! == LogLevel.Debug);
     }
 }

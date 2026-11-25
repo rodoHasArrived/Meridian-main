@@ -1,16 +1,24 @@
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using Meridian.Application.Backfill;
 using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Api;
 using Meridian.Core.Config;
+using Meridian.Core.IO;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Failover;
 using Meridian.Infrastructure.DataSources;
 using Meridian.ProviderSdk;
+using Meridian.Storage;
+using Meridian.Storage.Archival;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -21,6 +29,8 @@ public static class ProviderExtendedEndpoints
 {
     public static void MapProviderExtendedEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        app.MapProviderValidationEndpoints(jsonOptions);
+        app.MapProviderQuotaEndpoints(jsonOptions);
         var group = app.MapGroup("").WithTags("Providers");
 
         // Get provider by name
@@ -81,46 +91,41 @@ public static class ProviderExtendedEndpoints
         .WithDescription("Returns current failover configuration including priority chain and timeout settings.")
         .Produces(200);
 
-        // Trigger failover
-        group.MapPost(UiApiRoutes.ProviderFailoverTrigger, (FailoverTriggerRequest? req) =>
-        {
-            return Results.Json(new
-            {
-                triggered = true,
-                targetProvider = req?.TargetProvider,
-                message = "Failover request has been processed",
-                timestamp = DateTimeOffset.UtcNow
-            }, jsonOptions);
-        })
+        // Both compatibility controls await the same committed runtime hand-off as /api/failover/force.
+        group.MapPost(UiApiRoutes.ProviderFailoverTrigger, (
+            HttpContext context, [FromServices] ConfigStore store,
+            [FromServices] StreamingFailoverRegistry? registry, [FromServices] ILoggerFactory loggerFactory,
+            FailoverTriggerRequest? req, CancellationToken ct) =>
+            FailoverControlOperations.ExecuteAsync(context, store, registry, loggerFactory, jsonOptions,
+                req?.RuleId, req?.TargetProvider, reset: false, ct))
         .WithName("TriggerProviderFailover").RequirePermission(UserPermission.ManageProviders)
         .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageProviders))
-        .WithDescription("Manually triggers a failover to a specified target provider.")
-        .Produces(200)
+        .RequireWorkstationTenantScope()
+        .WithDescription("Switches the live streaming provider and returns only after the hand-off commits.")
+        .Produces(200).ProducesValidationProblem().ProducesProblem(404).ProducesProblem(409).ProducesProblem(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        // Reset failover
-        group.MapPost(UiApiRoutes.ProviderFailoverReset, () =>
-        {
-            return Results.Json(new
-            {
-                reset = true,
-                message = "Failover state has been reset to defaults",
-                timestamp = DateTimeOffset.UtcNow
-            }, jsonOptions);
-        })
+        group.MapPost(UiApiRoutes.ProviderFailoverReset, (
+            HttpContext context, [FromServices] ConfigStore store,
+            [FromServices] StreamingFailoverRegistry? registry, [FromServices] ILoggerFactory loggerFactory,
+            FailoverTriggerRequest? req, CancellationToken ct) =>
+            FailoverControlOperations.ExecuteAsync(context, store, registry, loggerFactory, jsonOptions,
+                req?.RuleId, null, reset: true, ct))
         .WithName("ResetProviderFailover").RequirePermission(UserPermission.ManageProviders)
         .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageProviders))
-        .WithDescription("Resets the failover state to defaults, clearing any manual overrides.")
-        .Produces(200)
+        .RequireWorkstationTenantScope()
+        .WithDescription("Returns the selected live failover rule to its configured primary provider.")
+        .Produces(200).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // Rate limits
         group.MapGet(UiApiRoutes.ProviderRateLimits, (
             [FromServices] ProviderRegistry? registry,
+            [FromServices] BackfillRoutingRuntime? routing,
             [FromServices] IEnumerable<IDataSource> dataSources) =>
         {
             return Results.Json(
-                CreateRateLimitsResponse(registry, dataSources, DateTimeOffset.UtcNow),
+                CreateRateLimitsResponse(registry, dataSources, DateTimeOffset.UtcNow, routing),
                 jsonOptions);
         })
         .WithName("GetProviderRateLimits").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
@@ -128,20 +133,31 @@ public static class ProviderExtendedEndpoints
         .Produces<ProviderRateLimitsResponse>(200);
 
         // Rate limit history
-        group.MapGet(UiApiRoutes.ProviderRateLimitHistory, (string providerName, int? hours) =>
+        group.MapGet(UiApiRoutes.ProviderRateLimitHistory, (string providerName, int? hours,
+            [FromServices] ConfigStore store, [FromServices] StorageOptions? storageOptions,
+            [FromServices] IAtomicFileWriter? writer) =>
         {
+            var history = ProviderRateLimitHistory.ForDataRoot(storageOptions?.RootPath ?? store.GetDataRoot(),
+                writer ?? new AtomicFileWriterAdapter());
+            var rollupsAvailable = history.TryReadDailyRollups(providerName, out var rollups);
             return Results.Json(
                 new ProviderRateLimitHistoryResponse(
                     providerName,
-                    hours ?? 24,
-                    Array.Empty<ProviderRateLimitEventDto>(),
+                    Math.Clamp(hours ?? 24, 1, 168),
+                    history.Read(providerName, hours ?? 24),
                     DateTimeOffset.UtcNow,
-                    IsAvailable: false,
-                    Message: "Runtime rate-limit history is not retained. Use /api/providers/rate-limits for the current snapshot."),
+                    IsAvailable: true,
+                    Message: rollupsAvailable
+                        ? "Recent events are held in memory. Daily totals retain the last seven UTC dates across host restarts."
+                        : "Recent events are available. Durable daily totals may be incomplete.")
+                {
+                    DailyRollups = rollups,
+                    DailyRollupsAvailable = rollupsAvailable
+                },
                 jsonOptions);
         })
         .WithName("GetProviderRateLimitHistory").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
-        .WithDescription("Legacy route retained for compatibility; rate-limit event history is not retained.")
+        .WithDescription("Returns recent rate-limit events and durable UTC daily throttle and rotation totals.")
         .Produces<ProviderRateLimitHistoryResponse>(200);
 
         // Provider capabilities
@@ -226,26 +242,37 @@ public static class ProviderExtendedEndpoints
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        // Failover thresholds
+        // Report retained configuration rather than invented global failure/cooldown thresholds.
         group.MapGet(UiApiRoutes.ProviderFailoverThresholds, ([FromServices] ConfigStore store) =>
         {
-            var cfg = store.Load();
+            var settings = store.Load().DataSources ?? new DataSourcesConfig();
+            var rules = settings.FailoverRules ?? [];
             return Results.Json(new
             {
-                maxConsecutiveFailures = 3,
-                timeoutSeconds = cfg.DataSources?.FailoverTimeoutSeconds ?? 30,
-                healthCheckIntervalSeconds = 60,
-                cooldownSeconds = 300,
+                maxConsecutiveFailures = rules.Length == 1 ? (int?)rules[0].FailoverThreshold : null,
+                timeoutSeconds = settings.FailoverTimeoutSeconds,
+                healthCheckIntervalSeconds = settings.HealthCheckIntervalSeconds,
+                autoRecover = settings.AutoRecover,
+                rules = rules.Select(rule => new
+                {
+                    rule.Id,
+                    rule.FailoverThreshold,
+                    rule.RecoveryThreshold,
+                    rule.DataQualityThreshold,
+                    rule.MaxLatencyMs
+                }).ToArray(),
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
         .WithName("GetProviderFailoverThresholds").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
-        .WithDescription("Returns failover threshold values including max failures, cooldown, and health check intervals.")
+        .WithDescription("Returns configured failover timing and each rule's actual failure, recovery, quality and latency thresholds.")
         .Produces(200);
 
         // Provider health
-        group.MapGet(UiApiRoutes.ProviderHealth, ([FromServices] ProviderRegistry? registry) =>
+        group.MapGet(UiApiRoutes.ProviderHealth, (
+            [FromServices] ProviderRegistry? registry, [FromServices] ConfigStore? store) =>
         {
+            var metricsStatus = TryLoadOptionalHealthMetrics(store);
             var diagnosticsByProviderId = ProviderConnectionDiagnosticsProjection.BuildByProviderId(registry);
             var providers = registry is null
                 ? Array.Empty<object>()
@@ -260,6 +287,8 @@ public static class ProviderExtendedEndpoints
                         p.IsEnabled,
                         diagnostics?.LifecycleState,
                         diagnostics?.IsConnected);
+                    var metrics = ProviderMetricsLookup.Find(metricsStatus, [], p.Name);
+                    var averageLatencyMs = ProviderMetricsLookup.GetMeasuredAverageLatencyMs(metrics);
 
                     return (object)new
                     {
@@ -275,15 +304,18 @@ public static class ProviderExtendedEndpoints
                         healthy = !p.IsEnabled
                             ? false
                             : diagnostics is null ? (bool?)null : diagnostics.IsConnected,
-                        connectionStabilityScore = diagnostics is null ? (int?)null : diagnostics.IsConnected ? 100 : 0,
-                        averageLatencyMs = 0,
-                        latencyP99Ms = 0,
-                        latencyConsistencyScore = 100,
-                        dataCompletenessPercent = 100,
-                        reconnectsLastHour = diagnostics?.ReconnectAttempts ?? 0,
-                        uptimePercent = diagnostics is null ? (int?)null : diagnostics.IsConnected ? 100 : 0,
-                        messagesPerSecond = 0,
-                        errorsLastHour = diagnostics?.LastFailureKind is null ? 0 : 1,
+                        // Connection state, lifetime attempts and the last failure cannot
+                        // establish observation-window metrics or dataset completeness.
+                        connectionStabilityScore = (double?)null,
+                        averageLatencyMs,
+                        latencyObservedAt = averageLatencyMs.HasValue ? metrics?.Timestamp : null,
+                        latencyP99Ms = (double?)null,
+                        latencyConsistencyScore = (double?)null,
+                        dataCompletenessPercent = (double?)null,
+                        reconnectsLastHour = (int?)null,
+                        uptimePercent = (double?)null,
+                        messagesPerSecond = (double?)null,
+                        errorsLastHour = (int?)null,
                         lifecycleState = diagnostics?.LifecycleState,
                         webSocketState = diagnostics?.WebSocketState,
                         isReconnecting = diagnostics?.IsReconnecting,
@@ -298,14 +330,14 @@ public static class ProviderExtendedEndpoints
             return Results.Json(new { providers, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
         .WithName("GetProviderHealthStatus").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
-        .WithDescription("Returns health status for all registered providers.")
+        .WithDescription("Returns observed provider connection state and available measurements. Unmeasured performance fields are null.")
         .Produces(200);
 
         // Provider health dashboard — unified traffic-light summary
         group.MapGet(UiApiRoutes.ProvidersDashboard, ([FromServices] ProviderRegistry? registry, [FromServices] ConfigStore store) =>
         {
             var allProviders = registry?.GetAllProviders() ?? Array.Empty<ProviderInfo>();
-            var metricsStatus = store.TryLoadProviderMetrics();
+            var metricsStatus = TryLoadOptionalHealthMetrics(store);
             var diagnosticsByProviderId = ProviderConnectionDiagnosticsProjection.BuildByProviderId(registry);
 
             var providerSummaries = allProviders.Select(p =>
@@ -328,21 +360,10 @@ public static class ProviderExtendedEndpoints
                             ? "yellow"
                             : diagnostics.IsConnected ? "green" : "red";
 
-                // Cross-reference latency metrics when available
-                string? latencyMs = null;
-                if (metricsStatus?.Providers is { } metricsList)
-                {
-                    var m = metricsList.FirstOrDefault(x =>
-                        string.Equals(x.ProviderId, p.Name, StringComparison.OrdinalIgnoreCase));
-                    if (m is not null)
-                    {
-                        latencyMs = m.AverageLatencyMs.ToString("F1");
-
-                        // Elevate to yellow when a healthy provider is showing elevated latency
-                        if (p.IsEnabled && diagnostics?.IsConnected == true && m.AverageLatencyMs > 500)
-                            trafficLight = "yellow";
-                    }
-                }
+                var metrics = ProviderMetricsLookup.Find(metricsStatus, [], p.Name);
+                var averageLatencyMs = ProviderMetricsLookup.GetMeasuredAverageLatencyMs(metrics);
+                if (p.IsEnabled && diagnostics?.IsConnected == true && averageLatencyMs > 500)
+                    trafficLight = "yellow";
 
                 return new
                 {
@@ -354,7 +375,8 @@ public static class ProviderExtendedEndpoints
                     connectionState,
                     diagnosticsAvailable = diagnostics is not null,
                     trafficLight,
-                    latencyMs,
+                    latencyMs = averageLatencyMs?.ToString("F1", CultureInfo.InvariantCulture),
+                    latencyObservedAt = averageLatencyMs.HasValue ? metrics?.Timestamp : null,
                     lifecycleState = diagnostics?.LifecycleState,
                     lastHeartbeatReceivedAt = diagnostics?.LastHeartbeatReceivedAt,
                     lastMessageReceivedAt = diagnostics?.LastMessageReceivedAt,
@@ -381,7 +403,7 @@ public static class ProviderExtendedEndpoints
 
             var summary = overallTrafficLight switch
             {
-                "green" => "All providers healthy — data collection operating normally.",
+                "green" => "All enabled providers report connected.",
                 "yellow" => "Some providers degraded or showing elevated latency — failover may be active.",
                 "red" => "Primary providers down — data collection at risk. Check provider credentials and connectivity.",
                 _ => "Unknown"
@@ -404,18 +426,37 @@ public static class ProviderExtendedEndpoints
         .Produces(200);
     }
 
+    private static ProviderMetricsStatus? TryLoadOptionalHealthMetrics(ConfigStore? store)
+    {
+        try
+        {
+            return store?.TryLoadProviderMetrics();
+        }
+        catch (InvalidDataException)
+        {
+            // The configuration determines the status-file location. A damaged config cannot
+            // provide latency evidence, but the live registry can still report connection state.
+            return null;
+        }
+    }
+
     internal static ProviderRateLimitsResponse CreateRateLimitsResponse(
         ProviderRegistry? registry,
         IEnumerable<IDataSource> dataSources,
-        DateTimeOffset observedAt)
+        DateTimeOffset observedAt,
+        BackfillRoutingRuntime? routing = null)
     {
         ArgumentNullException.ThrowIfNull(dataSources);
         var providers = new List<ProviderRateLimitSnapshotDto>();
         var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var provider in registry?.GetBackfillProviders() ?? Array.Empty<IHistoricalDataProvider>())
+        var historical = routing?.Current?.Providers ?? registry?.GetBackfillProviders()
+            .Select(provider => new BackfillRoutingProvider(provider, provider.Priority)).ToArray() ?? [];
+        foreach (var entry in historical)
         {
+            var provider = entry.Provider;
             var snapshot = (provider as IProviderRateLimitDiagnosticsSource)?.GetRateLimitDiagnosticsSnapshot();
+            var attempts = routing?.Admission?.GetStatus(provider.Name);
             var surface = snapshot?.Surface ?? ProviderRateLimitSurfaces.Historical;
             if (!keys.Add($"{provider.Name}:{surface}"))
                 continue;
@@ -424,7 +465,7 @@ public static class ProviderExtendedEndpoints
                 Provider: provider.Name,
                 Name: provider.Name,
                 DisplayName: provider.DisplayName,
-                Priority: provider.Priority,
+                Priority: entry.Priority,
                 Capabilities: MapCapabilities(provider.Capabilities),
                 Surface: surface,
                 StateAvailable: snapshot?.StateAvailable == true,
@@ -436,7 +477,16 @@ public static class ProviderExtendedEndpoints
                 UsageRatio: snapshot?.StateAvailable == true ? snapshot.UsageRatio : null,
                 IsRateLimited: snapshot?.StateAvailable == true && snapshot.IsRateLimited,
                 ResetAt: snapshot?.StateAvailable == true ? snapshot.ResetAt : null,
-                Reason: snapshot?.Reason ?? "runtime-diagnostics-unavailable"));
+                Reason: snapshot?.Reason ?? "runtime-diagnostics-unavailable")
+            {
+                QuotaUnit = snapshot?.QuotaUnit ?? "requests",
+                DailyUnitsUsed = snapshot?.DailyUnitsUsed,
+                DailyMaximum = snapshot?.DailyMaximum,
+                DailyResetsAt = snapshot?.DailyResetsAt,
+                DailyResetPolicy = snapshot?.DailyResetPolicy,
+                BackfillAttemptsInWindow = attempts?.RequestsInWindow,
+                BackfillAttemptWindowSeconds = attempts?.Window.TotalSeconds
+            });
         }
 
         foreach (var provider in registry?.GetStreamingProviders().OfType<IProviderRateLimitDiagnosticsSource>()
@@ -463,7 +513,14 @@ public static class ProviderExtendedEndpoints
                 UsageRatio: snapshot.StateAvailable ? snapshot.UsageRatio : null,
                 IsRateLimited: snapshot.StateAvailable && snapshot.IsRateLimited,
                 ResetAt: snapshot.StateAvailable ? snapshot.ResetAt : null,
-                Reason: snapshot.Reason));
+                Reason: snapshot.Reason)
+            {
+                QuotaUnit = snapshot.QuotaUnit,
+                DailyUnitsUsed = snapshot.DailyUnitsUsed,
+                DailyMaximum = snapshot.DailyMaximum,
+                DailyResetsAt = snapshot.DailyResetsAt,
+                DailyResetPolicy = snapshot.DailyResetPolicy
+            });
         }
 
         foreach (var source in dataSources.OfType<IProviderRateLimitDiagnosticsSource>())
@@ -489,7 +546,14 @@ public static class ProviderExtendedEndpoints
                 UsageRatio: snapshot.StateAvailable ? snapshot.UsageRatio : null,
                 IsRateLimited: snapshot.StateAvailable && snapshot.IsRateLimited,
                 ResetAt: snapshot.StateAvailable ? snapshot.ResetAt : null,
-                Reason: snapshot.Reason));
+                Reason: snapshot.Reason)
+            {
+                QuotaUnit = snapshot.QuotaUnit,
+                DailyUnitsUsed = snapshot.DailyUnitsUsed,
+                DailyMaximum = snapshot.DailyMaximum,
+                DailyResetsAt = snapshot.DailyResetsAt,
+                DailyResetPolicy = snapshot.DailyResetPolicy
+            });
         }
 
         return new ProviderRateLimitsResponse(
@@ -562,6 +626,6 @@ public static class ProviderExtendedEndpoints
         capabilities.SupportsHistoricalAuctions,
         capabilities.SupportedMarkets.ToArray());
 
-    private sealed record FailoverTriggerRequest(string? TargetProvider);
+    private sealed record FailoverTriggerRequest(string? TargetProvider = null, string? RuleId = null);
     private sealed record ProviderSwitchRequest(string? ProviderName, bool SaveAsDefault);
 }

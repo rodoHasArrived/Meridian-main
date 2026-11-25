@@ -5,7 +5,7 @@ import {
 } from "@/lib/workstation-endpoints";
 import {
   formatSettingsDateOnly,
-  formatSettingsUtcMinute
+  formatSettingsMinute
 } from "@/screens/settings-screen.date-format";
 import type { SettingsScreenPayload } from "@/screens/settings-screen.view-model";
 import type {
@@ -116,7 +116,7 @@ export function buildAssetProfileGovernancePanel(
   return {
     title: "Asset Profile accounting",
     summary: approvedProfiles.length > 0
-      ? `${approvedProfiles.length} approved alternative-asset profile${approvedProfiles.length === 1 ? "" : "s"} are available for governed Security Master creation.`
+      ? `${approvedProfiles.length} approved alternative-asset profile${approvedProfiles.length === 1 ? "" : "s"} are available for Security Master creation.`
       : "No approved asset profiles are available for Security Master creation.",
     statusLabel: approvedProfiles.length > 0 ? `${approvedProfiles.length} approved` : "Approval needed",
     statusVariant,
@@ -175,7 +175,7 @@ export function buildOperationsControlCenter(payload: SettingsScreenPayload): Se
       ? `${checkingCount} configuration surface${checkingCount === 1 ? "" : "s"} still loading; ${loadedCount} loaded.`
       : reviewCount > 0
         ? `${reviewCount} configuration surface${reviewCount === 1 ? "" : "s"} need operator review before close accounting is clean.`
-        : "Ledger mappings, role authority, approval rules, and close posture are loaded for operator review.",
+        : "Ledger mappings, role authority, approval rules, and close status are loaded for operator review.",
     statusLabel: checkingCount > 0
       ? `${checkingCount} checking`
       : reviewCount > 0
@@ -242,7 +242,7 @@ function buildLedgerMappingControlCard(
     ],
     detail: firstUnmapped
       ? `${firstUnmapped.accountCode} needs mapping. ${firstUnmapped.recommendedAction}`
-      : `Mapping view generated ${formatSettingsUtcMinute(workbench.asOf)}.`
+      : `Mapping view generated ${formatSettingsMinute(workbench.asOf)}.`
   };
 }
 
@@ -325,7 +325,7 @@ function buildApprovalPolicyControlCard(
     ],
     detail: checklistRules > 0
       ? `${checklistRules} rule${checklistRules === 1 ? "" : "s"} require checklist-control approvals before close.`
-      : `Policy generated ${formatSettingsUtcMinute(matrix.generatedAtUtc)}.`
+      : `Policy generated ${formatSettingsMinute(matrix.generatedAtUtc)}.`
   };
 }
 
@@ -374,7 +374,7 @@ function buildCloseCalendarControlCard(
     ],
     detail: nextDue
       ? `${nextDue.periodId}: ${nextDue.nextDueLabel ?? "Next close task"} due ${formatSettingsDateOnly(nextDue.nextDueDate)} for ${nextDue.nextDueOwner ?? "unassigned"}.`
-      : `Close calendar generated ${formatSettingsUtcMinute(calendar.generatedAtUtc)}.`
+      : `Close calendar generated ${formatSettingsMinute(calendar.generatedAtUtc)}.`
   };
 }
 

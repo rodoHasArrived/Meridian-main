@@ -65,6 +65,15 @@ public static class CorporateActionEconomicFingerprint
             return string.Empty;
         }
 
+        // Preserve legacy payload representations, including explicit empty objects and JSON
+        // null. A new envelope containing only the operational companion has no economic payload.
+        if (element.ValueKind == JsonValueKind.Object
+            && element.TryGetProperty("electionCalendar", out _)
+            && element.EnumerateObject().All(static property => property.NameEquals("electionCalendar")))
+        {
+            return string.Empty;
+        }
+
         var buffer = new ArrayBufferWriter<byte>();
         var typedFields = CorporateActionPayloadSchemaCatalog.Get(eventType).Fields
             .ToDictionary(static field => field.Key, static field => field.ValueType, StringComparer.Ordinal);
@@ -86,7 +95,9 @@ public static class CorporateActionEconomicFingerprint
         {
             case JsonValueKind.Object:
                 writer.WriteStartObject();
-                foreach (var property in element.EnumerateObject().OrderBy(static property => property.Name, StringComparer.Ordinal))
+                foreach (var property in element.EnumerateObject()
+                             .Where(property => !isPayloadRoot || !property.NameEquals("electionCalendar"))
+                             .OrderBy(static property => property.Name, StringComparer.Ordinal))
                 {
                     writer.WritePropertyName(property.Name);
                     if (isPayloadRoot

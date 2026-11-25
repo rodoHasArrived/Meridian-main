@@ -167,7 +167,9 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
     private readonly object _disposeSync = new();
     private readonly Dictionary<Guid, PendingTradeFillPosting> _pending = [];
     private readonly HashSet<Guid> _walAccepted = [];
-    private readonly HashSet<Guid> _posted = [];
+    // Completed retries remain bounded by the same limit as their identity index. A fill id
+    // alone cannot certify a retry: exact basis, direction, fees and scope must still agree.
+    private readonly Dictionary<Guid, TradeExecutedEvent> _posted = [];
     private readonly Queue<Guid> _postedOrder = [];
     private Task? _initializationTask;
     private Task? _disposeTask;
@@ -207,6 +209,7 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(tradeEvent);
+        tradeEvent = tradeEvent.FreezeFees();
         if (tradeEvent.FillId == Guid.Empty)
             throw new ArgumentException("A durable fill id is required.", nameof(tradeEvent));
 
@@ -216,8 +219,11 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
         try
         {
             ThrowIfDisposing();
-            if (_posted.Contains(tradeEvent.FillId))
+            if (_posted.TryGetValue(tradeEvent.FillId, out var completed))
+            {
+                EnsureSameEconomics(completed, tradeEvent);
                 return new TradeFillPostingAcceptance(null, ShouldEnqueue: false, WasAlreadyPosted: true);
+            }
             if (_pending.TryGetValue(tradeEvent.FillId, out var retained))
             {
                 EnsureSameEconomics(retained.TradeEvent, tradeEvent);
@@ -318,7 +324,7 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
         try
         {
             ThrowIfDisposing();
-            if (_posted.Contains(fillId))
+            if (_posted.ContainsKey(fillId))
                 return;
             if (!_pending.TryGetValue(fillId, out var posting))
                 throw new InvalidOperationException($"Fill '{fillId:D}' is not pending and cannot be acknowledged.");
@@ -377,7 +383,7 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
                     fillId);
             }
 
-            RememberPosted(fillId);
+            RememberPosted(posting.TradeEvent);
             await CompactSafelyAsync().ConfigureAwait(false);
         }
         finally
@@ -398,7 +404,7 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
         try
         {
             ThrowIfDisposing();
-            if (_posted.Contains(fillId))
+            if (_posted.ContainsKey(fillId))
                 return;
             if (!_pending.TryGetValue(fillId, out var posting))
                 throw new InvalidOperationException($"Fill '{fillId:D}' is not pending and cannot record a failure.");
@@ -584,8 +590,16 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
                 $"WAL record {record.Sequence}");
             if (payload.TradeEvent.FillId == Guid.Empty)
                 throw new InvalidDataException($"Trade-fill WAL record {record.Sequence} has an empty fill id.");
-            if (_posted.Contains(payload.TradeEvent.FillId))
-                return;
+            if (_posted.Remove(payload.TradeEvent.FillId))
+            {
+                // WAL order is authoritative: a later accepted record must be verified again,
+                // even when a different restart cache limit remembers its earlier completion.
+                // Preserve the durable pending marker and let the journal target compare facts.
+                var retainedOrder = _postedOrder.Where(id => id != payload.TradeEvent.FillId).ToArray();
+                _postedOrder.Clear();
+                foreach (var id in retainedOrder)
+                    _postedOrder.Enqueue(id);
+            }
 
             if (_pending.TryGetValue(payload.TradeEvent.FillId, out var existing))
             {
@@ -622,15 +636,15 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
         {
             if (status.Failure is not null)
                 throw new InvalidDataException($"Trade-fill acknowledgement record {record.Sequence} contains failure data.");
-            if (_posted.Contains(status.FillId))
+            if (_posted.ContainsKey(status.FillId))
                 return;
-            if (!_pending.Remove(status.FillId))
+            if (!_pending.Remove(status.FillId, out var completedPosting))
             {
                 throw new InvalidDataException(
                     $"Trade-fill WAL acknowledgement record {record.Sequence} does not reference a pending fill.");
             }
             _walAccepted.Remove(status.FillId);
-            RememberPosted(status.FillId);
+            RememberPosted(completedPosting.TradeEvent);
             return;
         }
 
@@ -785,9 +799,10 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
         }
     }
 
-    private void RememberPosted(Guid fillId)
+    private void RememberPosted(TradeExecutedEvent tradeEvent)
     {
-        if (!_posted.Add(fillId))
+        var fillId = tradeEvent.FillId;
+        if (!_posted.TryAdd(fillId, tradeEvent))
             return;
         _postedOrder.Enqueue(fillId);
         while (_postedOrder.Count > _options.MaxRememberedPostedFillIds
@@ -837,7 +852,7 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
 
     private static void EnsureSameEconomics(TradeExecutedEvent retained, TradeExecutedEvent candidate)
     {
-        if (retained != candidate)
+        if (!retained.HasSameEconomics(candidate))
         {
             throw new InvalidOperationException(
                 $"Fill '{candidate.FillId:D}' was replayed with different economic content.");

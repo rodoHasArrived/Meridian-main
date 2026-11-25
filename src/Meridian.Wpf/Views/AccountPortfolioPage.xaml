@@ -69,14 +69,6 @@
                                 AutomationProperties.AutomationId="AccountPortfolioActionStatePanel"
                                 AutomationProperties.Name="{Binding PositionActionStateTitle}">
                         <WrapPanel HorizontalAlignment="Right">
-                            <Button Content="Refresh Account"
-                                    Command="{Binding RefreshCommand}"
-                                    IsEnabled="{Binding CanRefreshAccount}"
-                                    ToolTip="{Binding RefreshTooltip}"
-                                    ToolTipService.ShowOnDisabled="True"
-                                    Style="{StaticResource PrimaryButtonStyle}"
-                                    AutomationProperties.AutomationId="AccountPortfolioRefreshButton"
-                                    Margin="0,0,8,8" />
                             <Button Content="Security Master"
                                     Command="{Binding OpenSelectedSecurityCommand}"
                                     ToolTip="{Binding SelectedSecurityTooltip}"
@@ -188,14 +180,6 @@
                                         ToolTipService.ShowOnDisabled="True"
                                         Style="{StaticResource PrimaryButtonStyle}"
                                         AutomationProperties.AutomationId="AccountPortfolioInspectorOpenSecurityButton"
-                                        Margin="0,0,8,8" />
-                                <Button Content="Refresh"
-                                        Command="{Binding RefreshCommand}"
-                                        IsEnabled="{Binding CanRefreshAccount}"
-                                        ToolTip="{Binding RefreshTooltip}"
-                                        ToolTipService.ShowOnDisabled="True"
-                                        Style="{StaticResource SecondaryButtonStyle}"
-                                        AutomationProperties.AutomationId="AccountPortfolioInspectorRefreshButton"
                                         Margin="0,0,8,8" />
                             </WrapPanel>
                         </StackPanel>

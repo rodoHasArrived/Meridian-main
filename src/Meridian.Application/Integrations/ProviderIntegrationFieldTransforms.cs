@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Meridian.Contracts.Integrations;
 
 namespace Meridian.Application.Integrations;
@@ -15,6 +17,29 @@ namespace Meridian.Application.Integrations;
 /// </remarks>
 internal static class ProviderIntegrationFieldTransforms
 {
+    public static object? ParseBoolean(string value, string targetField, List<ValidationIssueDto> issues)
+    {
+        if (bool.TryParse(value.Trim(), out var parsed))
+            return parsed;
+        issues.Add(new("transform.boolean.invalid", ProviderIntegrationIssueSeverityDto.Critical,
+            "Boolean values must explicitly be true or false.", targetField, "Supply the declared source convention."));
+        return null;
+    }
+
+    public static object? ParseJson(string value, string targetField, List<ValidationIssueDto> issues)
+    {
+        try
+        {
+            var parsed = JsonNode.Parse(value);
+            if (parsed is JsonObject or JsonArray)
+                return parsed;
+        }
+        catch (JsonException) { }
+        issues.Add(new("transform.json.invalid", ProviderIntegrationIssueSeverityDto.Critical,
+            "Structured contractual fields require a JSON object or array.", targetField,
+            "Supply retained contractual terms without converting them to a scalar string."));
+        return null;
+    }
     /// <summary>
     /// Parses a provider value as a decimal, recording <c>transform.decimal.invalid</c> when it
     /// cannot be coerced.

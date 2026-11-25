@@ -7,6 +7,8 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Core.Exceptions;
+using Meridian.Core.Config;
+using DataSourceType = Meridian.Infrastructure.DataSources.DataSourceType;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Models;
@@ -56,17 +58,23 @@ public sealed class RobinhoodMarketDataClient : PollingProviderBase, IMarketData
     private readonly ConcurrentDictionary<int, string> _subscriptions = new();
     private int _nextSubId;
     private long _dataQualityRejections;
+    private readonly ProviderValidationProfile _validationProfile;
 
     public RobinhoodMarketDataClient(
         IHttpClientFactory httpClientFactory,
         QuoteCollector quoteCollector,
         ILogger<RobinhoodMarketDataClient> logger,
-        string? accessToken = null)
+        string? accessToken = null,
+        ProviderValidationProfile? validationProfile = null)
         : base("Robinhood Live Quotes", logger, DefaultPollInterval)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _quoteCollector = quoteCollector ?? throw new ArgumentNullException(nameof(quoteCollector));
         _logger = logger;
+        _validationProfile = validationProfile ?? ProviderValidationProfile.Default;
+        _validationProfile.Validate();
+        _logger.LogInformation("Applying provider validation profile {Provider} {StaleToleranceDays} {FutureSkewSeconds} {StaleThresholdSeconds} {MaxLatencyMs}",
+            "robinhood", _validationProfile.StaleToleranceDays, _validationProfile.FutureSkewSeconds, _validationProfile.StaleThresholdSeconds, _validationProfile.MaxLatencyMs);
         _accessToken = accessToken ?? Environment.GetEnvironmentVariable(EnvAccessToken);
     }
 
@@ -291,7 +299,7 @@ public sealed class RobinhoodMarketDataClient : PollingProviderBase, IMarketData
                     StreamId: "ROBINHOOD",
                     Source: MarketDataSources.Robinhood);
 
-                var issues = ProviderDataQualityValidator.ValidateQuote("robinhood", update);
+                var issues = ProviderDataQualityValidator.ValidateQuote("robinhood", update, profile: _validationProfile);
                 if (issues.Any(issue => issue.Severity == ProviderDataQualitySeverity.Error))
                 {
                     Interlocked.Increment(ref _dataQualityRejections);

@@ -16,7 +16,7 @@ export function buildPortfolioLinkedContextItem(
     return buildLinkedContextItem({
       id: "portfolio-exposure",
       label: "Portfolio exposure",
-      detail: `Open positions, cash, account sync, and risk posture with ${symbol} retained.`,
+      detail: `Open positions, cash, account sync, and risk status with ${symbol} retained.`,
       route,
       workspaceLabel: "Portfolio",
       statusLabel: "Waiting",

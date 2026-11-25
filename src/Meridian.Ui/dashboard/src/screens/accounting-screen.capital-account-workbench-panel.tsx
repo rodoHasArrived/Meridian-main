@@ -2,7 +2,7 @@ import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { ChevronDown, RefreshCcw } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RollforwardTrace } from "@/components/accounting/RollforwardTrace";
-import { MetricSnapshotCard } from "@/components/meridian/metric-card";
+import { SnapshotMetricTile } from "@/components/meridian/snapshot-metric-tile";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,13 +10,13 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
-import { accountingToolingBadgeVariant, accountingToolingBorderClass } from "@/screens/accounting-screen.styles";
 import { AccountingChip } from "@/screens/accounting-screen.workbench-context";
 import type { CapitalAccountWorkbenchProofViewModel } from "@/screens/accounting-screen.capital-accounts.view-model";
 import { pluralizeCount } from "@/lib/format";
 import { usesTrackedCaps } from "@/design-system/label-case";
 import { StatusBadge, type DesignSystemSeverity } from "@/design-system/status";
 import type { RollforwardVerdict } from "@/components/accounting/proof-arithmetic";
+import { statusBadgeVariant, statusPanelClass } from "@/design-system/status-styles";
 
 // Only a real proof is green. Figures that agree by construction ("Not itemised") ask for review.
 const ROLLFORWARD_VERDICT_SEVERITY: Record<RollforwardVerdict, DesignSystemSeverity> = {
@@ -60,7 +60,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
             <CardDescription>{view.description}</CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={accountingToolingBadgeVariant(view.statusTone)} dot>{view.statusLabel}</Badge>
+            <Badge variant={statusBadgeVariant(view.statusTone)} dot>{view.statusLabel}</Badge>
             <Button size="sm" variant="outline" disabled={view.loading} busy={view.loading} onClick={() => void view.refresh()}>
               <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
               Refresh
@@ -86,7 +86,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {view.summaryCards.map((metric) => (
-            <MetricSnapshotCard
+            <SnapshotMetricTile
               key={metric.id}
               id={metric.id}
               label={metric.label}
@@ -121,7 +121,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
               <TableWorkbench<(typeof view.fundEventCommandRows)[number]> tableClassName={"w-full min-w-[940px] text-sm"} maxVisibleRows={null}  workbenchId="accounting-capital-command-centers" sourceKey={view.workbenchRouteLabel}
  rows={view.fundEventCommandRows} columns={[{ id: "field-0", label: "Fund event", rowHeader: true, exportValue: row => `${row.title} | ${row.subtitle} | ${row.memoLabel} | ${row.netActivityLabel}`, render: row => <>
 <div className="font-semibold text-foreground">{row.title}</div>
-                        <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.subtitle}</div>
+                        <div className="mt-1 break-all font-mono text-xs text-muted-foreground">{row.subtitle}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.memoLabel}</div>
                         <div className="mt-1 font-mono text-xs text-muted-foreground">{row.netActivityLabel}</div>
 </> },{ id: "field-1", label: "Readiness", exportValue: row => `${row.readinessLabel} | ${row.readinessReasonLabel} | ${row.nextActionLabel}`, render: row => <>
@@ -135,7 +135,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
                         <div className="mt-1">{row.reportOutputLabel}</div>
 </> },{ id: "field-3", label: "Routes", exportValue: row => `${row.commandCenterRouteLabel} | ${row.activityRouteLabel} | ${row.evidenceRouteLabel}`, render: row => <>
 <a
-                          className="block break-all font-mono text-[11px] text-primary hover:underline"
+                          className="block break-all font-mono text-xs text-primary hover:underline"
                           href={row.commandCenterRouteLabel}
                           target="_blank"
                           rel="noreferrer"
@@ -144,7 +144,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
                           {row.commandCenterRouteLabel}
                         </a>
                         <a
-                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                          className="mt-1 block break-all font-mono text-xs text-primary hover:underline"
                           href={row.activityRouteLabel}
                           target="_blank"
                           rel="noreferrer"
@@ -153,7 +153,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
                           {row.activityRouteLabel}
                         </a>
                         <a
-                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                          className="mt-1 block break-all font-mono text-xs text-primary hover:underline"
                           href={row.evidenceRouteLabel}
                           target="_blank"
                           rel="noreferrer"
@@ -163,7 +163,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
                         </a>
 </> }]}
  getRowId={row => row.id} getSearchText={row => `${row.title} ${row.subtitle}`}
- completePopulation={!view.loading && !view.errorText} sourceDescription="Complete authorized capital-account workbench projection. Monetary cells retain producer display units."
+ completePopulation={!view.loading && !view.errorText} sourceDescription="Complete authorized capital-account workbench view. Monetary cells retain producer display units."
  exportContext={{ "Projected at": view.projectedAtLabel, "Workbench": view.workbenchRouteLabel }}
  emptyText="No records match these controls." ariaLabel="Capital-account fund-event command centers" />
             </div>
@@ -183,7 +183,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
                         <div className="mt-1 text-xs text-muted-foreground">{row.subtitle}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.eventLabel}</div>
 </> },{ id: "field-1", label: "Readiness", exportValue: row => row.statusLabel, render: row => <>
-<Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+<Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
 </> },{ id: "field-2", label: "Net", exportValue: row => `${row.netActivityLabel} | ${row.rollForwardLabel} | ${row.activityMixLabel}`, render: row => <>
 <div className="text-foreground">{row.netActivityLabel}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.rollForwardLabel}</div>
@@ -229,7 +229,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
                         </a>
 </> }]}
  getRowId={row => row.id} getSearchText={row => `${row.title} ${row.subtitle}`}
- completePopulation={!view.loading && !view.errorText} sourceDescription="Complete authorized capital-account workbench projection. Monetary cells retain producer display units."
+ completePopulation={!view.loading && !view.errorText} sourceDescription="Complete authorized capital-account workbench view. Monetary cells retain producer display units."
  exportContext={{ "Projected at": view.projectedAtLabel, "Workbench": view.workbenchRouteLabel }}
  emptyText="No records match these controls." ariaLabel="Investor capital accounts" />
             </div>
@@ -242,13 +242,13 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
             </div>
             <div className="grid gap-2">
               {view.allocationRules.map((row) => (
-                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(row.statusTone))}>
+                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", statusPanelClass(row.statusTone))}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-semibold text-foreground">{row.label}</div>
-                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.accountLabel}</div>
+                      <div className="mt-1 break-all font-mono text-xs text-muted-foreground">{row.accountLabel}</div>
                     </div>
-                    <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.reason}</p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">{row.basis}</p>
@@ -261,7 +261,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
                     <AccountingChip label="Inputs" value={row.inputSummaryLabel} />
                     <AccountingChip label="Fund events" value={row.relatedFundEventLabel} />
                   </div>
-                  <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{row.formulaLabel}</p>
+                  <p className="mt-2 break-all font-mono text-xs text-muted-foreground">{row.formulaLabel}</p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">{row.traceLabel}</p>
                   {row.routeLabel !== "No route" ? (
                     <a href={row.routeLabel} className="mt-2 block text-xs font-medium text-primary hover:underline">
@@ -282,13 +282,13 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
             </div>
             <div className="grid gap-2">
               {view.statementLineage.map((row) => (
-                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(row.statusTone))}>
+                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", statusPanelClass(row.statusTone))}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-semibold text-foreground">{row.title}</div>
                       <div className="mt-1 text-xs text-muted-foreground">{row.subtitle}</div>
                     </div>
-                    <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
                   </div>
                   <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
                     <span>{row.publicationLabel}</span>
@@ -299,7 +299,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
                     <ul className="mt-2 grid gap-1 text-xs text-muted-foreground" aria-label={`${row.title} restatement changed lines`}>
                       {row.changedLineRows.map((line) => (
                         <li key={line.id} className="rounded-sm border border-border/60 px-2 py-1">
-                          <span className="break-all font-mono text-[11px]">{line.lineKey}</span>
+                          <span className="break-all font-mono text-xs">{line.lineKey}</span>
                           <span className="mx-2">{line.valueLabel}</span>
                           <span>{line.evidenceLabel}</span>
                         </li>
@@ -307,7 +307,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
                     </ul>
                   ) : null}
                   <TechnicalDetails label="Statement technical details" className="mt-2">
-                    <div className="break-all font-mono text-[11px] text-muted-foreground">{row.manifestLabel}</div>
+                    <div className="break-all font-mono text-xs text-muted-foreground">{row.manifestLabel}</div>
                   </TechnicalDetails>
                   <a href={row.routeLabel} className="mt-2 block text-xs font-medium text-primary hover:underline">Open statement</a>
                 </div>
@@ -322,13 +322,13 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
             </div>
             <div className="grid gap-2">
               {view.auditDrillThroughs.map((row) => (
-                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(row.statusTone))}>
+                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", statusPanelClass(row.statusTone))}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-semibold text-foreground">{row.title}</div>
                       <div className={cn("mt-1 text-xs text-muted-foreground", usesTrackedCaps(row.kind) && "uppercase")}>{row.kind}</div>
                     </div>
-                    <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.summary}</p>
                   <div className="mt-2 flex flex-wrap gap-2 text-xs">

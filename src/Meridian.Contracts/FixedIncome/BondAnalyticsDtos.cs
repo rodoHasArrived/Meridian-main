@@ -24,6 +24,21 @@ public sealed record BondAnalyticsRequest(
 {
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public string? CalculationVersion { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SelectionReceiptId { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? PriceAccountId { get; init; }
+
+    /// <summary>
+    /// The <c>SecurityTerms</c> content hash a retained receipt recorded, supplied when replaying it.
+    /// It is reported only when it equals the pre-invariant raw-text hash of exactly the terms resolved
+    /// now (<see cref="BondSecurityTermsDigest.Resolve"/>); otherwise the canonical hash is reported, so
+    /// it can never make changed terms verify.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? RetainedSecurityTermsSha256 { get; init; }
 }
 
 public sealed record BondAnalyticsBlocker(string Code, string Reason);
@@ -70,6 +85,9 @@ public sealed record BondExerciseYield(
 
 public sealed record BondOperationCapability(string Operation, bool Supported, string? Reason = null);
 
+/// <summary>Every tied issuer-controlled or maturity scenario determining yield to worst.</summary>
+public sealed record BondGoverningYieldScenario(string Kind, DateOnly Date, decimal Yield);
+
 /// <summary>
 /// All prices, accrued interest and DV01 are per 100 face; yields are annual fractions and
 /// durations are years. Blocked results contain no calculated metrics.
@@ -97,7 +115,16 @@ public sealed record BondAnalyticsResult(
     IReadOnlyList<BondOperationCapability> Capabilities,
     IReadOnlyList<string> Diagnostics)
 {
+    /// <summary>Explicit maturity and exercise alternatives, including all ties for the issuer-controlled worst yield.</summary>
+    public IReadOnlyList<BondExerciseYield> RedemptionScenarios { get; init; } = [];
+    public IReadOnlyList<BondExerciseYield> YieldToWorstScenarios { get; init; } = [];
     public bool IsBlocked => Blockers.Count > 0;
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public DateOnly? MaturityDate { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<BondGoverningYieldScenario>? GoverningYieldScenarios { get; init; }
 
     /// <summary>
     /// Floating-rate analytics only: the dirty-price change per 100 face for a one-basis-point increase in the

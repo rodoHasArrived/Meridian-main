@@ -42,6 +42,133 @@
             <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
             <Setter Property="Margin" Value="0,0,0,12" />
         </Style>
+
+        <Style x:Key="ShortcutRowActionStyle" TargetType="Button" BasedOn="{StaticResource LinkButtonStyle}">
+            <Setter Property="Margin" Value="12,0,0,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- One editable shortcut row: chord badge or capture surface, description and inline
+             rejection reason, then enable / rebind / reset actions. -->
+        <DataTemplate x:Key="ShortcutBindingRowTemplate">
+            <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" MinWidth="112" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0"
+                        Style="{StaticResource KeyboardShortcutStyle}"
+                        Visibility="{Binding IsCapturing, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}">
+                    <TextBlock Text="{Binding FormattedShortcut}" Style="{StaticResource ShortcutKeyTextStyle}" />
+                </Border>
+
+                <!-- Focused while capturing; key presses are routed to the ViewModel. -->
+                <Border x:Name="CaptureSurface"
+                        Grid.Column="0"
+                        Style="{StaticResource KeyboardShortcutStyle}"
+                        BorderBrush="{StaticResource InfoColorBrush}"
+                        BorderThickness="2"
+                        Focusable="True"
+                        FocusVisualStyle="{x:Null}"
+                        Tag="{Binding ElementName=RebindButton}"
+                        Visibility="{Binding IsCapturing, Converter={StaticResource BoolToVisibilityConverter}}"
+                        AutomationProperties.AutomationId="{Binding ActionId, StringFormat='KeyboardShortcutCapture_{0}'}"
+                        AutomationProperties.Name="{Binding Description, StringFormat='Press the new key combination for {0}'}"
+                        PreviewKeyDown="OnCaptureSurfacePreviewKeyDown"
+                        LostKeyboardFocus="OnCaptureSurfaceLostKeyboardFocus"
+                        IsVisibleChanged="OnCaptureSurfaceIsVisibleChanged">
+                    <TextBlock Text="{Binding ChordDisplayText}"
+                               Style="{StaticResource ShortcutKeyTextStyle}"
+                               Foreground="{StaticResource InfoColorBrush}" />
+                </Border>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Description}" TextWrapping="Wrap">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource ShortcutDescriptionStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsShortcutEnabled}" Value="False">
+                                        <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+                                        <Setter Property="FontStyle" Value="Italic" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Text="{Binding ValidationMessage}"
+                               Visibility="{Binding HasValidationMessage, Converter={StaticResource BoolToVisibilityConverter}}"
+                               Foreground="{StaticResource ErrorColorBrush}"
+                               FontSize="12"
+                               Margin="12,2,0,0"
+                               TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="{Binding ActionId, StringFormat='KeyboardShortcutValidation_{0}'}"
+                               AutomationProperties.LiveSetting="Assertive" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <CheckBox Content="On"
+                              VerticalAlignment="Center"
+                              IsChecked="{Binding IsShortcutEnabled, Mode=TwoWay}"
+                              ToolTip="Turn this shortcut on or off."
+                              AutomationProperties.AutomationId="{Binding ActionId, StringFormat='KeyboardShortcutEnabled_{0}'}"
+                              AutomationProperties.Name="{Binding Description, StringFormat='Enable {0} shortcut'}" />
+                    <Button x:Name="RebindButton"
+                            Content="Rebind"
+                            Style="{StaticResource ShortcutRowActionStyle}"
+                            Command="{Binding BeginCaptureCommand}"
+                            Visibility="{Binding IsCapturing, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}"
+                            ToolTip="Capture a new key combination for this shortcut."
+                            AutomationProperties.AutomationId="{Binding ActionId, StringFormat='KeyboardShortcutRebind_{0}'}"
+                            AutomationProperties.Name="{Binding Description, StringFormat='Rebind {0}'}" />
+                    <Button Content="Cancel"
+                            Style="{StaticResource ShortcutRowActionStyle}"
+                            Command="{Binding CancelCaptureCommand}"
+                            Visibility="{Binding IsCapturing, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.AutomationId="{Binding ActionId, StringFormat='KeyboardShortcutCancelCapture_{0}'}"
+                            AutomationProperties.Name="{Binding Description, StringFormat='Cancel rebinding {0}'}" />
+                    <Button Content="Reset"
+                            Style="{StaticResource ShortcutRowActionStyle}"
+                            Command="{Binding ResetCommand}"
+                            ToolTip="Restore this shortcut's default key combination and turn it back on."
+                            AutomationProperties.AutomationId="{Binding ActionId, StringFormat='KeyboardShortcutReset_{0}'}"
+                            AutomationProperties.Name="{Binding Description, StringFormat='Reset {0} to default'}" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+
+        <!-- One shortcut category card. -->
+        <DataTemplate x:Key="ShortcutCategoryCardTemplate">
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="{Binding Icon}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="18"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding Label}"
+                                   Style="{StaticResource CardHeaderStyle}"
+                                   Margin="8,0,0,0" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding Description}"
+                               Visibility="{Binding HasDescription, Converter={StaticResource BoolToVisibilityConverter}}"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               FontSize="12"
+                               Margin="0,0,0,16"
+                               TextWrapping="Wrap" />
+                    <ItemsControl ItemsSource="{Binding Rows}"
+                                  ItemTemplate="{StaticResource ShortcutBindingRowTemplate}"
+                                  Focusable="False" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
     </Page.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
@@ -62,6 +189,28 @@
                     </StackPanel>
                 </StackPanel>
             </Border>
+
+            <!-- Saved shortcut overrides: status and reset -->
+            <DockPanel Margin="0,0,0,16" LastChildFill="True">
+                <Button x:Name="ResetShortcutsButton"
+                        DockPanel.Dock="Right"
+                        Content="Reset to defaults"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        AutomationProperties.AutomationId="KeyboardShortcutsResetButton"
+                        AutomationProperties.Name="Reset keyboard shortcuts to defaults"
+                        ToolTip="Restore every shortcut's default key binding and re-enable disabled shortcuts."
+                        Command="{Binding ResetAllCommand}" />
+                <TextBlock x:Name="ShortcutOverrideStatusText"
+                           Text="{Binding OverrideStatusText}"
+                           VerticalAlignment="Center"
+                           Style="{StaticResource CardDescriptionStyle}"
+                           AutomationProperties.AutomationId="KeyboardShortcutsOverrideStatus" />
+            </DockPanel>
+
+            <TextBlock Style="{StaticResource CardDescriptionStyle}"
+                       Margin="0,0,0,16"
+                       TextWrapping="Wrap"
+                       Text="Choose Rebind, then press the new key combination. Collector start/stop, Toggle Connection, and Delete Selected must keep Ctrl or Alt, and a combination another shortcut already uses is refused. Changes are saved for this machine." />
 
             <!-- Dynamically populated shortcuts panel -->
             <StackPanel x:Name="DynamicShortcutsPanel" />

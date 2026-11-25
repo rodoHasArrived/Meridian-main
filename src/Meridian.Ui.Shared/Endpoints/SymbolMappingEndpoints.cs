@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using Meridian.Application.UI;
 using Meridian.Contracts.Api;
@@ -7,6 +8,7 @@ using Meridian.Storage.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualBasic.FileIO;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -14,12 +16,25 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// Registry-backed symbol mapping endpoints shared by browser and desktop hosts.
 /// Legacy configuration remains a migration/rollback input but is not a second write model.
 /// </summary>
-public static class SymbolMappingEndpoints
+public static partial class SymbolMappingEndpoints
 {
     private static readonly string[] LegacyProviders = ["ib", "alpaca", "polygon", "yahoo"];
+    private static readonly (string Id, string Label)[] MappingProviders =
+    [
+        ("ib", "Interactive Brokers"),
+        ("alpaca", "Alpaca Markets"),
+        ("polygon", "Polygon.io"),
+        ("yahoo", "Yahoo Finance"),
+        ("stooq", "Stooq"),
+        ("tiingo", "Tiingo"),
+        ("finnhub", "Finnhub"),
+        ("alphavantage", "Alpha Vantage"),
+        ("nyse", "NYSE")
+    ];
 
     public static void MapSymbolMappingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        MapRolloutEndpoints(app, jsonOptions);
         var group = app.MapGroup("").WithTags("Symbol Mapping");
         var requireModifyConfig = EndpointAuthorization.Require(UserPermission.ModifyConfig);
 
@@ -82,18 +97,14 @@ public static class SymbolMappingEndpoints
             if (string.IsNullOrWhiteSpace(req.CanonicalSymbol))
                 return Results.BadRequest("CanonicalSymbol is required.");
 
-            var canonical = req.CanonicalSymbol.Trim().ToUpperInvariant();
-            await registry.RegisterAsync(new CanonicalSymbolDefinition
+            var mappings = new[]
             {
-                Canonical = canonical,
-                DisplayName = req.Name,
-                Figi = req.Figi
-            }, ct).ConfigureAwait(false);
-
-            await SetIfPresentAsync(registry, canonical, "ib", req.IbSymbol, ct).ConfigureAwait(false);
-            await SetIfPresentAsync(registry, canonical, "alpaca", req.AlpacaSymbol, ct).ConfigureAwait(false);
-            await SetIfPresentAsync(registry, canonical, "polygon", req.PolygonSymbol, ct).ConfigureAwait(false);
-            await SetIfPresentAsync(registry, canonical, "yahoo", req.YahooSymbol, ct).ConfigureAwait(false);
+                ("ib", req.IbSymbol), ("alpaca", req.AlpacaSymbol),
+                ("polygon", req.PolygonSymbol), ("yahoo", req.YahooSymbol)
+            };
+            await SaveMappingsAsync(registry,
+                [CreateOperatorDefinition(req.CanonicalSymbol, req.Name, req.Figi, mappings)], ct)
+                .ConfigureAwait(false);
             return Results.Ok();
         }).WithName("UpsertSymbolMapping").Produces(200).Produces(400)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
@@ -105,22 +116,36 @@ public static class SymbolMappingEndpoints
             string symbol,
             CancellationToken ct) =>
         {
-            var definition = registry.GetDefinition(symbol);
-            if (definition is null)
-                return Results.NotFound();
-
-            var removed = false;
-            foreach (var provider in LegacyProviders)
-            {
-                if (!definition.ProviderSymbols.TryGetValue(provider, out var mapping) || !mapping.IsOverride)
-                    continue;
-
-                removed |= await registry.RemoveProviderSymbolAsync(definition.Canonical, provider, ct)
-                    .ConfigureAwait(false);
-            }
-
+            var removed = await DeleteMappingsAsync(registry, symbol, provider: null, ct).ConfigureAwait(false);
             return removed ? Results.Ok() : Results.NotFound();
         }).WithName("DeleteSymbolMapping").Produces(200).Produces(404)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig)
+        .RequirePermission(UserPermission.ModifyConfig);
+
+        const string providerMappingRoute = UiApiRoutes.SymbolMappings + "/{symbol}/providers/{provider}";
+        group.MapPut(providerMappingRoute, async (
+            HttpContext context, ICanonicalSymbolRegistry registry,
+            string symbol, string provider, SymbolProviderOverrideRequest request, CancellationToken ct) =>
+        {
+            if (!IsValidProviderId(provider) || string.IsNullOrWhiteSpace(request.ProviderSymbol))
+                return ApiProblemDetails.Validation(context, "mapping", "A provider ID and provider symbol are required.");
+
+            await SaveMappingsAsync(registry,
+                [CreateOperatorDefinition(symbol, null, null, [(provider, request.ProviderSymbol)])], ct)
+                .ConfigureAwait(false);
+            return Results.Ok();
+        }).WithName("SetSymbolProviderOverride").Produces(200).ProducesValidationProblem()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig)
+        .RequirePermission(UserPermission.ModifyConfig);
+
+        group.MapDelete(providerMappingRoute, async (
+            ICanonicalSymbolRegistry registry, string symbol, string provider, CancellationToken ct) =>
+        {
+            var removed = await DeleteMappingsAsync(registry, symbol, provider, ct).ConfigureAwait(false);
+            return removed ? Results.Ok() : Results.NotFound();
+        }).WithName("DeleteSymbolProviderOverride").Produces(200).Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(requireModifyConfig)
         .RequirePermission(UserPermission.ModifyConfig);
@@ -148,54 +173,60 @@ public static class SymbolMappingEndpoints
             if (file is null || file.Length == 0)
                 return Results.BadRequest("No file uploaded");
 
-            var imported = 0;
-            using var reader = new StreamReader(file.OpenReadStream());
-            var header = await reader.ReadLineAsync(ct).ConfigureAwait(false);
-            if (header is null)
-                return Results.Ok(new { imported });
-
-            var columns = header.Split(',')
-                .Select(static value => value.Trim().Trim('"').ToLowerInvariant())
-                .ToArray();
-
-            string? line;
-            while ((line = await reader.ReadLineAsync(ct).ConfigureAwait(false)) is not null)
+            using var stream = file.OpenReadStream();
+            using var parser = new TextFieldParser(stream) { HasFieldsEnclosedInQuotes = true };
+            parser.SetDelimiters(",");
+            List<CanonicalSymbolDefinition> definitions = [];
+            try
             {
-                if (string.IsNullOrWhiteSpace(line))
-                    continue;
+                var columns = parser.ReadFields() ?? [];
+                var canonicalIndex = FindColumn(columns, "canonical", "canonicalSymbol", "symbol");
+                if (canonicalIndex < 0)
+                    return Results.BadRequest("A Canonical, CanonicalSymbol, or Symbol column is required.");
 
-                var values = ParseCsvLine(line);
-                var canonical = GetColumn(columns, values, "canonical")
-                    ?? GetColumn(columns, values, "symbol");
-                if (string.IsNullOrWhiteSpace(canonical))
-                    continue;
-
-                canonical = canonical.Trim().ToUpperInvariant();
-                await registry.RegisterAsync(new CanonicalSymbolDefinition
+                var nameIndex = FindColumn(columns, "name", "displayName");
+                var figiIndex = FindColumn(columns, "figi");
+                var providerColumns = MappingProviders.Select(p => (p.Id, Index: FindColumn(columns, p.Id, p.Label)))
+                    .Where(column => column.Index >= 0)
+                    .ToArray();
+                while (parser.ReadFields() is { } fields)
                 {
-                    Canonical = canonical,
-                    DisplayName = GetColumn(columns, values, "name"),
-                    Figi = GetColumn(columns, values, "figi")
-                }, ct).ConfigureAwait(false);
-
-                foreach (var provider in LegacyProviders)
-                {
-                    await SetIfPresentAsync(
-                        registry,
-                        canonical,
-                        provider,
-                        GetColumn(columns, values, provider),
-                        ct).ConfigureAwait(false);
+                    ct.ThrowIfCancellationRequested();
+                    if (GetColumn(fields, canonicalIndex) is { } canonical)
+                    {
+                        definitions.Add(CreateOperatorDefinition(canonical, GetColumn(fields, nameIndex),
+                            GetColumn(fields, figiIndex), providerColumns.Select(column =>
+                                (column.Id, GetColumn(fields, column.Index)))));
+                    }
                 }
-
-                imported++;
             }
+            catch (MalformedLineException)
+            {
+                return Results.BadRequest("The CSV contains a malformed row.");
+            }
+
+            var imported = await SaveMappingsAsync(registry, definitions, ct).ConfigureAwait(false);
 
             return Results.Ok(new { imported });
         }).WithName("ImportSymbolMappings").Produces(200).Produces(400)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(requireModifyConfig)
         .RequirePermission(UserPermission.ModifyConfig);
+
+        group.MapGet(UiApiRoutes.SymbolMappings + "/csv/export", (ICanonicalSymbolRegistry registry) =>
+        {
+            var csv = new StringBuilder("Canonical,Name,Figi,")
+                .AppendJoin(',', MappingProviders.Select(provider => provider.Id))
+                .AppendLine();
+            foreach (var mapping in registry.GetAll().Select(ToResponse).Where(row => row.ProviderSymbols is { Count: > 0 }))
+            {
+                var values = new[] { mapping.CanonicalSymbol, mapping.Name, mapping.Figi }
+                    .Concat(MappingProviders.Select(provider => mapping.ProviderSymbols!.GetValueOrDefault(provider.Id)));
+                csv.AppendJoin(',', values.Select(EscapeCsv)).AppendLine();
+            }
+
+            return Results.File(Encoding.UTF8.GetBytes(csv.ToString()), "text/csv; charset=utf-8", "symbol-mappings.csv");
+        }).WithName("ExportSymbolMappings").Produces(200, contentType: "text/csv");
     }
 
     private static SymbolMappingResponse ToResponse(CanonicalSymbolDefinition definition)
@@ -206,7 +237,13 @@ public static class SymbolMappingEndpoints
             PolygonSymbol: GetProviderSymbol(definition, "polygon"),
             YahooSymbol: GetProviderSymbol(definition, "yahoo"),
             Name: definition.DisplayName,
-            Figi: definition.Figi);
+            Figi: definition.Figi)
+        {
+            ProviderSymbols = definition.ProviderSymbols.Where(entry => entry.Value.IsOverride)
+                .ToDictionary(entry => entry.Key, entry => entry.Value.Symbol, StringComparer.OrdinalIgnoreCase),
+            UpdatedAt = definition.ProviderSymbols.Values.Where(mapping => mapping.IsOverride)
+                .Select(mapping => mapping.UpdatedAt).Max()
+        };
 
     private static CanonicalSymbolRegistryEntryResponse ToRegistryEntryResponse(
         CanonicalSymbolDefinition definition,
@@ -301,48 +338,59 @@ public static class SymbolMappingEndpoints
     private static string? GetProviderSymbol(CanonicalSymbolDefinition definition, string provider)
         => definition.ProviderSymbols.TryGetValue(provider, out var mapping) ? mapping.Symbol : null;
 
-    private static Task SetIfPresentAsync(
-        ICanonicalSymbolRegistry registry,
-        string canonical,
-        string provider,
-        string? providerSymbol,
-        CancellationToken ct)
-        => string.IsNullOrWhiteSpace(providerSymbol)
-            ? Task.CompletedTask
-            : registry.SetProviderSymbolAsync(
-                canonical,
-                provider,
-                providerSymbol.Trim(),
-                SymbolMappingSources.Operator,
-                isOverride: true,
-                ct);
-
-    private static string? GetColumn(string[] columns, string[] values, string name)
-    {
-        var index = Array.FindIndex(columns, column => column.Equals(name, StringComparison.OrdinalIgnoreCase));
-        return index >= 0 && index < values.Length && !string.IsNullOrWhiteSpace(values[index])
-            ? values[index].Trim().Trim('"')
-            : null;
-    }
-
-    private static string[] ParseCsvLine(string line)
-    {
-        var values = new List<string>();
-        var current = new System.Text.StringBuilder();
-        var inQuotes = false;
-        foreach (var character in line)
+    private static CanonicalSymbolDefinition CreateOperatorDefinition(
+        string canonical, string? name, string? figi, IEnumerable<(string Provider, string? Symbol)> mappings)
+        => new()
         {
-            if (character == '"')
-                inQuotes = !inQuotes;
-            else if (character == ',' && !inQuotes)
-            {
-                values.Add(current.ToString());
-                current.Clear();
-            }
-            else
-                current.Append(character);
+            Canonical = canonical.Trim().ToUpperInvariant(),
+            DisplayName = name,
+            Figi = figi,
+            ProviderSymbols = mappings.Where(mapping => !string.IsNullOrWhiteSpace(mapping.Symbol))
+                .ToDictionary(mapping => mapping.Provider.Trim().ToLowerInvariant(),
+                    mapping => new ProviderSymbolDefinition(mapping.Symbol!.Trim(), SymbolMappingSources.Operator, IsOverride: true),
+                    StringComparer.OrdinalIgnoreCase)
+        };
+
+    private static Task<int> SaveMappingsAsync(
+        ICanonicalSymbolRegistry registry, IReadOnlyList<CanonicalSymbolDefinition> definitions, CancellationToken ct)
+        => definitions.Count == 0
+            ? Task.FromResult(0)
+            : registry is ICanonicalSymbolOperatorMappingWriter writer
+                ? writer.SaveOperatorMappingsAsync(definitions, ct)
+                : registry.RegisterBatchAsync(definitions, ct);
+
+    private static async Task<bool> DeleteMappingsAsync(
+        ICanonicalSymbolRegistry registry, string canonical, string? provider, CancellationToken ct)
+    {
+        if (registry is ICanonicalSymbolOperatorMappingWriter writer)
+            return await writer.RemoveOperatorMappingsAsync(canonical, provider, ct).ConfigureAwait(false) > 0;
+
+        var definition = registry.GetDefinition(canonical);
+        if (definition is null)
+            return false;
+
+        var removed = false;
+        foreach (var (providerId, mapping) in definition.ProviderSymbols)
+        {
+            if (mapping.IsOverride && (provider is null || providerId.Equals(provider, StringComparison.OrdinalIgnoreCase)))
+                removed |= await registry.RemoveProviderSymbolAsync(definition.Canonical, providerId, ct).ConfigureAwait(false);
         }
-        values.Add(current.ToString());
-        return values.ToArray();
+
+        return removed;
     }
+
+    private static int FindColumn(string[] columns, params string[] names)
+        => Array.FindIndex(columns, column => names.Contains(column.Trim(), StringComparer.OrdinalIgnoreCase));
+
+    private static string? GetColumn(string[] fields, int index)
+        => index >= 0 && index < fields.Length && !string.IsNullOrWhiteSpace(fields[index])
+            ? fields[index].Trim()
+            : null;
+
+    private static string EscapeCsv(string? value)
+        => value is null ? string.Empty : "\"" + value.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"";
+
+    private static bool IsValidProviderId(string id)
+        => id is { Length: > 0 and <= 100 }
+            && id.All(character => char.IsAsciiLetterOrDigit(character) || character is '-' or '_' or '.');
 }

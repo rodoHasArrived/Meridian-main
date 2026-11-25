@@ -49,10 +49,16 @@ on:
         description: WPF route script to run in wpf-route mode.
         required: true
         type: choice
-        default: position-blotter
+        default: both
         options:
+          - both
           - position-blotter
           - operator-inbox
+      build_only:
+        description: In wpf-dev-loop mode, build without running tests.
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -123,7 +129,7 @@ jobs:
           global-json-file: global.json
 
       - name: Set up Node.js
-        if: inputs.mode == 'browser-workstation'
+        if: inputs.mode == 'browser-workstation' || (inputs.mode == 'dotnet-filtered' && contains(inputs.dotnet_project, 'Meridian.Demo.Tests'))
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
@@ -131,7 +137,7 @@ jobs:
           cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
 
       - name: Set up Python
-        if: inputs.mode == 'docs-source'
+        if: inputs.mode == 'docs-source' || (inputs.mode == 'dotnet-filtered' && contains(inputs.dotnet_project, 'Meridian.Demo.Tests'))
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
@@ -207,6 +213,13 @@ jobs:
             $props += '/p:EnableFullWpfBuild=true'
           }
 
+          # Asset-resolution tests use the actual generated bundle. Prepare it
+          # on clean hosted checkouts before MSBuild captures static content.
+          if ($project -eq 'tests/Meridian.Demo.Tests/Meridian.Demo.Tests.csproj') {
+            & python build/scripts/ensure-workstation-assets.py
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+
           & dotnet restore $project @props
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
@@ -264,6 +277,7 @@ jobs:
         shell: pwsh
         env:
           DOTNET_FILTER: ${{ inputs.dotnet_filter }}
+          BUILD_ONLY: ${{ inputs.build_only }}
         run: |
           $devArgs = @{
             Restore = $true
@@ -271,6 +285,9 @@ jobs:
           }
           if (-not [string]::IsNullOrWhiteSpace($env:DOTNET_FILTER)) {
             $devArgs.Filter = $env:DOTNET_FILTER
+          }
+          if ($env:BUILD_ONLY -eq 'true') {
+            $devArgs.BuildOnly = $true
           }
           & scripts/dev/validate-wpf-dev.ps1 @devArgs
 
@@ -280,12 +297,28 @@ jobs:
         env:
           WPF_ROUTE: ${{ inputs.wpf_route }}
         run: |
-          if ($env:WPF_ROUTE -eq 'position-blotter') {
-            & scripts/dev/validate-position-blotter-route.ps1 -OutputRoot 'artifacts/wpf-validation/targeted-position-blotter-route'
-          } elseif ($env:WPF_ROUTE -eq 'operator-inbox') {
-            & scripts/dev/validate-operator-inbox-route.ps1 -OutputRoot 'artifacts/wpf-validation/targeted-operator-inbox-route'
-          } else {
+          if ($env:WPF_ROUTE -notin @('both', 'position-blotter', 'operator-inbox')) {
             throw "Unsupported wpf_route '$env:WPF_ROUTE'."
+          }
+          # Run every selected route even if an earlier one fails, then report the combined result.
+          $routes = [ordered]@{
+            'position-blotter' = 'scripts/dev/validate-position-blotter-route.ps1'
+            'operator-inbox' = 'scripts/dev/validate-operator-inbox-route.ps1'
+          }
+          $failed = @()
+          foreach ($route in $routes.Keys) {
+            if ($env:WPF_ROUTE -notin @('both', $route)) { continue }
+            try {
+              $global:LASTEXITCODE = 0
+              & $routes[$route] -OutputRoot "artifacts/wpf-validation/targeted-$route-route"
+              if ($LASTEXITCODE -ne 0) { throw "exit code $LASTEXITCODE" }
+            } catch {
+              Write-Host "::error::WPF route '$route' failed: $_"
+              $failed += $route
+            }
+          }
+          if ($failed.Count -gt 0) {
+            throw "WPF route validation failed: $($failed -join ', ')"
           }
 
       - name: Run desktop smoke publish

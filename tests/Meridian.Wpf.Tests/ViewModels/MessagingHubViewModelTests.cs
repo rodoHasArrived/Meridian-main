@@ -209,7 +209,7 @@ public sealed class MessagingHubViewModelTests
         xaml.Should().Contain("MessagingHubPostureTitle");
         xaml.Should().Contain("MessagingHubPostureDetail");
         xaml.Should().Contain("MessagingHubRecentActivityScopeText");
-        xaml.Should().Contain("MessagingHubRefreshButton");
+        xaml.Should().NotContain("MessagingHubRefreshButton", "the shell Refresh reloads the hub in place");
         xaml.Should().Contain("MessagingHubLastRefreshText");
         xaml.Should().Contain("MessagingHubClearActivityButton");
         xaml.Should().Contain("MessagingHubActivityEmptyStateTitle");
@@ -217,7 +217,7 @@ public sealed class MessagingHubViewModelTests
         xaml.Should().Contain("{Binding MessagingPostureTitle}");
         xaml.Should().Contain("{Binding MessagingPostureDetail}");
         xaml.Should().Contain("{Binding RecentActivityScopeText}");
-        xaml.Should().Contain("Command=\"{Binding RefreshCommand}\"");
+        xaml.Should().NotContain("Command=\"{Binding RefreshCommand}\"");
         xaml.Should().Contain("{Binding LastRefreshText}");
         xaml.Should().Contain("Command=\"{Binding ClearActivityCommand}\"");
         codeBehind.Should().NotContain("Refresh_Click");

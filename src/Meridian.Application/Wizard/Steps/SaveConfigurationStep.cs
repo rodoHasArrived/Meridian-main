@@ -1,5 +1,6 @@
 using Meridian.Core.Config;
 using Meridian.Application.UI;
+using Meridian.Application.ProviderRouting;
 using Meridian.Application.Wizard.Core;
 
 namespace Meridian.Application.Wizard.Steps;
@@ -16,8 +17,9 @@ public sealed class SaveConfigurationStep : IWizardStep
 
     public WizardStepId StepId => WizardStepId.SaveConfiguration;
 
-    public SaveConfigurationStep(TextWriter output, TextReader input)
-        : this(output, input, static path => new ConfigStore(path))
+    public SaveConfigurationStep(TextWriter output, TextReader input,
+        ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
+        : this(output, input, path => new ConfigStore(path, ownershipPolicy))
     {
     }
 
@@ -59,7 +61,7 @@ public sealed class SaveConfigurationStep : IWizardStep
             }
         }
 
-        await WriteConfigAsync(config, configPath, ct);
+        await _configStoreFactory(configPath).SaveAsync(config, ct);
         context.SavedConfigPath = configPath;
 
         return WizardStepResult.Succeeded($"Configuration saved to {configPath}");

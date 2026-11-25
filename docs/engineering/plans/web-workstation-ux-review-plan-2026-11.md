@@ -1,7 +1,7 @@
 # Browser Workstation UX Review and Improvement Plan (2026-11)
 
-> **Status:** In progress (Phase 3 started 2026-11-10) · **Created:** 2026-11-06 ·
-> **Extended:** 2026-11-10 · **Owner lane:** Workstation Shell and UX
+> **Status:** In progress (Phase 3 started 2026-11-10; trust fixes 2026-11-12) · **Created:** 2026-11-06 ·
+> **Extended:** 2026-11-10, 2026-11-12 (verified review corrections), 2026-11-18 (Phases F–J; Phase F delivered) · **Owner lane:** Workstation Shell and UX
 > **Builds on:** UI Phase 0–2 (merged 2026-11-04/05: font-fallback fix; A1–A5 task-first routes,
 > one-row masthead, Today front door, single StatusBadge; B2–B4 shared formatting, single table
 > system, three-tier type scale)
@@ -242,6 +242,55 @@ Today, Operations continuity, Casework and Exceptions/Approvals.
 - Keep the existing routes as preset filters of that queue so deep links still work.
 
 **Benefit:** less to scan, and one answer to "what do I work on next?"
+
+**Progress (2026-11-17).** The sidebar now lists seven daily-use Accounting destinations (Close
+cockpit, Close calendar, Ledger explorer, Adjustments, Casework, Exceptions, Approvals). The other
+ten sit behind a "More (10)" disclosure that opens by itself when the current page is one of them.
+`primary: true` in `lib/accounting-navigation.ts` marks the seven, and every destination stays in
+the command palette. Separately, Options screening is no longer also a Market data in-page tab. It
+keeps its Data sidebar entry, its `?view=options` deep link, and a page heading of its own. The
+merged Accounting work queue and the in-page secondary rail remain open.
+
+**Progress on V2 and V4 (2026-11-17).** The shared label rules (`type-label--caps`,
+`eyebrow-label`, dense-table headers, toolbar chips) moved from tracked monospace to light caps in
+the body face, and 75 inline `font-mono uppercase tracking-…` label classes now use
+`type-label--caps`. The P4 non-numeric monospace ratchet now exists as `monoCapsLabels` (18 left
+in five screens), with `rawSelects` at zero across `src/`. Ledger Explorer has the journal totals
+row with a debit, credit and balance check. Status badges are still uppercase monospace (V3), and
+the font decision is still open.
+
+**Progress on P2/V1 and P9 (2026-11-17).** Close Cockpit's `AccountingValue` tile no longer
+wraps dates onto three lines: the row wraps as a unit, and only figures keep monospace. The "Close
+task progress" and "Break aging" charts now render in view (after the queue and after the
+reconciliation workbench) rather than inside collapsed disclosures. Headline-KPI sparklines
+now have a first producer: `WorkstationMetricCard.History`, filled for open breaks by rebuilding each
+day's count from retained break times (2026-11-17). Other KPIs gain sparklines as their sources can
+support a rebuilt series; none uses stored snapshots.
+
+**Progress on F1/P3 (2026-11-17).** The shared inbox's "My items" checkbox is now an Owner
+switch (Everyone, Mine, Unassigned). Keyboard triage covers acknowledge (c) and snooze (s) as well
+as assign (a), through the same reviewed, reason-required dialogs, and the `?` sheet lists those
+keys. Bulk acknowledge and snooze now go through the same server bulk endpoint as bulk assign
+(`OperatorTriageBulkCommand` gained Acknowledge and Snooze, 2026-11-17).
+
+**Reconciled with Workstation UX Phases A–E (2026-11-18).** `main` landed a parallel overhaul
+(#3631) that covers several of the items above, and its implementation now stands where the two
+overlapped: the Accounting sidebar shows one row per group instead of the "More (10)" disclosure;
+Ledger Explorer's totals row and posting-line layout, the Close Cockpit value tile, the in-view
+charts and the label-face ratchet (`monospaceCapsLabels`) are #3631's; the legacy Runs headline
+(and with it the Runs population note) is gone; and the browser sends bulk acknowledge and snooze
+as one confirmed command per item. Still from this plan: `rawSelects`, the overflow fade, the
+Owner switch and c/s keys, view-aware sidebar highlighting, KPI sparklines, provider history
+links, the closing-balance comparison, the close board and the order-ledger lineage. The server's
+bulk endpoint keeps its Acknowledge and Snooze support as an API capability.
+
+**Progress on F2/F4/F7 (2026-11-17).** Provider verification history is deep-linkable by
+connection or provider family, and Today's degraded-provider items open it. Trial balance's
+"Compare prior period" is now "Closing balances vs prior close": the posted-period comparison gained a
+`ClosingBalances` measure that accumulates every posting through each period end (2026-11-17). Note
+that the Trial balance table itself reports the selected period's posted activity, not cumulative
+balances. The day-by-day close board needed no contract change: `CloseTaskDto` already carries due
+dates, owners and dependencies, and Close Cockpit now lays them out by day after period end.
 
 #### C4 🔴 Speak operator language, not system language (follows the 11-10 copy pass)
 
@@ -534,9 +583,8 @@ rules and the shared `StatStrip` and `MetricCard` apply them, so a screen cannot
 
 Still open from P1:
 
-- The KPI definition registry (Phase 3 item 2) and the cross-route same-value assertion. Strips
-  still take values from each workspace's read model; this change makes the source visible, it
-  does not make the numbers agree.
+- ~~The KPI definition registry (Phase 3 item 2) and the cross-route same-value assertion.~~
+  Closed by UX Phase A (2026-11-16): see "Phase A: figures and status you can trust" below.
 - Real baselines and a page-level "Compare to" control. No read model carries a comparison period;
   `WorkstationMetricCard.Delta` needs a baseline (or a prior value) before either can exist. The
   browser `MetricSnapshot.baseline` field is ready to receive it.
@@ -611,11 +659,7 @@ Done:
 
 Open in Phase 3:
 
-- **KPI definition registry (P1 item 1).** Not started; see "Still open from P1" above. The
-  headline-figure trust rules now hide a change figure that has no baseline, but same-named
-  numbers still come from each workspace's own read model, so "Runs 24" can still disagree with
-  "2 of 2 loaded". The registry is a shared read-model change and needs a matching
-  `W8-WPF-PARITY-001` item.
+- **KPI definition registry (P1 item 1).** Closed by UX Phase A (2026-11-16); see below.
 - **Content start height.** The first Trading card started at about 435px when this increment was
   written. Two changes that merged alongside it bring it to about 350px: the page-header
   simplification (one header row, no "<Workspace> Workstation" title, a fund picker in place of
@@ -639,6 +683,109 @@ Open in Phase 3:
 
 No shared read model changed in this increment, so no WPF-parity item was filed.
 
+**2026-11-12 — Phase 3, trust fixes (latency, Today counts, setup state, placeholders).** A
+follow-up review proposed these fixes. Each claim was checked by two independent reviewers against
+source and a fresh fixture-backed capture of all 82 routes, and only the claims that held up were
+built. The before and after captures were compared route by route.
+
+Done:
+
+- **Latency is a duration.** The Data overview's provider cards printed the last response time,
+  or "Never", under "Latency" when a provider reported no latency. `buildProviderRow` now keeps
+  two values. `latencyText` holds only the reported latency, or "Latency not reported" (the same
+  sentinel the server writes). `latencyOrLastGoodText` holds the old value and feeds only the
+  "Trust / last good" column and its CSV export, which are unchanged. The row's accessible name and
+  the trust fields follow `latencyText`. The summary card's description now reads "Last successful
+  call or verification." The "Latency / Last Response" label stays the same as WPF's.
+- **Today lists what its badge counts.** The sidebar badge, the status row and the status bar
+  already counted one list and agreed with each other. That list was visible only while the
+  operator inbox was loading. Today now shows it as "Finance queue" (6 items, the ones the badges
+  count) above "Operator inbox" (3 triage items from the shared host). Each count names its unit:
+  "6 items in the finance queue", "3 of 3 inbox items", and "+5 more issues" in the status bar. The
+  unit hint is in the nav link's tooltip, because the badge itself takes no pointer events. The
+  Today link now spans its row, so clicking the badge navigates.
+- **Account setup is not a failure.** In a paper environment with no fund account in scope,
+  Trading shows a neutral "Choose a fund account" state with one "Choose account" action, and the
+  sub-pages show a neutral row. Live, unknown or failed states keep the red "Live trading blocked"
+  block. The environment comes from the trading read model, which reports "paper" whenever the
+  preferred run is not live. The neutral state therefore lowers only the displayed severity: it
+  unblocks nothing, and the copy still says live trading stays off.
+- **An undeclared basis is stated once, not as a failure.** Strips show "Basis · Not declared by
+  source" once. Cards omit the line, and the figure passport says "Basis not declared by source".
+- **Harness.** Two new blocking content rules: `latency-not-duration` (a `Latency` label followed
+  by a clock time or "Never") and `unavailable-placeholder` ("Basis unavailable", "Saved views
+  unavailable"). A saved-views fixture ends the false "Saved views unavailable" notice on 22
+  captures; the product copy is unchanged, because it is accurate when the store really fails.
+  The Today capture now waits for the inbox. Neither rule needed an `allowedContentIssues` entry.
+
+| Rendered copy (82 captures) | Before | After |
+|---|---|---|
+| "Basis unavailable" | 48 in 34 files | 0 |
+| "Saved views unavailable" | 34 in 22 files | 0 |
+| `Latency` followed by a time or "Never" | 3 | 0 |
+| "Live trading blocked" with no account in a paper environment | 4 files | 0 |
+| "loaded workspace items" / "authorized items ·" | 1 / 1 | 0 / 0 |
+
+Not done, and why:
+
+- **"Providers healthy 1/2" above five provider cards** and **Strategy "Runs 24" above "2 of 2
+  loaded"** come from the capture fixture: `/api/workstation/data` lists two providers, and the
+  server sends no "Runs" card. In production the provider populations differ only for operators
+  without ManageCredentials. One population needs the KPI definition registry and a
+  `W8-WPF-PARITY-001` item.
+- **Showing a provider's measured latency** (Alpaca's trust snapshot carries `latency:p50=18ms`)
+  needs a typed contract field.
+- **Inbox count equals the sum of the badges** (Phase 6 F1) needs the server inbox to cover the
+  workspace queue. The two lists are now labelled as different units instead.
+- **Ledger "Entity name unavailable"** stays excused until the posted-ledger DTO carries display
+  names.
+- **A new three-level tone model** was not added. The existing primitives cover setup (empty
+  state), review and blocked.
+
+No shared read model changed, so no WPF-parity item was filed. Validation: full dashboard vitest
+suite, `tsc`, lint, ratchets, the harness node tests, the production build on Node 24 (the
+`.nvmrc` toolchain, which rebuilds the base bundle byte for byte), and the full 82-route capture.
+
+### Verified corrections to the 2026-11-11 follow-up review
+
+The follow-up review also restated several open items. Verifying them changed these facts, which
+later phases should use:
+
+- **Scope (C1, F2).** The header shows "No scope selected" on 78 of 82 routes again. Commit
+  `38baf358` replaced the dock with `OperatingScopeChip` ("All funds"), and a later merge restored
+  `WorkflowContinuityDock` in `app.tsx`, so the chip is now used only in tests. The Phase 3 note
+  above ("a fund picker in place of 'No scope selected'") no longer holds. Trading's "Scope:
+  DU1009034" is the account the unscoped payload belongs to, not an operator scope.
+- **Accounting navigation (C3).** It has 17 sub-items in 5 groups (22 rows), not 20. At
+  1440×1100 every workspace stays visible, crowded at the bottom. Accounting › Today lands on a
+  page headed "Close Cockpit", and every other workspace's first item is "Overview".
+- **Period comparison (F4).** Ledger's "Vs prior period" works: it is backed by
+  `PostedPeriodComparison` and its endpoint. The orphaned control is Trial balance's permanently
+  disabled "Compare prior period" button, which sits beside the working toggle. The gap is scope:
+  the comparison covers posted movements, not trial-balance balances, NAV, attribution or the
+  cash ladder.
+- **Run comparison.** Strategy › Promotions compares exactly two runs as a metrics table, with no
+  equity or drawdown overlay. A third selection silently drops the oldest.
+- **Since last visit (P10, F7).** Markers exist on the Accounting break queue and the open-breaks
+  tile. `lib/report-change-since-review.ts` is imported only by its own test.
+- **Charts (P9).** Drawdown and candles render through `EquityCurve` and `historical-chart`. The
+  close burndown and the run trend are blank in captures because their endpoints have no fixture.
+  Two implemented charts ("Close task progress", "Break aging") sit inside collapsed disclosures.
+- **Detail panes (P2/V1).** Close Cockpit (`/accounting`) still has right-aligned values that
+  wrap onto three lines; it was not among the migrated surfaces. The unmigrated `AccountingValue`
+  tile has 41 call sites in `accounting-screen.tsx`. The Security Master panels already use
+  `EntitySummary`.
+- **Monospace (P4/V2).** Status-bar values, not labels, are mono. Dense-table headers and toolbar
+  chips are mono uppercase through CSS rules (`ui-kit-primitives.css`), so a class-count ratchet
+  would miss them. The P4 non-numeric `font-mono` ratchet has not been built.
+- **Today inbox (F1, P3, P8).** The server ranks the inbox, but the browser never shows the rank
+  or its reason. Owner, Age, Due and Triage are clipped off-screen beside the detail pane at
+  1440px. Bulk and keyboard triage cover Assign only.
+- **Portfolio market value.** "Unavailable" comes from a deliberate guard against using exposure
+  as market value, and the backend never fills `MarketValue` or `Currency`. The fix is a contract
+  change with a WPF-parity item.
+- **Preferences** still carries the system KPI strip that C6 removes.
+
 ## Recommended Next Step
 
 Finish Phase 3 with the KPI definition registry: the strips now say where each number comes from
@@ -647,3 +794,305 @@ agree and gives deltas a real baseline. Add label, scope, as-of time and compari
 shared read model, move every strip onto it, and file the matching `W8-WPF-PARITY-001` item. Then
 add display names to the read models behind the twelve excused routes so their
 `allowedContentIssues` entries can be removed.
+
+## Phase A: figures and status you can trust (2026-11-16)
+
+Closes P1 item 1 and the status-bar half of the trust work. What changed:
+
+- **One definition per headline figure.** `lib/kpi-registry.ts` already owned each figure's
+  label and computation; every registered figure now also states its population and comparison
+  basis (`KPI_DEFINITIONS`). Strips print the population once when the figures share one
+  ("Covers: Live holdings · all accounts") and under each figure when they differ, and publish it
+  as `data-kpi-population`. The shared read model serves the same catalog at
+  `GET /api/workstation/kpi-definitions` (`WorkstationKpiDefinitions.cs`) for the WPF desktop;
+  `tests/fixtures/kpi-definitions/kpi-definitions.json` holds the browser and C# catalogs to the
+  same values.
+- **One provider-health count.** Data's "Providers healthy" now reads the shared cross-screen
+  count, as Today and Settings do, and counts its own loaded cards only when the shared count is
+  withheld, labelled "Providers visible to you". When the cards below disagree with the shared
+  count, Data says so in one line. Settings' setup checklist now reads "provider connections pass
+  setup checks", a separate population from provider health.
+- **"Runs 24" removed.** The figure came from capture and development fixtures carrying a legacy
+  `runs` card the server never sends; the fixtures now carry the server's `active-runs`,
+  `queued-runs`, `review-runs` and `winning-runs` cards and the registry no longer maps `runs`.
+  Task-workbench counts read "N of M shown".
+- **Position sources named.** Trading's position card reads "Source: Paper session (Alpaca …1234)"
+  and links to Portfolio's "Compare position sources", which now lists each symbol whose quantity
+  or average price differs between live holdings and the session. Position tables carry
+  `data-position-source` (`lib/position-source.ts`).
+- **Status bar freshness.** The footer starts from the masthead pill's provenance and provider
+  items (`resolveShellFreshness`) and always states Freshness; a page can make it worse but never
+  clear it, and "up to date" appears only when every reported source is current.
+- **Screenshot harness.** `status-contradiction` now also compares the footer with the masthead
+  pill; new `position-source-missing` rule; new cross-figure check `checkKpiLabelConsistency`
+  fails when two figures with the same label and population show different values in one dataset.
+
+WPF parity: `W8-WPF-PARITY-001` gains consuming `/api/workstation/kpi-definitions` for desktop
+headline strips (see `wpf-web-ui-alignment-plan.md`).
+
+## Phase B: main task first, quieter states (2026-11-16)
+
+Closes review proposals 3 (primary task above the fold), 4 (Today queue) and 10 (unavailable
+states). What changed:
+
+- **Journal Entry editor first.**
+  - The editor (balance bar, draft rail, journal lines) now sits directly under the page heading.
+  - Accrual schedules and recurring journals move below it into a "Journal automation · …"
+    disclosure, whose summary carries their counts.
+  - Both read the same journal-automation backend, so a failure now shows one
+    "Journal automation unavailable" notice with one Retry that reloads both
+    (`lib/combined-load-state.ts`, plus `quietFailure` on `AccrualScheduleWorkbench` and
+    `RecurringJournalQueue`). It used to show two notices, a red line and three Retry buttons.
+  - The entity box is a named picker when the organization structure loads, and a typed ID with a
+    note when it does not.
+- **Today queue.**
+  - One line per item: severity badge, then title. The description moved to the detail rail.
+  - The queue grows with the page instead of scrolling inside its card.
+  - Columns with no value on any row (Owner, Age, Due) are left out with one note each, through
+    the new `hideWhenEmpty`/`emptyNote` on `TableWorkbenchColumn`.
+  - A single missing age or due time is "—" with its reason on hover.
+  - The stray "Selected evidence" line is gone.
+  - The selected item states "Why ranked here", built from the same keys the queue sorts on
+    (`describeTodayQueueRank`).
+  - "Assigned to me" applies to every source, and says that workspace signals have no owner.
+- **Note once.**
+  - Ledger Explorer drops its Entity column when no posting has an entity name (posted entries
+    carry IDs only) and says so once. The IDs stay in Journal references and in exports.
+- **Live quotes.**
+  - The title is "Live quotes"; the stray "Data" scope line is gone.
+  - Freshness chips print their subject ("Quote matrix: No data").
+  - With no symbols, Connection reads "Connected · no symbols subscribed" and Coverage is not
+    shown.
+  - An empty list starts from the watchlist (archived symbols skipped) before the starter set.
+  - Table captions no longer put an article before the symbol.
+- **Screenshot harness.** New rules:
+  - `primary-task-below-fold`: routes declare `primaryTask: { selector, maxTop }`. Today, Trading,
+    Journal Entry and Live quotes are declared at 600px and measure 423, 360, 348 and 244px.
+  - `repeated-unavailable`: the same "… unavailable" line more than twice.
+  - `single-failure-notice`: routes declare `maxAlerts`; Journal Entry allows 1.
+
+  All 82 routes pass with no new exceptions.
+
+## Phase C: finance grid and visual system (2026-11-17)
+
+Closes review proposals 5 (accounting grids), 6 (type, badges, disclosures) and 7 (layout and
+density). What changed:
+
+- **Ledger Explorer reads like a GL.**
+  - Journal header rows carry the date, journal ID, total and status. Posting lines beneath them
+    leave Date and Journal ID blank and indent the account; "Posting amount" filler text is gone.
+  - Amounts are plain right-aligned numbers, with a small proof control beside each one.
+  - A sticky totals row (the new `footerCells` on `DenseDataTable`/`TableWorkbench`) shows total
+    debits, total credits and "Balanced" or the difference.
+  - Accounting dates that are date-only or UTC midnight print as dates
+    (`formatAccountingDate`), not "00:00 UTC". The count reads "2 posted entries".
+- **Close Cockpit and the other accounting value cells.**
+  - `AccountingValue` follows the detail pane's value rules: figures and IDs in the data face on
+    one line, dates as dates, prose in the body face.
+  - In a narrow cell the value moves under its label instead of squeezing either one.
+  - The case workbench's field grid goes two-wide only when a timestamp fits.
+- **Type.**
+  - Table headers, toolbar chips and the account picker use the body face in sentence case;
+    figures keep tabular numerals.
+  - A new ratchet, `monospaceCapsLabels`, holds uppercase-monospace label class strings at their
+    current count (30, down from 33).
+- **One colour per status word.** `StatusBadge` takes its severity from its label when the label
+  is itself a status word (`badgeSeverity`), so "Blocked", "Review" or "Running" render the same
+  colour on every screen. Four labels the cross-route check found were added to the alias table.
+- **One disclosure style.** Every native `<details>` summary without its own icon gets the same
+  chevron as `TechnicalDetails` instead of the browser's ▸ marker (CSS-only, in `index.css`).
+- **Quieter masthead.** The hazard stripe is kept for a LIVE session showing non-real data. In
+  paper and demo sessions the SEEDED chip in the masthead pill says it, and the stripe is gone.
+  The masthead now carries `data-environment`.
+- **Layout.**
+  - From 1280px the detail inspector no longer sets its row's height, so a tall inspector beside
+    a short table leaves no blank band (Trading).
+  - A table wider than its card shows an edge shadow on the side with more columns.
+  - Media queries use four documented tiers (640, 980, 1279 and 1599px for the masthead only),
+    enforced by `styles/breakpoints.test.ts`.
+- **Screenshot harness.**
+  - `checkSeverityLabelConsistency` checks across routes that one status label has one severity.
+  - New rules: `detail-value-wraps`, `table-overflow-without-cue`, and opt-in `monospace-prose`
+    (Today, Trading, Ledger, Journal Entry).
+  - Close Cockpit, Ledger and Trading are also captured at 1024px.
+  - All 85 captures pass.
+
+
+## Phase D: navigation and overviews (2026-11-17)
+
+Review proposals 8 (charts that answer finance questions) and 9 (Accounting navigation), plus the
+Close Calendar grid. All of it is browser-only. No shared contract changed.
+
+- **Accounting navigation.**
+  - Expanding Accounting adds 5 sidebar rows, one per group (Close, Records, Reconciliation,
+    Review, Administration), instead of 22. A group row is active when any of its pages is.
+  - The group's pages appear as a secondary menu under the page header ("{group} pages"),
+    carrying the fund, book, period and status query as the sidebar did.
+  - The command palette lists pinned and recent pages first. They are stored in this browser
+    only, and the palette works without storage. "Pin {page}" toggles the current page.
+- **Close Calendar.** It opens on a month grid (Monday-first weeks, previous, today and next
+  month) at the month of the earliest upcoming due date. Overdue items are marked. The existing
+  list follows as "List view", and undated workflows are listed once.
+- **Charts.**
+  - Close Cockpit's "Close task progress" and Reconciliation's "Break aging" are shown open.
+  - Provider evidence age uses one readable unit for the chart and lists every provider in use;
+    one with no timestamp reads "No timestamp".
+  - Every chart's section carries a table alternative (`data-chart-table`).
+  - The provider capability matrix has a Freshness column (Current, Stale or No evidence, with
+    the age), joined by provider id. The Data overview's evidence-age chart is the compact view;
+    the matrix stays under "Review data diagnostics".
+  - The Strategy overview has a run leaderboard: the top 5 runs by Sharpe with P&L, then runs
+    with no Sharpe as "Not ranked". Drawdown and trend columns show only when a run retains them.
+- **Screenshot harness.**
+  - `nav-row-budget`: a capture that declares `maxSidebarSubRows` fails when more sidebar
+    sub-rows are visible (Accounting, Reconciliation and Close Calendar declare 7).
+  - `chart-without-table`: a capture that declares `chartTables` fails when a chart's section has
+    no table alternative (Accounting, Reconciliation, Close Calendar, Data and Strategy).
+  - Close Calendar declares the month grid as its primary task.
+- **Follow-up: Portfolio NAV and exposure trend.** Both were delivered with the Phase E
+  follow-ups (`/api/fund-structure/nav-trend`, with exposure on each point).
+
+## Phase E: workflow features (2026-11-17)
+
+Review proposals 11 (features finance users expect next) and 12 (split large screens as they are
+touched). Phase E went out in slices E1–E5, each pushed separately.
+
+- **Due urgency (E1).**
+  - `lib/due-urgency.ts` and `DueChip` show "Overdue 3 days", "Due today" or "Due in 2 days", in UTC
+    calendar days; done work is never overdue.
+  - The chip is on Today, the triage inbox, close cockpit tasks and the Close Calendar list.
+  - Today and the Close Calendar list sort overdue first, and "Why ranked here" says so.
+  - Reporting production already flagged and sorted overdue runs; break SLAs keep their own state.
+- **New since you last looked (E1).** Per-viewer markers from the server's visit record, now also on
+  Today (`today-queue`), Approvals (`approvals`) and Reporting triage (`reporting-triage`, by
+  publication time). Casework reuses the break queue's baseline. The Approval Inbox has no timestamp
+  and is not marked.
+- **Bulk Acknowledge and Snooze on Today (E1).** Each checked item is confirmed in the dialog, sent as
+  its own command with its own command ID and versions (one activity entry each), and reported
+  separately. Ineligible items are listed as skipped with the reason.
+- **Export as shown (E2).** `TableWorkbench` adds "Export as shown · CSV" and "· XLSX": visible
+  columns in screen order, the table's formatting (`exportDisplay`), and totals (`footerExport`).
+  XLSX keeps numbers numeric and puts the source context on an About sheet. The raw source CSV is
+  unchanged; server-paged tables stay CSV-only. `write-excel-file` (MIT) loads only on export.
+- **Strategy comparison (E3).** Up to four runs. A fifth is refused with a message, not swapped in.
+  A tray lists the selection. After a compare, equity (rebased to 100) and drawdown are overlaid over
+  the dates every run shares, each with a data table. Diff stays two-run. Comparison code moved to
+  `strategy-screen.comparison*.ts(x)`.
+- **Variance (E4, E5).**
+  - One rule everywhere: variance = current − prior; variance % = variance ÷ |prior| × 100, none
+    for a zero prior. `PeriodChange` in `Meridian.Contracts`, mirrored exactly in `lib/variance.ts`.
+  - `varianceColumns` adds Prior, Variance and Variance % columns and flags variances past the
+    materiality policy with a "Material" chip.
+  - Trial balance: the posted-period comparison uses them (Accounting policy). The never-enabled
+    "Compare prior period" button is gone. Comparison figures stay period movements and are not
+    merged into the cumulative trial balance rows.
+  - NAV (`/portfolio/nav`): ledger NAV now against a prior date (default the end of last month), in
+    total and by asset class, both rebuilt from the posted ledger as of their own date.
+  - Attribution: the selected run's per-symbol P&L for its last month against the month before,
+    from its daily snapshots.
+  - Cash ladder: "Vs end of last month" rebuilds the ladder from the ledger's cash at that date and
+    compares opening cash, flows, the lowest cumulative cash, breaches and each bucket by position.
+- **Follow-ups done (2026-11-17).**
+  - Report-pack prior P&L: portfolio cuts and the report writer read only the latest published or
+    restated version per fund, account, template and period. Cuts use the latest period; Prior is
+    the previous published period's P&L lines, and the browser shows "—" when there is none.
+    This changes the Reporting figures in the compatibility path, which used to sum every record.
+  - NAV trend: `GET /api/fund-structure/nav-trend` returns ledger NAV at up to 24 month-ends plus
+    today, from one ledger book. `/portfolio/nav` draws it above the comparison, with a data table.
+  - Attribution commissions: snapshot P&L is before commissions, so a Commissions line (fills'
+    commissions dated in each month) is shown and the total becomes Net P&L.
+  - Endpoint tests cover the NAV comparison and trend, run attribution comparison (including another
+    tenant's run) and cash ladder comparison routes.
+- **Second follow-up round (2026-11-17).**
+  - Attribution by month reconciles to the run: a symbol closed mid-month counts its closed lots'
+    realized result; commissions, margin interest, short rebates and cash interest are their own
+    lines; the total, Net P&L, is the change in run equity, and anything unexplained (dividends,
+    corporate-action cash, rounding) is shown as Other.
+  - The cash ladder comparison projects the prior ladder from the instrument terms recorded by the
+    end of the prior date when the asset-operations service supports it
+    (`IAssetOperationsQueryService.SupportsTermsAsOf`).
+  - The NAV trend carries long, short, gross and net securities exposure, and `/portfolio/nav`
+    charts it with a table.
+  - WPF shows the NAV comparison and trend (Fund Operations → Portfolio), the run attribution
+    comparison (Run Risk) and the portfolio cash ladder comparison (Run Cash Flow).
+- **Follow-ups still open.**
+  - Positions merged inside asset operations are still current on the prior cash ladder.
+  - The WPF comparison tests run on Windows CI only.
+  - WPF parity items are listed in `wpf-web-ui-alignment-plan.md` (Phase E delta).
+
+## Phases F–J: 2026-11-18 review
+
+A screenshot review of all 86 catalog routes on `main` (`0adea571`) after Phases A–E. Proposals
+are numbered C1–C7 (clarity), V1–V7 (visual polish) and F1–F6 (functionality) within this section
+only; they do not reuse the 2026-11-10 numbering.
+
+| Phase | Scope | Items | Status |
+| --- | --- | --- | --- |
+| F | Rendering fixes, browser-only | V1 chart rendering, V5 page focus frame, C3 clipped detail panels, C5 ages and dates | Delivered (2026-11-18) |
+| G | Clarity and trust | C1 one name per page, C2 position source and divergence, C4 four status colours, C6 copy rules, C7 top-bar pill | Not started |
+| H | Visual system | V2 figure rows, V3 one toolbar per table, V4 monospace labels to zero, V6 pickers and money input, V7 two page layouts | Not started |
+| I | Throughput | F1 shared queue keyboard model, F2 saved views, F3 figure-to-rows links | Not started |
+| J | Insight | C7 Today headline row, F4 Live quotes, F5 NAV headline and presets, F6 "Since you last looked" | Not started |
+
+### Phase F: what changed
+
+- **Charts draw at real pixel size.** `useChartSize` (`components/charts/use-chart-size.ts`)
+  measures the chart box, and `EquityCurve`, `DrawdownChart`, `Histogram`, `CandleChart` and
+  `DepthChart` draw with a viewBox equal to it, so axis text is no longer stretched. `EquityCurve`
+  puts the value axis on the left, thins time ticks to at least 72px apart and value ticks to at
+  least 24px apart (`components/charts/axis-ticks.ts`), and reads ISO dates as "Aug '25" (or
+  "Aug 5" inside about two months). Axis text uses the body face with tabular figures.
+  `historical-chart.tsx` keeps its stretched plot but draws its labels in an HTML layer
+  (`stretched-chart-labels.tsx`).
+- **Small charts become figures.** Evidence charts with fewer than three categories (Close
+  checklist "Done 1", a single provider's evidence age) show the figures and a sentence instead
+  of a bar chart (`CHART_MIN_CATEGORIES`).
+- **No frame around the page.** Route focus still lands on `#workbench-content` for screen readers,
+  but the landmark draws no outline; controls inside keep their focus-visible rings.
+- **Detail panels say when there is more.** The workbench inspector shows a fade and a "More below"
+  button, and sets `data-more-below`, while it has content beneath its visible area
+  (`use-more-below.ts`).
+- **Ages and dates.** `formatRelativeTime` keeps hours to 48h and days to 60d, then reads
+  "since May 8, 2026"; Live quotes and the provider capability matrix use it instead of their own
+  builders. Reconciliation case dates (detected, updated, SLA, first observed) go through
+  `formatAccountingDate`, so UTC midnight reads as a date. NAV's prior date and the journal-entry
+  date use the shared `DatePicker` instead of a native `mm/dd/yyyy` input.
+- **New capture rules.** `detail-rail-clipped` (a detail panel that hides content with neither its
+  own scroll nor the cue) and `chart-label-overlap` (two labels in one chart overlap) run on
+  every capture in `scripts/dev/capture-web-screenshots.mjs`. The full catalog passes both.
+
+### Phase F: not done
+
+- Server-built age strings (`ActivityFeedService`, `IntegrityEventsService`, WPF view models) still
+  use unbounded hours and days. Aligning them changes WPF output and is a `W8-WPF-PARITY-001` item.
+- The provider evidence-age chart still uses a months unit ("4.2mo") for very old evidence.
+- Native date inputs remain on the bond, quant, settings, consolidation and entity panels.
+
+### Phases G–J acceptance criteria
+
+- **G:** sidebar, tab, breadcrumb and header agree on every route (`page-name-consistency`
+  rule); no more than two navigation levels below the sidebar; Trading never says "selected
+  account" with an empty picker; every position or exposure figure carries
+  `data-position-source`, with an inline flag when sources disagree, served from the shared read
+  model; red only for blocked or failed; no badge styled as a button (`badge-looks-like-button`);
+  one description sentence per section; the top-bar pill shows environment and overall health.
+- **H:** equal-width figure cells with sentence-case labels; `monospaceCapsLabels` at 0 for form and
+  section labels; one toolbar row per table; at most three visible Live quotes buttons; no free-text
+  fund, book, period, account or currency inputs where a read model exists; a tested money input;
+  Overview and Queue + detail layouts on every overview and at least ten queue routes.
+- **I:** one keyboard model (j/k, x, Enter, a, s, r) across Today, Reconciliation, Approvals and
+  Reporting triage, rebindable and shared with WPF; saved views that round-trip through preferences
+  sync and URLs; every registered figure links to a table showing exactly its count.
+- **J:** Today headline row (NAV and month-over-month, day P&L, cash, close progress, reports due)
+  from the shared figure definitions; Live quotes change, day range, sparklines and stale dimming;
+  NAV headline with presets and a fund picker; a "Since you last looked" panel with at least four
+  kinds of change.
+
+## Quick wins delivered (2026-11-18)
+
+- **Blank, not zero:** the manual journal editor leaves the off-side amount input blank, and posted-ledger lines leave the not-applicable debit or credit cell blank. Their aria labels name only the populated side.
+- **Palette screen actions:** a new `useScreenPaletteActions` hook (`components/meridian/command-palette.actions.ts`) registers palette actions that hand off to existing screen commands:
+  - Today: bulk Acknowledge and bulk Snooze. Both open the existing confirm dialogs.
+  - Reconciliation: assign selected breaks to me, which runs the existing dry run.
+  - Approvals: refresh. Approval decisions are not registered.
+  - Reporting: refresh live portfolio views.

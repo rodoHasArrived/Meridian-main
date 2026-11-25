@@ -152,6 +152,7 @@ public sealed partial class AccountingConfigurationService
     {
         var issues = new List<AccountingConfigurationValidationIssueDto>();
         var chartByPath = BuildChartByPath(workspace.ChartOfAccounts);
+        issues.AddRange(ValidateIntercompanyAccountRoles(workspace.ChartOfAccounts));
         if (requireLedgerBookSetup && workspace.LedgerBookId is { } ledgerBookId &&
             !workspace.LedgerBooks.Any(book => book.LedgerBookId == ledgerBookId))
         {
@@ -180,6 +181,22 @@ public sealed partial class AccountingConfigurationService
                 $"Chart of accounts path '{duplicatePath}' is assigned to multiple active nodes.",
                 duplicatePath,
                 "Keep one active chart node per account path before posting, previewing, or exporting ledger activity."));
+        }
+
+        var nodesBySelectorPath = workspace.ChartOfAccounts.ToLookup(node => node.Path.Trim(), StringComparer.OrdinalIgnoreCase);
+        foreach (var code in workspace.ChartOfAccounts
+                     .Where(static node => !string.IsNullOrWhiteSpace(node.AccountCode))
+                     .GroupBy(static node => node.AccountCode!.Trim(), StringComparer.OrdinalIgnoreCase))
+        {
+            if (code.Count() == 1 && nodesBySelectorPath[code.Key].All(node =>
+                    string.Equals(node.NodeId, code.First().NodeId, StringComparison.OrdinalIgnoreCase)))
+                continue;
+            issues.Add(Issue(
+                "chart.code-ambiguous",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Chart of accounts code '{code.Key}' identifies more than one account.",
+                code.Key,
+                "Keep each code distinct from other nodes' codes and paths before activating this chart."));
         }
 
         if (workspace.JournalTemplates.Count == 0)
@@ -875,6 +892,8 @@ public sealed partial class AccountingConfigurationService
                ScopeValuesOverlap(left.CapitalAccountId, right.CapitalAccountId) &&
                (!left.InstrumentId.HasValue || !right.InstrumentId.HasValue || left.InstrumentId == right.InstrumentId) &&
                (!left.PositionId.HasValue || !right.PositionId.HasValue || left.PositionId == right.PositionId) &&
+               (!left.IntercompanyAgreementId.HasValue || !right.IntercompanyAgreementId.HasValue || left.IntercompanyAgreementId == right.IntercompanyAgreementId) &&
+               (!left.IntercompanyAgreementVersion.HasValue || !right.IntercompanyAgreementVersion.HasValue || left.IntercompanyAgreementVersion == right.IntercompanyAgreementVersion) &&
                ScopeValuesOverlap(left.TaxLotId, right.TaxLotId) &&
                ScopeValuesOverlap(left.CostCenterId, right.CostCenterId) &&
                ScopeValuesOverlap(left.CounterpartyId, right.CounterpartyId) &&
@@ -1020,7 +1039,7 @@ public sealed partial class AccountingConfigurationService
     ///
     /// <para><b>Optional text is reduced the way a store reduces it.</b>
     /// <c>PostgresAccountingConfigurationStore.ReplaceChartAsync</c> writes <c>ParentPath</c>,
-    /// <c>Symbol</c> and <c>FinancialAccountId</c> through <c>AddTextOrNull</c>, which trims and
+    /// <c>Symbol</c>, <c>FinancialAccountId</c> and <c>AccountCode</c> through <c>AddTextOrNull</c>, which trims and
     /// nulls blank text, so a padded or blank value reloads as something the digest never covered
     /// (Codex review finding on PR #2871). This is the rule <c>NormalizeForPersistence</c> already
     /// applies to the audit event itself, applied to the workspace for the same reason: what is
@@ -1050,6 +1069,7 @@ public sealed partial class AccountingConfigurationService
                         ParentPath = NormalizeOptional(n.ParentPath),
                         Symbol = NormalizeOptional(n.Symbol),
                         FinancialAccountId = NormalizeOptional(n.FinancialAccountId),
+                        AccountCode = NormalizeOptional(n.AccountCode),
                     })
                     .OrderBy(static n => n.Path, StringComparer.Ordinal)
                     .ThenBy(static n => n.NodeId, StringComparer.Ordinal)

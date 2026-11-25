@@ -300,7 +300,7 @@ public static class ReportingWorkspaceShellPresentationService
         var first = items[0];
         var due = first.DueAtUtc is null
             ? null
-            : $" Due {UtcFormat.FormatUtcTimestamp(first.DueAtUtc.Value)}.";
+            : $" Due {UtcFormat.FormatDisplayTimestamp(first.DueAtUtc.Value)}.";
         var owner = string.IsNullOrWhiteSpace(first.Owner)
             ? null
             : $" Owner: {first.Owner}.";

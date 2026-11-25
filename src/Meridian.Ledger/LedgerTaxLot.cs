@@ -50,12 +50,18 @@ public sealed record LedgerTaxLot : IUnitizedLot
 
     public decimal Quantity { get; }
 
+    /// <summary>
+    /// Monetary cost per recorded quantity unit for realized-gain relief: quantity times unit cost
+    /// is the implied whole-lot basis. For face-value lots this is cost per dollar of face when
+    /// <see cref="Multiplier"/> is one, or cost per hundred of face when the multiplier is 100.
+    /// A market quote must be converted to this monetary convention before relief.
+    /// </summary>
     public decimal UnitCost { get; }
 
     /// <summary>
     /// What one unit of <see cref="Quantity"/> measures. Must be supplied explicitly; face-denominated debt
-    /// lots (bonds, CDs, bills, loans, structured credit) carry <see cref="SecurityLotUnitKind.FaceValue"/>,
-    /// whose <see cref="UnitCost"/> is a price per 100 of par.
+    /// lots (bonds, CDs, bills, loans, structured credit) carry <see cref="SecurityLotUnitKind.FaceValue"/>.
+    /// Their <see cref="Multiplier"/> states the face carried by one recorded quantity unit.
     /// </summary>
     public required SecurityLotUnitKind UnitKind
     {

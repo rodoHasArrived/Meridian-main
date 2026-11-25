@@ -33,6 +33,18 @@ namespace Meridian.Tests.Ui;
 public sealed class WorkstationServiceCollectionExtensionsTests
 {
     [Fact]
+    public async Task ExecutionWorkflows_ReadOnlyCompositionRemainsDormantWithoutGateway()
+    {
+        var services = CreateMinimalWorkstationServices();
+        services.AddWorkstationSharedServices();
+        await using var provider = services.BuildServiceProvider();
+        provider.GetService<Meridian.Execution.Sdk.IOrderPreviewService>().Should().BeNull();
+        var worker = provider.GetRequiredService<ExecutionWorkflowWorker>();
+        worker.Scope.Should().BeNull();
+        await worker.TickAsync();
+    }
+
+    [Fact]
     public void AddUiSharedServices_DefaultProviderCatalog_ResolvesEveryProviderAndAliasExactlyOnce()
     {
         using var quietProductionEnvironment =
@@ -98,7 +110,7 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         services.AddLogging();
         services.AddSingleton(new CoreConfigStore(configPath));
 
-        services.AddWorkstationSharedServices();
+        services.AddWorkstationSharedServices(new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build());
 
         using var provider = services.BuildServiceProvider();
         provider.GetRequiredService<PromotionRecordStoreOptions>().RootDirectory

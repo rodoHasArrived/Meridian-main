@@ -74,6 +74,11 @@ public sealed record JournalEntry
                     $"Ledger entry '{line.EntryId}' description must match the journal description.");
             }
 
+            if (line.ChartAccount is { } chart &&
+                (string.IsNullOrWhiteSpace(chart.NodeId) || string.IsNullOrWhiteSpace(chart.Revision) ||
+                 chart.AccountCode is not null && string.IsNullOrWhiteSpace(chart.AccountCode)))
+                throw new LedgerValidationException($"Ledger entry '{line.EntryId}' has incomplete chart account evidence.");
+
             if (!seenEntryIds.Add(line.EntryId))
                 throw new LedgerValidationException($"Ledger entry '{line.EntryId}' is duplicated within the journal entry.");
         }
@@ -92,8 +97,13 @@ public sealed record JournalEntry
     private const decimal BalanceTolerance = LedgerToleranceConstants.Balance;
 
     /// <summary>
-    /// Returns <c>true</c> when the total debits approximately equal the total credits
-    /// (within <see cref="BalanceTolerance"/>).
+    /// Returns <c>true</c> when debits approximately equal credits in one functional currency
+    /// (within <see cref="BalanceTolerance"/>). Legacy lines without currency detail inherit
+    /// that journal currency; explicitly different functional currencies can never offset.
+    /// Transaction currencies may differ for a foreign-exchange transaction: their amounts
+    /// are converted by each leg's recorded rate before this balance is measured. When every
+    /// line declares the same transaction currency, that currency must also balance; differing
+    /// conversion rates cannot hide a missing transaction-currency leg.
     /// </summary>
     public bool IsBalanced
     {
@@ -101,13 +111,35 @@ public sealed record JournalEntry
         {
             var totalDebit = 0m;
             var totalCredit = 0m;
+            string? functionalCurrency = null;
+            string? transactionCurrency = null;
+            var singleTransactionCurrency = true;
+            var allCurrenciesDeclared = true;
+            var transactionDebit = 0m;
+            var transactionCredit = 0m;
             foreach (var line in Lines)
             {
+                if (line.Currency is { } currency)
+                {
+                    functionalCurrency ??= currency.FunctionalCurrency;
+                    if (!string.Equals(functionalCurrency, currency.FunctionalCurrency, StringComparison.Ordinal))
+                        return false;
+
+                    transactionCurrency ??= currency.TransactionCurrency;
+                    singleTransactionCurrency &= transactionCurrency == currency.TransactionCurrency;
+                    transactionDebit += currency.TransactionDebit;
+                    transactionCredit += currency.TransactionCredit;
+                }
+                else
+                    allCurrenciesDeclared = false;
+
                 totalDebit += line.Debit;
                 totalCredit += line.Credit;
             }
 
-            return Math.Abs(totalDebit - totalCredit) <= BalanceTolerance;
+            return Math.Abs(totalDebit - totalCredit) <= BalanceTolerance &&
+                (!allCurrenciesDeclared || !singleTransactionCurrency ||
+                 Math.Abs(transactionDebit - transactionCredit) <= BalanceTolerance);
         }
     }
 }

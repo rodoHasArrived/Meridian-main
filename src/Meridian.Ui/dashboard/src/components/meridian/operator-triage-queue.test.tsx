@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { act, screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
-import { OperatorTriageQueue, triageAgeLabel } from "@/components/meridian/operator-triage-queue";
+import { OperatorTriageQueue, TriageAge, triageAgeLabel } from "@/components/meridian/operator-triage-queue";
 import { renderWithRouter, TestMemoryRouter } from "@/test/render";
 import { bulkAssignOperatorTriage, commandOperatorTriage, getOperatorTriageInbox, type OperatorTriageInbox, type OperatorTriageItem } from "@/lib/operator-inbox-triage";
 
@@ -39,11 +39,58 @@ describe("authorized operator triage", () => {
     expect(screen.queryByRole("button", { name: "Resolve" })).not.toBeInTheDocument();
   });
 
+  it("names its unit as inbox items, distinct from the finance queue the shell counts", async () => {
+    await mount();
+    const filters = screen.getByRole("group", { name: "Inbox filters" });
+    expect(filters).toHaveTextContent(/\d+ of \d+ inbox items? · All authorized accounts/);
+    expect(filters).toHaveTextContent("2 of 2 inbox items · All authorized accounts");
+    expect(filters).not.toHaveTextContent("authorized items");
+  });
+
+  it("renders only its loading status before the inbox resolves when no fallback is given", async () => {
+    let resolveInbox!: (inbox: OperatorTriageInbox) => void;
+    vi.mocked(getOperatorTriageInbox).mockImplementationOnce(() => new Promise((resolve) => { resolveInbox = resolve; }));
+    renderWithRouter(<OperatorTriageQueue />);
+
+    const group = screen.getByRole("group", { name: "Authorized operator inbox" });
+    expect(group.children).toHaveLength(1);
+    expect(within(group).getByRole("status")).toHaveTextContent("Refreshing authorized inbox…");
+    expect(group).toHaveTextContent(/^Refreshing authorized inbox…$/);
+
+    await act(async () => resolveInbox(response));
+    expect(await screen.findByRole("treegrid", { name: "Authorized ranked operator queue" })).toBeInTheDocument();
+    expect(screen.queryByText("Refreshing authorized inbox…")).not.toBeInTheDocument();
+  });
+
   it("My items uses the authenticated actor rather than the workspace label", async () => {
     const user = userEvent.setup(); await mount();
-    await user.click(screen.getByRole("checkbox", { name: "My items" }));
+    await user.selectOptions(screen.getByRole("combobox", { name: "Owner" }), "mine");
     expect(screen.getByRole("row", { name: "Report review" })).toBeInTheDocument();
     expect(screen.queryByRole("row", { name: "Cash variance" })).not.toBeInTheDocument();
+  });
+
+  it("shows only items nobody owns yet under Unassigned", async () => {
+    const user = userEvent.setup(); await mount();
+    await user.selectOptions(screen.getByRole("combobox", { name: "Owner" }), "unassigned");
+    expect(screen.getByRole("row", { name: "Cash variance" })).toBeInTheDocument();
+    expect(screen.queryByRole("row", { name: "Report review" })).not.toBeInTheDocument();
+    await user.selectOptions(screen.getByRole("combobox", { name: "Owner" }), "all");
+    expect(screen.getByRole("row", { name: "Report review" })).toBeInTheDocument();
+  });
+
+  it("opens the reviewed acknowledge and snooze dialogs from the queue keys", async () => {
+    const user = userEvent.setup(); await mount();
+    // The first row (the blocker) is selected; it can be acknowledged but never snoozed.
+    const grid = screen.getByRole("treegrid", { name: "Authorized ranked operator queue" });
+    grid.querySelector<HTMLElement>("tr[aria-selected=\"true\"]")?.focus();
+    await user.keyboard("s");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await user.keyboard("c");
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveTextContent("Acknowledge item");
+    // Same reviewed dialog as the button: no reason, no command.
+    expect(within(dialog).getByRole("button", { name: "Apply triage action" })).toBeDisabled();
+    expect(commandOperatorTriage).not.toHaveBeenCalled();
   });
 
   it("requires a reason and sends authoritative versions for assignment, then refreshes", async () => {
@@ -110,7 +157,8 @@ describe("authorized operator triage", () => {
     await act(async () => confirm({ status: "Applied", workItemId: blocked.workItemId, replayed: false }));
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     await waitFor(() => expect(screen.getByRole("button", { name: "Acknowledge" })).toBeEnabled());
-    expect(screen.getByRole("button", { name: "Refresh inbox" })).toBeEnabled();
+    // The inbox reloads with the header Refresh; it has no refresh button of its own.
+    expect(screen.queryByRole("button", { name: /refresh inbox/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Retry same command" })).not.toBeInTheDocument();
   });
 
@@ -156,14 +204,56 @@ describe("authorized operator triage", () => {
   it("reports bulk per-item refusals instead of optimistic all-success", async () => {
     const user = userEvent.setup(); await mount("account-1");
     vi.mocked(bulkAssignOperatorTriage).mockResolvedValue({ results: [{ status: "Applied", workItemId: blocked.workItemId, replayed: false }, { status: "Conflict", workItemId: review.workItemId, error: "Source version changed", replayed: false }] });
-    await user.click(screen.getByRole("checkbox", { name: "Select Cash variance for assignment" }));
-    await user.click(screen.getByRole("checkbox", { name: "Select Report review for assignment" }));
+    await user.click(screen.getByRole("checkbox", { name: "Select Cash variance for bulk actions" }));
+    await user.click(screen.getByRole("checkbox", { name: "Select Report review for bulk actions" }));
     await user.click(screen.getByRole("button", { name: "Assign 2 selected" }));
     await user.type(screen.getByLabelText("Assignee operator ID"), "reviewer");
     await user.type(screen.getByLabelText("Reason"), "Desk allocation");
     await user.click(screen.getByRole("button", { name: "Apply triage action" }));
     expect(await screen.findByText(/1 applied; 1 not applied: review-2: Source version changed/)).toBeInTheDocument();
     expect(bulkAssignOperatorTriage).toHaveBeenCalledWith(expect.objectContaining({ fundAccountId: "account-1", items: [{ workItemId: "critical-1", expectedVersion: 2, expectedSourceVersion: 4 }, { workItemId: "review-2", expectedVersion: 2, expectedSourceVersion: 4 }] }), expect.any(Object));
+  });
+
+  it("acknowledges in bulk with a confirmation per item, one command per item, and per-item results", async () => {
+    const user = userEvent.setup(); await mount();
+    vi.mocked(commandOperatorTriage)
+      .mockResolvedValueOnce({ status: "Applied", workItemId: blocked.workItemId, replayed: false })
+      .mockRejectedValueOnce(new Error("connection interrupted"));
+    await user.click(screen.getByRole("checkbox", { name: "Select Cash variance for bulk actions" }));
+    await user.click(screen.getByRole("checkbox", { name: "Select Report review for bulk actions" }));
+    await user.click(screen.getByRole("button", { name: "Acknowledge…" }));
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("2 of 2 selected items confirmed")).toBeInTheDocument();
+    expect(within(dialog).getByRole("checkbox", { name: "Confirm Cash variance" })).toBeChecked();
+    await user.type(within(dialog).getByLabelText("Reason"), "Seen at stand-up");
+    await user.click(within(dialog).getByRole("button", { name: "Apply triage action" }));
+    expect(await screen.findByRole("list", { name: "Bulk action results" })).toHaveTextContent("Cash variance: applied");
+    expect(screen.getByRole("list", { name: "Bulk action results" })).toHaveTextContent("Report review: outcome unconfirmed · connection interrupted");
+    expect(screen.getByText(/Acknowledge: 1 of 2 applied, 1 unconfirmed/)).toBeInTheDocument();
+    expect(commandOperatorTriage).toHaveBeenCalledTimes(2);
+    const [firstId, firstCommand] = vi.mocked(commandOperatorTriage).mock.calls[0]!;
+    const [, secondCommand] = vi.mocked(commandOperatorTriage).mock.calls[1]!;
+    expect(firstId).toBe("critical-1");
+    expect(firstCommand).toMatchObject({ action: "Acknowledge", reason: "Seen at stand-up", expectedVersion: 2, expectedSourceVersion: 4 });
+    expect(firstCommand.commandId).toMatch(/:0$/);
+    expect(secondCommand.commandId).toMatch(/:1$/);
+  });
+
+  it("sends only the items the operator confirmed and skips blockers when snoozing in bulk", async () => {
+    const user = userEvent.setup(); await mount();
+    vi.mocked(commandOperatorTriage).mockResolvedValue({ status: "Applied", workItemId: review.workItemId, replayed: false });
+    await user.click(screen.getByRole("checkbox", { name: "Select Cash variance for bulk actions" }));
+    await user.click(screen.getByRole("checkbox", { name: "Select Report review for bulk actions" }));
+    await user.click(screen.getByRole("button", { name: "Snooze…" }));
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText(/Cash variance · skipped: Blocked items remain visible\./)).toBeInTheDocument();
+    expect(within(dialog).queryByRole("checkbox", { name: "Confirm Cash variance" })).not.toBeInTheDocument();
+    await user.type(within(dialog).getByLabelText("Reason"), "Waiting on vendor");
+    await user.click(within(dialog).getByRole("button", { name: "Apply triage action" }));
+    await screen.findByRole("list", { name: "Bulk action results" });
+    expect(commandOperatorTriage).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(commandOperatorTriage).mock.calls[0]![0]).toBe("review-2");
+    expect(vi.mocked(commandOperatorTriage).mock.calls[0]![1]).toMatchObject({ action: "Snooze", snoozedUntil: expect.any(String) });
   });
 
   it("keeps unavailable storage read-only and distinguishes a failed inbox from empty work", async () => {
@@ -174,7 +264,11 @@ describe("authorized operator triage", () => {
     unmount();
     vi.mocked(getOperatorTriageInbox).mockRejectedValue(new Error("Forbidden"));
     renderWithRouter(<OperatorTriageQueue fallback={<p>Loaded workspace evidence</p>} />);
-    expect(await screen.findByRole("alert")).toHaveTextContent("Inbox triage is unavailable");
+    const failure = await screen.findByRole("alert");
+    expect(failure).toHaveTextContent("Inbox triage is unavailable");
+    // The finance queue now sits above the inbox, so the notice no longer points "below".
+    expect(failure).toHaveTextContent("finance queue on this page is unaffected");
+    expect(failure).not.toHaveTextContent("remains visible below");
     expect(screen.getByText("Loaded workspace evidence")).toBeInTheDocument();
     expect(screen.queryByText("No authorized items match these filters.")).not.toBeInTheDocument();
   });
@@ -199,5 +293,18 @@ describe("authorized operator triage", () => {
     expect(result.violations).toEqual([]);
     expect(triageAgeLabel(null)).toBe("Age unavailable");
     expect(triageAgeLabel("2030-01-01", Date.parse("2026-01-01"))).toBe("Age unavailable");
+  });
+
+  it("labels ages with the shared relative form and the absolute display-zone time on hover", () => {
+    const now = Date.parse("2026-06-30T18:10:00Z");
+    expect(triageAgeLabel("2026-06-30T18:09:40Z", now)).toBe("20s ago");
+    expect(triageAgeLabel("2026-06-30T18:05:00Z", now)).toBe("5m ago");
+    expect(triageAgeLabel("2026-06-30T15:10:00Z", now)).toBe("3h ago");
+    expect(triageAgeLabel("2026-06-27T18:10:00Z", now)).toBe("3d ago");
+
+    const { rerender } = renderWithRouter(<TriageAge value="2026-06-30T18:05:00Z" now={now} />);
+    expect(screen.getByText("5m ago")).toHaveAttribute("title", "Jun 30, 2026, 18:05 UTC");
+    rerender(<TriageAge value="2026-07-01T00:00:00Z" now={now} />);
+    expect(screen.getByText("Age unavailable").tagName).toBe("SPAN");
   });
 });

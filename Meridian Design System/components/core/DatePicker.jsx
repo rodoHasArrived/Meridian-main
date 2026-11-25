@@ -4,7 +4,7 @@
 // every user west of UTC — a settlement date entered as the 26th posted as the 25th.)
 // The field is typeable; the calendar is a full ARIA grid with the standard keyboard model.
 import React from "react";
-import { toISO, fromISO, addDays, addMonths, sameDay, clampDate, parseLoose, dowLabels, longDate, monthTitle, weeksFor } from "./localDate.js";
+import { calendarDate, toISO, fromISO, addDays, addMonths, sameDay, clampDate, parseLoose, dowLabels, longDate, monthTitle, weeksFor } from "./localDate.js";
 
 let injected = false;
 function inject() {
@@ -102,6 +102,12 @@ export function DatePicker({
   const base = id || auto;
   const gridId = `${base}-grid`;
   const errorId = `${base}-error`;
+  const {
+    "aria-labelledby": labelledBy, "aria-describedby": describedBy,
+    "aria-invalid": invalid, "aria-errormessage": errorMessage,
+    "aria-required": ariaRequired, ...containerProps
+  } = rest;
+  const feedbackIds = [...new Set([...(describedBy || "").split(/\s+/).filter(Boolean), ...(error ? [errorId] : [])])].join(" ") || undefined;
 
   const selected = React.useMemo(() => fromISO(value), [value]);
   const minD = React.useMemo(() => fromISO(min), [min]);
@@ -144,13 +150,20 @@ export function DatePicker({
     setPlacement(p);
   }, [open]);
 
-  React.useEffect(() => { if (open) dayRef.current?.focus(); }, [open, cursor]);
+  React.useEffect(() => {
+    // Opening and day-grid navigation move focus to the active day. Month buttons
+    // retain focus while enabled so users can advance repeatedly. Browsers may
+    // retain a disabled month's focus at a bound; move it to the available day.
+    const active = document.activeElement;
+    if (open && (!calRef.current?.contains(active) || active?.classList.contains("mds-date-day") || active?.matches(":disabled"))) dayRef.current?.focus();
+  }, [open, cursor]);
 
   const openCal = () => {
     if (disabled) return;
     setCursor(selected || clampDate(new Date(), minD, maxD));
     setOpen(true);
   };
+  const moveMonth = (delta) => setCursor(clampDate(addMonths(cursor, delta), minD, maxD));
   const close = (refocus = true) => {
     setOpen(false);
     setPlacement("");
@@ -178,8 +191,11 @@ export function DatePicker({
     else if (e.key === "Escape" && open) { e.preventDefault(); e.stopPropagation(); close(); }
   };
 
-  const onGridKey = (e) => {
+  const onDialogKey = (e) => {
     if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); close(); return; }
+  };
+
+  const onGridKey = (e) => {
     if (!e.target.classList.contains("mds-date-day")) return;
     const k = e.key;
     let next = null;
@@ -192,19 +208,17 @@ export function DatePicker({
     else if (k === "PageUp") next = addMonths(cursor, e.shiftKey ? -12 : -1);
     else if (k === "PageDown") next = addMonths(cursor, e.shiftKey ? 12 : 1);
     else if (k === "Enter" || k === " ") return; // Native day button commits its own date.
-    else if (k === "Escape") { e.preventDefault(); e.stopPropagation(); close(); return; }
-    else if (k === "Tab") { close(); return; }
     if (next) { e.preventDefault(); setCursor(next); }
   };
 
   const weeks = React.useMemo(() => weeksFor(cursor, weekStartsOn), [cursor, weekStartsOn]);
   const dow = React.useMemo(() => dowLabels(weekStartsOn), [weekStartsOn]);
   const today = new Date();
-  const prevBlocked = minD && new Date(cursor.getFullYear(), cursor.getMonth(), 0) < minD;
-  const nextBlocked = maxD && new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1) > maxD;
+  const prevBlocked = minD && calendarDate(cursor.getFullYear(), cursor.getMonth(), 0) < minD;
+  const nextBlocked = maxD && calendarDate(cursor.getFullYear(), cursor.getMonth() + 1, 1) > maxD;
 
   return (
-    <div ref={rootRef} {...rest}>
+    <div ref={rootRef} {...containerProps}>
       {label && (
         <label className="mds-date-label" htmlFor={base}>
           {label}{required && <span className="mds-date-req" aria-hidden="true">*</span>}
@@ -224,9 +238,11 @@ export function DatePicker({
             value={draft}
             disabled={disabled}
             aria-label={!label ? ariaLabel : undefined}
-            aria-invalid={error ? true : undefined}
-            aria-describedby={error ? errorId : undefined}
-            aria-required={required || undefined}
+            aria-labelledby={labelledBy}
+            aria-invalid={error ? true : invalid}
+            aria-describedby={feedbackIds}
+            aria-errormessage={errorMessage}
+            aria-required={required ? true : ariaRequired}
             onChange={(e) => setDraft(e.target.value)}
             onBlur={commitTyped}
             onKeyDown={onFieldKey}
@@ -248,15 +264,15 @@ export function DatePicker({
         </div>
         {open && (
           <div ref={calRef} className={`mds-date-cal${placement}`} role="dialog" aria-modal="false"
-            aria-label={label ? `${label} calendar` : "Choose date"} onKeyDown={onGridKey}>
+            aria-label={label ? `${label} calendar` : "Choose date"} onKeyDown={onDialogKey}>
             <div className="mds-date-header">
               <button type="button" className="mds-date-nav" disabled={prevBlocked} aria-label="Previous month"
-                onClick={() => setCursor(addMonths(cursor, -1))}>‹</button>
+                onClick={() => moveMonth(-1)}>‹</button>
               <span className="mds-date-title" aria-live="polite">{monthTitle(cursor)}</span>
               <button type="button" className="mds-date-nav" disabled={nextBlocked} aria-label="Next month"
-                onClick={() => setCursor(addMonths(cursor, 1))}>›</button>
+                onClick={() => moveMonth(1)}>›</button>
             </div>
-            <table className="mds-date-grid" role="grid" id={gridId} aria-label={monthTitle(cursor)}>
+            <table className="mds-date-grid" role="grid" id={gridId} aria-label={monthTitle(cursor)} onKeyDown={onGridKey}>
               <thead>
                 <tr>{dow.map((d) => <th key={d} className="mds-date-dow" scope="col" abbr={d}>{d}</th>)}</tr>
               </thead>

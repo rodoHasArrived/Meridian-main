@@ -40,8 +40,12 @@ public sealed record LedgerCashFlowStatement(
     /// <summary>Sum of operating, investing, and financing cash flows.</summary>
     public decimal NetCashFlow => OperatingCashFlow + InvestingCashFlow + FinancingCashFlow;
 
+    /// <summary>Functional cash carrying-value changes with no transaction-currency cash flow.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    public decimal ExchangeRateEffects { get; init; }
+
     /// <summary>Difference between the roll-forward and the observed ending cash. Zero when reconciled.</summary>
-    public decimal ReconciliationVariance => BeginningCash + NetCashFlow - EndingCash;
+    public decimal ReconciliationVariance => BeginningCash + NetCashFlow + ExchangeRateEffects - EndingCash;
 
     /// <summary>True when the statement ties beginning cash plus net flow to ending cash.</summary>
     public bool IsReconciled => Math.Abs(ReconciliationVariance) <= LedgerToleranceConstants.Balance;

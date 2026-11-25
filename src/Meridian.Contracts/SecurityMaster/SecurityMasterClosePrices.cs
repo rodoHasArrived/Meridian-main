@@ -82,6 +82,8 @@ public static class SecurityClosePriceEvidence
                 Block("UnsupportedPrice", "A positive close price with an explicit supported quote unit is required.");
             if (line.Observations.Any(p => p.Unit != line.Unit || p.Unit == SecurityPriceUnit.Unspecified || !Enum.IsDefined(p.Unit)))
                 Block("IncomparableUnits", "Retained source observations have unsupported or different quote units; no undeclared conversion is permitted.");
+            if (line.Observations.Any(p => !SecurityPriceQuotationEvidence.EconomicallyComparable(p.Quotation, selected.Quotation)))
+                Block("IncomparableQuotationBasis", "Retained observations differ in clean/dirty quotation or settlement basis; normalize and review before close approval.");
             if (line.Override is { } manual && (string.IsNullOrWhiteSpace(manual.Rationale)
                 || string.IsNullOrWhiteSpace(manual.EvidenceReference) || manual.Unit != selected.Unit))
                 Block("UnsupportedOverride", "An override requires rationale, supporting evidence and the selected source's quote unit.");
@@ -147,8 +149,8 @@ public static class SecurityClosePriceEvidence
                     || line.ClosePrice != (line.Override?.Price ?? selection.GoldenCopyPrice)
                     || line.Unit != (line.Override?.Unit ?? selection.Unit))
                     throw new ArgumentException("Close selection evidence, units and final price must agree with the retained scope and cutoffs.");
-                var observations = new[] { new SecurityRawPriceDto(selection.SelectedSource, selection.GoldenCopyPrice, selection.PriceAsOf, selection.Unit) }
-                    .Concat(selection.ComparisonPrices.Select(p => new SecurityRawPriceDto(p.SourceId, p.Price, p.PriceAsOf, p.Unit)))
+                var observations = new[] { new SecurityRawPriceDto(selection.SelectedSource, selection.GoldenCopyPrice, selection.PriceAsOf, selection.Unit) { Quotation = selection.Quotation } }
+                    .Concat(selection.ComparisonPrices.Select(p => new SecurityRawPriceDto(p.SourceId, p.Price, p.PriceAsOf, p.Unit) { Quotation = p.Quotation }))
                     .OrderBy(p => p.SourceId, StringComparer.Ordinal).ToArray();
                 if (!observations.SequenceEqual(line.Observations))
                     throw new ArgumentException("Close observations must retain the exact selection and comparison source rows.");

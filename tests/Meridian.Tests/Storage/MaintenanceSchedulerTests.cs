@@ -21,6 +21,170 @@ public sealed class MaintenanceSchedulerTests : IDisposable
             Directory.Delete(_defaultHistoryRoot, recursive: true);
     }
 
+    [Theory]
+    [InlineData("2026-07-13T21:00:00Z", false)] // 17:00 EDT
+    [InlineData("2026-07-14T01:00:00Z", true)]  // Monday 21:00 EDT
+    [InlineData("2026-11-10T02:00:00Z", true)]  // Monday 21:00 EST
+    public async Task CanRunNowAsync_UsesConfiguredTimeZone(string utcNow, bool expectedAllowed)
+    {
+        await using var scheduler = CreateScheduler(
+            config: OvernightConfig(DayOfWeek.Monday),
+            clock: new FixedTimeProvider(DateTimeOffset.Parse(utcNow)));
+
+        var decision = await scheduler.CanRunNowAsync(MaintenanceType.Backup, new ResourceRequirements());
+
+        decision.Allowed.Should().Be(expectedAllowed);
+    }
+
+    [Theory]
+    [InlineData("2026-11-14T06:00:00Z", true)]  // Saturday 01:00 belongs to Friday
+    [InlineData("2026-11-13T06:00:00Z", false)] // Friday 01:00 belongs to Thursday
+    [InlineData("2026-11-14T08:00:00Z", false)] // End is exclusive
+    public async Task CanRunNowAsync_OvernightWindowUsesItsStartingWeekday(string utcNow, bool expectedAllowed)
+    {
+        await using var scheduler = CreateScheduler(
+            config: OvernightConfig(DayOfWeek.Friday),
+            clock: new FixedTimeProvider(DateTimeOffset.Parse(utcNow)));
+
+        var decision = await scheduler.CanRunNowAsync(MaintenanceType.Backup, new ResourceRequirements());
+
+        decision.Allowed.Should().Be(expectedAllowed);
+    }
+
+    [Fact]
+    public async Task FindNextWindowAsync_AfterMidnightRejectsJobsLongerThanRemainingWindow()
+    {
+        var now = DateTimeOffset.Parse("2026-11-10T06:00:00Z"); // Tuesday 01:00 EST
+        await using var scheduler = CreateScheduler(
+            config: OvernightConfig(DayOfWeek.Monday), clock: new FixedTimeProvider(now));
+
+        var fitting = await scheduler.FindNextWindowAsync(
+            MaintenanceType.Backup, TimeSpan.FromHours(2), new ResourceRequirements());
+        var tooLong = await scheduler.FindNextWindowAsync(
+            MaintenanceType.Backup, TimeSpan.FromHours(3), new ResourceRequirements());
+
+        fitting!.Start.Should().Be(now);
+        fitting.End.Should().Be(DateTimeOffset.Parse("2026-11-10T08:00:00Z"));
+        tooLong!.Start.Should().Be(DateTimeOffset.Parse("2026-11-17T02:00:00Z"));
+    }
+
+    [Fact]
+    public async Task GetStateAsync_ReportsActualNextWindowDate()
+    {
+        var now = DateTimeOffset.Parse("2026-11-10T12:00:00Z");
+        await using var scheduler = CreateScheduler(
+            config: OvernightConfig(DayOfWeek.Monday), clock: new FixedTimeProvider(now));
+
+        var state = await scheduler.GetStateAsync();
+        var decision = await scheduler.CanRunNowAsync(MaintenanceType.Backup, new ResourceRequirements());
+
+        state.NextMaintenanceWindowStart.Should().Be(DateTimeOffset.Parse("2026-11-17T02:00:00Z"));
+        decision.WaitTime.Should().Be(state.NextMaintenanceWindowStart - now);
+    }
+
+    [Theory]
+    [InlineData("2026-03-08T02:00:00Z", 5)] // Saturday 21:00 EST through Sunday 03:00 EDT
+    [InlineData("2026-11-01T01:00:00Z", 7)] // Saturday 21:00 EDT through Sunday 03:00 EST
+    public async Task FindNextWindowAsync_UsesBoundaryOffsetsAcrossDaylightSavingChanges(string utcNow, int elapsedHours)
+    {
+        var now = DateTimeOffset.Parse(utcNow);
+        await using var scheduler = CreateScheduler(
+            config: OvernightConfig(DayOfWeek.Saturday), clock: new FixedTimeProvider(now));
+
+        var slot = await scheduler.FindNextWindowAsync(
+            MaintenanceType.Backup, TimeSpan.Zero, new ResourceRequirements());
+
+        (slot!.End - slot.Start).Should().Be(TimeSpan.FromHours(elapsedHours));
+    }
+
+    [Theory]
+    [InlineData("2026-11-01T05:45:00Z", false)] // First 01:45 is before the resolved 01:30 EST start
+    [InlineData("2026-11-01T06:45:00Z", true)]
+    public async Task CanRunNowAsync_RepeatedHourUsesSameBoundariesAsFutureSlots(string utcNow, bool allowed)
+    {
+        var config = OvernightConfig(DayOfWeek.Sunday) with
+        {
+            MaintenanceWindows = [new MaintenanceWindow(
+                "repeated-hour", TimeSpan.FromMinutes(90), TimeSpan.FromMinutes(150),
+                [DayOfWeek.Sunday], [], Limits: new ResourceLimits())]
+        };
+        await using var scheduler = CreateScheduler(
+            config: config, clock: new FixedTimeProvider(DateTimeOffset.Parse(utcNow)));
+
+        var decision = await scheduler.CanRunNowAsync(MaintenanceType.Backup, new ResourceRequirements());
+        var slot = await scheduler.FindNextWindowAsync(MaintenanceType.Backup, TimeSpan.Zero, new ResourceRequirements());
+
+        decision.Allowed.Should().Be(allowed);
+        slot!.Start.Should().Be(DateTimeOffset.Parse(allowed ? "2026-11-01T06:45:00Z" : "2026-11-01T06:30:00Z"));
+        slot.End.Should().Be(DateTimeOffset.Parse("2026-11-01T07:30:00Z"));
+    }
+
+    [Fact]
+    public async Task Scheduler_FutureJobDoesNotBlockDueJobBehindIt()
+    {
+        var now = DateTimeOffset.Parse("2026-11-10T06:00:00Z");
+        await using var scheduler = CreateScheduler(
+            config: OvernightConfig(DayOfWeek.Monday), clock: new FixedTimeProvider(now));
+        var future = CreateJob(MaintenanceType.Backup) with { EstimatedDuration = TimeSpan.FromHours(3) };
+        var due = CreateJob(MaintenanceType.Backup) with { EstimatedDuration = TimeSpan.Zero };
+        await scheduler.ScheduleAsync(future, new ScheduleOptions());
+        await scheduler.ScheduleAsync(due, new ScheduleOptions());
+
+        scheduler.Start();
+        await WaitUntilAsync(() => scheduler.GetJobStatus(due.Id) is not null, "the due job must be processed");
+
+        scheduler.GetPendingJobs().Should().ContainSingle(job => job.Id == future.Id);
+        scheduler.GetJobStatus(future.Id).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Scheduler_DelayedJobMustStillFitInRemainingWindow()
+    {
+        var clock = new FixedTimeProvider(DateTimeOffset.Parse("2026-11-10T02:00:00Z"));
+        await using var scheduler = CreateScheduler(config: OvernightConfig(DayOfWeek.Monday), clock: clock);
+        var delayed = CreateJob(MaintenanceType.Backup) with { EstimatedDuration = TimeSpan.FromHours(2) };
+        await scheduler.ScheduleAsync(delayed, new ScheduleOptions());
+        clock.Now = DateTimeOffset.Parse("2026-11-10T07:00:00Z"); // Tuesday 02:00 EST
+
+        // Start processes the queue synchronously until its polling delay when no
+        // admission is attempted; the delayed job must remain queued for a later window.
+        scheduler.Start();
+
+        scheduler.GetPendingJobs().Should().ContainSingle(job => job.Id == delayed.Id);
+        scheduler.GetRunningJobs().Should().BeEmpty();
+        scheduler.GetJobStatus(delayed.Id).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Scheduler_ReservesConcurrencyBeforeRunningHistoryWriteCompletes()
+    {
+        var history = new DelayedRunningHistoryStore(_defaultHistoryRoot);
+        await using var scheduler = CreateScheduler(
+            history: history,
+            config: AlwaysOpenConfig() with
+            {
+                MaintenanceWindows = [AlwaysOpenConfig().MaintenanceWindows[0] with { MaxConcurrentJobs = 1 }]
+            });
+        var first = CreateJob(MaintenanceType.Backup) with { EstimatedDuration = TimeSpan.Zero };
+        var second = CreateJob(MaintenanceType.Backup) with { EstimatedDuration = TimeSpan.Zero };
+        await scheduler.ScheduleAsync(first, new ScheduleOptions());
+        await scheduler.ScheduleAsync(second, new ScheduleOptions());
+
+        try
+        {
+            scheduler.Start();
+            await WaitUntilAsync(() => history.RunningAppendAttempts > 0, "the first job must reach admission");
+
+            history.RunningAppendAttempts.Should().Be(1);
+            scheduler.GetRunningJobs().Should().ContainSingle(job => job.Id == first.Id);
+            scheduler.GetPendingJobs().Should().ContainSingle(job => job.Id == second.Id);
+        }
+        finally
+        {
+            history.Release.TrySetResult();
+        }
+    }
+
     [Fact]
     public void ComputeInputHash_IsCollisionSafeAndIncludesMaterialSettings()
     {
@@ -520,14 +684,58 @@ public sealed class MaintenanceSchedulerTests : IDisposable
         IDataQualityService? quality = null,
         OperationalScheduleConfig? config = null,
         IFileMaintenanceService? files = null,
-        ITierMigrationService? migration = null) =>
+        ITierMigrationService? migration = null,
+        TimeProvider? clock = null) =>
         new(
             config ?? new OperationalScheduleConfig(),
             files ?? Substitute.For<IFileMaintenanceService>(),
             migration ?? Substitute.For<ITierMigrationService>(),
             quality ?? Substitute.For<IDataQualityService>(),
             search,
-            history ?? new FileOperationalCaseHistoryStore(_defaultHistoryRoot));
+            history ?? new FileOperationalCaseHistoryStore(_defaultHistoryRoot),
+            clock);
+
+    private static OperationalScheduleConfig OvernightConfig(DayOfWeek startingDay) =>
+        new(
+            "Overnight",
+            [],
+            [new MaintenanceWindow(
+                "overnight", TimeSpan.FromHours(21), TimeSpan.FromHours(3), [startingDay], [],
+                Limits: new ResourceLimits())],
+            [],
+            TimeZoneInfo.FindSystemTimeZoneById("America/New_York"));
+
+    private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
+    {
+        public DateTimeOffset Now { get; set; } = now;
+        public override DateTimeOffset GetUtcNow() => Now;
+    }
+
+    private sealed class DelayedRunningHistoryStore(string root) : IOperationalCaseHistoryStore
+    {
+        private readonly FileOperationalCaseHistoryStore _inner = new(root);
+        private int _runningAppendAttempts;
+        public int RunningAppendAttempts => Volatile.Read(ref _runningAppendAttempts);
+        public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public async ValueTask<OperationalCaseHistoryRecord> AppendAsync(
+            OperationalCaseHistoryAppendRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            if (request.EventType == "maintenance.running")
+            {
+                Interlocked.Increment(ref _runningAppendAttempts);
+                await Release.Task.WaitAsync(cancellationToken);
+            }
+
+            return await _inner.AppendAsync(request, cancellationToken);
+        }
+
+        public ValueTask<IReadOnlyList<OperationalCaseHistoryRecord>> ReadAsync(
+            OperationalCaseHistoryQuery query,
+            CancellationToken cancellationToken = default) =>
+            _inner.ReadAsync(query, cancellationToken);
+    }
 
     private static DataQualityReport QualityReport(int attempted, int succeeded, int failed) =>
         new(

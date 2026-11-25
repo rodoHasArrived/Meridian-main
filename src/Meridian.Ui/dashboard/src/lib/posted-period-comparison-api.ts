@@ -21,11 +21,16 @@ export interface PostedPeriodComparison {
   current: PostedComparisonRange; baseline: PostedComparisonRange | null;
   lines: PostedComparisonLine[]; currentJournalIds: string[]; baselineJournalIds: string[];
   populationHash: string; dimensions: Record<string, unknown> | null;
+  /** What the figures are: activity within each period, or cumulative balances at each period end. Absent from older hosts means Movements. */
+  measure?: PostedComparisonMeasure;
 }
+export type PostedComparisonMeasure = "Movements" | "ClosingBalances";
 export interface PostedComparisonQuery {
   bookId: string; periodId: string; baselinePeriodId?: string | null; asOf?: string | null;
   accountingBasis?: string;
   dimensions?: Record<string, string>;
+  /** Defaults to Movements on the server. */
+  measure?: PostedComparisonMeasure;
 }
 
 export async function getPostedPeriodComparison(query: PostedComparisonQuery, options: ApiRequestOptions = {}): Promise<PostedPeriodComparison> {
@@ -33,6 +38,7 @@ export async function getPostedPeriodComparison(query: PostedComparisonQuery, op
   if (query.baselinePeriodId) params.set("baselinePeriodId", query.baselinePeriodId);
   if (query.asOf) params.set("asOf", query.asOf);
   if (query.accountingBasis) params.set("accountingBasis", query.accountingBasis);
+  if (query.measure) params.set("measure", query.measure);
   const suffix = params.toString();
   const result = await getJson<PostedPeriodComparison>(`/api/ledger/books/${encodeURIComponent(query.bookId)}/periods/${encodeURIComponent(query.periodId)}/comparison${suffix ? `?${suffix}` : ""}`, { ...options, allowDevelopmentFallback: false });
   const equalId = (left: string | undefined, right: string) => typeof left === "string" && left.toLowerCase() === right.toLowerCase();
@@ -43,6 +49,10 @@ export async function getPostedPeriodComparison(query: PostedComparisonQuery, op
   }
   if (query.accountingBasis && (typeof result.accountingBasis !== "string" || result.accountingBasis.toLowerCase() !== query.accountingBasis.toLowerCase())) {
     throw new Error("The comparison response does not match the selected accounting basis.");
+  }
+  // A host that ignored the measure would return movements; never show them as balances.
+  if ((result.measure ?? "Movements") !== (query.measure ?? "Movements")) {
+    throw new Error("The comparison response does not match the requested measure.");
   }
   if (query.asOf && (!Number.isFinite(Date.parse(query.asOf)) || Date.parse(result.asOf) !== Date.parse(query.asOf))) {
     throw new Error("The comparison response does not match the selected as-of cutoff.");

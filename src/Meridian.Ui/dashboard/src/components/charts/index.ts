@@ -3,6 +3,8 @@
 export { ChartCard } from "./ChartCard";
 export type { ChartCardProps, ChartReadoutItem } from "./ChartCard";
 
+export type { ChartA11yProps, ChartAccessibleData } from "./chart-a11y";
+
 export { CandleChart } from "./CandleChart";
 export type { CandleChartProps, Candle, CandleOverlay } from "./CandleChart";
 

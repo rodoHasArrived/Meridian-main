@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-31
+**Reviewed:** 2026-11-23
 
 This is the canonical developer and agent entrypoint for Meridian engineering and contribution work.
 
@@ -17,11 +17,13 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **Source ownership:** [Source registry](../source/README.md)
 - **Roadmap truth:** [Roadmap registry](../roadmap/README.md)
 - **Generated output rules:** [Documentation ownership](../documentation-ownership.md)
+- **CI-produced files and reviewed snapshots:** [Generated output delivery](generated-output-delivery.md)
 - **Detailed implementation and tooling guides:** [Development](../development/README.md)
 - **Writing or moving docs:** [Documentation Contribution Guide](../development/documentation-contribution-guide.md)
 - **Dead-code cleanup inventory:** [Dead-Code Inventory](dead-code-inventory.md)
 - **Production readiness and test debt:** [Production Readiness Audit 2026-07-27](production-readiness-audit-2026-07-27.md)
-- **Security Master architecture review:** [Rolling review and October dispositions](../architecture/security-master-extensibility-review.md#consolidated-october-review-and-dispositions--2026-10-28), with the [remediation working plan](plans/security-master-review-remediation-plan.md). The [2026-08-13 audit](security-master-architecture-audit-2026-08-13.md) remains historical evidence.
+- **Security Master architecture review:** [Archived review and October dispositions](../../archive/docs/architecture/security-master-extensibility-review.md#consolidated-october-review-and-dispositions--2026-10-28), with the [remediation working plan](plans/security-master-review-remediation-plan.md). The [2026-08-13 audit](security-master-architecture-audit-2026-08-13.md) remains historical evidence.
+- **Adding a Security Master asset class:** [the file-by-file checklist](security-master-adding-an-asset-class.md) for a new first-class kind or a CustomAsset promotion target.
 - **WPF performance and UI/UX audit:** [WPF Performance & UI/UX Refinement Audit 2026-06-14](wpf-perf-uiux-audit-2026-06-14.md) *(dated; its changes were not compiled or run when written)*
 - **Release-evidence working ledger:** [Production-Certification Evidence Chain](production-certification-evidence-chain.md)
 - **CI/CD ownership and rollout:** [CI/CD validation ownership](ci-cd-optimization.md)
@@ -41,6 +43,7 @@ Use the source-module registry and source README workflow before changing code:
 - [Architecture](../architecture/README.md) *(canonical system design and rationale)*
 - [Module map](../architecture/module-map.md) *(maintained boundary reference; module ownership is registered in `source/data/source-modules.yml`)*
 - [Project structure](../architecture/project-structure.md) *(maintained repository overview)*
+- [Execution workflows](execution-workflows.md) *(preview, operational journal, alerts, controlled strategy comparison and opt-in paper probe)*
 - [Live trading engine](live-trading-engine.md) *(promotion → execution loop: feed tap, strategy sessions, OMS routing)*
 - [ETL execution ownership](etl-execution-ownership.md) *(single-run admission, guarded publication, takeover, and commit ordering)*
 
@@ -156,13 +159,20 @@ Focused checks and environment diagnostics do not replace the required hosted ch
 GitHub Actions `Meridian CI / quality-gate` is the authoritative merge result. Local work may
 happen on `main` when the user explicitly requests it or the checkout is intentionally operating
 there. Do not bypass GitHub branch protections; for PR-ready publishing, use a
-`codex/<short-task-name>` branch and a pull request targeting `main`.
+`codex/<short-task-name>` or `claude/<short-task-name>` branch (either agent prefix is accepted)
+and a pull request targeting `main`.
 
 The four-lane `Meridian CI / quality-gate` keeps its identity. The always-reported
 `Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
 Production Certification, including pull requests and merge groups.
 
-For tracked-output drift or conflicts after updating from main, prepare a candidate without
+Eligible PRs use the [hosted repair bot](generated-merge-recovery.md#hosted-pr-repair) for routine
+workstation, contract-manifest, and documentation regeneration in one commit. Commit authored
+inputs and let the bot repair generated output; required same-commit freshness checks still apply.
+The bot must first be [configured by the owner](ci-cd-optimization.md#generated-repair-and-maintenance-activation).
+Generator, dependency, and policy changes remain on the contributor review path.
+
+For local tracked-output drift or conflicts after updating from main, prepare a candidate without
 changing your branch or index:
 
 ```powershell
@@ -194,7 +204,9 @@ the sequential test default; set
 `MERIDIAN_CI_TEST_MAX_PARALLEL=2` only when local capacity permits. Each shard uses isolated
 temporary files and retains its logs, TRX results, and duration under
 `artifacts/test-results/dotnet/`; temporary fixture files are removed after the shard exits.
-The project roster, catch-all shard, filters, and failure aggregation remain the same.
+The project roster, catch-all shard, and failure aggregation remain the same. The serial
+`WorkstationEndpointsTests` class runs as three disjoint process shards selected by method-name
+prefix; the base shard keeps every method the other two do not name.
 Golden Path runs browser, WPF, and pilot harness validation concurrently, then requires
 all three successes in the stable `Pilot Acceptance Evidence` gate. See the
 [workflow guide](../../.github/workflows/README.md) for the execution and evidence details.
@@ -399,7 +411,8 @@ for evidence paths and local working-tree details.
 The [machine-readable migration reservation register](../../database/migration-reservations.json)
 owns pending ordinal claims; the [blueprint table](blueprints/README.md#ledger-migration-ordinals)
 is generated from it and existing SQL filenames. `new-migration` advances past the highest on-disk
-ordinal and skips reservations. An explicit `--ordinal N` also refuses occupied or reserved numbers.
+ordinal and skips reservations and retired ordinals. An explicit `--ordinal N` also refuses occupied,
+reserved, or retired numbers (Security Master `061` and `063` are retired and never reused).
 Release a pending claim before scaffolding its implementation, and run
 `python build/scripts/schema-control.py generate-migration-docs` after editing reservations.
 Preserve applied filenames and ordinals, including the two historical Ledger `008` scripts.
@@ -560,6 +573,14 @@ python3 build/scripts/docs/mark-stale-docs.py --write --summary
 ```
 
 ## Supporting Detail and Historical Sources
+
+Focused engineering references:
+
+- [C#/TypeScript Contract Parity](contract-type-parity.md) *(registry-driven structural parity gate and exemption ratchet)*
+- [Financial Values and Amount Passports](financial-value-pattern.md) *(browser `FinancialValue` entry point and scoped Amount passports)*
+- [Archive Compression and Replay Safety](archive-compression-replay-safety.md) *(recoverable `.jsonl` → `.jsonl.gz` publication protocol)*
+
+Supporting and historical sources:
 
 - [Development Guides](../development/README.md) *(active supporting implementation detail)*
 - [Desktop Testing Guide](../development/desktop-testing-guide.md) *(active supporting WPF detail)*

@@ -5,13 +5,21 @@
 // regardless of host locale, and all accept null/undefined/non-finite input,
 // rendering the configurable `fallback` instead.
 //
-// SCOPE: this is the default formatting convention for the workstation. Accounting
-// surfaces (ledger, statements, journal grids) intentionally use the statement
-// convention in `components/accounting/money.ts` (parenthesized negatives, zero-dash);
-// the two conventions differ by design — see the note in that file.
+// MONEY: `formatMoney` below is the one money formatter. It reads numbers and decimal strings
+// exactly through `@/lib/exact-decimal` (the single rounding, sign and grouping implementation)
+// and spells them in one of two conventions: `screen` (Intl symbols, "-") for workstation screens
+// and `statement` (the accounting symbol table, U+2212 "−", optional parentheses and zero-dash)
+// for ledgers, statements and journal grids. `components/accounting/money.ts` is a thin
+// statement-convention wrapper over it.
 //
-// STYLE GUIDE: the "Number style" section of the dashboard README is the operator-facing
-// contract these helpers implement (signed P&L, the "P&L" spelling, currency codes, decimals).
+// STYLE GUIDE: the "Number style" and "Formatting" sections of the dashboard README are the
+// operator-facing contract these helpers implement (signed P&L, the "P&L" spelling, currency
+// codes, decimals, timestamps and the display time zone).
+
+import { DEFAULT_DISPLAY_TIME_ZONE, getDisplayTimeZone } from "@/lib/display-time-zone";
+import { formatExactMagnitude, parseExactDecimal, type MoneyValue } from "@/lib/exact-decimal";
+
+export type { MoneyValue } from "@/lib/exact-decimal";
 
 const FORMAT_LOCALE = "en-US";
 const DEFAULT_FALLBACK = "—";
@@ -21,10 +29,22 @@ export type NullableNumber = number | null | undefined;
 export interface NumberFormatOptions {
   minimumFractionDigits?: number;
   maximumFractionDigits?: number;
+  /** Scientific notation preserves tiny nonzero observations without rounding them to zero. */
+  notation?: Intl.NumberFormatOptions["notation"];
   /** Thousands separators; false for a value typed back into an input, e.g. "1234.5". @default true */
   useGrouping?: boolean;
   /** Rendered when the value is null, undefined, or not finite. */
   fallback?: string;
+}
+
+export interface SignableNumberFormatOptions extends NumberFormatOptions {
+  /** Explicit "+" on positives and "-" on negatives; zero (including -0) stays unsigned, e.g. "+1,234.5". */
+  signed?: boolean;
+}
+
+/** "+" for a positive value, "-" for a negative one, "" for zero, so the sign follows the value, not its rounding. */
+function signPrefix(value: number): string {
+  return value > 0 ? "+" : value < 0 ? "-" : "";
 }
 
 export interface CurrencyFormatOptions extends NumberFormatOptions {
@@ -43,14 +63,44 @@ function isRenderable(value: NullableNumber): value is number {
   return typeof value === "number" && Number.isFinite(value);
 }
 
-/** Grouped plain number, e.g. "1,234.56". */
-export function formatNumber(value: NullableNumber, options: NumberFormatOptions = {}): string {
-  const { minimumFractionDigits, maximumFractionDigits = 2, useGrouping, fallback = DEFAULT_FALLBACK } = options;
+/** Grouped plain number, e.g. "1,234.56"; `signed` gives "+1,234.56" / "-1,234.56". */
+export function formatNumber(value: NullableNumber, options: SignableNumberFormatOptions = {}): string {
+  const { minimumFractionDigits, maximumFractionDigits = 2, notation, useGrouping, signed = false, fallback = DEFAULT_FALLBACK } = options;
   if (!isRenderable(value)) {
     return fallback;
   }
 
-  return value.toLocaleString(FORMAT_LOCALE, { minimumFractionDigits, maximumFractionDigits, useGrouping });
+  const localeOptions = { minimumFractionDigits, maximumFractionDigits, notation, useGrouping };
+  if (signed) {
+    return `${signPrefix(value)}${Math.abs(value).toLocaleString(FORMAT_LOCALE, localeOptions)}`;
+  }
+  return value.toLocaleString(FORMAT_LOCALE, localeOptions);
+}
+
+/**
+ * Display number with exactly `digits` fraction digits, grouped and locale-pinned, e.g.
+ * `formatDecimal(1234.5, 2)` -> "1,234.50", `formatDecimal(0.84, 2)` -> "0.84". This is the
+ * replacement for a displayed `value.toFixed(digits)`; `signed` gives "+0.84" / "-0.84".
+ * Ties round on the shortest decimal form, so 0.35 at one digit reads "0.4" (toFixed gives "0.3").
+ */
+export function formatDecimal(
+  value: NullableNumber,
+  digits: number,
+  options: Omit<SignableNumberFormatOptions, "minimumFractionDigits" | "maximumFractionDigits"> = {}
+): string {
+  // -0 reads "0.00" as it did under toFixed, not "-0.00".
+  return formatNumber(value === 0 ? 0 : value, { ...options, minimumFractionDigits: digits, maximumFractionDigits: digits });
+}
+
+/**
+ * Machine-readable fixed-point string for values a browser parses rather than an operator reads:
+ * SVG path coordinates, polyline points and CSS lengths, e.g. `formatFixed(12.5, 2)` -> "12.50".
+ * Never grouped and never localized, with exactly `Number#toFixed` digits (exact binary rounding,
+ * "NaN" for NaN) so geometry stays byte-stable. Do not use it for a displayed figure: a number an
+ * operator reads goes through `formatDecimal`, `formatNumber`, `formatPercent` or `formatMoney`.
+ */
+export function formatFixed(value: number, digits: number): string {
+  return value.toFixed(digits);
 }
 
 // PERCENT UNITS: the workstation carries percent-like values in two different units,
@@ -62,8 +112,8 @@ export function formatNumber(value: NullableNumber, options: NumberFormatOptions
 // `maxDrawdownPercent`, which arrives as a fraction from the walk-forward path and
 // as percent units from the live-metrics path.
 
-/** Percent display for values already expressed in percent units, e.g. 42.5 -> "42.5%". */
-export function formatPercent(value: NullableNumber, options: NumberFormatOptions = {}): string {
+/** Percent display for values already expressed in percent units, e.g. 42.5 -> "42.5%"; `signed` gives "+42.5%". */
+export function formatPercent(value: NullableNumber, options: SignableNumberFormatOptions = {}): string {
   const { fallback = DEFAULT_FALLBACK } = options;
   if (!isRenderable(value)) {
     return fallback;
@@ -72,8 +122,8 @@ export function formatPercent(value: NullableNumber, options: NumberFormatOption
   return `${formatNumber(value, options)}%`;
 }
 
-/** Percent display for values expressed as a fraction of 1, e.g. 0.425 -> "42.5%". */
-export function formatRatioAsPercent(value: NullableNumber, options: NumberFormatOptions = {}): string {
+/** Percent display for values expressed as a fraction of 1, e.g. 0.425 -> "42.5%"; `signed` gives "+42.5%". */
+export function formatRatioAsPercent(value: NullableNumber, options: SignableNumberFormatOptions = {}): string {
   const { fallback = DEFAULT_FALLBACK } = options;
   if (!isRenderable(value)) {
     return fallback;
@@ -116,7 +166,7 @@ export function formatPrefixedCurrency(value: NullableNumber, options: NumberFor
   }
 
   const prefix = value < 0 ? "-$" : "$";
-  return `${prefix}${formatNumber(Math.abs(value), options)}`;
+  return `${prefix}${formatNumber(Math.abs(value), { ...options, signed: false })}`;
 }
 
 /** Explicitly signed dollar amount, e.g. "+$1,234" / "-$1,234". */
@@ -131,7 +181,7 @@ export function formatSignedCurrency(value: NullableNumber, options: SignedCurre
   }
 
   const prefix = value < 0 ? "-$" : "+$";
-  return `${prefix}${formatNumber(Math.abs(value), options)}`;
+  return `${prefix}${formatNumber(Math.abs(value), { ...options, signed: false })}`;
 }
 
 /** Compact dollar amount, e.g. "$1.2M", "$3.4K", "-$512". */
@@ -175,30 +225,76 @@ export function pluralizeCount(count: number, singular: string, options: Plurali
   return `${renderedCount} ${count === 1 ? singular : plural}`;
 }
 
-/** Amount with an ISO code suffix and no symbol, e.g. "1,234.56 USD". */
+// Vowel-initial words that start with a consonant sound ("a user", "a one-time", "a European").
+const CONSONANT_SOUND_VOWEL_START = /^(?:uni|us[aeu]|ut[eio]|eu|one|once|ubiq)/i;
+// Consonant-initial words that start with a vowel sound ("an hour", "an honest").
+const VOWEL_SOUND_CONSONANT_START = /^(?:hour|honest|honou?r|heir)/i;
+
+/**
+ * A word or phrase with the right indefinite article: "an Operator session", "a Viewer session".
+ * Use it wherever a generated sentence puts "a" before a name it does not control.
+ */
+export function withIndefiniteArticle(phrase: string): string {
+  const word = phrase.trim();
+  const vowelSound = /^[aeiou]/i.test(word)
+    ? !CONSONANT_SOUND_VOWEL_START.test(word)
+    : VOWEL_SOUND_CONSONANT_START.test(word);
+  return `${vowelSound ? "an" : "a"} ${word}`;
+}
+
+/**
+ * A count out of a named population, e.g. "1 of 5 providers". Every KPI that shows a part of a
+ * whole uses this, so the denominator always says what it counts and two figures over different
+ * populations cannot be read as contradicting each other.
+ */
+export function formatCountOfTotal(count: number, total: number, singular: string, options: PluralizeCountOptions = {}): string {
+  return `${count} of ${pluralizeCount(total, singular, options)}`;
+}
+
+/** Amount with an ISO code suffix and no symbol, e.g. "1,234.56 USD"; `signed` gives "+1,234.56 USD". */
 export function formatAmountWithCode(
   value: NullableNumber,
   currency: string | null | undefined,
-  options: NumberFormatOptions = {}
+  options: SignableNumberFormatOptions = {}
 ): string {
-  const { minimumFractionDigits = 2, maximumFractionDigits = 2, fallback = DEFAULT_FALLBACK } = options;
+  const { minimumFractionDigits = 2, maximumFractionDigits = 2, signed = false, fallback = DEFAULT_FALLBACK } = options;
   if (!isRenderable(value)) {
     return fallback;
   }
 
-  const text = value.toLocaleString(FORMAT_LOCALE, { minimumFractionDigits, maximumFractionDigits });
+  const text = formatNumber(value, { minimumFractionDigits, maximumFractionDigits, signed });
   const code = currency?.trim();
   return code ? `${text} ${code}` : text;
 }
 
-/** Grouped count, e.g. 1234 -> "1,234"; the same output as `value.toLocaleString("en-US")`. */
-export function formatCount(value: NullableNumber, options: Pick<NumberFormatOptions, "fallback"> = {}): string {
-  const { fallback = DEFAULT_FALLBACK } = options;
+export interface CurrencyWithCodeFormatOptions {
+  /** Explicit "+" on positives and two fraction digits on every non-zero amount, e.g. "+€100.00 EUR". */
+  signed?: boolean;
+}
+
+/**
+ * Symbol-style currency that keeps the ISO code visible when the symbol alone is ambiguous,
+ * e.g. "$100 USD", "-£100 GBP", "AED 100" (the code is not repeated when Intl already shows it).
+ * Unsigned amounts drop trailing zero cents ("€100 EUR"); `signed` pins two decimals on non-zero
+ * amounts ("+€100.00 EUR") and leaves zero, including -0, unsigned ("€0 EUR"). A blank code means USD.
+ */
+export function formatCurrencyWithCode(value: number, currency: string, options: CurrencyWithCodeFormatOptions = {}): string {
+  const { signed = false } = options;
+  const code = currency.trim().toUpperCase();
+  const normalizedValue = value === 0 ? 0 : value;
+  const amount = formatCurrency(normalizedValue, { currency: code || "USD", minimumFractionDigits: signed && normalizedValue !== 0 ? 2 : 0 });
+  const prefix = signed && value > 0 && Number.isFinite(value) ? "+" : "";
+  return code && !amount.includes(code) ? `${prefix}${amount} ${code}` : `${prefix}${amount}`;
+}
+
+/** Grouped count, e.g. 1234 -> "1,234"; the same output as `value.toLocaleString("en-US")`. `signed` gives "+1,234". */
+export function formatCount(value: NullableNumber, options: Pick<SignableNumberFormatOptions, "fallback" | "signed"> = {}): string {
+  const { signed = false, fallback = DEFAULT_FALLBACK } = options;
   if (!isRenderable(value)) {
     return fallback;
   }
 
-  return value.toLocaleString(FORMAT_LOCALE);
+  return signed ? `${signPrefix(value)}${Math.abs(value).toLocaleString(FORMAT_LOCALE)}` : value.toLocaleString(FORMAT_LOCALE);
 }
 
 /**
@@ -209,44 +305,133 @@ export function formatCount(value: NullableNumber, options: Pick<NumberFormatOpt
  */
 export type MoneyContext = "accounting" | "trading" | "summary";
 
+/**
+ * How a money figure is spelled, independent of its reading context:
+ *  - `screen`: Intl en-US symbols ("$", "€", "CA$", "CHF "), "-" for negatives. The default.
+ *  - `statement`: the accounting statement symbol table (`currencySymbol`: "$", "€", "CHF ",
+ *    "CODE" + narrow no-break space for unmapped codes) and U+2212 "−" for negatives, as ledgers,
+ *    statements and journal grids print them.
+ */
+export type MoneyConvention = "screen" | "statement";
+
 export interface MoneyFormatOptions {
-  /** ISO 4217 code; `null` renders a bare amount with no symbol. @default "USD" */
+  /** ISO 4217 code; `null` (or "" under `statement`) renders a bare amount with no symbol. @default "USD" */
   currency?: string | null;
   /** @default "trading" */
   context?: MoneyContext;
   /** Fraction digits; overrides the context default (instrument precision for trading). */
   decimals?: number;
-  /** Positives get an explicit "+". */
+  /** Positives get an explicit "+". A value that rounds to zero is always unsigned. */
   signed?: boolean;
+  /** Negatives in parentheses, e.g. "($1,234.00)". @default true for the accounting context, else false */
+  parens?: boolean;
+  /** An exact zero renders as an em dash. @default false */
+  zeroDash?: boolean;
+  /** @default "screen" */
+  convention?: MoneyConvention;
+  /** Rendered when the value is null, undefined, not finite, or a string that is not a number. */
   fallback?: string;
 }
 
-/** Money for its reading context, e.g. accounting "(1,234.00)", trading "-$1,234.56", summary "$1,235". */
-export function formatMoney(value: NullableNumber, options: MoneyFormatOptions = {}): string {
-  const { currency, context = "trading", decimals, signed = false, fallback = DEFAULT_FALLBACK } = options;
-  if (!isRenderable(value)) {
+const STATEMENT_SYMBOLS: Record<string, string> = {
+  USD: "$",
+  EUR: "€",
+  GBP: "£",
+  JPY: "¥",
+  CNY: "¥",
+  CHF: "CHF ",
+  CAD: "$",
+  AUD: "$"
+};
+
+/**
+ * Statement-convention currency symbol: code -> leading symbol. Unmapped codes render as "CODE"
+ * plus a narrow no-break space (U+202F); a blank code renders no symbol.
+ */
+export function currencySymbol(code?: string | null): string {
+  if (!code) return "";
+  return STATEMENT_SYMBOLS[code] ?? code + " ";
+}
+
+interface ScreenCurrencyLayout {
+  prefix: string;
+  suffix: string;
+  minorUnits: number;
+}
+
+const screenCurrencyLayouts = new Map<string, ScreenCurrencyLayout>();
+
+/** Intl's en-US symbol placement and minor units for a code, read once per code from a sample. */
+function screenCurrencyLayout(code: string): ScreenCurrencyLayout {
+  let layout = screenCurrencyLayouts.get(code);
+  if (layout) {
+    return layout;
+  }
+  try {
+    const formatter = new Intl.NumberFormat(FORMAT_LOCALE, { style: "currency", currency: code });
+    const parts = formatter.formatToParts(1);
+    const first = parts.findIndex((part) => part.type === "integer");
+    const last = parts.length - 1 - [...parts].reverse().findIndex((part) => part.type === "integer" || part.type === "fraction");
+    layout = {
+      prefix: parts.slice(0, first).map((part) => part.value).join(""),
+      suffix: parts.slice(last + 1).map((part) => part.value).join(""),
+      minorUnits: formatter.resolvedOptions().maximumFractionDigits ?? 2
+    };
+  } catch {
+    // A code Intl rejects outright renders after the amount's code, e.g. "US-D 1,234.56".
+    layout = { prefix: `${code} `, suffix: "", minorUnits: 2 };
+  }
+  screenCurrencyLayouts.set(code, layout);
+  return layout;
+}
+
+/**
+ * The one money formatter. A decimal string is formatted exactly from its digits (never through a
+ * float), and a number from its shortest decimal form; both round half away from zero. Examples:
+ * trading "-$1,234.56", summary "$1,235", accounting "($1,234.00)",
+ * `formatMoney("12345678901234.565")` -> "$12,345,678,901,234.57", and the statement convention
+ * `formatMoney(-42.5, { convention: "statement", currency: null })` -> "−42.50".
+ */
+export function formatMoney(value: MoneyValue, options: MoneyFormatOptions = {}): string {
+  const {
+    currency,
+    context = "trading",
+    decimals,
+    signed = false,
+    parens = context === "accounting",
+    zeroDash = false,
+    convention = "screen",
+    fallback = DEFAULT_FALLBACK
+  } = options;
+  const parsed = parseExactDecimal(value);
+  if (!parsed) {
     return fallback;
   }
-
-  const digits = decimals ?? (context === "summary" ? 0 : undefined);
-  const code = currency === null ? null : currency?.trim() || "USD";
-  let magnitude: string;
-  if (code === null) {
-    magnitude = Math.abs(value).toLocaleString(FORMAT_LOCALE, { minimumFractionDigits: digits ?? 2, maximumFractionDigits: digits ?? 2 });
-  } else try {
-    magnitude = new Intl.NumberFormat(FORMAT_LOCALE, {
-      style: "currency",
-      currency: code,
-      ...(digits === undefined ? {} : { minimumFractionDigits: digits, maximumFractionDigits: digits })
-    }).format(Math.abs(value));
-  } catch {
-    magnitude = `${code} ${Math.abs(value).toLocaleString(FORMAT_LOCALE, { minimumFractionDigits: digits ?? 2, maximumFractionDigits: digits ?? 2 })}`;
+  if (zeroDash && parsed.units === 0n) {
+    return "—";
   }
 
-  if (value < 0) {
-    return context === "accounting" ? `(${magnitude})` : `-${magnitude}`;
+  const code = currency === null ? null : currency === undefined ? "USD" : currency.trim() || (convention === "statement" ? null : "USD");
+  let prefix = "";
+  let suffix = "";
+  let minorUnits = 2;
+  if (code !== null && convention === "statement") {
+    prefix = currencySymbol(code);
+  } else if (code !== null) {
+    ({ prefix, suffix, minorUnits } = screenCurrencyLayout(code));
   }
-  return signed && value > 0 ? `+${magnitude}` : magnitude;
+
+  const digits = decimals ?? (context === "summary" ? 0 : minorUnits);
+  const magnitude = formatExactMagnitude(parsed, digits);
+  const amount = `${prefix}${magnitude.text}${suffix}`;
+  // A value that rounds to zero at this precision is shown unsigned.
+  if (magnitude.roundsToZero) {
+    return amount;
+  }
+  if (parsed.negative) {
+    return parens ? `(${amount})` : `${convention === "statement" ? "−" : "-"}${amount}`;
+  }
+  return signed ? `+${amount}` : amount;
 }
 
 /** Tone of a signed P&L figure: gain, loss, or flat/unknown. */
@@ -312,21 +497,160 @@ export function formatQuantity(value: NullableNumber, options: QuantityFormatOpt
 
 const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
 
-function padTwo(value: number): string {
-  return String(value).padStart(2, "0");
+
+// TIMESTAMPS: an instant renders as "Jun 30, 2026, 18:05 UTC" — month, day and year, a fixed
+// 24-hour clock and the zone label — in the operator's display time zone (Settings > Preferences,
+// "UTC" until they pick one). `formatTimestamp` is that format; `formatRelativeTime` is the "5m ago"
+// form, and `<TimeText>` (components/ui/time-text) renders one with the other on hover.
+export {
+  COMMON_DISPLAY_TIME_ZONES,
+  DEFAULT_DISPLAY_TIME_ZONE,
+  getDisplayTimeZone,
+  isValidTimeZone,
+  setDisplayTimeZone,
+  subscribeDisplayTimeZone
+} from "@/lib/display-time-zone";
+
+/** An instant as a formatter accepts it: a `Date`, epoch milliseconds, or an ISO datetime string. */
+export type TimestampInput = Date | number | string;
+
+function toDate(value: TimestampInput): Date {
+  return value instanceof Date ? value : new Date(value);
 }
 
 /**
- * UTC timestamp label that always carries the year, e.g. "Jun 30, 2026, 18:05 UTC". The year
- * is never dropped: a ledger or evidence timestamp has to be unambiguous, and a label that
- * omitted it for the current year would read differently as the calendar turns. An invalid
- * date renders "Invalid Date", as `toLocaleString` does.
+ * The finest clock unit a timestamp shows. "minute" is the default ("18:05"); "second" ("18:05:07")
+ * is for audit and alert evidence; "millisecond" ("18:05:07.123") is for market-data ticks.
  */
-export function formatUtcTimestamp(date: Date): string {
+export type TimestampPrecision = "minute" | "second" | "millisecond";
+
+export interface TimestampFormatOptions {
+  /** IANA zone to render in, overriding the operator's display zone, e.g. "UTC" for a UTC-defined label. */
+  timeZone?: string;
+  /** Finest clock unit shown; defaults to "minute". */
+  precision?: TimestampPrecision;
+}
+
+const timestampFormatters = new Map<string, Intl.DateTimeFormat>();
+
+function timestampFormatter(timeZone: string, precision: TimestampPrecision): Intl.DateTimeFormat {
+  const key = `${timeZone}|${precision}`;
+  let formatter = timestampFormatters.get(key);
+  if (!formatter) {
+    try {
+      formatter = new Intl.DateTimeFormat(FORMAT_LOCALE, {
+        timeZone,
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        ...(precision === "minute" ? {} : { second: "2-digit" as const }),
+        ...(precision === "millisecond" ? { fractionalSecondDigits: 3 as const } : {}),
+        hourCycle: "h23",
+        timeZoneName: "short"
+      });
+    } catch {
+      // An unknown zone (a stale preference from another runtime) reads in UTC rather than failing.
+      return timestampFormatter(DEFAULT_DISPLAY_TIME_ZONE, precision);
+    }
+    timestampFormatters.set(key, formatter);
+  }
+  return formatter;
+}
+
+/**
+ * The one timestamp format: "Jun 30, 2026, 18:05 UTC" in the operator's display time zone, e.g.
+ * "Jun 30, 2026, 14:05 EDT" for America/New_York or "Jul 1, 2026, 03:05 GMT+9" for Asia/Tokyo.
+ * The clock is always 24-hour and the year is never dropped: a ledger or evidence timestamp has to
+ * be unambiguous. The zone label is the runtime's short name (an abbreviation where en-US has one,
+ * else a GMT offset). `precision` adds seconds ("18:05:07 UTC") or milliseconds ("18:05:07.123 UTC")
+ * to the same layout. An invalid date renders "Invalid Date", as `toLocaleString` does.
+ */
+export function formatTimestamp(value: TimestampInput, options: TimestampFormatOptions = {}): string {
+  const date = toDate(value);
   if (Number.isNaN(date.getTime())) {
     return "Invalid Date";
   }
-  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}, ${padTwo(date.getUTCHours())}:${padTwo(date.getUTCMinutes())} UTC`;
+  const fields: Partial<Record<Intl.DateTimeFormatPartTypes, string>> = {};
+  const precision = options.precision ?? "minute";
+  for (const part of timestampFormatter(options.timeZone ?? getDisplayTimeZone(), precision).formatToParts(date)) {
+    fields[part.type] = part.value;
+  }
+  const seconds = precision === "minute" ? "" : `:${fields.second}`;
+  const fraction = precision === "millisecond" ? `.${fields.fractionalSecond}` : "";
+  return `${fields.month} ${fields.day}, ${fields.year}, ${fields.hour}:${fields.minute}${seconds}${fraction} ${fields.timeZoneName}`;
+}
+
+/**
+ * Timestamp fixed to UTC whatever the operator's display zone, e.g. "Jun 30, 2026, 18:05 UTC".
+ * Only for labels defined on the UTC clock (a UTC cut-off, a column headed "UTC"); an
+ * operator-facing time goes through `formatTimestamp`.
+ */
+export function formatUtcTimestamp(date: Date, options: Pick<TimestampFormatOptions, "precision"> = {}): string {
+  return formatTimestamp(date, { ...options, timeZone: DEFAULT_DISPLAY_TIME_ZONE });
+}
+
+/**
+ * A timestamp for a narrow cell or tile: "Jan 1 '26 00:00Z" in UTC, "Jan 1 '26 09:00 GMT+9" in
+ * another display zone. It never wraps mid-value; pair it with the full `formatTimestamp` on hover
+ * (`<TimeText display="compact">` does). The zone is always shown: "Z" for UTC, else the short name.
+ */
+export function formatCompactTimestamp(value: TimestampInput, options: Pick<TimestampFormatOptions, "timeZone"> = {}): string {
+  const date = toDate(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Invalid Date";
+  }
+  const fields: Partial<Record<Intl.DateTimeFormatPartTypes, string>> = {};
+  for (const part of timestampFormatter(options.timeZone ?? getDisplayTimeZone(), "minute").formatToParts(date)) {
+    fields[part.type] = part.value;
+  }
+  const zone = fields.timeZoneName === "UTC" ? "Z" : ` ${fields.timeZoneName}`;
+  return `${fields.month} ${fields.day} '${(fields.year ?? "").slice(-2)} ${fields.hour}:${fields.minute}${zone}`;
+}
+
+const FULL_TIMESTAMP_LABEL = /^([A-Z][a-z]{2}) (\d{1,2}), (\d{4}), (\d{2}:\d{2})(?::\d{2}(?:\.\d{3})?)? (\S.*)$/;
+
+/**
+ * The compact form of text already produced by `formatTimestamp` ("Jan 1, 2026, 00:00 UTC" →
+ * "Jan 1 '26 00:00Z"), for a tile or badge whose view model hands it a formatted string. Any other
+ * text is returned unchanged, so it is safe on a value that is only sometimes a timestamp. Show
+ * the original as the hover title.
+ */
+export function compactTimestampLabel(label: string): string {
+  const match = FULL_TIMESTAMP_LABEL.exec(label.trim());
+  if (!match) {
+    return label;
+  }
+  const [, month, day, year, clock, zone] = match;
+  return `${month} ${day} '${year.slice(-2)} ${clock}${zone === "UTC" ? "Z" : ` ${zone}`}`;
+}
+
+/**
+ * Compact relative time from `now`, e.g. "30s ago", "5m ago", "36h ago", "3d ago", or "in 2h" for a
+ * future instant. Hours run up to 48h and whole days up to 60d; an older past instant reads
+ * "since May 8, 2026" so very old ages ("4643h ago", "195d ago") never appear. Pair it with the absolute
+ * `formatTimestamp` (`<TimeText>` puts that in the hover title). An invalid date renders "Invalid Date".
+ */
+const RELATIVE_HOURS_LIMIT = 48;
+const RELATIVE_DAYS_LIMIT = 60;
+
+export function formatRelativeTime(value: TimestampInput, now: TimestampInput = Date.now()): string {
+  const timestamp = toDate(value).getTime();
+  const reference = toDate(now).getTime();
+  if (Number.isNaN(timestamp) || Number.isNaN(reference)) {
+    return "Invalid Date";
+  }
+  const diff = reference - timestamp;
+  const seconds = Math.round(Math.abs(diff) / 1000);
+  const minutes = Math.round(seconds / 60);
+  const hours = Math.round(minutes / 60);
+  const days = Math.floor(hours / 24);
+  if (diff > 0 && hours >= RELATIVE_HOURS_LIMIT && days >= RELATIVE_DAYS_LIMIT) {
+    return `since ${formatUtcDate(new Date(timestamp))}`;
+  }
+  const amount = seconds < 60 ? `${seconds}s` : minutes < 60 ? `${minutes}m` : hours < RELATIVE_HOURS_LIMIT ? `${hours}h` : `${days}d`;
+  return diff < 0 && seconds > 0 ? `in ${amount}` : `${amount} ago`;
 }
 
 /** UTC calendar date with the year, e.g. "Jun 30, 2026". */
@@ -342,6 +666,13 @@ export function formatUtcMonthYear(date: Date): string {
 }
 
 const dateTimeFormatters = new Map<string, Intl.DateTimeFormat>();
+
+/** Currency metadata for authoring a governed policy; the server validates its own precision. */
+export function currencyMinorUnitPrecision(currency: string): number {
+  const normalized = currency.trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(normalized)) return 2;
+  return new Intl.NumberFormat(FORMAT_LOCALE, { style: "currency", currency: normalized }).resolvedOptions().maximumFractionDigits ?? 2;
+}
 
 /**
  * A date or time in a layout the fixed helpers above do not cover, through one pinned-locale

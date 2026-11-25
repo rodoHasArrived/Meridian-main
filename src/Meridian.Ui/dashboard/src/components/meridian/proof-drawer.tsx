@@ -1,5 +1,6 @@
 import { Link2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerBody } from "@/components/ui/drawer";
@@ -7,14 +8,32 @@ import { NumberPassport } from "@/components/meridian/number-passport";
 import { hasExactRetainedSource, isCurrentRetainedEvidence } from "@/components/meridian/ledger-amount-proof-validation";
 import { getLedgerAmountProof } from "@/lib/ledger-amount-proof-api";
 import { cn } from "@/lib/utils";
+import { equalExactDecimals } from "@/lib/exact-financial-value";
 import { normalizeFinancialLabel } from "@/lib/format";
 import type { LedgerAmountProof, LedgerAmountSelection } from "@/types/ledger-amount-proof";
 import type {
   FinancialRecordExplorerDto,
   FinancialRecordExplorerSelectedRecordDto,
-  FinancialRecordExplorerTone
+  FinancialRecordExplorerTone,
+  PreparerAttestationEvidenceProjection
 } from "@/types";
 import { usesTrackedCaps } from "@/design-system/label-case";
+
+export function AmountPassportRail({ onClose, width, children }: { onClose: () => void; width: number; children: ReactNode }) {
+  const viewport = useMemo(() => window.matchMedia?.(`(max-width: ${width}rem)`), [width]);
+  const subscribe = useMemo(() => (listener: () => void) => {
+    viewport?.addEventListener("change", listener);
+    return () => viewport?.removeEventListener("change", listener);
+  }, [viewport]);
+  const fillsViewport = useSyncExternalStore(subscribe, () => viewport?.matches ?? false);
+  return createPortal(
+    <Drawer open modal={fillsViewport} closeOnBackdrop={false} onClose={onClose} title="Amount passport"
+      className="relative motion-reduce:animate-none" panelStyle={{ width: `${width}rem`, maxWidth: "100vw" }}>
+      {children}
+    </Drawer>,
+    document.body
+  );
+}
 
 /** Browser presentation of the same subject-addressed payload consumed by WPF. */
 export function LedgerAmountProofDrawer({ selection, onClose }: {
@@ -22,7 +41,7 @@ export function LedgerAmountProofDrawer({ selection, onClose }: {
   onClose: () => void;
 }) {
   return (
-    <Drawer open={selection !== null} onClose={onClose} title={selection ? `${selection.label} proof detail` : "Amount proof detail"} className="max-w-[32rem]">
+    <Drawer open={selection !== null} onClose={onClose} title={selection ? `${selection.label} Amount passport` : "Amount passport"} className="max-w-[32rem]">
       <DrawerBody>{selection ? <LedgerAmountProofContent selection={selection} /> : null}</DrawerBody>
     </Drawer>
   );
@@ -30,7 +49,8 @@ export function LedgerAmountProofDrawer({ selection, onClose }: {
 
 function LedgerAmountProofContent({ selection }: { selection: LedgerAmountSelection }) {
   const selectionKey = JSON.stringify(selection);
-  const [result, setResult] = useState<{ key: string; proof: LedgerAmountProof | null; error: string | null } | null>(null);
+  const [result, setResult] = useState<{ key: string; proof: LedgerAmountProof | null; error: string | null;
+    preparerAttestations?: PreparerAttestationEvidenceProjection | null } | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -47,14 +67,14 @@ function LedgerAmountProofContent({ selection }: { selection: LedgerAmountSelect
       if (!proof || packet.completeness.status !== proof.status || packet.subject.subjectKind !== "ledger-amount" || packet.subject.subjectId !== requested.subjectId ||
         proof.subjectId !== requested.subjectId || scope?.ledgerBookId !== requested.ledgerBookId ||
         scope?.periodId !== requested.periodId || scope?.fundProfileId !== requested.fundProfileId ||
-        (requested.subjectId.startsWith("report:") &&
+        ((requested.subjectId.startsWith("report:") || requested.subjectId.startsWith("trial-balance:")) &&
           (scope?.tenantId !== requested.tenantId || scope?.companyId !== requested.companyId)) ||
-        !scope.tenantId || !scope.companyId || proof.amount !== requested.amount || proof.currency !== requested.currency) {
+        !scope.tenantId || !scope.companyId || !equalExactDecimals(proof.amountExact ?? proof.amount, requested.amount) || proof.currency !== requested.currency) {
         setResult({ key: selectionKey, proof: null, error: "Blocked: evidence identity, amount or scope does not match the selection." });
       } else if (new Set(proof.evidence.map((item) => item.evidenceId)).size !== proof.evidence.length ||
         proof.evidence.some((item) => !item.evidenceId)) {
         setResult({ key: selectionKey, proof: null, error: "Blocked: evidence identifiers are missing or ambiguous." });
-      } else if (requested.subjectId.startsWith("report:") &&
+      } else if ((requested.subjectId.startsWith("report:") || requested.subjectId.startsWith("trial-balance:")) &&
         (!requested.journalEntryIds?.length || !requested.ledgerEntryIds?.length || proof.evidence.some((item) => {
           if (item.kind === "ledger-record") return false;
           const parts = item.sourceSubjectId?.split(":");
@@ -64,7 +84,7 @@ function LedgerAmountProofContent({ selection }: { selection: LedgerAmountSelect
       } else if (proof.evidence.some((item) => item.kind !== "ledger-record" && isCurrentRetainedEvidence(item) && !hasExactRetainedSource(packet, proof, item))) {
         setResult({ key: selectionKey, proof: null, error: "Blocked: supporting evidence does not identify this exact retained amount, scope and content digest." });
       } else {
-        setResult({ key: selectionKey, proof, error: null });
+        setResult({ key: selectionKey, proof, error: null, preparerAttestations: packet.preparerAttestations });
       }
     }).catch(() => {
       if (current) setResult({ key: selectionKey, proof: null, error: "Blocked: retained evidence for this amount is unavailable. Review the selected book and period." });
@@ -94,7 +114,7 @@ function LedgerAmountProofContent({ selection }: { selection: LedgerAmountSelect
             <p className="text-xs text-muted-foreground">{item.kind} · {item.sourceSystem} · {item.retainedAt}</p>
             <p className="break-all font-mono text-xs">{item.evidenceId}</p>
             {item.contentHash ? <p className="break-all font-mono text-xs">{item.contentHash}</p> : null}
-            {proof.subjectId.startsWith("report:") && item.sourceScope && item.sourceSubjectId ? (
+            {(proof.subjectId.startsWith("report:") || proof.subjectId.startsWith("trial-balance:")) && item.sourceScope && item.sourceSubjectId ? (
               <dl className="mt-2 space-y-1 text-xs">
                 <div><dt className="text-muted-foreground">Original posting</dt><dd className="break-all font-mono">{item.sourceSubjectId}</dd></div>
                 <div><dt className="text-muted-foreground">Source period</dt><dd className="break-all font-mono">{item.sourceScope.periodId}</dd></div>
@@ -104,7 +124,8 @@ function LedgerAmountProofContent({ selection }: { selection: LedgerAmountSelect
           </article>
         ))}
       </section>
-      <NumberPassport proof={{ ...proof, status: blocked ? "Blocked" : ready ? "Ready" : "ReviewRequired" }} title={selection.label} />
+      <NumberPassport proof={{ ...proof, status: blocked ? "Blocked" : ready ? "Ready" : "ReviewRequired" }} title={selection.label}
+        preparerAttestations={result.preparerAttestations} sourceJournalEntryIds={selection.journalEntryIds} />
     </div>
   );
 }
@@ -189,7 +210,7 @@ function FactList({ title, items }: { title: string; items: FinancialRecordExplo
       <h4 className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(title) && "uppercase")}>{title}</h4>
       {items.map((item) => (
         <dl key={`${item.label}-${item.value}`} className="rounded-md border border-border/60 px-3 py-2">
-          <dt className="text-[11px] text-muted-foreground">{normalizeFinancialLabel(item.label)}</dt>
+          <dt className="text-xs text-muted-foreground">{normalizeFinancialLabel(item.label)}</dt>
           <dd className={cn("mt-1 font-mono text-sm", toneTextClass(item.tone))}>
             {item.value}
             {item.detail ? <span className="mt-1 block font-sans text-xs text-muted-foreground">{item.detail}</span> : null}

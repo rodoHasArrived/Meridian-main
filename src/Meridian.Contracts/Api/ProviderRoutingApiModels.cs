@@ -50,7 +50,24 @@ public sealed record RoutePreviewRequest(
     string? Symbol = null,
     string? Market = null,
     string? AssetClass = null,
-    bool RequireProductionReady = false);
+    bool RequireProductionReady = false,
+    ProviderRoutingProposedConfig? ProposedConfig = null,
+    bool PreviewBackfill = false,
+    string Granularity = "daily",
+    DateOnly? From = null,
+    DateOnly? To = null);
+
+/// <summary>Read-only what-if fields. Ownership, credentials, provenance and execution policies are never accepted.</summary>
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed record ProviderRoutingProposedConfig(
+    ProviderRoutingBindingChange[]? Bindings = null,
+    BackfillRoutingProviderChange[]? BackfillProviders = null);
+
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed record ProviderRoutingBindingChange(string BindingId, int? Priority = null, bool? Enabled = null);
+
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed record BackfillRoutingProviderChange(string ProviderId, int? Priority = null, bool? Enabled = null);
 
 /// <summary>
 /// Request to run certification for a connection.
@@ -180,7 +197,9 @@ public sealed record RoutePreviewResponse(
     string[] FallbackConnectionIds,
     string? PolicyGate,
     RoutePreviewCandidateDto[] Candidates,
-    RoutePreviewCandidateDto[]? RankedAlternatives = null);
+    RoutePreviewCandidateDto[]? RankedAlternatives = null,
+    string[]? Warnings = null,
+    bool IsProposed = false);
 
 /// <summary>
 /// Shared scope DTO used by provider routing APIs.

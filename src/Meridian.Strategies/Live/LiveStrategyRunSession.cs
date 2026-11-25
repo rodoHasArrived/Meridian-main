@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Threading.Channels;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Operations;
@@ -10,6 +12,8 @@ using Meridian.Strategies.Storage;
 using ExecutionSdk = Meridian.Execution.Sdk;
 using OrderType = Meridian.Backtesting.Sdk.OrderType;
 using TimeInForce = Meridian.Backtesting.Sdk.TimeInForce;
+
+using Meridian.Strategies.Live.Designer;
 
 namespace Meridian.Strategies.Live;
 
@@ -36,6 +40,7 @@ internal sealed class LiveStrategyRunSession
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly ILogger _logger;
     private readonly bool _useSynchronousFillFallback;
+    private readonly PaperRunOrderContext? _paperOrders;
     private readonly Channel<ExecutionSdk.ExecutionReport> _fillReports;
     private readonly CancellationTokenSource _stopRequested = new();
     private readonly Lock _stopSync = new();
@@ -46,6 +51,14 @@ internal sealed class LiveStrategyRunSession
 
     /// <summary>How many times a cancellation that did not take is retried before giving up.</summary>
     private const int MaxCancellationAttempts = 3;
+
+    /// <summary>How often a stop re-checks whether OMS-accepted fills have reached the event loop.</summary>
+    private static readonly TimeSpan AcceptedFillDrainPollInterval = TimeSpan.FromMilliseconds(10);
+
+    // Cumulative fill quantity this session has received per submitted client order id. Written
+    // on the event loop, read by an operator stop comparing it with the OMS-accepted quantity.
+    private readonly ConcurrentDictionary<string, decimal> _receivedFillQuantities = new(StringComparer.Ordinal);
+    private int _eventLoopExited;
     private readonly LiveRunMetricsTracker _metrics;
     private readonly string _clientOrderIdPrefix;
 
@@ -71,7 +84,8 @@ internal sealed class LiveStrategyRunSession
         ExecutionAuditTrailService? auditTrail,
         ILogger logger,
         bool useSynchronousFillFallback,
-        int fillReportQueueCapacity)
+        int fillReportQueueCapacity,
+        PaperRunOrderContext? paperOrders = null)
     {
         _run = run;
         _strategy = strategy;
@@ -82,6 +96,7 @@ internal sealed class LiveStrategyRunSession
         _auditTrail = auditTrail;
         _logger = logger;
         _useSynchronousFillFallback = useSynchronousFillFallback;
+        _paperOrders = paperOrders;
         _metrics = new LiveRunMetricsTracker(context.PortfolioValue, DateTimeOffset.UtcNow);
         _clientOrderIdPrefix = BuildClientOrderIdPrefix(run.RunId);
         _fillReports = Channel.CreateBounded<ExecutionSdk.ExecutionReport>(new BoundedChannelOptions(fillReportQueueCapacity)
@@ -359,6 +374,8 @@ internal sealed class LiveStrategyRunSession
         }
         finally
         {
+            Volatile.Write(ref _eventLoopExited, 1);
+
             // A directly hosted session owns its inbox. Engine-hosted sessions keep admission
             // open until FinishAsync closes and drains the engine's delivery worker.
             if (_closeReportAdmission is null)
@@ -559,10 +576,19 @@ internal sealed class LiveStrategyRunSession
             var request = MapOrder(order, clientOrderId);
             _ordersByClientId[clientOrderId] = order;
             _clientIdsByOrderId[order.OrderId] = clientOrderId;
+            _receivedFillQuantities[clientOrderId] = 0m;
 
             try
             {
-                var result = await _orderManager.PlaceOrderAsync(request, ct).ConfigureAwait(false);
+                var result = _paperOrders is { } paper
+                    ? await ((ExecutionSdk.IOrderIntentSubmitter)_orderManager).SubmitIntentAsync(
+                        new ExecutionSdk.OrderIntent(order.OrderId, paper.TenantId, paper.CompanyId, paper.AccountId,
+                            ActorId, request, paper.Authority), ct).ConfigureAwait(false)
+                    : await SubmitRunOrderAsync(request, ct).ConfigureAwait(false);
+                if (result.IntentStatus is ExecutionSdk.OrderIntentStatus.ReconciliationRequired or
+                        ExecutionSdk.OrderIntentStatus.Conflict)
+                    throw new InvalidOperationException(result.ErrorMessage ?? "The strategy order requires reconciliation.");
+
                 if (result.RequiresApproval)
                 {
                     // Parked for governed approval, not rejected: the order can still be
@@ -622,7 +648,7 @@ internal sealed class LiveStrategyRunSession
                 // durably accounted. This is a run failure, not an ordinary submit rejection.
                 throw;
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex) when (ex is not OperationCanceledException && _paperOrders is null)
             {
                 _logger.LogError(ex,
                     "Run {RunId} order {ClientOrderId} for {Symbol} could not be submitted.",
@@ -655,32 +681,56 @@ internal sealed class LiveStrategyRunSession
         if (report.OrderStatus is ExecutionSdk.OrderStatus.Filled or ExecutionSdk.OrderStatus.PartiallyFilled
             && report.FilledQuantity > 0m)
         {
-            var signedQuantity = ConvertToBacktestFillQuantity(report);
-            var fillPrice = report.FillPrice
-                ?? _context.GetLastPrice(report.Symbol)
-                ?? order.LimitPrice
-                ?? 0m;
-            var fill = new FillEvent(
-                FillId: Guid.NewGuid(),
-                OrderId: order.OrderId,
-                Symbol: report.Symbol,
-                FilledQuantity: signedQuantity,
-                FillPrice: fillPrice,
-                Commission: report.Commission ?? 0m,
-                FilledAt: report.Timestamp,
-                AccountId: order.AccountId);
+            // Counted as received before any strategy callback runs: a stop draining accepted
+            // fills waits for delivery to this loop, not for the strategy to finish handling it.
+            _receivedFillQuantities.AddOrUpdate(
+                clientOrderId,
+                report.FilledQuantity,
+                (_, received) => received + report.FilledQuantity);
 
-            // The report's OMS-stamped sizing classification and lot multiplier ride along so a
-            // fixed-income fill (face value at percent-of-par) books its par-scaled cash flow and
-            // a multiplied contract books the same cash the paper portfolio moved.
-            _metrics.RecordFill(
-                fill,
-                report.Timestamp,
-                report.UsesFaceValuePercentageOfPar,
-                report.LotMultiplier ?? 1m);
-            if (_strategy.Status != StrategyStatus.Stopped)
+            if (report.FillPrice is not { } fillPrice)
             {
-                _strategy.OnOrderFill(fill, _context);
+                // The execution price is the venue's to state. Substituting the last market
+                // price, the limit price, or zero would book strategy P&L the portfolio ledger
+                // never recorded — it books nothing for a fill report without a price — so the
+                // two would drift apart with no evidence of why. Book nothing here either.
+                _logger.LogWarning(
+                    "Run {RunId} order {ClientOrderId} for {Symbol}: {Status} report for quantity {FilledQuantity} " +
+                    "carries no fill price; no strategy fill was booked for it.",
+                    _run.RunId, clientOrderId, report.Symbol, report.OrderStatus, report.FilledQuantity);
+            }
+            else
+            {
+                if (fillPrice <= 0m)
+                {
+                    throw new InvalidOperationException(
+                        $"Execution fill for order '{report.OrderId}' has non-positive price {fillPrice}; "
+                        + "the portfolio ledger rejects such a fill, so the live run failed closed.");
+                }
+
+                var signedQuantity = ConvertToBacktestFillQuantity(report);
+                var fill = new FillEvent(
+                    FillId: Guid.NewGuid(),
+                    OrderId: order.OrderId,
+                    Symbol: report.Symbol,
+                    FilledQuantity: signedQuantity,
+                    FillPrice: fillPrice,
+                    Commission: report.Commission ?? 0m,
+                    FilledAt: report.Timestamp,
+                    AccountId: order.AccountId);
+
+                // The report's OMS-stamped sizing classification and lot multiplier ride along so a
+                // fixed-income fill (face value at percent-of-par) books its par-scaled cash flow and
+                // a multiplied contract books the same cash the paper portfolio moved.
+                _metrics.RecordFill(
+                    fill,
+                    report.Timestamp,
+                    report.UsesFaceValuePercentageOfPar,
+                    report.LotMultiplier ?? 1m);
+                if (_strategy.Status != StrategyStatus.Stopped)
+                {
+                    _strategy.OnOrderFill(fill, _context);
+                }
             }
         }
 
@@ -790,6 +840,62 @@ internal sealed class LiveStrategyRunSession
         _clientIdsByOrderId.Remove(orderId);
         _parkedClientOrderIds.Remove(clientOrderId);
         _cancellationAttempts.Remove(orderId);
+        _receivedFillQuantities.TryRemove(clientOrderId, out _);
+    }
+
+    /// <summary>
+    /// Waits until every fill the order manager has already accepted for this run's orders has
+    /// reached the session's event loop. An operator stop calls this after closing outbound
+    /// admission and before closing report admission, so a fill that is between OMS acceptance
+    /// (and its accounting handoff) and engine delivery is applied to the run instead of being
+    /// rejected as undeliverable. Fills the venue has not yet produced are not waited for.
+    /// </summary>
+    /// <returns>
+    /// True when no accepted fill remains undelivered; false when the wait ended at
+    /// <paramref name="timeout"/>, because the event loop exited, or because the run is failing.
+    /// </returns>
+    internal async Task<bool> WaitForAcceptedFillDeliveryAsync(TimeSpan timeout, CancellationToken ct = default)
+    {
+        if (_useSynchronousFillFallback)
+        {
+            // Without an OMS report pump every fill is applied synchronously on placement.
+            return true;
+        }
+
+        var elapsed = Stopwatch.StartNew();
+        while (true)
+        {
+            if (!HasUndeliveredAcceptedFills())
+            {
+                return true;
+            }
+
+            bool failing;
+            lock (_stopSync)
+            {
+                failing = _requestedFailure is not null;
+            }
+
+            if (failing || Volatile.Read(ref _eventLoopExited) != 0 || elapsed.Elapsed >= timeout)
+            {
+                return false;
+            }
+
+            await Task.Delay(AcceptedFillDrainPollInterval, ct).ConfigureAwait(false);
+        }
+    }
+
+    private bool HasUndeliveredAcceptedFills()
+    {
+        foreach (var (clientOrderId, received) in _receivedFillQuantities)
+        {
+            if (_orderManager.GetOrder(clientOrderId) is { } accepted && accepted.FilledQuantity > received)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -825,6 +931,22 @@ internal sealed class LiveStrategyRunSession
                 _parkedClientOrderIds.Remove(clientOrderId);
             }
         }
+    }
+
+    /// <summary>
+    /// Submits a strategy order under the run's typed authority: the run id and the run's retained
+    /// fund account, which the OMS checks against the run's live promotion. A run without a fund
+    /// account (paper only; live runs are refused one at launch) keeps the untyped path.
+    /// </summary>
+    private Task<ExecutionSdk.OrderResult> SubmitRunOrderAsync(ExecutionSdk.OrderRequest request, CancellationToken ct)
+    {
+        if (_run.FundAccountId is not { } fundAccountId || fundAccountId == Guid.Empty)
+            return _orderManager.PlaceOrderAsync(request, ct);
+
+        var grant = new ExecutionSdk.ExecutionAccountGrant(
+            fundAccountId, ActorId, ExecutionSdk.ExecutionAccountGrantSources.StrategyRun, DateTimeOffset.UtcNow);
+        var authority = ExecutionSdk.OrderSubmissionAuthority.ForStrategyRun(ActorId, grant, _run.RunId, _run.StrategyArtifactId);
+        return _orderManager.SubmitAsync(new ExecutionSdk.OrderSubmitCommand(request, authority), ct);
     }
 
     private ExecutionSdk.OrderRequest MapOrder(Order order, string clientOrderId) => new()
@@ -1043,6 +1165,18 @@ internal sealed class LiveStrategyRunSession
             }
         }
 
+        if (completeRun && faulted is null)
+        {
+            try
+            {
+                await ReconcilePaperSessionAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                faulted = CombineFailures(faulted, ex);
+            }
+        }
+
         BacktestResult? metrics = null;
         if (canBuildMetrics && (completeRun || faulted is not null))
         {
@@ -1113,6 +1247,8 @@ internal sealed class LiveStrategyRunSession
 
         try
         {
+            if (faulted is null)
+                await ReconcilePaperSessionAsync().ConfigureAwait(false);
             metrics = BuildMetrics();
         }
         catch (Exception ex)
@@ -1124,12 +1260,30 @@ internal sealed class LiveStrategyRunSession
             ?? throw new InvalidOperationException($"Run '{_run.RunId}' operator completion produced no retained receipt.");
     }
 
+    private async Task ReconcilePaperSessionAsync()
+    {
+        if (_paperOrders is not { } paper)
+            return;
+
+        if (_orderManager.GetOpenOrders().Any(order => order.RunId == paper.Authority.RunId))
+            throw new InvalidOperationException("The paper run has working orders that require reconciliation before completion.");
+
+        var sessionId = paper.Authority.PaperSessionId;
+        await paper.Sessions.CloseSessionAsync(sessionId, CancellationToken.None).ConfigureAwait(false);
+        var verification = await paper.Sessions.VerifyReplayAsync(sessionId, CancellationToken.None).ConfigureAwait(false);
+        if (verification is not { IsConsistent: true, ReplaySource: "DurableFillLog" })
+            throw new InvalidOperationException("The retained paper session could not be reconciled from its durable fills.");
+    }
+
     private BacktestResult BuildMetrics() => _metrics.Build(
         _run.Engine ?? (_run.RunType == RunType.Live ? "BrokerLive" : "BrokerPaper"),
         _context.Universe,
         _context.PortfolioValue,
         _context.Ledger,
-        DateTimeOffset.UtcNow);
+        DateTimeOffset.UtcNow,
+        // Account financing has no retained run allocation. The private context ledger is
+        // not evidence of a measured zero; retain explicit unavailable coverage instead.
+        runAttributedMarginInterest: null);
 
     private static Exception? CombineFailures(Exception? first, Exception? second) =>
         first is null ? second : second is null || ReferenceEquals(first, second) ? first :
@@ -1280,9 +1434,12 @@ internal sealed class LiveStrategyRunSession
         try
         {
             var latest = await _repository.GetRunByIdAsync(_run.RunId, CancellationToken.None).ConfigureAwait(false);
-            if (latest is { EndedAt: not null, LastLifecycleEvent: StrategyRunLifecycleEventType.Failed } && faulted is null)
+            if (latest is { EndedAt: not null, LastLifecycleEvent: StrategyRunLifecycleEventType.Failed })
             {
-                return RequireTerminalOutcome(latest, StrategyRunLifecycleEventType.Failed);
+                // Another owner (the engine's undeliverable-fill path) already retained this
+                // run's single Failed terminal. A second Failed append is never a valid
+                // transition, and rebuilding it would move the retained end timestamp.
+                return AdoptRetainedFailure(latest, faulted);
             }
 
             if (suspending)
@@ -1324,6 +1481,16 @@ internal sealed class LiveStrategyRunSession
                 return retainedOutcome;
             }
 
+            // The append can lose a race with the engine retaining Failed for an undeliverable
+            // fill. That retained failure is the run's terminal; a recovery warning appended on
+            // top of it would itself be an invalid Failed -> EvidencePersistenceFailed step.
+            retainedOutcome = await TryAdoptConcurrentRetainedFailureAsync(faulted ?? persistenceException)
+                .ConfigureAwait(false);
+            if (retainedOutcome is not null)
+            {
+                return retainedOutcome;
+            }
+
             var failure = CombineFailures(terminalFailure ?? priorPersistenceFailure, persistenceException)!;
             var warning = terminal.EvidencePersistenceFailed(
                 failure,
@@ -1349,6 +1516,38 @@ internal sealed class LiveStrategyRunSession
                     $"Run '{_run.RunId}' ended, but neither its terminal transition nor recovery warning could be retained.",
                     new AggregateException(failure, warningPersistenceException));
             }
+        }
+    }
+
+    private VerifiedOperationOutcome AdoptRetainedFailure(StrategyRunEntry retained, Exception? sessionFailure)
+    {
+        if (sessionFailure is not null &&
+            !string.Equals(retained.ExceptionMessage, sessionFailure.Message, StringComparison.Ordinal))
+        {
+            _logger.LogWarning(
+                sessionFailure,
+                "Run {RunId} already retained a Failed terminal ({RetainedFailure}); the session's own failure is logged only.",
+                _run.RunId,
+                retained.ExceptionMessage ?? retained.Reason);
+        }
+
+        return RequireTerminalOutcome(retained, StrategyRunLifecycleEventType.Failed);
+    }
+
+    private async Task<VerifiedOperationOutcome?> TryAdoptConcurrentRetainedFailureAsync(Exception sessionFailure)
+    {
+        try
+        {
+            var retained = await _repository.GetRunByIdAsync(_run.RunId, CancellationToken.None).ConfigureAwait(false);
+            return retained is { EndedAt: not null, LastLifecycleEvent: StrategyRunLifecycleEventType.Failed }
+                ? AdoptRetainedFailure(retained, sessionFailure)
+                : null;
+        }
+        catch (Exception verificationException)
+        {
+            _logger.LogWarning(verificationException,
+                "Run {RunId} retained failure could not be verified.", _run.RunId);
+            return null;
         }
     }
 

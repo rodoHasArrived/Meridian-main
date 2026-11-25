@@ -1,5 +1,7 @@
 import { sourceObservationLabel, sourceObservationAge } from "./reconciliation-source-observation";
 import { getRunReviewPacketPath } from "@/lib/api";
+import { equalExactDecimals, exactDecimalText, parseExactDecimal, subtractExactDecimals } from "@/lib/exact-financial-value";
+import { caseResidual, caseVarianceLabel, formatReconciliationValue, reconciliationValueDecimals } from "./reconciliation-case-values";
 import type { ApiErrorDisplay } from "@/lib/api-errors";
 import {
   evidenceWorkbenchPath,
@@ -8,11 +10,9 @@ import {
   workflowTargetPath,
 } from "@/lib/workspace";
 import {
-  formatCurrency,
-  formatCurrencyForCode,
+  formatAccountingDate,
   formatDateOnly,
   formatDateTimeLabel,
-  formatSignedCurrency,
 } from "./accounting-screen.formatting";
 import { normalizeApiErrorDisplay } from "./accounting-screen.view-model.shared";
 import type {
@@ -44,10 +44,10 @@ import type {
   ReconciliationBreakQueueItem,
   StatementRunSummary,
 } from "@/types";
-import { formatCount, pluralizeCount } from "@/lib/format";
+import { formatCount, pluralizeCount, formatPrefixedCurrency } from "@/lib/format";
 import {
   TIE_OUT_EPSILON,
-  usableAmount,
+  roundMoney,
   type TieOutCondition,
 } from "@/components/accounting/proof-arithmetic";
 
@@ -81,18 +81,21 @@ export interface ReconciliationTieOutViewState {
   context: string;
   type: "one-to-one";
   currency: string;
-  /** "number" when rows span more than one currency, so no single symbol is printed over them. */
-  notation: "currency" | "number";
+  notation: "currency";
+  digits: number;
   sourceA: ReconciliationTieOutSourceViewModel;
   sourceB: ReconciliationTieOutSourceViewModel;
   items: ReconciliationTieOutItemViewModel[];
-  /** Declared from the summary rule: tied needs zero open breaks and a net variance under half a cent. */
+  /** Exact equality and no open breaks are required; no source tolerance is inferred. */
   status: "tied" | "exception";
   statusNote?: string;
 }
 
 /** The comparison view state with the numbers behind its labels and the tie-out that proves them. */
 export interface ReconciliationComparisonProofViewState extends ReconciliationComparisonViewState {
+  statementBalanceExact: string | null;
+  ledgerBalanceExact: string | null;
+  netVarianceExact: string | null;
   /** Statement-side balance behind `statementBalanceLabel`. `null` when not loaded. */
   statementBalance: number | null;
   /** Ledger-side balance behind `ledgerBalanceLabel`. `null` when not loaded. */
@@ -163,7 +166,7 @@ export function buildReconciliationDetailViewState(
     buildReconciliationDetailField("Run status", item.status, "default"),
     buildReconciliationDetailField("Break count", String(item.breakCount), "default"),
     buildReconciliationDetailField("Open breaks", String(item.openBreakCount), openBreakTone),
-    buildReconciliationDetailField("Last updated", item.lastUpdated, "default")
+    buildReconciliationDetailField("Last updated", /^\d{4}-\d{2}-\d{2}/.test(item.lastUpdated) ? formatAccountingDate(item.lastUpdated) : item.lastUpdated, "default")
   ];
 
   return {
@@ -225,22 +228,76 @@ function describeSystemReconciliationStatus(status: AccountingSystemReconciliati
   }
 }
 
+interface ComparisonAmount {
+  value: string | null;
+  unavailable: boolean;
+  reason?: string;
+}
+
+/** An explicit exact null is unavailable, not permission to revive a numeric compatibility field. */
+function comparisonAmount(exact: string | null | undefined, legacy: number | null | undefined): ComparisonAmount {
+  const source = exact === undefined ? legacy : exact;
+  if (source == null) return exact === null
+    ? { value: null, unavailable: true, reason: "The source marked this amount unavailable." }
+    : { value: null, unavailable: false, reason: "The source did not supply this amount." };
+  const parsed = parseExactDecimal(source);
+  if (!parsed || parsed.scale > 28 || (exact === undefined && typeof source === "number" && Math.abs(source) > Number.MAX_SAFE_INTEGER)) {
+    return { value: null, unavailable: true, reason: "The source did not supply a usable amount at retained precision." };
+  }
+  return { value: exactDecimalText(parsed), unavailable: false };
+}
+
+function subtractComparisonAmounts(debit: ComparisonAmount, credit: ComparisonAmount): ComparisonAmount {
+  return { value: subtractExactDecimals(debit.value, credit.value), unavailable: debit.unavailable || credit.unavailable,
+    reason: debit.reason ?? credit.reason };
+}
+
+function comparisonCurrency(currency: string | null | undefined): string | undefined {
+  const code = currency?.trim().toUpperCase();
+  return code && /^[A-Z]{3}$/.test(code) ? code : undefined;
+}
+
+function systemLineCurrency(row: AccountingSystemReconciliationRow, side: "statement" | "ledger"): string | undefined {
+  const source = side === "statement" ? row.externalCurrency : row.meridianCurrency;
+  // New hosts explicitly report unknown source currency as null. Only old hosts omit these fields.
+  return comparisonCurrency(source === undefined ? row.currency : source);
+}
+
+function comparisonAmountLabel(amount: ComparisonAmount, currency?: string): string {
+  return amount.value === null ? amount.unavailable ? "Unavailable" : "Not recorded"
+    : `${formatReconciliationValue(amount.value, currency)} ${currency ?? "Currency unavailable"}`;
+}
+
+function systemLineAmount(row: AccountingSystemReconciliationRow, side: "statement" | "ledger"): ComparisonAmount {
+  return side === "statement"
+    ? subtractComparisonAmounts(comparisonAmount(row.externalDebitExact, row.externalDebit), comparisonAmount(row.externalCreditExact, row.externalCredit))
+    : subtractComparisonAmounts(comparisonAmount(row.meridianDebitExact, row.meridianDebit), comparisonAmount(row.meridianCreditExact, row.meridianCredit));
+}
+
+/** The old proof uses numbers and rounds to 15 significant digits internally. Suppress any lossy bridge. */
+function proofNumber(value: string | null, digits: number): number | null {
+  if (value === null) return null;
+  const numeric = Number(value);
+  return Number.isFinite(numeric) && Math.abs(numeric) <= Number.MAX_SAFE_INTEGER
+    && equalExactDecimals(value, numeric) && equalExactDecimals(value, roundMoney(numeric, digits, "half-even")) ? numeric : null;
+}
+
 function buildSystemReconciliationLine(
   row: AccountingSystemReconciliationRow,
   side: "statement" | "ledger"
 ): ReconciliationLineItemViewModel {
-  const amount = side === "statement"
-    ? row.externalDebit - row.externalCredit
-    : row.meridianDebit - row.meridianCredit;
+  const amount = systemLineAmount(row, side);
+  const currency = systemLineCurrency(row, side);
   return {
     id: `${row.rowId}:${side}`,
     matchKey: row.rowId,
     title: row.accountName || row.accountCode,
-    meta: (row.accountName ? [row.accountCode, row.currency, row.detail] : [row.currency, row.detail])
+    meta: (row.accountName ? [row.accountCode, currency, row.detail] : [currency, row.detail])
       .map((part) => part?.trim())
       .filter(Boolean)
       .join(" · "),
-    amountLabel: formatCurrencyForCode(amount, row.currency),
+    amountLabel: comparisonAmountLabel(amount, currency),
+    amountReason: amount.reason,
     statusLabel: describeSystemReconciliationStatus(row.status),
     statusTone: SYSTEM_RECONCILIATION_TONE[row.status]
   };
@@ -248,14 +305,14 @@ function buildSystemReconciliationLine(
 
 function buildSystemReconciliationTieOutItem(
   row: AccountingSystemReconciliationRow,
-  showCurrency: boolean
+  digits: number
 ): ReconciliationTieOutItemViewModel {
   const title = row.accountName || row.accountCode;
   const evidenceCount = row.evidenceReferences?.length ?? (row.evidenceRef ? 1 : 0);
   return {
     id: row.rowId,
-    label: showCurrency && row.currency ? `${title} (${row.currency})` : title,
-    value: usableAmount(row.variance),
+    label: title,
+    value: proofNumber(comparisonAmount(row.varianceExact, row.variance).value, digits),
     explained: false,
     condition: SYSTEM_RECONCILIATION_TIE_OUT_CONDITION[row.status] ?? "exception",
     conditionLabel: describeSystemReconciliationStatus(row.status),
@@ -273,7 +330,8 @@ function buildSystemReconciliationTieOut({
   statementLineCount,
   ledgerLineCount,
   balanced,
-  currency
+  currency,
+  digits
 }: {
   systemReconciliation: AccountingSystemReconciliationSummary;
   statementHeading: string;
@@ -285,34 +343,31 @@ function buildSystemReconciliationTieOut({
   ledgerLineCount: number;
   balanced: boolean;
   currency: string;
+  digits: number;
 }): ReconciliationTieOutViewState {
-  const rowCurrencies = [...new Set(systemReconciliation.rows.map((row) => row.currency).filter(Boolean))];
-  const mixedCurrencies = rowCurrencies.length > 1;
   const openCount = systemReconciliation.breakCount;
   const period = systemReconciliation.periodStart && systemReconciliation.periodEnd
     ? `${formatDateOnly(systemReconciliation.periodStart)} to ${formatDateOnly(systemReconciliation.periodEnd)}`
     : null;
   // Offsetting row-level breaks net to zero. The arithmetic alone would call that tied, so the
   // declared exception needs its reason on screen.
-  const offsettingBreaks = !balanced && netVariance !== null && Math.abs(netVariance) < TIE_OUT_EPSILON;
+  const offsettingBreaks = !balanced && netVariance === 0;
 
   return {
     title: "Tie-out proof",
     context: [
       "External GL reconciliation",
-      period,
-      mixedCurrencies
-        ? `Rows span ${rowCurrencies.join(", ")}; totals are summed as reported, without conversion`
-        : null
+      period
     ].filter(Boolean).join(" · "),
     type: "one-to-one",
     currency,
-    notation: mixedCurrencies ? "number" : "currency",
+    notation: "currency",
+    digits,
     sourceA: { label: statementHeading, value: statementBalance, count: statementLineCount },
     sourceB: { label: ledgerHeading, value: ledgerBalance, count: ledgerLineCount },
     items: systemReconciliation.rows
       .filter((row) => row.status !== "Matched")
-      .map((row) => buildSystemReconciliationTieOutItem(row, mixedCurrencies)),
+      .map((row) => buildSystemReconciliationTieOutItem(row, digits)),
     status: balanced ? "tied" : "exception",
     statusNote: offsettingBreaks
       ? `${pluralizeCount(openCount, "open break", { localizeCount: true })} ${openCount === 1 ? "remains" : "remain"} although the totals net to zero. Offsetting breaks are not a tie-out.`
@@ -411,6 +466,8 @@ export function buildReconciliationComparisonViewState({
   cashFlow,
   systemReconciliation = null
 }: ReconciliationComparisonBuildInput): ReconciliationComparisonProofViewState {
+  // A successfully loaded summary can contain default zero totals with no cash observations.
+  const cashEvidence = cashFlow && cashFlow.runsWithCashSignals > 0 ? cashFlow : null;
   const fallbackRows: StatementRunSummaryWithMetadata[] = statementRuns.length > 0
     ? []
     : fallbackQueue.map((item): StatementRunSummaryWithMetadata => ({
@@ -455,10 +512,10 @@ export function buildReconciliationComparisonViewState({
       id: run.runId,
       statementTitle: brokerCustodian,
       statementMeta: `${period} · ${account}`,
-      statementValue: index === 0 && cashFlow ? formatCurrency(cashFlow.totalCash) : `${formatCount(matchCount)} matched`,
+      statementValue: `${formatCount(matchCount)} matched`,
       ledgerTitle,
       ledgerMeta,
-      ledgerValue: index === 0 && cashFlow ? formatCurrency(cashFlow.totalLedgerCash) : (openCount > 0 ? `${formatCount(openCount)} open` : "Matched"),
+      ledgerValue: openCount > 0 ? `${formatCount(openCount)} open` : "Matched",
       statusLabel,
       statusTone: rawStatus === "SecurityCoverageOpen"
         ? "danger"
@@ -507,65 +564,112 @@ export function buildReconciliationComparisonViewState({
   let statementBalanceLabel: string;
   let ledgerBalanceLabel: string;
   let varianceLabel: string;
-  let varianceTone: "success" | "warning";
-  // The numbers behind the labels, kept so the tie-out proves them without re-parsing text.
-  let statementBalanceValue: number | null;
-  let ledgerBalanceValue: number | null;
-  let netVarianceValue: number | null;
+  let varianceTone: ReconciliationComparisonViewState["varianceTone"];
+  // Exact values drive labels; compatibility numbers are only populated when the proof can retain them.
+  let statementBalanceExact: string | null = null;
+  let ledgerBalanceExact: string | null = null;
+  let netVarianceExact: string | null = null;
+  let statementBalanceValue: number | null = null;
+  let ledgerBalanceValue: number | null = null;
+  let netVarianceValue: number | null = null;
   let tieOut: ReconciliationTieOutViewState | null = null;
+  let summaryUnavailableReason: string | undefined;
+  let tieOutUnavailableReason: string | undefined;
+  let legacyPrecisionNotice: string | undefined;
   const statementHeading = hasTransactionLines ? "Custodian statement" : "Statement";
   const ledgerHeading = hasTransactionLines ? "Internal ledger" : "Ledger";
 
   if (hasTransactionLines && systemReconciliation) {
-    const summaryCurrency = systemReconciliation.rows[0]?.currency || "USD";
-    const statementBalance = systemReconciliation.totalExternalDebits - systemReconciliation.totalExternalCredits;
-    const ledgerBalance = systemReconciliation.totalMeridianDebits - systemReconciliation.totalMeridianCredits;
-    const netVariance = statementBalance - ledgerBalance;
-    // Open breaks keep the reconciliation out of balance even when debit/credit totals tie out —
-    // e.g. a trial balance with offsetting row-level breaks nets to zero but is not reconciled.
-    const balanced = systemReconciliation.breakCount === 0 && Math.abs(netVariance) < 0.005;
     matchedCount = systemReconciliation.matchedCount;
     openCount = systemReconciliation.breakCount;
-    statementBalanceLabel = formatCurrencyForCode(statementBalance, summaryCurrency);
-    ledgerBalanceLabel = formatCurrencyForCode(ledgerBalance, summaryCurrency);
-    varianceTone = balanced ? "success" : "warning";
-    varianceLabel = balanced
-      ? "Balanced"
-      : Math.abs(netVariance) >= 0.005
-        ? `Out by ${formatCurrencyForCode(Math.abs(netVariance), summaryCurrency)}`
-        : `${formatCount(openCount)} open break${openCount === 1 ? "" : "s"}`;
-    statementBalanceValue = usableAmount(statementBalance);
-    ledgerBalanceValue = usableAmount(ledgerBalance);
-    netVarianceValue = usableAmount(netVariance);
-    tieOut = buildSystemReconciliationTieOut({
-      systemReconciliation,
-      statementHeading,
-      ledgerHeading,
-      statementBalance: statementBalanceValue,
-      ledgerBalance: ledgerBalanceValue,
-      netVariance: netVarianceValue,
-      statementLineCount: statementLines.length,
-      ledgerLineCount: ledgerLines.length,
-      balanced,
-      currency: summaryCurrency
-    });
+    const currencies = systemRows.flatMap((row) => [
+      ...(row.status === "MissingExternal" ? [] : [systemLineCurrency(row, "statement")]),
+      ...(row.status === "MissingMeridian" ? [] : [systemLineCurrency(row, "ledger")])
+    ]);
+    const declaredCurrencies = [...new Set(currencies.filter((currency): currency is string => Boolean(currency)))];
+    const hasBothSources = statementLines.length > 0 && ledgerLines.length > 0;
+    const summaryCurrency = hasBothSources && currencies.every(Boolean) && declaredCurrencies.length === 1 ? declaredCurrencies[0] : undefined;
+    const statementAmount = subtractComparisonAmounts(
+      comparisonAmount(systemReconciliation.totalExternalDebitsExact, systemReconciliation.totalExternalDebits),
+      comparisonAmount(systemReconciliation.totalExternalCreditsExact, systemReconciliation.totalExternalCredits));
+    const ledgerAmount = subtractComparisonAmounts(
+      comparisonAmount(systemReconciliation.totalMeridianDebitsExact, systemReconciliation.totalMeridianDebits),
+      comparisonAmount(systemReconciliation.totalMeridianCreditsExact, systemReconciliation.totalMeridianCredits));
+    if ([systemReconciliation.totalExternalDebitsExact, systemReconciliation.totalExternalCreditsExact,
+      systemReconciliation.totalMeridianDebitsExact, systemReconciliation.totalMeridianCreditsExact].some((value) => value === undefined)
+      || systemRows.some((row) => [row.externalDebitExact, row.externalCreditExact, row.meridianDebitExact,
+        row.meridianCreditExact, row.varianceExact].some((value) => value === undefined))) {
+      legacyPrecisionNotice = "Some amounts came from a legacy numeric response. Their original decimal precision is unavailable.";
+    }
+
+    if (!summaryCurrency) {
+      statementBalanceLabel = "Unavailable";
+      ledgerBalanceLabel = "Unavailable";
+      varianceTone = "default";
+      varianceLabel = "Can't assess";
+      summaryUnavailableReason = !hasBothSources
+        ? "Totals are unavailable because one source has no reconciliation rows. Its recorded balance and currency cannot be established."
+        : currencies.some((currency) => !currency)
+        ? "Totals are unavailable because at least one row has no declared currency. Individual amounts remain visible."
+        : `Totals are unavailable because rows use multiple currencies (${declaredCurrencies.join(", ")}). Individual amounts remain visible.`;
+    } else {
+      statementBalanceExact = statementAmount.value;
+      ledgerBalanceExact = ledgerAmount.value;
+      netVarianceExact = subtractExactDecimals(statementBalanceExact, ledgerBalanceExact);
+      statementBalanceLabel = comparisonAmountLabel(statementAmount, summaryCurrency);
+      ledgerBalanceLabel = comparisonAmountLabel(ledgerAmount, summaryCurrency);
+      const residual = parseExactDecimal(netVarianceExact);
+      const incompleteRows = systemRows.some((row) => (row.status !== "MissingExternal" && systemLineAmount(row, "statement").value === null)
+        || (row.status !== "MissingMeridian" && systemLineAmount(row, "ledger").value === null));
+      const balanced = residual?.coefficient === 0n && openCount === 0 && !incompleteRows;
+      varianceTone = residual === null ? "default" : balanced ? "success" : "warning";
+      varianceLabel = residual === null ? "Can't assess" : balanced ? "Balanced"
+        : residual.coefficient === 0n ? `${formatCount(openCount)} open break${openCount === 1 ? "" : "s"}`
+        : `${openCount > 0 ? "Out by" : "Difference"} ${comparisonAmountLabel({ value: exactDecimalText({ ...residual,
+          coefficient: residual.coefficient < 0n ? -residual.coefficient : residual.coefficient }), unavailable: false }, summaryCurrency)}`;
+      const openRows = systemRows.filter((row) => row.status !== "Matched");
+      const itemValues = openRows.map((row) => comparisonAmount(row.varianceExact, row.variance).value);
+      const digits = [statementBalanceExact, ledgerBalanceExact, netVarianceExact, ...itemValues]
+        .reduce((maximum, value) => Math.max(maximum, reconciliationValueDecimals(value, summaryCurrency)), 0);
+      statementBalanceValue = proofNumber(statementBalanceExact, digits);
+      ledgerBalanceValue = proofNumber(ledgerBalanceExact, digits);
+      netVarianceValue = proofNumber(netVarianceExact, digits);
+      if (residual === null) {
+        summaryUnavailableReason = `Comparison unavailable: ${statementAmount.reason ?? ledgerAmount.reason ?? "A required source amount is unavailable."}`;
+      } else if (incompleteRows) {
+        varianceLabel = "Can't assess";
+        varianceTone = "default";
+        summaryUnavailableReason = "Comparison unavailable: at least one source line amount is unavailable. Reported totals do not establish a complete comparison.";
+      } else if (statementBalanceValue === null || ledgerBalanceValue === null || netVarianceValue === null
+        || !equalExactDecimals(netVarianceExact, statementBalanceValue - ledgerBalanceValue)
+        || itemValues.some((value) => proofNumber(value, digits) === null)) {
+        tieOutUnavailableReason = "the proof cannot preserve all retained amounts and differences at their supplied precision. Exact source values remain visible.";
+      } else if (netVarianceValue !== 0 && Math.abs(netVarianceValue) < TIE_OUT_EPSILON) {
+        tieOutUnavailableReason = "the proof's fixed tolerance does not describe this residual. The exact difference remains visible.";
+      } else {
+        tieOut = buildSystemReconciliationTieOut({
+          systemReconciliation, statementHeading, ledgerHeading,
+          statementBalance: statementBalanceValue, ledgerBalance: ledgerBalanceValue, netVariance: netVarianceValue,
+          statementLineCount: statementLines.length, ledgerLineCount: ledgerLines.length, balanced,
+          currency: summaryCurrency, digits
+        });
+      }
+    }
   } else {
     matchedCount = sourceRows.reduce((total, run) => total + (run.matchCount ?? run.positionMatches + run.cashMatches + run.transactionMatches), 0);
     openCount = sourceRows.reduce((total, run) => total + run.openExceptionCount, 0);
-    statementBalanceLabel = cashFlow ? formatCurrency(cashFlow.totalCash) : "Not loaded";
-    ledgerBalanceLabel = cashFlow ? formatCurrency(cashFlow.totalLedgerCash) : "Not loaded";
-    const variance = cashFlow?.netVariance ?? 0;
-    varianceTone = Math.abs(variance) < 0.005 ? "success" : "warning";
-    varianceLabel = Math.abs(variance) < 0.005 ? "Balanced" : `Out by ${formatCurrency(Math.abs(variance))}`;
-    // Not loaded is null, never zero: the labels above read "Not loaded" for the same case.
-    statementBalanceValue = cashFlow ? usableAmount(cashFlow.totalCash) : null;
-    ledgerBalanceValue = cashFlow ? usableAmount(cashFlow.totalLedgerCash) : null;
-    netVarianceValue = cashFlow ? usableAmount(cashFlow.netVariance) : null;
+    // The run-level cash summary has neither a declared currency nor per-run amount bindings.
+    // Keep run counts as text and do not assign an aggregate cash balance to the first run.
+    statementBalanceLabel = cashEvidence ? "Unavailable" : "Not loaded";
+    ledgerBalanceLabel = cashEvidence ? "Unavailable" : "Not loaded";
+    varianceTone = "default";
+    varianceLabel = "Can't assess";
+    if (cashEvidence) summaryUnavailableReason = "Cash totals are unavailable because the summary does not declare a currency. Run counts remain visible.";
   }
 
   return {
     title: "Cash reconciliation - broker statement vs. ledger",
-    subtitle: cashFlow?.summary ?? "Broker and custodian statements are compared with Meridian ledger balances from shared reconciliation read models.",
+    subtitle: cashFlow?.summary ?? "Broker and custodian statements are compared with Meridian ledger balances from shared reconciliation data.",
     statementHeading,
     ledgerHeading,
     matchedBadgeLabel: `${formatCount(matchedCount)} matched`,
@@ -574,6 +678,12 @@ export function buildReconciliationComparisonViewState({
     ledgerBalanceLabel,
     varianceLabel,
     varianceTone,
+    summaryUnavailableReason,
+    tieOutUnavailableReason,
+    legacyPrecisionNotice,
+    statementBalanceExact,
+    ledgerBalanceExact,
+    netVarianceExact,
     statementBalance: statementBalanceValue,
     ledgerBalance: ledgerBalanceValue,
     netVariance: netVarianceValue,
@@ -663,7 +773,7 @@ function buildReconciliationRunDetailTabs(run: StatementRunSummaryWithMetadata |
     { id: "positions", label: "Positions", badgeLabel: run ? matchTotal(run.positionMatches) : null, description: matchDescription("Position match totals supplied by the reconciliation service.", "Position match") },
     { id: "cash", label: "Cash", badgeLabel: run ? matchTotal(run.cashMatches) : null, description: matchDescription("Cash match totals supplied by the reconciliation service.", "Cash match") },
     { id: "transactions", label: "Transactions", badgeLabel: run ? matchTotal(run.transactionMatches) : null, description: matchDescription("Transaction match totals supplied by the reconciliation service.", "Transaction match") },
-    { id: "breaks-cases", label: "Breaks & Cases", badgeLabel: run ? String(run.breakCount ?? openExceptionCount) : null, description: "Break and case counts from reconciliation/casework read models; no case-state logic runs in React." },
+    { id: "breaks-cases", label: "Breaks & Cases", badgeLabel: run ? String(run.breakCount ?? openExceptionCount) : null, description: "Break and case counts from reconciliation/casework data; no case-state logic runs in React." },
     { id: "evidence", label: "Evidence", badgeLabel: run ? matchTotal(matchCount) : null, description: "Evidence packet and imported statement references available for review." }
   ];
 
@@ -689,10 +799,10 @@ export function buildReconciliationQueuePanelViewState(
     description: "Select a run to inspect its active reconciliation detail panel.",
     overviewTitle: "Reconciliation queue",
     overviewDescription: "Open breaks, timing drift, and balanced runs stay visible without leaving Accounting.",
-    overviewCaption: "Read-only reconciliation queue summary. Open the reconciliation workstream to inspect selected run detail.",
+    overviewCaption: "Read-only reconciliation queue summary. Open the reconciliation area to inspect selected run detail.",
     overviewActionHref: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
     overviewActionLabel: "Open reconciliation",
-    overviewActionAriaLabel: "Open Accounting reconciliation workstream",
+    overviewActionAriaLabel: "Open Accounting reconciliation area",
     listLabel: "Reconciliation runs",
     emptyText: "No reconciliation runs are available for this accounting scope.",
     detailPanelId,
@@ -842,7 +952,7 @@ export function buildOperationalExceptionWorkbenchState({
 
   return {
     title: "Operational exception workbench",
-    description: "Unified review for reconciliation breaks, workflow state, comments, audit evidence, and approval handoffs.",
+    description: "One review for reconciliation breaks, workflow state, comments, audit evidence, and approval next steps.",
     metricRows: [
       {
         id: "active-breaks",
@@ -906,6 +1016,8 @@ export function buildReconciliationBreakRows(
   selectedBreakId: string | null = null
 ): ReconciliationBreakRowViewModel[] {
   return breakQueue.map((item) => {
+    const varianceLabel = caseVarianceLabel(item);
+    const residualValue = parseExactDecimal(caseResidual(item))?.coefficient;
     const actionBusy = action?.breakId === item.breakId;
     const assignBusy = actionBusy && action?.command === "assign";
     const resolveBusy = actionBusy && action?.command === "resolve";
@@ -920,13 +1032,13 @@ export function buildReconciliationBreakRows(
       ...item,
       actionBusy,
       financeLabel,
-      varianceLabel: formatSignedCurrency(item.variance),
-      varianceTone: item.variance > 0 ? "success" : item.variance < 0 ? "danger" : "default",
+      varianceLabel,
+      varianceTone: residualValue !== undefined && residualValue > 0n ? "success" : residualValue !== undefined && residualValue < 0n ? "danger" : "default",
       statusBadgeVariant: reconciliationBreakStatusBadgeVariant(item.status),
-      detectedAtLabel: formatDateTimeLabel(item.detectedAt),
-      lastUpdatedAtLabel: formatDateTimeLabel(item.lastUpdatedAt),
+      detectedAtLabel: formatAccountingDate(item.detectedAt),
+      lastUpdatedAtLabel: formatAccountingDate(item.lastUpdatedAt),
       ownerLabel: item.assignedTo ?? "Unassigned",
-      rowAriaLabel: `${financeLabel} ${item.breakId}. ${item.status}. Variance ${formatSignedCurrency(item.variance)}. ${item.reason}`,
+      rowAriaLabel: `${financeLabel} ${item.breakId}. ${item.status}. Variance ${varianceLabel}. ${item.reason}`,
       rowSelectAriaLabel: `Inspect reconciliation break ${item.breakId}`,
       detailPanelId: "reconciliation-break-detail-panel",
       isSelected,
@@ -990,7 +1102,7 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
       { label: "Updated", value: row.lastUpdatedAtLabel },
       { label: "Exception route", value: formatReconciliationMetadata(row.exceptionRoute, "Unrouted") },
       { label: "Tolerance profile", value: formatReconciliationMetadata(row.toleranceProfileId, "Unassigned") },
-      { label: "Tolerance band", value: row.toleranceBand == null ? "Policy default" : formatCurrency(row.toleranceBand) },
+      { label: "Tolerance band", value: row.toleranceBand == null ? "Policy default" : formatPrefixedCurrency(row.toleranceBand) },
       { label: "Priority", value: formatReconciliationMetadata(row.priority, "Normal") },
       { label: "Urgency", value: buildReconciliationExceptionUrgency(row) },
       { label: "SLA tone", value: formatReconciliationMetadata(row.slaBadgeTone, "info") },
@@ -1001,7 +1113,7 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
       { label: "Comparison scope", value: row.lineage?.comparisonScopeId ?? "Not tracked" },
       { label: "Source lineage", value: row.lineage?.lineageId ?? "No stable source identity retained" },
       { label: "Occurrence", value: row.lineage ? `${row.lineage.occurrenceNumber} · ${row.lineage.occurrenceId}` : "Not tracked" },
-      { label: "First observed", value: row.lineage?.firstObservedAt ?? "Not tracked" },
+      { label: "First observed", value: row.lineage?.firstObservedAt ? formatAccountingDate(row.lineage.firstObservedAt) : "Not tracked" },
       { label: "Last observed run", value: row.lineage?.lastObservedRunId ?? "Not tracked" },
       { label: "Source clearing", value: row.lineage?.clearedByRunId ? `Absent from completed run ${row.lineage.clearedByRunId}; casework still requires disposition` : "No clearing established" },
       { label: "Root cause", value: formatReconciliationMetadata(row.rootCauseCode, "Unset") },
@@ -1051,13 +1163,13 @@ function formatReconciliationList(values: string[] | null | undefined, fallback:
 function buildReconciliationSlaText(row: Pick<ReconciliationBreakQueueItem, "slaState" | "slaDueAt" | "slaWarningAt" | "slaBreachedAt">): string {
   const state = reconciliationSlaStateLabel(row.slaState);
   if (row.slaBreachedAt) {
-    return `${state}; breached ${formatDateTimeLabel(row.slaBreachedAt)}`;
+    return `${state}; breached ${formatAccountingDate(row.slaBreachedAt)}`;
   }
   if (row.slaDueAt) {
-    return `${state}; due ${formatDateTimeLabel(row.slaDueAt)}`;
+    return `${state}; due ${formatAccountingDate(row.slaDueAt)}`;
   }
   if (row.slaWarningAt) {
-    return `${state}; warning ${formatDateTimeLabel(row.slaWarningAt)}`;
+    return `${state}; warning ${formatAccountingDate(row.slaWarningAt)}`;
   }
   return state;
 }
@@ -1108,7 +1220,7 @@ function reconciliationSlaStateLabel(state: ReconciliationBreakQueueItem["slaSta
   }
 }
 
-function buildReconciliationBreakRoutingHref(routingTarget: string | null | undefined): string | null {
+export function buildReconciliationBreakRoutingHref(routingTarget: string | null | undefined): string | null {
   const trimmedTarget = routingTarget?.trim();
   if (!trimmedTarget) {
     return null;

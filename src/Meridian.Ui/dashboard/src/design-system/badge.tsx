@@ -43,8 +43,8 @@ const badgeVariantClasses: Record<NonNullable<DesignSystemBadgeProps["variant"]>
 export function DesignSystemBadge({ children, className, dot = false, variant = "default", ...props }: DesignSystemBadgeProps) {
   // Tracked mono caps are for one- or two-word badges; a count or sentence reads in normal case.
   const caseClasses = usesTrackedCaps(children)
-    ? "font-mono text-[10px] uppercase tracking-[0.14em]"
-    : "mds-badge--sentence text-[11px] normal-case tracking-normal";
+    ? "shrink-0 whitespace-nowrap font-mono text-xs uppercase tracking-[0.14em]"
+    : "mds-badge--sentence text-xs normal-case tracking-normal";
   return (
     <span
       className={cn(

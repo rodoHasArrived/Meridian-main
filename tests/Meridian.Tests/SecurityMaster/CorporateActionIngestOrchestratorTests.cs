@@ -19,7 +19,7 @@ namespace Meridian.Tests.SecurityMaster;
 /// consensus voting, dedupe against already-recorded actions, and staged handling for
 /// announcements below the configured source threshold.
 /// </summary>
-public sealed class CorporateActionIngestOrchestratorTests
+public sealed partial class CorporateActionIngestOrchestratorTests
 {
     private static readonly DateOnly ExDate = new(2026, 8, 14);
 
@@ -194,6 +194,70 @@ public sealed class CorporateActionIngestOrchestratorTests
         result.Staged.Should().Be(1, "single-source announcements stay staged for operator review");
         result.Proposals.Should().ContainSingle();
         commandService.Requests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task IngestAsync_LegacyEmptyFetch_HasUnknownCoverageAndVisibleWarning()
+    {
+        var securityId = Guid.NewGuid();
+        var orchestrator = CreateOrchestrator(securityId, EmptyEventStore(securityId), out _, new LegacyEmptyProvider());
+
+        var result = await orchestrator.IngestAsync(new CorporateActionIngestRequest());
+
+        result.Proposals.Should().BeEmpty();
+        result.FetchOutcomes.Should().ContainSingle().Which.Status.Should().Be(CorporateActionFetchStatus.Unknown);
+        result.Errors.Should().ContainSingle().Which.Should().Contain("coverage-unreported");
+    }
+
+    [Fact]
+    public async Task IngestAsync_CompleteEmptyAndFailedEmpty_RemainDistinctInInbox()
+    {
+        var securityId = Guid.NewGuid();
+        var orchestrator = CreateOrchestrator(securityId, EmptyEventStore(securityId), out _,
+            new OutcomeProvider("complete", CorporateActionFetchResult.Complete([])),
+            new OutcomeProvider("failed", CorporateActionFetchResult.Failed("unauthorized", 401)));
+
+        var result = await orchestrator.IngestAsync(new CorporateActionIngestRequest());
+        var inbox = new CorporateActionInboxState();
+        inbox.Record(result);
+
+        result.FetchOutcomes.Select(outcome => outcome.Status).Should().Equal(
+            CorporateActionFetchStatus.Complete, CorporateActionFetchStatus.Failed);
+        result.Errors.Should().ContainSingle().Which.Should().StartWith("failed/");
+        inbox.GetInbox().FetchOutcomes.Should().BeEquivalentTo(result.FetchOutcomes);
+    }
+
+    [Fact]
+    public async Task IngestAsync_PartialProvider_WithholdsObservationsWithCoverageWarning()
+    {
+        var securityId = Guid.NewGuid();
+        var orchestrator = CreateOrchestrator(securityId, EmptyEventStore(securityId), out var commands,
+            new OutcomeProvider("partial", new CorporateActionFetchResult(
+                [Dividend(securityId, "partial", 0.24m)], CorporateActionFetchStatus.Partial,
+                [new("rate-limited", 429, TimeSpan.FromSeconds(20), "splits")])));
+
+        var result = await orchestrator.IngestAsync(new CorporateActionIngestRequest());
+
+        result.FetchOutcomes.Should().ContainSingle().Which.Failures.Should().ContainSingle()
+            .Which.RetryAfter.Should().Be(TimeSpan.FromSeconds(20));
+        result.Errors.Should().ContainSingle().Which.Should().Contain("Partial").And.Contain("splits:rate-limited");
+        result.Staged.Should().Be(0);
+        result.Applied.Should().Be(0);
+        result.Proposals.Should().BeEmpty();
+        result.Errors.Should().ContainSingle().Which.Should().Contain("1 observation(s) withheld");
+        commands.Requests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task IngestAsync_ProviderException_DoesNotExposeExceptionText()
+    {
+        var securityId = Guid.NewGuid();
+        var orchestrator = CreateOrchestrator(securityId, EmptyEventStore(securityId), out _, new ThrowingProvider("nasdaq"));
+
+        var result = await orchestrator.IngestAsync(new CorporateActionIngestRequest());
+
+        result.FetchOutcomes.Should().ContainSingle().Which.Status.Should().Be(CorporateActionFetchStatus.Failed);
+        result.Errors.Should().ContainSingle().Which.Should().Contain("transport-error").And.NotContain("upstream unavailable");
     }
 
     [Fact]
@@ -450,7 +514,7 @@ public sealed class CorporateActionIngestOrchestratorTests
             request.RequestUri!.Query.Contains("page_token=", StringComparison.Ordinal)
                 ? new HttpResponseMessage(HttpStatusCode.InternalServerError)
                 : AlpacaJson(
-                    """{"corporate_actions":{"cash_dividends":[{"ex_date":"2026-08-14","id":"first","rate":0.24,"symbol":"ACME"}]},"next_page_token":"next-1"}"""));
+                    """{"corporate_actions":{"cash_dividends":[{"process_date":"2026-08-14","ex_date":"2026-08-14","id":"first","rate":0.24,"symbol":"ACME"}]},"next_page_token":"next-1"}"""));
         var orchestrator = CreateDurableOrchestrator(
             securityId,
             out var recordedRequests,
@@ -520,7 +584,7 @@ public sealed class CorporateActionIngestOrchestratorTests
     {
         var securityId = Guid.NewGuid();
         var alpaca = CreateAlpacaProvider(_ => AlpacaJson(
-            """{"corporate_actions":{"cash_dividends":[{"ex_date":"2026-08-14","id":"first","rate":0.24,"symbol":"ACME"}]},"next_page_token":null}"""));
+            """{"corporate_actions":{"cash_dividends":[{"process_date":"2026-08-14","ex_date":"2026-08-14","id":"first","rate":0.24,"symbol":"ACME"}]},"next_page_token":null}"""));
         var orchestrator = CreateDurableOrchestrator(securityId, out var recordedRequests, alpaca);
 
         var result = await orchestrator.IngestAsync(new CorporateActionIngestRequest());
@@ -603,7 +667,7 @@ public sealed class CorporateActionIngestOrchestratorTests
 
         public Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(
             string ticker, Guid securityId, CancellationToken ct = default)
-            => Task.FromResult(outcome.Observations);
+            => throw new InvalidOperationException("Coverage-aware ingestion must use the outcome API.");
 
         public Task<CorporateActionFetchResult> FetchWithOutcomeAsync(
             string ticker, Guid securityId, CancellationToken ct = default)
@@ -757,6 +821,10 @@ public sealed class CorporateActionIngestOrchestratorTests
         public Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(
             string ticker, Guid securityId, CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<CorporateActionCommand>>(commands);
+
+        public Task<CorporateActionFetchResult> FetchWithOutcomeAsync(
+            string ticker, Guid securityId, CancellationToken ct = default)
+            => Task.FromResult(CorporateActionFetchResult.Complete(commands));
     }
 
     private sealed class AcceptanceEligibleStubProvider(
@@ -771,6 +839,19 @@ public sealed class CorporateActionIngestOrchestratorTests
         public Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(
             string ticker, Guid securityId, CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<CorporateActionCommand>>(commands);
+
+        public Task<CorporateActionFetchResult> FetchWithOutcomeAsync(
+            string ticker, Guid securityId, CancellationToken ct = default)
+            => Task.FromResult(CorporateActionFetchResult.Complete(commands));
+    }
+
+    private sealed class LegacyEmptyProvider : ICorporateActionProvider
+    {
+        public string ProviderId => "legacy";
+
+        public Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(
+            string ticker, Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<CorporateActionCommand>>([]);
     }
 
     private sealed class ThrowingProvider(string providerId) : ICorporateActionProvider

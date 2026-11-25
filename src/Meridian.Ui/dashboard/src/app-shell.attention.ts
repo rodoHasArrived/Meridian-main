@@ -1,9 +1,11 @@
 import type { ShellStatusItem } from "@/app-shell.status-panel";
 import type { AppShellTrustStripItem, AppShellTrustStripState, AppShellTrustStripTone } from "@/app-shell.trust-strip";
 import type { AppShellWorkflowContinuityViewModel } from "@/app-shell.workflow-continuity-types";
+import { attentionSeverityRank, buildAttentionItems, needsAttention, type AttentionItem } from "@/lib/attention-items";
 import { selectDailyControlTowerQueueItems, selectLeadingDecisionItem } from "@/lib/daily-control-tower";
 import { buildDegradedModeNotices } from "@/lib/degraded-mode";
 import { pluralizeCount } from "@/lib/format";
+import type { OperatorTriageItem } from "@/lib/operator-inbox-triage";
 import { summarizeStatusSignals, type StatusSignalCounts } from "@/lib/status-signals";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import type { DegradedModeStatus } from "@/types";
@@ -39,8 +41,13 @@ export interface AppShellAttentionState {
   statusLabel: string;
   /** The worst issue's headline, or "No open issues". */
   title: string;
-  /** Issues beyond the one named in `title`, counting each queued decision. */
+  /** Issues beyond the one named in `title`, counting each attention item. */
   moreCount: number;
+  /**
+   * The attention list every count reads: the queue's workspace signals plus the shared inbox.
+   * Count it with `needsAttention`; the sidebar badges and Today's queue are filtered views of it.
+   */
+  items: AttentionItem[];
   counts: StatusSignalCounts;
   /** The pill always opens Today, where every signal is listed. */
   href: string;
@@ -80,7 +87,8 @@ export function buildAppShellAttentionState({
   error = null,
   trustStrip,
   workflowContinuity,
-  degradedMode = null
+  degradedMode = null,
+  inboxItems = null
 }: {
   loading: boolean;
   bootstrapFailed: boolean;
@@ -93,8 +101,10 @@ export function buildAppShellAttentionState({
   trustStrip: AppShellTrustStripState;
   workflowContinuity: AppShellWorkflowContinuityViewModel;
   degradedMode?: DegradedModeStatus | null;
+  /** The shared operator inbox, or null while it is loading or unavailable. */
+  inboxItems?: readonly OperatorTriageItem[] | null;
 }): AppShellAttentionState {
-  const decisions = buildDecisionSignal(workflowContinuity);
+  const decisions = buildDecisionSignal(workflowContinuity, inboxItems);
   const providers = trustStrip.items.find((item) => item.id === "providers") ?? null;
   const source = trustStrip.items.find((item) => item.id === "source") ?? null;
   const host = buildHostSignal(degradedMode);
@@ -110,9 +120,9 @@ export function buildAppShellAttentionState({
   ];
 
   const summary = summarizeStatusSignals(signals);
-  // Each queued decision is its own issue; the decisions signal stands for all of them. A
+  // Each attention item is its own issue; the decisions signal stands for all of them. A
   // provider warning or a failed workspace area is already queued as a decision, so its source
-  // signal is not counted a second time and the total matches the queue count beside Today.
+  // signal is not counted a second time and the total matches the count beside Today.
   const sourceIssuesOutsideQueue = summary.issues.filter(
     (signal) => signal.id !== "decisions" && !decisions.coveredSignalIds.has(signal.id)
   ).length;
@@ -132,24 +142,40 @@ export function buildAppShellAttentionState({
     ariaLabel: summary.clear
       ? "Workstation attention: All clear. No open issues. Open Today."
       : `Workstation attention: ${statusLabel}. ${title}.${moreCount > 0 ? ` ${pluralizeCount(moreCount, "more issue")}.` : ""} Open Today.`,
+    items: decisions.items,
     signals,
     issues: summary.issues,
     sourceSignals: signals.filter((signal) => signal.kind === "source")
   };
 }
 
-function buildDecisionSignal(workflowContinuity: AppShellWorkflowContinuityViewModel): {
+function buildDecisionSignal(
+  workflowContinuity: AppShellWorkflowContinuityViewModel,
+  inboxItems: readonly OperatorTriageItem[] | null
+): {
   signal: AppShellAttentionSignal;
+  items: AttentionItem[];
   issueCount: number;
   coveredSignalIds: ReadonlySet<AppShellAttentionSignalId>;
 } {
   const queue = selectDailyControlTowerQueueItems(workflowContinuity);
+  const items = buildAttentionItems(queue, inboxItems);
+  // The one count rule: blocked and action items, excluding snoozed.
+  const issueCount = items.filter(needsAttention).length;
   const summary = summarizeStatusSignals(queue);
-  const worst = summary.clear ? null : selectLeadingDecisionItem(workflowContinuity);
+  const worstSignal = summary.clear ? null : selectLeadingDecisionItem(workflowContinuity);
+  // A shared-inbox item leads only when it is strictly worse than every workspace signal, so the
+  // pill and Today's headline keep naming the same decision otherwise.
+  const worstInbox = items
+    .filter((item) => item.source === "inbox" && needsAttention(item))
+    .sort((left, right) => attentionSeverityRank(left.severity) - attentionSeverityRank(right.severity))[0] ?? null;
+  const worstSignalRank = worstSignal ? SIGNAL_TONE_RANK[worstSignal.tone] : Number.POSITIVE_INFINITY;
+  const inboxLeads = worstInbox !== null && attentionSeverityRank(worstInbox.severity) < worstSignalRank;
 
-  if (!worst) {
+  if (!worstSignal && !inboxLeads) {
     return {
-      issueCount: 0,
+      items,
+      issueCount,
       coveredSignalIds: new Set(),
       signal: {
         id: "decisions",
@@ -165,27 +191,51 @@ function buildDecisionSignal(workflowContinuity: AppShellWorkflowContinuityViewM
     };
   }
 
-  const others = summary.issues.length - 1;
+  const coveredSignalIds = new Set(
+    QUEUED_SOURCE_SIGNALS
+      .filter(({ queueIdPrefix }) => summary.issues.some((item) => item.id.startsWith(queueIdPrefix)))
+      .map(({ signalId }) => signalId)
+  );
+  const leading = inboxLeads && worstInbox
+    ? {
+        label: worstInbox.label,
+        detail: worstInbox.detail,
+        tone: worstInbox.severity === "blocked" ? "blocked" as const : "review" as const,
+        href: worstInbox.route ?? APP_SHELL_TODAY_ROUTE,
+        actionLabel: worstInbox.route ? "Open in workspace" : "Open Today",
+        counted: true
+      }
+    : {
+        label: worstSignal!.label,
+        detail: worstSignal!.detail,
+        tone: worstSignal!.tone,
+        href: worstSignal!.route,
+        actionLabel: worstSignal!.actionLabel,
+        // Counted unless it is informational, or its shared-inbox twin is snoozed.
+        counted: items.some((item) => needsAttention(item)
+          && (item.id === worstSignal!.id || `work-item:${item.id}` === worstSignal!.id))
+      };
+  const others = issueCount - (leading.counted ? 1 : 0);
   return {
-    issueCount: summary.issues.length,
-    coveredSignalIds: new Set(
-      QUEUED_SOURCE_SIGNALS
-        .filter(({ queueIdPrefix }) => summary.issues.some((item) => item.id.startsWith(queueIdPrefix)))
-        .map(({ signalId }) => signalId)
-    ),
+    items,
+    issueCount,
+    coveredSignalIds,
     signal: {
       id: "decisions",
       kind: "workflow",
       label: "Decisions",
-      value: others > 0 ? `${worst.label} · ${others} more` : worst.label,
-      detail: worst.detail,
-      tone: worst.tone,
-      headline: worst.label,
-      href: worst.route,
-      actionLabel: worst.actionLabel
+      value: others > 0 ? `${leading.label} · ${others} more` : leading.label,
+      detail: leading.detail,
+      tone: leading.tone,
+      headline: leading.label,
+      href: leading.href,
+      actionLabel: leading.actionLabel
     }
   };
 }
+
+/** A workspace signal's tone on the attention-severity scale (0 blocked … 3 clear). */
+const SIGNAL_TONE_RANK: Record<AppShellTrustStripTone, number> = { blocked: 0, review: 1, pending: 2, ready: 3 };
 
 function fromTrustItem(
   id: "providers" | "source",

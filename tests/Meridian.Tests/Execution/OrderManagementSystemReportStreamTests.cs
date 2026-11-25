@@ -109,6 +109,46 @@ public sealed class OrderManagementSystemReportStreamTests
     }
 
     [Fact]
+    public async Task LateAcknowledgement_DoesNotRegressPartiallyFilledStatus()
+    {
+        var gateway = new StreamingGateway
+        {
+            SubmitAck = BuildReport("pending", OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null)
+        };
+        using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10,
+            LimitPrice = 150m
+        });
+        result.Success.Should().BeTrue();
+
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.PartiallyFilled, ExecutionReportType.PartialFill, filledQty: 5m, fillPrice: 150m, orderQuantity: 10m));
+        await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.FilledQuantity == 5m,
+            "the partial fill must reach tracked order state");
+
+        // The broker's "New" acknowledgement arrives after the first fill. Its timestamp is the
+        // barrier that proves the report was applied to tracked state.
+        var lateAckAt = DateTimeOffset.UtcNow.AddSeconds(1);
+        var lateAck = BuildReport(
+            result.OrderId, OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null, orderQuantity: 10m);
+        await gateway.PublishAsync(lateAck with { Timestamp = lateAckAt });
+        await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.LastUpdatedAt == lateAckAt,
+            "the late acknowledgement must be applied to tracked order state");
+
+        var order = oms.GetOrder(result.OrderId)!;
+        order.FilledQuantity.Should().Be(5m);
+        order.Status.Should().Be(OrderStatus.PartiallyFilled,
+            "an order holding fills must not be presented as untouched because its acknowledgement arrived late");
+    }
+
+    [Fact]
     public async Task CumulativePartialFills_ApplyOnlyTheIncrementToPortfolio()
     {
         var portfolio = new PaperTradingPortfolio(100_000m);

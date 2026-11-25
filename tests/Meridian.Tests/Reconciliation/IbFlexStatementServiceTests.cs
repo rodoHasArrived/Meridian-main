@@ -7,7 +7,7 @@ using System.Text;
 using FluentAssertions;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Xunit;
 
 namespace Meridian.Tests.Reconciliation;
@@ -126,6 +126,26 @@ public sealed class IbFlexStatementServiceTests : IDisposable
 
         result.IsValid.Should().BeFalse();
         result.Errors.Should().ContainSingle(static e => e.Contains("well-formed"));
+    }
+
+    [Fact]
+    public async Task MalformedXmlTail_RefusesValidPrefixAndRetainsOnlyTheCorrectedSource()
+    {
+        var path = WriteFlexFile(SampleFlexXml.Replace("</FlexQueryResponse>", "", StringComparison.Ordinal));
+        var request = MakeRequest(path);
+
+        (await _service.ValidateAsync(request)).IsValid.Should().BeFalse();
+        await Assert.ThrowsAsync<XmlException>(() => _service.ImportAsync(request));
+        (await _store.ListImportsAsync()).Should().BeEmpty();
+        Directory.Exists(Path.Combine(_tempDir, "reconciliation", "statement-imports")).Should().BeFalse();
+
+        await File.WriteAllTextAsync(path, SampleFlexXml);
+        var imported = await _service.ImportAsync(request);
+        File.Delete(path);
+        var evidence = await new JsonCanonicalStatementStore(_tempDir, new AtomicFileWriterAdapter())
+            .ReadSourceEvidenceAsync(imported.Import.ImportId);
+        Encoding.UTF8.GetString(evidence.Source).Should().Be(SampleFlexXml);
+        imported.Rows.Should().HaveCount(5);
     }
 
     [Fact]

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
@@ -36,7 +37,11 @@ public sealed record OpenLotFactorPaydownInstructionDto(
     decimal NewFactor,
     decimal PrincipalPaydown,
     string Currency,
-    IReadOnlyList<OpenLotFactorPaydownLotDto> Lots);
+    IReadOnlyList<OpenLotFactorPaydownLotDto> Lots)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BondIncomeScheduledPrincipalDto? ScheduledPrincipal { get; init; }
+}
 
 /// <summary>Pure allocation and projection rules of a factor paydown; the store re-runs them under lock.</summary>
 public static class OpenLotFactorPaydown
@@ -183,8 +188,10 @@ public static class OpenLotFactorPaydown
                     "Factor paydown cannot precede a successor lot's immutable origin or repeat it.");
         }
 
-        var allocated = Allocate(lots.Select(static lot => lot.ExpectedLot).ToArray(),
-            instruction.PriorFactor, instruction.NewFactor, instruction.PrincipalPaydown, instruction.Currency);
+        var allocated = instruction.ScheduledPrincipal is { } scheduled
+            ? BondIncomeScheduledPrincipal.Allocate(instruction, scheduled)
+            : Allocate(lots.Select(static lot => lot.ExpectedLot).ToArray(),
+                instruction.PriorFactor, instruction.NewFactor, instruction.PrincipalPaydown, instruction.Currency);
         var projected = new OpenLotDto[lots.Count];
         for (var index = 0; index < lots.Count; index++)
         {

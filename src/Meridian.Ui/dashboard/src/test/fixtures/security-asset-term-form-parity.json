@@ -515,7 +515,7 @@
     },
     {
       "assetClass": "Bond",
-      "termsVersion": 3,
+      "termsVersion": 5,
       "lotUnit": "FaceValue",
       "cashFlowBehavior": "ContractualSchedule",
       "fields": [
@@ -917,6 +917,20 @@
           "editor": "Json",
           "group": "Schedules and structure",
           "order": 26,
+          "required": false,
+          "scalarEditable": false,
+          "choices": [],
+          "aliases": [],
+          "role": "Economic"
+        },
+        {
+          "key": "bondWorkflow",
+          "fieldPath": "assetSpecificTerms.bondWorkflow",
+          "label": "Bond workflow",
+          "type": "Object",
+          "editor": "Json",
+          "group": "Schedules and structure",
+          "order": 27,
           "required": false,
           "scalarEditable": false,
           "choices": [],

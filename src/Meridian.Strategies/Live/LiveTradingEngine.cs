@@ -5,7 +5,10 @@ using Meridian.Execution.Live;
 using Meridian.Execution.Services;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
+using Meridian.Strategies.Live.Designer;
 using Meridian.Strategies.Services;
+using Meridian.Strategies.Artifacts;
+using Meridian.Strategies.Live.Designer;
 using Microsoft.Extensions.Logging.Abstractions;
 using ExecutionSdk = Meridian.Execution.Sdk;
 
@@ -38,6 +41,9 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
     private readonly StrategyLifecycleManager _lifecycleManager;
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly BrokerageConfiguration? _brokerageConfiguration;
+    private readonly DesignerPaperExecution? _designerPaper;
+    private readonly StrategyArtifactRegistry? _artifacts;
+    private readonly StrategyLiveAuthorizationService? _liveAuthorizations;
     private readonly CancellationTokenSource _engineCts = new();
     private readonly ConcurrentDictionary<string, ActiveRun> _activeRuns = new(StringComparer.Ordinal);
     // Cross-strategy aggregation and the portfolio-aware risk rails read the registry, so
@@ -66,7 +72,10 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         StrategyLifecycleManager? lifecycleManager = null,
         ExecutionAuditTrailService? auditTrail = null,
         BrokerageConfiguration? brokerageConfiguration = null,
-        Meridian.Execution.Services.PortfolioRegistry? portfolioRegistry = null)
+        Meridian.Execution.Services.PortfolioRegistry? portfolioRegistry = null,
+        StrategyArtifactRegistry? artifacts = null,
+        StrategyLiveAuthorizationService? liveAuthorizations = null,
+        DesignerPaperExecution? designerPaper = null)
     {
         _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
         _feed = feed ?? throw new ArgumentNullException(nameof(feed));
@@ -83,6 +92,9 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         _auditTrail = auditTrail;
         _brokerageConfiguration = brokerageConfiguration;
         _portfolioRegistry = portfolioRegistry;
+        _designerPaper = designerPaper;
+        _artifacts = artifacts;
+        _liveAuthorizations = liveAuthorizations;
     }
 
     /// <summary>Run ids owned by this engine, including restored paused runs.</summary>
@@ -153,6 +165,9 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                 }
             }
 
+            if (run.RunType == RunType.Live && await CheckLiveAuthorizationAsync(run, ct).ConfigureAwait(false) is { } authorizationBlock)
+                return await DeferAsync(run, authorizationBlock, ct).ConfigureAwait(false);
+
             if (_activeRuns.ContainsKey(run.RunId))
             {
                 return RunLaunchResult.Success();
@@ -165,12 +180,70 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                     ct).ConfigureAwait(false);
             }
 
-            if (!_catalog.TryCreate(run.StrategyId, run.ParameterSet, out var strategy, out var failureReason) || strategy is null)
+            StrategyArtifact? artifact = null;
+            var creationParameters = run.ParameterSet;
+            if (run.StrategyArtifactId is { } artifactId)
+            {
+                try
+                {
+                    artifact = _artifacts is null ? null : await _artifacts.GetAsync(artifactId, ct).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+                {
+                    _logger.LogWarning(ex, "Could not verify artifact for run {RunId}.", run.RunId);
+                }
+                if (artifact is null || artifact.StrategyId != run.StrategyId)
+                    return await DeferAsync(run, "The exact retained strategy artifact could not be verified.", ct).ConfigureAwait(false);
+                if (artifact.Route == StrategyAuthoringRoute.QuantScript)
+                    return await DeferAsync(run, "QuantScript activation requires a supported execution runtime.", ct).ConfigureAwait(false);
+                if (artifact.Route == StrategyAuthoringRoute.Designer)
+                {
+                    if (run.ParameterSet?.ContainsKey(DesignerStrategyVersion.VersionKey) == true ||
+                        artifact.Parameters.ContainsKey(DesignerStrategyVersion.VersionKey))
+                    {
+                        if (run.ParameterSet?.ContainsKey(DesignerStrategyVersion.VersionKey) != true ||
+                            run.ExecutionRealism is null || artifact.DesignerDocument is null ||
+                            !StrategyRunRepositoryVisibility.TryGetRetainedScope(run, out var artifactScope) ||
+                            !string.Equals(artifactId, StrategyArtifact.FromScopedDesigner(
+                                artifact.DesignerDocument,
+                                new StrategyRunRepositoryScope(artifactScope.TenantId, artifactScope.CompanyId),
+                                run.ExecutionRealism).ComputeId(), StringComparison.Ordinal))
+                            return await DeferAsync(run,
+                                "The scoped Designer artifact differs from the retained strategy scope or execution settings.", ct)
+                                .ConfigureAwait(false);
+                    }
+                    creationParameters = new Dictionary<string, string>(run.ParameterSet ?? new Dictionary<string, string>(),
+                        StringComparer.OrdinalIgnoreCase)
+                    {
+                        [DesignerDocumentLiveSource.RetainedArtifactParameterKey] = artifactId
+                    };
+                }
+            }
+
+            if (!_catalog.TryCreate(run.StrategyId, creationParameters, out var strategy, out var failureReason) || strategy is null)
             {
                 return await DeferAsync(run, failureReason ?? "No live strategy implementation available.", ct).ConfigureAwait(false);
             }
 
-            var universe = ResolveUniverse(run);
+            if (artifact is { Route: StrategyAuthoringRoute.Code })
+            {
+                var implementation = strategy is BacktestStrategyLiveAdapter adapter ? adapter.ImplementationType : strategy.GetType();
+                var effective = StrategyArtifact.CaptureCodeParameters(strategy, run.ParameterSet ?? new Dictionary<string, string>());
+                try
+                {
+                    if (artifact.SourceRevision != StrategyArtifact.CodeRevision(implementation) ||
+                        artifact.Parameters.Any(pair => !effective.TryGetValue(pair.Key, out var value) || pair.Value != value))
+                        return await DeferAsync(run, "The executable strategy or its inputs differ from the approved revision.", ct).ConfigureAwait(false);
+                }
+                catch (IOException ex)
+                {
+                    _logger.LogWarning(ex, "Could not verify the executable revision for run {RunId}.", run.RunId);
+                    return await DeferAsync(run, "The executable strategy revision could not be verified.", ct).ConfigureAwait(false);
+                }
+            }
+
+            var universe = artifact is null ? ResolveUniverse(run) :
+                artifact.Universe.ToHashSet(StringComparer.OrdinalIgnoreCase);
             if (universe.Count == 0)
             {
                 return await DeferAsync(
@@ -178,6 +251,20 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                     "Run has no trading universe: set the 'symbols' run parameter or configure " +
                     $"{LiveTradingEngineOptions.SectionKey}:DefaultSymbols.",
                     ct).ConfigureAwait(false);
+            }
+
+            PaperRunOrderContext? paperOrders = null;
+            if (run.ParameterSet?.ContainsKey(DesignerStrategyVersion.VersionKey) == true)
+            {
+                if (_designerPaper is null || _orderManager is not OrderManagementSystem oms ||
+                    _orderGateway.Mode != Meridian.Execution.Models.ExecutionMode.Paper)
+                    return await DeferAsync(run, "Scoped Designer paper execution is unavailable on this host.", ct)
+                        .ConfigureAwait(false);
+
+                var prepared = await _designerPaper.PrepareAsync(run, oms, universe.ToArray(), ct).ConfigureAwait(false);
+                if (prepared.Context is null)
+                    return await DeferAsync(run, prepared.Blocker!, ct).ConfigureAwait(false);
+                paperOrders = prepared.Context;
             }
 
             var fillQueueCapacity = Math.Max(1, _options.FillReportQueueCapacity);
@@ -197,7 +284,8 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                 _auditTrail,
                 _loggerFactory.CreateLogger<LiveStrategyRunSession>(),
                 useSynchronousFillFallback: _orderManager is not OrderManagementSystem,
-                fillReportQueueCapacity: fillQueueCapacity);
+                fillReportQueueCapacity: fillQueueCapacity,
+                paperOrders: paperOrders);
 
             var activeRun = new ActiveRun(session, fillQueueCapacity);
             session.SetLifecycleControlGate(activeRun.ControlGate);
@@ -353,13 +441,29 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         return activeRun.GetOrStartStop(() => StopActiveRunCoreAsync(activeRun));
     }
 
-    private static async Task<VerifiedOperationOutcome> StopActiveRunCoreAsync(ActiveRun activeRun)
+    private async Task<VerifiedOperationOutcome> StopActiveRunCoreAsync(ActiveRun activeRun)
     {
         await activeRun.Initialized.ConfigureAwait(false);
         await activeRun.ControlGate.WaitAsync().ConfigureAwait(false);
         try
         {
             activeRun.Session.CloseOutboundOrderAdmission();
+
+            // A fill the OMS already accepted (and handed to accounting) may still be on its way
+            // through the shared report pump. Closing admission now would reject it as
+            // undeliverable and fail a run the operator asked to stop cleanly, so let accepted
+            // fills reach the session first.
+            var drainTimeout = _options.StopFillDrainTimeout > TimeSpan.Zero
+                ? _options.StopFillDrainTimeout
+                : TimeSpan.Zero;
+            if (!await activeRun.Session.WaitForAcceptedFillDeliveryAsync(drainTimeout).ConfigureAwait(false))
+            {
+                _logger.LogWarning(
+                    "Run {RunId} stop proceeded before every OMS-accepted fill reached its session (drain timeout {Timeout}).",
+                    activeRun.Session.RunId,
+                    drainTimeout);
+            }
+
             activeRun.CompleteReportAdmission();
             try
             {
@@ -426,6 +530,17 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         }
 
         await activeRun.Initialized.WaitAsync(ct).ConfigureAwait(false);
+        if (activeRun.Session.RunType == RunType.Live && _liveAuthorizations is not null)
+        {
+            var run = await _repository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+            if (run is null)
+                return null;
+            if (await CheckLiveAuthorizationAsync(run, ct).ConfigureAwait(false) is { } authorizationBlock)
+            {
+                _logger.LogWarning("Live run {RunId} cannot resume: {Reason}.", runId, authorizationBlock);
+                return null;
+            }
+        }
         return await _lifecycleManager.ResumeRunAsync(
             activeRun.Session.Strategy,
             runId,
@@ -442,6 +557,21 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
     /// finished (host restart, engine previously missing). Returns the number of runs
     /// activated.
     /// </summary>
+    private async Task<string?> CheckLiveAuthorizationAsync(StrategyRunEntry run, CancellationToken ct)
+    {
+        if (_liveAuthorizations is null)
+            return null;
+        try
+        {
+            return (await _liveAuthorizations.CheckRunAsync(run, ct).ConfigureAwait(false)).Reason;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            _logger.LogWarning(ex, "Live authorization for run {RunId} could not be verified.", run.RunId);
+            return "The live strategy authorization could not be verified.";
+        }
+    }
+
     public async Task<int> ResumePendingRunsAsync(CancellationToken ct = default)
     {
         if (!_options.Enabled)
@@ -857,11 +987,24 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         {
             var retainedRun = await _repository.GetRunByIdAsync(runId, CancellationToken.None).ConfigureAwait(false)
                 ?? throw new InvalidOperationException($"No retained strategy run '{runId}' exists for the late fill.");
-            await _repository.RecordLifecycleEventAsync(
-                    retainedRun.Fail(failure, "An accepted broker fill could not reach the live strategy session."),
-                    StrategyRunLifecycleEventType.Failed,
-                    CancellationToken.None)
-                .ConfigureAwait(false);
+            if (retainedRun is { EndedAt: not null, TerminalStatus: StrategyRunStatus.Failed })
+            {
+                // The run's outcome is already explicitly failed. Appending a second Failed is not
+                // a valid transition and would move its retained end timestamp; the audit row
+                // below still records this particular undelivered report.
+                _logger.LogWarning(
+                    "Run {RunId} is already retained as failed; undelivered report for order {OrderId} is recorded in the audit trail only.",
+                    runId,
+                    clientOrderId);
+            }
+            else
+            {
+                await _repository.RecordLifecycleEventAsync(
+                        retainedRun.Fail(failure, "An accepted broker fill could not reach the live strategy session."),
+                        StrategyRunLifecycleEventType.Failed,
+                        CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
         }
         catch (Exception ex)
         {

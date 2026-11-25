@@ -2,7 +2,7 @@
 
 **Status:** automation-owned-support
 **Owner:** core-team
-**Reviewed:** 2026-09-23
+**Reviewed:** 2026-11-15
 
 This folder holds generated repository reports, compatibility entry points, and retained evidence
 contracts. Delivery status comes from the [roadmap registry](../roadmap/README.md); release readiness
@@ -43,6 +43,14 @@ rerun it from the repository root. Paths in the command column are relative to t
 | [UI route wiring](ui-route-wiring-report.md) and [JSON](ui-route-wiring-report.json) | `python build/scripts/docs/generate-ui-route-wiring-report.py`; static wiring scan. |
 | [WPF screen tracker](wpf-screen-development-tracker.md) and [JSON](wpf-screen-development-tracker.json) | `npm run generate-wpf-screen-tracker`; registry/source/test-reference/screenshot inventory, not proof of executed UI tests. |
 | [Workflow manifest](workflow-manifest.json), [drift report](workflow-drift-report.md), and [validation summary](workflow-validation-summary.json) | `python build/scripts/docs/generate-workflow-manifest.py`; workflow declarations and file inventory. |
+
+Several of these reports are gitignored local outputs (see the `/docs/status/` entries in
+`.gitignore`), including program state, the TODO scan, example validation, automation summary,
+AI inventory and handoff reports, prompt routing, the API contract, paper replay, evidence
+continuity and governance dashboards,
+the WPF screen tracker, the workflow drift report and validation summary. Their links resolve
+only after the owning command has run in your checkout. A fresh clone shows them as missing,
+which `repair-links.py` reports as broken links.
 
 Unless a full path is shown, Python report owners above live in `build/scripts/docs/`. Some dashboard
 generators deliberately emit `1970-01-01T00:00:00+00:00` as a stable timestamp for reproducible output.

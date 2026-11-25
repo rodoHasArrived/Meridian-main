@@ -20,8 +20,12 @@ public static partial class SecurityMasterEndpoints
     /// </summary>
     private static void MapCurveAndValuationEndpoints(WebApplication app, RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
+        jsonOptions = FixedIncomeHttpJson.Options(jsonOptions);
         if (app.Services.GetService<ISecurityCurveStore>() is not null)
+        {
             MapCurveEndpoints(group, jsonOptions);
+            MapRateIngestionEndpoints(app, group, jsonOptions);
+        }
 
         if (app.Services.GetService<ISecurityValuationService>() is not null)
             MapValuationEndpoints(group, jsonOptions);
@@ -138,6 +142,9 @@ public static partial class SecurityMasterEndpoints
             var authorizationResult = RequireSecurityMasterMutationPermission(context);
             if (authorizationResult is not null)
                 return authorizationResult;
+
+            if (request.Points?.Any(point => point?.RateEvidence is not null) == true)
+                return Results.BadRequest(new { error = "Use verified rates ingestion to retain rate source evidence." });
 
             // An unknown curve answers as the reads do. A curve identity is never deleted, so one found
             // here is still there when the store re-reads it under a row lock.

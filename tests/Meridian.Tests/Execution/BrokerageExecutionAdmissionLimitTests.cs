@@ -4,6 +4,7 @@ using FluentAssertions;
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -18,7 +19,7 @@ public sealed class BrokerageExecutionAdmissionLimitTests
     {
         await using var fixture = new Fixture(config => config.MaxOrderNotional = 100m);
 
-        var result = await fixture.Oms.PlaceOrderAsync(Request("notional") with { Quantity = notional });
+        var result = await fixture.SubmitAsync(Request("notional") with { Quantity = notional });
 
         result.Success.Should().Be(accepted);
         fixture.Broker.Submissions.Should().HaveCount(accepted ? 1 : 0);
@@ -31,7 +32,7 @@ public sealed class BrokerageExecutionAdmissionLimitTests
     {
         await using var fixture = new Fixture(config => config.MaxOrderNotional = 100m);
 
-        var result = await fixture.Oms.PlaceOrderAsync(Request("market") with { Type = OrderType.Market, LimitPrice = null });
+        var result = await fixture.SubmitAsync(Request("market") with { Type = OrderType.Market, LimitPrice = null });
 
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("Unable to evaluate order notional");
@@ -43,11 +44,11 @@ public sealed class BrokerageExecutionAdmissionLimitTests
     {
         await using var fixture = new Fixture(config => config.MaxOrderNotional = 100m);
 
-        var nativeNotional = await fixture.Oms.PlaceOrderAsync(Request("native-notional") with
+        var nativeNotional = await fixture.SubmitAsync(Request("native-notional") with
         {
             Metadata = new Dictionary<string, string> { ["runId"] = "run-limits", ["notional"] = "101" }
         });
-        var option = await fixture.Oms.PlaceOrderAsync(Request("option") with
+        var option = await fixture.SubmitAsync(Request("option") with
         {
             Quantity = 2m,
             OptionContract = new OptionContractIdentity { Multiplier = "100" }
@@ -63,7 +64,7 @@ public sealed class BrokerageExecutionAdmissionLimitTests
     {
         await using var fixture = new Fixture(config => config.MaxOrderNotional = 100m);
 
-        var result = await fixture.Oms.PlaceOrderAsync(Request("face-value") with
+        var result = await fixture.SubmitAsync(Request("face-value") with
         {
             Quantity = 100m,
             LimitPrice = 100m,
@@ -80,7 +81,7 @@ public sealed class BrokerageExecutionAdmissionLimitTests
         await using var fixture = new Fixture(config => config.MaxOpenOrders = 1);
         fixture.Broker.OpenOrders = [BrokerOrder("external", "broker-external")];
 
-        var result = await fixture.Oms.PlaceOrderAsync(Request("blocked-by-external"));
+        var result = await fixture.SubmitAsync(Request("blocked-by-external"));
 
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("Open order count");
@@ -91,10 +92,10 @@ public sealed class BrokerageExecutionAdmissionLimitTests
     public async Task RegisteredOms_DoesNotCountTrackedBrokerOrderTwice()
     {
         await using var fixture = new Fixture(config => config.MaxOpenOrders = 2);
-        (await fixture.Oms.PlaceOrderAsync(Request("first"))).Success.Should().BeTrue();
+        (await fixture.SubmitAsync(Request("first"))).Success.Should().BeTrue();
         fixture.Broker.OpenOrders = [BrokerOrder("first", "broker-first")];
 
-        var second = await fixture.Oms.PlaceOrderAsync(Request("second"));
+        var second = await fixture.SubmitAsync(Request("second"));
 
         second.Success.Should().BeTrue();
         fixture.Broker.Submissions.Should().HaveCount(2);
@@ -104,10 +105,10 @@ public sealed class BrokerageExecutionAdmissionLimitTests
     public async Task RegisteredOms_DuplicateClientIdsAtDifferentBrokerOrdersStillConsumeCapacity()
     {
         await using var fixture = new Fixture(config => config.MaxOpenOrders = 2);
-        (await fixture.Oms.PlaceOrderAsync(Request("first"))).Success.Should().BeTrue();
+        (await fixture.SubmitAsync(Request("first"))).Success.Should().BeTrue();
         fixture.Broker.OpenOrders = [BrokerOrder("first", "broker-first"), BrokerOrder("first", "other-broker-order")];
 
-        var second = await fixture.Oms.PlaceOrderAsync(Request("second"));
+        var second = await fixture.SubmitAsync(Request("second"));
 
         second.Success.Should().BeFalse();
         second.ErrorMessage.Should().Contain("Open order count");
@@ -120,7 +121,7 @@ public sealed class BrokerageExecutionAdmissionLimitTests
     public async Task RegisteredOms_RetainedReplacementAliases_OverlapOnlyOneLocalSlot(bool includeCurrentBrokerRow)
     {
         await using var fixture = new Fixture(config => config.MaxOpenOrders = 2);
-        (await fixture.Oms.PlaceOrderAsync(Request("first"))).Success.Should().BeTrue();
+        (await fixture.SubmitAsync(Request("first"))).Success.Should().BeTrue();
         fixture.Broker.ModificationResponse = new ExecutionReport
         {
             OrderId = "broker-first-replacement",
@@ -138,7 +139,7 @@ public sealed class BrokerageExecutionAdmissionLimitTests
             ? [BrokerOrder("first", "broker-first"), BrokerOrder("replacement-client", "broker-first-replacement")]
             : [BrokerOrder("first", "broker-first")];
 
-        var second = await fixture.Oms.PlaceOrderAsync(Request("second"));
+        var second = await fixture.SubmitAsync(Request("second"));
 
         second.Success.Should().Be(!includeCurrentBrokerRow,
             "a stale predecessor overlaps its working replacement, while two live broker rows consume two slots");
@@ -152,12 +153,12 @@ public sealed class BrokerageExecutionAdmissionLimitTests
     {
         await using var fixture = new Fixture(config => config.MaxOpenOrders = 1);
         fixture.Broker.HoldSubmissions = true;
-        var first = fixture.Oms.PlaceOrderAsync(Request("pending-ack"));
+        var first = fixture.SubmitAsync(Request("pending-ack"));
         await fixture.Broker.SubmissionEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
         try
         {
             var competing = await Task.WhenAll(Enumerable.Range(0, 8).Select(index =>
-                fixture.Oms.PlaceOrderAsync(Request($"competing-{index}")))).WaitAsync(TimeSpan.FromSeconds(5));
+                fixture.SubmitAsync(Request($"competing-{index}")))).WaitAsync(TimeSpan.FromSeconds(5));
 
             competing.Should().OnlyContain(result => !result.Success && result.ErrorMessage!.Contains("Open order count"));
             fixture.Broker.Submissions.Should().ContainSingle();
@@ -175,9 +176,9 @@ public sealed class BrokerageExecutionAdmissionLimitTests
     {
         await using var fixture = new Fixture(config => config.MaxOpenOrders = 1);
         fixture.Broker.FailSubmission = true;
-        (await fixture.Oms.PlaceOrderAsync(Request("uncertain"))).Success.Should().BeFalse();
+        (await fixture.SubmitAsync(Request("uncertain"))).Success.Should().BeFalse();
 
-        var retry = await fixture.Oms.PlaceOrderAsync(Request("new-order"));
+        var retry = await fixture.SubmitAsync(Request("new-order"));
 
         retry.Success.Should().BeFalse();
         retry.ErrorMessage.Should().Contain("Open order count");
@@ -189,10 +190,10 @@ public sealed class BrokerageExecutionAdmissionLimitTests
     {
         await using var fixture = new Fixture(config => config.MaxOpenOrders = 1);
         fixture.Broker.SubmissionStatus = OrderStatus.Rejected;
-        (await fixture.Oms.PlaceOrderAsync(Request("rejected"))).Success.Should().BeFalse();
+        (await fixture.SubmitAsync(Request("rejected"))).Success.Should().BeFalse();
         fixture.Broker.SubmissionStatus = OrderStatus.Accepted;
 
-        var accepted = await fixture.Oms.PlaceOrderAsync(Request("accepted"));
+        var accepted = await fixture.SubmitAsync(Request("accepted"));
 
         accepted.Success.Should().BeTrue();
         fixture.Broker.Submissions.Should().HaveCount(2);
@@ -204,7 +205,7 @@ public sealed class BrokerageExecutionAdmissionLimitTests
         await using var fixture = new Fixture(config => config.MaxOpenOrders = 1);
         fixture.Broker.FailOpenOrderQuery = true;
 
-        var result = await fixture.Oms.PlaceOrderAsync(Request("snapshot-failure"));
+        var result = await fixture.SubmitAsync(Request("snapshot-failure"));
 
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("snapshot is unavailable");
@@ -215,7 +216,7 @@ public sealed class BrokerageExecutionAdmissionLimitTests
     public async Task RegisteredOms_AmendmentCannotBypassConfiguredNotional()
     {
         await using var fixture = new Fixture(config => config.MaxOrderNotional = 100m);
-        (await fixture.Oms.PlaceOrderAsync(Request("amended") with { Quantity = 100m })).Success.Should().BeTrue();
+        (await fixture.SubmitAsync(Request("amended") with { Quantity = 100m })).Success.Should().BeTrue();
 
         var result = await fixture.Oms.ModifyOrderAsync("amended", new OrderModification { NewQuantity = 101m });
 
@@ -225,6 +226,11 @@ public sealed class BrokerageExecutionAdmissionLimitTests
         fixture.Broker.ModifyCount.Should().Be(0);
     }
 
+    private static readonly Guid AccountId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+
+    /// <summary>Live routing refuses untyped orders; these orders route as a promoted live run.</summary>
+    private static readonly LiveRunOrderAuthority LiveRuns = new(AccountId);
+
     private static OrderRequest Request(string id) => new()
     {
         ClientOrderId = id,
@@ -233,7 +239,7 @@ public sealed class BrokerageExecutionAdmissionLimitTests
         Type = OrderType.Limit,
         Quantity = 1m,
         LimitPrice = 1m,
-        FundAccountId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+        FundAccountId = AccountId,
         Metadata = new Dictionary<string, string> { ["runId"] = "run-limits" }
     };
 
@@ -255,12 +261,16 @@ public sealed class BrokerageExecutionAdmissionLimitTests
         public RecordingBroker Broker { get; } = new();
         public IOrderManager Oms { get; }
 
+        /// <summary>Submits as a promoted live run: live routing refuses untyped orders.</summary>
+        public Task<OrderResult> SubmitAsync(OrderRequest order) => Oms.SubmitLiveRunAsync(order, LiveRuns);
+
         public Fixture(Action<BrokerageConfiguration> configure)
         {
             var services = new ServiceCollection();
             services.AddLogging();
             services.AddBrokerageGateway(Broker.GatewayId, _ => Broker);
             services.AddSingleton<ILiveOrderReadinessGate>(new ApprovedReadinessGate());
+            services.AddSingleton(LiveRuns.Source);
             services.AddSingleton(new FileBrokerageOrderRecoveryStore(Path.Combine(_root, "orders.json"), Broker.GatewayId));
             services.AddBrokerageExecution(config =>
             {

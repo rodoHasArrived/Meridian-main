@@ -1,3 +1,4 @@
+using Meridian.Contracts.Calendars;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -42,13 +43,22 @@ public sealed class ProviderIntegrationRestDryRunService
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly ILogger<ProviderIntegrationRestDryRunService> logger;
     private readonly IProviderIntegrationManifestStore store;
+    private readonly IBusinessDayCalendarSource? calendars;
     private readonly IProviderIntegrationHttpTransport transport;
 
     public ProviderIntegrationRestDryRunService(
         IProviderIntegrationManifestStore store,
         IProviderIntegrationHttpTransport transport,
         ILogger<ProviderIntegrationRestDryRunService>? logger = null)
+        : this(store, transport, logger, null) { }
+
+    public ProviderIntegrationRestDryRunService(
+        IProviderIntegrationManifestStore store,
+        IProviderIntegrationHttpTransport transport,
+        ILogger<ProviderIntegrationRestDryRunService>? logger,
+        IBusinessDayCalendarSource? calendars = null)
     {
+        this.calendars = calendars;
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.transport = transport ?? throw new ArgumentNullException(nameof(transport));
         this.logger = logger ?? NullLogger<ProviderIntegrationRestDryRunService>.Instance;
@@ -161,12 +171,14 @@ public sealed class ProviderIntegrationRestDryRunService
         string? cursor = null;
         var maxPages = Math.Clamp(request.MaxPages <= 0 ? 1 : request.MaxPages, 1, 100);
         var dedupeValidator = new ProviderIntegrationStagingDedupeValidator();
+        var mappedRecordPreviews = new List<JsonElement>();
 
         for (var page = 1; page <= maxPages; page++)
         {
             ct.ThrowIfCancellationRequested();
             var httpRequest = BuildHttpRequest(manifest, endpoint, request, cursor);
             var response = await transport.SendAsync(httpRequest, ct).ConfigureAwait(false);
+            var incompleteResponse = ProviderIntegrationHttpCompleteness.IsIncomplete(response.StatusCode, response.Headers);
             using var document = JsonDocument.Parse(
                 response.Body,
                 new JsonDocumentOptions { MaxDepth = 64, CommentHandling = JsonCommentHandling.Disallow });
@@ -189,6 +201,7 @@ public sealed class ProviderIntegrationRestDryRunService
                         ["path"] = httpRequest.Path,
                         ["page"] = page.ToString(CultureInfo.InvariantCulture),
                         ["statusCode"] = response.StatusCode.ToString(CultureInfo.InvariantCulture),
+                        [ProviderIntegrationHttpCompleteness.MetadataKey] = incompleteResponse ? "true" : "false",
                         ["requestedBy"] = request.RequestedBy
                     },
                     responseBody,
@@ -200,12 +213,12 @@ public sealed class ProviderIntegrationRestDryRunService
                 },
                 ct).ConfigureAwait(false);
 
-            if (response.StatusCode < 200 || response.StatusCode >= 300)
+            if (incompleteResponse || response.StatusCode < 200 || response.StatusCode >= 300)
             {
                 allIssues.Add(new ValidationIssueDto(
-                    "http.status.failed",
+                    incompleteResponse ? "http.response.incomplete" : "http.status.failed",
                     ProviderIntegrationIssueSeverityDto.Critical,
-                    $"Provider endpoint returned HTTP {response.StatusCode}.",
+                    incompleteResponse ? "Provider endpoint returned an incomplete response." : $"Provider endpoint returned HTTP {response.StatusCode}.",
                     null,
                     "Confirm credentials, endpoint path, parameters, and provider availability before activation."));
                 break;
@@ -237,9 +250,11 @@ public sealed class ProviderIntegrationRestDryRunService
                     }
                 }
 
-                ProviderIntegrationMappedRecordValidation.AddValidationIssues(request.Capability, mappedRecord, rowIssues);
+                ProviderIntegrationMappedRecordValidation.AddValidationIssues(request.Capability, mappedRecord, rowIssues, calendars);
                 allIssues.AddRange(rowIssues);
                 var mappedElement = ToJsonElement(mappedRecord);
+                if (mappedRecordPreviews.Count < 20)
+                    mappedRecordPreviews.Add(mappedElement);
                 var sourceRecordId = ProviderIntegrationMappedRecordIdentity.ResolveSourceRecordId(request.Capability, mappedRecord);
                 var recordOrdinal = (accepted + quarantined + 1).ToString(CultureInfo.InvariantCulture);
                 var dedupeKey = ProviderIntegrationMappedRecordIdentity.BuildDedupeKey(
@@ -304,9 +319,19 @@ public sealed class ProviderIntegrationRestDryRunService
             {
                 break;
             }
+
+            if (page == maxPages)
+            {
+                allIssues.Add(new ValidationIssueDto(
+                    "http.response.incomplete",
+                    ProviderIntegrationIssueSeverityDto.Critical,
+                    "Provider response pagination exceeded the dry-run page limit.",
+                    null,
+                    "Fetch complete source evidence before promoting or replaying this run."));
+            }
         }
 
-        if (received == 0 && allIssues.All(issue => issue.Code != "http.status.failed"))
+        if (received == 0 && allIssues.All(issue => issue.Code is not ("http.status.failed" or "http.response.incomplete")))
         {
             allIssues.Add(new ValidationIssueDto(
                 "response.no-records",
@@ -328,7 +353,10 @@ public sealed class ProviderIntegrationRestDryRunService
             accepted,
             quarantined,
             status,
-            allIssues);
+            allIssues)
+        {
+            MappedRecordPreviews = mappedRecordPreviews
+        };
         await scopedStore.SaveSyncRunAsync(
             CreateSyncRun(request, manifest, manifestReference, connection, endpoint.EndpointKey, firstPayloadId, result), ct).ConfigureAwait(false);
         return result;
@@ -454,7 +482,7 @@ public sealed class ProviderIntegrationRestDryRunService
             "or an absolute token URL from the same provider origin.");
     }
 
-    private static IReadOnlyList<JsonElement> ExtractRecords(JsonElement responseBody, string recordsPath)
+    internal static IReadOnlyList<JsonElement> ExtractRecords(JsonElement responseBody, string recordsPath)
     {
         if (string.IsNullOrWhiteSpace(recordsPath) ||
             StringComparer.Ordinal.Equals(recordsPath.Trim(), "$"))
@@ -548,6 +576,8 @@ public sealed class ProviderIntegrationRestDryRunService
             "uppercase" => value.Trim().ToUpperInvariant(),
             "lowercase" => value.Trim().ToLowerInvariant(),
             "decimal" or "decimalparsing" => ParseDecimal(value, mapping.TargetField, issues),
+            "boolean" => ProviderIntegrationFieldTransforms.ParseBoolean(value, mapping.TargetField, issues),
+            "json" => ProviderIntegrationFieldTransforms.ParseJson(value, mapping.TargetField, issues),
             "signedamount" => ParseSignedAmount(
                 value,
                 mapping,
@@ -577,7 +607,7 @@ public sealed class ProviderIntegrationRestDryRunService
         return null;
     }
 
-    private static string? ReadJsonString(JsonElement root, string sourcePath)
+    internal static string? ReadJsonString(JsonElement root, string sourcePath)
     {
         var current = root;
         foreach (var part in NormalizeSourcePath(sourcePath).Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
@@ -643,6 +673,7 @@ public sealed class ProviderIntegrationRestDryRunService
         {
             decimal decimalValue => JsonValue.Create(decimalValue),
             bool boolValue => JsonValue.Create(boolValue),
+            JsonNode nodeValue => nodeValue.DeepClone(),
             _ => JsonValue.Create(value.ToString())
         };
     }
@@ -671,7 +702,7 @@ public sealed class ProviderIntegrationRestDryRunService
         return document.RootElement.Clone();
     }
 
-    private static string StableId(params string[] parts)
+    internal static string StableId(params string[] parts)
     {
         var input = string.Join("|", parts);
         return Sha256Digest.ComputeUtf8(input)[..24];

@@ -390,7 +390,20 @@ public sealed record LoanPortfolioSummaryDto(
     decimal? TotalCollateralValue,
     IReadOnlyList<LoanSummaryDto> Loans,
     IReadOnlyList<LoanPortfolioCurrencyTotalsDto>? CurrencyTotals = null,
-    CurrencyCode? TotalCurrency = null);
+    CurrencyCode? TotalCurrency = null)
+{
+    /// <summary>Current principal grouped by contractual maturity, never scheduled repayments.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<LoanMaturityBucketDto>? MaturityBuckets { get; init; }
+}
+
+/// <summary>Amounts are exact invariant decimal text; an unknown denomination has no amount.</summary>
+public sealed record LoanMaturityBucketDto(
+    CurrencyCode Currency,
+    int? Year,
+    int? Quarter,
+    string? PrincipalOutstanding,
+    IReadOnlyList<Guid> LoanIds);
 
 /// <summary>
 /// Unconverted totals in the retained loan or collateral currency. Portfolio scalar totals

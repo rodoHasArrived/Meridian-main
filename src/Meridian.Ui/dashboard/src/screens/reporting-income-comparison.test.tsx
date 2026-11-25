@@ -222,6 +222,23 @@ describe("ReportingIncomeComparisonPanel", () => {
     expect(api.createIncomeComparison).not.toHaveBeenCalled();
   });
 
+  it("opens retained support from the waterfall by keyboard and restores focus", async () => {
+    const user = userEvent.setup();
+    renderComparison(savedQuery);
+    const waterfall = await screen.findByRole("region", { name: "Income movement waterfall" });
+    expect(within(waterfall).getByRole("img")).toBeInTheDocument();
+    const trigger = within(waterfall).getByRole("button", { name: "Inspect waterfall contribution: Late June interest accrual" });
+    trigger.focus();
+    await user.keyboard("{Enter}");
+    const dialog = await screen.findByRole("dialog", { name: "Retained supporting record" });
+    expect(await within(dialog).findByText("Record: journal-late-accrual-17")).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+    expect(queryContext().get("incomeComparison")).toBe(retained.comparisonId);
+    expect(queryContext().get("incomeContribution")).toBeNull();
+  });
+
   it.each([1, 2])("opens retained support for contribution %i without leaving the comparison", async (index) => {
     const contribution = retained.contributions[index];
     vi.mocked(api.getIncomeContributionSupport).mockResolvedValue(buildIncomeContributionSupport(retained, index));
@@ -335,9 +352,19 @@ describe("ReportingIncomeComparisonPanel", () => {
     expect(screen.queryByText("Movement reconciled to retained evidence")).not.toBeInTheDocument();
   });
 
+  it("withholds an inconsistent bridge and cannot label its totals reconciled", async () => {
+    vi.mocked(api.getIncomeComparison).mockResolvedValue(buildIncomeComparison({ currentAmount: "1150.000000000000000000000001" }));
+    renderComparison(savedQuery);
+    const waterfall = await screen.findByRole("region", { name: "Income movement waterfall" });
+    expect(within(waterfall).getByRole("status")).toHaveTextContent("do not form a consistent bridge");
+    expect(within(waterfall).queryByRole("img")).not.toBeInTheDocument();
+    expect(screen.queryByText("Movement reconciled to retained evidence")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open retained support for Late June interest accrual" })).toBeInTheDocument();
+  });
+
   it("does not call offsetting unsupported movements reconciled when the net residual is zero", async () => {
     const unsupported = buildIncomeComparison({
-      status: "Unexplained",
+      status: "Reconciled",
       residualAmount: "0",
       warnings: ["Unsupported positive and negative movements offset."],
       contributions: [

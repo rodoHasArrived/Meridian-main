@@ -43,6 +43,78 @@ public sealed class ReportRetainedAmountsViewModelTests
         model.ProofDrawer.ManifestText.Should().Contain(CanonicalSource);
     }
 
+    [Fact]
+    public async Task HistoricalAttestedContributor_PreservesNativeDisclosureWithoutOrdinaryApprovalCredit()
+    {
+        var packet = AttestedPacket();
+        var originalScope = packet.LedgerAmount!.AccountingPreparerAttestations!.Single().SourceScope;
+        var client = new Client { Proof = packet };
+        var model = new ReportRetainedAmountsViewModel(client, client);
+        model.SetRun(Run());
+        await model.RefreshAsync();
+
+        await model.InspectCommand.ExecuteAsync(model.Rows.Single());
+
+        model.ProofDrawer.StatusText.Should().Be("Ready");
+        model.ProofDrawer.AccountingAttestationDisclosures.Should().ContainSingle()
+            .Which.Should().Contain(SinglePrincipalAttestationPolicy.Disclosure);
+        model.ProofDrawer.AccountingAttestationSummaryText.Should()
+            .Contain("Ordinary recorded approval is not satisfied").And.Contain("do not supply Verified Coverage credit");
+        originalScope.PeriodId.Should().Be(OpeningPeriod).And.NotBe(Period);
+        packet.LedgerAmount.AccountingPreparerAttestations!.Single().SourceScope.Should().Be(originalScope);
+        await model.ProofDrawer.OpenManifestCommand.ExecuteAsync(model.ProofDrawer.Evidence.Single());
+        client.ManifestRequests.Should().Equal(SourceRoute);
+        model.ProofDrawer.ManifestText.Should().Contain(CanonicalSource);
+    }
+
+    [Theory]
+    [InlineData("forged-source-period")]
+    [InlineData("wrong-journal")]
+    [InlineData("foreign-scope")]
+    [InlineData("unselected-line")]
+    public async Task UnboundAttestedContributor_CannotExposeReadyProofOrKnownPreparerClassification(string mismatch)
+    {
+        var packet = AttestedPacket();
+        var proof = packet.LedgerAmount!;
+        var decision = proof.AccountingPreparerAttestations!.Single();
+        var evidence = proof.Evidence.Single();
+        var foreignId = Guid.Parse("f66f7666-6666-4666-8666-666666666666");
+        switch (mismatch)
+        {
+            case "forged-source-period":
+                var forgedScope = Scope with { PeriodId = foreignId };
+                decision = decision with { SourceScope = forgedScope };
+                evidence = evidence with { SourceScope = forgedScope };
+                break;
+            case "wrong-journal":
+                decision = decision with { JournalEntryIds = [foreignId] };
+                evidence = evidence with { SourceSubjectId = $"{foreignId:D}:{Line:D}:credit" };
+                break;
+            case "foreign-scope":
+                proof = proof with { Scope = Scope with { CompanyId = "foreign" } };
+                decision = decision with { SourceScope = decision.SourceScope with { CompanyId = "foreign" } };
+                evidence = evidence with { SourceScope = evidence.SourceScope! with { CompanyId = "foreign" } };
+                break;
+            case "unselected-line":
+                evidence = evidence with { SourceSubjectId = $"{Journal:D}:{foreignId:D}:credit" };
+                break;
+        }
+        var client = new Client
+        {
+            Proof = packet with { LedgerAmount = proof with { Evidence = [evidence], AccountingPreparerAttestations = [decision] } }
+        };
+        var model = new ReportRetainedAmountsViewModel(client, client);
+        model.SetRun(Run());
+        await model.RefreshAsync();
+
+        await model.InspectCommand.ExecuteAsync(model.Rows.Single());
+
+        model.ProofDrawer.StatusText.Should().Be("Blocked");
+        model.ProofDrawer.AccountingAttestationDisclosures.Should().BeEmpty();
+        model.ProofDrawer.Evidence.Should().BeEmpty();
+        client.ManifestRequests.Should().BeEmpty();
+    }
+
     [Theory]
     [InlineData("tenant")]
     [InlineData("company")]
@@ -203,7 +275,7 @@ public sealed class ReportRetainedAmountsViewModelTests
 
     private static ReportLedgerAmountBindingDto Binding() => new(AmountId, "Retained capital",
         -9007199254740993.1234m, "USD", Scope, [Journal], [Line])
-        { SubjectId = Subject, SourceSnapshotHash = Hash, ProofAvailable = true };
+    { SubjectId = Subject, SourceSnapshotHash = Hash, ProofAvailable = true };
 
     private static EvidencePacketDto Packet()
     {
@@ -218,6 +290,28 @@ public sealed class ReportRetainedAmountsViewModelTests
             LedgerAmount = new(Subject, Scope, Binding().Amount, "USD", EvidenceStatusDto.Ready,
                 [new(id, "source-document", "Historical retained source", SourceRoute, "vault", now, EvidenceStatusDto.Ready, Hash)
                     { SourceSubjectId = SourceSubject, SourceScope = Scope with { PeriodId = OpeningPeriod } }], [])
+        };
+    }
+
+    private static EvidencePacketDto AttestedPacket()
+    {
+        var packet = Packet();
+        return packet with
+        {
+            LedgerAmount = packet.LedgerAmount! with
+            {
+                OrdinaryRecordedApprovalSatisfied = false,
+                AccountingPreparerAttestations =
+                [
+                    new(1, LedgerAmountApprovalClassification.PreparerAttestation,
+                        SinglePrincipalAttestationPolicy.Disclosure, Scope with { PeriodId = OpeningPeriod }, [Journal], [])
+                    {
+                        Actor = "principal-a",
+                        AttestationId = Guid.Parse("f77f7777-7777-4777-8777-777777777777"),
+                        RecordedAt = DateTimeOffset.Parse("2026-11-12T12:00:00Z")
+                    }
+                ]
+            }
         };
     }
 
@@ -241,7 +335,9 @@ public sealed class ReportRetainedAmountsViewModelTests
             ManifestRequests.Add(route);
             return Task.FromResult(ApiResponse<JsonDocument>.Ok(JsonSerializer.SerializeToDocument(new
             {
-                tenantId = "tenant-a", scope = "company-a", subject = new { subjectKind = "ledger-amount", subjectId = CanonicalSource },
+                tenantId = "tenant-a",
+                scope = "company-a",
+                subject = new { subjectKind = "ledger-amount", subjectId = CanonicalSource },
                 vaultIdentity = new { contentHashSha256 = Hash }
             })));
         }

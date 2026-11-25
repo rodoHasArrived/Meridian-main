@@ -6,6 +6,7 @@
 import { useId, useState } from "react";
 import { AmountCell } from "./AmountCell";
 import { toNumber } from "./money";
+import { DatePicker } from "@/components/ui/date-picker";
 
 export interface JournalLine {
   account?: string;
@@ -51,7 +52,7 @@ function inject(): void {
 .jnl__hd{display:grid;grid-template-columns:140px 160px 1fr;gap:12px;padding:14px;
   border-bottom:1px solid var(--border-color,#D2CDC3);background:var(--bg-medium,#EBE8E1);}
 .jnl__field{display:flex;flex-direction:column;gap:4px;min-width:0;}
-.jnl__lbl{font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;
+.jnl__lbl{font-family:var(--font-body,inherit);font-size:0.75rem;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;color:var(--text-muted,#606870);}
 .jnl__inp{font-family:var(--font-body,inherit);font-size:12px;color:var(--text-primary,#20252B);
   background:var(--bg-light,#F8F7F3);border:1px solid var(--border-color,#D2CDC3);border-radius:var(--radius-button,2px);
@@ -59,7 +60,7 @@ function inject(): void {
 .jnl__inp:focus{outline:2px solid var(--interaction-focus,#2D6FB3);outline-offset:-1px;border-color:var(--interaction-focus,#2D6FB3);}
 .jnl__inp--num{font-family:var(--font-data,monospace);text-align:right;font-variant-numeric:tabular-nums;}
 .jnl__grid{width:100%;border-collapse:separate;border-spacing:0;font-family:var(--font-data,monospace);font-size:12px;}
-.jnl__grid th{padding:8px 12px;text-align:left;font-family:var(--font-body,inherit);font-size:10px;
+.jnl__grid th{padding:8px 12px;text-align:left;font-family:var(--font-body,inherit);font-size:0.75rem;
   font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);
   border-bottom:1px solid var(--border-color,#D2CDC3);}
 .jnl__grid th.jnl--r{text-align:right;}
@@ -74,7 +75,7 @@ function inject(): void {
 .jnl__grid tfoot td{padding:8px 12px;border-top:2px solid var(--border-strong,#AAA49A);
   background:var(--bg-medium,#EBE8E1);font-weight:600;}
 .jnl__grid tfoot td.jnl--r{text-align:right;}
-.jnl__foot-lbl{font-family:var(--font-body,inherit);font-size:11px;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-secondary,#535C65);}
+.jnl__foot-lbl{font-family:var(--font-body,inherit);font-size:0.75rem;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-secondary,#535C65);}
 .jnl__bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-top:1px solid var(--border-color,#D2CDC3);}
 .jnl__actions{display:flex;gap:8px;}
 .jnl__btn{font-family:var(--font-body,inherit);font-size:12px;font-weight:600;cursor:pointer;
@@ -86,7 +87,7 @@ function inject(): void {
 .jnl__btn:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:1px;}
 .jnl__btn:disabled{cursor:not-allowed;opacity:.5;}
 .jnl__status{display:inline-flex;align-items:center;gap:7px;
-  font-family:var(--font-body,inherit);font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;
+  font-family:var(--font-body,inherit);font-size:0.75rem;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;
   border:1px solid;border-radius:var(--radius-chip,2px);padding:5px 10px;}
 .jnl__status--bal{background:var(--green-a10,rgba(46,118,85,.10));border-color:var(--green,#2E7655);color:var(--green-dim,#225840);}
 .jnl__status--out{background:var(--red-a10,rgba(181,75,66,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#883832);}
@@ -154,7 +155,7 @@ export function JournalEntryForm({
           <label className="jnl__lbl" htmlFor={dateId}>
             Date
           </label>
-          <input id={dateId} className="jnl__inp" type="date" value={header.date} onChange={(e) => setH("date", e.target.value)} />
+          <DatePicker id={dateId} className="jnl__date" value={header.date || null} onChange={(value) => setH("date", value)} />
         </div>
         <div className="jnl__field">
           <label className="jnl__lbl" htmlFor={refId}>

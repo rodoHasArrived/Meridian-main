@@ -426,13 +426,6 @@ public sealed class CoveredCallBacktestServiceTests
                 using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
                 await service.StartAsync(timeout.Token);
 
-                ICoveredCallBacktestService contract = service;
-#pragma warning disable CS0618 // Explicitly prove the obsolete unscoped compatibility shim fails closed.
-                Action startWithoutScope = () => _ = contract.StartAsync(CreateRequest(), timeout.Token);
-#pragma warning restore CS0618
-                startWithoutScope.Should().Throw<NotSupportedException>()
-                    .WithMessage("*authenticated tenant and company scope*");
-
                 var handle = await service.StartAsync(CreateRequest(), Scope, timeout.Token);
                 runId = handle.RunId;
                 var status = await WaitForTerminalAsync(service, runId, Scope, timeout.Token);

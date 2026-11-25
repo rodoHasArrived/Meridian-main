@@ -1,7 +1,9 @@
 using FluentAssertions;
+using Meridian.Contracts.Integrity;
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Xunit;
@@ -19,6 +21,9 @@ namespace Meridian.Tests.Execution;
 public sealed class OrderManagementSystemTests : IDisposable
 {
     private static readonly Guid LiveFundAccountId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+
+    /// <summary>Live routing refuses untyped orders; live-path tests submit as a promoted live run.</summary>
+    private static readonly LiveRunOrderAuthority LiveRuns = new(LiveFundAccountId);
 
     private readonly ExecutionGateway _gateway;
     private readonly OrderManagementSystem _oms;
@@ -106,8 +111,13 @@ public sealed class OrderManagementSystemTests : IDisposable
     public async Task PlaceOrderAsync_WithPaperTradingPortfolio_AppliesFillToSharedPortfolio()
     {
         var portfolio = new PaperTradingPortfolio(100_000m);
+        var feed = new Meridian.Execution.Adapters.LiveMarketDataCache();
+        feed.RecordTrade("MSFT", new Meridian.Contracts.Domain.Models.Trade(DateTimeOffset.UtcNow, "MSFT", 25m, 100, Meridian.Contracts.Domain.Enums.AggressorSide.Buy, 1));
+        await using var gateway = new ExecutionGateway(
+            NullLogger<ExecutionGateway>.Instance, liveFeed: feed,
+            costOptions: new Meridian.Execution.PaperMatching.PaperTradingCostOptions { CommissionRate = 0m });
         using var oms = new OrderManagementSystem(
-            _gateway,
+            gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio);
         await oms.StartAsync();
@@ -552,11 +562,12 @@ public sealed class OrderManagementSystemTests : IDisposable
             NullLogger<OrderManagementSystem>.Instance,
             auditTrail: auditTrail,
             brokerageConfiguration: CreateEnabledBrokerageConfiguration("robinhood"),
+            strategyRunAuthority: LiveRuns.Source,
             liveOrderReadinessGate: new RecordingLiveOrderReadinessGate(
                 LiveOrderReadinessDecision.Approved("audit://live/run-disconnected")));
         await oms.StartAsync();
 
-        var result = await oms.PlaceOrderAsync(new OrderRequest
+        var result = await oms.SubmitLiveRunAsync(new OrderRequest
         {
             Symbol = "AAPL",
             Side = OrderSide.Buy,
@@ -566,10 +577,11 @@ public sealed class OrderManagementSystemTests : IDisposable
             {
                 ["runId"] = "run-disconnected"
             }
-        });
+        }, LiveRuns);
 
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("not connected");
+        result.RequiresOrderReconciliation.Should().BeTrue();
         result.OrderState!.Status.Should().Be(OrderStatus.PendingNew,
             "an exception after invoking the gateway does not prove the broker rejected the order");
         oms.GetOpenOrders().Should().ContainSingle(order =>
@@ -647,7 +659,7 @@ public sealed class OrderManagementSystemTests : IDisposable
     }
 
     [Fact]
-    public async Task PlaceOrderAsync_WithLiveBrokerAndNoRunId_RejectsBeforeReadinessGate()
+    public async Task PlaceOrderAsync_UntypedLiveOrder_IsRefusedBeforeReadinessGate()
     {
         var gateway = Substitute.For<IExecutionGateway>();
         gateway.GatewayId.Returns("alpaca");
@@ -670,8 +682,8 @@ public sealed class OrderManagementSystemTests : IDisposable
         });
 
         result.Success.Should().BeFalse();
-        result.ErrorMessage.Should().Contain("requires runId metadata");
-        liveReadinessGate.Request.Should().BeNull("the OMS should fail closed before calling the readiness gate without a run id");
+        result.ErrorMessage.Should().Contain("typed order authority");
+        liveReadinessGate.Request.Should().BeNull("an untyped live order is refused before the readiness gate is consulted");
         await gateway.DidNotReceive().SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
     }
 
@@ -684,10 +696,11 @@ public sealed class OrderManagementSystemTests : IDisposable
         using var oms = new OrderManagementSystem(
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
-            brokerageConfiguration: CreateEnabledBrokerageConfiguration("alpaca"));
+            brokerageConfiguration: CreateEnabledBrokerageConfiguration("alpaca"),
+            strategyRunAuthority: LiveRuns.Source);
         await oms.StartAsync();
 
-        var result = await oms.PlaceOrderAsync(new OrderRequest
+        var result = await oms.SubmitLiveRunAsync(new OrderRequest
         {
             Symbol = "AAPL",
             Side = OrderSide.Buy,
@@ -697,7 +710,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             {
                 ["runId"] = "run-live-001"
             }
-        });
+        }, LiveRuns);
 
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("requires a live order readiness gate");
@@ -716,10 +729,11 @@ public sealed class OrderManagementSystemTests : IDisposable
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             brokerageConfiguration: CreateEnabledBrokerageConfiguration("alpaca"),
+            strategyRunAuthority: LiveRuns.Source,
             liveOrderReadinessGate: liveReadinessGate);
         await oms.StartAsync();
 
-        var result = await oms.PlaceOrderAsync(new OrderRequest
+        var result = await oms.SubmitLiveRunAsync(new OrderRequest
         {
             Symbol = "AAPL",
             Side = OrderSide.Buy,
@@ -731,7 +745,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             {
                 ["runId"] = "run-live-001"
             }
-        });
+        }, LiveRuns);
 
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("W7 live-readiness evidence is incomplete");
@@ -753,10 +767,11 @@ public sealed class OrderManagementSystemTests : IDisposable
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             brokerageConfiguration: CreateEnabledBrokerageConfiguration("alpaca"),
+            strategyRunAuthority: LiveRuns.Source,
             liveOrderReadinessGate: liveReadinessGate);
         await oms.StartAsync();
 
-        var result = await oms.PlaceOrderAsync(new OrderRequest
+        var result = await oms.SubmitLiveRunAsync(new OrderRequest
         {
             Symbol = "AAPL",
             Side = OrderSide.Buy,
@@ -767,7 +782,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             {
                 ["runId"] = "run-live-001"
             }
-        });
+        }, LiveRuns);
 
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("without a retained evidence reference");
@@ -809,10 +824,11 @@ public sealed class OrderManagementSystemTests : IDisposable
             operatorControls: controls,
             auditTrail: auditTrail,
             brokerageConfiguration: CreateEnabledBrokerageConfiguration("alpaca"),
+            strategyRunAuthority: LiveRuns.Source,
             liveOrderReadinessGate: liveReadinessGate);
         await oms.StartAsync();
 
-        var result = await oms.PlaceOrderAsync(new OrderRequest
+        var result = await oms.SubmitLiveRunAsync(new OrderRequest
         {
             Symbol = "AAPL",
             Side = OrderSide.Sell,
@@ -827,7 +843,7 @@ public sealed class OrderManagementSystemTests : IDisposable
                 ["manualOverrideId"] = bypassOverride.OverrideId,
                 ["runId"] = "run-live-001"
             }
-        });
+        }, LiveRuns);
 
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("Operator halt");
@@ -838,7 +854,8 @@ public sealed class OrderManagementSystemTests : IDisposable
         auditEntries.Should().Contain(entry =>
             entry.Action == "OrderRejected" &&
             entry.Reason == "CIRCUIT_BREAKER_OPEN" &&
-            entry.CorrelationId == "act-live-forged-override" &&
+            // Strategy-run authority correlates by run id, as LiveStrategyRunSession always has.
+            entry.CorrelationId == "run-live-001" &&
             entry.Metadata != null &&
             entry.Metadata["rejectCode"] == "CIRCUIT_BREAKER_OPEN");
     }
@@ -872,10 +889,11 @@ public sealed class OrderManagementSystemTests : IDisposable
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             brokerageConfiguration: CreateEnabledBrokerageConfiguration("alpaca"),
+            strategyRunAuthority: LiveRuns.Source,
             liveOrderReadinessGate: liveReadinessGate);
         await oms.StartAsync();
 
-        var result = await oms.PlaceOrderAsync(new OrderRequest
+        var result = await oms.SubmitLiveRunAsync(new OrderRequest
         {
             Symbol = "912797AB1",
             Side = OrderSide.Buy,
@@ -891,7 +909,7 @@ public sealed class OrderManagementSystemTests : IDisposable
                 ["liveReadinessEvidenceReference"] = "forged-evidence-ref",
                 ["runId"] = "run-live-001"
             }
-        });
+        }, LiveRuns);
 
         result.Success.Should().BeTrue();
         liveReadinessGate.Request.Should().NotBeNull();
@@ -1461,9 +1479,14 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     [Fact]
     public async Task PlaceOrderAsync_WhenGateRejects_ReturnsFailureWithoutSubmittingToGateway()
     {
-        var gate = new RejectAllGate("UNKNWN is not in Security Master");
-        using var oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance,
-            securityMasterGate: gate);
+        const string reason = "UNKNWN is not in Security Master\r\nFORGED";
+        var gate = new RejectAllGate(reason);
+        var logger = new RecordingLogger<OrderManagementSystem>();
+        var root = Path.Combine(Path.GetTempPath(), "meridian-rejected-log-" + Guid.NewGuid().ToString("N"));
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(root), NullLogger<ExecutionAuditTrailService>.Instance);
+        using var oms = new OrderManagementSystem(_gateway, logger,
+            securityMasterGate: gate, auditTrail: auditTrail);
         await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
@@ -1475,8 +1498,13 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         });
 
         result.Success.Should().BeFalse("the gate rejected the symbol");
-        result.ErrorMessage.Should().Contain("UNKNWN");
+        result.ErrorMessage.Should().Be(reason);
         oms.GetOpenOrders().Should().BeEmpty("rejected orders must not be tracked");
+        var audit = (await auditTrail.GetRecentAsync(10)).Single(entry => entry.Action == "OrderRejected");
+        audit.Message.Should().Be(reason);
+        logger.Entries.Should().Contain(entry => entry.Message.Contains(Sha256Digest.ComputeUtf8(reason), StringComparison.Ordinal));
+        logger.Entries.Should().OnlyContain(entry => !entry.Message.Contains("FORGED", StringComparison.Ordinal)
+            && !entry.Message.Contains('\r') && !entry.Message.Contains('\n'));
     }
 
     [Fact]

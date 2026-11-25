@@ -5,13 +5,25 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import {
   assertHealthyScene, chromiumLaunchOptions, compositeColor, contrastRatio, designSystemMatrix,
-  parseCssColor, parseDesignSystemOptions, readOnlySmokeResponse, supportingSmokeResponse, workstationBase
+  isCanceledApiRequest, parseCssColor, parseDesignSystemOptions, readOnlySmokeResponse, supportingSmokeResponse, workstationBase
 } from "./design-system-smoke-helpers.mjs";
 import { managedSmokeOptions } from "./design-system-smoke-runner.mjs";
 
 const dashboardDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const options = (values = [], flags = ["design-system"]) =>
   managedSmokeOptions({ values: new Map(values), flags: new Set(flags), repoRoot: "/repo with spaces" });
+
+test("only canceled API transports are exempt from failed asset checks", () => {
+  const request = (url, resourceType, errorText = "net::ERR_ABORTED") => ({
+    url: () => url, resourceType: () => resourceType, failure: () => ({ errorText })
+  });
+  assert.equal(isCanceledApiRequest(request("http://fixture.test/api/positions", "fetch")), true);
+  assert.equal(isCanceledApiRequest(request("http://fixture.test/api/positions", "xhr")), true);
+  assert.equal(isCanceledApiRequest(request("http://fixture.test/api/positions", "fetch", "net::ERR_CONNECTION_RESET")), false);
+  assert.equal(isCanceledApiRequest(request("http://fixture.test/assets/workstation.css", "stylesheet")), false);
+  assert.equal(isCanceledApiRequest(request("http://fixture.test/api/chart.js", "script")), false);
+  assert.equal(isCanceledApiRequest(request("http://fixture.test/api/chart.css", "stylesheet")), false);
+});
 
 test("matrix covers three actual routes at all desktop sizes and appearance configurations", () => {
   const matrix = designSystemMatrix();

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.ReferenceData.SecurityMaster;
 using Meridian.Storage;
@@ -249,6 +250,7 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
         var profileId = Required(request.ProfileId, nameof(request.ProfileId));
         var rationale = Required(request.Rationale, nameof(request.Rationale));
         var approvalReference = Required(request.ApprovalReference, nameof(request.ApprovalReference));
+        PreparerAttestationApprovalBoundary.RequireOrdinaryReference(approvalReference, nameof(request.ApprovalReference));
         var correlationId = ResolveCorrelationId(request.CorrelationId, "asset-profile-approve");
         var now = DateTimeOffset.UtcNow;
 
@@ -318,6 +320,7 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
         var profileId = Required(request.ProfileId, nameof(request.ProfileId));
         var rationale = Required(request.Rationale, nameof(request.Rationale));
         var approvalReference = Required(request.ApprovalReference, nameof(request.ApprovalReference));
+        PreparerAttestationApprovalBoundary.RequireOrdinaryReference(approvalReference, nameof(request.ApprovalReference));
         var correlationId = ResolveCorrelationId(request.CorrelationId, "asset-profile-rollback");
         var now = DateTimeOffset.UtcNow;
 
@@ -577,7 +580,7 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
             signals.Add(new SecurityAssetProfilePromotionSignalDto(
                 "profile-fields.projected",
                 "Declared projected field surface",
-                $"{projectedFields} profile fields are declared projected (intent only; no profile field is projected today) and should become typed read-model columns if usage grows.",
+                $"{projectedFields} profile fields are declared projected (the flag is intent only; every CustomAsset profile field is already written to the profile-keyed custom_asset_profile_field_projection rows, migration 064, but none has a typed read-model column) and should become typed read-model columns if usage grows.",
                 projectedFields >= 6
                     ? SecurityAssetProfilePromotionSignalSeverityDto.Strong
                     : SecurityAssetProfilePromotionSignalSeverityDto.Advisory));

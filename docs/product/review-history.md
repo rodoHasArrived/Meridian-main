@@ -12,7 +12,7 @@ and evidence available to each author; they do not establish current delivery or
 
 - [Single-principal attestation policy proposal (2026-11-02)](single-principal-attestation-policy-proposal-2026-11-02.md) and [synthetic acceptance matrix](single-principal-attestation-acceptance-matrix-2026-11-02.md) are draft decision inputs for `W14-ATTEST-001`, registered by merged PR #3358. They compare eligibility and exclusions, preserve existing approval controls, and leave owner adoption and independent Security/Accounting review outstanding; they implement no exception or metric.
 - [Product Plans](plans/README.md#next-work-determinations) owns the latest prioritization pointer
-  and retained next-work determinations, including [2026-10-02](plans/next-work-determination-2026-10-02.md)
+  and retained next-work determinations, including [2026-10-02](../../archive/docs/plans/next-work-determination-2026-10-02.md)
   and [2026-09-27](plans/next-work-determination-2026-09-27.md).
 - Earlier determinations: [2026-09-23](../../archive/docs/plans/next-work-determination-2026-09-23.md)
   and [2026-09-20](../../archive/docs/plans/next-work-determination-2026-09-20.md).
@@ -53,7 +53,7 @@ finding into implementation work.
   lifecycle axes, change-since-review and per-class gate policies now exist in the browser
   workstation's TypeScript modules, so the remaining gap is promoting them into the shared
   contract seam, and the two documents' competing navigation models are left as an open decision
-- [Adversarial Program Review (2026-08-25)](adversarial-program-review-2026-08-25.md) —
+- [Adversarial Program Review (2026-08-25, archived)](../../archive/docs/product/adversarial-program-review-2026-08-25.md) —
   independent whole-program adverse review; re-tests the 2026-08-24 open items against the 39
   commits landed since, then extends into cross-catalog consistency between the authorization
   model, the shared API surface, and the client surface. Findings are anchored at `e232ece1`;
@@ -149,6 +149,11 @@ finding into implementation work.
   governance, reconciliation matching, approvals, close evidence, backfill, marks, order
   lifecycle), anchored to a depth survey of declared-but-dead seams and sequenced around the
   W9 slate
+- [Settings & Preferences Configurability Brainstorm (2026-11-16)](settings-preferences-brainstorm-2026-11-16.md) —
+  inventory of browser, WPF, server-side, and file-only settings, seven ideas (server-side
+  operator preferences, shared browser/WPF preference contract, notifications panel, saved
+  shortcuts, workstation bundle export, searchable settings, versioned config profiles), and
+  guardrails keeping credentials and financial settings host-level
 
 ## Archived Product Material
 

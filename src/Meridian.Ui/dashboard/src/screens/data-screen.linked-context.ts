@@ -58,7 +58,7 @@ export function buildDataLinkedContextItem(
   return buildLinkedContextItem({
     id: "data-quotes",
     label: "Quote evidence",
-    detail: `Live quote, alert, and historical evidence routes retain ${symbol}.`,
+    detail: `Live quote, alert, and historical supporting record links retain ${symbol}.`,
     route,
     workspaceLabel: "Data",
     statusLabel: "Trusted",

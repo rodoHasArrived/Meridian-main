@@ -42,6 +42,7 @@ public static class CorporateActionCaseStates
     public const string AccountingReview = "AccountingReview";
     public const string ReadyForApproval = "ReadyForApproval";
     public const string Approved = "Approved";
+    public const string PreparerAttested = "PreparerAttested";
     public const string Scheduled = "Scheduled";
     public const string Posted = "Posted";
     public const string Reconciled = "Reconciled";
@@ -56,7 +57,7 @@ public static class CorporateActionCaseStates
     {
         Detected, NeedsTerms, Disputed, TermsConfirmed, ElectionPending, ElectionSubmitted,
         AllocationPending, AccountingReview,
-        ReadyForApproval, Approved, Scheduled, Posted, Reconciled, Reported, Closed, Blocked,
+        ReadyForApproval, Approved, PreparerAttested, Scheduled, Posted, Reconciled, Reported, Closed, Blocked,
         Cancelled, Superseded, RestatementRequired,
     };
 
@@ -67,7 +68,7 @@ public static class CorporateActionCaseStates
     /// may prepare a case through ReadyForApproval but cannot grant one of these outcomes.
     /// </summary>
     public static bool RequiresDownstreamAuthority(string? state) => state is
-        Approved or Scheduled or Posted or Reconciled or Reported or Closed;
+        Approved or PreparerAttested or Scheduled or Posted or Reconciled or Reported or Closed;
 
     /// <summary>
     /// Case content is frozen once it is an approval candidate or has entered a governed
@@ -75,13 +76,13 @@ public static class CorporateActionCaseStates
     /// RestatementRequired is required before evidence, conflicts, or options may change.
     /// </summary>
     public static bool IsContentFrozen(string? state) => state is
-        ReadyForApproval or Approved or Scheduled or Posted or Reconciled or Reported or Closed or
+        ReadyForApproval or Approved or PreparerAttested or Scheduled or Posted or Reconciled or Reported or Closed or
         Cancelled or Superseded;
 
     /// <summary>States whose validity depends on confirmed, undisputed source terms.</summary>
     public static bool PresupposesConfirmedTerms(string? state) => state is
         TermsConfirmed or ElectionPending or ElectionSubmitted or AllocationPending or
-        AccountingReview or ReadyForApproval or Approved or Scheduled or Posted or Reconciled or
+        AccountingReview or ReadyForApproval or Approved or PreparerAttested or Scheduled or Posted or Reconciled or
         Reported or Closed;
 }
 
@@ -117,6 +118,8 @@ public static class CorporateActionCaseTransitionPolicy
             // It never grants a downstream outcome and re-entering ReadyForApproval requires a
             // freshly attached exact-version projection.
             [CorporateActionCaseStates.Approved] =
+                [CorporateActionCaseStates.AccountingReview],
+            [CorporateActionCaseStates.PreparerAttested] =
                 [CorporateActionCaseStates.AccountingReview],
             // A posted case's journals stay immutable; the only governed continuation the generic
             // command offers is opening a restatement decision, mirroring Closed.
@@ -241,7 +244,7 @@ public static class CorporateActionEvidenceKinds
 
     public static bool IsKnown(string? kind) => kind is
         ProviderPayload or OfferingMemorandum or IssuerNotice or CustodianNotice or
-        PositionSnapshot or TaxLotSnapshot or ElectionInstruction or OperatorAnalysis;
+        PositionSnapshot or TaxLotSnapshot or ElectionInstruction or OperatorAnalysis or CorporateActionDeadlinePolicy.EvidenceKind;
 
     public static bool IsTrustedReference(string? reference)
     {
@@ -465,7 +468,10 @@ public sealed record CorporateActionDurableInboxEntryDto(
     long Version,
     string ProposalState,
     CorporateActionCaseScopeDto AcceptanceScope,
-    CorporateActionSourceProposalActionAvailabilityDto ActionAvailability);
+    CorporateActionSourceProposalActionAvailabilityDto ActionAvailability)
+{
+    public CorporateActionElectionCalendarDto? ElectionCalendar { get; init; }
+}
 
 public sealed record CorporateActionDurableInboxDto(
     DateTimeOffset? LastIngestAt,
@@ -503,7 +509,10 @@ public sealed record CorporateActionProcessingCaseDto(
     DateTimeOffset UpdatedAtUtc,
     CorporateActionCaseActionAvailabilityDto? ActionAvailability = null,
     CorporateActionCaseSourceSnapshotDto? SourceSnapshot = null,
-    CorporateActionCaseAccountingStatusDto? AccountingStatus = null);
+    CorporateActionCaseAccountingStatusDto? AccountingStatus = null)
+{
+    public CorporateActionElectionCalendarDto? ElectionCalendar { get; init; }
+}
 
 /// <summary>Server-owned action posture consumed by browser and desktop clients.</summary>
 public sealed record CorporateActionCaseActionAvailabilityDto(

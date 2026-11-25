@@ -17,6 +17,50 @@ public sealed class StrategyRunReadServiceTests
 {
 
     [Fact]
+    public async Task Sweeps_RankTheNamedObjectiveAndRetainCoordinatesWithoutMixingDatasets()
+    {
+        var store = new StrategyRunStore();
+        StrategyRunEntry Point(string id, decimal equity, decimal pnl, decimal totalReturn, string dataset) =>
+            BuildCompletedRun(id, "sensitivity", "Sensitivity", equity, pnl, totalReturn,
+                pnl, 0m, 1, 1.0, 100m) with
+            {
+                SweepId = "experiment-1",
+                SweepDefinitionHash = "sweep-v2:comparison-context",
+                SweepObjective = "TotalReturn",
+                DatasetReference = dataset,
+                ParameterSet = new Dictionary<string, string> { ["lookback"] = id == "a" ? "10" : "20" }
+            };
+        await store.RecordRunAsync(Point("a", 200_000m, 10_000m, 0.1m, "dataset-a"));
+        await store.RecordRunAsync(Point("b", 110_000m, 20_000m, 0.2m, "dataset-a"));
+        await store.RecordRunAsync(Point("c", 300_000m, 90_000m, 0.9m, "dataset-b"));
+        var service = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
+        var groups = await service.GetSweepResultGroupsAsync();
+        groups.Should().HaveCount(2);
+        var group = groups.Single(group => group.RunCount == 2);
+        group.ObjectiveRankings[0].RunId.Should().Be("b");
+        group.ObjectiveRankings[0].ObjectiveValue.Should().Be(0.2m);
+        group.Runs.Single(run => run.RunId == "a").Parameters.Should().ContainKey("lookback").WhoseValue.Should().Be("10");
+        group.HistoryMayBeTruncated.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Sweeps_UnknownObjectiveDoesNotMasqueradeAsFinalEquityRanking()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(BuildCompletedRun("unknown-objective", "sensitivity", "Sensitivity",
+            110_000m, 10_000m, 0.1m, 10_000m, 0m, 1, 1.0, 100m) with
+        {
+            SweepId = "legacy",
+            SweepDefinitionHash = "legacy-point-hash",
+            SweepObjective = "UnsupportedMetric"
+        });
+        var service = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
+        var group = (await service.GetSweepResultGroupsAsync()).Single();
+        group.ObjectiveRankings.Should().BeEmpty();
+        group.ComparisonContextVerified.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task GetRunsAsync_ProvidesCanonicalIdentityAndCompatibilityPasses()
     {
         var store = new StrategyRunStore();

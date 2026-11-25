@@ -102,7 +102,7 @@ export function Accordion({ items, multi = false, defaultOpen = [], className }:
               />
               <span className="flex-1">{item.title}</span>
               {item.badge != null ? (
-                <span className="shrink-0 font-mono text-[11px] tabular-nums text-muted-foreground">{item.badge}</span>
+                <span className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground">{item.badge}</span>
               ) : null}
             </button>
             {isOpen ? (

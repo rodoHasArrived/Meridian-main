@@ -9,7 +9,7 @@ public sealed partial class OperationsContinuityWorkflowService
         IReadOnlyList<OperationsWorkflowAuditDto> auditTimeline,
         IReadOnlyList<OperationsChecklistControlApprovalDto>? requestedApprovals)
     {
-        var checklist = BuildChecklist(workflow, auditTimeline.Select(ToTimelineEntry).ToArray());
+        var checklist = OperationsWorkflowReadModelBuilder.BuildChecklist(workflow, auditTimeline.Select(ToTimelineEntry).ToArray());
         var retained = OperationsChecklistControlEvidence.Collect(checklist, workflow.Approvals, workflow.ApprovalState);
 
         foreach (var requested in requestedApprovals ?? [])

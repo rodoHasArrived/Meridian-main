@@ -50,6 +50,11 @@ public static class ProviderCapabilityDescriptorCatalog
                 InstrumentType.Future, InstrumentType.FuturesOption, InstrumentType.Forex,
                 InstrumentType.Bond, InstrumentType.CFD, InstrumentType.Warrant, InstrumentType.Index
             ],
+            // Match IBMarketDataClient's detailed profiles. Bond historical/contract coverage
+            // does not establish streaming trades, executable quotes, or depth.
+            StreamingInstrumentTypes:
+            [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption,
+                InstrumentType.Future, InstrumentType.FuturesOption, InstrumentType.Forex],
             StreamingFactory: static f => f.CreateIbStreamingClient(),
             HistoricalFactory: static f => f.CreateIbBackfillProvider(f.Config.IB),
             BrokerageFactory: static f => f.CreateIbBrokerageGateway()),
@@ -64,9 +69,7 @@ public static class ProviderCapabilityDescriptorCatalog
                 ("ALPACA_SECRET_KEY", f.Config.Alpaca?.SecretKey ?? f.Config.Backfill?.Providers?.Alpaca?.SecretKey)),
             OptionsFactory: static f => f.CreateAlpacaOptionsProvider(),
             BrokerageFactory: static f => f.CreateAlpacaBrokerageGateway()),
-        new("yahoo", Historical: typeof(YahooFinanceHistoricalDataProvider),
-            InstrumentTypes: [InstrumentType.Equity, InstrumentType.Index, InstrumentType.Forex, InstrumentType.Crypto],
-            HistoricalFactory: static f => f.CreateYahooBackfillProvider(f.Config.Backfill?.Providers?.Yahoo)),
+        YahooFinanceProviderModule.Descriptor,
         new("tiingo", Historical: typeof(TiingoHistoricalDataProvider), Search: typeof(TiingoSymbolSearchProvider), CorporateActions: typeof(TiingoCorporateActionProvider),
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.Crypto],
             HistoricalFactory: static f => f.CreateTiingoBackfillProvider(f.Config.Backfill?.Providers?.Tiingo),

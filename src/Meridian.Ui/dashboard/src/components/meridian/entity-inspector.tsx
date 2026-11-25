@@ -76,7 +76,7 @@ export function EntityInspectorProvider({ children, scopeKey, sessionIdentity, r
           <section aria-label="Entity linked evidence" className="space-y-2">
             <h3 className="font-semibold">Linked evidence</h3>
             {record.evidence?.length ? <ul className="space-y-2">{record.evidence.map((item) => <li key={item.evidenceId}>
-              {isWorkspaceHref(item.href) ? <Link className="underline decoration-dotted underline-offset-4" to={item.href}>{item.label}</Link> : <span>{item.label} · Evidence route unavailable</span>}
+              {isWorkspaceHref(item.href) ? <Link className="underline decoration-dotted underline-offset-4" to={item.href}>{item.label}</Link> : <span>{item.label} · Supporting record link unavailable</span>}
             </li>)}</ul> : <p className="text-muted-foreground">No linked evidence was supplied. This snapshot does not establish provenance completeness.</p>}
             {record.proof ? <EntityExplorerProof key={`${contextKey}:${record.kind}:${record.id}`} binding={record.proof} /> : null}
           </section>

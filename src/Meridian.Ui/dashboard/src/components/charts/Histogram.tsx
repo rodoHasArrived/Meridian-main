@@ -2,6 +2,10 @@
 // raw `values` (auto-binned) or precomputed `bins`. When `signed`, bars left of zero tint red and
 // right of zero green so a returns distribution reads instantly; an optional dashed mean rule
 // overlays. Flat, token-driven, explicit-height svg.
+import { AXIS_LABEL_STYLE } from "./axis-ticks";
+import { ChartSvg, type ChartA11yProps } from "./chart-a11y";
+import { useChartSize } from "./use-chart-size";
+import { ChartEvidenceMark, type ChartInspection } from "./chart-evidence";
 
 export interface HistogramBin {
   x0: number;
@@ -9,7 +13,7 @@ export interface HistogramBin {
   count: number;
 }
 
-export interface HistogramProps {
+export interface HistogramProps extends ChartA11yProps {
   /** Raw sample — auto-binned. Provide this OR `bins`. */
   values?: number[] | null;
   /** Precomputed bins. Provide this OR `values`. */
@@ -28,6 +32,7 @@ export interface HistogramProps {
   countFmt?: (c: number) => string;
   /** @default 7 */
   xTicks?: number;
+  inspection?: ChartInspection;
 }
 
 const PLOT = "var(--chart-plot, #F8F7F3)";
@@ -39,7 +44,8 @@ const UP = "var(--chart-equity, #2E7655)";
 const DOWN = "var(--chart-drawdown, #B54B42)";
 const PRIMARY = "var(--chart-primary, #29323A)";
 
-function buildBins(values: number[], binCount: number): HistogramBin[] {
+export function buildHistogramBins(values: number[], binCount = 24): HistogramBin[] {
+  if (values.length === 0) return [];
   const min = Math.min(...values);
   const max = Math.max(...values);
   const span = max - min || 1;
@@ -67,11 +73,16 @@ export function Histogram({
   mean: meanProp = null,
   valueFmt = (v) => v.toFixed(1),
   countFmt = (c) => String(c),
-  xTicks = 7
+  xTicks = 7,
+  ariaLabel = "Distribution histogram",
+  ariaDescription,
+  accessibleData,
+  inspection
 }: HistogramProps) {
-  const bins = presetBins || (values && values.length ? buildBins(values, binCount) : []);
-  const W = 960;
-  const H = 340;
+  const bins = presetBins || (values && values.length ? buildHistogramBins(values, binCount) : []);
+  const [plotRef, size] = useChartSize({ width: 960, height: 340 });
+  const W = size.width;
+  const H = size.height;
   const padT = 14;
   const axisB = 28;
   const axisL = 40;
@@ -92,18 +103,37 @@ export function Histogram({
 
   const mean =
     meanProp != null ? meanProp : values && values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
+  const meanVisible = showMean && mean !== null && mean >= lo && mean <= hi;
+  const meanLabelX = meanVisible ? Math.min(bx(mean) + 5, plotR - 78) : 0;
 
   const cTicks = [0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(f * maxCount));
-  const labelFont = { fontFamily: "var(--font-data, monospace)", fontSize: 11 };
+  const labelFont = { fontFamily: AXIS_LABEL_STYLE.fontFamily, fontVariantNumeric: "tabular-nums", fontSize: 12 };
   const tStep = Math.max(1, Math.round((n || 1) / xTicks));
 
   return (
-    <svg
+    <div ref={plotRef} style={{ width: "100%", height: "100%", minHeight: 0 }}>
+    <ChartSvg
       viewBox={`0 0 ${W} ${H}`}
-      preserveAspectRatio="none"
       style={{ width: "100%", height: "100%", display: "block" }}
-      role="img"
-      aria-label="Distribution histogram"
+      ariaLabel={ariaLabel}
+      ariaDescription={ariaDescription}
+      accessibleData={accessibleData}
+      overlayHintId={inspection?.hintId}
+      overlay={inspection ? (
+        <>
+          {bins.map((bin, index) => (
+            <ChartEvidenceMark
+              key={index}
+              inspection={inspection}
+              index={index}
+              geometry={{ x: bx(bin.x0) + gap, y: Math.min(by(bin.count), plotB - 8), width: Math.max(0.5, bx(bin.x1) - bx(bin.x0) - 2 * gap), height: Math.max(8, plotB - by(bin.count)) }}
+            />
+          ))}
+          {meanVisible ? (
+            <ChartEvidenceMark inspection={inspection} index={bins.length} geometry={{ x: meanLabelX, y: plotT, width: 74, height: 17 }} />
+          ) : null}
+        </>
+      ) : null}
     >
       <rect x="0" y="0" width={W} height={H} fill={PLOT} />
       {[...new Set(cTicks)].map((c, k) => (
@@ -142,11 +172,11 @@ export function Histogram({
       {signed && lo < 0 && hi > 0 && <line x1={bx(0)} x2={bx(0)} y1={plotT} y2={plotB} stroke={BORDER} strokeWidth="1" opacity="0.5" />}
 
       {/* mean rule */}
-      {showMean && mean != null && mean >= lo && mean <= hi && (
+      {meanVisible && (
         <g>
           <line x1={bx(mean)} x2={bx(mean)} y1={plotT} y2={plotB} stroke={CROSSHAIR} strokeWidth="1.2" strokeDasharray="5 3" />
-          <rect x={Math.min(bx(mean) + 5, plotR - 78)} y={plotT} width="74" height="17" fill={CROSSHAIR} opacity="0.95" />
-          <text x={Math.min(bx(mean) + 5, plotR - 78) + 37} y={plotT + 12} fill="#fff" textAnchor="middle" style={{ ...labelFont, fontWeight: 600 }}>
+          <rect x={meanLabelX} y={plotT} width="74" height="17" fill={CROSSHAIR} opacity="0.95" />
+          <text x={meanLabelX + 37} y={plotT + 12} fill="#fff" textAnchor="middle" style={{ ...labelFont, fontWeight: 600 }}>
             μ {valueFmt(mean)}
           </text>
         </g>
@@ -154,7 +184,8 @@ export function Histogram({
 
       <line x1={plotL} x2={plotR} y1={plotB} y2={plotB} stroke={BORDER} strokeWidth="1.2" />
       <line x1={plotL} x2={plotL} y1={plotT} y2={plotB} stroke={BORDER} strokeWidth="1" opacity="0.5" />
-    </svg>
+    </ChartSvg>
+    </div>
   );
 }
 

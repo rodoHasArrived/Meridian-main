@@ -177,7 +177,7 @@ public sealed class TradingWorkspaceShellPageTests
                 Tone: "Primary"),
             PrimaryBlocker: new WorkflowBlockerSummary(
                 Code: "choose-context",
-                Label: "No operating context selected",
+                Label: "No scope selected",
                 Detail: "Paper review, live posture, and Accounting-linked trading actions scope to the active operating context.",
                 Tone: "Warning",
                 IsBlocking: true),

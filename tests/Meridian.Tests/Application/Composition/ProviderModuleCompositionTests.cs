@@ -27,6 +27,7 @@ public sealed class ProviderModuleCompositionTests : IDisposable
         var config = new AppConfig(ProviderModules: new ProviderModulesConfig(new()
         {
             ["fred"] = new(Enabled: false),
+            ["yahoo"] = new(Enabled: false),
             [" COMPOSITION-PLUGIN "] = new(Enabled: enabled, Settings: new() { ["marker"] = "configured-by-module" })
         }));
         var services = new ServiceCollection();
@@ -123,6 +124,7 @@ public sealed class ProviderModuleCompositionTests : IDisposable
         var config = new AppConfig(ProviderModules: new ProviderModulesConfig(new()
         {
             ["fred"] = new(Enabled: false),
+            ["yahoo"] = new(Enabled: false),
             [" COMPOSITION-PLUGIN "] = new(Settings: new() { ["registrationMode"] = registrationMode })
         }));
         var services = new ServiceCollection();
@@ -153,6 +155,7 @@ public sealed class ProviderModuleCompositionTests : IDisposable
         var config = new AppConfig(ProviderModules: new ProviderModulesConfig(new()
         {
             ["fred"] = new(Enabled: false),
+            ["yahoo"] = new(Enabled: false),
             ["composition-plugin"] = new(Settings: new() { ["registrationMode"] = "no-op" })
         }));
         var adapter = assembly.GetTypes().Single(type => typeof(PluginCorporateActions).IsAssignableFrom(type));
@@ -225,6 +228,7 @@ public sealed class ProviderModuleCompositionTests : IDisposable
     private static AppConfig CreateEnabledPluginConfig() => new(ProviderModules: new ProviderModulesConfig(new()
     {
         ["fred"] = new(Enabled: false),
+        ["yahoo"] = new(Enabled: false),
         [" COMPOSITION-PLUGIN "] = new(Enabled: true, Settings: new() { ["marker"] = "configured-by-module" })
     }));
 

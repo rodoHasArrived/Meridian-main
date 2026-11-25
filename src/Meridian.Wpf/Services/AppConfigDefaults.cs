@@ -12,12 +12,12 @@ public static class AppConfigDefaults
         return new AppConfigDto
         {
             DataRoot = MeridianPathDefaults.DefaultDataRoot,
-            DataSource = "NoOp",
+            DataSource = "Synthetic",
             Symbols = [],
             Storage = new StorageConfigDto
             {
                 NamingConvention = "BySymbol",
-                Profile = "Standard"
+                Profile = null
             },
             Backfill = new BackfillConfigDto
             {

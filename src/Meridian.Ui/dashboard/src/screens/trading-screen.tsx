@@ -1,8 +1,15 @@
+import { PageHeading } from "@/components/ui/page-heading";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React, { type ReactNode } from "react";
+import { ServerOrderPreviewPanel } from "./trading-screen.server-preview";
+import { ExecutionJournalPanel } from "./trading-screen.journal";
+import { PaperReconciliationPanel } from "./trading-screen.paper-reconciliation";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
-import { useLocation } from "react-router-dom";
+import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
+import { Link, useLocation } from "react-router-dom";
+import { describeBrokerageSessionSource, positionSourceAttributes } from "@/lib/position-source";
 import { StatusBadge } from "@/design-system/status";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,13 +23,17 @@ import {
 } from "@/components/ui/dialog";
 import { GuardrailPanelBody } from "@/components/ui/guardrail-utilization";
 import { Input } from "@/components/ui/input";
+import { LiveAuthorizationRevokeForm } from "@/screens/trading-screen.live-authorization-revoke";
 import { OverflowMenu } from "@/components/ui/overflow-menu";
 import { OrderStatusBanner } from "@/components/ui/order-status-banner";
 import { TradingOrderTicketForm } from "@/screens/trading-screen.order-ticket-form";
 import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TradingRiskControls } from "@/components/ui/trading-risk-controls";
+import { CancelAllIncidentPanel } from "@/screens/trading-screen.cancel-incidents";
 import {
+  dataToneClass,
+  promotionChecklistDotTone,
   promotionEvaluationPanelTone,
   promotionEvaluationTextTone,
   promotionOutcomeTone,
@@ -44,6 +55,9 @@ import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian
 import type { CsvCell } from "@/lib/csv";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { KpiProvider } from "@/lib/kpi-context";
+import { operatorNote } from "@/lib/internal-copy";
+import { workspaceKpiIds } from "@/lib/kpi-registry";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
@@ -73,7 +87,6 @@ import {
   type PaperSessionReplayPanel,
   type TradingLoadingState,
   type TradingBlotterDetail,
-  type TradingDataTone,
   type TradingFillRow,
   type TradingOrderRow,
   type TradingPositionRow,
@@ -82,6 +95,7 @@ import {
 } from "@/screens/trading-screen.view-model";
 import { ExecutionControlsHeader } from "@/screens/trading-screen.execution-controls-header";
 import { BrokerageRecoveryPanel } from "@/screens/trading-screen.brokerage-recovery";
+import { ExecutionJourneyPanel } from "@/screens/execution-journey";
 import { LIVE_GOVERNED_APPROVAL_SERVICES, useGovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
 import type { ExecutionAuditEntry, ExecutionControlSnapshot, MetricFreshness, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 import { usesTrackedCaps } from "@/design-system/label-case";
@@ -97,22 +111,9 @@ interface TradingScreenProps {
   fundAccountId?: string | null;
 }
 
-const promotionChecklistDotTone = {
-  ready: "bg-success",
-  blocked: "bg-danger",
-  review: "bg-warning"
-} as const;
-
-const dataToneClass: Record<TradingDataTone, string> = {
-  default: "text-foreground",
-  success: "text-success",
-  warning: "text-warning",
-  danger: "text-danger",
-  muted: "text-muted-foreground"
-};
-
 type TradingRouteViewId = "overview" | "orders" | "positions" | "risk";
-const TRADING_QUOTE_PRICE_BASIS = "Prices in source quote units · currency not supplied.";
+// Stated once on the Orders page (and carried into each CSV export), not under every table.
+const TRADING_QUOTE_PRICE_BASIS = "Prices are as quoted by the source; no currency was supplied.";
 
 
 /**
@@ -139,11 +140,11 @@ export function resolveTradingRouteView(pathname: string): TradingRouteViewId {
 const tradingRouteViewCopy: Record<TradingRouteViewId, { title: string; description: string }> = {
   overview: {
     title: "Trading overview",
-    description: "Paper cockpit acceptance, session workflows, and promotion evidence. Orders, positions, and risk have focused routes."
+    description: "See your positions and open orders, and check whether the paper account is ready to trade."
   },
   orders: {
     title: "Orders blotter",
-    description: "Working orders, recent fills, and order actions for the active paper session."
+    description: "Work open orders and review recent fills for the active paper session."
   },
   positions: {
     title: "Position book",
@@ -151,7 +152,7 @@ const tradingRouteViewCopy: Record<TradingRouteViewId, { title: string; descript
   },
   risk: {
     title: "Risk guardrails",
-    description: "Guardrail posture, execution controls, and adapter health."
+    description: "Check risk limits, trading controls, and broker connection health."
   }
 };
 
@@ -313,6 +314,13 @@ function buildOrderColumns(confirmVm: TradingConfirmViewModel): DenseDataTableCo
       )
     },
     {
+      id: "origin",
+      label: "Origin",
+      sortValue: (order) => order.origin,
+      className: "text-foreground",
+      render: (order) => order.origin
+    },
+    {
       id: "submitted",
       label: "Submitted",
       className: "font-mono text-muted-foreground",
@@ -443,24 +451,40 @@ function TradingLoadingPanel({ state }: { state: TradingLoadingState }) {
   );
 }
 
-export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
-  const { pathname, search } = useLocation();
+export function TradingScreen(props: TradingScreenProps) {
+  const crossScreenCounts = useSharedCrossScreenCounts();
+  return (
+    <KpiProvider models={{ trading: props.data, crossScreenCounts }}>
+      <TradingScreenContent {...props} />
+    </KpiProvider>
+  );
+}
+
+function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
+  const { pathname, search, hash, key: navigationKey } = useLocation();
   const sharedCounts = useSharedCrossScreenCounts();
   const figureContext = useWorkspaceFigureContext();
   // One open-order count for the headline card, the completeness card and every other screen.
   const crossCounts = selectCrossScreenCounts({ shared: sharedCounts, openOrders: data?.openOrders });
   const headlineMetrics = applyCrossScreenCounts(data?.metrics ?? [], crossCounts);
-  const shellVm = useTradingScreenShellViewModel({ pathname, data });
-  const blotterVm = useTradingBlotterViewModel(data);
+  const shellVm = useTradingScreenShellViewModel({ pathname, data, hash, navigationKey });
+  const blotterVm = useTradingBlotterViewModel(data, new URLSearchParams(search).get("positionRef"));
+  const positionSource = describeBrokerageSessionSource(data?.brokerage);
   const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId);
+  const positionRecord = blotterVm.selectedPositionRecord;
+  const scopedPositionRecord = positionRecord ? { ...positionRecord, scope: { ...positionRecord.scope, fundAccountId } } : null;
+  const positionContext = useRecordWorkspaceContext(scopedPositionRecord, blotterVm.selectedPositionReference
+    ? { positionRef: blotterVm.selectedPositionReference, fundAccountId } : null, `#${blotterVm.positionDetailId}`);
   const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null, fundAccountId });
   const executionEvidence = useExecutionEvidenceViewModel();
 
   const governedApprovals = useGovernedApprovalsViewModel(LIVE_GOVERNED_APPROVAL_SERVICES);
   const orderTicket = useOrderTicketViewModel({
     fundAccountId,
+    scopedPaperIntentKey: data?.scopedPaperOrderIntentKey,
     positions: data?.positions ?? [],
     risk: data?.risk ?? null,
+    manualOrderEntry: data?.manualOrderEntry ?? null,
     onOrderAccepted: async () => {
       await Promise.all([
         executionEvidence.refresh(),
@@ -481,6 +505,9 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   });
   const selectedPositionRow = blotterVm.positionRows.find((row) => row.id === blotterVm.selectedPositionRowId) ?? null;
   const selectedOrderRow = blotterVm.orderRows.find((row) => row.id === blotterVm.selectedOrderRowId) ?? null;
+  const journeyOrderId = blotterVm.selectedExecutionKind === "fill"
+    ? blotterVm.fillRows.find((row) => row.id === blotterVm.selectedFillRowId)?.orderId
+    : selectedOrderRow?.orderId;
   const positionColumns = React.useMemo(() => tradingExportColumns(buildPositionColumns(confirmVm), {
     "mark-readiness": (row) => row.markFreshness.label,
     symbol: (row) => row.symbol, side: (row) => row.side, quantity: (row) => row.quantity,
@@ -541,6 +568,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       tradingReadiness.refresh()
     ]);
   }
+  // Readiness and execution evidence reload with the header Refresh; neither has its own button.
+  useOnGlobalRefresh(refreshSessionEvidence);
 
   if (!data) {
     return <TradingLoadingPanel state={shellVm.loadingState} />;
@@ -633,14 +662,14 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         }}
         blocker={readinessStatus ? {
           value: formatReadinessStatusValue(readinessStatus),
-          detail: "Operator readiness posture",
+          detail: "Operator readiness status",
           tone: readinessTone
         } : undefined}
       />
   );
 
   return (
-    <div className={showOverview ? "space-y-5" : "space-y-2"}>
+    <div className={showOverview ? "space-y-3" : showOrders ? "space-y-1.5" : "space-y-2"}>
       {/* The route answers "where am I?" first; workspace-wide metrics follow. Sub-route
           navigation is the sidebar's job alone (no in-page tab strip). */}
       <section
@@ -649,165 +678,32 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         aria-label="Execution cockpit context"
         className="min-w-0"
       >
-        <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
-          {routeCopy.title}
-        </h2>
-        <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
-          {routeCopy.description}
-        </p>
+        <PageHeading title={routeCopy.title} purpose={routeCopy.description} descriptionKey={`trading:${routeView}`} />
       </section>
 
-      {showOverview ? <StatStrip metrics={trustedHeadlineMetrics} label="Trading headline metrics" /> : null}
-
-      {showOverview ? tradingConfidence : null}
+      {showOverview ? <KpiProvider models={{ trading: { ...data, metrics: trustedHeadlineMetrics } }}><StatStrip ids={workspaceKpiIds("trading", trustedHeadlineMetrics)} label="Trading headline metrics" /></KpiProvider> : null}
 
       {/* The full recovery workspace belongs to the overview; every other route keeps one
           blocked-state row so its own object (blotter, book, guardrails) stays above the fold. */}
       <BrokerageRecoveryPanel
         readiness={tradingReadiness.readiness}
         fundAccountId={fundAccountId}
+        brokerageEnvironment={data?.brokerage.environment ?? null}
         busy={tradingReadiness.refreshing}
         error={tradingReadiness.errorText}
         onRecover={tradingReadiness.recoverBrokerage}
-        variant={showOverview ? "full" : "row"}
+        // With no account in scope the overview shows one row that picks the account into the
+        // header scope, not a second picker box; the recovery workspace appears once one is chosen.
+        variant={showOverview && fundAccountId ? "full" : "row"}
         reviewHref={`${WORKSTATION_ROUTE_CATALOG.trading}${search}#brokerage-recovery`}
       />
 
-      {showOverview ? (
-      <section id="trading-posture" className="workspace-section-band" aria-labelledby="trading-posture-heading">
-        <div className="workspace-section-subheader">
-          <div className="min-w-0">
-            <p className="eyebrow-label">Posture</p>
-            <h3 id="trading-posture-heading" className="workspace-section-title">Trading readiness posture</h3>
-          </div>
-        </div>
+      {showOverview ? tradingConfidence : null}
 
-      <AcceptanceStatusCard
-        items={cockpitAcceptance}
-        readinessVm={tradingReadiness}
-      />
-
-      <div
-        role="region"
-        aria-label={shellVm.workflowStrip.ariaLabel}
-        className="panel-surface flex flex-wrap items-center gap-3 px-4 py-3"
-      >
-        <span className={cn("mr-1 text-xs font-semibold text-muted-foreground", usesTrackedCaps(shellVm.workflowStrip.eyebrow) && "uppercase tracking-[0.14em]")}>
-          {shellVm.workflowStrip.eyebrow}
-        </span>
-        {shellVm.workflowStrip.chips.map((chip) => (
-          <CockpitChip key={chip.label} label={chip.label} value={chip.value} />
-        ))}
-        <span id={shellVm.workflowStrip.statusId} className="sr-only" aria-live="polite">
-          {shellVm.workflowStrip.statusText}
-        </span>
-        {shellVm.workflowStrip.commands.map((command) => (
-          <WorkflowPanelButton
-            key={command.id}
-            command={command}
-            onOpen={() => shellVm.openWorkflowPanel(command.id)}
-          />
-        ))}
-      </div>
-      </section>
-      ) : null}
-
-      {showRisk ? (
-      <section id="trading-exceptions" className="workspace-section-band" aria-labelledby="trading-exceptions-heading">
-        <div className="workspace-section-subheader">
-          <div className="min-w-0">
-            <p className="eyebrow-label">Exceptions</p>
-            <h3 id="trading-exceptions-heading" className="workspace-section-title">Risk and adapter exceptions</h3>
-          </div>
-        </div>
-      <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="panel-surface">
-          <CardHeader>
-            <div className="eyebrow-label">Risk State</div>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-primary" />
-              Paper risk cockpit
-            </CardTitle>
-            <CardDescription>{data.risk.summary}</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-3">
-            <Stat label="State" value={data.risk.state} tone={riskTone[data.risk.state]} />
-            <Stat label="Net Exposure" value={data.risk.netExposure} />
-            <Stat label="Gross Exposure" value={data.risk.grossExposure} />
-            <Stat label="VaR (95%)" value={data.risk.var95} />
-            <Stat label="Max Drawdown" value={data.risk.maxDrawdown} />
-            <Stat label="Buying Power Used" value={data.risk.buyingPowerUsed} />
-          </CardContent>
-          <CardContent className="pt-0">
-            <div className="rounded-xl border border-border/70 bg-secondary/35 p-4">
-              <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                <AlertTriangle className="h-4 w-4" />
-                Active guardrails
-              </div>
-              <GuardrailPanelBody
-                guardrails={data.risk.guardrails}
-                activeGuardrails={data.risk.activeGuardrails}
-              />
-            </div>
-            <div className="mt-3 rounded-xl border border-border/70 bg-background/80 p-4">
-              <ExecutionControlsHeader
-                executionEvidence={executionEvidence}
-                onConfirm={confirmVm.openConfirm}
-              />
-              <span className="sr-only" aria-live="polite">{executionEvidence.statusAnnouncement}</span>
-              {executionEvidence.errorText && (
-                <p role="alert" className="mb-2 rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-xs text-warning">
-                  {executionEvidence.errorText}
-                </p>
-              )}
-              {executionEvidence.controlsPanel ? (
-                <TechnicalDetails label="Audit details">
-                  <dl
-                    aria-label={executionEvidence.controlsPanel.ariaLabel}
-                    className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2"
-                  >
-                    {executionEvidence.controlsPanel.rows.map((row) => (
-                      <div key={row.id} className="rounded-md border border-border/60 bg-secondary/20 px-2.5 py-2">
-                        <dt>{row.label}:</dt>
-                        <dd className="mt-1 break-words font-mono text-foreground">{row.value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </TechnicalDetails>
-              ) : (
-                <p className="text-xs text-muted-foreground">{executionEvidence.controlsEmptyText}</p>
-              )}
-            </div>
-            <TradingRiskControls governedApprovals={governedApprovals} />
-          </CardContent>
-        </Card>
-
-        <Card className="panel-surface-strong bg-panel-strong">
-          <CardHeader>
-            <div className="eyebrow-label">Brokerage Wiring</div>
-            <CardTitle className="flex items-center gap-2">
-              <Cable className="h-5 w-5 text-primary" />
-              Execution adapter health
-            </CardTitle>
-            <CardDescription>{data.brokerage.notes}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <KeyValueRow label="Provider" value={data.brokerage.provider} />
-            <KeyValueRow label="Account" value={data.brokerage.account} />
-            <KeyValueRow label="Environment" value={data.brokerage.environment.toUpperCase()} />
-            <KeyValueRow label="Connection" value={data.brokerage.connection} tone={wiringTone[data.brokerage.connection]} />
-            <KeyValueRow label="Last heartbeat" value={data.brokerage.lastHeartbeat} />
-            <KeyValueRow label="Order ingress" value={data.brokerage.orderIngress} />
-            <KeyValueRow label="Fill feed" value={data.brokerage.fillFeed} />
-          </CardContent>
-        </Card>
-      </section>
-      </section>
-      ) : null}
-
-      {showPositions ? (
-      <section id="trading-actions" className="workspace-section-band" aria-label="Position book and selected detail">
-      <WorkspaceWorkbenchShell label="Trading positions workbench" switchInspector inspectorRole="region" inspector={(
+      {/* The overview leads with its main lists: the position book, then the order blotter. */}
+      {showPositions || showOverview ? (
+      <section id={showOverview ? "trading-positions" : "trading-actions"} className="workspace-section-band" aria-label="Position book and selected detail">
+      <WorkspaceWorkbenchShell label="Trading positions workbench" switchInspector inspectorRole="region" inspectorLabel={showOverview ? "Selected position inspector" : undefined} inspector={(
 <div className="min-w-0">
           <TradingBlotterDetailPanel
             id={blotterVm.positionDetailId}
@@ -824,18 +720,23 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 {selectedPositionRow.closeTitleLabel}
               </Button>
             ) : null}
+            identity={scopedPositionRecord ? <RecordIdentitySpine record={scopedPositionRecord} context={positionContext} /> : null}
           />
         </div>
       )}>
 
-        <Card className="panel-surface">
+        <Card className="panel-surface" {...positionSourceAttributes(positionSource)}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Wallet className="h-4 w-4 text-primary" />
-                  Live positions
+                  Positions
                 </CardTitle>
+                <p className="mt-1 text-xs text-muted-foreground" data-testid="trading-position-source">
+                  Source: {positionSource.label}. Portfolio holdings cover every account and can differ.{" "}
+                  <Link className="underline underline-offset-2" to="/portfolio#compare-sources">Compare with Portfolio holdings</Link>
+                </p>
                 <CardDescription className="mt-2">
                   Select a holding to keep risk, exposure, and guardrail context visible.
                 </CardDescription>
@@ -868,16 +769,15 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       </section>
       ) : null}
 
-      {showOrders ? (
-      <section id="trading-actions" className="workspace-section-band" aria-label="Order blotter and selected detail">
-      <WorkspaceWorkbenchShell label="Trading orders workbench" switchInspector inspectorRole="region" inspector={(
+      {showOrders || showOverview ? (
+      <section id={showOverview ? "trading-orders" : "trading-actions"} className="workspace-section-band" aria-label="Order blotter and selected detail">
+      <WorkspaceWorkbenchShell label="Trading orders workbench" switchInspector inspectorRole="region" inspectorLabel={showOverview ? "Selected order inspector" : undefined} inspector={(
 <div className="min-w-0">
           {/* Orders and fills share one pane keyed to the row selected last. */}
           <TradingBlotterDetailPanel
             id={blotterVm.executionDetailId}
             objectType={blotterVm.selectedExecutionKind === "fill" ? "Fill" : "Order"}
             detail={blotterVm.selectedExecution}
-            priceBasis={TRADING_QUOTE_PRICE_BASIS}
             emptyText={blotterVm.executionEmptyText}
             action={blotterVm.selectedExecutionKind === "order" && selectedOrderRow ? (
               <Button
@@ -890,12 +790,13 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               </Button>
             ) : null}
           />
+          {journeyOrderId ? <ExecutionJourneyPanel key={`${fundAccountId}:${data.brokerage.account}:${journeyOrderId}`} orderId={journeyOrderId} fills={data.fills} /> : null}
         </div>
       )}>
 
         <div className="min-w-0 space-y-4">
         <Card className="panel-surface">
-          <CardHeader>
+          <CardHeader className="px-3 py-2">
             <div className="flex items-center justify-between gap-3">
               <CardTitle className="flex items-center gap-2 text-base">
                 <ClipboardList className="h-4 w-4 text-primary" />
@@ -932,7 +833,15 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           {orderTicket.open && (
             <TradingOrderTicketForm
               orderTicket={orderTicket}
-              preview={<OrderPreviewPanel preview={orderTicket.preview} />}
+              preview={<>
+                <OrderPreviewPanel preview={orderTicket.preview} />
+                <ServerOrderPreviewPanel
+                  preview={orderTicket.serverPreview} error={orderTicket.serverPreviewError}
+                  loading={orderTicket.serverPreviewLoading} expired={orderTicket.serverPreviewExpired}
+                  sessionIntent={orderTicket.sessionIntent} onSessionIntent={orderTicket.setSessionIntent}
+                  onRefresh={orderTicket.refreshServerPreview}
+                />
+              </>}
             />
           )}
           {!orderTicket.open && (
@@ -942,7 +851,12 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               riskWarnings={orderTicket.riskWarnings}
             />
           )}
-          <CardContent className="space-y-3">
+          {!orderTicket.open && orderTicket.phase === "reconciliation" ? (
+            <CardContent className="border-b border-border/60 py-3">
+              <p role="status" className="text-sm text-warning">{orderTicket.errorText}</p>
+            </CardContent>
+          ) : null}
+          <CardContent className="space-y-3 px-3 py-2">
             <TableWorkbench
               workbenchId="trading-orders" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
               sourceDescription="All open orders in the current authorized workspace snapshot; filters do not alter the scope of Cancel all."
@@ -999,7 +913,6 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               onRowSelect={(fill) => blotterVm.selectFill(fill.id)}
               emptyText={blotterVm.fillEmptyText}
             />
-            <p className="text-xs text-muted-foreground">{TRADING_QUOTE_PRICE_BASIS}</p>
           </CardContent>
         </Card>
         </div>
@@ -1008,15 +921,145 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       </section>
       ) : null}
 
+      {showOrders ? (
+        <ExecutionJournalPanel accountId={fundAccountId} />
+      ) : null}
+
       {showOverview ? (
-      <section id="trading-history" className="workspace-section-band" aria-labelledby="trading-history-heading">
+      <section id="trading-posture" className="workspace-section-band" aria-label="Trading readiness">
+      {/* Secondary to the blotters, so collapsed by default. */}
+      <TechnicalDetails label="Readiness checks" contentClassName="p-0">
+      <AcceptanceStatusCard
+        items={cockpitAcceptance}
+        readinessVm={tradingReadiness}
+      />
+      </TechnicalDetails>
+
+      <div
+        role="region"
+        aria-label={shellVm.workflowStrip.ariaLabel}
+        className="panel-surface flex flex-wrap items-center gap-3 px-4 py-3"
+      >
+        <span className={cn("mr-1 text-xs font-semibold text-muted-foreground", usesTrackedCaps(shellVm.workflowStrip.eyebrow) && "type-label--caps")}>
+          {shellVm.workflowStrip.eyebrow}
+        </span>
+        {shellVm.workflowStrip.chips.map((chip) => (
+          <CockpitChip key={chip.label} label={chip.label} value={chip.value} />
+        ))}
+        <span id={shellVm.workflowStrip.statusId} className="sr-only" aria-live="polite">
+          {shellVm.workflowStrip.statusText}
+        </span>
+        {shellVm.workflowStrip.commands.map((command) => (
+          <WorkflowPanelButton
+            key={command.id}
+            command={command}
+            onOpen={() => shellVm.openWorkflowPanel(command.id)}
+          />
+        ))}
+      </div>
+      </section>
+      ) : null}
+
+      {showRisk ? (
+      <section id="trading-exceptions" className="workspace-section-band" aria-labelledby="trading-exceptions-heading">
         <div className="workspace-section-subheader">
           <div className="min-w-0">
-            <p className="eyebrow-label">History</p>
-            <h3 id="trading-history-heading" className="workspace-section-title">Paper session history and execution evidence</h3>
+            <p className="eyebrow-label">Exceptions</p>
+            <h3 id="trading-exceptions-heading" className="workspace-section-title">Risk and adapter exceptions</h3>
           </div>
-          <a className="workspace-section-jump" href="#trading-posture">Posture</a>
         </div>
+      <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+        <Card className="panel-surface min-w-0">
+          <CardHeader>
+            <div className="eyebrow-label">Risk State</div>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-primary" />
+              Paper risk cockpit
+            </CardTitle>
+            <CardDescription>{data.risk.summary}</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-3">
+            <Stat label="State" value={data.risk.state} tone={riskTone[data.risk.state]} />
+            {/* Scope named on the label: these are the paper session's risk figures, not the
+                Portfolio header's gross exposure over live holdings. */}
+            <Stat label="Net exposure · paper session" value={data.risk.netExposure} />
+            <Stat label="Gross exposure · paper session" value={data.risk.grossExposure} />
+            <Stat label="VaR (95%)" value={data.risk.var95} />
+            <Stat label="Max Drawdown" value={data.risk.maxDrawdown} />
+            <Stat label="Buying Power Used" value={data.risk.buyingPowerUsed} />
+          </CardContent>
+          <CardContent className="pt-0">
+            <div className="rounded-xl border border-border/70 bg-secondary/35 p-4">
+              <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                <AlertTriangle className="h-4 w-4" />
+                Active guardrails
+              </div>
+              <GuardrailPanelBody
+                guardrails={data.risk.guardrails}
+                activeGuardrails={data.risk.activeGuardrails}
+              />
+            </div>
+            <div className="mt-3 rounded-xl border border-border/70 bg-background/80 p-4">
+              <ExecutionControlsHeader
+                executionEvidence={executionEvidence}
+                onConfirm={confirmVm.openConfirm}
+              />
+              <span className="sr-only" aria-live="polite">{executionEvidence.statusAnnouncement}</span>
+              {executionEvidence.errorText && (
+                <p role="alert" className="mb-2 rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-xs text-warning">
+                  {executionEvidence.errorText}
+                </p>
+              )}
+              {executionEvidence.controlsPanel ? (
+                <TechnicalDetails label="Audit details">
+                  <dl
+                    aria-label={executionEvidence.controlsPanel.ariaLabel}
+                    className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2"
+                  >
+                    {executionEvidence.controlsPanel.rows.map((row) => (
+                      <div key={row.id} className="rounded-md border border-border/60 bg-secondary/20 px-2.5 py-2">
+                        <dt>{row.label}:</dt>
+                        <dd className="mt-1 break-words font-mono text-foreground">{row.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </TechnicalDetails>
+              ) : (
+                <p className="text-xs text-muted-foreground">{executionEvidence.controlsEmptyText}</p>
+              )}
+            </div>
+            <TradingRiskControls governedApprovals={governedApprovals} />
+          </CardContent>
+        </Card>
+
+        <Card className="panel-surface-strong min-w-0 bg-panel-strong">
+          <CardHeader>
+            <div className="eyebrow-label">Brokerage connection</div>
+            <CardTitle className="flex items-center gap-2">
+              <Cable className="h-5 w-5 text-primary" />
+              Execution adapter health
+            </CardTitle>
+            {operatorNote(data.brokerage.notes) ? <CardDescription>{operatorNote(data.brokerage.notes)}</CardDescription> : null}
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <KeyValueRow label="Provider" value={data.brokerage.provider} />
+            <KeyValueRow label="Account" value={data.brokerage.account} />
+            <KeyValueRow label="Environment" value={data.brokerage.environment.toUpperCase()} />
+            <KeyValueRow label="Connection" value={data.brokerage.connection} tone={wiringTone[data.brokerage.connection]} />
+            <KeyValueRow label="Last heartbeat" value={data.brokerage.lastHeartbeat} />
+            <KeyValueRow label="Order ingress" value={data.brokerage.orderIngress} />
+            <KeyValueRow label="Fill feed" value={data.brokerage.fillFeed} />
+          </CardContent>
+        </Card>
+      </section>
+      <CancelAllIncidentPanel fundAccountId={operatingFundAccountId} />
+      </section>
+      ) : null}
+
+      {showOverview ? (
+      <section id="trading-history" className="workspace-section-band" aria-label="Paper session history and execution evidence">
+      {/* Secondary to the blotters, so collapsed by default. */}
+      <TechnicalDetails label="Paper sessions and execution evidence">
       <section className="grid gap-4 xl:grid-cols-2">
         {/* Paper session management */}
         <Card className="panel-surface">
@@ -1063,7 +1106,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               >
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1">
-                    <label htmlFor={paperSessions.strategyIdField.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(paperSessions.strategyIdField.label) && "uppercase tracking-[0.14em]")}>
+                    <label htmlFor={paperSessions.strategyIdField.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(paperSessions.strategyIdField.label) && "type-label--caps")}>
                       {paperSessions.strategyIdField.label}
                     </label>
                     <Input
@@ -1084,7 +1127,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                     />
                   </div>
                   <div className="space-y-1">
-                    <label htmlFor={paperSessions.initialCashField.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(paperSessions.initialCashField.label) && "uppercase tracking-[0.14em]")}>
+                    <label htmlFor={paperSessions.initialCashField.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(paperSessions.initialCashField.label) && "type-label--caps")}>
                       {paperSessions.initialCashField.label}
                     </label>
                     <Input
@@ -1212,10 +1255,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               className="mt-4 rounded-lg border border-border/70 bg-secondary/20 p-4"
             >
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <p className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(executionEvidence.auditTitle) && "uppercase tracking-[0.14em]")}>
+                <p className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(executionEvidence.auditTitle) && "type-label--caps")}>
                   {executionEvidence.auditTitle}
                 </p>
-                <span className="font-mono text-[11px] text-muted-foreground">{executionEvidence.auditCountLabel}</span>
+                <span className="font-mono text-xs text-muted-foreground">{executionEvidence.auditCountLabel}</span>
               </div>
               {executionEvidence.auditRows.length === 0 ? (
                 <p className="text-xs text-muted-foreground">{executionEvidence.auditEmptyText}</p>
@@ -1244,10 +1287,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                         </span>
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">{entry.message}</p>
-                      <p className="mt-1 font-mono text-[11px] text-muted-foreground">{entry.metadataText}</p>
+                      <p className="mt-1 font-mono text-xs text-muted-foreground">{entry.metadataText}</p>
                       {entry.technicalMetadataText ? (
                         <TechnicalDetails label="Execution references" className="mt-2">
-                          <p className="break-all font-mono text-[11px] text-muted-foreground">
+                          <p className="break-all font-mono text-xs text-muted-foreground">
                             {entry.technicalMetadataText}
                           </p>
                         </TechnicalDetails>
@@ -1262,6 +1305,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
         {/* Strategy lifecycle controls — moved to sheet; trigger in Workflow Tools strip */}
       </section>
+      </TechnicalDetails>
       </section>
       ) : null}
 
@@ -1278,7 +1322,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           </SheetHeader>
           <SheetBody>
             <div className="space-y-1">
-              <label htmlFor={strategyLifecycle.strategyIdInputId} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(strategyLifecycle.strategyIdLabel) && "uppercase tracking-[0.14em]")}>
+              <label htmlFor={strategyLifecycle.strategyIdInputId} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(strategyLifecycle.strategyIdLabel) && "type-label--caps")}>
                 {strategyLifecycle.strategyIdLabel}
               </label>
               <Input
@@ -1339,7 +1383,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           </SheetHeader>
           <SheetBody className="space-y-3">
             <div className="grid gap-2">
-              <label htmlFor={sessionReplay.fileSelectId} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(sessionReplay.fileSelectLabel) && "uppercase tracking-[0.14em]")}>
+              <label htmlFor={sessionReplay.fileSelectId} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(sessionReplay.fileSelectLabel) && "type-label--caps")}>
                 {sessionReplay.fileSelectLabel}
               </label>
               <Select
@@ -1362,7 +1406,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
             <div className="grid gap-3 lg:grid-cols-[minmax(7rem,9rem)_1fr] lg:items-end">
               <div className="grid gap-1.5">
-                <label htmlFor={sessionReplay.speedInputId} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(sessionReplay.speedLabel) && "uppercase tracking-[0.14em]")}>
+                <label htmlFor={sessionReplay.speedInputId} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(sessionReplay.speedLabel) && "type-label--caps")}>
                   {sessionReplay.speedLabel}
                 </label>
                 <Input
@@ -1374,7 +1418,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   inputMode="decimal"
                   error={Boolean(sessionReplay.speedValidationText)}
                 />
-                <span id={sessionReplay.speedHelpId} className="text-[11px] text-muted-foreground">
+                <span id={sessionReplay.speedHelpId} className="text-xs text-muted-foreground">
                   {sessionReplay.speedHelpText}
                 </span>
               </div>
@@ -1422,7 +1466,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
             <div className="grid gap-3 lg:grid-cols-[minmax(8rem,10rem)_1fr] lg:items-end">
               <div className="grid gap-1.5">
-                <label htmlFor={sessionReplay.seekInputId} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(sessionReplay.seekLabel) && "uppercase tracking-[0.14em]")}>
+                <label htmlFor={sessionReplay.seekInputId} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(sessionReplay.seekLabel) && "type-label--caps")}>
                   {sessionReplay.seekLabel}
                 </label>
                 <Input
@@ -1434,7 +1478,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   inputMode="numeric"
                   error={Boolean(sessionReplay.seekValidationText)}
                 />
-                <span id={sessionReplay.seekHelpId} className="text-[11px] text-muted-foreground">
+                <span id={sessionReplay.seekHelpId} className="text-xs text-muted-foreground">
                   {sessionReplay.seekHelpText}
                 </span>
               </div>
@@ -1490,7 +1534,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           <SheetHeader>
             <SheetTitle id="promotion-gate-title">
               <FlaskConical className="h-4 w-4 text-primary" />
-              Backtest → Paper promotion gate
+              {promotionGate.evaluation?.targetMode?.toLowerCase() === "live"
+                ? "Paper → Live promotion gate" : "Backtest → Paper promotion gate"}
             </SheetTitle>
             <SheetDescription id="promotion-gate-description">Requires eligibility check before confirmation and audit refresh.</SheetDescription>
             <SheetCloseButton onClick={() => shellVm.closeWorkflowPanel("promotion")} />
@@ -1509,7 +1554,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
             <div className="grid gap-3 sm:grid-cols-2">
               <label htmlFor={promotionGate.fields.runId.id} className="grid gap-1 text-sm">
-                <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.runId.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.runId.label}</span>
+                <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.runId.label) && "type-label--caps")}>{promotionGate.fields.runId.label}</span>
                 <Input
                   id={promotionGate.fields.runId.id}
                   aria-label={promotionGate.fields.runId.ariaLabel}
@@ -1525,7 +1570,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 ) : null}
               </label>
               <label htmlFor={promotionGate.fields.approvedBy.id} className="grid gap-1 text-sm">
-                <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.approvedBy.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.approvedBy.label}</span>
+                <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.approvedBy.label) && "type-label--caps")}>{promotionGate.fields.approvedBy.label}</span>
                 <Input
                   id={promotionGate.fields.approvedBy.id}
                   aria-label={promotionGate.fields.approvedBy.ariaLabel}
@@ -1540,7 +1585,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               </label>
             </div>
             <label htmlFor={promotionGate.fields.approvalReason.id} className="grid gap-1 text-sm">
-              <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.approvalReason.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.approvalReason.label}</span>
+              <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.approvalReason.label) && "type-label--caps")}>{promotionGate.fields.approvalReason.label}</span>
               <Input
                 id={promotionGate.fields.approvalReason.id}
                 aria-label={promotionGate.fields.approvalReason.ariaLabel}
@@ -1554,7 +1599,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               />
             </label>
             <label htmlFor={promotionGate.fields.rejectionReason.id} className="grid gap-1 text-sm">
-              <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.rejectionReason.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.rejectionReason.label}</span>
+              <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.rejectionReason.label) && "type-label--caps")}>{promotionGate.fields.rejectionReason.label}</span>
               <Input
                 id={promotionGate.fields.rejectionReason.id}
                 aria-label={promotionGate.fields.rejectionReason.ariaLabel}
@@ -1568,7 +1613,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
               <label htmlFor={promotionGate.fields.reviewNotes.id} className="grid gap-1 text-sm">
-                <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.reviewNotes.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.reviewNotes.label}</span>
+                <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.reviewNotes.label) && "type-label--caps")}>{promotionGate.fields.reviewNotes.label}</span>
                 <Input
                   id={promotionGate.fields.reviewNotes.id}
                   aria-label={promotionGate.fields.reviewNotes.ariaLabel}
@@ -1581,7 +1626,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 />
               </label>
               <label htmlFor={promotionGate.fields.manualOverrideId.id} className="grid gap-1 text-sm">
-                <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.manualOverrideId.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.manualOverrideId.label}</span>
+                <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.manualOverrideId.label) && "type-label--caps")}>{promotionGate.fields.manualOverrideId.label}</span>
                 <Input
                   id={promotionGate.fields.manualOverrideId.id}
                   aria-label={promotionGate.fields.manualOverrideId.ariaLabel}
@@ -1595,7 +1640,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               </label>
             </div>
             <label htmlFor={promotionGate.fields.evidenceReferences.id} className="grid gap-1 text-sm">
-              <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.evidenceReferences.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.evidenceReferences.label}</span>
+              <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.evidenceReferences.label) && "type-label--caps")}>{promotionGate.fields.evidenceReferences.label}</span>
               <TextArea rows={2}
                 id={promotionGate.fields.evidenceReferences.id}
                 aria-label={promotionGate.fields.evidenceReferences.ariaLabel}
@@ -1610,6 +1655,26 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 <span id={promotionGate.fields.evidenceReferences.helpId ?? undefined} className="text-xs text-muted-foreground">{promotionGate.fields.evidenceReferences.helpText}</span>
               ) : null}
             </label>
+            {promotionGate.evaluation?.targetMode?.toLowerCase() === "live" && (
+              <fieldset className="grid gap-3 rounded-lg border border-border/60 p-3 text-xs sm:grid-cols-3" disabled={promotionGate.busy}>
+                <legend className="px-1 font-semibold">Live authorization</legend>
+                <p className="break-all text-muted-foreground sm:col-span-3">
+                  Strategy revision {promotionGate.evaluation.strategyArtifactId ?? "unavailable"}
+                </p>
+                <label className="grid gap-1">
+                  Allowed symbols
+                  <Input value={promotionGate.form.liveSymbols ?? ""} onChange={(event) => promotionGate.updateField("liveSymbols", event.target.value)} />
+                </label>
+                <label className="grid gap-1">
+                  Max USD per order
+                  <Input type="number" min="0.01" step="0.01" value={promotionGate.form.liveNotional ?? ""} onChange={(event) => promotionGate.updateField("liveNotional", event.target.value)} />
+                </label>
+                <label className="grid gap-1">
+                  Expiry (local time)
+                  <Input type="datetime-local" value={promotionGate.form.liveExpiry ?? ""} onChange={(event) => promotionGate.updateField("liveExpiry", event.target.value)} />
+                </label>
+              </fieldset>
+            )}
             <div className="flex flex-wrap gap-2">
               <Button
                 size="sm"
@@ -1667,7 +1732,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   <dl className="mt-2 grid gap-2 sm:grid-cols-3">
                     {promotionGate.evaluationPanel.metrics.map((metric) => (
                       <div key={metric.id}>
-                        <dt className={cn("text-[10px] opacity-75", usesTrackedCaps(metric.label) && "font-mono uppercase tracking-[0.14em]")}>{metric.label}</dt>
+                        <dt className={cn("text-xs opacity-75", usesTrackedCaps(metric.label) && "uppercase tracking-[0.08em]")}>{metric.label}</dt>
                         <dd className="font-mono text-xs">{metric.value}</dd>
                       </div>
                     ))}
@@ -1723,6 +1788,13 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 {promotionGate.historyRows.map((record) => (
                   <li key={record.id} className="font-mono" aria-label={record.ariaLabel}>
                     {record.label}
+                    {record.canRevoke && (
+                      <LiveAuthorizationRevokeForm
+                        authorizationId={record.id}
+                        disabled={promotionGate.busy}
+                        revoke={promotionGate.revokeLiveAuthorization}
+                      />
+                    )}
                   </li>
                 ))}
               </ul>
@@ -1731,7 +1803,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         </SheetContent>
       </Sheet>
 
-      {!showOverview ? <TechnicalDetails label="Trading metrics and data confidence"><StatStrip metrics={trustedHeadlineMetrics} label="Trading headline metrics" />{tradingConfidence}</TechnicalDetails> : null}
+      {!showOverview ? <TechnicalDetails label="Trading data confidence">{tradingConfidence}</TechnicalDetails> : null}
       <ConfirmActionDialog vm={confirmVm} />
       <SessionCloseConfirmationDialog
         sessionId={sessionCloseTarget}
@@ -1978,6 +2050,7 @@ function PaperSessionDetailPanelView({ detail }: { detail: PaperSessionDetailPan
       )}
 
       {detail.replay && <PaperSessionReplayPanelView panel={detail.replay} />}
+      <PaperReconciliationPanel key={detail.sessionId} sessionId={detail.sessionId} />
     </div>
   );
 }
@@ -2021,7 +2094,7 @@ function PaperSessionReplayPanelView({ panel }: { panel: PaperSessionReplayPanel
 function DataRow({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="data-grid-surface px-3 py-2">
-      <div className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.14em]")}>{label}</div>
+      <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</div>
       <div className="mt-1 font-mono text-sm text-foreground">{value ?? "Unavailable"}</div>
     </div>
   );
@@ -2224,7 +2297,7 @@ function TradingBlotterDetailPanel({
   detail,
   emptyText,
   action,
-  priceBasis
+  identity
 }: {
   id: string;
   objectType: string;
@@ -2232,7 +2305,7 @@ function TradingBlotterDetailPanel({
   emptyText: string;
   /** The next action for the selected row, e.g. cancel the order. */
   action?: ReactNode;
-  priceBasis?: string;
+  identity?: ReactNode;
 }) {
   return (
     <DetailPane
@@ -2243,8 +2316,8 @@ function TradingBlotterDetailPanel({
       status={detail ? { label: detail.statusLabel, tone: detail.statusTone } : null}
       subtitle={detail?.subtitle}
       summary={detail?.detail}
-      notice={detail && priceBasis ? <p className="text-xs text-muted-foreground">{priceBasis}</p> : null}
       actions={detail ? action : null}
+      identity={identity}
       fields={detail?.fields}
       shownInRow={detail?.shownInRow}
       empty={{ text: emptyText }}
@@ -2255,7 +2328,9 @@ function TradingBlotterDetailPanel({
 function Stat({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
     <div className="workspace-header-card p-4">
-      <div className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.16em]")}>{label}</div>
+      {/* KPI labels are the one place the tracked-caps eyebrow is used, and every tile in a row
+          uses it: per-label casing left "Buying Power Used" beside "MAX DRAWDOWN". */}
+      <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">{label}</div>
       <div className={cn("mt-2 font-mono text-sm font-semibold text-foreground", tone)}>{value}</div>
     </div>
   );
@@ -2334,7 +2409,7 @@ function OrderPreviewPanel({ preview }: { preview: OrderPreview }) {
       data-testid="order-preview"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <div className="text-[11px] font-medium text-muted-foreground">
+        <div className="text-xs font-medium text-muted-foreground">
           Order impact preview
         </div>
         <div className={cn("font-semibold", effectTone)} data-testid="order-preview-effect">
@@ -2376,7 +2451,7 @@ function OrderPreviewPanel({ preview }: { preview: OrderPreview }) {
 function PreviewStat({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <dt className={cn("text-[11px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.14em]")}>{label}</dt>
+      <dt className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</dt>
       <dd className={cn("text-foreground", mono && "font-mono")}>{value}</dd>
     </div>
   );

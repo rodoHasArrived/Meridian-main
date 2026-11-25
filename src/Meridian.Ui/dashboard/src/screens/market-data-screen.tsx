@@ -3,6 +3,7 @@ import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { LiveQuotesScreen } from "@/screens/live-quotes-screen";
 import { PriceAlertsScreen } from "@/screens/price-alerts-screen";
 import { WatchlistScreen } from "@/screens/watchlist-screen";
+import { OptionsScreen } from "@/screens/options-screen";
 
 const MARKET_DATA_TABS = [
   { id: "quotes", label: "Live quotes" },
@@ -10,10 +11,10 @@ const MARKET_DATA_TABS = [
   { id: "alerts", label: "Price alerts" }
 ];
 
-type MarketDataView = "quotes" | "watchlist" | "alerts";
+type MarketDataView = "quotes" | "watchlist" | "alerts" | "options";
 
 function resolveMarketDataView(requested: string | null): MarketDataView {
-  return requested === "watchlist" || requested === "alerts" ? requested : "quotes";
+  return requested === "watchlist" || requested === "alerts" || requested === "options" ? requested : "quotes";
 }
 
 /**
@@ -25,6 +26,12 @@ function resolveMarketDataView(requested: string | null): MarketDataView {
 export function MarketDataScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
   const view = resolveMarketDataView(searchParams.get("view"));
+
+  // Options screening has its own sidebar entry (Data > Options screening), so it is not also a
+  // tab here: one destination, one way to reach it. Its deep link keeps working.
+  if (view === "options") {
+    return <OptionsScreen />;
+  }
 
   return (
     <Tabs

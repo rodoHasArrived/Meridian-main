@@ -16,17 +16,43 @@ import xml.etree.ElementTree as ET
 
 RECEIPT = "integration-receipt.json"
 WORKFLOW = ".github/workflows/service-backed-integrations.yml"
+# One xUnit class runs serially, and this one is about a third of the suite's test time, so
+# it was the floor under the whole job. It runs as its own process against its own database
+# while every other test runs in a second process. The two terms are exact complements, so
+# together the processes select the suite filter once; evidence() checks each result's class.
+TAX_LOT_JOURNAL_CLASS = "Meridian.Tests.Storage.AtomicTaxLotJournalStoreTests"
+MERIDIAN_PROCESSES = {
+    "tax-lot-journal": {
+        "filter": f"FullyQualifiedName~{TAX_LOT_JOURNAL_CLASS}",
+        "database": "meridian_tax_lot",
+    },
+    "remainder": {
+        "filter": f"FullyQualifiedName!~{TAX_LOT_JOURNAL_CLASS}",
+        "database": "meridian",
+    },
+}
 SUITES = {
     "meridian-integrations": {
         "project": "tests/Meridian.Tests/Meridian.Tests.csproj",
         "filter": "Category=Integration&Category!=LiveProvider",
+        "processes": MERIDIAN_PROCESSES,
     },
     "direct-lending-integrations": {
         "project": "tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj",
         "filter": "Category=Integration",
     },
+    "demo-integrations": {
+        "project": "tests/Meridian.Demo.Tests/Meridian.Demo.Tests.csproj",
+        "filter": "Category=Integration&Category!=LiveProvider",
+    },
 }
-SCHEMA_FILES = ("database-schema.sql", "database-table-inventory.csv", "migration-ledger-inventory.csv")
+# One set per database a test process used. Tests create and remove their own schemas, so
+# these record what each database retained once its process finished.
+PRIMARY_SCHEMA_FILES = ("database-schema.sql", "database-table-inventory.csv", "migration-ledger-inventory.csv")
+SCHEMA_FILES = PRIMARY_SCHEMA_FILES + tuple(
+    f"{process['database']}-{name}"
+    for process in MERIDIAN_PROCESSES.values() if process["database"] != "meridian"
+    for name in PRIMARY_SCHEMA_FILES)
 
 
 def digest(data: bytes) -> str:
@@ -73,7 +99,11 @@ def evidence(root: Path) -> dict:
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     spec.loader.exec_module(module)
-    observed = module.collect_evidence(root, list(SUITES))
+    # Requiring each declared process by name reports which one is missing or empty,
+    # instead of leaving it to a totals mismatch.
+    required = list(SUITES) + [f"{prefix}-{process}" for prefix, contract in SUITES.items()
+                               for process in contract.get("processes", {})]
+    observed = module.collect_evidence(root, required)
     errors = module.validation_errors(observed)
     if errors:
         raise ValueError("; ".join(errors))
@@ -95,6 +125,17 @@ def evidence(root: Path) -> dict:
         results = sorted(suite_root.rglob(f"{prefix}*.trx"))
         if not results or results != sorted(root.rglob(f"{prefix}*.trx")):
             raise ValueError(f"TRX evidence must belong to its declared suite directory: {prefix}")
+        processes = contract.get("processes", {})
+        owners = {}
+        for process in processes:
+            # "remainder" must not also claim "<prefix>-remainder-of-..." style names.
+            owned = [path for path in results if path.name.startswith(f"{prefix}-{process}_")
+                     or path.name == f"{prefix}-{process}.trx"]
+            if not owned:
+                raise ValueError(f"Integration suite {prefix} lacks results from its {process} process")
+            owners.update({path: process for path in owned})
+        if processes and (set(owners) != set(results) or len(coverage) < len(processes)):
+            raise ValueError(f"Integration suite {prefix} evidence does not match its declared processes")
         identities = []
         for path in results:
             for result in ET.parse(path).getroot().iter():
@@ -102,8 +143,14 @@ def evidence(root: Path) -> dict:
                     name = result.attrib.get("testName", "")
                     if not name:
                         raise ValueError("Integration TRX result lacks a test identity")
+                    if path in owners and (
+                            (TAX_LOT_JOURNAL_CLASS in name) != (owners[path] == "tax-lot-journal")):
+                        raise ValueError(f"Integration test ran in the wrong process: {name}")
                     identities.append([path.relative_to(root).as_posix(), name,
                                        result.attrib.get("testId", "")])
+        for process in processes:
+            if not any(owners.get(root / identity[0]) == process for identity in identities):
+                raise ValueError(f"Integration suite {prefix} has no results from its {process} process")
         suites[prefix] = dict(contract, passed=len(identities),
                              discoverySha256=digest(json.dumps(sorted(identities)).encode()))
     return {"files": inventory, "suites": suites, "totals": observed["totals"]}

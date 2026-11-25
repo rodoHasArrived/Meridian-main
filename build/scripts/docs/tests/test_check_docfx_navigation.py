@@ -114,6 +114,30 @@ class NavigationTests(unittest.TestCase):
         (self.root / "archive/docs/old.md").unlink()
         self.assertTrue(any("source file is missing" in error for error in self.check().errors))
 
+    def test_repository_resources_publish_archived_json_and_gzip_downloads(self):
+        repository = SCRIPTS.parents[2]
+        repository_config = json.loads((repository / "docfx.json").read_text(encoding="utf-8"))
+        self.config["build"]["resource"] = repository_config["build"]["resource"]
+        self.write("docs/README.md", """# Home
+[Receipt](../archive/docs/testing/evidence/receipt.json)
+[Snapshot](../archive/docs/engineering/snapshot.json.gz)
+""")
+        downloads = (
+            "archive/docs/testing/evidence/receipt.json",
+            "archive/docs/engineering/snapshot.json.gz",
+        )
+        for download in downloads:
+            self.write(download, "retained evidence")
+        self.assertEqual([], self.check().errors)
+
+        self.write("site/docs/toc.html")
+        self.write("site/docs/README.html")
+        result = self.check(site=True)
+        for download in downloads:
+            self.assertTrue(any(f"built output is missing: {download}" in error for error in result.errors))
+            self.write(f"site/{download}", "retained evidence")
+        self.assertEqual([], self.check(site=True).errors)
+
     def test_archive_references_are_checked_but_code_examples_are_ignored(self):
         self.write("docs/README.md", """# Home
 ```md

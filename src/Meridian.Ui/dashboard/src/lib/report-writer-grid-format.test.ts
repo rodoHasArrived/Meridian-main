@@ -41,11 +41,40 @@ describe("report-writer grid formatting", () => {
 
     const technology = viz.categories[0];
     expect(technology.category).toBe("Technology");
-    expect(technology.bars[0]).toMatchObject({ seriesKey: "marketValue", value: 100, widthPct: 100, isNegative: false });
-    expect(technology.bars[1]).toMatchObject({ seriesKey: "pnl", value: 10, widthPct: 10 });
+    expect(technology.bars[0]).toMatchObject({ seriesKey: "marketValue", value: 100, widthPct: 50, leftPct: 50, isNegative: false });
+    expect(technology.bars[1]).toMatchObject({ seriesKey: "pnl", value: 10, widthPct: 5 });
 
     const rates = viz.categories[1];
-    expect(rates.bars[1]).toMatchObject({ value: -2, widthPct: 2, isNegative: true });
+    expect(rates.bars[1]).toMatchObject({ value: -2, widthPct: 1, leftPct: 49, isNegative: true });
+  });
+
+  it("preserves missing and non-finite observations and ignores values without categories", () => {
+    const chart: ReportWriterChartRender = {
+      type: "Area", title: "Partial", categoryField: "month",
+      categories: ["Jan", "Feb", "Mar", "Apr"],
+      series: [
+        { key: "a", label: "A", values: [20, Number.NaN, Number.POSITIVE_INFINITY] },
+        { key: "b", label: "B", values: [-10, 0, 5, 10, 10000] }
+      ], warnings: []
+    };
+    const viz = buildChartViz(chart);
+    expect(viz.maxAbs).toBe(20);
+    expect(viz.categories[0].bars[0]).toMatchObject({ value: 20, leftPct: 50, widthPct: 50 });
+    expect(viz.categories[0].bars[1]).toMatchObject({ value: -10, leftPct: 25, widthPct: 25 });
+    for (const category of viz.categories.slice(1)) {
+      expect(category.bars[0]).toMatchObject({ value: null, leftPct: 50, widthPct: 0 });
+    }
+    expect(viz.categories[1].bars[1].value).toBe(0);
+  });
+
+  it("preserves runtime null and non-numeric observations without coercion", () => {
+    const chart = {
+      type: "Pie", title: "Unavailable", categoryField: "month", categories: ["Jan", "Feb"],
+      series: [{ key: "v", label: "V", values: [null, "12"] }], warnings: []
+    } as unknown as ReportWriterChartRender;
+    const viz = buildChartViz(chart);
+    expect(viz.maxAbs).toBe(0);
+    expect(viz.categories.flatMap((category) => category.bars.map((bar) => bar.value))).toEqual([null, null]);
   });
 
   it("handles an all-zero chart without dividing by zero", () => {

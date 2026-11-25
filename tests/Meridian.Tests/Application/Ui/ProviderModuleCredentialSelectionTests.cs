@@ -6,6 +6,7 @@ using Meridian.Infrastructure.DataSources;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using HostConfigStore = Meridian.Application.UI.ConfigStore;
 
 namespace Meridian.Tests.Application.UI;
 
@@ -51,7 +52,9 @@ public sealed class ProviderModuleCredentialSelectionTests
             var path = Path.Combine(root, "appsettings.json");
             await File.WriteAllTextAsync(path, "{}");
             var config = new ConfigStore(path);
-            await config.UpdateAsync(value => value with
+            // Environment mappings are privileged host setup; the ordinary UI store must
+            // continue refusing credential-bearing configuration mutations.
+            await new HostConfigStore(path).UpdateAsync(value => value with
             {
                 ProviderModules = new ProviderModulesConfig(new Dictionary<string, ProviderModuleSettings>
                 {

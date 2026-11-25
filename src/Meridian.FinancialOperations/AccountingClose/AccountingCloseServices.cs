@@ -594,6 +594,8 @@ public sealed class TrialBalanceProjectionService
             Matches(expected.CapitalAccountId, actual.CapitalAccountId) &&
             Matches(expected.InstrumentId?.ToString("D"), actual.InstrumentId?.ToString("D")) &&
             Matches(expected.PositionId?.ToString("D"), actual.PositionId?.ToString("D")) &&
+            (!expected.IntercompanyAgreementId.HasValue || expected.IntercompanyAgreementId == actual.IntercompanyAgreementId) &&
+            (!expected.IntercompanyAgreementVersion.HasValue || expected.IntercompanyAgreementVersion == actual.IntercompanyAgreementVersion) &&
             Matches(expected.TaxLotId, actual.TaxLotId) &&
             Matches(expected.CostCenterId, actual.CostCenterId) &&
             Matches(expected.CounterpartyId, actual.CounterpartyId) &&
@@ -676,9 +678,10 @@ public sealed class TrialBalanceProjectionService
             NormalizeToken(dimensions.ProjectId),
             string.Join(",", externalGl));
 
-        return dimensions.PositionId.HasValue
+        var withPosition = dimensions.PositionId.HasValue
             ? $"{signature}|positionId={dimensions.PositionId.Value:D}"
             : signature;
+        return Meridian.Contracts.Ledger.LedgerAgreementDimensions.AppendSignature(withPosition, dimensions.IntercompanyAgreementId, dimensions.IntercompanyAgreementVersion, "|");
     }
 
     private static string NormalizeToken(string? value)

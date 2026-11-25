@@ -2,7 +2,7 @@
 
 **Status:** active guidance  
 **Owner:** core-team  
-**Reviewed:** 2026-10-30
+**Reviewed:** 2026-11-20
 
 This directory contains Meridian's domain dictionary for AI-assisted and human development.
 Start with the [Meridian Domain Model](../architecture/meridian-domain-model.md) for shared scope,
@@ -18,14 +18,19 @@ follow-up.
 Start with:
 
 - [Strategy, Orders, and Execution](strategy-order-execution.md)
+- [Options Screening and Imported Broker Assessments](options-screening-and-assessments.md)
 - [Brokerage Account Snapshot](brokerage-account-snapshot.md)
 - [Corporate Action Case](corporate-action-case.md)
 - [Fund Event](fund-event.md)
 - [Operational Evidence Graph](operational-evidence-graph.md)
 - [Account Oversight Evidence](account-oversight-evidence.md)
 - [Account and Book Scopes](account-and-book-scopes.md)
+- [Intercompany Agreements and Entity Lifecycle](intercompany-agreements-and-entity-lifecycle.md)
+
+- [Intercompany Agreements](intercompany-agreements.md)
 - [Intercompany Consolidation](intercompany-consolidation.md)
 - [Recurring Journal](recurring-journal.md)
+- [Fiscal-Year Close](fiscal-year-close.md)
 - [Security](security.md)
 - [Contractual Schedule](contractual-schedule.md)
 - [Contractual Cash-Flow Projection](contractual-cash-flow-projection.md)

@@ -46,13 +46,23 @@ public static partial class LedgerEndpoints
             var actor = ResolveMutationActor(context, request.Actor);
             var result = await service
                 .LockClosePeriodScopedAsync(
-                    request with
-                    {
-                        Actor = actor,
+                    new LockClosePeriodRequestDto(
+                        WorkflowId: request.WorkflowId,
+                        ExpectedWorkflowVersion: request.ExpectedWorkflowVersion,
+                        Actor: actor,
+                        Rationale: request.Rationale,
+                        ReportPackId: request.ReportPackId,
+                        EvidenceLinks: request.EvidenceLinks,
+                        ChecklistControlApprovals: request.ChecklistControlApprovals,
+                        CorrelationId: request.CorrelationId,
+                        ClosePackageId: request.ClosePackageId,
+                        ClosePackageManifestId: request.ClosePackageManifestId,
+                        ClosePackageRetainedManifestRoute: request.ClosePackageRetainedManifestRoute,
                         // Narrower of declaration and principal standing (#2673).
-                        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
-                        ControllerRole = controllerRole
-                    },
+                        ActionOrigin: EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
+                        PrepareClosingEntriesOnly: request.PrepareClosingEntriesOnly,
+                        ControllerRole: controllerRole,
+                        CloseScope: request.CloseScope),
                     actor,
                     scope.TenantContext.TenantId,
                     scope.TenantContext.CompanyId,

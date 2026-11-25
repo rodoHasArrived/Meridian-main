@@ -1,9 +1,10 @@
 import { TableWorkbench } from "@/components/meridian/table-workbench";
-import { ArrowRight, Play, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { ArrowRight, Play, Plus, Trash2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -19,7 +20,8 @@ import {
 } from "@/screens/statement-fetch-panel.view-model";
 import { StatementImportPreviewDetails } from "@/screens/statement-import-preview";
 import type { StatementConnectorDescriptor, StatementMappingProfile } from "@/types";
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatTimestamp as formatDisplayTimestamp } from "@/lib/format";
+import { narrowRowsWithFundScopeContext, useFundScopeNarrowingContext } from "@/lib/operating-scope/fund-scope-context";
 
 export interface StatementFetchPanelProps {
   connectors: StatementConnectorDescriptor[];
@@ -275,6 +277,15 @@ function StatementFetchSchedulesTable({
 }: {
   viewModel: ReturnType<typeof useStatementFetchPanelViewModel>;
 }) {
+  // Schedules narrowed to the scope's fund (or entity) when the organization graph places their
+  // fund accounts; schedules it does not place are counted in the note, never hidden silently.
+  const fundScope = narrowRowsWithFundScopeContext(
+    useFundScopeNarrowingContext(),
+    viewModel.schedules,
+    (schedule) => schedule.fundAccountId,
+    "statement fetch schedules"
+  );
+  const schedules = fundScope.rows;
   return (
     <Card>
       <CardHeader>
@@ -283,17 +294,7 @@ function StatementFetchSchedulesTable({
             <CardTitle>Saved statement fetch schedules</CardTitle>
             <CardDescription>Run a schedule now, edit its configuration, or remove it.</CardDescription>
           </div>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            busy={viewModel.loading}
-            busyLabel="Refreshing…"
-            onClick={() => void viewModel.refreshSchedules()}
-          >
-            <RefreshCw className="size-3.5" aria-hidden="true" />
-            Refresh
-          </Button>
+          <PanelReload reload={viewModel.refreshSchedules} failed={viewModel.loadError !== null} busy={viewModel.loading} what="saved statement fetch schedules" />
         </div>
       </CardHeader>
       <CardContent>
@@ -307,9 +308,14 @@ function StatementFetchSchedulesTable({
             detail="Complete the fetch and reconciliation fields above, then save the first statement schedule."
           />
         ) : null}
+        {fundScope.note && !viewModel.loading && !viewModel.loadError ? (
+          <p role="status" aria-label="Statement fetch schedules fund scope" data-narrowing={fundScope.status} className="mb-2 text-xs text-muted-foreground">
+            {fundScope.note}
+          </p>
+        ) : null}
         {viewModel.schedules.length > 0 ? (
           <div className="overflow-x-auto">
-            <TableWorkbench<(typeof viewModel.schedules)[number]> tableClassName={"w-full border-collapse text-xs"} maxVisibleRows={null}  workbenchId="accounting-statement-schedules" sourceKey={JSON.stringify(viewModel.schedules)} rows={viewModel.schedules} columns={[{id:"field-0",label:"Schedule",exportValue:schedule=>schedule.scheduleId,render:schedule=><>
+            <TableWorkbench<(typeof viewModel.schedules)[number]> tableClassName={"w-full border-collapse text-xs"} maxVisibleRows={null}  workbenchId="accounting-statement-schedules" sourceKey={JSON.stringify(schedules)} rows={schedules} columns={[{id:"field-0",label:"Schedule",exportValue:schedule=>schedule.scheduleId,render:schedule=><>
                       <div className="font-mono font-semibold">{schedule.scheduleId}</div>
                       <div className="mt-1 flex flex-wrap gap-1.5">
                         <Badge variant={schedule.enabled ? "success" : "outline"}>{schedule.enabled ? "Enabled" : "Paused"}</Badge>
@@ -325,7 +331,7 @@ function StatementFetchSchedulesTable({
 {id:"field-2",label:"Cadence",exportValue:schedule=>schedule.cadenceHours,render:schedule=><>Every {schedule.cadenceHours}h</>},
 {id:"field-3",label:"Last result",exportValue:schedule=>schedule.lastRunStatus,render:schedule=><>
                       <div>{schedule.lastRunStatus ?? "Not run"}</div>
-                      <div className="font-mono text-[10px] text-muted-foreground">{formatTimestamp(schedule.lastRunAtUtc)}</div>
+                      <div className="font-mono text-xs text-muted-foreground">{formatTimestamp(schedule.lastRunAtUtc)}</div>
                     </>},
 {id:"field-4",label:"Next due",exportValue:schedule=>schedule.nextDueAtUtc,render:schedule=><>{formatTimestamp(schedule.nextDueAtUtc)}</>},
 {id:"field-5",label:"Actions",render:schedule=><>
@@ -373,13 +379,17 @@ function StatementFetchSchedulesTable({
                             role="status"
                             aria-label="Schedule deletion confirmation"
                             aria-live="polite"
-                            className="basis-full text-right text-[11px] leading-4 text-warning"
+                            className="basis-full text-right text-xs leading-4 text-warning"
                           >
                             Delete confirmation pending for {schedule.scheduleId}. Confirm delete permanently removes this schedule.
                           </p>
                         ) : null}
                       </div>
-                    </>}]} getRowId={schedule=>schedule.scheduleId} getSearchText={schedule=>[schedule.scheduleId,schedule.sourceInstitution,schedule.externalAccountId,schedule.fundAccountId].join(" ")} completePopulation sourceDescription="Authorized persisted statement schedules; cadence is in hours and timestamps are UTC." ariaLabel="Statement fetch schedules" caption="Persisted remote statement fetch schedules and run posture" emptyText="No statement schedules returned." />
+                    </>}]} getRowId={schedule=>schedule.scheduleId} getSearchText={schedule=>[schedule.scheduleId,schedule.sourceInstitution,schedule.externalAccountId,schedule.fundAccountId].join(" ")} completePopulation sourceDescription={fundScope.status === "applied"
+              ? `Authorized persisted statement schedules under the chosen ${fundScope.dimension}; cadence is in hours and timestamps are in the display time zone.`
+              : "Authorized persisted statement schedules; cadence is in hours and timestamps are in the display time zone."} ariaLabel="Statement fetch schedules" caption="Persisted remote statement fetch schedules and run status" emptyText={fundScope.status === "applied"
+              ? `No statement schedules under the chosen ${fundScope.dimension}.`
+              : "No statement schedules returned."} />
           </div>
         ) : null}
       </CardContent>
@@ -435,7 +445,7 @@ function formatTimestamp(value: string | null): string {
     return "—";
   }
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : formatUtcTimestamp(date);
+  return Number.isNaN(date.getTime()) ? value : formatDisplayTimestamp(date);
 }
 
 function toKebabCase(value: string): string {

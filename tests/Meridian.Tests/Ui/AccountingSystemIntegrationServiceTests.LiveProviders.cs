@@ -30,6 +30,11 @@ public sealed partial class AccountingSystemIntegrationServiceTests
         var periods = await fixture.ListPeriodsAsync(ExternalGlLedgerBookId, fundProfileId: "default-fund");
         var records = await fixture.GetByPeriodAsync(periods.Single().PeriodId);
         var ledger = new Mock<ILedgerJournalStore>(MockBehavior.Strict);
+        ledger.Setup(s => s.QueryAsync(It.Is<LedgerJournalEntryQuery>(q => q.LedgerBookId == ExternalGlLedgerBookId), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((LedgerJournalEntryQuery query, CancellationToken _) => (IReadOnlyList<LedgerJournalEntryRecord>)records
+                .Where(record => (!query.JournalEntryId.HasValue || record.Entry.JournalEntryId == query.JournalEntryId)
+                    && (!query.EffectiveFrom.HasValue || (record.Entry.Metadata?.EffectiveDate ?? DateOnly.FromDateTime(record.Entry.Timestamp.UtcDateTime)) >= query.EffectiveFrom)
+                    && (!query.EffectiveTo.HasValue || (record.Entry.Metadata?.EffectiveDate ?? DateOnly.FromDateTime(record.Entry.Timestamp.UtcDateTime)) <= query.EffectiveTo)).ToArray());
         ledger.Setup(s => s.GetLedgerBookAsync(ExternalGlLedgerBookId, It.IsAny<CancellationToken>())).ReturnsAsync(() => book);
         ledger.Setup(s => s.ListPeriodsAsync(ExternalGlLedgerBookId, null, "default-fund", null, It.IsAny<CancellationToken>())).ReturnsAsync(periods);
         ledger.Setup(s => s.GetByPeriodAsync(periods.Single().PeriodId, It.IsAny<CancellationToken>())).ReturnsAsync(records);
@@ -120,6 +125,8 @@ public sealed partial class AccountingSystemIntegrationServiceTests
         reconciliation.BreakCount.Should().Be(2);
         reconciliation.Rows.Should().OnlyContain(row => row.Variance == 0m &&
             row.Status == AccountingSystemReconciliationStatusDto.Variance && row.Currency == "USD");
+        reconciliation.Rows.Should().OnlyContain(row => row.MeridianCurrency == "USD" &&
+            row.ExternalCurrency == (omittedZeroBalances ? null : "EUR"));
         reconciliation.Rows.Should().OnlyContain(row => row.Detail.Contains("EUR") && row.Detail.Contains("USD"));
         var template = CertifiedQuickBooksMappingProfile();
         var profile = template with

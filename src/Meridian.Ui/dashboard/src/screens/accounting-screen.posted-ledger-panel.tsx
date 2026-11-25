@@ -9,12 +9,11 @@ import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "
 import { TrialBalanceTable } from "@/components/accounting";
 import { LedgerAccountRunningBalancePanel } from "@/components/accounting/LedgerAccountRunningBalancePanel";
 import { cn } from "@/lib/utils";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, formatCurrency } from "@/lib/format";
 import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
 import type { FinancialRecordExplorerSavedView } from "@/components/meridian/financial-record-explorer";
 import { useAccountingPostedLedgerViewModel } from "@/screens/accounting-screen.posted-ledger.view-model";
 import type { AccountingWorkstream } from "@/screens/accounting-screen.task-mode-view-model";
-import { formatCurrencyForCode } from "@/screens/accounting-screen.formatting";
 
 /**
  * Static saved views for the strategy-run ledger explorer that renders below the
@@ -84,7 +83,7 @@ export function AccountingPostedLedgerSection({ workstream }: { workstream: Acco
                     onClick={() => viewModel.selectBook(option.id)}
                   >
                     <span>{option.label}</span>
-                    <span className="ml-2 font-mono text-[10px] opacity-75">{option.baseCurrency}</span>
+                    <span className="ml-2 font-mono text-xs opacity-75">{option.baseCurrency}</span>
                   </Button>
                 ))}
               </div>
@@ -121,7 +120,7 @@ export function AccountingPostedLedgerSection({ workstream }: { workstream: Acco
                     onClick={() => viewModel.selectPeriod(option.id)}
                   >
                     <span>{option.label}</span>
-                    <span className="ml-2 font-mono text-[10px] opacity-75">{option.statusLabel}</span>
+                    <span className="ml-2 font-mono text-xs opacity-75">{option.statusLabel}</span>
                   </Button>
                 ))}
               </div>
@@ -148,7 +147,7 @@ export function AccountingPostedLedgerSection({ workstream }: { workstream: Acco
                 onClick={() => viewModel.selectBasis(option.id)}
               >
                 <span>{option.label}</span>
-                <span className="ml-2 font-mono text-[10px] opacity-75">{option.rowCount}</span>
+                <span className="ml-2 font-mono text-xs opacity-75">{option.rowCount}</span>
               </Button>
             ))}
           </div>
@@ -215,7 +214,7 @@ export function AccountingPostedLedgerSection({ workstream }: { workstream: Acco
                       financialAccountId={selectedTrialBalanceRow.financialAccountId}
                       dimensions={selectedTrialBalanceRow.dimensions ?? null}
                       formatAmount={(value) =>
-                        view.baseCurrency ? formatCurrencyForCode(value, view.baseCurrency) : `${formatNumber(value)} (currency unavailable)`
+                        view.baseCurrency ? formatCurrency(value, { currency: view.baseCurrency, minimumFractionDigits: 0 }) : `${formatNumber(value)} (currency unavailable)`
                       }
                     />
                   ) : null}

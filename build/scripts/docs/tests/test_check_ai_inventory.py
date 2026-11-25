@@ -418,6 +418,7 @@ class CheckAiInventoryTests(unittest.TestCase):
             write(root / ".codex" / "skills" / "meridian-test" / "SKILL.md")
             write(root / ".claude" / "settings.json")
             write(root / ".claude" / "skills" / "meridian-test" / "SKILL.md")
+            write(root / ".agents" / "skills" / "meridian-test" / "SKILL.md")
             write(root / ".claude" / "plugins" / "csharp-dotnet-development" / ".github" / "plugin" / "plugin.json")
             write(
                 root

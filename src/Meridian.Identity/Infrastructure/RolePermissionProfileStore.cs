@@ -76,7 +76,7 @@ public sealed class FileRolePermissionProfileStore : IRolePermissionProfileStore
         await _writeGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var snapshot = ReadSnapshot();
+            var snapshot = ReadSnapshot(forWrite: true);
             var profiles = snapshot.Profiles.ToList();
             var index = profiles.FindIndex(profile => ProfileKey(profile.ProfileName) == validated.ProfileKey);
             var existing = index >= 0 ? profiles[index] : null;
@@ -129,7 +129,11 @@ public sealed class FileRolePermissionProfileStore : IRolePermissionProfileStore
         }
     }
 
-    private RolePermissionProfileSnapshot ReadSnapshot()
+    /// <param name="forWrite">
+    /// True on mutation paths. Reads fail safe to no custom profiles on a corrupt file, but a
+    /// write built on that empty list would replace every stored profile, so writes refuse instead.
+    /// </param>
+    private RolePermissionProfileSnapshot ReadSnapshot(bool forWrite = false)
     {
         lock (_gate)
         {
@@ -144,6 +148,15 @@ public sealed class FileRolePermissionProfileStore : IRolePermissionProfileStore
                     File.ReadAllText(_path),
                     JsonOptions);
                 return snapshot ?? new RolePermissionProfileSnapshot([]);
+            }
+            catch (JsonException ex) when (forWrite)
+            {
+                _logger?.LogError(
+                    ex,
+                    "Refusing to write role-permission profiles: governance file at {Path} is corrupt. Manual data-integrity review required.",
+                    _path);
+                throw new InvalidOperationException(
+                    "The role-permission profile file is corrupt; refusing to overwrite it. Repair or restore the file first.", ex);
             }
             catch (JsonException ex)
             {

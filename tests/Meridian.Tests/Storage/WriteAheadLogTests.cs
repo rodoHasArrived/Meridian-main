@@ -40,6 +40,54 @@ public sealed class WriteAheadLogTests : TempDirectoryAsyncTestBase
         r2.Sequence.Should().BeGreaterThan(r1.Sequence);
     }
 
+    [Theory]
+    [InlineData("trade|fill")]
+    [InlineData("trade\nfill")]
+    [InlineData("trade\r")]
+    public async Task AppendAsync_RecordTypeThatCannotBeReadBack_IsRefusedBeforeItIsWritten(string recordType)
+    {
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        await wal.InitializeAsync();
+        var before = await wal.AppendAsync(new { Symbol = "SPY", Price = 450.0 }, "trade");
+
+        var append = () => wal.AppendAsync(new { Symbol = "SPY", Price = 451.0 }, recordType);
+
+        await append.Should().ThrowAsync<ArgumentException>().WithMessage("*record type*");
+        var after = await wal.AppendAsync(new { Symbol = "SPY", Price = 452.0 }, "trade");
+        after.Sequence.Should().Be(before.Sequence + 1, "a refused record consumes no sequence number");
+    }
+
+    [Fact]
+    public async Task RepairAndTruncate_RunConcurrently_CommittedRecordsNeverReplayAndNothingUncommittedIsLost()
+    {
+        // Small segments so truncation has several closed files to delete while repair scans
+        // and rewrites them. Repair holds the truncate lock, so the two never interleave.
+        var options = new WalOptions { SyncMode = WalSyncMode.NoSync, MaxWalFileSizeBytes = 400 };
+        await using (var wal = new WriteAheadLog(TestDataRoot, options))
+        {
+            await wal.InitializeAsync();
+            for (var i = 0; i < 60; i++)
+                await wal.AppendAsync(new { Symbol = "SPY", Price = 400.0 + i }, "trade");
+
+            await wal.CommitAsync(40);
+            Directory.GetFiles(TestDataRoot, "*.wal").Should().HaveCountGreaterThan(3);
+
+            await Task.WhenAll(
+                Task.Run(() => wal.TruncateAsync(40)),
+                Task.Run(() => wal.RepairAsync()),
+                Task.Run(() => wal.RepairAsync()));
+        }
+
+        await using var restarted = new WriteAheadLog(TestDataRoot, options);
+        await restarted.InitializeAsync();
+        var replay = new List<long>();
+        await foreach (var record in restarted.GetUncommittedRecordsAsync())
+            replay.Add(record.Sequence);
+
+        replay.Should().Equal(Enumerable.Range(41, 20).Select(sequence => (long)sequence),
+            "committed records must not replay and every uncommitted record must survive repair");
+    }
+
     [Fact]
     public async Task AppendAsync_SetsRecordType()
     {

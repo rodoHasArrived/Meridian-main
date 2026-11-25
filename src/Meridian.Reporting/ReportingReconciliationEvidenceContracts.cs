@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
@@ -258,6 +259,15 @@ public static class ReportingReconciliationEvidenceValidation
         ReportingReconciliationCompletionEvidence completion)
     {
         ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(completion);
+        // Reject only at new receipt creation. Frozen historical receipt validation must
+        // reproduce its original bytes and must not retroactively rewrite review labels.
+        foreach (var item in completion.BreakEvidence.IsDefault ? [] : completion.BreakEvidence)
+        {
+            PreparerAttestationApprovalBoundary.RequireOrdinaryReference(item.ApprovalReference, nameof(item.ApprovalReference));
+            PreparerAttestationApprovalBoundary.RequireOrdinaryReference(item.ApprovalActor, nameof(item.ApprovalActor));
+        }
+
         ValidateCompletion(completion);
         RequireText(source.TenantId, nameof(source.TenantId));
         RequireText(source.OrganizationId, nameof(source.OrganizationId));

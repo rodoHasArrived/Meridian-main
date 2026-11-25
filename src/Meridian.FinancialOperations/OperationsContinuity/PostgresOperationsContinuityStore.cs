@@ -296,6 +296,7 @@ public sealed class PostgresOperationsContinuityStore :
 
         // Reject an unresolved book before a transactional ledger append can create any related writes.
         await EnsureLedgerBookTenantResolvableAsync(connection, transaction, workflow, ct).ConfigureAwait(false);
+        await using var postingAuthority = await _ledgerJournalStore.AcquirePostingAuthorityAsync(connection, transaction, [journalEntry], ct).ConfigureAwait(false);
         await _ledgerJournalStore.AppendAsync(connection, transaction, journalEntry, ct).ConfigureAwait(false);
         var audit = await AppendAuditAsync(connection, transaction,
             OperationsWorkflowChecklistSnapshots.ForCommit(auditDraft, workflow), ct).ConfigureAwait(false);

@@ -4,6 +4,7 @@ using Meridian.Application.Pipeline;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
+using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
 namespace Meridian.Tests.Application.Pipeline;
@@ -227,6 +228,43 @@ public sealed class PersistentDedupLedgerTests : IAsyncLifetime
             (await _secondLedger.TryReserveAsync(evt, DedupLookupScope.WalRecovery)).Status
                 .Should().Be(DedupReservationStatus.Duplicate);
         }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AutomaticCompaction_AndEitherReloadPath_UseTheInjectedClock(bool synchronousReload)
+    {
+        var time = new FakeTimeProvider(new DateTimeOffset(2001, 1, 2, 0, 0, 0, TimeSpan.Zero));
+        var events = new[] { CreateTradeEvent("AAPL", 1), CreateTradeEvent("AAPL", 2) };
+        _firstLedger = new PersistentDedupLedger(
+            _ledgerDirectory, entryTtl: TimeSpan.FromMinutes(1), compactionMinLines: 2, timeProvider: time);
+        await _firstLedger.InitializeAsync();
+        foreach (var evt in events)
+            (await _firstLedger.IsDuplicateAsync(evt)).Should().BeFalse();
+
+        var reservations = new List<DedupReservation>();
+        foreach (var evt in events)
+        {
+            var claim = await _firstLedger.TryReserveAsync(evt, DedupLookupScope.WalRecovery);
+            claim.Status.Should().Be(DedupReservationStatus.Reserved);
+            reservations.Add(claim.Reservation);
+        }
+        await _firstLedger.CommitDurableAsync(reservations);
+        _firstLedger.DiskLineCount.Should().Be(2,
+            "the automatic rewrite must retain fresh entries in the configured clock domain");
+        await _firstLedger.DisposeAsync();
+        _firstLedger = null;
+
+        _secondLedger = new PersistentDedupLedger(
+            _ledgerDirectory, entryTtl: TimeSpan.FromMinutes(1), timeProvider: time);
+        if (synchronousReload)
+            _secondLedger.Initialize();
+        else
+            await _secondLedger.InitializeAsync();
+        foreach (var evt in events)
+            (await _secondLedger.TryReserveAsync(evt, DedupLookupScope.WalRecovery)).Status
+                .Should().Be(DedupReservationStatus.Duplicate);
     }
 
     [Fact]

@@ -190,7 +190,8 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         builder.Services.RemoveAll<Meridian.Ui.Shared.Services.RiskRuleRuntimeOptions>();
         builder.Services.AddSingleton(new Meridian.Ui.Shared.Services.RiskRuleRuntimeOptions(
             Path.Combine(DataRoot, "risk-rules.json")));
-        builder.Services.TryAddSingleton<StreamingFailoverRegistry>();
+        // An isolated registry per fixture: production registers the process-wide instance, which tests must not share.
+        builder.Services.Replace(ServiceDescriptor.Singleton(new StreamingFailoverRegistry()));
         builder.Services.RemoveAll<ProviderRegistry>();
         builder.Services.AddSingleton(_ => CreateTestProviderRegistry());
         builder.Services.RemoveAll<IProviderCatalog>();
@@ -459,6 +460,17 @@ public sealed class EndpointTestFixture : IAsyncLifetime
                         Type = "RealTime",
                         Priority = 10,
                         Description = "Test Alpaca provider"
+                    },
+                    new
+                    {
+                        // Failover rules must reference configured sources (checked at save time).
+                        Id = "test-backup",
+                        Name = "Test Backup",
+                        Provider = "Polygon",
+                        Enabled = true,
+                        Type = "RealTime",
+                        Priority = 20,
+                        Description = "Test backup provider"
                     }
                 },
                 DefaultRealTimeSourceId = "test-alpaca",

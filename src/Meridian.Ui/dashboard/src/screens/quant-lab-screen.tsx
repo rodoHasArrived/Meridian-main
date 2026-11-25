@@ -1,3 +1,5 @@
+import { QuantCorporateActionControl } from "./quant-lab-corporate-actions";
+import { ProviderProvenancePanel } from "@/components/meridian/provider-provenance-panel";
 import {
   AlertCircle,
   CheckCircle2,
@@ -13,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ScreenLayout } from "@/components/ui/screen-layout";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { SeverityBadge } from "@/components/operations";
-import { QuantPlotChart } from "@/components/meridian/quant-plot";
+import { QuantPlotChart, QuantPlotSource } from "@/components/meridian/quant-plot";
 import {
   DenseDataTable,
   EntitySummary,
@@ -147,6 +149,7 @@ function ScriptLabPanel() {
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted-foreground">{vm.resultPanel.runtimeSummary}</span>
           </div>
+          <QuantCorporateActionControl source={vm.source} onChange={vm.setSource} disabled={vm.run.phase === "running"} />
           <label htmlFor={vm.sourceEditor.id} className="sr-only">{vm.sourceEditor.label}</label>
           <TextArea rows={2}
             id={vm.sourceEditor.id}
@@ -297,6 +300,9 @@ function RunResultPanel({ run, panel, consoleLines, tradeLedger, onTradeSelect }
           {panel.diagnosticSections.map((section) => (
             <DiagnosticsBlock key={section.id} label={section.label} entries={section.entries} tone={section.tone} />
           ))}
+          {result.providerProvenanceReceipts?.map((receipt, index) => (
+            <ProviderProvenancePanel key={`${receipt.receiptId}-${index}`} receipt={receipt} />
+          ))}
         </CardContent>
       </Card>
 
@@ -307,11 +313,15 @@ function RunResultPanel({ run, panel, consoleLines, tradeLedger, onTradeSelect }
             <CardDescription>{panel.plotsDescription}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-3 lg:grid-cols-2">
-              {result.plots.map((plot, idx) => (
-                <QuantPlotChart key={`${plot.title}-${idx}`} plot={plot} />
-              ))}
-            </div>
+            <QuantPlotSource source={run.submittedSource}>
+              {(proof) => (
+                <div className="grid gap-3 lg:grid-cols-2">
+                  {result.plots.map((plot, idx) => (
+                    <QuantPlotChart key={`${plot.title}-${idx}`} plot={plot} proof={proof} />
+                  ))}
+                </div>
+              )}
+            </QuantPlotSource>
           </CardContent>
         </Card>
       ) : null}
@@ -471,7 +481,7 @@ function ParametersSidePanel({ rows, panel, onChange, onReset }: ParametersSideP
                   >
                     {row.label}
                   </label>
-                  <span className="rounded bg-secondary/50 px-1 py-0.5 font-mono text-[10px] text-muted-foreground">
+                  <span className="rounded bg-secondary/50 px-1 py-0.5 font-mono text-xs text-muted-foreground">
                     {row.typeName}
                   </span>
                 </div>
@@ -505,14 +515,14 @@ function ParametersSidePanel({ rows, panel, onChange, onReset }: ParametersSideP
                   />
                 )}
                 {row.description ? (
-                  <p id={row.descriptionId ?? undefined} className="text-[10px] leading-4 text-muted-foreground">{row.description}</p>
+                  <p id={row.descriptionId ?? undefined} className="text-xs leading-4 text-muted-foreground">{row.description}</p>
                 ) : null}
                 {row.resetLabel ? (
                   <button
                     type="button"
                     disabled={panel.controlsDisabled}
                     onClick={() => onReset(row.name)}
-                    className="text-[10px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
                     aria-label={row.resetLabel}
                   >
                     {row.resetText}

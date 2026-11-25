@@ -265,7 +265,7 @@ public sealed class ReportingDatabaseFactAttribute : FactAttribute
 
     public ReportingDatabaseFactAttribute()
     {
-        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(ConnectionStringVariable)))
+        if (!string.IsNullOrWhiteSpace(PostgresTestServer.ResolveExternalConnectionString(ConnectionStringVariable)))
         {
             return;
         }

@@ -1,7 +1,9 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
 using Meridian.Strategies.Live;
 using Meridian.Strategies.Promotions;
+using Meridian.Strategies.Serialization;
 using MeridianLedger = Meridian.Ledger.Ledger;
 
 namespace Meridian.Tests.Strategies;
@@ -20,6 +22,84 @@ namespace Meridian.Tests.Strategies;
 public sealed class LiveRunMetricsTrackerTests
 {
     private static readonly DateTimeOffset StartedAt = new(2024, 1, 2, 0, 0, 0, TimeSpan.Zero);
+
+    [Fact]
+    public void Build_ExplicitRunAttributedFinancing_AdjustsGrossProfitAndInterestMetric()
+    {
+        var ledger = new MeridianLedger();
+        ledger.PostLines(StartedAt.AddHours(2), "Assessed financing",
+        [
+            (Meridian.Ledger.LedgerAccounts.MarginInterestExpenseFor("account-1"), 12.50m, 0m),
+            (Meridian.Ledger.LedgerAccounts.CashAccount("account-1"), 0m, 12.50m)
+        ]);
+        ledger.PostLines(StartedAt.AddDays(-1), "Earlier period",
+        [
+            (Meridian.Ledger.LedgerAccounts.MarginInterestExpense, 100m, 0m),
+            (Meridian.Ledger.LedgerAccounts.Cash, 0m, 100m)
+        ]);
+        var result = new LiveRunMetricsTracker(1_000m, StartedAt).Build("BrokerPaper",
+            new HashSet<string>(), 987.50m, ledger, StartedAt.AddDays(1), runAttributedMarginInterest: 12.50m);
+        result.Metrics.TotalMarginInterest.Should().Be(12.50m);
+        result.Metrics.NetPnl.Should().Be(-12.50m);
+        result.Metrics.GrossPnl.Should().Be(0m);
+        result.EngineMetadata!.FinancingCoverageStatus.Should().Be(BacktestFinancingCoverageStatuses.Available);
+        result.EngineMetadata.RunAttributedMarginInterest.Should().Be(12.50m);
+    }
+
+    [Fact]
+    public void Build_AccountExpenseLedgerWithoutRunAllocation_RemainsUnavailable()
+    {
+        var accountLedger = new MeridianLedger();
+        accountLedger.PostLines(StartedAt.AddHours(1), "Account financing",
+        [
+            (Meridian.Ledger.LedgerAccounts.MarginInterestExpense, 12.50m, 0m),
+            (Meridian.Ledger.LedgerAccounts.Cash, 0m, 12.50m)
+        ]);
+        var result = new LiveRunMetricsTracker(1_000m, StartedAt).Build("BrokerPaper",
+            new HashSet<string>(), 987.50m, accountLedger, StartedAt.AddDays(1));
+        result.EngineMetadata!.FinancingCoverageStatus.Should().Be(BacktestFinancingCoverageStatuses.Unavailable);
+        result.EngineMetadata.RunAttributedMarginInterest.Should().BeNull();
+        result.EngineMetadata.CoverageWarnings.Should().Contain(LiveRunMetricsTracker.FinancingUnavailableWarning);
+        result.Metrics.TotalMarginInterest.Should().Be(0m, "the legacy decimal is only a compatibility placeholder");
+        result.Metrics.GrossPnl.Should().Be(-12.50m, "unknown account costs cannot be allocated to a run by inspecting its ledger");
+    }
+
+    [Fact]
+    public void Build_ExplicitMeasuredZero_IsAvailableAndDistinctFromUnavailable()
+    {
+        var result = new LiveRunMetricsTracker(1_000m, StartedAt).Build("BrokerPaper",
+            new HashSet<string>(), 1_000m, new MeridianLedger(), StartedAt.AddDays(1), runAttributedMarginInterest: 0m);
+        result.EngineMetadata!.FinancingCoverageStatus.Should().Be(BacktestFinancingCoverageStatuses.Available);
+        result.EngineMetadata.RunAttributedMarginInterest.Should().Be(0m);
+        result.EngineMetadata.CoverageWarnings.Should().NotContain(LiveRunMetricsTracker.FinancingUnavailableWarning);
+    }
+
+    [Fact]
+    public void Build_WithoutClosedTradeAccounting_ReportsOutcomeMetricsAsUnavailable()
+    {
+        var tracker = new LiveRunMetricsTracker(1_000m, StartedAt);
+        tracker.RecordFill(CreateFill("SPY", 1, 100m), StartedAt);
+        var result = tracker.Build("BrokerPaper", new HashSet<string>(), 1_000m,
+            new MeridianLedger(), StartedAt.AddDays(1));
+
+        double.IsNaN(result.Metrics.WinRate).Should().BeTrue();
+        double.IsNaN(result.Metrics.ProfitFactor).Should().BeTrue();
+        result.Metrics.TotalTrades.Should().Be(0, "fills do not establish completed trade outcomes");
+        result.EngineMetadata!.CoverageWarnings.Should().NotBeEmpty();
+        var json = JsonSerializer.SerializeToElement(result.Metrics);
+        json.GetProperty(nameof(BacktestMetrics.WinRate)).ValueKind.Should().Be(JsonValueKind.Null);
+        json.GetProperty(nameof(BacktestMetrics.ProfitFactor)).ValueKind.Should().Be(JsonValueKind.Null);
+        var restored = json.Deserialize<BacktestMetrics>()!;
+        double.IsNaN(restored.WinRate).Should().BeTrue();
+        double.IsNaN(restored.ProfitFactor).Should().BeTrue();
+
+        var retained = JsonSerializer.SerializeToElement(result, StrategyRunPersistenceJson.Options);
+        retained.GetProperty("metrics").GetProperty("winRate").ValueKind.Should().Be(JsonValueKind.Null);
+        retained.GetProperty("metrics").GetProperty("profitFactor").ValueKind.Should().Be(JsonValueKind.Null);
+        var restoredRun = retained.Deserialize<BacktestResult>(StrategyRunPersistenceJson.Options)!;
+        double.IsNaN(restoredRun.Metrics.WinRate).Should().BeTrue();
+        double.IsNaN(restoredRun.Metrics.ProfitFactor).Should().BeTrue();
+    }
 
     [Fact]
     public void Build_LargerLaterCurrencyLoss_PreservesWorstPercentageAndBlocksPromotion()

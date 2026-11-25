@@ -23,7 +23,34 @@ public enum SecurityPriceKind
 public enum SecurityPriceUnit { Unspecified, CurrencyPerUnit, PercentOfPar }
 
 /// <summary>A dated source observation retained without overwriting earlier prices.</summary>
-public sealed record SecurityRawPriceDto(string SourceId, decimal Price, DateTimeOffset PriceAsOf, SecurityPriceUnit Unit);
+public sealed record SecurityRawPriceDto(string SourceId, decimal Price, DateTimeOffset PriceAsOf, SecurityPriceUnit Unit)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public SecurityPriceQuotationEvidence? Quotation { get; init; }
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<SecurityPriceBasis>))]
+public enum SecurityPriceBasis { Unspecified, Clean, Dirty }
+
+[JsonConverter(typeof(JsonStringEnumConverter<SecurityQuotationConvention>))]
+public enum SecurityQuotationConvention { Unspecified, Per100Face, CurrencyPerUnit }
+
+[JsonConverter(typeof(JsonStringEnumConverter<SecurityQuoteStatus>))]
+public enum SecurityQuoteStatus { Unspecified, Bid, Ask, Mid, Evaluated, Trade }
+
+/// <summary>Provider-declared quotation and settlement facts; absent legacy facts are never inferred.</summary>
+public sealed record SecurityPriceQuotationEvidence(
+    SecurityPriceBasis Basis,
+    SecurityQuotationConvention Convention,
+    SecurityQuoteStatus Status,
+    DateOnly SettlementDate,
+    string SettlementBasis)
+{
+    public static bool EconomicallyComparable(SecurityPriceQuotationEvidence? left, SecurityPriceQuotationEvidence? right)
+        => left is null ? right is null : right is not null && left.Basis == right.Basis
+            && left.Convention == right.Convention && left.SettlementDate == right.SettlementDate
+            && string.Equals(left.SettlementBasis, right.SettlementBasis, StringComparison.Ordinal);
+}
 
 /// <summary>
 /// One entry in a per-security pricing source priority chain.
@@ -52,7 +79,11 @@ public sealed record SecurityComparisonPriceDto(
     decimal Price,
     DateTimeOffset PriceAsOf,
     decimal? PctDiffFromGoldenCopy,
-    SecurityPriceUnit Unit = SecurityPriceUnit.Unspecified);
+    SecurityPriceUnit Unit = SecurityPriceUnit.Unspecified)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public SecurityPriceQuotationEvidence? Quotation { get; init; }
+}
 
 /// <summary>
 /// The selected golden copy price with explicit units, exact hierarchy and comparison evidence.
@@ -73,7 +104,11 @@ public sealed record SecurityPriceGoldenCopyDto(
     DateTimeOffset? HierarchyAsOf = null,
     DateTimeOffset? KnowledgeAsOf = null,
     Guid? SelectionReceiptId = null,
-    SecurityPricingHierarchyDto? HierarchySnapshot = null);
+    SecurityPricingHierarchyDto? HierarchySnapshot = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public SecurityPriceQuotationEvidence? Quotation { get; init; }
+}
 
 /// <summary>
 /// Request to record a raw price from a single source for golden copy evaluation.
@@ -84,4 +119,8 @@ public sealed record RecordRawPriceRequest(
     decimal Price,
     DateTimeOffset PriceAsOf,
     string RecordedBy,
-    SecurityPriceUnit Unit = SecurityPriceUnit.Unspecified);
+    SecurityPriceUnit Unit = SecurityPriceUnit.Unspecified)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public SecurityPriceQuotationEvidence? Quotation { get; init; }
+}

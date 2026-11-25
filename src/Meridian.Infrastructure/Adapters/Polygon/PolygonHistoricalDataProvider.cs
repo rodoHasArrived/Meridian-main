@@ -48,10 +48,12 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
 
 
 
-    public override int Priority => 12;
-    public override TimeSpan RateLimitDelay => TimeSpan.FromSeconds(12); // 5 requests/minute = 12 seconds between requests
-    public override int MaxRequestsPerWindow => 5;
-    public override TimeSpan RateLimitWindow => TimeSpan.FromMinutes(1);
+    public override int Priority => RuntimeOptions?.Priority ?? Meridian.Core.Config.BackfillProviderCatalog.PolygonPriority;
+    public override TimeSpan RateLimitDelay => RuntimeOptions?.Requests is { } requests
+        ? TimeSpan.FromTicks((RuntimeOptions.Window ?? RateLimitWindow).Ticks / requests)
+        : TimeSpan.FromSeconds(12); // 5 requests/minute = 12 seconds between requests
+    public override int MaxRequestsPerWindow => RuntimeOptions?.Requests ?? Meridian.Core.Config.BackfillProviderCatalog.PolygonPerMinute;
+    public override TimeSpan RateLimitWindow => RuntimeOptions?.Window ?? TimeSpan.FromMinutes(1);
 
     /// <summary>
     /// Polygon supports adjusted bars with intraday aggregates and corporate actions.
@@ -63,8 +65,8 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
 
 
     public PolygonHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null,
-        TimeProvider? timeProvider = null)
-        : base(httpClient, log, timeProvider: timeProvider)
+        TimeProvider? timeProvider = null, BackfillProviderRuntimeOptions? runtimeOptions = null)
+        : base(httpClient, log, timeProvider: timeProvider, runtimeOptions: runtimeOptions)
     {
         _apiKey = apiKey ?? Environment.GetEnvironmentVariable("POLYGON_API_KEY");
 
@@ -82,11 +84,9 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
 
         try
         {
-            await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
             // Quick health check with ticker details endpoint
             var url = $"{BaseUrl}/v3/reference/tickers/AAPL?apiKey={Uri.EscapeDataString(_apiKey)}";
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, "AAPL", "availability", ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
         catch
@@ -364,8 +364,7 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
                     provider: Name, symbol: symbol);
             }
 
-            await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-            using var response = await Http.GetAsync(pageUri, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(pageUri.AbsoluteUri, symbol, dataType, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
                 await HandleHttpResponseOrThrowAsync(response, symbol, dataType, ct).ConfigureAwait(false);

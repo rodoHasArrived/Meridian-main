@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Storage;
 using Meridian.Storage.Maintenance;
 using Meridian.Storage.Services;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -302,6 +303,24 @@ public sealed partial class ScheduledArchiveMaintenanceServiceTests : IDisposabl
     }
 
     [Fact]
+    public async Task ExecuteMaintenanceAsync_Cleanup_PreservesQuarantineIncludingTemporaryEvidence()
+    {
+        var quarantinePath = WriteFile("_quarantine/evidence.jsonl", "retained evidence");
+        var quarantineTemp = WriteFile("_quarantine/partial.tmp", "retained partial evidence");
+        File.SetLastWriteTimeUtc(quarantineTemp, DateTime.UtcNow.AddDays(-30));
+        SetupOrphans(new OrphanedFile(quarantinePath, "quarantined_file", 2048, DateTime.UtcNow.AddDays(-30)));
+        var sut = CreateSut();
+
+        var execution = await sut.ExecuteMaintenanceAsync(MaintenanceTaskType.Cleanup,
+            new MaintenanceTaskOptions { DeleteOrphans = true, DeleteTemporaryFiles = true });
+
+        File.Exists(quarantinePath).Should().BeTrue();
+        File.Exists(quarantineTemp).Should().BeTrue();
+        execution.Result!.IssuesResolved.Should().Be(0);
+        execution.Result.BytesSaved.Should().Be(0);
+    }
+
+    [Fact]
     public async Task ExecuteMaintenanceAsync_CleanupTemporaryFiles_DeletesOnlyStaleTmpFiles()
     {
         var stalePath = WriteFile("stale.tmp", "stale");
@@ -549,6 +568,32 @@ public sealed partial class ScheduledArchiveMaintenanceServiceTests : IDisposabl
 
         (await act.Should().ThrowAsync<KeyNotFoundException>()).WithMessage("*no-such-schedule*");
         sut.QueuedExecutions.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task TriggerScheduleAsync_NeutralizesLogTextWithoutChangingScheduleIdentity()
+    {
+        const string scheduleId = "schedule\r\nforged";
+        const string name = "Nightly\r\nforged";
+        var schedule = await _scheduleManager.CreateScheduleAsync(new ArchiveMaintenanceSchedule
+        {
+            ScheduleId = scheduleId,
+            Name = name,
+            CronExpression = "0 3 * * *",
+            TaskType = MaintenanceTaskType.HealthCheck
+        });
+        var logger = new Mock<ILogger<ScheduledArchiveMaintenanceService>>();
+        var sut = CreateSut(logger: logger.Object);
+
+        var execution = await sut.TriggerScheduleAsync(schedule.ScheduleId);
+
+        execution.ScheduleId.Should().Be(scheduleId);
+        execution.ScheduleName.Should().Be(name);
+        _scheduleManager.ExecutionHistory.GetExecution(execution.ExecutionId)!.ScheduleId.Should().Be(scheduleId);
+        var messages = logger.Invocations.Where(call => call.Method.Name == "Log")
+            .Select(call => call.Arguments[2].ToString()!).ToArray();
+        messages.Should().Contain(message => message.Contains("Nightly__forged") && message.Contains("schedule__forged"));
+        messages.Should().OnlyContain(message => !message.Contains('\r') && !message.Contains('\n'));
     }
 
     [Fact]
@@ -908,10 +953,11 @@ public sealed partial class ScheduledArchiveMaintenanceServiceTests : IDisposabl
     private ScheduledArchiveMaintenanceService CreateSut(
         int? retentionDays = null,
         ArchiveMaintenanceScheduleManager? manager = null,
-        IFileMaintenanceService? fileMaintenance = null)
+        IFileMaintenanceService? fileMaintenance = null,
+        ILogger<ScheduledArchiveMaintenanceService>? logger = null)
     {
         var service = new ScheduledArchiveMaintenanceService(
-            NullLogger<ScheduledArchiveMaintenanceService>.Instance,
+            logger ?? NullLogger<ScheduledArchiveMaintenanceService>.Instance,
             manager ?? _scheduleManager,
             fileMaintenance ?? _fileMaintenance.Object,
             _tierMigration.Object,

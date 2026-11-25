@@ -74,7 +74,7 @@ public sealed partial class CanonicalLotCorporateActionService(
         foreach (var (securityId, version, hash) in expectedSecurities)
         {
             var actual = await securityStore.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
-            if (actual is null || actual.Version != version || OpenLotAmortization.SecurityHash(actual) != hash)
+            if (actual is null || actual.Version != version || !OpenLotAmortization.AcceptedSecurityHashes(actual).Contains(hash))
                 throw new InvalidOperationException("A source or successor Security Master projection is missing or stale.");
         }
 

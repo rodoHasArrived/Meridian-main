@@ -64,6 +64,7 @@ public sealed class BrokerageExecutionRegistrationRecoveryTests
                 var result = await oms.PlaceOrderAsync(request);
 
                 result.Success.Should().BeFalse();
+                Assert.NotNull(result.OrderState);
                 result.OrderState.Status.Should().Be(OrderStatus.PendingNew);
                 firstGateway.SubmitCount.Should().Be(1);
                 provider.GetRequiredService<FileBrokerageOrderRecoveryStore>().Load()
@@ -110,6 +111,7 @@ public sealed class BrokerageExecutionRegistrationRecoveryTests
         var result = await oms.PlaceOrderAsync(Request("paper-without-broker-recovery"));
 
         result.Success.Should().BeTrue();
+        Assert.NotNull(result.OrderState);
         result.OrderState.Status.Should().Be(OrderStatus.Accepted);
         oms.GetOpenOrders().Should().ContainSingle(order => order.OrderId == result.OrderId);
     }
@@ -138,6 +140,10 @@ public sealed class BrokerageExecutionRegistrationRecoveryTests
     {
         var services = new ServiceCollection();
         services.AddLogging();
+        var feed = new Meridian.Execution.Adapters.LiveMarketDataCache();
+        feed.RecordTrade("AAPL", new Meridian.Contracts.Domain.Models.Trade(
+            DateTimeOffset.UtcNow, "AAPL", 150m, 100, Meridian.Contracts.Domain.Enums.AggressorSide.Buy, 1));
+        services.AddSingleton<Meridian.Execution.Interfaces.ILiveFeedAdapter>(feed);
         services.AddBrokerageExecution(config =>
             config.BrokerFlows["paper"] = new BrokerFlowFlags { PaperOrderFlowEnabled = true });
         await using var provider = services.BuildServiceProvider();

@@ -23,6 +23,7 @@ using Meridian.Execution.Services;
 using Meridian.Instruments.AssetOperations;
 using Meridian.QuantScript.Compilation;
 using Meridian.Storage.Export;
+using Meridian.Storage.Backfill;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Query;
 using Meridian.Storage.Services;
@@ -39,6 +40,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 using static Meridian.Contracts.Text.TextPrimitives;
@@ -116,6 +118,7 @@ public static partial class WorkstationEndpoints
         // so it maps its own tenant-scoped group directly on the app.
         MapSecurityMasterWorkbenchEndpoints(app, jsonOptions);
 
+        MapAssetMarketValuationEndpoints(group, jsonOptions);
         MapStreamEndpoints(group, jsonOptions);
         MapStrategyDesignerEndpoints(group, jsonOptions);
         MapStrategyEngineEndpoints(group, jsonOptions);
@@ -123,10 +126,13 @@ public static partial class WorkstationEndpoints
         MapExtensibilityEndpoints(group, jsonOptions);
         MapCloseReadinessEndpoints(group, jsonOptions);
         MapFinancialRecordExplorerEndpoints(group, jsonOptions);
+        MapRecordSearchEndpoint(group, jsonOptions);
         MapOperatorTriageEndpoints(group, jsonOptions);
+        MapBookReceiptQueueEndpoints(group, jsonOptions);
         MapCloseChecklistHistoryEndpoints(group, jsonOptions);
         MapApprovalCollaborationEndpoints(group, jsonOptions);
         MapWorkstationChartEvidenceEndpoints(group, jsonOptions);
+        MapRunLedgerQueryEndpoints(group);
         MapFamilyOfficeEndpoints(group);
         MapDataUploadEndpoints(group, jsonOptions);
         MapDataOperationsAssuranceEndpoints(group);
@@ -192,6 +198,8 @@ public static partial class WorkstationEndpoints
 
         MapCollateralEndpoints(group, jsonOptions);
         MapOperatorScopePreferenceEndpoints(group, jsonOptions);
+        MapOperatorPreferencesEndpoints(group, jsonOptions);
+        MapScopeOptionEndpoints(group, jsonOptions);
         MapOperatorSurfaceVisitEndpoints(group, jsonOptions);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowPresets), async (HttpContext context) =>
@@ -431,6 +439,12 @@ public static partial class WorkstationEndpoints
         .Produces<WorkstationCrossScreenCountsDto>(200)
         .RequireWorkstationTenantCompanyScope();
 
+        // UX Phase A: one definition per headline figure, read by the browser and WPF workstations.
+        // The catalog describes figures, not data, so any workstation reader may load it.
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationKpiDefinitions), () => Results.Json(WorkstationKpiDefinitions.Catalog, jsonOptions))
+        .WithName("GetWorkstationKpiDefinitions").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .Produces<WorkstationKpiDefinitionsDto>(200);
+
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationDataOperations), async (HttpContext context) =>
         {
             var payload = await BuildDataPayloadAsync(context).ConfigureAwait(false);
@@ -559,1733 +573,11 @@ public static partial class WorkstationEndpoints
         .Produces<AssetOperationsDetailDto>(200)
         .Produces(404);
 
-        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuity), async (
-            Guid? fundAccountId,
-            string? periodId,
-            Guid? ledgerBookId,
-            string? status,
-            HttpContext context) =>
-        {
-            if (!HasOperationsContinuityReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
+        MapOperationsContinuityRecordEndpoints(group, jsonOptions);
 
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
+        MapReconciliationRecordEndpoints(group, jsonOptions);
 
-            var parsedStatus = ParseOperationsWorkflowStatus(status);
-            if (!string.IsNullOrWhiteSpace(status) && parsedStatus is null)
-            {
-                return Results.ValidationProblem(new Dictionary<string, string[]>
-                {
-                    ["status"] = [$"Status '{status}' is not a valid operations workflow status."]
-                });
-            }
-
-            var workflows = await service.ListAsync(fundAccountId, periodId, parsedStatus, context.RequestAborted, ledgerBookId: ledgerBookId).ConfigureAwait(false);
-            return Results.Json(workflows, jsonOptions);
-        })
-        .WithName("GetOperationsContinuitySummary").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalPolicyMatrix), (HttpContext context) =>
-        {
-            if (!HasOperationsContinuityReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsApprovalPolicyMatrixService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations approval policy matrix service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            return Results.Json(service.GetMatrix(), jsonOptions);
-        })
-        .WithName("GetOperationsContinuityApprovalPolicyMatrix").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<OperationsApprovalPolicyMatrixDto>(200)
-        .Produces(403);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalPolicyRules), async (
-            OperationsApprovalPolicyRuleUpsertRequestDto? request,
-            HttpContext context) =>
-        {
-            if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (request is null)
-            {
-                return MissingOperationsPayload("request", "An operations approval policy rule request is required.");
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsApprovalPolicyMatrixService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations approval policy matrix service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            try
-            {
-                var trustedRequest = request with { RequestedBy = currentUser };
-                var result = await service.UpsertRuleAsync(trustedRequest, currentUser, context.RequestAborted).ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.ValidationProblem(new Dictionary<string, string[]>
-                {
-                    ["request"] = [ex.Message]
-                });
-            }
-        })
-        .WithName("UpsertOperationsContinuityApprovalPolicyRule").RequirePermission(UserPermission.AdminMaintenance)
-        .Produces<OperationsApprovalPolicyRuleUpsertResultDto>(200)
-        .Produces(400)
-        .Produces(401)
-        .Produces(403);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityCloseCalendar), async (
-            Guid? fundAccountId,
-            string? periodId,
-            HttpContext context) =>
-        {
-            if (!HasOperationsContinuityReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsCloseCalendarService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations close calendar service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var calendar = await service.GetCalendarAsync(fundAccountId, periodId, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(calendar, jsonOptions);
-        })
-        .WithName("GetOperationsContinuityCloseCalendar").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<OperationsCloseCalendarDto>(200)
-        .Produces(403);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsPrivateCapitalCloseCockpit), async (
-            string? fundProfileId,
-            Guid? ledgerBookId,
-            Guid? fundAccountId,
-            string? periodId,
-            string? entityId,
-            HttpContext context) =>
-        {
-            if (!HasOperationsContinuityReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = context.RequestServices.GetService<IPrivateCapitalCloseCockpitService>();
-            if (service is null)
-            {
-                return Results.Problem("Private-capital close cockpit service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-            var cockpit = await service
-                .GetCockpitAsync(
-                    fundProfileId,
-                    ledgerBookId,
-                    fundAccountId,
-                    periodId,
-                    entityId,
-                    context.RequestAborted,
-                    tenantContext.TenantId,
-                    tenantContext.CompanyId)
-                .ConfigureAwait(false);
-            return Results.Json(cockpit, jsonOptions);
-        })
-        .WithName("GetOperationsPrivateCapitalCloseCockpit").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<PrivateCapitalCloseCockpitDto>(200)
-        .Produces(403)
-        .RequireFundProfileTenantScope(
-            UserPermission.ViewDirectLending,
-            UserPermission.ViewSecurityMaster,
-            UserPermission.ManageDirectLending,
-            UserPermission.ModifySecurityMaster,
-            UserPermission.AdminMaintenance);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityCloseCalendarItems), async (
-            OperationsCloseCalendarItemUpsertRequestDto? request,
-            HttpContext context) =>
-        {
-            if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (request is null)
-            {
-                return MissingOperationsPayload("request", "An operations close calendar item request is required.");
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsCloseCalendarService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations close calendar service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            try
-            {
-                var trustedRequest = request with { RequestedBy = currentUser };
-                var result = await service.UpsertItemAsync(trustedRequest, currentUser, context.RequestAborted).ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.ValidationProblem(new Dictionary<string, string[]>
-                {
-                    ["request"] = [ex.Message]
-                });
-            }
-        })
-        .WithName("UpsertOperationsContinuityCloseCalendarItem").RequirePermission(UserPermission.AdminMaintenance)
-        .Produces<OperationsCloseCalendarItemUpsertResultDto>(200)
-        .Produces(400)
-        .Produces(401)
-        .Produces(403);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuity), async (
-            OperationsStartWorkflowRequestDto? request,
-            HttpContext context) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (request is null)
-            {
-                return MissingOperationsPayload("request", "An operations continuity start request is required.");
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var trustedRequest = request with { Actor = currentUser };
-            var result = await service.StartWorkflowAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return OperationsTransitionResult(result, jsonOptions);
-        })
-        .WithName("StartOperationsContinuityWorkflow").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<OperationsTransitionResultDto>(200)
-        .Produces<OperationsTransitionResultDto>(400)
-        .Produces<OperationsTransitionResultDto>(409)
-        .Produces(401)
-        .Produces(403);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityById), async (Guid workflowId, HttpContext context) =>
-        {
-            if (!HasOperationsContinuityReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var workflow = await service.GetAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
-            return workflow is null ? Results.NotFound() : Results.Json(workflow, jsonOptions);
-        })
-        .WithName("GetOperationsContinuityDetail").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityCloseReadiness), async (Guid workflowId, HttpContext context) =>
-        {
-            if (!HasOperationsContinuityReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var workflow = await service.GetAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
-            return workflow?.CloseReadiness is null
-                ? Results.NotFound()
-                : Results.Json(workflow.CloseReadiness, jsonOptions);
-        })
-        .WithName("GetOperationsContinuityCloseReadiness").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<OperationsCloseReadinessDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status404NotFound);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityTimeline), async (Guid workflowId, HttpContext context) =>
-        {
-            if (!HasOperationsContinuityReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var workflow = await service.GetAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
-            if (workflow is null)
-            {
-                return Results.NotFound();
-            }
-
-            var timeline = await service.GetTimelineAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(timeline, jsonOptions);
-        })
-        .WithName("GetOperationsContinuityTimeline").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityBrokerImport), async (
-            Guid workflowId,
-            OperationsTransitionRequestDto? request,
-            HttpContext context) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (request is null)
-            {
-                return MissingOperationsPayload("request", "An operations continuity transition request is required.");
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var trustedRequest = request with { Actor = currentUser };
-            var result = await service.ImportBrokerDataAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return OperationsTransitionResult(result, jsonOptions);
-        })
-        .WithName("ImportOperationsContinuityBrokerData").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<OperationsTransitionResultDto>(200)
-        .Produces<OperationsTransitionResultDto>(400)
-        .Produces<OperationsTransitionResultDto>(409)
-        .Produces(401)
-        .Produces(403);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityBrokerNormalize), async (
-            Guid workflowId,
-            OperationsTransitionRequestDto? request,
-            HttpContext context) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (request is null)
-            {
-                return MissingOperationsPayload("request", "An operations continuity transition request is required.");
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var trustedRequest = request with { Actor = currentUser };
-            var result = await service.NormalizeBrokerTransactionsAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return OperationsTransitionResult(result, jsonOptions);
-        })
-        .WithName("NormalizeOperationsContinuityBrokerTransactions").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<OperationsTransitionResultDto>(200)
-        .Produces<OperationsTransitionResultDto>(400)
-        .Produces<OperationsTransitionResultDto>(409)
-        .Produces(401)
-        .Produces(403);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityPostureRefresh), async (
-            Guid workflowId,
-            OperationsGatePostureRequestDto? request,
-            HttpContext context) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (request is null)
-            {
-                return MissingOperationsPayload("request", "An operations continuity posture request is required.");
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var trustedRequest = request with { Actor = currentUser };
-            if (request.ReportPackReady == true ||
-                (request.ReportPackReady != false && !string.IsNullOrWhiteSpace(request.ReportPackId)))
-            {
-                var retained = await ResolveOperationsReportPackAsync(context, service, workflowId, request.ReportPackId,
-                    requireRetainedRevision: false).ConfigureAwait(false);
-                if (!retained.IsReady)
-                    return ReportPackAuthorityRefusal(retained, jsonOptions);
-                trustedRequest = trustedRequest with
-                {
-                    ReportPackReady = retained.IsReady,
-                    ReportPackId = retained.ReportPackId,
-                    EvidenceLinks = (request.EvidenceLinks ?? [])
-                        .Where(link => link.Source is not ("accounting-report-pack" or "accounting-report-package-revision"))
-                        .Concat(retained.EvidenceLinks).ToArray()
-                };
-            }
-            var result = await service.RefreshGatePostureAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return OperationsTransitionResult(result, jsonOptions);
-        })
-        .WithName("RefreshOperationsContinuityGatePosture").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuitySecurityMasterResolve), async (
-            Guid workflowId,
-            OperationsSecurityMasterResolveRequestDto? request,
-            HttpContext context) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (request is null)
-            {
-                return MissingOperationsPayload("request", "A Security Master resolution request is required.");
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var trustedRequest = request with { Actor = currentUser };
-            var result = await service.ResolveSecurityMasterMappingsAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return OperationsTransitionResult(result, jsonOptions);
-        })
-        .WithName("ResolveOperationsContinuitySecurityMasterMappings").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuitySecurityMasterOverrideApprove), async (
-            Guid workflowId,
-            string overrideId,
-            OperationsSecurityMasterOverrideApprovalRequestDto? request,
-            HttpContext context) =>
-        {
-            if (!HasSecurityMasterOverrideApprovalPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (request is null)
-            {
-                return MissingOperationsPayload("request", "A Security Master override approval request is required.");
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var trustedRequest = request with { Actor = currentUser, OverrideId = overrideId, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
-            var result = await service.ApproveSecurityMasterOverrideAsync(workflowId, overrideId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return OperationsTransitionResult(result, jsonOptions);
-        })
-        .WithName("ApproveOperationsContinuitySecurityMasterOverride").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ModifySecurityMaster)
-        .Produces<OperationsTransitionResultDto>(200)
-        .Produces<OperationsTransitionResultDto>(400)
-        .Produces<OperationsTransitionResultDto>(409)
-        .Produces(401)
-        .Produces(403);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerDraft), async (
-            Guid workflowId,
-            OperationsLedgerDraftRequestDto? request,
-            HttpContext context) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (request is null)
-            {
-                return MissingOperationsPayload("request", "A ledger draft request is required.");
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var trustedRequest = request with { Actor = currentUser };
-            var result = await service.BuildLedgerDraftAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return OperationsTransitionResult(result, jsonOptions);
-        })
-        .WithName("BuildOperationsContinuityLedgerDraft").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerValidate), async (
-            Guid workflowId,
-            OperationsLedgerValidationRequestDto? request,
-            HttpContext context) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (request is null)
-            {
-                return MissingOperationsPayload("request", "A ledger validation request is required.");
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var trustedRequest = request with { Actor = currentUser };
-            var result = await service.ValidateLedgerDraftAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return OperationsTransitionResult(result, jsonOptions);
-        })
-        .WithName("ValidateOperationsContinuityLedgerDraft").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerPost), async (
-            Guid workflowId,
-            OperationsLedgerPostRequestDto? request,
-            HttpContext context) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (request is null)
-            {
-                return MissingOperationsPayload("request", "A ledger posting request is required.");
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var trustedRequest = request with { Actor = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
-            var result = await service.PostLedgerEntriesAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return OperationsTransitionResult(result, jsonOptions);
-        })
-        .WithName("PostOperationsContinuityLedgerEntries").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<OperationsTransitionResultDto>(200)
-        .Produces<OperationsTransitionResultDto>(400)
-        .Produces<OperationsTransitionResultDto>(409)
-        .Produces(401)
-        .Produces(403);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReconciliationRun), async (
-            Guid workflowId,
-            OperationsReconciliationRunRequestDto? request,
-            HttpContext context) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (request is null)
-            {
-                return MissingOperationsPayload("request", "A reconciliation run request is required.");
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityReconciliationBridge>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity reconciliation bridge is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var trustedRequest = request with { Actor = currentUser };
-            var result = await service
-                .RunReconciliationAsync(workflowId, trustedRequest, accessScope, context.RequestAborted)
-                .ConfigureAwait(false);
-            return OperationsTransitionResult(result, jsonOptions);
-        })
-        .WithName("RunOperationsContinuityReconciliation").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .RequireWorkstationTenantCompanyScope();
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReconciliationBreakAssign), async (
-            Guid workflowId,
-            string breakId,
-            OperationsAssignBreakCaseRequestDto? request,
-            HttpContext context) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (request is null)
-            {
-                return MissingOperationsPayload("request", "A reconciliation break assignment request is required.");
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var trustedRequest = request with { Actor = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
-            var result = await service.AssignBreakCaseAsync(workflowId, breakId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return OperationsTransitionResult(result, jsonOptions);
-        })
-        .WithName("AssignOperationsContinuityReconciliationBreak").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReconciliationBreakResolve), async (
-            Guid workflowId,
-            string breakId,
-            OperationsResolveBreakCaseRequestDto? request,
-            HttpContext context) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (request is null)
-            {
-                return MissingOperationsPayload("request", "A reconciliation break resolution request is required.");
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var trustedRequest = request with
-            {
-                Actor = currentUser,
-                // Narrower of the caller's declaration and the principal's standing: hardcoding
-                // HumanOperator stamped an API-key caller as a human, and discarded automation
-                // that declared itself (#2673).
-                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
-                ApprovalActor = NormalizeOptional(request.ApprovalActor),
-                ApprovalReference = NormalizeOptional(request.ApprovalReference)
-            };
-            var result = await service.ResolveBreakCaseAsync(workflowId, breakId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return OperationsTransitionResult(result, jsonOptions);
-        })
-        .WithName("ResolveOperationsContinuityReconciliationBreak").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalSubmit), async (
-            Guid workflowId,
-            OperationsSubmitApprovalRequestDto? request,
-            HttpContext context) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (request is null)
-            {
-                return MissingOperationsPayload("request", "An approval submission request is required.");
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var trustedRequest = request with { Actor = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
-            var reportSupport = await ResolveOperationsReportPackAsync(context, service, workflowId, trustedRequest.ReportPackId).ConfigureAwait(false);
-            if (!reportSupport.IsReady)
-                return ReportPackAuthorityRefusal(reportSupport, jsonOptions);
-            var result = await service.SubmitForApprovalAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return OperationsTransitionResult(result, jsonOptions);
-        })
-        .WithName("SubmitOperationsContinuityApproval").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalApprove), async (
-            Guid workflowId,
-            OperationsApprovalDecisionRequestDto? request,
-            HttpContext context) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (request is null)
-            {
-                return MissingOperationsPayload("request", "An approval decision request is required.");
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
-            var reportSupport = await ResolveOperationsReportPackAsync(context, service, workflowId, trustedRequest.ReportPackId).ConfigureAwait(false);
-            if (!reportSupport.IsReady)
-                return ReportPackAuthorityRefusal(reportSupport, jsonOptions);
-            var result = await service.ApproveWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return OperationsTransitionResult(result, jsonOptions);
-        })
-        .WithName("ApproveOperationsContinuityWorkflow").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalReject), async (
-            Guid workflowId,
-            OperationsRejectWorkflowRequestDto? request,
-            HttpContext context) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (request is null)
-            {
-                return MissingOperationsPayload("request", "An approval rejection request is required.");
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
-            var result = await service.RejectWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return OperationsTransitionResult(result, jsonOptions);
-        })
-        .WithName("RejectOperationsContinuityWorkflow").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<OperationsTransitionResultDto>(200)
-        .Produces<OperationsTransitionResultDto>(400)
-        .Produces<OperationsTransitionResultDto>(409)
-        .Produces(401)
-        .Produces(403);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityClose), async (
-            Guid workflowId,
-            OperationsCloseWorkflowRequestDto? request,
-            HttpContext context) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (request is null)
-            {
-                return MissingOperationsPayload("request", "A close workflow request is required.");
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var trustedRequest = request with { Actor = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
-            var readinessRefusal = await ValidateClosePublicationReadinessAsync(context, workflowId, trustedRequest.ExpectedVersion, trustedRequest.CloseScope, jsonOptions).ConfigureAwait(false);
-            if (readinessRefusal is not null)
-                return readinessRefusal;
-            var reportSupport = await ResolveOperationsReportPackAsync(context, service, workflowId, trustedRequest.ReportPackId).ConfigureAwait(false);
-            if (!reportSupport.IsReady)
-                return ReportPackAuthorityRefusal(reportSupport, jsonOptions);
-            return await LedgerEndpoints.ExecuteClosePeriodLockAsync(
-                new LockClosePeriodRequestDto(
-                    workflowId, trustedRequest.ExpectedVersion, currentUser, trustedRequest.Rationale,
-                    trustedRequest.ReportPackId,
-                    EvidenceLinks: trustedRequest.EvidenceLinks?.Select(link => link.EvidenceId).ToArray(),
-                    ChecklistControlApprovals: trustedRequest.ChecklistControlApprovals,
-                    CorrelationId: trustedRequest.CorrelationId,
-                    ClosePackageId: trustedRequest.ClosePackageId,
-                    ClosePackageManifestId: trustedRequest.ClosePackageManifestId,
-                    ClosePackageRetainedManifestRoute: trustedRequest.ClosePackageRetainedManifestRoute,
-                    ActionOrigin: trustedRequest.ActionOrigin,
-                    CloseScope: trustedRequest.CloseScope),
-                context, jsonOptions, operationsEnvelope: true).ConfigureAwait(false);
-        })
-        .WithName("CloseOperationsContinuityWorkflow").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReopen), async (
-            Guid workflowId,
-            OperationsReopenWorkflowRequestDto? request,
-            HttpContext context) =>
-        {
-            if (!HasGovernedWorkflowReopenPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (request is null)
-            {
-                return MissingOperationsPayload("request", "A reopen workflow request is required.");
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var trustedRequest = request with { Actor = currentUser, IsGovernedAdmin = HasGovernedWorkflowReopenPermission(context), ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
-            var result = await service.ReopenWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return OperationsTransitionResult(result, jsonOptions);
-        })
-        .WithName("ReopenOperationsContinuityWorkflow").RequirePermission(UserPermission.AdminMaintenance)
-        .Produces<OperationsTransitionResultDto>(200)
-        .Produces<OperationsTransitionResultDto>(400)
-        .Produces<OperationsTransitionResultDto>(409)
-        .Produces(401)
-        .Produces(403);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityBreaks), async (Guid workflowId, HttpContext context) =>
-        {
-            if (!HasOperationsContinuityReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var workflow = await service.GetAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
-            return workflow is null ? Results.NotFound() : Results.Json(workflow.BreakCases, jsonOptions);
-        })
-        .WithName("GetOperationsContinuityBreaks").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerPreview), async (Guid workflowId, HttpContext context) =>
-        {
-            if (!HasOperationsContinuityReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var workflow = await service.GetAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
-            return workflow is null ? Results.NotFound() : Results.Json(workflow.LedgerPreview, jsonOptions);
-        })
-        .WithName("GetOperationsContinuityLedgerPreview").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityChecklist), async (Guid workflowId, HttpContext context) =>
-        {
-            if (!HasOperationsContinuityReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var checklist = await service.GetChecklistAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(checklist, jsonOptions);
-        })
-        .WithName("GetOperationsContinuityChecklist").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityChecklistAcknowledge), async (
-            Guid workflowId,
-            string taskId,
-            OperationsChecklistAcknowledgeRequestDto request,
-            HttpContext context) =>
-        {
-            if (!HasOperationsContinuityMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
-            if (service is null)
-            {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var trustedRequest = request with { Actor = currentUser };
-            var result = await service.AcknowledgeChecklistTaskAsync(workflowId, taskId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return OperationsTransitionResult(result, jsonOptions);
-        })
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
-        .WithName("AcknowledgeOperationsContinuityChecklistTask").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationRuns), async (ReconciliationRunRequest request, HttpContext context) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = context.RequestServices.GetService<IReconciliationRunService>();
-            if (service is null)
-            {
-                return Results.Problem("Reconciliation service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var detail = await service.RunAsync(request, context.RequestAborted).ConfigureAwait(false);
-            return detail is null
-                ? Results.NotFound()
-                : Results.Json(detail, jsonOptions);
-        })
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
-        .WithName("CreateReconciliationRun").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<ReconciliationRunDetail>(200)
-        .Produces(404)
-        .Produces(429);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationRunById), async (string reconciliationRunId, HttpContext context) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = context.RequestServices.GetService<IReconciliationRunService>();
-            if (service is null)
-            {
-                return Results.Problem("Reconciliation service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var detail = await service.GetByIdAsync(reconciliationRunId, context.RequestAborted).ConfigureAwait(false);
-            return detail is null
-                ? Results.NotFound()
-                : Results.Json(detail, jsonOptions);
-        })
-        .WithName("GetReconciliationRun").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<ReconciliationRunDetail>(200)
-        .Produces(404);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsReconciliation), async (string runId, HttpContext context) =>
-        {
-            var service = context.RequestServices.GetService<IReconciliationRunService>();
-            if (service is null)
-            {
-                return Results.Problem("Reconciliation service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var detail = await service.GetLatestForRunAsync(runId, context.RequestAborted).ConfigureAwait(false);
-            return detail is null
-                ? Results.NotFound()
-                : Results.Json(detail, jsonOptions);
-        })
-        .WithName("GetLatestRunReconciliation").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<ReconciliationRunDetail>(200)
-        .Produces(404)
-        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsReconciliationHistory), async (string runId, HttpContext context) =>
-        {
-            var service = context.RequestServices.GetService<IReconciliationRunService>();
-            if (service is null)
-            {
-                return Results.Problem("Reconciliation service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var history = await service.GetHistoryForRunAsync(runId, context.RequestAborted).ConfigureAwait(false);
-            return history.Count == 0
-                ? Results.NotFound()
-                : Results.Json(history, jsonOptions);
-        })
-        .WithName("GetRunReconciliationHistory").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<IReadOnlyList<ReconciliationRunSummary>>(200)
-        .Produces(404)
-        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRuns), async (
-            HttpContext context,
-            [FromServices] IReconciliationApiService? service) =>
-        {
-            if (service is null)
-            {
-                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            return Results.Json(
-                await service.ListStatementRunsAsync(accessScope, context.RequestAborted).ConfigureAwait(false),
-                jsonOptions);
-        })
-        .WithName("ListStatementRuns").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<IReadOnlyList<StatementRunSummaryDto>>(200)
-        .Produces(403)
-        .Produces(501)
-        .RequireWorkstationTenantCompanyScope();
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRuns), async (
-            StatementRunCreateDto request,
-            HttpContext context) =>
-            await CreateStatementRunAsync(request, context, jsonOptions).ConfigureAwait(false))
-        .WithName("CreateStatementRun").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<StatementRunDto>(201)
-        .Produces(401)
-        .Produces(403)
-        .Produces(404)
-        .Produces(501)
-        .RequireWorkstationTenantCompanyScope();
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunById), async (
-            string runId,
-            HttpContext context,
-            [FromServices] IReconciliationApiService? service) =>
-        {
-            if (service is null)
-            {
-                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var detail = await service
-                .GetStatementRunAsync(runId, accessScope, context.RequestAborted)
-                .ConfigureAwait(false);
-            return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions);
-        })
-        .WithName("GetStatementRun").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<StatementRunDto>(200)
-        .Produces(403)
-        .Produces(404)
-        .Produces(501)
-        .RequireWorkstationTenantCompanyScope();
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunValidation), async (
-            string runId,
-            HttpContext context,
-            [FromServices] IReconciliationApiService? service) =>
-        {
-            if (service is null)
-            {
-                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var validation = await service
-                .GetStatementRunValidationAsync(runId, accessScope, context.RequestAborted)
-                .ConfigureAwait(false);
-            return validation is null ? Results.NotFound() : Results.Json(validation, jsonOptions);
-        })
-        .WithName("GetStatementRunValidation").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<StatementRunValidationDto>(200)
-        .Produces(403)
-        .Produces(404)
-        .Produces(501)
-        .RequireWorkstationTenantCompanyScope();
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunBreaks), async (
-            string runId,
-            HttpContext context,
-            [FromServices] IReconciliationApiService? service) =>
-        {
-            if (service is null)
-            {
-                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var breaks = await service
-                .ListStatementRunBreaksAsync(runId, accessScope, context.RequestAborted)
-                .ConfigureAwait(false);
-            return breaks is null ? Results.NotFound() : Results.Json(breaks, jsonOptions);
-        })
-        .WithName("ListStatementRunBreaks").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<IReadOnlyList<StatementRunBreakDto>>(200)
-        .Produces(403)
-        .Produces(404)
-        .Produces(501)
-        .RequireWorkstationTenantCompanyScope();
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunReconcile), async (
-            string runId,
-            StatementRunReconcileRequestDto request,
-            HttpContext context,
-            [FromServices] IReconciliationApiService? service) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (service is null)
-            {
-                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var trustedRequest = request with { Actor = currentUser };
-            var detail = await service
-                .ReconcileStatementRunAsync(runId, trustedRequest, accessScope, context.RequestAborted)
-                .ConfigureAwait(false);
-            return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions);
-        })
-        .WithName("ReconcileStatementRun").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<StatementRunDto>(200)
-        .Produces(401)
-        .Produces(403)
-        .Produces(404)
-        .Produces(501)
-        .RequireWorkstationTenantCompanyScope();
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementExceptions), async (HttpContext context) =>
-        {
-            var service = context.RequestServices.GetService<IReconciliationApiService>();
-            if (service is null)
-            {
-                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var exceptions = await service
-                .ListOpenExceptionsAsync(accessScope, context.RequestAborted)
-                .ConfigureAwait(false);
-            return Results.Json(exceptions, jsonOptions);
-        })
-        .WithName("ListStatementExceptions").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<IReadOnlyList<StatementRunExceptionDto>>(200)
-        .Produces(403)
-        .Produces(501)
-        .RequireWorkstationTenantCompanyScope();
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementBreaks), async (HttpContext context) =>
-        {
-            var service = context.RequestServices.GetService<IReconciliationApiService>();
-            if (service is null)
-            {
-                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var breaks = await service
-                .ListOpenStatementBreaksAsync(accessScope, context.RequestAborted)
-                .ConfigureAwait(false);
-            return Results.Json(breaks, jsonOptions);
-        })
-        .WithName("ListOpenStatementBreaks").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<IReadOnlyList<StatementBreakDto>>(200)
-        .Produces(403)
-        .Produces(501)
-        .RequireWorkstationTenantCompanyScope();
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationOpenCases), async (HttpContext context) =>
-        {
-            var service = context.RequestServices.GetService<IReconciliationApiService>();
-            if (service is null)
-            {
-                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var cases = await service
-                .ListOpenCasesAsync(accessScope, context.RequestAborted)
-                .ConfigureAwait(false);
-            return Results.Json(cases, jsonOptions);
-        })
-        .WithName("ListOpenReconciliationCases").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<IReadOnlyList<ReconciliationCaseSummaryDto>>(200)
-        .Produces(403)
-        .Produces(501)
-        .RequireWorkstationTenantCompanyScope();
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationQueueStatus), async (HttpContext context) =>
-        {
-            var service = context.RequestServices.GetService<IReconciliationApiService>();
-            if (service is null)
-            {
-                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var queueStatus = await service
-                .ListQueueStatusAsync(accessScope, context.RequestAborted)
-                .ConfigureAwait(false);
-            return Results.Json(queueStatus, jsonOptions);
-        })
-        .WithName("ListReconciliationQueueStatus").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<IReadOnlyList<ReconciliationQueueAccountStatusDto>>(200)
-        .Produces(403)
-        .Produces(501)
-        .RequireWorkstationTenantCompanyScope();
-
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakQueue), async (string? status, string? fundAccountId, Guid? ledgerBookId, HttpContext context) =>
-        {
-            if (!CanViewReconciliationBreakQueue(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
-            if (repository is null)
-            {
-                return Results.Problem(
-                    "Reconciliation break queue repository is not registered.",
-                    statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var items = await GetBreakQueueItemsAsync(repository, queueScope, status, fundAccountId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(items, jsonOptions);
-        })
-        .WithName("GetReconciliationBreakQueue").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(200)
-        .Produces(501);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakQueueById), async (string breakId, HttpContext context) =>
-        {
-            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
-            if (repository is null)
-            {
-                return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var item = await repository.GetByIdAsync(queueScope, breakId, context.RequestAborted).ConfigureAwait(false);
-            return item is null ? Results.NotFound() : Results.Json(item, jsonOptions);
-        })
-        .WithName("GetReconciliationBreakQueueItem").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<ReconciliationBreakQueueItem>(200)
-        .Produces(404);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationCalibrationSummary), async (HttpContext context) =>
-        {
-            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var asOf = DateTimeOffset.UtcNow;
-            var ledgerBookId = ParseOptionalGuid(context.Request.Query["ledgerBookId"].FirstOrDefault());
-            var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
-            if (repository is null)
-            {
-                return Results.Problem(
-                    "Reconciliation break queue repository is not registered.",
-                    statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var items = await GetBreakQueueItemsAsync(repository, queueScope, status: null, fundAccountId: null, ledgerBookId: ledgerBookId, ct: context.RequestAborted).ConfigureAwait(false);
-            var summary = BuildReconciliationCalibrationSummary(items, asOf);
-            return Results.Json(summary, jsonOptions);
-        })
-        .WithName("GetReconciliationCalibrationSummary").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<ReconciliationCalibrationSummaryDto>(200)
-        .Produces(501);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakAudit), async (string breakId, HttpContext context) =>
-        {
-            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
-            if (repository is null)
-            {
-                return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var history = await repository.GetAuditHistoryAsync(queueScope, breakId, context.RequestAborted).ConfigureAwait(false);
-            return history.Count == 0
-                ? Results.NotFound()
-                : Results.Json(history, jsonOptions);
-        })
-        .WithName("GetReconciliationBreakAudit").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<IReadOnlyList<ReconciliationBreakQueueAuditEvent>>(200)
-        .Produces(404)
-        .Produces(501);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakReview), async (string breakId, ReviewReconciliationBreakRequest request, HttpContext context) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase))
-            {
-                return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
-            }
-
-            if (!CanMutateReconciliationBreakQueue(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            // Authentication proves the executing operator. Rewrite the client-supplied assignee the
-            // same way as the reviewer: the browser lane hardcodes a placeholder assignee, the queue's
-            // assignee filter must answer "my breaks", and the repository derives the audit actor from
-            // AssignedTo ?? ReviewedBy ?? ResolvedBy — so neither identity may pass through verbatim.
-            var reviewActor = ResolveCurrentActor(context);
-            var transition = await ReviewBreakAsync(context.RequestServices, queueScope, request with
-            {
-                AssignedTo = reviewActor,
-                ReviewedBy = reviewActor
-            }, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(ToReconciliationCaseworkOperationResult(transition), jsonOptions);
-        })
-        .WithName("ReviewReconciliationBreak").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<ReconciliationCaseworkOperationResult>(200)
-        .Produces(400)
-        .Produces(401)
-        .Produces(403)
-        .Produces(404);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakResolve), async (string breakId, ResolveReconciliationBreakRequest request, HttpContext context) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase))
-            {
-                return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
-            }
-
-            if (request.Status is not ReconciliationBreakQueueStatus.Resolved and not ReconciliationBreakQueueStatus.Dismissed)
-            {
-                return Results.BadRequest(new { error = "Status must be Resolved or Dismissed for resolve action." });
-            }
-            if (string.IsNullOrWhiteSpace(request.OperatorRationale))
-            {
-                return Results.BadRequest(new { error = "Operator rationale is required for resolve or waive transitions." });
-            }
-
-            if (!CanMutateReconciliationBreakQueue(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            try
-            {
-                var transition = await ResolveBreakAsync(
-                    context.RequestServices,
-                    queueScope,
-                    request with
-                    {
-                        ResolvedBy = ResolveCurrentActor(context),
-                        // Derived from the principal, discarding the body: this is the statement
-                        // legacy-resolve adapter, which is authoritative over the caller's identity
-                        // like the rest of the reconciliation casework routes. Before #2673 the
-                        // origin was left as the browser sent it. See DeriveActionOriginFromPrincipal.
-                        ActionOrigin = EndpointAuthorization.DeriveActionOriginFromPrincipal(context)
-                    },
-                    context.RequestAborted).ConfigureAwait(false);
-                return Results.Json(ToReconciliationCaseworkOperationResult(transition), jsonOptions);
-            }
-            catch (StatementReconciliationCaseworkHandoffException exception)
-            {
-                return Results.Problem(
-                    detail: $"{exception.Code}: {exception.Message}",
-                    statusCode: StatusCodes.Status503ServiceUnavailable,
-                    title: "Statement reconciliation casework handoff failed");
-            }
-        })
-        .WithName("ResolveReconciliationBreak").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<ReconciliationCaseworkOperationResult>(200)
-        .Produces(400)
-        .Produces(401)
-        .Produces(403)
-        .Produces(404)
-        .Produces(503);
-
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakAssign), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
-            await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.Assign }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("AssignReconciliationBreakCase").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<ReconciliationCaseworkOperationResult>(200)
-        .Produces(400)
-        .Produces(403)
-        .Produces(404)
-        .Produces(409);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakTransition), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
-            await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.TransitionStatus }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("TransitionReconciliationBreakCase").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<ReconciliationCaseworkOperationResult>(200)
-        .Produces(400)
-        .Produces(403)
-        .Produces(404)
-        .Produces(409);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakWaive), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
-            await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.Waive }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("WaiveReconciliationBreakCase").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<ReconciliationCaseworkOperationResult>(200)
-        .Produces(400)
-        .Produces(403)
-        .Produces(404)
-        .Produces(409);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakSupersede), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
-            await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.Supersede }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("SupersedeReconciliationBreakCase").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<ReconciliationCaseworkOperationResult>(200)
-        .Produces(400)
-        .Produces(403)
-        .Produces(404)
-        .Produces(409);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationCaseTaxonomy), () => Results.Json(FileReconciliationBreakQueueRepository.Taxonomy, jsonOptions))
-        .WithName("GetReconciliationCaseTaxonomy").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<ReconciliationTaxonomySnapshot>(200);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakComments), async (string breakId, HttpContext context) =>
-        {
-            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
-            if (repository is null)
-            {
-                return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var item = await repository.GetByIdAsync(queueScope, breakId, context.RequestAborted).ConfigureAwait(false);
-            return item is null ? Results.NotFound() : Results.Json(item.Comments ?? [], jsonOptions);
-        })
-        .WithName("GetReconciliationBreakComments").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<IReadOnlyList<ReconciliationCaseComment>>(200)
-        .Produces(404)
-        .Produces(501);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakRebuiltSnapshot), async (string breakId, HttpContext context) =>
-        {
-            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
-            if (repository is null)
-            {
-                return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var item = await repository.RebuildSnapshotFromAuditAsync(queueScope, breakId, context.RequestAborted).ConfigureAwait(false);
-            return item is null ? Results.NotFound() : Results.Json(item, jsonOptions);
-        })
-        .WithName("RebuildReconciliationBreakSnapshot").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<ReconciliationBreakQueueItem>(200)
-        .Produces(404)
-        .Produces(501);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakComments), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
-            await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.AddComment }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("AddReconciliationBreakComment").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<ReconciliationCaseworkOperationResult>(200);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakComment), async (string breakId, string commentId, ReconciliationCaseworkCommand request, HttpContext context) =>
-            await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.EditComment, CommentId = commentId }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("EditReconciliationBreakComment").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<ReconciliationCaseworkOperationResult>(200);
-
-        group.MapDelete(WorkstationSubroute(UiApiRoutes.ReconciliationBreakComment), async (
-            string breakId,
-            string commentId,
-            [FromQuery] long expectedVersion,
-            [FromQuery] string? reason,
-            [FromQuery] string? commandId,
-            [FromQuery] string? correlationId,
-            [FromQuery] string? source,
-            HttpContext context) =>
-            await ApplyReconciliationCaseworkEndpointAsync(
-                breakId,
-                new ReconciliationCaseworkCommand(
-                    breakId,
-                    ReconciliationCaseworkAction.DeleteComment,
-                    Actor: string.Empty,
-                    CommandId: string.IsNullOrWhiteSpace(commandId) ? Guid.NewGuid().ToString("N") : commandId,
-                    CorrelationId: string.IsNullOrWhiteSpace(correlationId) ? Guid.NewGuid().ToString("N") : correlationId,
-                    Source: string.IsNullOrWhiteSpace(source) ? "workstation-api" : source,
-                    ExpectedVersion: expectedVersion,
-                    Reason: reason,
-                    CommentId: commentId),
-                context,
-                jsonOptions).ConfigureAwait(false))
-        .WithName("DeleteReconciliationBreakComment").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<ReconciliationCaseworkOperationResult>(200);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakRootCause), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
-            await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.SetRootCause }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("SetReconciliationBreakRootCause").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<ReconciliationCaseworkOperationResult>(200);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakResolution), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
-            await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.SetResolution }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("SetReconciliationBreakResolution").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<ReconciliationCaseworkOperationResult>(200);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakSignOff), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
-            await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.SignOff }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("SignOffReconciliationBreakCase").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<ReconciliationCaseworkOperationResult>(200);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakReopen), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
-            await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.Reopen }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("ReopenReconciliationBreakCase").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<ReconciliationCaseworkOperationResult>(200);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakBulkDryRun), async (ReconciliationBulkCaseworkRequest request, HttpContext context) =>
-            await ApplyReconciliationBulkEndpointAsync(request with { DryRun = true }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("DryRunReconciliationBreakBulkAction").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<ReconciliationBulkCaseworkResult>(200);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakBulkExecute), async (ReconciliationBulkCaseworkRequest request, HttpContext context) =>
-            await ApplyReconciliationBulkEndpointAsync(request with { DryRun = false }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("ExecuteReconciliationBreakBulkAction").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<ReconciliationBulkCaseworkResult>(200);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakBulkStatus), async (string bulkActionId, HttpContext context) =>
-        {
-            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
-            var result = repository is null
-                ? null
-                : await repository.GetBulkCaseworkResultAsync(queueScope, bulkActionId, context.RequestAborted).ConfigureAwait(false);
-
-            return Results.Json(new
-            {
-                bulkActionId,
-                status = result is null ? "unknown" : "completed",
-                requestedCount = result?.RequestedCount ?? 0,
-                succeededCount = result?.SucceededCount ?? 0,
-                failedCount = result?.FailedCount ?? 0,
-                resultEndpoint = $"/api/workstation/reconciliation/break-queue/bulk/{Uri.EscapeDataString(bulkActionId)}/result"
-            }, jsonOptions);
-        })
-        .WithName("GetReconciliationBreakBulkActionStatus").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakBulkResult), async (string bulkActionId, HttpContext context) =>
-        {
-            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
-            if (repository is null)
-            {
-                return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var result = await repository.GetBulkCaseworkResultAsync(queueScope, bulkActionId, context.RequestAborted).ConfigureAwait(false);
-            return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
-        })
-        .WithName("GetReconciliationBreakBulkActionResult").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<ReconciliationBulkCaseworkResult>(200)
-        .Produces(404)
-        .Produces(501);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsLedger), async (string runId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsLedger), async (string runId, DateTimeOffset? asOf, HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
             if (readService is null)
@@ -2293,11 +585,9 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var summary = await readService.GetLedgerSummaryAsync(
-                    runId,
-                    ResolveStrategyRunReadScope(context),
-                    context.RequestAborted)
-                .ConfigureAwait(false);
+            var summary = asOf.HasValue
+                ? await readService.GetLedgerSummaryAsync(runId, asOf.Value, ResolveStrategyRunReadScope(context), context.RequestAborted).ConfigureAwait(false)
+                : await readService.GetLedgerSummaryAsync(runId, ResolveStrategyRunReadScope(context), context.RequestAborted).ConfigureAwait(false);
             return summary is null
                 ? Results.NotFound()
                 : Results.Json(summary, jsonOptions);
@@ -2306,6 +596,8 @@ public static partial class WorkstationEndpoints
         .Produces<LedgerSummary>(200)
         .Produces(404)
         .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
+
+        MapRunLedgerExportEndpoint(group);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsContinuity), async (string runId, HttpContext context) =>
         {
@@ -2446,8 +738,46 @@ public static partial class WorkstationEndpoints
         .Produces(501)
         .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsAttributionPeriodComparison), async (string runId, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var rawPeriodEnd = context.Request.Query["periodEnd"].FirstOrDefault();
+            DateOnly? periodEnd = null;
+            if (!string.IsNullOrWhiteSpace(rawPeriodEnd))
+            {
+                if (!DateOnly.TryParseExact(rawPeriodEnd, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsed))
+                {
+                    return Results.Problem("periodEnd must be a date in yyyy-MM-dd form.", statusCode: StatusCodes.Status400BadRequest);
+                }
+
+                periodEnd = parsed;
+            }
+
+            var comparison = await readService.GetAttributionPeriodComparisonAsync(
+                    runId,
+                    periodEnd,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
+            return comparison is null
+                ? Results.NotFound()
+                : Results.Json(comparison, jsonOptions);
+        })
+        .WithName("GetRunAttributionPeriodComparison").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .Produces<PeriodComparisonDto>(200)
+        .Produces(400)
+        .Produces(404)
+        .Produces(501)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
+
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsLedgerTrialBalance), async (
             string runId,
+            DateTimeOffset? asOf,
             string? accountType,
             string? fundId,
             string? entityId,
@@ -2475,11 +805,9 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var summary = await readService.GetLedgerSummaryAsync(
-                    runId,
-                    ResolveStrategyRunReadScope(context),
-                    context.RequestAborted)
-                .ConfigureAwait(false);
+            var summary = asOf.HasValue
+                ? await readService.GetLedgerSummaryAsync(runId, asOf.Value, ResolveStrategyRunReadScope(context), context.RequestAborted).ConfigureAwait(false)
+                : await readService.GetLedgerSummaryAsync(runId, ResolveStrategyRunReadScope(context), context.RequestAborted).ConfigureAwait(false);
             if (summary is null)
             {
                 return Results.NotFound();
@@ -2522,6 +850,7 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsLedgerJournal), async (
             string runId,
+            DateTimeOffset? asOf,
             DateTimeOffset? from,
             DateTimeOffset? to,
             string? fundId,
@@ -2550,11 +879,9 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var summary = await readService.GetLedgerSummaryAsync(
-                    runId,
-                    ResolveStrategyRunReadScope(context),
-                    context.RequestAborted)
-                .ConfigureAwait(false);
+            var summary = asOf.HasValue
+                ? await readService.GetLedgerSummaryAsync(runId, asOf.Value, ResolveStrategyRunReadScope(context), context.RequestAborted).ConfigureAwait(false)
+                : await readService.GetLedgerSummaryAsync(runId, ResolveStrategyRunReadScope(context), context.RequestAborted).ConfigureAwait(false);
             if (summary is null)
             {
                 return Results.NotFound();
@@ -2600,184 +927,7 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterSearch), async (
-            string? query,
-            int? take,
-            bool? activeOnly,
-            [FromServices] ContractSecurityMasterQueryService queryService,
-            CancellationToken ct) =>
-        {
-            if (string.IsNullOrWhiteSpace(query))
-            {
-                return Results.BadRequest(new { error = "Query is required." });
-            }
-
-            var request = new SecuritySearchRequest(
-                Query: query.Trim(),
-                Take: Math.Clamp(take ?? 25, 1, 100),
-                ActiveOnly: activeOnly ?? true);
-            var results = await queryService.SearchAsync(request, ct).ConfigureAwait(false);
-            return Results.Json(results.Select(MapToWorkstationSecurity).ToArray(), jsonOptions);
-        })
-        .WithName("SearchSecurityMasterWorkstation").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
-        .Produces<IReadOnlyList<SecurityMasterWorkstationDto>>(200)
-        .Produces(400);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterById), async (
-            Guid securityId,
-            [FromServices] ContractSecurityMasterQueryService queryService,
-            CancellationToken ct) =>
-        {
-            var detail = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
-            return detail is null
-                ? Results.NotFound()
-                : Results.Json(MapToWorkstationSecurity(detail), jsonOptions);
-        })
-        .WithName("GetSecurityMasterWorkstationSecurity").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
-        .Produces<SecurityMasterWorkstationDto>(200)
-        .Produces(404);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterHistory), async (
-            Guid securityId,
-            int? take,
-            [FromServices] ContractSecurityMasterQueryService queryService,
-            CancellationToken ct) =>
-        {
-            var history = await queryService.GetHistoryAsync(
-                    new SecurityHistoryRequest(
-                        SecurityId: securityId,
-                        Take: Math.Clamp(take ?? 50, 1, 500)),
-                    ct)
-                .ConfigureAwait(false);
-
-            return history.Count == 0
-                ? Results.NotFound()
-                : Results.Json(history, jsonOptions);
-        })
-        .WithName("GetSecurityMasterWorkstationSecurityHistory").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
-        .Produces<IReadOnlyList<SecurityMasterEventEnvelope>>(200)
-        .Produces(404);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterIdentity), async (
-            Guid securityId,
-            [FromServices] ContractSecurityMasterQueryService queryService,
-            CancellationToken ct) =>
-        {
-            var detail = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
-            return detail is null
-                ? Results.NotFound()
-                : Results.Json(MapToIdentityDrillIn(detail), jsonOptions);
-        })
-        .WithName("GetSecurityMasterWorkstationIdentityDrillIn").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
-        .Produces<SecurityIdentityDrillInDto>(200)
-        .Produces(404);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterEconomicDefinition), async (
-            Guid securityId,
-            [FromServices] ContractSecurityMasterQueryService queryService,
-            CancellationToken ct) =>
-        {
-            var record = await queryService.GetEconomicDefinitionByIdAsync(securityId, ct).ConfigureAwait(false);
-            return record is null
-                ? Results.NotFound()
-                : Results.Json(MapToEconomicDefinitionSummary(record), jsonOptions);
-        })
-        .WithName("GetSecurityMasterWorkstationEconomicDefinition").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
-        .Produces<SecurityEconomicDefinitionSummaryDto>(200)
-        .Produces(404);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterTrustSnapshot), async (
-            Guid securityId,
-            string? fundProfileId,
-            HttpContext context) =>
-        {
-            if (!EndpointAuthorization.HasAnyPermission(
-                    context,
-                    UserPermission.ViewSecurityMaster,
-                    UserPermission.ModifySecurityMaster))
-            {
-                return Results.StatusCode(StatusCodes.Status403Forbidden);
-            }
-
-            var workbenchService = context.RequestServices.GetService<ISecurityMasterWorkbenchQueryService>();
-            if (workbenchService is null)
-            {
-                return Results.Problem("Security Master workbench service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var snapshot = await workbenchService
-                .GetTrustSnapshotAsync(securityId, fundProfileId, context.RequestAborted)
-                .ConfigureAwait(false);
-
-            return snapshot is null
-                ? Results.NotFound()
-                : Results.Json(snapshot, jsonOptions);
-        })
-        .WithName("GetSecurityMasterWorkstationTrustSnapshot").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
-        .Produces<SecurityMasterTrustSnapshotDto>(200)
-        .Produces(403)
-        .Produces(404)
-        .Produces(501);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterInstrumentPassport), async (
-            Guid securityId,
-            string? fundProfileId,
-            HttpContext context) =>
-        {
-            if (!EndpointAuthorization.HasAnyPermission(
-                    context,
-                    UserPermission.ViewSecurityMaster,
-                    UserPermission.ModifySecurityMaster))
-            {
-                return Results.StatusCode(StatusCodes.Status403Forbidden);
-            }
-
-            var workbenchService = context.RequestServices.GetService<ISecurityMasterWorkbenchQueryService>();
-            if (workbenchService is null)
-            {
-                return Results.Problem("Security Master workbench service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var passport = await workbenchService
-                .GetInstrumentPassportAsync(securityId, fundProfileId, context.RequestAborted)
-                .ConfigureAwait(false);
-
-            return passport is null
-                ? Results.NotFound()
-                : Results.Json(passport, jsonOptions);
-        })
-        .WithName("GetSecurityMasterWorkstationInstrumentPassport").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
-        .Produces<InstrumentPassportDto>(200)
-        .Produces(403)
-        .Produces(404)
-        .Produces(501);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterBulkResolveConflicts), async (
-            BulkResolveSecurityMasterConflictsRequest request,
-            HttpContext context) =>
-        {
-            if (!HasPermission(context, UserPermission.ModifySecurityMaster))
-            {
-                return Results.StatusCode(StatusCodes.Status403Forbidden);
-            }
-
-            var workbenchService = context.RequestServices.GetService<ISecurityMasterWorkbenchQueryService>();
-            if (workbenchService is null)
-            {
-                return Results.Problem("Security Master workbench service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var result = await workbenchService
-                .BulkResolveConflictsAsync(request, context.RequestAborted)
-                .ConfigureAwait(false);
-
-            return Results.Json(result, jsonOptions);
-        })
-        .WithName("BulkResolveSecurityMasterWorkstationConflicts").RequirePermission(UserPermission.ModifySecurityMaster)
-        .Accepts<BulkResolveSecurityMasterConflictsRequest>("application/json")
-        .Produces<BulkResolveSecurityMasterConflictsResult>(200)
-        .Produces(403)
-        .Produces(501);
+        MapSecurityMasterReadEndpoints(group, jsonOptions);
 
         // --- Multi-run comparison and diff ---
 
@@ -3151,10 +1301,15 @@ public static partial class WorkstationEndpoints
             readinessService = new TradingOperatorReadinessService(context.RequestServices, logger);
         }
 
+        Guid? authorizedPaperAccountId = fundAccountId is { } selectedAccount &&
+            await FundAccountEndpoints.CanAccessFundAccountBrokerageSyncAsync(selectedAccount, context).ConfigureAwait(false)
+                ? selectedAccount
+                : null;
         return await readinessService.GetAsync(
             fundAccountId,
             ResolveStrategyRunReadScope(context),
-            context.RequestAborted).ConfigureAwait(false);
+            context.RequestAborted,
+            authorizedPaperAccountId).ConfigureAwait(false);
     }
 
     private static Task<bool> CanReadTradingAccountAsync(Guid? fundAccountId, HttpContext context) =>
@@ -3234,7 +1389,6 @@ public static partial class WorkstationEndpoints
         HttpContext context,
         Meridian.Application.UI.ConfigStore? configStore)
     {
-        var providerConnectionLifecycle = context.RequestServices.GetService<ProviderConnectionLifecycleService>();
         var routingConnectionService = context.RequestServices.GetService<ProviderConnectionService>();
         var routingBindingService = context.RequestServices.GetService<ProviderBindingService>();
         var routingTrustService = context.RequestServices.GetService<ProviderTrustScoringService>();
@@ -3245,11 +1399,18 @@ public static partial class WorkstationEndpoints
         var routingTenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
         // Provider readiness mirrors GET /api/providers/connections: a tenant-scoped request includes the
         // tenant's own connection credentials, so a scoped save is reflected here as it is in Settings.
-        var connectionRows = !canManageCredentials || providerConnectionLifecycle is null
-            ? []
-            : routingTenant.HasTenantScope
-                ? await providerConnectionLifecycle.GetConnectionsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
-                : await providerConnectionLifecycle.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
+        var connectionRows = canManageCredentials
+            ? await LoadOptionalDataProviderEvidenceAsync<ProviderConnectionRowDto>(context, "Provider connections", async () =>
+            {
+                var lifecycle = context.RequestServices.GetService<ProviderConnectionLifecycleService>();
+                if (lifecycle is null)
+                    return [];
+
+                return routingTenant.HasTenantScope
+                    ? await lifecycle.GetConnectionsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
+                    : await lifecycle.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
+            }).ConfigureAwait(false)
+            : [];
         // Routing reads mirror the direct /api/provider-routing endpoints: they are filtered to the
         // authenticated tenant's retained connections, and a request without tenant scope sees none.
         var canReadRouting = canManageCredentials && routingTenant.HasTenantScope;
@@ -3262,13 +1423,70 @@ public static partial class WorkstationEndpoints
         var trustSnapshots = canReadRouting && routingTrustService is not null
             ? await routingTrustService.GetTrustSnapshotsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
             : [];
+        // Readiness also depends on the connection read. A failed read leaves only independent evidence.
+        var readinessRows = connectionRows is null
+            ? null
+            : await LoadDataProviderReadinessRowsAsync(context).ConfigureAwait(false);
         return BuildWorkstationDataProviderRecords(
             metricsStatus,
-            connectionRows,
+            connectionRows ?? [],
             routingConnections,
             routingBindings,
             trustSnapshots,
-            exposeConnectionSummaries: canManageCredentials);
+            readinessRows,
+            asOf: DateTimeOffset.UtcNow,
+            exposeConnectionSummaries: canManageCredentials && connectionRows is not null);
+    }
+
+    // The same permissions GET /api/providers/readiness admits, so the list never shows a caller a
+    // readiness-derived status the browser's own readiness read would refuse them.
+    private static readonly UserPermission[] DataProviderReadinessPermissions =
+        [UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders,
+         UserPermission.ManageCredentials, UserPermission.AdminMaintenance];
+
+    /// <summary>
+    /// Readiness rows for the provider list. The browser's Data page shows each provider the worse
+    /// of its listed and readiness status; listing with the same rule here keeps the cross-screen
+    /// "Providers healthy" count equal to what that page shows.
+    /// </summary>
+    private static async Task<IReadOnlyList<ProviderReadinessRowDto>?> LoadDataProviderReadinessRowsAsync(HttpContext context)
+    {
+        if (!DataProviderReadinessPermissions.Any(permission => HasPermission(context, permission)))
+        {
+            return [];
+        }
+
+        return await LoadOptionalDataProviderEvidenceAsync<ProviderReadinessRowDto>(context, "Provider readiness", async () =>
+        {
+            // Hosts without the shared configuration store do not offer readiness enrichment.
+            if (context.RequestServices.GetService<Meridian.Ui.Shared.Services.ConfigStore>() is null)
+                return [];
+
+            var readinessService = context.RequestServices.GetService<ProviderReadinessService>();
+            if (readinessService is null)
+                return [];
+
+            var readiness = await readinessService.GetReadinessAsync(context.RequestAborted).ConfigureAwait(false);
+            return readiness.Providers;
+        }).ConfigureAwait(false);
+    }
+
+    private static async Task<IReadOnlyList<T>?> LoadOptionalDataProviderEvidenceAsync<T>(
+        HttpContext context, string evidence, Func<Task<IReadOnlyList<T>>> read)
+    {
+        try
+        {
+            return await read().ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException and not AccessViolationException)
+        {
+            context.RequestAborted.ThrowIfCancellationRequested();
+            // Repository failures can contain connection details. Log the type without the payload.
+            context.RequestServices.GetService<ILoggerFactory>()
+                ?.CreateLogger("Meridian.Ui.Shared.Endpoints.WorkstationEndpoints")
+                .LogWarning("{Evidence} unavailable ({FailureType}).", evidence, ex.GetType().Name);
+            return null;
+        }
     }
 
     // Returns null when neither the strategy run read service nor the configuration store is
@@ -3298,39 +1516,7 @@ public static partial class WorkstationEndpoints
             .CountProviderHealth(providers.Select(static provider => provider.Status))
             .Healthy;
 
-        // --- Backfills (last known backfill result from status file) ---
-        var lastBackfill = configStore?.TryLoadBackfillStatus();
-        WorkstationDataBackfillRecord[] backfills;
-        if (lastBackfill is not null)
-        {
-            var symbolSummary = lastBackfill.Symbols.Length > 0
-                ? string.Join(", ", lastBackfill.Symbols.Take(3)) + (lastBackfill.Symbols.Length > 3 ? " …" : "")
-                : "unknown";
-            var days = (lastBackfill.To != null && lastBackfill.From != null)
-                ? (lastBackfill.To.Value.DayNumber - lastBackfill.From.Value.DayNumber).ToString(CultureInfo.InvariantCulture) + "d"
-                : "—";
-            var age = DateTimeOffset.UtcNow - lastBackfill.CompletedUtc;
-            var updatedAt = age.TotalMinutes < 60
-                ? $"{(int)age.TotalMinutes}m ago"
-                : $"{(int)age.TotalHours}h ago";
-            backfills =
-            [
-                new WorkstationDataBackfillRecord(
-                    JobId: "BF-" + Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
-                    {
-                        lastBackfill.Provider, lastBackfill.CompletedUtc, lastBackfill.From, lastBackfill.To, lastBackfill.Symbols
-                    }))[..16],
-                    Scope: $"{symbolSummary} / {days}",
-                    Provider: lastBackfill.Provider,
-                    Status: lastBackfill.Success ? "Completed" : "Failed",
-                    Progress: lastBackfill.Success ? "100%" : "Error",
-                    UpdatedAt: updatedAt)
-            ];
-        }
-        else
-        {
-            backfills = [];
-        }
+        var backfills = LoadOptionalDataBackfillRows(context, configStore);
 
         var metrics = new List<WorkstationMetricCard>
         {
@@ -3359,6 +1545,67 @@ public static partial class WorkstationEndpoints
             Exports: [],
             UploadTemplates: BuildDataUploadTemplateCatalog(),
             KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
+    }
+
+    private static IReadOnlyList<WorkstationDataBackfillRecord> LoadOptionalDataBackfillRows(
+        HttpContext context, Meridian.Application.UI.ConfigStore? configStore)
+    {
+        context.RequestAborted.ThrowIfCancellationRequested();
+        var backfills = new List<WorkstationDataBackfillRecord>();
+        try
+        {
+            var backfillStore = context.RequestServices.GetService<BackfillCoordinator>()?.GetReceiptStore()
+                ?? (configStore is null ? null : new BackfillStatusStore(configStore.GetDataRoot()));
+            var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+            var retained = backfillStore?.ReadRecentRetainedResults(50, tenantId) ?? [];
+            backfills.AddRange(retained.Select(BuildRetainedBackfillRow));
+
+            if (backfillStore?.TryReadLegacySummary() is { } legacy)
+            {
+                var legacyId = "BF-" + Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
+                {
+                    legacy.Provider,
+                    legacy.CompletedUtc,
+                    legacy.From,
+                    legacy.To,
+                    legacy.Symbols
+                }))[..16];
+                backfills.Add(BuildBackfillRow(legacyId, legacy.Symbols,
+                    legacy.From, legacy.To, legacy.Provider, legacy.Success, legacy.CompletedUtc));
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            context.RequestServices.GetService<ILoggerFactory>()
+                ?.CreateLogger("Meridian.Ui.Shared.Endpoints.WorkstationEndpoints")
+                .LogWarning("Backfill evidence unavailable ({FailureType}).", ex.GetType().Name);
+        }
+
+        context.RequestAborted.ThrowIfCancellationRequested();
+        return backfills;
+    }
+
+    private static WorkstationDataBackfillRecord BuildBackfillRow(string id, IReadOnlyList<string> symbols,
+        DateOnly? from, DateOnly? to, string provider, bool success, DateTimeOffset completed)
+    {
+        var symbolSummary = symbols.Count > 0
+            ? string.Join(", ", symbols.Take(3)) + (symbols.Count > 3 ? " …" : "")
+            : "Unknown symbols";
+        var days = from.HasValue && to.HasValue ? $"{to.Value.DayNumber - from.Value.DayNumber + 1}d" : "—";
+        var age = DateTimeOffset.UtcNow - completed;
+        var updatedAt = age.TotalMinutes < 60 ? $"{(int)age.TotalMinutes}m ago" : $"{(int)age.TotalHours}h ago";
+        return new(id, $"{symbolSummary} / {days}", provider, success ? "Completed" : "Failed", success ? "100%" : "Error", updatedAt);
+    }
+
+    internal static WorkstationDataBackfillRecord BuildRetainedBackfillRow(RetainedBackfillResult result)
+    {
+        var receipt = result.Receipt;
+        var providers = receipt.Providers.Where(provider => provider.ResponsesWithData > 0 || provider.StaleResponsesAccepted > 0)
+            .Select(provider => provider.ProviderId).ToArray();
+        var providerLabel = providers.Length > 0 ? string.Join(", ", providers) : receipt.RoutingDecision;
+        return BuildBackfillRow($"BF-{receipt.ReceiptId:N}", receipt.Request.Symbols, receipt.Request.From,
+            receipt.Request.To, providerLabel, result.Success, receipt.CompletedUtc) with
+        { ProviderProvenance = receipt };
     }
 
     /// <summary>
@@ -3489,6 +1736,12 @@ public static partial class WorkstationEndpoints
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var portfolio = context.RequestServices.GetService<IPortfolioState>();
         var oms = context.RequestServices.GetService<IOrderManager>();
+        if (oms is Meridian.Execution.OrderManagementSystem { ScopedPaperBook: { } paper } &&
+            !await ExecutionEndpoints.CanAccessScopedPaperBookAsync(context, paper, UserPermission.ViewTrades).ConfigureAwait(false))
+        {
+            portfolio = null;
+            oms = null;
+        }
         var brokerageConfiguration = context.RequestServices.GetService<BrokerageConfiguration>();
         var quoteCollector = context.RequestServices.GetService<QuoteCollector>();
         var tradeCollector = context.RequestServices.GetService<TradeDataCollector>();
@@ -3537,19 +1790,23 @@ public static partial class WorkstationEndpoints
                 var mark = retainedMark.Price;
                 var hasMark = mark.HasValue && mark.Value > 0m;
                 var effectiveMark = hasMark ? mark!.Value : pos.AverageCostBasis;
-                var liveUnrealized = (effectiveMark - pos.AverageCostBasis) * pos.Quantity;
-                var liveExposure = Math.Abs(pos.Quantity * effectiveMark);
+                var liveUnrealized = (effectiveMark - pos.AverageCostBasis) * pos.ExactQuantity * pos.ContractMultiplier;
+                var liveExposure = Math.Abs(pos.ExactQuantity * effectiveMark * pos.ContractMultiplier);
 
                 return new WorkstationTradingPositionRow(
                     PositionKey: pos.Symbol,
                     Symbol: pos.Symbol,
-                    Side: pos.Quantity >= 0 ? "Long" : "Short",
-                    Quantity: Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
+                    Side: pos.ExactQuantity >= 0 ? "Long" : "Short",
+                    Quantity: Math.Abs(pos.ExactQuantity).ToString(CultureInfo.InvariantCulture),
                     AveragePrice: pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
                     MarkPrice: hasMark ? effectiveMark.ToString("F2", CultureInfo.InvariantCulture) : "—",
                     DayPnl: "—",
                     UnrealizedPnl: FormatCurrency(hasMark ? liveUnrealized : pos.UnrealizedPnl),
-                    Exposure: hasMark ? FormatCurrency(liveExposure) : "—");
+                    Exposure: hasMark ? FormatCurrency(liveExposure) : "—",
+                    AveragePriceExact: pos.AverageCostBasis.ToString(CultureInfo.InvariantCulture),
+                    MarkPriceExact: hasMark ? effectiveMark.ToString(CultureInfo.InvariantCulture) : null,
+                    UnrealizedPnlExact: (hasMark ? liveUnrealized : pos.UnrealizedPnl).ToString(CultureInfo.InvariantCulture),
+                    ExposureExact: hasMark ? liveExposure.ToString(CultureInfo.InvariantCulture) : null);
             }).ToArray();
         }
         else
@@ -3571,8 +1828,8 @@ public static partial class WorkstationEndpoints
             {
                 var mark = ResolveLiveMark(pos.Symbol, quoteCollector, tradeCollector);
                 var px = mark.HasValue && mark.Value > 0m ? mark.Value : pos.AverageCostBasis;
-                grossExposure += Math.Abs(pos.Quantity * px);
-                netExposureValue += pos.Quantity * px;
+                grossExposure += Math.Abs(pos.ExactQuantity * px * pos.ContractMultiplier);
+                netExposureValue += pos.ExactQuantity * px * pos.ContractMultiplier;
             }
             var drawdownPct = portfolio.PortfolioValue > 0m ? totalPnl / portfolio.PortfolioValue : 0m;
             if (drawdownPct < -0.05m)

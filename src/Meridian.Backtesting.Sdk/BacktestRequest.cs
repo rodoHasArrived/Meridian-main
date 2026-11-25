@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Meridian.Backtesting.Sdk;
 
@@ -148,6 +149,28 @@ public sealed record BacktestRequest(
     int DelistingGraceDays = 5,
     bool PopulateAssetEventsFromSecurityMaster = false)
 {
+    /// <summary>Opt-in receivable/pay-date accounting; Legacy retains the configured stored/manual action behavior.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public BacktestCorporateActionMode CorporateActionMode { get; init; } = BacktestCorporateActionMode.Legacy;
+
+    /// <summary>Abort at day-end when ledger cash, lot basis, or clearing balances fail reconciliation.</summary>
+    public bool FailOnLedgerIntegrityBreak { get; init; }
+
+    /// <summary>
+    /// Apply confirmed Security Master actions to positions and cash using raw historical prices
+    /// when a source is configured. Disable for reviewed manual AssetEvents or legacy adjusted-price research.
+    /// </summary>
+    public bool ApplyStoredCorporateActions { get; init; } = true;
+
+    /// <summary>
+    /// When set, and the engine has a ledger journal store, every journal the run posts is written
+    /// as it happens to an append-only, hash-chained journal under this id (normally the run id),
+    /// so the run's books survive a crash and can be re-verified later. Operational only: it does
+    /// not change the numbers a run produces, so it is excluded from serialized run identity.
+    /// </summary>
+    [JsonIgnore]
+    public string? LedgerJournalScopeId { get; init; }
+
     /// <summary>
     /// Captures every setting on this request that changes what numbers the run produces, so run
     /// identity can account for execution realism rather than strategy inputs alone.
@@ -175,7 +198,11 @@ public sealed record BacktestRequest(
         CanonicalRiskFreeRateSeries(),
         DefaultBrokerageAccountId,
         // Only counts when it takes effect: explicit request events win over the source.
-        PopulateAssetEventsFromSecurityMaster && AssetEvents is null);
+        PopulateAssetEventsFromSecurityMaster && AssetEvents is null)
+    {
+        ApplyStoredCorporateActions = ApplyStoredCorporateActions,
+        CorporateActionMode = CorporateActionMode
+    };
 
     /// <summary>
     /// Canonical form of the resolved account financing configuration. Uses <see cref="ResolveAccounts"/>

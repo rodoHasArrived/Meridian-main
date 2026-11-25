@@ -100,7 +100,8 @@ type BondTerms = {
     Principal: PrincipalScheduleTerms
     /// Declared schedule conventions (asset-class terms version 2); empty until declared.
     DeclaredSchedule: DeclaredScheduleTerms
-    /// Declared call and put schedules (asset-class terms version 3); empty until declared.
+    /// Validated, retained v5 overnight/indexed conventions; absent on every historical record.
+    Workflow: BondWorkflowTerms option
 
 } with
     member this.ScheduleConventions = this.DeclaredSchedule.Conventions
@@ -129,7 +130,8 @@ module BondTerms =
           DebtClassification = { Subclass = BondSubclass.Corporate; Seniority = None }
           RedemptionFacts = BondRedemptionTerms.empty
           Principal = { Payments = [] }
-          DeclaredSchedule = DeclaredScheduleTerms.empty }
+          DeclaredSchedule = DeclaredScheduleTerms.empty
+          Workflow = None }
 
     let floatingRate maturity index spreadBps issuerName =
         { Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (maturity) }; CouponStructure = { Structure = BondCouponStructure.Floating(index, spreadBps, None, None, None); PaymentFrequency = None }
@@ -137,7 +139,8 @@ module BondTerms =
           DebtClassification = { Subclass = BondSubclass.FloatingRate; Seniority = None }
           RedemptionFacts = BondRedemptionTerms.empty
           Principal = { Payments = [] }
-          DeclaredSchedule = DeclaredScheduleTerms.empty }
+          DeclaredSchedule = DeclaredScheduleTerms.empty
+          Workflow = None }
 
     let zeroCoupon maturity issuerName =
         { Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (maturity) }; CouponStructure = { Structure = BondCouponStructure.ZeroCoupon; PaymentFrequency = None }
@@ -145,7 +148,8 @@ module BondTerms =
           DebtClassification = { Subclass = BondSubclass.Corporate; Seniority = None }
           RedemptionFacts = BondRedemptionTerms.empty
           Principal = { Payments = [] }
-          DeclaredSchedule = DeclaredScheduleTerms.empty }
+          DeclaredSchedule = DeclaredScheduleTerms.empty
+          Workflow = None }
 
     let couponRate (terms: BondTerms) =
         match terms.Coupon with
@@ -666,7 +670,7 @@ module AssetClassRegistry =
             SubType = SecuritySubType.FutureContract; IssuerType = None; RiskCountry = None; IsDerivative = true }
           { AssetClassName = "Bond"; AssetClass = AssetClass.FixedIncome; Family = Some AssetFamily.CorporateDebt
             SubType = SecuritySubType.CorporateBond; IssuerType = Some "Corporate"; RiskCountry = None; IsDerivative = false }
-          { AssetClassName = "FxSpot"; AssetClass = AssetClass.Other; Family = None
+          { AssetClassName = "FxSpot"; AssetClass = AssetClass.CashEquivalent; Family = Some AssetFamily.ForeignExchange
             SubType = SecuritySubType.OtherSubType "FxSpot"; IssuerType = None; RiskCountry = None; IsDerivative = false }
           { AssetClassName = "Deposit"; AssetClass = AssetClass.CashEquivalent; Family = Some AssetFamily.BankProduct
             SubType = SecuritySubType.TimeDeposit; IssuerType = Some "Bank"; RiskCountry = None; IsDerivative = false }
@@ -684,7 +688,7 @@ module AssetClassRegistry =
             SubType = SecuritySubType.CashSweep; IssuerType = None; RiskCountry = None; IsDerivative = false }
           { AssetClassName = "OtherSecurity"; AssetClass = AssetClass.Other; Family = None
             SubType = SecuritySubType.OtherSubType "OtherSecurity"; IssuerType = None; RiskCountry = None; IsDerivative = false }
-          { AssetClassName = "Swap"; AssetClass = AssetClass.Derivative; Family = Some AssetFamily.ListedDerivative
+          { AssetClassName = "Swap"; AssetClass = AssetClass.Derivative; Family = Some AssetFamily.OtcDerivative
             SubType = SecuritySubType.SwapContract; IssuerType = None; RiskCountry = None; IsDerivative = true }
           { AssetClassName = "DirectLoan"; AssetClass = AssetClass.PrivateCredit; Family = Some AssetFamily.PrivateLoan
             SubType = SecuritySubType.DirectLoan; IssuerType = None; RiskCountry = None; IsDerivative = false }
@@ -702,23 +706,23 @@ module AssetClassRegistry =
             SubType = SecuritySubType.OtherSubType "Commodity"; IssuerType = None; RiskCountry = None; IsDerivative = false }
           { AssetClassName = "CryptoCurrency"; AssetClass = AssetClass.Other; Family = Some (AssetFamily.OtherFamily "Crypto")
             SubType = SecuritySubType.OtherSubType "CryptoCurrency"; IssuerType = None; RiskCountry = None; IsDerivative = false }
-          { AssetClassName = "Cfd"; AssetClass = AssetClass.Derivative; Family = Some AssetFamily.ListedDerivative
+          { AssetClassName = "Cfd"; AssetClass = AssetClass.Derivative; Family = Some AssetFamily.OtcDerivative
             SubType = SecuritySubType.OtherSubType "Cfd"; IssuerType = None; RiskCountry = None; IsDerivative = true }
           { AssetClassName = "Warrant"; AssetClass = AssetClass.Derivative; Family = Some AssetFamily.ListedDerivative
             SubType = SecuritySubType.OtherSubType "Warrant"; IssuerType = None; RiskCountry = None; IsDerivative = true }
-          { AssetClassName = "FxForward"; AssetClass = AssetClass.Derivative; Family = Some (AssetFamily.OtherFamily "OtcDerivative")
+          { AssetClassName = "FxForward"; AssetClass = AssetClass.Derivative; Family = Some AssetFamily.OtcDerivative
             SubType = SecuritySubType.OtherSubType "FxForward"; IssuerType = None; RiskCountry = None; IsDerivative = true }
-          { AssetClassName = "NonDeliverableForward"; AssetClass = AssetClass.Derivative; Family = Some (AssetFamily.OtherFamily "OtcDerivative")
+          { AssetClassName = "NonDeliverableForward"; AssetClass = AssetClass.Derivative; Family = Some AssetFamily.OtcDerivative
             SubType = SecuritySubType.OtherSubType "NonDeliverableForward"; IssuerType = None; RiskCountry = None; IsDerivative = true }
-          { AssetClassName = "CreditDefaultSwap"; AssetClass = AssetClass.Derivative; Family = Some (AssetFamily.OtherFamily "OtcDerivative")
+          { AssetClassName = "CreditDefaultSwap"; AssetClass = AssetClass.Derivative; Family = Some AssetFamily.OtcDerivative
             SubType = SecuritySubType.OtherSubType "CreditDefaultSwap"; IssuerType = None; RiskCountry = None; IsDerivative = true }
-          { AssetClassName = "Swaption"; AssetClass = AssetClass.Derivative; Family = Some (AssetFamily.OtherFamily "OtcDerivative")
+          { AssetClassName = "Swaption"; AssetClass = AssetClass.Derivative; Family = Some AssetFamily.OtcDerivative
             SubType = SecuritySubType.OtherSubType "Swaption"; IssuerType = None; RiskCountry = None; IsDerivative = true }
-          { AssetClassName = "CapFloor"; AssetClass = AssetClass.Derivative; Family = Some (AssetFamily.OtherFamily "OtcDerivative")
+          { AssetClassName = "CapFloor"; AssetClass = AssetClass.Derivative; Family = Some AssetFamily.OtcDerivative
             SubType = SecuritySubType.OtherSubType "CapFloor"; IssuerType = None; RiskCountry = None; IsDerivative = true }
           { AssetClassName = "StructuredNote"; AssetClass = AssetClass.FixedIncome; Family = Some AssetFamily.CorporateDebt
             SubType = SecuritySubType.OtherSubType "StructuredNote"; IssuerType = Some "Corporate"; RiskCountry = None; IsDerivative = false }
-          { AssetClassName = "InvestmentFund"; AssetClass = AssetClass.Fund; Family = None
+          { AssetClassName = "InvestmentFund"; AssetClass = AssetClass.Fund; Family = Some AssetFamily.PooledFund
             SubType = SecuritySubType.OtherSubType "InvestmentFund"; IssuerType = None; RiskCountry = None; IsDerivative = false }
           { AssetClassName = "CustomAsset"; AssetClass = AssetClass.Other; Family = Some (AssetFamily.OtherFamily "CustomAsset")
             SubType = SecuritySubType.OtherSubType "CustomAsset"; IssuerType = None; RiskCountry = None; IsDerivative = false } ]

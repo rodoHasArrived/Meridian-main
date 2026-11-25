@@ -11,7 +11,7 @@ describe("EntitySetupWizard", () => {
     expect(screen.getByText("Not validated")).toBeInTheDocument();
     expect(screen.getByText("Organization and fund")).toBeInTheDocument();
     expect(screen.getByText("Legal entity")).toBeInTheDocument();
-    expect(screen.getByText("Advanced structure and handoff")).toBeInTheDocument();
+    expect(screen.getByText("Advanced structure and account")).toBeInTheDocument();
     expect(screen.getByText(/draft validation summary/i)).toBeInTheDocument();
     expect(screen.getByText(/resulting graph \/ ownership preview/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/legal form/i)).toBeInTheDocument();

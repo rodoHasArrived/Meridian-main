@@ -718,7 +718,7 @@ public sealed class CorporateActionOperationsServiceTests
     [Fact]
     public async Task GetInbox_ProjectsOnlyActionableProposalsWithTrustedAcceptanceScope()
     {
-        var open = SourceProposal(Dividend()) with
+        var open = SourceProposal(Dividend() with { Payload = ElectionCalendarPayload() }) with
         {
             DisplayMetadata = new CorporateActionSourceDisplayMetadataDto(
                 "ACME", "provider-a", ["provider-a", "provider-b"], []),
@@ -745,6 +745,8 @@ public sealed class CorporateActionOperationsServiceTests
             "tenant-a", "company-a", FundProfileId: "fund-a", AccountingBasis: "GAAP",
             FunctionalCurrency: "USD", Jurisdiction: "US"));
         entry.ActionAvailability.CanAccept.Should().BeTrue();
+        entry.ElectionCalendar!.EvidenceState.Should().Be("Available");
+        entry.ElectionCalendar.Cutoffs.Should().ContainSingle().Which.DeadlineAt.Offset.Should().Be(TimeSpan.FromHours(-5));
         await fixture.Store.Received(1).ListActionableSourceProposalsAsync(
             null, 25, Arg.Any<CancellationToken>());
     }
@@ -752,7 +754,7 @@ public sealed class CorporateActionOperationsServiceTests
     [Fact]
     public async Task GetInbox_AcceptedProposalLeavesStagingButItsFullyScopedCaseRemainsConsumable()
     {
-        var accepted = SourceProposal(Dividend()) with
+        var accepted = SourceProposal(Dividend() with { Payload = ElectionCalendarPayload() }) with
         {
             State = CorporateActionSourceProposalStates.Accepted,
             Version = 5,
@@ -812,9 +814,20 @@ public sealed class CorporateActionOperationsServiceTests
         retainedCase.Version.Should().Be(6);
         retainedCase.Scope.Should().BeEquivalentTo(scope);
         retainedCase.SourceSnapshot.Should().NotBeNull();
-        retainedCase.SourceSnapshot!.ProposedAction.Should().BeEquivalentTo(accepted.ProposedAction);
+        retainedCase.SourceSnapshot!.ProposedAction.Should().BeEquivalentTo(
+            accepted.ProposedAction,
+            options => options.Excluding(action => action.Payload));
+        // JsonElement.Equals compares the backing document identity after JSON round-trip.
+        // Assert the entire retained payload structurally, including every cutoff/evidence field.
+        retainedCase.SourceSnapshot.ProposedAction.Payload.Should().NotBeNull();
+        accepted.ProposedAction.Payload.Should().NotBeNull();
+        JsonElement.DeepEquals(
+            retainedCase.SourceSnapshot.ProposedAction.Payload!.Value,
+            accepted.ProposedAction.Payload!.Value).Should().BeTrue();
         retainedCase.SourceSnapshot.ProviderIdentity.Should().BeEquivalentTo(accepted.ProviderIdentity);
         retainedCase.SourceSnapshot.DisplayMetadata.Should().BeEquivalentTo(accepted.DisplayMetadata);
+        retainedCase.ElectionCalendar!.EvidenceState.Should().Be("Available");
+        retainedCase.ElectionCalendar.Cutoffs.Should().ContainSingle().Which.EvidenceReference.Should().Be("document://notice/v2");
         retainedCase.ActionAvailability.Should().NotBeNull();
         retainedCase.ActionAvailability!.AllowedTransitionTargets
             .Should().Contain(CorporateActionCaseStates.RestatementRequired);
@@ -1448,6 +1461,15 @@ public sealed class CorporateActionOperationsServiceTests
         return new CorporateActionSourceProposalAcceptanceResultDto(
             proposal, action, processingCase, transition, audit, restatement, replayed);
     }
+
+    private static JsonElement ElectionCalendarPayload() => JsonSerializer.SerializeToElement(new
+    {
+        electionCalendar = new
+        {
+            schemaVersion = 1,
+            cutoffs = new[] { new { id = "custodian", label = "Custodian instruction", deadlineAt = "2026-08-14T23:30:00-05:00", source = "Custodian notice revision 2", evidenceReference = "document://notice/v2" } },
+        },
+    });
 
     private static CorporateActionDto Dividend(decimal amount = 0.24m) =>
         new(

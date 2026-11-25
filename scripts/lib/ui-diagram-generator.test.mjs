@@ -10,6 +10,7 @@ import {
   buildWpfScreenCatalogDot,
   buildWpfScreenSummaryDot,
   buildWpfWorkspaceScreenDot,
+  generateUiDiagrams,
   parseMainPageXaml,
   parseNavigationService,
   parsePagesFile,
@@ -17,6 +18,54 @@ import {
   parseShellPageDescriptors,
   parseTransientPages,
 } from './ui-diagram-generator.mjs';
+
+test('UI generation writes one canonical diagram set and is unchanged on repeat runs', async (t) => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'meridian-ui-diagrams-'));
+  t.after(() => fs.rm(repoRoot, { recursive: true, force: true }));
+  const inputs = new Map([
+    ['App.xaml.cs', 'services.AddTransient<DashboardPage>();'],
+    ['MainWindow.xaml.cs', ''],
+    ['Views/MainPage.xaml', ''],
+    ['Views/MainPage.xaml.cs', ''],
+    ['Services/NavigationService.cs', ''],
+    ['Views/Pages.cs', ''],
+    ['Shell/Services/ShellPageRegistryBuilder.cs', ''],
+    ['Features/TradingFeatureModule.cs',
+      'Page<DashboardPage>("Dashboard", "Dashboard", "Review trading.", "trading", "Desk", "icon", 0, ShellNavigationVisibilityTier.Primary, [], []);'],
+  ]);
+  for (const [relativePath, contents] of inputs) {
+    const inputPath = path.join(repoRoot, 'src', 'Meridian.Wpf', relativePath);
+    await fs.mkdir(path.dirname(inputPath), { recursive: true });
+    await fs.writeFile(inputPath, contents);
+  }
+  await fs.mkdir(path.join(repoRoot, 'src', 'Meridian.Wpf', 'Models'), { recursive: true });
+  const diagramsDir = path.join(repoRoot, 'docs', 'diagrams');
+  await fs.mkdir(diagramsDir, { recursive: true });
+
+  const firstRun = await generateUiDiagrams({ repoRoot });
+  const diagramNames = [
+    'ui-implementation-flow',
+    'ui-navigation-map',
+    'ui-wpf-screen-catalog',
+    'ui-wpf-screen-summary',
+    'ui-wpf-screens-trading',
+  ];
+  assert.deepEqual(firstRun.map(({ dotPath }) => path.relative(diagramsDir, dotPath)),
+    diagramNames.map((name) => `${name}.dot`));
+  assert.deepEqual((await fs.readdir(diagramsDir)).sort(),
+    diagramNames.flatMap((name) => [`${name}.dot`, `${name}.svg`]).sort());
+
+  const firstContents = await Promise.all(firstRun.flatMap(({ dotPath, svgPath }) => [
+    fs.readFile(dotPath), fs.readFile(svgPath),
+  ]));
+  const secondRun = await generateUiDiagrams({ repoRoot });
+  assert.ok(secondRun.every(({ svgChanged }) => !svgChanged));
+  assert.deepEqual(await Promise.all(secondRun.flatMap(({ dotPath, svgPath }) => [
+    fs.readFile(dotPath), fs.readFile(svgPath),
+  ])), firstContents);
+  assert.deepEqual((await fs.readdir(diagramsDir)).sort(),
+    diagramNames.flatMap((name) => [`${name}.dot`, `${name}.svg`]).sort());
+});
 
 test('parseTransientPages normalizes fully qualified type names', () => {
   const content = `

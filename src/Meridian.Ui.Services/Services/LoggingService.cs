@@ -1,12 +1,13 @@
 using System;
 using System.Diagnostics;
+using Meridian.Ui.Services.Services;
 
 namespace Meridian.Ui.Services;
 
 /// <summary>
 /// Default logging service for the shared UI services layer.
-/// Platform-specific projects (WPF) override this with their own implementations
-/// by setting the Instance property during app startup.
+/// Uses the same message rendering and structured property formatting as the
+/// platform-specific logging services.
 /// </summary>
 public sealed class LoggingService
 {
@@ -16,16 +17,21 @@ public sealed class LoggingService
 
     public void LogError(string message, Exception? exception = null, params (string key, string value)[] properties)
     {
-        Debug.WriteLine($"[ERROR] {message} {exception?.Message}");
+        Debug.WriteLine(LoggingServiceBase.FormatLogEntry(LogLevel.Error, DateTime.UtcNow, message, exception, properties));
     }
 
     public void LogWarning(string message, Exception? exception = null)
     {
-        Debug.WriteLine($"[WARN] {message} {exception?.Message}");
+        LogWarning(message, exception, []);
+    }
+
+    public void LogWarning(string message, Exception? exception, params (string key, string value)[] properties)
+    {
+        Debug.WriteLine(LoggingServiceBase.FormatLogEntry(LogLevel.Warning, DateTime.UtcNow, message, exception, properties));
     }
 
     public void LogInfo(string message, params (string key, string value)[] properties)
     {
-        Debug.WriteLine($"[INFO] {message}");
+        Debug.WriteLine(LoggingServiceBase.FormatLogEntry(LogLevel.Info, DateTime.UtcNow, message, null, properties));
     }
 }

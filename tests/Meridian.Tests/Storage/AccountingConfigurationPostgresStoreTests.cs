@@ -172,6 +172,32 @@ public sealed class AccountingConfigurationPostgresStoreTests
 
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
+    public async Task SaveAsync_RejectsAStaleWorkspaceThatWouldRemoveAnAssignedAccountCode()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var bookId = Guid.NewGuid();
+        var stale = BuildScopedWorkspace(bookId, "cash", "Assets:Cash", "template", "rule", "InterestAccrual",
+            TenantId: "tenant-alpha", CompanyId: "company-alpha");
+        await database.AccountingConfigurationStore.SaveAsync(stale);
+
+        var assigned = stale with
+        {
+            ConfigurationVersion = "v2",
+            ChartOfAccounts = [stale.ChartOfAccounts.Single() with { AccountCode = "1000" }]
+        };
+        await database.AccountingConfigurationStore.SaveAsync(assigned);
+
+        var restarted = new PostgresAccountingConfigurationStore(database.Options);
+        await FluentActions.Awaiting(() => restarted.SaveAsync(stale))
+            .Should().ThrowAsync<InvalidOperationException>().WithMessage("*Reload the chart*");
+        var retained = await restarted.GetAsync(stale.FundProfileId, bookId,
+            tenantId: stale.TenantId, companyId: stale.CompanyId);
+        retained!.ConfigurationVersion.Should().Be("v2");
+        retained.ChartOfAccounts.Should().ContainSingle().Which.AccountCode.Should().Be("1000");
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task SaveAndGetAsync_IsolatesConfigurationByLedgerBook()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();

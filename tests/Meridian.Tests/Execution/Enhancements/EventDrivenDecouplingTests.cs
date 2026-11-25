@@ -170,7 +170,10 @@ public sealed partial class EventDrivenDecouplingTests
             RealizedPnl: 0m,
             NewCash: 0m,
             OccurredAt: new DateTimeOffset(2026, 5, 28, 14, 30, 0, TimeSpan.Zero),
-            FinancialAccountId: "EXT-1");
+            FinancialAccountId: "EXT-1")
+        {
+            BrokerActivityId = "native-activity-fill-101"
+        };
 
         consumer.Publish(evt);
         await consumer.DisposeAsync();
@@ -180,6 +183,8 @@ public sealed partial class EventDrivenDecouplingTests
             .WhoseValue.Should().Be("12.5", "the projection parses the invariant decimal form");
         tradeJournal.Metadata.Tags.Should().ContainKey("externalTransactionId")
             .WhoseValue.Should().Be(evt.FillId.ToString("D"));
+        tradeJournal.Metadata.Tags.Should().ContainKey("brokerActivityId")
+            .WhoseValue.Should().Be(evt.BrokerActivityId);
         tradeJournal.Metadata.Tags.Should().NotContainKey(
             "settlementDate",
             "the execution report carries no settlement date, and estimating T+n conventions is a policy decision");
@@ -200,12 +205,12 @@ public sealed partial class EventDrivenDecouplingTests
 
         var projectedTrade = internalTransactions.Single(transaction => transaction.TransactionType == "trade");
         projectedTrade.Quantity.Should().Be(12.5m);
-        projectedTrade.ExternalTransactionId.Should().Be(evt.FillId.ToString("D"));
+        projectedTrade.ExternalTransactionId.Should().Be(evt.BrokerActivityId);
         projectedTrade.SettlementDate.Should().Be(new DateOnly(2026, 5, 28));
 
         var statementRow = new NormalizedStatementTransaction(
             "import-1:1",
-            evt.FillId.ToString("D"),
+            evt.BrokerActivityId,
             "EXT-1",
             "MSFT",
             "USD",
@@ -746,6 +751,7 @@ public sealed partial class EventDrivenDecouplingTests
                 using var oms = new OrderManagementSystem(
                     new ImmediateFillGateway(),
                     NullLogger<OrderManagementSystem>.Instance,
+                    portfolioState: new Meridian.Execution.Services.PaperTradingPortfolio(100_000m),
                     tradeEventPublisher: consumer);
                 await oms.StartAsync();
 
@@ -760,6 +766,9 @@ public sealed partial class EventDrivenDecouplingTests
                 await gate.ValidationStarted.WaitAsync(TimeSpan.FromSeconds(2));
                 var pending = await firstStore.LoadPendingAsync();
                 pending.Should().ContainSingle();
+                pending[0].TradeEvent.AccountingEvidenceVersion.Should().Be(1);
+                pending[0].TradeEvent.AccountingEvidence.Should().NotBeNull(
+                    "the paper book applied this opening before its accounting handoff was retained");
                 retainedFillId = pending[0].TradeEvent.FillId;
 
                 await consumer.DisposeAsync();
@@ -822,6 +831,7 @@ public sealed partial class EventDrivenDecouplingTests
                 using var oms = new OrderManagementSystem(
                     new ImmediateFillGateway(),
                     NullLogger<OrderManagementSystem>.Instance,
+                    portfolioState: new Meridian.Execution.Services.PaperTradingPortfolio(100_000m),
                     tradeEventPublisher: consumer,
                     tradeFillHandoffFailureStore: failureStore);
                 await oms.StartAsync();
@@ -840,6 +850,9 @@ public sealed partial class EventDrivenDecouplingTests
                 result.ErrorMessage.Should().Contain("durably retained for restart replay");
                 var failures = await oms.GetAccountingHandoffFailuresAsync();
                 failures.Should().ContainSingle();
+                failures[0].TradeEvent.AccountingEvidenceVersion.Should().Be(1);
+                failures[0].TradeEvent.AccountingEvidence.Should().NotBeNull(
+                    "the failed publisher must retain the paper book's exact opening economics");
                 fillId = failures[0].TradeEvent.FillId;
                 await consumer.DisposeAsync();
             }
@@ -1757,7 +1770,7 @@ public sealed partial class EventDrivenDecouplingTests
         }
     }
 
-    private sealed class InMemoryTradeFillLedgerPostingTarget : ITradeFillLedgerPostingTarget
+    internal sealed class InMemoryTradeFillLedgerPostingTarget : ITradeFillLedgerPostingTarget
     {
         private readonly object _sync = new();
         private readonly Dictionary<Guid, LedgerJournalEntryRecord> _retained = [];
@@ -2037,7 +2050,7 @@ public sealed partial class EventDrivenDecouplingTests
         public ValueTask DisposeAsync() => _inner.DisposeAsync();
     }
 
-    private sealed class PassingSecurityValidationGate : ISecurityValidationGateService
+    internal sealed class PassingSecurityValidationGate : ISecurityValidationGateService
     {
         public static readonly Guid SecurityId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         private readonly Guid _securityId;

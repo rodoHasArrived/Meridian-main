@@ -1552,8 +1552,7 @@ describe("operator readiness console view model", () => {
     }, services));
 
     await waitFor(() => expect(result.current.inboxErrorText).toBe("Operator inbox 503"));
-    expect(result.current.inboxRefreshLabel).toBe("Refresh inbox");
-    expect(result.current.inboxRefreshAriaLabel).toBe("Refresh operator inbox work items");
+    expect(result.current).not.toHaveProperty("inboxRefreshLabel");
     expect(result.current.inboxRefreshDisabled).toBe(false);
 
     await act(async () => {

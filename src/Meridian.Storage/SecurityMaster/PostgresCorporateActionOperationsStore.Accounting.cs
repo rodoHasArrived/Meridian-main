@@ -1,5 +1,6 @@
 using System.Data;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Operations;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -175,6 +176,11 @@ public sealed partial class PostgresCorporateActionOperationsStore
             await transaction.CommitAsync(ct).ConfigureAwait(false);
             return replay with { Replayed = true };
         }
+
+        if (PreparerAttestationApprovalBoundary.IsReservedReceiptId(approval.ApprovalId)
+            || PreparerAttestationApprovalBoundary.IsReservedReference(request.EvidenceReference)
+            || PreparerAttestationApprovalBoundary.IsReservedReference(approval.EvidenceReference))
+            throw new CorporateActionValidationException("A preparer attestation cannot supply an ordinary corporate-action approval identity or evidence reference.");
 
         var processingCase = await LoadScopedCaseForMutationAsync(
                 connection, transaction, request.CaseId, request.TenantId, request.CompanyId,
@@ -397,6 +403,8 @@ public sealed partial class PostgresCorporateActionOperationsStore
         command.Parameters.AddWithValue("voided_at", now.UtcDateTime);
         command.Parameters.AddWithValue("voided_by", actor);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        await VoidActiveCashDividendAttestationsAsync(connection, transaction, caseId, actor, now, ct)
+            .ConfigureAwait(false);
     }
 
     private async Task InsertProjectionAsync(

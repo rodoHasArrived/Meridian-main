@@ -1,5 +1,9 @@
 """Protect the shared database gate's failure handling and untrusted PR boundary."""
+import importlib.util
+import os
 from pathlib import Path
+import subprocess
+import tempfile
 import unittest
 
 import yaml
@@ -7,6 +11,14 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOWS = ROOT / ".github/workflows"
+
+
+def load_script(name):
+    spec = importlib.util.spec_from_file_location(name.replace("-", "_").removesuffix(".py"),
+                                                  ROOT / "build/scripts/ci" / name)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def load_workflow(name):
@@ -23,7 +35,8 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
         cls.steps = cls.job["steps"]
 
     def test_same_implementation_runs_for_pr_merge_group_and_certification(self):
-        self.assertEqual(self.ci["on"]["pull_request"]["branches"], ["main"])
+        self.assertIn("pull_request", self.ci["on"])
+        self.assertFalse(self.ci["on"]["pull_request"], "Integration coverage applies to PRs targeting any branch")
         self.assertIn("merge_group", self.ci["on"])
         for event in ("pull_request", "merge_group"):
             config = self.ci["on"][event] or {}
@@ -32,9 +45,17 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
         for caller in (self.ci["jobs"]["service-backed-integrations"],
                        self.production["jobs"]["deterministic-integrations"]):
             self.assertEqual(caller["uses"], "./.github/workflows/service-backed-integrations.yml")
-            self.assertNotIn("if", caller)
             self.assertNotIn("secrets", caller)
             self.assertNotIn("continue-on-error", caller)
+        # Certification always runs its integrations. Meridian CI shares the .NET lane's
+        # change classification, which only a docs-only pull request can make false.
+        self.assertNotIn("if", self.production["jobs"]["deterministic-integrations"])
+        caller = self.ci["jobs"]["service-backed-integrations"]
+        self.assertEqual(caller["needs"], "changes")
+        self.assertEqual(caller["if"], "needs.changes.outputs.dotnet == 'true'")
+        detect = self.ci["jobs"]["changes"]["steps"][1]["run"]
+        self.assertIn('if [[ "$EVENT_NAME" == "pull_request" ]]', detect)
+        self.assertIn('echo "dotnet=true"', detect)
 
     def test_forks_use_event_commit_read_only_token_and_no_production_secrets(self):
         for workflow in (self.shared, self.ci):
@@ -64,24 +85,126 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
         self.assertEqual(set(connections.values()), {"Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification"})
         self.assertEqual(self.job["env"]["MERIDIAN_DISABLE_DOCKER_TESTS"], "false")
 
-    def test_restore_and_test_failures_never_short_circuit_the_other_project(self):
-        independent = [step for step in self.steps if step.get("id") in
-                       {"restore-meridian", "restore-direct-lending", "test-meridian", "test-direct-lending"}]
-        self.assertEqual([step["id"] for step in independent],
-                         ["restore-meridian", "restore-direct-lending", "test-meridian", "test-direct-lending"])
+    def test_restore_and_test_failures_never_short_circuit_the_other_projects(self):
+        ordered = ["restore-meridian", "restore-direct-lending", "restore-demo",
+                   "build-meridian", "database-meridian",
+                   "test-meridian", "test-direct-lending", "test-demo"]
+        independent = [step for step in self.steps if step.get("id") in set(ordered)]
+        self.assertEqual([step["id"] for step in independent], ordered)
         for step in independent:
             # !cancelled() overrides GitHub's implicit success() status check;
             # the sole prerequisite is SDK availability, never another suite's result.
             self.assertEqual(step["if"], "${{ !cancelled() && steps.dotnet.outcome == 'success' }}")
             self.assertNotIn("continue-on-error", step)
-            self.assertEqual(step["run"].count("dotnet "), 1)
-        self.assertIn("tests/Meridian.Tests/Meridian.Tests.csproj", independent[2]["run"])
-        self.assertIn("tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj", independent[3]["run"])
+            if step["id"] not in {"database-meridian", "test-meridian"}:
+                self.assertEqual(step["run"].count("dotnet "), 1)
+        projects = {
+            "meridian": "tests/Meridian.Tests/Meridian.Tests.csproj",
+            "direct-lending": "tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj",
+            "demo": "tests/Meridian.Demo.Tests/Meridian.Demo.Tests.csproj",
+        }
+        for name, path in projects.items():
+            for action in ("restore", "test"):
+                if (action, name) == ("test", "meridian"):
+                    continue
+                step = next(step for step in independent if step["id"] == f"{action}-{name}")
+                self.assertIn(f"dotnet {action} {path}", step["run"])
+
+    def test_meridian_suite_runs_as_declared_processes_from_one_build(self):
+        by_id = {step["id"]: step for step in self.steps if "id" in step}
+        self.assertEqual(by_id["build-meridian"]["run"],
+                         "dotnet build tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore")
+        self.assertIn("createdb --username postgres meridian_tax_lot", by_id["database-meridian"]["run"])
+        self.assertEqual(by_id["database-meridian"]["env"]["POSTGRES_CONTAINER_ID"], "${{ job.services.postgres.id }}")
+        run = by_id["test-meridian"]["run"]
+        self.assertIn("python build/scripts/ci/run-meridian-integrations.py", run)
+        self.assertIn("--results-dir artifacts/test-results/production-certification/meridian-integrations", run)
+
+        evidence = load_script("integration_evidence.py")
+        processes = evidence.SUITES["meridian-integrations"]["processes"]
+        # The two filter terms are exact complements, so the processes select the suite once.
+        terms = sorted(process["filter"] for process in processes.values())
+        self.assertEqual(terms, [f"FullyQualifiedName!~{evidence.TAX_LOT_JOURNAL_CLASS}",
+                                 f"FullyQualifiedName~{evidence.TAX_LOT_JOURNAL_CLASS}"])
+        self.assertEqual(sorted(process["database"] for process in processes.values()),
+                         ["meridian", "meridian_tax_lot"])
+        self.assertTrue(list((ROOT / "tests/Meridian.Tests/Storage").glob("AtomicTaxLotJournalStoreTests*.cs")))
+        validate = next(step for step in self.steps if "validate-test-results.py" in step.get("run", ""))
+        capture = next(step for step in self.steps if "pg_dump" in step.get("run", ""))
+        for name, process in processes.items():
+            self.assertIn(f"--require-trx-prefix meridian-integrations-{name}", validate["run"])
+            self.assertIn(process["database"], capture["run"].split("for database in ", 1)[1].split(";", 1)[0].split())
+        # Each database's evidence is required by the receipt, never optional.
+        self.assertEqual(len(evidence.SCHEMA_FILES), 6)
+        self.assertIn("meridian_tax_lot-database-schema.sql", evidence.SCHEMA_FILES)
+
+    def test_runner_isolates_each_process_database_output_and_filter(self):
+        runner = load_script("run-meridian-integrations.py")
+        contract = runner.load_contract()
+        environment = {
+            "MERIDIAN_LEDGER_CONNECTION_STRING": "Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=x",
+            "MERIDIAN_REPORTING_CONNECTION_STRING": "Host=localhost;Database=meridian",
+            "UNRELATED": "Database=meridian;",
+        }
+        isolated = runner.process_environment(environment, "meridian_tax_lot", "/private")
+        self.assertEqual(isolated["MERIDIAN_LEDGER_CONNECTION_STRING"],
+                         "Host=localhost;Port=5432;Database=meridian_tax_lot;Username=postgres;Password=x")
+        self.assertEqual(isolated["MERIDIAN_REPORTING_CONNECTION_STRING"], "Host=localhost;Database=meridian_tax_lot")
+        self.assertEqual(isolated["UNRELATED"], "Database=meridian;")
+        self.assertEqual({isolated[name] for name in ("TMPDIR", "TMP", "TEMP")}, {"/private"})
+        primary = runner.process_environment(environment, "meridian", "/other")
+        self.assertEqual(primary["MERIDIAN_LEDGER_CONNECTION_STRING"], environment["MERIDIAN_LEDGER_CONNECTION_STRING"])
+        self.assertEqual(primary["TMPDIR"], "/other")
+        # A process that could not be isolated must not run against the shared database.
+        for broken in ({}, {"MERIDIAN_LEDGER_CONNECTION_STRING": "Host=localhost;Database=other"},
+                       {"MERIDIAN_LEDGER_CONNECTION_STRING": "Database=meridian;Database=meridian"}):
+            with self.subTest(broken=broken), self.assertRaises(ValueError):
+                runner.process_environment(broken, "meridian_tax_lot", "/private")
+
+        commands = {
+            name: runner.build_command(contract, name, configuration="Release", results_dir=Path("results"),
+                                       settings="tests/coverlet.runsettings",
+                                       output=Path("/copy") if name == "tax-lot-journal" else None)
+            for name in contract["processes"]
+        }
+        for name, command in commands.items():
+            self.assertEqual(command[:3], ["dotnet", "test", "tests/Meridian.Tests/Meridian.Tests.csproj"])
+            for flag in ("--no-build", "--no-restore"):
+                self.assertIn(flag, command)
+            self.assertEqual(command[command.index("--collect") + 1], "XPlat Code Coverage")
+            self.assertEqual(command[command.index("--settings") + 1], "tests/coverlet.runsettings")
+            self.assertEqual(command[command.index("--logger") + 1], f"trx;LogFilePrefix=meridian-integrations-{name}")
+            self.assertEqual(command[command.index("--filter") + 1],
+                             f"(Category=Integration&Category!=LiveProvider)&({contract['processes'][name]['filter']})")
+        # Coverage instruments assemblies in place: the processes must not share an output.
+        self.assertEqual(commands["tax-lot-journal"][-2:], ["--output", "/copy"])
+        self.assertNotIn("--output", commands["remainder"])
+
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
+            built = Path(temporary) / "bin" / "Release" / "net10.0"
+            built.mkdir(parents=True)
+            with self.assertRaises(ValueError):
+                runner.isolated_output(built, "tax-lot-journal")
+            (built / "Meridian.Tests.dll").write_text("assembly")
+            copy = runner.isolated_output(built, "tax-lot-journal")
+            self.assertEqual(copy, built.with_name("net10.0-tax-lot-journal"))
+            self.assertEqual((copy / "Meridian.Tests.dll").read_text(), "assembly")
+
+    def test_moved_demo_cases_keep_service_backed_coverage_and_distinct_evidence(self):
+        demo = next(step for step in self.steps if step.get("id") == "test-demo")
+        self.assertIn('--filter "Category=Integration&Category!=LiveProvider"', demo["run"])
+        self.assertIn('--collect:"XPlat Code Coverage"', demo["run"])
+        self.assertIn("--settings tests/coverlet.runsettings", demo["run"])
+        self.assertIn("--results-directory artifacts/test-results/production-certification/demo-integrations",
+                      demo["run"])
+        self.assertIn('--logger "trx;LogFilePrefix=demo-integrations"', demo["run"])
+        self.assertIn("--no-restore", demo["run"])
 
     def test_validation_and_evidence_run_even_after_test_failure(self):
         validate = next(step for step in self.steps if "validate-test-results.py" in step.get("run", ""))
         self.assertEqual(validate["if"], "always()")
-        for prefix in ("meridian-integrations", "direct-lending-integrations"):
+        for prefix in ("meridian-integrations", "meridian-integrations-tax-lot-journal",
+                       "meridian-integrations-remainder", "direct-lending-integrations", "demo-integrations"):
             self.assertIn(f"--require-trx-prefix {prefix}", validate["run"])
         evidence = next(step for step in self.steps if "pg_dump" in step.get("run", ""))
         upload = next(step for step in self.steps if step.get("uses", "").startswith("actions/upload-artifact@"))
@@ -93,14 +216,37 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
         gate = self.ci["jobs"]["integration-gate"]
         self.assertEqual(gate["name"], "integration-gate")
         self.assertEqual(gate["if"], "always()")
-        self.assertEqual(gate["needs"], "service-backed-integrations")
+        self.assertEqual(gate["needs"], ["changes", "service-backed-integrations"])
         step = gate["steps"][0]
-        self.assertEqual(step["env"]["INTEGRATION_RESULT"], "${{ needs.service-backed-integrations.result }}")
+        self.assertEqual(step["env"], {
+            "CHANGES_RESULT": "${{ needs.changes.result }}",
+            "DOTNET_REQUIRED": "${{ needs.changes.outputs.dotnet }}",
+            "INTEGRATION_RESULT": "${{ needs.service-backed-integrations.result }}",
+        })
         self.assertIn('if [[ "$INTEGRATION_RESULT" != "success" ]]; then', step["run"])
         self.assertIn("exit 1", step["run"])
         self.assertNotIn("continue-on-error", gate)
+
+        def run_gate(integration, changes="success", required="true"):
+            with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
+                environment = dict(os.environ, CHANGES_RESULT=changes, DOTNET_REQUIRED=required,
+                                   INTEGRATION_RESULT=integration,
+                                   GITHUB_STEP_SUMMARY=str(Path(temporary) / "summary.md"))
+                return subprocess.run(["bash", "-c", step["run"]], env=environment,
+                                      capture_output=True, text=True, check=False).returncode
+
+        self.assertEqual(run_gate("success"), 0)
+        # The only accepted skip: classification succeeded and found a docs-only pull request.
+        self.assertEqual(run_gate("skipped", required="false"), 0)
+        for integration, changes, required in (
+                ("failure", "success", "true"), ("cancelled", "success", "true"),
+                ("skipped", "success", "true"), ("skipped", "failure", "false"),
+                ("skipped", "success", ""), ("skipped", "cancelled", "false"),
+                ("failure", "success", "false"), ("cancelled", "success", "false")):
+            with self.subTest(integration=integration, changes=changes, required=required):
+                self.assertNotEqual(run_gate(integration, changes, required), 0)
         self.assertEqual(self.ci["jobs"]["quality-gate"]["needs"],
-                         ["verify-dotnet", "verify-browser", "verify-docs", "verify-workflows"])
+                         ["changes", "verify-dotnet", "verify-browser", "verify-docs", "verify-workflows"])
 
     def test_reuse_requires_explicit_producer_outputs_and_validated_bytes(self):
         inputs = self.shared["on"]["workflow_call"]["inputs"]

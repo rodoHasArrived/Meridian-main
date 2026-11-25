@@ -6,7 +6,7 @@ using Meridian.Storage.Ledger;
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
-/// Hydrates the requested ledger book once and returns the durable securities-account carrying
+/// Reads the requested ledger book's as-of trial balance once and returns the durable securities-account carrying
 /// value for every requested security/account key within the requested entity. Missing accounts are explicit null results;
 /// present zero-balance accounts remain zero.
 /// </summary>
@@ -26,10 +26,9 @@ public sealed class LedgerMarkToMarketCarryingValueSource(ILedgerJournalStore st
         var asOfUtc = request.AsOf.ToUniversalTime();
         var entityId = string.IsNullOrWhiteSpace(request.EntityId) ? null : request.EntityId.Trim();
         var dimensions = entityId is null ? null : new LedgerLineDimensionSet(EntityId: entityId);
-        var ledger = await store
-            .HydrateLedgerAsOfAsync(request.LedgerBookId.Value, asOfUtc, dimensions, ct)
+        var trialBalance = await store
+            .ReadTrialBalanceAsOfAsync(request.LedgerBookId.Value, asOfUtc, lineDimensions: dimensions, ct: ct)
             .ConfigureAwait(false);
-        var trialBalance = ledger.TrialBalanceAsOf(asOfUtc, lineDimensions: dimensions);
         var results = new Dictionary<MarkToMarketCarryingValueKey, MarkToMarketCarryingValue>();
         foreach (var position in request.Positions)
         {

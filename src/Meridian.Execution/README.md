@@ -6,12 +6,100 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Execution
 
+## Retained cancel-all incidents
+
+Every OMS cancel-all sweep assigns an incident ID and retains structured evidence in the existing
+execution audit WAL: an initial header, bounded per-order updates, and one complete final snapshot.
+The header carries authority, actor/correlation, execution mode, gateway and verified broker scope;
+each known local order retains its fund-account attribution. The complete snapshot keeps all orders,
+including those beyond the ten names in `KillSwitchSweepResult.Describe()`. Recording follows the
+existing cancellation and fill paths; it does not apply executions or create accounting postings.
+
+`ExecutionAuditTrailService.GetCancelAllIncidentAsync(incidentId, fundAccountId)` and
+`GetCancelAllIncidentsAsync(fundAccountId, take)` reopen the WAL rather than the bounded audit display
+cache. Account projections omit other accounts and unattributed broker-only rows, and explicitly mark
+the projection. Full broker-only observations remain in the internal audit history. Public generic
+audit feeds must omit `ExecutionAuditEntry.CancelAllEvidence`; only an authorized account-scoped
+incident endpoint may expose its projection. Reopening never contacts or acts on the broker.
+Sweep lifecycle audit records carry a non-authorizing `cancelAllIncidentId` metadata marker, including
+parameterless sweeps, so generic HTTP projections can suppress raw cross-account details while
+the internal audit retains them.
+
+Outcomes distinguish confirmed cancellation, a fill during cancellation, another terminal outcome,
+still-working orders, unknown state, and escalation withdrawal before dispatch. Filled and remaining
+quantities are historical observations at `ObservedAt`, not current position exposure. A fresh
+executable-side quote can value measured USD equity share quantities; unsupported instruments,
+stale quotes, unknown state and unconfirmed replacements retain unavailable valuation. Terminal
+predecessors with retained pending amendments remain sweep targets and never count as cancelled
+while their successor is unresolved. Broker coverage remains explicit even if every local order
+was cancelled.
+The final local observations include cumulative fills applied while broker convergence was in
+flight, without overwriting a contradictory broker survivor or resolving earlier uncertainty.
+Missing broker share quantity, including native notional orders reported with quantity zero, stays
+unknown rather than becoming zero residual exposure. Valuation never runs before cancellation;
+post-cancel instrument and quote reads have a separate 250ms budget.
+
+Incident durability requires the audit WAL's default `EveryWrite` mode. Missing storage, weaker
+sync settings, or failed writes never veto cancellation: the result carries `IncidentId`,
+`EvidenceRetained=false` and `EvidenceError`, and its display text names missing retention.
+Each sweep audit write has a one-second budget. After a failed incident checkpoint, further
+checkpoints stay in memory until one final full-snapshot retry, preventing repeated storage delays
+from accumulating across the book.
+A successful final snapshot can recover earlier missing checkpoints while retaining the write
+failure explanation. Without a retained completion, readback reports incomplete observations.
+Identical replayed updates are idempotent; contradictory updates or audit corruption refuse
+complete readback. A retained order cannot change identity or move to another account, and a final
+snapshot cannot drop an already observed order; previously unknown attribution may become known.
+Synthetic regression coverage is in `CancelAllIncidentTests`,
+`CancelAllIncidentReplayTests`, and the amendment recovery incident scenario; this is not evidence
+of a live broker run.
+
+Designer typed strategy intents carry an optional `StrategyArtifactId` into the strategy-run
+submission authority and durable intent claim metadata. Legacy null identities are omitted from
+JSON and preserve existing fingerprints; reusing an intent key with a different artifact is refused
+by the existing authority fingerprint check.
+
+`PaperSessionPersistenceService.GetSessionFillHistory` exposes cloned retained execution reports for order investigation without rebuilding portfolio/ledger views. Consumers initialize retained sessions before reading and keep canonical report identity, source event time, cumulative-versus-last quantity and price basis explicit; completed-order workspace summaries are not individual fills.
+
+Failed execution probes use bounded, single-line diagnostic fields, including provider error text.
+The original symbol remains authoritative for probing and order validation, and a failed probe
+still refuses the order.
+
+Broker submission, cancellation/amendment, retained-rejection and paper-close logs use SHA-256
+correlation for submitted symbols, broker order IDs, rejection reasons and session identities. Corrupt JSONL reads log the operation and failure
+type. The original requests, journal/audit reasons, session metadata and JSONL bytes remain retained
+unchanged; operational logs do not carry those payloads or storage paths.
+
 Paper mode has one paper book: the DI-resolved `IOrderGateway` is `OmsGovernedExecutionOrderGateway`, a read-only view over the OMS's own paper `IExecutionGateway`, so direct submit/cancel through `IOrderGateway` is refused in paper as well as live mode. Its order-update stream reads `OrderManagementSystem.SubscribeOrderStateChanges()`: the OMS order table publishes every order-state transition (acceptance, fills, amendment, cancellation, rejection) at write time, in write order. Each subscription keeps only the latest unread state per order incarnation (a token issued when an order id is registered or a terminal id is reused), so a slow subscriber never blocks the OMS, skips only intermediate states, and still receives every order's final state, including orders already evicted from retention. Terminal order-status checks share `OrderManagement.OrderStatusFacts.IsTerminal`.
+
+Paper matching reads the live feed cache as it is by default, however old the last quote or print.
+`PaperTrading:Gateway:RequireBondAccruedInterest=true` opts the hosted execution gateway into
+required bond settlement economics. Before emitting an immediate or resting face-value fill,
+shared analytics must return matching security, as-of, settlement date, clean/dirty prices and
+nonnegative accrued interest (zero is valid). Missing, refused, inconsistent or failed calculations
+produce a terminal rejection with no fill quantity, price or fees. Declared face-value orders
+without a resolvable security are also rejected. The default retains legacy clean-only fallback,
+and old persisted fills retain their original replay economics. This option does not enable
+canonical bond paper accounting, short-side accrued-interest treatment or holiday calendars.
+See the [synthetic LOT golden case](../../docs/testing/evidence/next-work-20261029/bond-lot-golden-case.md).
+
+Setting `PaperTrading:Gateway:MaxObservationAgeSeconds` opts into a freshness window
+(`PaperObservationFreshnessPolicy`): a quote or print outside it is dropped, and when a symbol has
+tick data but none is current the whole observation is withheld, including any cached bar. A market
+order is then rejected with a reason naming the setting, scaffold pricing does not stand in, and
+resting limit and stop orders neither fill nor trigger until current data arrives. Bar-only symbols
+are unaffected. The pre-trade guard (`AggregatePortfolioExposureProvider`) captures through the
+same policy, so it predicts the matcher under either setting.
+
+A paper limit or stop order keeps one gateway id (`PAPER-{seq}`) across its New report and its
+later fill, and every terminal outcome claims the order exactly once, so a racing cancel or
+background evaluation cannot add a second fill or a cancel beside a fill. `ModifyOrderAsync`
+refuses a zero or negative quantity or price and leaves the order resting unchanged.
 
 Reg T short sales post the collateral the broker holds (proceeds × the short initial rate) from `Cash` to `Short Sale Collateral Receivable`, and covering releases it back, so ledger cash equals the account's free cash while a short is open.
 
@@ -65,6 +153,11 @@ the original order identity.
 Open-order limits recognize a working order's prior broker IDs in stale snapshots. Multiple chain
 members reported as open still consume separate slots.
 
+Tracked order status does not regress on out-of-order reports: a `PendingNew` or `Accepted`
+report for an order that already holds fills resolves to `PartiallyFilled`, and `Accepted` is not
+walked back to `PendingNew`. Enabled execution-alert webhooks must target a public address;
+literal internal addresses are refused when settings are saved.
+
 Broker-dispatched client IDs, run/account ownership and processed fill watermarks are retained by
 `FileBrokerageOrderRecoveryStore` before dispatch. Broker acknowledgement accounts are retained as
 `OrderState.BrokerAccountId`; later reports
@@ -91,6 +184,92 @@ outcomes, pending fill handoffs, and cancelled/expired orders retain their compl
 recovery and may exceed the display-cache limit. The permanent minimal identity index is not expired.
 
 ## Purpose
+
+Hosted native paper orders bind to a durable simulation session before dispatch. The server checks
+the session's account against the order's grant. A ticket can select an existing session with the
+`paperSessionId` query parameter on `POST /api/execution/orders/submit`. When no session is selected,
+the host reuses the active default session for that account. Account-bound simulation requires a
+verified USD base currency. The session opens with simulated capital and has its own journal.
+
+The session store retains one append-only journal batch for each opening, fill, settlement, or
+assessed financing charge. Batch identity binds the session, account, source, and posting purpose.
+The fill claim survives interruption, and the store acknowledges it only after the journal
+receipt is durable. Restart verifies retained batch content and recovers an unacknowledged
+source. Exact retries reuse the stored receipt and conflicting content is refused. Historical
+snapshot sessions remain readable. The cutoff proof compares verified journal cash and an
+independent portfolio replay, including its lot and carrying-value checks.
+
+The daily reconciliation worker retains exchange-close comparisons. Trading operators can review
+the latest comparison for an authorized session in either workstation. A later change to that
+cutoff's journal evidence raises a coverage blocker and preserves the original receipt.
+
+Paper sessions that post to the configured accounting book use `PaperFinancingPostingService`, composed alongside
+`Execution:TradeFillLedgerPosting`. An authenticated administrator can record a dated,
+cash-paid margin charge through `POST /api/execution/sessions/{sessionId}/financing` with
+`accrualDate`, `amount`, `sourceReference`, and `rationale`. The authenticated actor is retained
+by the server. This records an assessed charge; it does not invent a daily financing rate.
+
+The scope-partitioned source outbox syncs each accepted assessment through the existing WAL,
+publishes an atomic source snapshot, and confirms the journal through the same governed target
+as fills. A lifetime file lease permits one writer per scope directory. The store publishes its
+initialized marker only after the first complete snapshot exists; loss of an initialized snapshot
+blocks recovery instead of treating compacted financing history as an empty account. Retries retain the
+same source identity (session, account, accrual date, source reference); different economics
+under that identity fail closed. Accepted assessments survive interrupted posting and are
+recovered before a session book is exposed. They debit margin-interest expense and credit cash
+without increasing the loan principal. The authoritative journal remains in the configured
+ledger store; the outbox retains source evidence and delivery state.
+Before retaining a new source, admission reads the authoritative period and validates the exact
+book, dates, open status and expected version, normalizes the complete posting command, and requires
+the retained book's identity, Primary basis and policy/version to match the command. Dedicated
+consolidation books are refused. The amount must fit the journal's numeric(38,10) storage exactly.
+New assessments retain the normalized book base currency before acceptance and post native
+transaction amounts on both legs with an exchange rate of one. Legacy accepted or posted
+assessments keep their original null-currency journal format during recovery; currency is not
+inferred from today's book. Financing sources do not retain entity dimensions, so the UI's
+prior-period correction workflow remains unavailable when it requires retained entity scope.
+A rejected assessment creates
+no pending source and does not block the next valid assessment. Existing accepted-source retries keep
+their immutable context and can confirm already-posted journals after the period closes.
+This admission read does not lock the period across the local WAL and database append. A close that
+races after acceptance remains subject to the authoritative posting guard; the source stays pending
+and requires governed recovery instead of deletion or automatic period reassignment.
+If confirmation fails, the current session refuses further fills, settlements and close until
+the same source is successfully retried or startup recovers the pending assessment. Order history
+and cancellation evidence remain recordable while recovery is pending.
+
+New sessions created with this composition retain the exact book, period, aggregate and
+policy binding, plus their local `default` account identity. A missing accounting owner makes
+that session's portfolio unavailable instead of silently omitting financing. Legacy sessions remain
+unbound and require an explicit migration before accepting these charges. Session reconstruction
+merges financing and settlements into fill replay, preserving paid charges when subsequent fills
+rebuild the projection. This endpoint serves single-account paper sessions; account-level charge
+allocation to promoted strategy runs requires a retained run allocation and is not inferred.
+
+The financing writer owns one immutable posting context. After an explicit period rollover,
+the catalog preserves historical bindings and permits new sessions in the current context.
+Historical sessions are read-only: fills, order updates, settlements, financing and close cannot
+write through an obsolete context. Their original scope must use a distinct posting-scope label;
+reusing a label for a different context still fails immutable store validation.
+For the same authorized aggregate, book and policy, historical portfolio reads require the
+original financing store's exact completed checkpoint and a checked WAL with no newer evidence.
+The source assessments must also match the retained session's financing journals in both
+directions, including their deterministic identities, legs and projection metadata. Other
+opening and fill journal identities are not part of that comparison. The session projection
+does not retain native-currency pins or all authoritative command facts, so this cash check
+does not re-verify those facts or infer them from the current book. A missing cached financing
+journal can be refreshed only by the original current owner after confirming its source against
+the governed ledger, and only if every existing cached financing journal already matches.
+The same current-owner confirmation can refresh a pre-metadata cache only when its complete
+scalar and line facts match and its optional full metadata is absent. Nonnull conflicting
+metadata is never replaced. Historical reads remain unavailable until that refresh completes.
+Conflicting or unexpected cached charges remain evidence and are never overwritten by recovery.
+These reads never post, initialize, or acknowledge historical deliveries. Missing, conflicting,
+busy or pending evidence leaves `Portfolio` null with `AccountingUnavailableReason`; stored
+session metadata, fills, orders and journal remain readable. Recovery requires the original
+accounting owner. New bound sessions retain an empty checkpoint before metadata publication,
+so subsequent historical reads can prove that no financing was accepted. No scope rebinding,
+period migration or strategy-run allocation is inferred.
 
 Broker reconciliation propagates caller cancellation from health and open-order queries so cancelled requests do not become unhealthy-broker or query-failure evidence.
 
@@ -135,8 +314,16 @@ passing the OMS instance as a general callback target.
 | `AccountingHandoffCoordinator` | Publisher scope checks, durable accounting acceptance, independent fallback retention, and retained-handoff replay. The lifecycle coordinator starts and drains replay. |
 | `ExecutionReportHub`, `ExecutionFailureState` | Authoritative subscriber delivery and recovery, the best-effort observer channel, and the first terminal consumer failure shared with operation admission. The lifecycle coordinator controls registration closure and shutdown ordering. |
 | `OrderAuditMetadata`, `OrderExecutionAudit` | Audit metadata construction and lifecycle/unresolved-fill evidence from explicit snapshots. Command decisions and their audit timing stay with their callers. |
+| `OrderAuthorityResolver`, `OrderAuthorityMetadata` | Typed order authority at preflight and at dispatch, and binding the authority's identity into order metadata. The facade decides when each check runs and settles reservations on refusal. |
+| `OrderManagementSystemFactory` | The single OMS composition from a service provider, for both hosts. |
 
 `OrderExecutionAudit` sanitizes order IDs in diagnostic logs while retaining the original IDs in durable audit records.
+
+`OrderManagementSystemFactory` is the only place that builds the OMS from a service provider. Both
+hosts use it: `AddBrokerageExecution` with `OrderManagementSystemComposition.BrokerageExecution`
+(risk validator, portfolio state, and options optional; no paper-session persistence) and the
+workstation `UiServer` with `HostedWorkstation` (all three required; paper-session persistence
+wired). New OMS dependencies are wired there once.
 
 The shared broker-report gate still serializes live callbacks, explicit recovery, amendment
 resolution, and retention. Amendment preparation keeps original/proposed snapshot identity and
@@ -154,7 +341,93 @@ comparison rules, and lock ordering. Command/risk/amendment coordination still s
 and its collaborators; the extraction does not move the whole order state machine into one new
 service.
 
+### Order authority
+
+Design: `docs/engineering/blueprints/governed-order-command-boundary-blueprint.md` (`W13-OMS-001`).
+
+`OrderManagementSystem.SubmitAsync(OrderSubmitCommand)` submits an order under a typed,
+server-built `OrderSubmissionAuthority`. The authority can only be built through validating
+factories in `Meridian.Execution.Sdk`. Before admission, `OrderAuthorityMetadata.Bind` strips any
+identity the caller put in metadata (`actor`, `runId`, `correlationId`, `sessionId`, `orderOrigin`,
+`riskSubmitter` and their aliases) and stamps the authority's identity instead.
+
+| Origin | Built by | Live behavior |
+| --- | --- | --- |
+| `OperatorTicket` | Order ticket endpoint, after verifying the operator's access to the named account | Refused (`MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED`) until a reviewed manual-intent contract exists |
+| `PositionAction` | Position close and upsize endpoints, same account check | Refused as a manual live order. Broker-reported position metadata never grants run authority |
+| `StrategyRun` | `LiveStrategyRunSession`, using the run's retained fund account | Routes only for an active, live-promoted run whose artifact matches, and then only if readiness approves |
+| `EscalationRelease` | Risk escalation release, from the authority retained with the parked entry (`RiskEscalationEntry.Authority`) plus the approver's grant resolved at release time | Judged by the parked authority. Grant age is taken from the approver's grant, so a late approval can still release |
+| `KillSwitch` | Kill-switch sweep (`CancelAllAsync(OrderCancelAllCommand)`): the operator's cancel-all, the circuit-breaker endpoint, and the automated trip handler | Cancel-only; any submit is refused (`KILL_SWITCH_SUBMIT_NOT_ALLOWED`). The authority is recorded on every cancellation the sweep makes and on one `KillSwitchSweep` audit record, and never refuses a cancellation |
+| `Unattributed` | Legacy `PlaceOrderAsync`, and operator orders that name no account | Paper routes unchanged. Live is refused before readiness (`ORDER_ORIGIN_UNATTRIBUTED_LIVE`) |
+
+`OrderAuthorityResolver` runs at two checkpoints:
+
+- **Preflight.** It runs where the live readiness gate used to run, so every other gate keeps its
+  refusal order. It checks the account grant (`ACCOUNT_GRANT_MISSING`, `_MISMATCH`, `_STALE`
+  against `OrderAuthorityOptions.MaxGrantAge`, 8 hours by default). Then, through
+  `IStrategyRunAuthoritySource`, it checks the run binding for live strategy orders
+  (`RUN_NOT_FOUND`, `RUN_NOT_ACTIVE`, `RUN_NOT_PROMOTED_TARGET`, `RUN_ARTIFACT_MISMATCH`), and
+  finally readiness (`LIVE_ORDER_READINESS_REJECTED`). If the source cannot answer, the result is
+  `AUTHORITY_SOURCE_UNAVAILABLE`. Security Master stays in `OrderAdmissionPolicy`, after operator
+  controls.
+- **Dispatch.** This runs after risk validation and before the dispatch lease, so authority lookups
+  never lengthen the window a kill-switch sweep waits on. For typed authority it rechecks grant age,
+  the run binding and readiness for live strategy orders (`READINESS_CHANGED_BEFORE_DISPATCH`), and
+  Security Master (`SECURITY_MASTER_REJECTED_AT_DISPATCH`). A refusal releases risk reservations and
+  consumed approvals, the same way an operator-control refusal does. Untyped orders have no dispatch
+  recheck.
+
+The live authorization lease binds the active run, retained artifact, and account through the
+broker send. Scoped Designer paper intents retain the exact strategy version, review, and
+session with their own durable intent evidence.
+
+Retention and reporting:
+
+- A parked order keeps its typed authority in the escalation entry's own durable write. The OMS
+  stages it with the queue (`RiskEscalationQueueService.StageAuthority`, keyed by client order id)
+  while risk validation runs. `TryAttachAuthority` is only a fallback for validators that park
+  without staging.
+- The order ticket's `correlationId` is minted server-side. A client's value is kept as
+  `clientCorrelationId` metadata and never names the order in authority, journal or audit records.
+- Typed authority is retained on journal intents (`ExecutionJournalEntry.Authority`) and in
+  `OrderSubmitted` audit metadata (`orderOrigin`, `accountGrant`, `accountGrantSource`,
+  `releasedFromOrigin`). Untyped records are unchanged.
+- On a typed release, `actor` is the approver and `riskSubmitter` is the original submitter, as on
+  the untyped release path.
+- `OrderState.Origin` records who originated each order created by submission, including refused and
+  parked orders.
+- `OrderResult.AuthorityDecision` reports refusals by order authority, with their checkpoint
+  (`preflight` or `dispatch`) and reason code. It also reports admitted typed submissions.
+- The workstation trading payload exposes origin on working orders, plus `ManualOrderEntry`. The
+  browser ticket uses `ManualOrderEntry` to disable manual entry on a live path.
+
+Open owner decisions are in the blueprint's Open Questions:
+
+- the manual-intent contract;
+- live position closes;
+- whether a paused run keeps authority;
+- whether every operator order must name an account;
+- whether untyped *paper* orders should also be refused.
+
 ## Important workflows
+
+### Execution preview and operational evidence
+
+The order journal's `to` boundary is exclusive, matching the summary's half-open UTC window and the browser's **Before date** filter.
+
+`OrderPreviewService` observes the shared admission/risk path without reserving capacity,
+consuming approval tokens, or dispatching orders. Submission repeats current admission and risk
+checks; a successful preview grants no routing authority.
+
+`ExecutionJournal` retains scoped intent, dispatch, operation, raw report and confirmed state
+evidence in a synchronous WAL. Submission attempts keep separate identities when a client order
+ID is reused; uncertain cancel or replacement outcomes retain their evidence for reconciliation.
+FIFO operational attribution uses ledger lot helpers and preserves unknown cost/basis as
+unavailable. Restarting a local paper portfolio without restoring its positions retains an
+economic coverage gap, preserving order history while withholding cross-book P&L.
+`ExecutionAlertService` supplies persistent alerts and outbox selection. See
+[execution workflows](../../docs/engineering/execution-workflows.md) for API, recovery, limits and
+verification details.
 
 All new OMS orders undergo structural validation after the duplicate-client-ID guard and before
 gateway sizing or governance preflight. Invalid requests are rejected through the existing audit
@@ -200,6 +473,12 @@ sizes the order at. Cost basis, lot entry prices and marks stay per-unit quotes,
 apply the multiplier themselves; the aggregate position view carries the multiplier its P&L used,
 and `PortfolioStatePositionTracker` divides by it when recovering a mark. Face-value fills and every
 other asset class stay at 1×.
+Paper bond fills settle at the dirty price when the composed `IBondAnalyticsService` prices accrued
+interest at the clean fill price and a T+1 weekday settlement date (`PaperBondSettlement`); the
+report carries `AccruedInterestPer100` and `SettlementDate`. Purchased interest goes to Accrued
+Interest Receivable, never cost basis; a sale relieves it pro rata and books the rest as coupon
+income, and `LedgerPostingConsumer` posts the matching `trade-accrued-interest` journal. An
+analytics refusal, and any short-side bond fill, settles clean.
 A fill whose multiplier differs from the open position's is refused. The OMS stamps the multiplier
 on each fill increment, and stamps `BookedMoneyMultiplier` when the scale is not 1, so session
 replay reproduces the same cash; records written before that stamp replay at the 1× they were booked
@@ -227,6 +506,11 @@ appends a `PaperSessionSettlementRecord` (one per account, symbol and trading da
 `settlements.jsonl` in the JSONL store, read strictly) before applying it, and the live projection,
 restart and replay all merge settlements into the fills at `SettledAt`. Settlements are not yet
 published to the accounting handoff, and the sessionless OMS portfolio is not settled.
+
+Both paper gateways wait for capacity on their bounded update/report channel before emitting a
+fill, cancellation, or terminal update for an order that has already left the working set; only
+gateway disposal abandons a waiting emission. A slow consumer therefore applies backpressure
+instead of losing the update.
 
 Both paper gateways resolve the final fill price through the shared trading-parameter helper.
 Tick-size rounding is best-effort: a rounded price is used only when it remains positive, stays
@@ -337,19 +621,47 @@ present `FundAccountId` against the authenticated actor's account-scoped `Manage
 before the OMS can use that account in live-readiness evaluation. Missing run/account context,
 missing readiness registration, rejected readiness, or an approval without retained evidence
 produces an audited rejection instead of a broker submit.
+`runId`, `run_id`, `sessionId`, `session_id`, and `orderOrigin` are server-owned order metadata
+(`ExecutionOrderMetadataPolicy`): the shared HTTP submit and preview routes refuse them with 403, and
+position actions strip them from broker-reported position metadata. Only server-side callers such as
+`LiveStrategyRunSession` stamp a run id, so a manual ticket cannot borrow a promoted run's live
+authority, and no supported manual live-order path exists until a reviewed manual-intent authority
+contract does (see `docs/engineering/blueprints/governed-order-command-boundary-blueprint.md`). The
+OMS's own routing sanitization keeps these keys.
 Broker-backed readiness also includes open-order reconciliation: `BrokerageExecutionReconciliationService`
 compares broker-reported open orders with the OMS open-order ledger, treats missing client order IDs
 as untraceable breaks, and reports OMS/broker divergence before live operators rely on the gateway.
 Ledger posting from trade-fill events is explicit and Security Master gated. `LedgerPostingConsumer`
-retains the trade journal's Investing cash category against its immutable line IDs. Sales report
-actual cash proceeds; realized gains/losses remain noncash adjustments, and commission journals
-remain separate Operating payments. Reversal preserves the retained category.
-A buy that covers a short books its realized gain or loss the same way a sale does: Securities is
-debited by the short-sale proceeds being relieved (cash paid plus the gain, or less the loss), so a
-flat position leaves no residual Securities balance. A buy-to-cover fill whose two-line trade
-journal was retained before this accounting is replayed against that retained journal, matched
-exactly, so a fill interrupted across the upgrade can post its remaining journals. The retained
-journal is kept as posted; replay never appends the earlier shape and does not correct it.
+and `PaperTradingPortfolio` use Ledger's `SecurityTradePostingProjector` and shared
+`IChartOfAccounts` / `StandardChartOfAccounts` registry for opening/closing trades, financing,
+short collateral, transaction charges and variation-margin fill settlements. The paper lot-book lock
+captures exact per-leg execution values and relieved basis or original short proceeds into immutable
+`TradeFillAccountingEvidence`; a fill crossing zero retains its closing and opening legs separately.
+Commission, fees and explicit slippage charges all reach the expense journal. Contract multipliers,
+face-value percentage pricing and the selected variation-margin model retain their booked scale.
+The consumer checks these facts against the fill, realized result and financial-account scope;
+pooled positions with ambiguous ownership cannot certify another owner's basis. Session records
+retain their accounting evidence version and owner provenance through restart. Version 1 requires
+both captured evidence and an accepted durable accounting handoff; offline paper-only records remain
+version 0. Old unverified positions cannot certify typed closing evidence, even when their execution
+reports can be replayed. These provenance fields do not change the execution report or its canonical
+session hash.
+
+New OMS events carry accounting-evidence version 1. A broker fill without authoritative lot evidence
+remains pending for reconciliation instead of inferring direction or basis from order side or a zero
+realized result. Production `AddTradeFillLedgerPosting` requires the current version on new admission.
+The assembly-internal retained-recovery port accepts historical events only from the exact retained
+accounting scope; original public consumer constructors retain explicit legacy compatibility.
+Value-record equality in the primary WAL and independent handoff store prevents an existing fill
+identity from being reused with changed basis, costs or scope.
+
+New short trades use the same short-securities liability as Backtesting; covers relieve retained
+opening proceeds and recognize the gain or loss, leaving no short liability when flat. Version-0
+retained events still use their historical Securities-based journal shapes. A buy-to-cover fill whose
+two-line trade journal predates cover accounting is compared against that exact retained record so
+an interrupted fill can finish its remaining journals. Replay never appends an obsolete alternative
+or rewrites a retained journal. Trade cash-flow categories bind to immutable line IDs; acquisition
+and disposal cash, financing, and separate Operating transaction charges preserve their source economics.
 For a crash retry whose deterministic journal was already retained before attribution existed,
 the governed target first requires exactly one authoritative identity collision with no
 `cash-flow.*` evidence. Only the new canonical trade group/category tags can be omitted from the
@@ -525,7 +837,11 @@ See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.
 ## Validation
 
 ```bash
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~PaperTradingGatewayTests|FullyQualifiedName~PaperTradingPortfolioBasisParityTests" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~PaperTradingGatewayTests|FullyQualifiedName~PaperTradingPortfolioBasisParityTests|FullyQualifiedName~PaperTradingPortfolioAccountingEvidenceTests|FullyQualifiedName~OrderFillProcessorTests|FullyQualifiedName~TradeFillAccountingEvidencePersistenceTests" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~ExecutionWorkflowTests|FullyQualifiedName~ExecutionJournalAttemptTests" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~TradeFillLedgerPostingHostCompositionTests|FullyQualifiedName~EquityOrderSessionPolicyTests" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~OrderAuthority|FullyQualifiedName~OrderSubmissionAuthority|FullyQualifiedName~OrderManagementSystemTypedSubmit|FullyQualifiedName~OrderManagementSystemFactory|FullyQualifiedName~ExecutionOrderMetadataPolicy|FullyQualifiedName~RiskEscalationAuthorityRetention" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~StrategyRunAuthoritySource|FullyQualifiedName~WorkstationManualOrderEntry|FullyQualifiedName~ExecutionGovernance|FullyQualifiedName~RiskEndpoints" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 ```
 
@@ -540,3 +856,145 @@ Keep live actions explicitly gated and paper-first unless roadmap acceptance evi
 
 Both paper gateway implementations retain their aggregate-query constructor signatures and optional
 arguments alongside the separate identity/trading-query overloads for compiled-client compatibility.
+
+## Paper ledger and broker accounting checks
+
+Multi-account paper books post cash, lot basis, gains, expenses and financing with the canonical
+`LedgerAccounts` financial-account dimension. The legacy single-account constructor retains its
+unscoped journal format for replay compatibility. Short margin collateral is retained as an asset
+and released on cover; paid margin interest is expensed once without also increasing loan principal.
+`PaperTradingPortfolio.CheckLedgerIntegrity` compares cash, exact remaining lot basis, financing,
+collateral, orphan accounts and transfer/allocation residuals. Paper-session close refuses a
+mismatched final journal and replay verification includes the individual differences. The quote-only
+corporate-action adjuster may rescale split lots; a basis-changing result with an attached ledger is
+refused before mutation because that contract does not carry cash or event posting evidence.
+
+`AddPortfolioAccountingReconciliation` composes a read-only hosted check over `PortfolioRegistry`
+and registered `IBrokeragePortfolioSync`/`IBrokerageActivitySync` adapters. It runs at the configured
+`PositionSyncOptions.SyncInterval` (at least daily), uses a single broker portfolio snapshot, compares
+exact fractional quantities, cash, loans and carrying prices, and exposes missing, amount-mismatch
+and unknown-activity evidence. `CoverageIssues` explicitly identifies unavailable realized P&L or
+position-only provider evidence; a clean position report is not proof of complete accounting.
+No reconciliation check submits broker orders or automatic correcting entries.
+
+Alpaca activity intake continues through the existing `alpaca-activity` statement connector and
+governed durable statement import/recovery pipeline. Activity IDs remain external transaction IDs;
+the provider cursor now retains the newest activity ID, timestamp watermark, page count and
+completeness after all pages have been retrieved. Synthetic fixtures exercise paging, interrupted
+statement recovery, duplicate IDs and unsupported activities; live-provider compatibility remains
+live-untested.
+
+`BrokerActivityImportService` is the shared read-side inbox used by brokerage workstation sync.
+It atomically retains source-generated per-ID records before publishing a checksummed checkpoint.
+`ImportWithHistoryAsync` returns separate `Current` and `Retained` snapshots. `Current` is the
+latest provider observation and supplies the current projection, raw snapshot and status.
+`Retained` is the checksum-verified union of immutable accepted activity records; downstream
+history can be recovered from it even when the next current fetch is empty. Accepted historical
+rows do not become observations in that current provider window. The existing `ImportAsync`
+contract is unchanged and returns the retained history.
+Restart resumes at the last complete timestamp watermark minus one tick and deduplicates broker IDs,
+including distinct events sharing a timestamp. A failure after record acceptance but before the
+checkpoint causes a safe reread and exact-content verification. Missing completeness evidence
+forces a rescan; incomplete fetches cannot move the checkpoint. Corrections require a distinct
+provider activity ID/lineage; changed evidence under the same ID is refused. Explicit `Since`
+rescans discover late arrivals earlier than the watermark. The inbox retains evidence for the
+existing governed statement importer and does not authorize journal entries.
+
+Paper trade producers retain investing cash-flow attribution for gross acquisitions, disposals,
+short proceeds and covers; realized gain/loss and basis relief are not additional cash movements.
+Margin borrowing and repayment are independent balanced financing journals, so cash-flow exports
+preserve gross investing and financing activity rather than attributing a net margin trade by guess.
+
+Paper-session journal snapshots retain complete `JournalEntryMetadata` as an optional additive DTO
+property, including cash-flow tags and their original line IDs. Closed-session restart restores
+that evidence before statement generation; legacy snapshots retain their available scalar metadata.
+
+Session creation, fill-time rebuilds and restart replay use retained `CreatedAt` as the opening
+capital journal timestamp. Rebuilding a projection cannot move capital into a later reporting
+period or change the historical opening cash balance. Public portfolio constructors remain intact.
+
+## Canonical synthetic fill accounting
+
+`Execution:TradeFillLedgerPosting:CanonicalAccounting` is opt-in. A null value preserves the
+legacy journal-only handoff. Enabling it creates a distinct `/v2` WAL scope and requires reviewed
+opening cash/lots, an exact active operator posting grant, matching chart configuration revision,
+USD book policy and effective automatic evidence-requiring rules for `execution.trade-fill`,
+`execution.trade-commission` and (when present) `execution.trade-fee`. The grant must be activated
+through the authorized ledger API; merely setting configuration never creates authority.
+
+Configure the cash, securities, realized gain/loss, commission and fee chart paths. Active configured
+accounts are resolved through `IConfiguredLedgerAccountResolver`; unknown, ambiguous, archived,
+wrong-type and foreign-scope mappings block posting. The cash account name must match the ledger's
+native account-scoped `Cash` account. Realized-result mappings must resolve to the
+native account-scoped `Realized Gain` and `Realized Loss` accounts without an instrument symbol,
+as required by canonical disposal validation. Financial-account and instrument identity remain separate
+from the chart classification. This slice supports in-process paper (Synthetic) long USD cash
+equities only. Broker/live or unknown-source events are refused; no host setting converts them into
+synthetic evidence. Legacy scope events retain their original source and replay serialization.
+
+`AutomatedTradeFillAccountingService` retains an immutable, content-hashed accounting intent
+alongside the WAL before attempting an append. Buys create canonical acquisition lots; sales use
+the effective FIFO account policy and retained lot versions to derive book P&L, rather than trusting
+OMS P&L. Commissions and uniquely identified USD fee components are separate expenses. Policy
+mutation authority is held during each new write; the database rechecks the grant, configuration,
+reference versions and period in the same transaction as the journal/lot mutation.
+
+A fill is complete only after authoritative readback proves its trade/lot receipt and every required
+fee journal. Partial completion and failed authority remain pending with the existing durable
+failure evidence. Restart reuses selected lots and original posting identities; committed receipts
+can be recovered after grant revocation, while new writes cannot. Historical journal-only fills
+never gain lots during replay; use the existing reviewed opening-lot backfill before a v2 cutover.
+This path retains a system delegation receipt, not a human reviewer or an Asset Spine approval.
+
+Targeted proof: `AutomatedTradeFillAccountingServiceTests`, `AutomatedPostingGrantTests`,
+`TradeFillCanonicalScopeTests` and the existing `EventDrivenDecouplingTests`/handoff recovery suites.
+The PostgreSQL golden case covers buy, fees, FIFO partial sale, restart, revocation and exact replay;
+its provider evidence is synthetic-verified, not live-provider compatibility.
+
+Grant activation retains the exact operator-authorized policy/rule pack and its integrity hash in
+PostgreSQL. After a full process restart, policy authority restores that snapshot only if its version
+is absent; an existing different policy under the same version blocks posting and requires a new
+policy version/grant. Both preparation and new writes hold policy mutation authority. The append
+transaction independently verifies the retained policy, source rule ID/version and automatic flags,
+so bypassing the application adapter cannot bypass rule authority. Older grants lacking a snapshot
+can recover already-committed receipts but cannot authorize a new posting.
+
+Before preparing a new fill, the canonical adapter requires posted cash history for the exact
+financial account through the fill cutoff. Every contributing line must retain USD/USD at rate 1;
+missing or currency-blind history blocks posting. Proven cash must cover gross consideration plus
+all required commission/fees for a buy; sale proceeds may cover costs but cannot create an overdraft.
+This slice never infers funding or margin from an absent opening.
+Completed receipt recovery bypasses new-purchase checks; partial fills retain their original intent.
+
+The canonical paper host binds its sole actual portfolio account to the grant's financial-account
+GUID; there is no `default` account alias. Before HTTP or OMS admission starts, it recovers pending
+primary-WAL and fallback fills, then hydrates authoritative ledger cash and canonical open lots.
+Startup checks the exact context, current open period, grant, immutable policy and complete mapped
+content. Runtime lots retain the durable acquisition GUID and use the same acquisition-date/GUID
+FIFO ordering as canonical relief, including multiple purchases on the same day.
+
+Recovered market observations come only from retained automatic execution receipts for the same
+book, account and security, including receipts under an earlier grant or period. Startup refuses
+holdings without those receipts, including transformed holdings without a subsequent execution-price
+receipt. Recovery preserves the original observation timestamp. Stale restored observations block
+orders until actual fresh market data arrives; basis never substitutes for a price observation.
+
+Canonical order admission currently supports immediate synthetic market orders with an explicit
+simulated `LimitPrice`, unit quantity, authoritative active USD Equity shares and multiplier one.
+It refuses other accounts, resting orders, amendments, derivatives, notional sizing, short sales and
+insufficient cash before gateway dispatch. The actual configured paper cost model supplies the
+commission/fee bound. Submission is serialized through portfolio fill application. Each admission
+also compares a coherent current book snapshot with runtime cash, quantity and exact basis; pending
+accounting must catch up, and external cash/lot changes require reviewed restart recovery before
+further orders. These restrictions apply only to the opt-in canonical host.
+
+Only the canonical OMS binding enables explicit synthetic-price observations in its unused paper
+gateway. Its required market-order price is the actual simulated fill price and cost-model input;
+it cannot fall back to scaffold pricing. Native paper market orders retain observed-market pricing
+and do not treat a caller's `LimitPrice` as an observation.
+
+The v2 handoff retains the native version-one `AccountingEvidence`, booked money multiplier,
+variation-margin flag and strategy/run lineage alongside its synthetic source and identified costs.
+The native evidence-capturing fill path applies to the configured GUID account. Canonical mode
+refuses financed trades, financing charges and variation-margin settlements; native paper sessions
+retain their existing multiplier, financing recovery and historical evidence behavior.

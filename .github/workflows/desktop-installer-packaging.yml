@@ -17,7 +17,7 @@ on:
       rehearsal_version:
         description: Version for a complete signed rehearsal. Manual runs never publish.
         required: true
-        default: 1.0.0-rehearsal
+        default: 0.1.0-rc.2
         type: string
 
 permissions:
@@ -50,6 +50,8 @@ jobs:
       package_version: ${{ steps.identity.outputs.package_version }}
       version: ${{ steps.identity.outputs.version }}
       commit: ${{ steps.identity.outputs.commit }}
+      desktop_matrix: ${{ steps.identity.outputs.desktop_matrix }}
+      support_scope: ${{ steps.identity.outputs.support_scope }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -102,6 +104,7 @@ jobs:
     needs: [eligibility, ci]
     uses: ./.github/workflows/production-certification.yml
     with:
+      require-recovery-acceptance: true
       integration-artifact-id: ${{ needs.ci.outputs.integration-artifact-id }}
       integration-artifact-name: ${{ needs.ci.outputs.integration-artifact-name }}
       integration-receipt-sha256: ${{ needs.ci.outputs.integration-receipt-sha256 }}
@@ -175,8 +178,9 @@ jobs:
       attestations: write
     strategy:
       fail-fast: false
-      matrix:
-        runtime: [win-x64, win-arm64]
+      # Version-bounded ADR-019 policy: v0.1.0 certifies x64; later releases
+      # continue to require both architectures. Dispatch cannot override scope.
+      matrix: ${{ fromJSON(needs.eligibility.outputs.desktop_matrix) }}
 
     steps:
       - name: Check out repository
@@ -289,7 +293,7 @@ jobs:
             -BuildDropPath artifacts/release/${{ matrix.runtime }} `
             -BuildComponentPath . `
             -PackageName Meridian-Desktop `
-            -PackageVersion '${{ github.ref_name }}-${{ matrix.runtime }}'
+            -PackageVersion '${{ needs.eligibility.outputs.version }}-${{ matrix.runtime }}'
           $generated = Get-ChildItem artifacts/release/${{ matrix.runtime }}/_manifest -Filter manifest.spdx.json -File -Recurse | Select-Object -First 1
           if ($null -eq $generated) { throw "Microsoft SBOM Tool did not emit manifest.spdx.json." }
           Copy-Item -LiteralPath $generated.FullName -Destination artifacts/release/${{ matrix.runtime }}/desktop-installer-${{ matrix.runtime }}-sbom.spdx.json -Force
@@ -417,7 +421,7 @@ jobs:
             -BuildDropPath artifacts/consumer-setup `
             -BuildComponentPath . `
             -PackageName Meridian-Consumer-Setup `
-            -PackageVersion '${{ github.ref_name }}'
+            -PackageVersion '${{ needs.eligibility.outputs.version }}'
           $generated = Get-ChildItem artifacts/consumer-setup/_manifest -Filter manifest.spdx.json -File -Recurse | Select-Object -First 1
           if ($null -eq $generated) { throw "Microsoft SBOM Tool did not emit manifest.spdx.json." }
           Copy-Item -LiteralPath $generated.FullName -Destination artifacts/consumer-setup/consumer-setup-win-x64-sbom.spdx.json -Force
@@ -484,16 +488,7 @@ jobs:
       contents: read
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - runtime: win-x64
-            architecture: x64
-            runner: windows-latest
-          # Native ARM64 is required. The readiness workflow reports observed allocation
-          # and successful lifecycle evidence; a declared hosted label does not prove capacity.
-          - runtime: win-arm64
-            architecture: ARM64
-            runner: windows-11-arm
+      matrix: ${{ fromJSON(needs.eligibility.outputs.desktop_matrix) }}
 
     steps:
       - name: Check out repository
@@ -530,21 +525,42 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           CONFIGURED_PRIOR_TAG: ${{ inputs.prior_release_tag }}
+          CURRENT_RELEASE_TAG: v${{ needs.eligibility.outputs.version }}
         run: |
+          $ErrorActionPreference = 'Stop'
           $current = Get-ChildItem artifacts/current -Filter '*.msix' -File -Recurse | Select-Object -First 1
           if ($null -eq $current) { throw "Could not resolve the current ${{ matrix.runtime }} MSIX package." }
           "current_path=$($current.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
           $priorTag = $env:CONFIGURED_PRIOR_TAG
-          if ([string]::IsNullOrWhiteSpace($priorTag)) {
-            # Prereleases are excluded deliberately: the evaluation lane publishes self-signed
-            # prereleases, and certifying a production update against one would prove an upgrade
-            # path from an artifact that carries no publisher identity.
-            $priorTag = gh api 'repos/${{ github.repository }}/releases?per_page=100' --paginate --slurp `
-              --jq '[.[][] | select(.draft == false and .prerelease == false and (.tag_name | startswith("v")))] | sort_by(.published_at) | reverse | .[0].tag_name'
-            if ($LASTEXITCODE -ne 0) {
-              throw "Could not query published releases, so whether an N-1 package exists is unknown. Refusing to assume this is a first release."
+          # Signed production v* RCs are real predecessors. The separate evaluation
+          # identity uses eval-v*, so a prerelease flag alone cannot exclude an RC.
+          $history = gh api 'repos/${{ github.repository }}/releases?per_page=100' --paginate --slurp
+          if ($LASTEXITCODE -ne 0) {
+            throw "Could not query published releases, so whether an N-1 package exists is unknown. Refusing to assume this is a first release."
+          }
+          $pages = ConvertFrom-Json -InputObject ($history -join "`n") -NoEnumerate
+          if ($pages -isnot [array]) { throw 'Malformed release history: expected paginated arrays.' }
+          $eligible = @(
+            foreach ($page in $pages) {
+              if ($page -isnot [array]) { throw 'Malformed release history page.' }
+              foreach ($release in $page) {
+                if ($release.draft -isnot [bool] -or $release.tag_name -isnot [string] -or
+                    'published_at' -notin $release.PSObject.Properties.Name) {
+                  throw 'Incomplete release history; predecessor availability is unknown.'
+                }
+                if (-not $release.draft -and $null -ne $release.published_at -and
+                    $release.tag_name.StartsWith('v') -and $release.tag_name -cne $env:CURRENT_RELEASE_TAG) {
+                  $release
+                }
+              }
             }
+          ) | Sort-Object { [DateTimeOffset]::Parse($_.published_at) } -Descending
+          $eligible = @($eligible)
+          if ([string]::IsNullOrWhiteSpace($priorTag)) {
+            $priorTag = if ($eligible.Count -gt 0) { $eligible[0].tag_name } else { '' }
+          } elseif ($eligible.Count -eq 0 -or $priorTag -cne $eligible[0].tag_name) {
+            throw 'Configured predecessor must be the latest published production release, excluding the current tag, drafts and evaluation builds.'
           }
 
           if ([string]::IsNullOrWhiteSpace($priorTag) -or $priorTag -eq 'null') {
@@ -555,6 +571,7 @@ jobs:
 
           New-Item -ItemType Directory -Path artifacts/prior -Force | Out-Null
           gh release download $priorTag --repo '${{ github.repository }}' --pattern '*.msix' --dir artifacts/prior
+          if ($LASTEXITCODE -ne 0) { throw "Could not download the published N-1 installer from $priorTag." }
           $architecturePattern = if ('${{ matrix.runtime }}' -eq 'win-arm64') { 'arm64' } else { 'x64' }
           $prior = Get-ChildItem artifacts/prior -Filter '*.msix' -File -Recurse |
             Where-Object Name -Match $architecturePattern | Select-Object -First 1
@@ -721,8 +738,11 @@ jobs:
         if: steps.resume.outputs.restored != 'true'
         env:
           RELEASE_NEEDS: ${{ toJSON(needs) }}
+          RELEASE_VERSION: ${{ needs.eligibility.outputs.version }}
           GH_TOKEN: ${{ github.token }}
         run: python build/scripts/ci/verify-release-promotion.py --root artifacts/release --receipts artifacts/certification --smoke artifacts/startup/release-evidence.json --output artifacts/publish-release
+      - name: Check P0 release-candidate evidence on the certified commit
+        run: python build/scripts/ci/check-release-candidate.py --root artifacts/publish-release --output artifacts/publish-release/release-candidate-evidence.json
       - name: Retain validated release or rehearsal evidence
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -775,6 +795,7 @@ jobs:
         if: always()
         env:
           RELEASE_NEEDS: ${{ toJSON(needs) }}
+          RELEASE_VERSION: ${{ needs.eligibility.outputs.version }}
           CERT_WARNING_DAYS: ${{ vars.MDC_SIGNING_CERT_WARNING_DAYS || '30' }}
         run: python build/scripts/ci/release-readiness.py summary --mode coordinator --warning-days "$CERT_WARNING_DAYS" --output artifacts/release-readiness/report.json
       - name: Retain readiness report even when a gate fails

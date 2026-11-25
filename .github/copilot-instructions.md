@@ -26,7 +26,8 @@ For each task, follow this sequence:
 10. Summarize what changed, why, and how it was validated.
 11. Local work may happen on `main` when the user explicitly requests it or the checkout is
     intentionally operating there. Do not bypass GitHub branch protections; for PR-ready publishing,
-    use a `codex/<short-task-name>` branch and a PR targeting `main`.
+    use a `codex/<short-task-name>` or `claude/<short-task-name>` branch (either agent prefix is
+    accepted) and a PR targeting `main`.
 
 **No mobile development lane:** do not create mobile applications, mobile-specific product
 surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
@@ -160,3 +161,7 @@ The four-lane `Meridian CI / quality-gate` keeps its identity. The always-report
 `Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
 Production Certification, including pull requests and merge groups.
 All CI governance changes require human review.
+
+Generated-file delivery: run `python build/python/cli/buildctl.py regen --fix` after merging.
+Commit reviewed views only; declared machine inventories and workstation builds are CI artifacts.
+Preserve reviewed source hashes. See [generated output delivery](../docs/engineering/generated-output-delivery.md).

@@ -1,6 +1,7 @@
 import type {
   CorporateActionInboxResponse,
   DailyValuationScheduleWorkItem,
+  OperatorPreferences,
   OperatorScopePreference,
   OperatorSurfaceVisit,
   ProviderCapabilityMatrixResponse,
@@ -133,6 +134,8 @@ const fixtureStatementRunBreaks: StatementRunBreak[] = [
 // ── Operator preferences ───────────────────────────────────────────────────────────────────
 // No saved default scope and no earlier visit: the first-session answer the server gives.
 const fixtureOperatorScopePreference: OperatorScopePreference = { defaultScope: null, updatedAt: null };
+// Nothing stored on the host yet: the browser keeps its own presentation preferences.
+const fixtureOperatorPreferences: OperatorPreferences = { preferences: {}, updatedAt: null };
 
 function fixtureOperatorSurfaceVisit(surface: string): OperatorSurfaceVisit {
   return { surface, previousVisitAt: null, visitedAt: null };
@@ -246,6 +249,7 @@ export const workstationSurfaceFixtureRoutes = {
   [RECONCILIATION_API_ENDPOINTS.openCases]: fixtureReconciliationOpenCases,
   [RECONCILIATION_API_ENDPOINTS.breakQueueTaxonomy]: fixtureReconciliationTaxonomy,
   [UI_API_ROUTES.WorkstationOperatorScopePreference]: fixtureOperatorScopePreference,
+  [UI_API_ROUTES.WorkstationOperatorPreferences]: fixtureOperatorPreferences,
   [RISK_API_ENDPOINTS.escalations]: fixtureRiskEscalations,
   [WORKSTATION_API_ENDPOINTS.dailyValuationSchedules]: fixtureDailyValuationSchedules,
   [PROVIDER_API_ENDPOINTS.capabilityMatrix]: fixtureProviderCapabilityMatrix,

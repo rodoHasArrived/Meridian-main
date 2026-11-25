@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { formatCount as formatCountValue, formatNumber, pluralizeCount } from "@/lib/format";
+import { formatCount as formatCountValue, formatDecimal, formatFixed, formatNumber, formatRelativeTime, formatTimestamp, pluralizeCount } from "@/lib/format";
+import type { ChartEvidence } from "@/components/charts/chart-evidence";
 import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import type { ApiRequestOptions } from "@/lib/api";
 import { useQuickTradeTicket, type QuickTradeTicketViewModel } from "./live-quotes-screen.quick-trade";
+import { liveQuoteTradeId, liveTradeChartEvidence } from "./live-quotes-screen.trade-evidence";
 import type {
   OrderBookLevelDto,
   OrderBookResponse,
@@ -87,7 +89,7 @@ export interface IntradayMetrics {
   changePct: number | null;
   windowStart: string | null;
   windowEnd: string | null;
-  series: { ts: number; price: number }[];
+  series: { ts: number; price: number; trade: TradeDataResponse }[];
 }
 
 export interface LiveQuotesMetricRowViewModel {
@@ -239,6 +241,8 @@ export interface LiveQuotesSparklineViewModel {
   lowLabel: string;
   strokeToken: string;
   ariaLabel: string;
+  observations: (LiveQuotesSparklinePointViewModel & ChartEvidence)[];
+  latestIndex: number;
 }
 
 export interface LiveQuotesMarketDataViewModel {
@@ -371,6 +375,11 @@ export interface LiveQuotesApi {
   getLiveOrderbook: (symbol: string, depth: number, options?: ApiRequestOptions) => Promise<OrderBookResponse>;
   getLiveQuotesSnapshot: (symbols?: readonly string[], options?: ApiRequestOptions) => Promise<QuotesSnapshotResponse>;
   submitOrder: (request: OrderSubmitRequest) => Promise<OrderResult>;
+  /**
+   * The operator's watchlist. When the route names no symbols and nothing is pinned, the quote
+   * list starts from it (before the starter set), and a later edit by the operator always wins.
+   */
+  getWatchlistSymbols?: (options?: ApiRequestOptions) => Promise<ReadonlyArray<{ symbol: string; status?: string }>>;
 }
 
 export interface LiveQuotesRouteBinding {
@@ -737,8 +746,8 @@ export function useLiveQuotesScreenViewModel(
     }
   }, [activeSymbol, resetMarketState, resetSelectedPanels, route, symbolSet]);
 
-  const loadStarterSet = useCallback(() => {
-    const nextSet = [...LIVE_QUOTES_DEFAULT_SYMBOL_SET];
+  const applySymbolSet = useCallback((symbols: readonly string[]) => {
+    const nextSet = [...symbols];
     const nextActiveSymbol = nextSet[0] ?? null;
     setSymbolSet(nextSet);
     setActiveSymbol(nextActiveSymbol);
@@ -752,6 +761,33 @@ export function useLiveQuotesScreenViewModel(
       route.setRouteSymbol(nextActiveSymbol ?? "");
     }
   }, [resetMarketState, resetSelectedPanels, route]);
+  const loadStarterSet = useCallback(() => applySymbolSet(LIVE_QUOTES_DEFAULT_SYMBOL_SET), [applySymbolSet]);
+
+  // Start from the watchlist when the route and the pinned set name nothing. Read once per
+  // screen; an operator who adds symbols first (or a failed read) leaves the list as it is.
+  const watchlistRequested = useRef(false);
+  const getWatchlistSymbols = api.getWatchlistSymbols;
+  const listIsEmpty = symbolSet.length === 0 && !activeSymbol;
+  useEffect(() => {
+    if (!getWatchlistSymbols || !listIsEmpty || watchlistRequested.current) return undefined;
+    watchlistRequested.current = true;
+    const controller = new AbortController();
+    let settled = false;
+    void getWatchlistSymbols({ signal: controller.signal })
+      .then((records) => {
+        settled = true;
+        if (controller.signal.aborted) return;
+        const symbols = normalizeLiveQuoteSymbols(records.filter((record) => record.status !== "Archived").map((record) => record.symbol).join(","));
+        if (symbols.length > 0) applySymbolSet(symbols);
+      })
+      .catch(() => { settled = true; });
+    return () => {
+      if (!settled) {
+        controller.abort();
+        watchlistRequested.current = false;
+      }
+    };
+  }, [getWatchlistSymbols, listIsEmpty, applySymbolSet]);
 
   const pinSymbolSet = useCallback(() => {
     persistLiveMarketDataPinnedSet(symbolSet);
@@ -969,10 +1005,11 @@ export function buildLiveQuoteRefreshCommand(
   }
 
   return {
-    label: refreshing ? "Refreshing" : "Refresh",
-    ariaLabel: refreshing ? `Refreshing live data for ${activeSymbol}` : `Refresh live data for ${activeSymbol}`,
+    // Asks the market-data provider for new quotes on demand, so it is named for that work.
+    label: refreshing ? "Fetching" : "Fetch latest",
+    ariaLabel: refreshing ? `Fetching latest live data for ${activeSymbol}` : `Fetch latest live data for ${activeSymbol}`,
     disabled: refreshing,
-    disabledReason: refreshing ? "Live market data refresh is already running." : null,
+    disabledReason: refreshing ? "Live market data is already being fetched." : null,
     busy: refreshing
   };
 }
@@ -1005,10 +1042,10 @@ export function buildLiveQuotesMarketViewModel({
   const tradeRows = tradeHistory.slice(0, tradeTableLimit);
   const tradeDetailPanelId = "live-quotes-trade-detail";
   const baseTradeRows = tradeRows.map((trade) => buildTradeRow(trade, tradeDetailPanelId));
-  const stableSelectedTradeId = baseTradeRows.some((row) => row.id === selectedTradeId)
+  const stableSelectedTradeId = tradeHistory.some((trade) => liveQuoteTradeId(trade) === selectedTradeId)
     ? selectedTradeId
     : baseTradeRows[0]?.id ?? null;
-  const selectedTrade = tradeRows.find((trade) => liveQuoteTradeId(trade) === stableSelectedTradeId) ?? null;
+  const selectedTrade = tradeHistory.find((trade) => liveQuoteTradeId(trade) === stableSelectedTradeId) ?? null;
   const tradeDisplayRows = baseTradeRows.map((row) => ({
     ...row,
     expanded: row.id === stableSelectedTradeId
@@ -1059,12 +1096,12 @@ export function buildLiveQuotesMarketViewModel({
         ? "Select a bid or ask level to inspect depth evidence."
         : `No depth levels are available for ${symbol}.`,
       tableLabel: `${symbol} order book depth ladder`,
-      caption: `Select a ${symbol} bid or ask level to seed the ticket and inspect venue, sequence, and depth evidence.`
+      caption: `Select a bid or ask level for ${symbol} to seed the ticket and inspect venue, sequence, and depth evidence.`
     },
-    priceChart: buildPriceChartViewModel(symbol, intraday, refreshing, trades.error),
+    priceChart: buildPriceChartViewModel(symbol, intraday, refreshing, trades.error, selectTrade, tradeDetailPanelId),
     sessionStats: buildLiveQuotesSessionStatsViewModel(symbol, quoteRow?.session ?? null),
     tradesTableLabel: `Recent ${symbol} trade prints`,
-    tradesTableCaption: `Select a ${symbol} trade print to inspect sequence, stream, and venue evidence.`,
+    tradesTableCaption: `Select a trade print for ${symbol} to inspect sequence, stream, and venue evidence.`,
     tradesDetailPanelId: tradeDetailPanelId,
     tradesDetailEmptyTitle: "No trade selected",
     tradesDetailEmptyText: tradeRows.length > 0
@@ -1072,7 +1109,7 @@ export function buildLiveQuotesMarketViewModel({
       : `No recent trades for ${symbol}.`,
     venueLabel: quoteRow?.venue ?? orderbook.data?.venue ?? null,
     stale: orderbook.data?.isStale === true,
-    lastUpdateLabel: formatMarketTimestamp(quoteRow?.timestamp ?? orderbook.data?.timestamp ?? null),
+    lastUpdateLabel: formatMarketTime(quoteRow?.timestamp ?? orderbook.data?.timestamp ?? null),
     quoteState: buildPanelState({
       loading: refreshing && !quote.data && !quote.error,
       error: quote.error,
@@ -1152,8 +1189,8 @@ export function buildLiveMarketDataWorkspaceViewModel({
   const selectedDetail = buildLiveMarketDataDetail(selectedRow, selectedQuote, market);
 
   return {
-    title: "Live Market Data Workspace",
-    description: "Monitor real-time quotes, trades, BBO, spreads, provider posture, and latency from one symbol set.",
+    title: "Live quotes",
+    description: "Monitor real-time quotes, trades, BBO, spreads, provider health, and latency from one symbol set.",
     symbolSet: [...symbolSet],
     symbolSetLabel: symbolSet.join(", "),
     hasSymbols: symbolSet.length > 0,
@@ -1266,7 +1303,7 @@ function buildLiveMarketDataDetail(
       ariaLabel: "Selected symbol summary",
       title: "No symbol selected",
       subtitle: "Load a symbol set to inspect detail",
-      description: "The selected-symbol detail panel announces quote posture, venue, spread, tick health, and latency once a row is selected.",
+      description: "The selected-symbol detail panel announces quote status, venue, spread, tick health, and latency once a row is selected.",
       statusLabel: "Empty",
       statusTone: "default",
       fields: []
@@ -1345,7 +1382,7 @@ function buildLiveMarketDataDiagnostics({
     connectionQualityLabel,
     tickHealthLabel,
     items: [
-      { id: "provider-latency", label: "Provider posture", value: providerLatencyLabel },
+      { id: "provider-latency", label: "Provider health", value: providerLatencyLabel },
       { id: "throughput", label: "Throughput", value: throughputLabel },
       { id: "connection", label: "Connection quality", value: connectionQualityLabel },
       { id: "tick-health", label: "Tick health", value: tickHealthLabel }
@@ -1362,17 +1399,18 @@ function buildLiveMarketStatusBadges(
     {
       id: "connection",
       label: "Connection",
-      value: diagnostics.connectionQualityLabel,
-      tone: diagnostics.statusTone,
-      ariaLabel: `Connection ${diagnostics.connectionQualityLabel}`
+      // With no symbols there is no feed to judge, so "Connected" would read as an all-clear.
+      value: rows.length === 0 && diagnostics.connectionQualityLabel === "Connected" ? "Connected · no symbols subscribed" : diagnostics.connectionQualityLabel,
+      tone: rows.length === 0 ? "default" : diagnostics.statusTone,
+      ariaLabel: `Connection ${rows.length === 0 && diagnostics.connectionQualityLabel === "Connected" ? "connected, no symbols subscribed" : diagnostics.connectionQualityLabel}`
     },
-    {
+    ...(rows.length === 0 ? [] : [{
       id: "coverage",
       label: "Coverage",
       value: `${rows.filter((row) => row.stateTone === "success").length}/${rows.length || 0} live`,
       tone: rows.length === 0 ? "default" : rows.every((row) => row.stateTone === "success") ? "success" : "warning",
       ariaLabel: `${rows.filter((row) => row.stateTone === "success").length} of ${rows.length || 0} symbols live`
-    },
+    } satisfies LiveMarketDataMarketStatusBadgeViewModel]),
     {
       id: "updates",
       label: "Updates",
@@ -1483,7 +1521,7 @@ export function computeIntradayMetrics(trades: readonly TradeDataResponse[]): In
   }
 
   const chronological = [...trades].reverse();
-  const series: { ts: number; price: number }[] = [];
+  const series: IntradayMetrics["series"] = [];
   let high = -Infinity;
   let low = Infinity;
   let volume = 0;
@@ -1494,7 +1532,7 @@ export function computeIntradayMetrics(trades: readonly TradeDataResponse[]): In
     if (!Number.isFinite(price) || price <= 0) continue;
     const ts = new Date(trade.timestamp).getTime();
     if (Number.isFinite(ts)) {
-      series.push({ ts, price });
+      series.push({ ts, price, trade });
     }
     if (price > high) high = price;
     if (price < low) low = price;
@@ -1551,11 +1589,12 @@ function formatPriceSize(price: number | null | undefined, size: number | null |
   return `${priceLabel} x ${sizeLabel}`;
 }
 
+/** A market-data instant to the millisecond in the display zone, e.g. "May 8, 2026, 15:00:00.123 UTC". */
 export function formatMarketTime(iso: string | null | undefined): string {
   if (!iso) return LIVE_QUOTES_EMPTY_VALUE;
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return LIVE_QUOTES_EMPTY_VALUE;
-  return formatUtcTimeWithMilliseconds(date);
+  return formatTimestamp(date, { precision: "millisecond" });
 }
 
 function formatRelativeAge(iso: string | null | undefined): string {
@@ -1566,10 +1605,7 @@ function formatRelativeAge(iso: string | null | undefined): string {
   if (elapsedMs < 1000) return "just now";
   const seconds = Math.round(elapsedMs / 1000);
   if (seconds < 60) return `${seconds}s ago`;
-  const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.round(minutes / 60);
-  return `${hours}h ago`;
+  return formatRelativeTime(then, then + elapsedMs);
 }
 
 function formatCount(count: number, noun: string): string {
@@ -1638,7 +1674,7 @@ export function buildLiveQuotesSessionStatsViewModel(
     id: "live-quotes-session-stats",
     ariaLabel: `${symbol} session statistics`,
     descriptionId: "live-quotes-session-stats-description",
-    description: `Session ${session.sessionDate} quote evidence from ${formatMarketTimestamp(session.firstTradeAt)} to ${formatMarketTimestamp(session.lastTradeAt)}.`,
+    description: `Session ${session.sessionDate} quote evidence from ${formatMarketTime(session.firstTradeAt)} to ${formatMarketTime(session.lastTradeAt)}.`,
     periodLabel: "Today",
     dateLabel: `Session ${session.sessionDate}`,
     changeLabel,
@@ -1688,7 +1724,7 @@ function buildDepthLevelDetail(
   const venueLabel = orderbook?.venue ?? "Unreported";
   const streamLabel = orderbook?.streamId ?? "Unreported";
   const sequenceLabel = orderbook ? formatMarketSize(orderbook.sequenceNumber) : LIVE_QUOTES_EMPTY_VALUE;
-  const timestampLabel = formatMarketTimestamp(orderbook?.timestamp ?? null);
+  const timestampLabel = formatMarketTime(orderbook?.timestamp ?? null);
   const marketStateLabel = orderbook?.marketState ?? "Unreported";
   const imbalanceLabel = orderbook?.imbalance === null || orderbook?.imbalance === undefined
     ? LIVE_QUOTES_EMPTY_VALUE
@@ -1716,10 +1752,6 @@ function buildDepthLevelDetail(
       { label: "Timestamp", value: timestampLabel }
     ]
   };
-}
-
-function liveQuoteTradeId(trade: TradeDataResponse): string {
-  return `${trade.sequenceNumber}-${trade.timestamp}`;
 }
 
 function buildTradeRow(trade: TradeDataResponse, detailPanelId: string): LiveQuotesTradeRowViewModel {
@@ -1773,7 +1805,7 @@ function buildTradeDetail(trade: TradeDataResponse): LiveQuotesTradeDetailViewMo
       { label: "Sequence", value: String(trade.sequenceNumber) },
       { label: "Stream", value: streamLabel },
       { label: "Venue", value: venueLabel },
-      { label: "Timestamp", value: formatMarketTimestamp(trade.timestamp) }
+      { label: "Timestamp", value: formatMarketTime(trade.timestamp) }
     ]
   };
 }
@@ -1782,7 +1814,9 @@ function buildPriceChartViewModel(
   symbol: string,
   metrics: IntradayMetrics,
   loading: boolean,
-  error: string | null
+  error: string | null,
+  selectTrade: (id: string) => void,
+  tradeDetailPanelId: string
 ): LiveQuotesPriceChartViewModel {
   const changeTone: LiveQuotesPriceChartViewModel["changeTone"] = metrics.change === null
     ? "default"
@@ -1819,14 +1853,16 @@ function buildPriceChartViewModel(
       { id: "volume", label: "Volume", value: formatVolume(metrics.volume) }
     ],
     ariaLabel,
-    sparkline: buildPriceSparklineViewModel(metrics, strokeToken, ariaLabel)
+    sparkline: buildPriceSparklineViewModel(metrics, strokeToken, ariaLabel, selectTrade, tradeDetailPanelId)
   };
 }
 
 export function buildPriceSparklineViewModel(
   metrics: IntradayMetrics,
   strokeToken: string,
-  ariaLabel: string
+  ariaLabel: string,
+  selectTrade?: (id: string) => void,
+  tradeDetailPanelId?: string
 ): LiveQuotesSparklineViewModel | null {
   const width = 800;
   const height = 180;
@@ -1845,12 +1881,16 @@ export function buildPriceSparklineViewModel(
   const xFor = (ts: number) => padX + ((ts - minTs) / tsSpan) * (width - padX * 2);
   const yFor = (price: number) => padY + (1 - (price - low) / priceSpan) * (height - padY * 2);
   const pointFor = (point: { ts: number; price: number }): LiveQuotesSparklinePointViewModel => ({
-    x: xFor(point.ts).toFixed(2),
-    y: yFor(point.price).toFixed(2)
+    x: formatFixed(xFor(point.ts), 2),
+    y: formatFixed(yFor(point.price), 2)
   });
   const points = series.map(pointFor);
+  const observations = series.map(({ trade, price }, index) => ({
+    ...points[index]!,
+    ...liveTradeChartEvidence(trade, price, selectTrade, tradeDetailPanelId)
+  }));
   const lastPoint = points[points.length - 1]!;
-  const baseY = (height - padY).toFixed(2);
+  const baseY = formatFixed(height - padY, 2);
   const areaSegments = [`M ${points[0]!.x} ${baseY}`];
 
   for (const point of points) {
@@ -1863,17 +1903,33 @@ export function buildPriceSparklineViewModel(
     points: points.map((point) => `${point.x},${point.y}`).join(" "),
     areaPath: areaSegments.join(" "),
     lastPoint,
-    guideStartX: padX.toFixed(2),
-    guideEndX: (width - padX).toFixed(2),
-    highGuideY: yFor(high).toFixed(2),
-    lowGuideY: yFor(low).toFixed(2),
-    labelX: (width - padX).toFixed(2),
-    highLabelY: Math.max(yFor(high) - 4, 12).toFixed(2),
-    lowLabelY: Math.min(yFor(low) + 12, height - 4).toFixed(2),
+    guideStartX: formatFixed(padX, 2),
+    guideEndX: formatFixed(width - padX, 2),
+    highGuideY: formatFixed(yFor(high), 2),
+    lowGuideY: formatFixed(yFor(low), 2),
+    labelX: formatFixed(width - padX, 2),
+    highLabelY: formatFixed(Math.max(yFor(high) - 4, 12), 2),
+    lowLabelY: formatFixed(Math.min(yFor(low) + 12, height - 4), 2),
     highLabel: formatMarketPrice(high),
     lowLabel: formatMarketPrice(low),
     strokeToken,
-    ariaLabel
+    ariaLabel,
+    observations: [
+      ...observations,
+      ...(["high", "low"] as const).map((key) => {
+        const value = key === "high" ? high : low;
+        const source = observations.find((point) => point.values[0]?.value === value);
+        return {
+          ...source,
+          id: `trade-${key}:${series[0]!.trade.symbol}`,
+          label: `Recent trade ${key}`,
+          x: formatFixed(width - padX, 2),
+          y: formatFixed(yFor(value), 2),
+          values: [{ series: `Trade ${key}`, value, unit: "Price per unit (currency unreported)", basis: `Window ${key} across buffered trade prices.` }]
+        };
+      })
+    ],
+    latestIndex: observations.length - 1
   };
 }
 
@@ -1950,21 +2006,6 @@ function buildPanelState({
   };
 }
 
-function formatMarketTimestamp(iso: string | null | undefined): string {
-  if (!iso) return LIVE_QUOTES_EMPTY_VALUE;
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return LIVE_QUOTES_EMPTY_VALUE;
-  return formatUtcTimeWithMilliseconds(date);
-}
-
-function formatUtcTimeWithMilliseconds(date: Date): string {
-  return [
-    String(date.getUTCHours()).padStart(2, "0"),
-    String(date.getUTCMinutes()).padStart(2, "0"),
-    String(date.getUTCSeconds()).padStart(2, "0")
-  ].join(":") + `.${String(date.getUTCMilliseconds()).padStart(3, "0")} UTC`;
-}
-
 function formatChange(value: number | null): string {
   if (value === null || !Number.isFinite(value)) return LIVE_QUOTES_EMPTY_VALUE;
   const sign = value > 0 ? "+" : value < 0 ? "" : "";
@@ -1979,8 +2020,8 @@ function formatChangePct(value: number | null): string {
 
 function formatVolume(value: number): string {
   if (!Number.isFinite(value) || value <= 0) return LIVE_QUOTES_EMPTY_VALUE;
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
+  if (value >= 1_000_000) return `${formatDecimal(value / 1_000_000, 2)}M`;
+  if (value >= 1_000) return `${formatDecimal(value / 1_000, 1)}K`;
   return formatCountValue(value);
 }
 

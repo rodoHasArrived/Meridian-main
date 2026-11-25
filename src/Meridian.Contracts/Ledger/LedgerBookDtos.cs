@@ -319,7 +319,18 @@ public sealed record LedgerPeriodTrialBalanceLineDto(
     string? RuleVersion = null,
     string? SourceEventId = null,
     Guid? SourceJournalEntryId = null,
-    LedgerDimensionSetDto? Dimensions = null);
+    LedgerDimensionSetDto? Dimensions = null)
+{
+    // Additive exact presentation values keep existing numeric consumers compatible.
+    public string BalanceExact => Balance.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    public string DebitTotalExact => DebitTotal.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    public string CreditTotalExact => CreditTotal.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    public IReadOnlyList<Guid> JournalEntryIds { get; init; } = [];
+    public IReadOnlyList<Guid> LedgerEntryIds { get; init; } = [];
+    public string? BalanceProofSubjectId { get; init; }
+    public LedgerAmountScopeDto? BalanceProofScope { get; init; }
+    public string? BalanceProofCurrency { get; init; }
+}
 
 public sealed record LedgerPeriodSummaryDto(
     Guid PeriodId,
@@ -350,7 +361,25 @@ public sealed record LedgerJournalEntryLineDto(
     decimal Debit,
     decimal Credit,
     string Description,
-    LedgerDimensionSetDto? Dimensions = null);
+    LedgerDimensionSetDto? Dimensions = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Memo { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LedgerJournalLineChartAccountDto? ChartAccount { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LedgerJournalLineCurrencyDto? Currency { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AmountPassportReferenceDto? AmountPassport { get; init; }
+}
+
+public sealed record LedgerJournalLineChartAccountDto(string NodeId, string Revision, string? AccountCode);
+
+public sealed record LedgerJournalLineCurrencyDto(string TransactionCurrency, string FunctionalCurrency,
+    decimal TransactionDebit, decimal TransactionCredit, decimal FxRateToFunctional);
 
 /// <summary>One posting to an account with the account balance after it.</summary>
 public sealed record LedgerAccountRunningBalancePointDto(
@@ -406,10 +435,18 @@ public sealed record LedgerJournalEntryDto(
     Guid? SourceEventId = null,
     Guid? SourceJournalEntryId = null,
     LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
-    LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null)
+    LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] LedgerJournalExecutionLineageDto? Execution = null)
 {
     public IReadOnlyList<LedgerJournalEntryLineDto> Lines { get; init; } = Lines ?? [];
 }
+
+/// <summary>
+/// The execution a journal entry was posted from, exactly as its retained metadata recorded it:
+/// the order identifier the execution journal uses, the fill, and the strategy run. Absent when the
+/// entry was not posted from an execution; never inferred from symbol, amount or time.
+/// </summary>
+public sealed record LedgerJournalExecutionLineageDto(string? OrderId, Guid? FillId, string? StrategyRunId);
 
 public sealed record LedgerReportSignatureDto(
     string Algorithm,

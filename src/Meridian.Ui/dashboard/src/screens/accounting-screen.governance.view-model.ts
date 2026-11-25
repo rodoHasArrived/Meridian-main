@@ -24,7 +24,6 @@ import {
 } from "@/lib/api";
 import {
   formatCount,
-  formatCurrency,
   formatDateOnly,
   formatDateTimeLabel,
 } from "./accounting-screen.formatting";
@@ -93,7 +92,7 @@ import type {
   RuleDryRunResult,
   GeneratedPostingLine,
 } from "@/types";
-import { formatCount as formatCountValue } from "@/lib/format";
+import { formatCount as formatCountValue, formatPrefixedCurrency } from "@/lib/format";
 
 const PRODUCTION_CERTIFICATION_RETAINED_EVIDENCE_REQUIRED = "Retained evidence is required before saving production certification controls.";
 interface AccountingTenantAdministrationProfileDraft {
@@ -177,6 +176,7 @@ interface AccountingChartAccountDraft {
   path: string;
   accountName: string;
   accountType: string;
+  accountCode: string;
   parentPath: string;
   financialAccountId: string;
   evidenceText: string;
@@ -1088,6 +1088,8 @@ export function useAccountingConfigurationViewModel(
     const path = chartAccountDraft.path.trim();
     const accountName = chartAccountDraft.accountName.trim();
     const accountType = chartAccountDraft.accountType.trim();
+    const retainedCode = workspace.chartOfAccounts.find(node => node.nodeId.toLowerCase() === nodeId.toLowerCase())?.accountCode;
+    const accountCode = retainedCode ?? chartAccountDraft.accountCode.trim();
     if (!nodeId || !path || !accountName || !accountType) {
       setChartAccountSaveError({
         summary: "Chart account is missing required fields.",
@@ -1113,6 +1115,7 @@ export function useAccountingConfigurationViewModel(
           path,
           accountName,
           accountType,
+          ...(accountCode ? { accountCode } : {}),
           parentPath: chartAccountDraft.parentPath.trim() || null,
           financialAccountId: chartAccountDraft.financialAccountId.trim() || null,
           isArchived: false
@@ -2006,6 +2009,8 @@ export function useAccountingConfigurationViewModel(
         : !workspace.ledgerBookSetupCandidate
           ? "No server-provided ledger-book setup candidate is available for this configuration scope."
           : null;
+    const retainedChartAccountCode = workspace?.chartOfAccounts.find(node =>
+      node.nodeId.toLowerCase() === chartAccountDraft.nodeId.trim().toLowerCase())?.accountCode;
     const chartAccountSaveDisabledReason = loading
       ? "Accounting configuration is still loading."
       : !workspace
@@ -2403,7 +2408,7 @@ export function useAccountingConfigurationViewModel(
         title: template.displayName,
         subtitle: `${template.version} | ${template.description || "No description supplied."}`,
         lineCountLabel: `${template.lines.length} line${template.lines.length === 1 ? "" : "s"}`,
-        balanceLabel: `${formatCurrency(debitTotal)} debit / ${formatCurrency(creditTotal)} credit`,
+        balanceLabel: `${formatPrefixedCurrency(debitTotal)} debit / ${formatPrefixedCurrency(creditTotal)} credit`,
         statusLabel: template.isArchived ? "Archived" : debitTotal === creditTotal ? "Balanced" : "Unbalanced"
       };
     });
@@ -2441,13 +2446,13 @@ export function useAccountingConfigurationViewModel(
     const previewView = preview
       ? {
           title: preview.displayName,
-          balanceLabel: `${formatCurrency(preview.totalDebits)} debit / ${formatCurrency(preview.totalCredits)} credit`,
+          balanceLabel: `${formatPrefixedCurrency(preview.totalDebits)} debit / ${formatPrefixedCurrency(preview.totalCredits)} credit`,
           statusLabel: preview.isBalanced ? "Balanced non-posting preview" : "Unbalanced preview",
           lineRows: preview.lines.map((line, index) => ({
             id: `${line.accountPath}-${line.side}-${index}`,
             account: `${line.accountPath} | ${line.accountName}`,
             side: line.side,
-            amount: `${formatCurrency(line.amount)} ${line.currency}`,
+            amount: `${formatPrefixedCurrency(line.amount)} ${line.currency}`,
             description: line.description ?? "Template line"
           }))
         }
@@ -2474,6 +2479,8 @@ export function useAccountingConfigurationViewModel(
         pathValue: chartAccountDraft.path,
         accountNameValue: chartAccountDraft.accountName,
         accountTypeValue: chartAccountDraft.accountType,
+        accountCodeValue: retainedChartAccountCode ?? chartAccountDraft.accountCode,
+        accountCodeReadOnly: Boolean(retainedChartAccountCode),
         parentPathValue: chartAccountDraft.parentPath,
         financialAccountIdValue: chartAccountDraft.financialAccountId,
         evidenceValue: chartAccountDraft.evidenceText,
@@ -2802,6 +2809,7 @@ function buildDefaultAccountingChartAccountDraft(): AccountingChartAccountDraft 
     path: "Assets:Cash:Operating",
     accountName: "Operating Cash",
     accountType: "Asset",
+    accountCode: "",
     parentPath: "Assets:Cash",
     financialAccountId: "",
     evidenceText: "browser://accounting/configure/chart-account/setup"
@@ -2815,6 +2823,7 @@ function buildNextAccountingChartAccountDraft(workspace: AccountingConfiguration
     path: `Assets:Configured Account ${nextIndex}`,
     accountName: `Configured Account ${nextIndex}`,
     accountType: "Asset",
+    accountCode: "",
     parentPath: "Assets",
     financialAccountId: "",
     evidenceText: `browser://accounting/configure/chart-account/${nextIndex}`
@@ -2988,7 +2997,7 @@ function parseExternalGlAccountMappings(value: string): Record<string, string> {
   return mappings;
 }
 
-type LedgerDimensionScalarKey = Exclude<keyof LedgerDimensionSet, "externalGlDimensions">;
+type LedgerDimensionScalarKey = Exclude<keyof LedgerDimensionSet, "externalGlDimensions" | "intercompanyAgreementVersion">;
 
 const LEDGER_DIMENSION_KEYS = new Map<string, LedgerDimensionScalarKey>([
   ["fundid", "fundId"],
@@ -3137,7 +3146,7 @@ function buildAccountingProductionReadinessViewModel(
           ? `Fund ${workspace.fundProfileId}`
           : "Accounting scope not loaded",
       issueSummaryLabel: error?.summary ?? "Load accounting configuration to assess rollout readiness.",
-      externalGlLabel: "External GL posture unavailable",
+      externalGlLabel: "External GL status unavailable",
       ledgerBookRolloutLabel: "Ledger-book rollout unavailable",
       dimensionalReportingLabel: "Dimensional reporting unavailable",
       dimensionalReportingEvidenceLabel: "No dimensional reporting evidence loaded",
@@ -3213,7 +3222,7 @@ function buildAccountingProductionReadinessViewModel(
       ? gap.blockingIssueCodes.join(", ")
       : "No blocking issue codes",
     issueDetailLabel: (gap.issues ?? []).length > 0
-      ? (gap.issues ?? []).map((issue) => `${issue.code}: ${issue.message} -> ${issue.suggestedAction}`).join(" | ")
+      ? (gap.issues ?? []).map((issue) => `${issue.code}: ${issue.message} → ${issue.suggestedAction}`).join(" | ")
       : "No blocking issue details",
     routeLabel: gap.routes.length > 0
       ? gap.routes.join(", ")
@@ -3360,7 +3369,7 @@ function buildAccountingProductionCertificationProfileControls(
     {
       id: "direct-lending-book",
       label: "Direct lending by book",
-      description: "Loan-account and borrower projections retain the selected ledger book.",
+      description: "Loan-account and borrower views retain the selected ledger book.",
       checked: draft?.directLendingLedgerBookNativeCertified ?? false
     },
     {
@@ -3572,7 +3581,7 @@ function buildAccountingTenantAdministrationProfileControls(
     {
       id: "admin-roles",
       label: "Admin roles",
-      description: "Accounting admin role profiles are configured for governed setup.",
+      description: "Accounting admin role profiles are configured for controlled setup.",
       checked: draft?.adminRoleProfileConfigured ?? false
     },
     {
@@ -3590,7 +3599,7 @@ function buildAccountingTenantAdministrationProfileControls(
     {
       id: "operator-surface",
       label: "Operator surface",
-      description: "Accounting setup controls are exposed through the governed operator surface.",
+      description: "Accounting setup controls are exposed through the controlled operator surface.",
       checked: draft?.accountingAdminSurfaceConfigured ?? false
     },
     {
@@ -4035,7 +4044,7 @@ function buildAccountingMigrationWorkerPlanRows(plans: AccountingMigrationRunWor
         title: plan.summary?.trim() || plan.planId,
         detail: dimensionScope ? `Dimensions ${dimensionScope}` : "No retained dimension envelope",
         kindLabel: formatMigrationRunKind(plan.kind),
-        countLabel: `${formatCount(plan.sourceRecordCount, "source record")} -> ${formatCount(plan.migratedRecordCount, "migrated record")}`,
+        countLabel: `${formatCount(plan.sourceRecordCount, "source record")} → ${formatCount(plan.migratedRecordCount, "migrated record")}`,
         evidenceLabel: `${plan.evidenceReferences.length} evidence reference${plan.evidenceReferences.length === 1 ? "" : "s"}`,
         scopeLabel: `Tenant ${plan.tenantId?.trim() || "context"} | company ${plan.companyId?.trim() || "context"} | fund ${plan.fundProfileId || "default-fund"} | book ${plan.ledgerBookId || "missing"}`,
         tone: reconciled ? "success" : "danger"
@@ -4067,7 +4076,7 @@ function buildAccountingMigrationRolloutPlanRows(plan: AccountingMigrationRollou
   });
 }
 
-type LedgerScopeScalarKey = Exclude<keyof NonNullable<PostingRule["scope"]>, "externalGlDimensions">;
+type LedgerScopeScalarKey = Exclude<keyof NonNullable<PostingRule["scope"]>, "externalGlDimensions" | "intercompanyAgreementVersion">;
 
 const LEDGER_SCOPE_SCALAR_KEYS: LedgerScopeScalarKey[] = [
   "fundId",
@@ -4441,12 +4450,12 @@ function buildAccountingRulesStudioDryRunViewModel(result: RuleDryRunResult): Ac
   return {
     title: `${result.sourceEventType} dry run`,
     balanceLabel: result.isPostingBalanced
-      ? `Balanced ${formatCurrency(result.eventAmount)} ${result.currency}`
-      : `Unbalanced ${formatCurrency(result.eventAmount)} ${result.currency}`,
+      ? `Balanced ${formatPrefixedCurrency(result.eventAmount)} ${result.currency}`
+      : `Unbalanced ${formatPrefixedCurrency(result.eventAmount)} ${result.currency}`,
     selectedRuleLabel: result.selectedRuleId ? `Selected rule ${result.selectedRuleId}` : "No rule selected",
     matchRows: result.ruleMatches.map(formatRuleDryRunMatch),
     generatedLineRows: result.generatedLines.map((line, index) =>
-      `${index + 1}. ${line.side} ${line.accountPath} ${formatCurrency(line.amount)} ${line.currency} - ${line.description ?? line.accountName}`
+      `${index + 1}. ${line.side} ${line.accountPath} ${formatPrefixedCurrency(line.amount)} ${line.currency} - ${line.description ?? line.accountName}`
     ),
     generatedPostingRows: generatedPostingLines.length > 0
       ? generatedPostingLines.map(formatGeneratedPostingLine)
@@ -4473,13 +4482,13 @@ function buildAccountingRulesStudioJournalCandidateViewModel(
     : "Approval state unavailable.";
 
   return {
-    title: "Governed journal draft candidate",
+    title: "Journal draft candidate",
     selectedRuleLabel: result.selectedRuleId
       ? `Selected rule ${result.selectedRuleId}${result.selectedRuleVersion ? ` version ${result.selectedRuleVersion}` : ""}`
       : "No selected posting rule",
     balanceLabel: result.isBalanced
-      ? `Balanced ${formatCurrency(result.totalDebits)} / ${formatCurrency(result.totalCredits)}`
-      : `Unbalanced by ${formatCurrency(result.imbalance)}`,
+      ? `Balanced ${formatPrefixedCurrency(result.totalDebits)} / ${formatPrefixedCurrency(result.totalCredits)}`
+      : `Unbalanced by ${formatPrefixedCurrency(result.imbalance)}`,
     commandLabel,
     approvalLabel,
     evidenceLabel: `${result.evidenceLinks.length} evidence link${result.evidenceLinks.length === 1 ? "" : "s"}`,
@@ -4512,7 +4521,7 @@ function buildAccountingRulesStudioTestCaseViewModel(testCase: AccountingRuleTes
   return {
     id: testCase.testCaseId,
     title: testCase.displayName,
-    subtitle: `${request.sourceEventType} | ${request.effectiveDate} | ${formatCurrency(request.eventAmount)} ${request.currency}`,
+    subtitle: `${request.sourceEventType} | ${request.effectiveDate} | ${formatPrefixedCurrency(request.eventAmount)} ${request.currency}`,
     assertionLabel: `Expect ${expectedRule}${expectedVersion}, ${testCase.expectBalancedPosting ? "balanced" : "unbalanced"}, ${expectedIssues}, ${expectedPostings}.`,
     evidenceLabel: evidenceCount > 0
       ? `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`
@@ -4606,7 +4615,7 @@ function resolveRulePolicyId(workspace: AccountingConfigurationWorkspace): strin
 
 function formatAccountingRuleCondition(condition: NonNullable<PostingRule["conditions"]>[number]): string {
   const value = condition.secondValue
-    ? `${condition.value ?? "missing"} -> ${condition.secondValue}`
+    ? `${condition.value ?? "missing"} → ${condition.secondValue}`
     : condition.value ?? "present";
   const required = condition.isRequired ? "required" : "optional";
   return `${condition.field} ${condition.operator} ${value} (${required})${condition.description ? ` - ${condition.description}` : ""}`;
@@ -4617,21 +4626,21 @@ function formatAccountingRuleConditionGroup(group: NonNullable<PostingRule["cond
   const conditions = group.conditions.length > 0
     ? group.conditions.map(formatAccountingRuleCondition).join("; ")
     : "no child predicates";
-  return `${group.groupId}: ${group.operator} (${required}) -> ${conditions}${group.description ? ` - ${group.description}` : ""}`;
+  return `${group.groupId}: ${group.operator} (${required}) → ${conditions}${group.description ? ` - ${group.description}` : ""}`;
 }
 
 function formatAccountingRuleFormula(formula: NonNullable<PostingRule["formulas"]>[number]): string {
-  return `${formula.formulaId}: ${formula.kind} ${formatCurrency(formula.value)} ${formula.currency}${formula.description ? ` - ${formula.description}` : ""}`;
+  return `${formula.formulaId}: ${formula.kind} ${formatPrefixedCurrency(formula.value)} ${formula.currency}${formula.description ? ` - ${formula.description}` : ""}`;
 }
 
 function formatAllocationRule(allocation: AllocationRule): string {
   const scope = formatLedgerDimensionSet(allocation.targetDimensions).join(", ");
-  return `${allocation.allocationRuleId}: ${allocation.basis} weight ${allocation.weight}${allocation.formulaId ? ` via ${allocation.formulaId}` : ""}${scope ? ` -> ${scope}` : ""}`;
+  return `${allocation.allocationRuleId}: ${allocation.basis} weight ${allocation.weight}${allocation.formulaId ? ` via ${allocation.formulaId}` : ""}${scope ? ` → ${scope}` : ""}`;
 }
 
 function formatGeneratedPostingLine(line: GeneratedPostingLine): string {
   const scope = formatLedgerDimensionSet(line.dimensions).join(", ");
-  return `${line.side} ${line.accountPath} ${formatCurrency(line.amount)} ${line.currency} via ${line.amountFormulaId}${scope ? ` | ${scope}` : ""}${line.description ? ` - ${line.description}` : ""}`;
+  return `${line.side} ${line.accountPath} ${formatPrefixedCurrency(line.amount)} ${line.currency} via ${line.amountFormulaId}${scope ? ` | ${scope}` : ""}${line.description ? ` - ${line.description}` : ""}`;
 }
 
 function formatRuleDryRunMatch(match: AccountingRuleDryRunMatch): string {
@@ -4658,6 +4667,8 @@ function formatLedgerDimensionSet(dimensions?: PostingRule["scope"]): string[] {
     ["Tax lot", dimensions.taxLotId],
     ["Cost center", dimensions.costCenterId],
     ["Counterparty", dimensions.counterpartyId],
+    ["Agreement", dimensions.intercompanyAgreementId],
+    ["Agreement version", dimensions.intercompanyAgreementVersion == null ? null : String(dimensions.intercompanyAgreementVersion)],
     ["Organization", dimensions.organizationId],
     ["Portfolio", dimensions.portfolioId],
     ["Book", dimensions.bookId],

@@ -32,6 +32,7 @@ public sealed class BacktestProxy
     private decimal _marketImpactCoefficient = 0.1m;
     private decimal _orderBookQueueAheadFraction;
     private bool _adjustForCorporateActions = true;
+    private BacktestCorporateActionMode _corporateActionMode;
     private double _riskFreeRate = 0.04;
     private readonly LambdaBacktestStrategy _strategy = new();
     private Func<CancellationToken> _cancellationTokenProvider;
@@ -175,6 +176,27 @@ public sealed class BacktestProxy
         return this;
     }
 
+    /// <summary>Selects legacy price adjustments or canonical accounting over explicitly raw bars.</summary>
+    public BacktestProxy WithCorporateActionMode(BacktestCorporateActionMode mode)
+    {
+        if (!Enum.IsDefined(mode))
+            throw new ArgumentOutOfRangeException(nameof(mode), "Unknown corporate-action mode.");
+        _corporateActionMode = mode;
+        return this;
+    }
+
+    /// <summary>Accepts the named mode, case-insensitively; numeric and unknown modes are rejected.</summary>
+    public BacktestProxy WithCorporateActionMode(string mode)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(mode);
+        return mode.Trim().ToLowerInvariant() switch
+        {
+            "legacy" => WithCorporateActionMode(BacktestCorporateActionMode.Legacy),
+            "rawpriceswithcanonicalevents" => WithCorporateActionMode(BacktestCorporateActionMode.RawPricesWithCanonicalEvents),
+            _ => throw new ArgumentException("Expected Legacy or RawPricesWithCanonicalEvents.", nameof(mode))
+        };
+    }
+
     /// <summary>Sets the annualised risk-free rate used for Sharpe/Sortino (default 0.04).</summary>
     public BacktestProxy WithRiskFreeRate(double annualRate)
     {
@@ -255,7 +277,10 @@ public sealed class BacktestProxy
         OrderBookQueueAheadFraction: _orderBookQueueAheadFraction,
         FillTiming: _fillTiming,
         FillConservatism: _fillConservatism,
-        DelistingPolicy: _delistingPolicy);
+        DelistingPolicy: _delistingPolicy)
+    {
+        CorporateActionMode = _corporateActionMode
+    };
 
     /// <summary>
     /// The execution-realism configuration this proxy will run with, for lineage and disclosure.

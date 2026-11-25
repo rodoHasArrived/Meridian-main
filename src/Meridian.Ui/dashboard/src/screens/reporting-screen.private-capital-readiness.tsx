@@ -89,7 +89,7 @@ export function ReportingPrivateCapitalReadinessPanel({ data }: { data: Accounti
                   <TableWorkbench workbenchId="reporting-private-capital-events" sourceKey={activity.projectedAtUtc}
                     rows={fundEventRecords} columns={fundEventColumns(activity)} getRowId={record => record.fundEventRecordId}
                     getSearchText={record => [record.fundEventType, record.fundEventId, record.capitalAccountId, record.memo].join(" ")}
-                    completePopulation={activity.fundEventCount === fundEventRecords.length} sourceDescription="Private-capital activity projection, as of the displayed projection time; amounts retain their source currency."
+                    completePopulation={activity.fundEventCount === fundEventRecords.length} sourceDescription="Private-capital activity snapshot, as of the displayed snapshot time; amounts retain their source currency."
                     ariaLabel="Private-capital report-ready fund event records" emptyText="No private-capital fund event records returned." />
                 </div>
               ) : (
@@ -103,7 +103,7 @@ export function ReportingPrivateCapitalReadinessPanel({ data }: { data: Accounti
                   <TableWorkbench workbenchId="reporting-capital-subledgers" sourceKey={activity.projectedAtUtc}
                     rows={subledgers} columns={subledgerColumns()} getRowId={subledger => subledger.subledgerId}
                     getSearchText={subledger => JSON.stringify(subledger)} completePopulation={activity.capitalAccountCount === subledgers.length}
-                    sourceDescription="Capital-account references from the authorized private-capital projection."
+                    sourceDescription="Capital-account references from the authorized private-capital snapshot."
                     ariaLabel="Private-capital capital account subledger references" emptyText="No account-level capital-account subledger references were included." />
                 </div>
 
@@ -127,9 +127,9 @@ export function ReportingPrivateCapitalReadinessPanel({ data }: { data: Accounti
 function fundEventColumns(activity: PrivateCapitalActivityProjection): TableWorkbenchColumn<PrivateCapitalFundEventLedgerRecord>[] { return [
   { id: "field-0", label: "Fund event", exportValue: (record) => record.fundEventType || record.fundEventId, render: (record) => { return <>
         <div className="font-semibold text-foreground">{record.fundEventType || record.fundEventId}</div>
-        <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{record.fundEventRecordId}</div>
+        <div className="mt-1 break-all font-mono text-xs text-muted-foreground">{record.fundEventRecordId}</div>
         <div className="mt-1 text-xs text-muted-foreground">{record.memo || record.journalEntryId}</div>
-        <div className="mt-1 font-mono text-[11px] text-muted-foreground">{record.effectiveDate}</div>
+        <div className="mt-1 font-mono text-xs text-muted-foreground">{record.effectiveDate}</div>
       </>; } },
   { id: "field-1", label: "Approval and readiness", exportValue: (record) => `${record.approvalState}; ${record.readiness ?? ""}`, render: (record) => { return <>
         <div className="flex flex-wrap gap-1.5">
@@ -158,7 +158,7 @@ function fundEventColumns(activity: PrivateCapitalActivityProjection): TableWork
         <p className="mt-2 text-xs text-muted-foreground">
           {formatNumber(record.reportOutputCount, { maximumFractionDigits: 0 })} output{record.reportOutputCount === 1 ? "" : "s"} / {formatNumber(record.reportLineProvenanceCount, { maximumFractionDigits: 0 })} provenance line{record.reportLineProvenanceCount === 1 ? "" : "s"}
         </p>
-        <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">
+        <p className="mt-1 break-all font-mono text-xs text-muted-foreground">
           {record.primaryReportOutputType ?? record.reportWorkflowState ?? record.publicationManifestId ?? "No primary report output"}
         </p>
       </>; } },
@@ -212,7 +212,7 @@ function isGuid(value: string): boolean {
 function subledgerColumns(): TableWorkbenchColumn<PrivateCapitalCapitalAccountSubledger>[] { return [
   { id: "field-0", label: "Subledger", exportValue: (subledger) => subledger.subledgerId, render: (subledger) => { return <>
         <div className="break-all font-mono text-xs text-foreground">{subledger.capitalAccountId}</div>
-        <div className="mt-1 break-all text-[11px] text-muted-foreground">{subledger.investorId ?? "Investor not assigned"}</div>
+        <div className="mt-1 break-all text-xs text-muted-foreground">{subledger.investorId ?? "Investor not assigned"}</div>
         <ReportingPrivateCapitalRouteLink label="Subledger" href={subledger.activityRoute} />
       </>; } },
   { id: "field-1", label: "Roll-forward", exportValue: (subledger) => JSON.stringify(subledger), render: (subledger) => { return <>
@@ -231,7 +231,7 @@ function subledgerColumns(): TableWorkbenchColumn<PrivateCapitalCapitalAccountSu
           status={subledger.readiness ?? "EvidenceMissing"}
           label={subledger.readinessLabel || subledger.readiness || "Evidence missing"}
         />
-        <div className="mt-1 text-[11px] text-muted-foreground">{subledger.readinessReason || "No subledger readiness reason"}</div>
+        <div className="mt-1 text-xs text-muted-foreground">{subledger.readinessReason || "No subledger readiness reason"}</div>
         <ReportingPrivateCapitalRouteLink label={subledger.nextAction || "Next action"} href={subledger.nextActionRoute ?? subledger.activityRoute} />
         <div>{formatNumber(subledger.evidenceLinkCount, { maximumFractionDigits: 0 })} retained evidence link{subledger.evidenceLinkCount === 1 ? "" : "s"}</div>
         <div className="mt-1">{formatNumber(subledger.validationIssueCount, { maximumFractionDigits: 0 })} validation issue{subledger.validationIssueCount === 1 ? "" : "s"}</div>
@@ -253,14 +253,14 @@ function ReportingPrivateCapitalLedgerImpactList({ impacts }: { impacts: Private
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <span className="min-w-0">
                   <span className="block font-semibold text-foreground">{impact.fundEventType || impact.fundEventId}</span>
-                  <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{impact.journalEntryId}</span>
+                  <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">{impact.journalEntryId}</span>
                 </span>
                 <SeverityBadge
                   status={impact.isPostingReady ? "Ready" : impact.isBalanced ? "ReviewRequired" : "Blocked"}
                   label={impact.isPostingReady ? "Posting-ready" : impact.isBalanced ? "Balanced review" : "Unbalanced"}
                 />
               </div>
-              <div className="mt-2 grid grid-cols-2 gap-2 font-mono text-[11px] text-muted-foreground">
+              <div className="mt-2 grid grid-cols-2 gap-2 font-mono text-xs text-muted-foreground">
                 <span>Debits {formatReportingMoney(impact.totalDebits, impact.currency)}</span>
                 <span>Credits {formatReportingMoney(impact.totalCredits, impact.currency)}</span>
                 <span>Imbalance {formatReportingMoney(impact.imbalance, impact.currency)}</span>
@@ -290,7 +290,7 @@ function ReportingPrivateCapitalReportOutputList({ outputs }: { outputs: Private
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <span className="min-w-0">
                   <span className="block font-semibold text-foreground">{output.displayName || output.reportOutputType}</span>
-                  <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{output.reportOutputId}</span>
+                  <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">{output.reportOutputId}</span>
                 </span>
                 <span className="flex flex-wrap justify-end gap-1.5">
                   <SeverityBadge
@@ -303,11 +303,11 @@ function ReportingPrivateCapitalReportOutputList({ outputs }: { outputs: Private
                   />
                 </span>
               </div>
-              <p className="mt-2 text-[11px] text-muted-foreground">{output.readinessReason || "No report-output readiness reason"}</p>
-              <p className="mt-2 font-mono text-[11px] text-muted-foreground">
+              <p className="mt-2 text-xs text-muted-foreground">{output.readinessReason || "No report-output readiness reason"}</p>
+              <p className="mt-2 font-mono text-xs text-muted-foreground">
                 {formatReportingMoney(output.netCapitalActivity, output.currency)} / {output.approvalState} / {output.reportWorkflowState ?? "No workflow state"}
               </p>
-              <p className="mt-1 text-[11px] text-muted-foreground">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {formatNumber(output.evidenceLinkCount, { maximumFractionDigits: 0 })} evidence link{output.evidenceLinkCount === 1 ? "" : "s"} / {formatNumber((output.reportLineProvenanceCount ?? 0), { maximumFractionDigits: 0 })} provenance line{output.reportLineProvenanceCount === 1 ? "" : "s"}
               </p>
               <ReportingPrivateCapitalRouteLink label={output.nextAction || "Output"} href={output.nextActionRoute ?? output.reportOutputRoute ?? output.reportRoute} />
@@ -323,7 +323,7 @@ function ReportingPrivateCapitalReportOutputList({ outputs }: { outputs: Private
 
 function ReportingPrivateCapitalEvidenceCategories({ categories }: { categories: PrivateCapitalEvidenceCategory[] }) {
   if (categories.length === 0) {
-    return <div className="mt-2 text-[11px] text-muted-foreground">No evidence categories retained.</div>;
+    return <div className="mt-2 text-xs text-muted-foreground">No evidence categories retained.</div>;
   }
 
   return (
@@ -335,11 +335,11 @@ function ReportingPrivateCapitalEvidenceCategories({ categories }: { categories:
               status={category.isReady ? "Ready" : "ReviewRequired"}
               label={category.label || category.categoryId}
             />
-            <span className="font-mono text-[11px] text-muted-foreground">{formatNumber(category.evidenceLinkCount, { maximumFractionDigits: 0 })} evidence</span>
+            <span className="font-mono text-xs text-muted-foreground">{formatNumber(category.evidenceLinkCount, { maximumFractionDigits: 0 })} evidence</span>
           </div>
-          <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{category.summary || "No evidence summary retained."}</p>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">{category.summary || "No evidence summary retained."}</p>
           {(category.requiredEvidence ?? []).length > 0 ? (
-            <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
               Required: {(category.requiredEvidence ?? []).join(", ")}
             </p>
           ) : null}
@@ -352,7 +352,7 @@ function ReportingPrivateCapitalEvidenceCategories({ categories }: { categories:
 function ReportingPrivateCapitalMetric({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
     <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
-      <div className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "uppercase")}>{label}</div>
+      <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "uppercase")}>{label}</div>
       <div className="mt-1 font-mono text-base text-foreground">{value}</div>
       <div className="mt-1 text-xs leading-5 text-muted-foreground">{detail}</div>
     </div>
@@ -361,7 +361,7 @@ function ReportingPrivateCapitalMetric({ label, value, detail }: { label: string
 
 function ReportingPrivateCapitalRouteLink({ label, href }: { label: string; href: string | null | undefined }) {
   if (!href) {
-    return <div className="mt-1 text-[11px] text-muted-foreground">{label}: none retained</div>;
+    return <div className="mt-1 text-xs text-muted-foreground">{label}: none retained</div>;
   }
 
   return (

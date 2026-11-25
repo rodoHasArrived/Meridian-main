@@ -61,7 +61,6 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
             if (SetProperty(ref _isRefreshing, value))
             {
                 OnPropertyChanged(nameof(CanRefreshPortfolio));
-                OnPropertyChanged(nameof(RefreshTooltip));
                 RefreshCommand.NotifyCanExecuteChanged();
                 UpdatePositionsPresentation();
             }
@@ -128,10 +127,6 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
     public bool HasSelectedPosition => SelectedPosition is not null;
 
     public bool CanRefreshPortfolio => !IsRefreshing;
-
-    public string RefreshTooltip => IsRefreshing
-        ? "Aggregate portfolio refresh is already running."
-        : "Refresh cross-strategy exposure and netted positions.";
 
     public bool CanOpenSelectedSecurity => !string.IsNullOrWhiteSpace(SelectedPosition?.Symbol);
 
@@ -358,7 +353,6 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
         OnPropertyChanged(nameof(IsPositionsEmptyStateVisible));
         OnPropertyChanged(nameof(PortfolioActionStateTitle));
         OnPropertyChanged(nameof(PortfolioActionStateDetail));
-        OnPropertyChanged(nameof(RefreshTooltip));
     }
 
     private void RaiseSelectedPositionStateChanged()

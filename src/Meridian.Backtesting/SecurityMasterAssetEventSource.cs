@@ -17,7 +17,19 @@ public interface IBacktestAssetEventSource
         IReadOnlyCollection<string> symbols,
         DateOnly from,
         DateOnly to,
-        CancellationToken ct = default);
+        CancellationToken ct = default) => LoadAsync(symbols, from, to, ct);
+
+    /// <summary>
+    /// Compatibility entry point for sources implementing the original automatic-replay contract.
+    /// The engine calls GetAssetEventsAsync, which forwards to an existing LoadAsync implementation.
+    /// A source implementing neither entry point fails explicitly rather than recursing.
+    /// </summary>
+    Task<IReadOnlyList<AssetEvent>> LoadAsync(
+        IReadOnlyCollection<string> symbols,
+        DateOnly from,
+        DateOnly through,
+        CancellationToken ct = default)
+        => throw new NotSupportedException("The corporate-action source must implement an asset-event loading entry point.");
 }
 
 /// <summary>
@@ -52,6 +64,10 @@ public sealed class SecurityMasterAssetEventSource : IBacktestAssetEventSource
         _logger = logger;
     }
 
+    public Task<IReadOnlyList<AssetEvent>> LoadAsync(
+        IReadOnlyCollection<string> symbols, DateOnly from, DateOnly to, CancellationToken ct = default)
+        => GetAssetEventsAsync(symbols, from, to, ct);
+
     public async Task<IReadOnlyList<AssetEvent>> GetAssetEventsAsync(
         IReadOnlyCollection<string> symbols,
         DateOnly from,
@@ -61,6 +77,7 @@ public sealed class SecurityMasterAssetEventSource : IBacktestAssetEventSource
         ArgumentNullException.ThrowIfNull(symbols);
 
         var effectiveThroughUtc = new DateTimeOffset(to.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+        var retainedAt = DateTimeOffset.UtcNow;
         var events = new List<AssetEvent>();
         foreach (var symbol in symbols
             .Where(static symbol => !string.IsNullOrWhiteSpace(symbol))
@@ -99,7 +116,10 @@ public sealed class SecurityMasterAssetEventSource : IBacktestAssetEventSource
             {
                 if (TryMap(symbol, action) is { } assetEvent)
                 {
-                    events.Add(assetEvent);
+                    events.Add(assetEvent with
+                    {
+                        EvidenceReferences = [SecurityMasterBacktestAssetEventSource.ActionEvidence(action, retainedAt)]
+                    });
                 }
                 else
                 {

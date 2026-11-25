@@ -157,7 +157,7 @@ modules:
       - src/Meridian.Ui.Services
       - src/Meridian.Wpf
       - src/Meridian.Ui/dashboard
-    migration_next: Reporting template metadata, run contracts, deterministic section rendering, orchestration, approval transition, audit-entry, and run-store seams now live in Meridian.Reporting. Continue moving remaining report packs, governed exports, publication, restatement, and distribution evidence out of UI/application owners behind shared contracts and services consumed by both UI surfaces.
+    migration_next: Reporting template metadata, template-governance lifecycle and access policy, run contracts, deterministic section rendering, orchestration, approval transition, audit-entry, and run-store seams now live in Meridian.Reporting. Continue moving remaining report packs, governed exports, publication, restatement, and distribution evidence out of UI/application owners behind shared contracts and services consumed by both UI surfaces.
 
   - name: Meridian.Documents
     conformance: physical

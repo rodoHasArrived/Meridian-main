@@ -25,7 +25,7 @@ const statementOwners = {
   }
 };
 const statementTables = [
-  { file: "src/screens/accounting-screen.tsx", attribute: "className", value: "accounting-journal-table",
+  { file: "src/screens/accounting-screen.manual-journal-panel.tsx", attribute: "className", value: "accounting-journal-table",
     reason: "Editable journal source lines and financial balance-impact preview preserve debit/credit layout." },
   { file: "src/screens/accounting-screen.close-cockpit-panels.tsx", attribute: "aria-label", value: "Scoped temporary-account balances",
     reason: "Financial closing-entry balance statement bound to the exact close preview." }

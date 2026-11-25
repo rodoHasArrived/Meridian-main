@@ -104,5 +104,6 @@ public sealed partial class OrderManagementSystem
         }
 
         public ExecutionReport Report { get; }
+        internal bool IsJournalFailure { get; init; }
     }
 }

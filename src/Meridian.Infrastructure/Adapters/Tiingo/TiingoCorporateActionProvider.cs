@@ -63,6 +63,13 @@ public sealed partial class TiingoCorporateActionProvider : ICorporateActionProv
         string ticker,
         Guid securityId,
         CancellationToken ct = default)
+        => (await FetchWithOutcomeAsync(ticker, securityId, ct).ConfigureAwait(false)).Actions;
+
+    /// <inheritdoc />
+    public async Task<CorporateActionFetchResult> FetchWithOutcomeAsync(
+        string ticker,
+        Guid securityId,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(ticker);
         ct.ThrowIfCancellationRequested();
@@ -72,7 +79,7 @@ public sealed partial class TiingoCorporateActionProvider : ICorporateActionProv
         {
             _logger.LogDebug(
                 "Tiingo API token not configured; corporate action fetch for {Ticker} skipped.", ticker);
-            return [];
+            return CorporateActionFetchResult.Failed("credentials-missing");
         }
 
         var normalizedSymbol = SymbolNormalization.NormalizeForTiingo(ticker);
@@ -88,13 +95,13 @@ public sealed partial class TiingoCorporateActionProvider : ICorporateActionProv
         try
         {
             using var response = await client.GetAsync(url, ct).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode || CorporateActionFetchResult.IsPartialResponse(response))
             {
                 _logger.LogDebug(
                     "Tiingo corporate actions returned {StatusCode} for {Ticker}; skipping.",
                     (int)response.StatusCode,
                     ticker);
-                return [];
+                return CorporateActionFetchResult.FromHttpFailure(response);
             }
 
             await using var jsonStream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
@@ -102,10 +109,12 @@ public sealed partial class TiingoCorporateActionProvider : ICorporateActionProv
                     jsonStream,
                     TiingoCorporateActionJsonContext.Default.TiingoCorporateActionPriceArray,
                     ct)
-                .ConfigureAwait(false)
-                ?? [];
+                .ConfigureAwait(false);
+            if (prices is null)
+                return CorporateActionFetchResult.Failed("invalid-payload");
 
             var commands = prices
+                .Where(price => price is not null)
                 .SelectMany(price => MapToCommands(price, securityId))
                 .OrderBy(command => command.ExDate)
                 .ThenBy(command => command.ActionType, StringComparer.Ordinal)
@@ -116,12 +125,15 @@ public sealed partial class TiingoCorporateActionProvider : ICorporateActionProv
                 commands.Length,
                 ticker);
 
-            return commands;
+            return prices.Any(price => price is null || !TryParseSessionDate(price.Date, out _)
+                || price.DivCash is null or < 0m || price.SplitFactor is not > 0m)
+                ? new CorporateActionFetchResult(commands, CorporateActionFetchStatus.Partial, [new("invalid-record")])
+                : CorporateActionFetchResult.Complete(commands);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
-            _logger.LogWarning(ex, "Failed to fetch Tiingo corporate actions for {Ticker}.", ticker);
-            return [];
+            _logger.LogWarning("Failed to fetch Tiingo corporate actions for {Ticker}.", ticker);
+            return CorporateActionFetchResult.FromException(ex);
         }
     }
 

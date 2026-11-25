@@ -59,6 +59,26 @@ public sealed class LedgerJournalReversalTests
     }
 
     [Fact]
+    public void Reverse_PreservesCurrenciesAndReversesOriginalTransactionAmounts()
+    {
+        var id = Guid.NewGuid();
+        const string description = "EUR purchase";
+        var original = new JournalEntry(id, Ts, description,
+        [
+            new LedgerEntry(Guid.NewGuid(), id, Ts, LedgerAccounts.Securities("ABC"), 110m, 0m, description,
+                currency: new LedgerEntryCurrency("EUR", "USD", 100m, 0m, 1.1m)),
+            new LedgerEntry(Guid.NewGuid(), id, Ts, LedgerAccounts.Cash, 0m, 110m, description,
+                currency: new LedgerEntryCurrency("EUR", "USD", 0m, 100m, 1.1m))
+        ]);
+        var reversal = LedgerJournalReversal.Reverse(original, Guid.NewGuid(), Ts.AddDays(1), "Correction");
+
+        reversal.IsBalanced.Should().BeTrue();
+        reversal.Lines[0].Currency.Should().Be(new LedgerEntryCurrency("EUR", "USD", 0m, 100m, 1.1m));
+        reversal.Lines[1].Currency.Should().Be(new LedgerEntryCurrency("EUR", "USD", 100m, 0m, 1.1m));
+        original.Lines[0].Currency!.TransactionDebit.Should().Be(100m);
+    }
+
+    [Fact]
     public void Reverse_LinksToOriginalAndDropsIdempotencyKey()
     {
         var originalId = Guid.NewGuid();
@@ -95,6 +115,27 @@ public sealed class LedgerJournalReversalTests
 
         ledger.GetBalance(LedgerAccounts.DividendReceivable("ABC")).Should().Be(0m);
         ledger.GetBalance(LedgerAccounts.DividendIncome).Should().Be(0m);
+    }
+
+    [Fact]
+    public void Reverse_PreservesAndReversesTransactionCurrencyEvidence()
+    {
+        var id = Guid.NewGuid();
+        const string description = "EUR dividend";
+        var original = new JournalEntry(id, Ts, description,
+        [
+            new LedgerEntry(Guid.NewGuid(), id, Ts, LedgerAccounts.Cash, 110m, 0m, description,
+                currency: new LedgerEntryCurrency("EUR", "USD", 100m, 0m, 1.1m)),
+            new LedgerEntry(Guid.NewGuid(), id, Ts, LedgerAccounts.DividendIncome, 0m, 110m, description,
+                currency: new LedgerEntryCurrency("EUR", "USD", 0m, 100m, 1.1m))
+        ]);
+
+        var reversed = LedgerJournalReversal.Reverse(original, Guid.NewGuid(), Ts.AddDays(1));
+
+        reversed.Lines[0].Currency.Should().BeEquivalentTo(new LedgerEntryCurrency("EUR", "USD", 0m, 100m, 1.1m));
+        reversed.Lines[1].Currency.Should().BeEquivalentTo(new LedgerEntryCurrency("EUR", "USD", 100m, 0m, 1.1m));
+        original.Lines[0].Currency!.TransactionDebit.Should().Be(100m);
+        reversed.IsBalanced.Should().BeTrue();
     }
 
     [Fact]

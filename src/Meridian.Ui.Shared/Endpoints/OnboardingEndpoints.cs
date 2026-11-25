@@ -9,6 +9,7 @@ using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Shared.Evidence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -153,6 +154,8 @@ public static class OnboardingEndpoints
                 "application/json", $"onboarding-readiness-{packet.PacketId}.json");
         }).WithName("DownloadOnboardingReadinessPacket");
 
+        MapShadowEndpoints(group, jsonOptions);
+
         group.MapPost(UiApiRoutes.OnboardingReplay, async (
             string workspaceId, string comparisonId, HttpContext context, OnboardingWorkspaceService service) =>
         {
@@ -161,6 +164,87 @@ public static class OnboardingEndpoints
                 comparisonId, context.RequestAborted);
             return comparison is null ? Results.NotFound() : Results.Json(comparison, jsonOptions);
         }).WithName("ReplayOnboardingComparison");
+    }
+
+    /// <summary>Shadow-mode onboarding (W11-SHADOW-001). Promotion is the only route that changes book authority.</summary>
+    private static void MapShadowEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
+    {
+        Mutation(group.MapPost(UiApiRoutes.OnboardingShadowDesignation, async (
+            string workspaceId, DesignateShadowBookRequestDto request, HttpContext context, OnboardingWorkspaceService service) =>
+        {
+            var scope = Scope(context);
+            return Results.Json(await service.DesignateShadowAsync(scope.TenantId!, scope.CompanyId!, workspaceId,
+                request, scope.Actor!, context.RequestAborted), jsonOptions);
+        }).WithName("DesignateOnboardingShadowBook"));
+
+        Mutation(group.MapPost(UiApiRoutes.OnboardingShadowWithdrawal, async (
+            string workspaceId, WithdrawShadowBookRequestDto request, HttpContext context, OnboardingWorkspaceService service) =>
+        {
+            var scope = Scope(context);
+            return Results.Json(await service.WithdrawShadowAsync(scope.TenantId!, scope.CompanyId!, workspaceId,
+                request, scope.Actor!, context.RequestAborted), jsonOptions);
+        }).WithName("WithdrawOnboardingShadowBook"));
+
+        Mutation(group.MapPost(UiApiRoutes.OnboardingOpeningBalances, async (
+            string workspaceId, ImportOnboardingOpeningBalancesRequestDto request, HttpContext context, OnboardingWorkspaceService service) =>
+        {
+            var scope = Scope(context);
+            return Results.Json(await service.ImportOpeningBalancesAsync(scope.TenantId!, scope.CompanyId!, workspaceId,
+                request, scope.Actor!, context.RequestAborted), jsonOptions);
+        }).WithName("ImportOnboardingOpeningBalances"));
+
+        group.MapGet(UiApiRoutes.OnboardingOpeningBalanceReport, async (
+            string workspaceId, HttpContext context, OnboardingWorkspaceService service) =>
+        {
+            var scope = Scope(context);
+            var report = await service.GetOpeningReportAsync(scope.TenantId!, scope.CompanyId!, workspaceId, context.RequestAborted);
+            return report is null ? Results.NotFound() : Results.Json(report, jsonOptions);
+        }).WithName("GetOnboardingOpeningBalanceReport");
+
+        Mutation(group.MapPost(UiApiRoutes.OnboardingDifferenceExplanation, async (
+            string workspaceId, string differenceKey, ExplainOnboardingDifferenceRequestDto request,
+            HttpContext context, OnboardingWorkspaceService service, IEvidenceArtifactStore evidence) =>
+        {
+            var scope = Scope(context);
+            await VerifyEvidenceAsync(service, evidence, scope, workspaceId, request.EvidenceIds, context.RequestAborted);
+            return Results.Json(await service.ExplainDifferenceAsync(scope.TenantId!, scope.CompanyId!, workspaceId,
+                differenceKey, request, scope.Actor!, context.RequestAborted), jsonOptions);
+        }).WithName("ExplainOnboardingDifference"));
+
+        Mutation(group.MapPost(UiApiRoutes.OnboardingCertificates, async (
+            string workspaceId, IssueParallelRunCertificateRequestDto request, HttpContext context, OnboardingWorkspaceService service) =>
+        {
+            var scope = Scope(context);
+            return Results.Json(await service.IssueCertificateAsync(scope.TenantId!, scope.CompanyId!, workspaceId,
+                request, scope.Actor!, context.RequestAborted), jsonOptions);
+        }).WithName("IssueOnboardingParallelRunCertificate"));
+
+        group.MapGet(UiApiRoutes.OnboardingCertificate, async (
+            string workspaceId, string certificateId, HttpContext context, OnboardingWorkspaceService service) =>
+        {
+            var scope = Scope(context);
+            var certificate = await service.GetCertificateAsync(scope.TenantId!, scope.CompanyId!, workspaceId,
+                certificateId, context.RequestAborted);
+            return certificate is null ? Results.NotFound() : Results.Json(certificate, jsonOptions);
+        }).WithName("GetOnboardingParallelRunCertificate");
+
+        Mutation(group.MapPost(UiApiRoutes.OnboardingPromotion, async (
+            string workspaceId, PromoteShadowBookRequestDto request, HttpContext context,
+            OnboardingWorkspaceService service, IEvidenceArtifactStore evidence) =>
+        {
+            var scope = Scope(context);
+            if (request.EvidenceIds is { Count: > 0 })
+                await VerifyEvidenceAsync(service, evidence, scope, workspaceId, request.EvidenceIds, context.RequestAborted);
+            return Results.Json(await service.PromoteAsync(scope.TenantId!, scope.CompanyId!, workspaceId,
+                request, scope.Actor!, context.RequestAborted), jsonOptions);
+        }).WithName("PromoteOnboardingShadowBook"));
+
+        group.MapGet(UiApiRoutes.OnboardingBookOfRecordStatus, async (
+            Guid ledgerBookId, HttpContext context, [FromServices] IBookOfRecordGuard guard) =>
+        {
+            var scope = Scope(context);
+            return Results.Json(await guard.GetStatusAsync(scope.TenantId!, scope.CompanyId, ledgerBookId, context.RequestAborted), jsonOptions);
+        }).WithName("GetLedgerBookOfRecordStatus");
     }
 
     private static WorkstationTenantContext Scope(HttpContext context)

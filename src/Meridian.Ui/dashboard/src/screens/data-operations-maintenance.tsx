@@ -10,7 +10,8 @@ import { exportTableQuery } from "@/lib/table-workbench";
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { RefreshCcw, Wrench } from "lucide-react";
+import { Wrench } from "lucide-react";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,7 +42,7 @@ import type {
 } from "@/types/archive-maintenance.types";
 import { cn } from "@/lib/utils";
 import { usesTrackedCaps } from "@/design-system/label-case";
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatTimestamp as formatDisplayTimestamp } from "@/lib/format";
 
 const EXECUTION_LIMIT = 25;
 type MaintenanceExecutionRow = MaintenanceExecutionRowViewModel & { source: ArchiveMaintenanceExecution };
@@ -57,6 +58,7 @@ export function ArchiveMaintenanceOperations() {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   const refresh = useCallback(async () => {
     setError(null);
@@ -81,6 +83,7 @@ export function ArchiveMaintenanceOperations() {
 
     const failures = [statusResult, statisticsResult, summaryResult, taskTypeResult, executionResult]
       .filter((result): result is PromiseRejectedResult => result.status === "rejected");
+    setLoadFailed(failures.length > 0);
     if (failures.length > 0) {
       setError(`${failures.length} of 5 maintenance reads failed. ${errorMessage(failures[0].reason)}`);
     }
@@ -175,17 +178,14 @@ export function ArchiveMaintenanceOperations() {
               tier migration, and retention enforcement.
             </CardDescription>
           </div>
-          <Button size="sm" variant="outline" onClick={() => void refresh()}>
-            <RefreshCcw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
+          <PanelReload reload={refresh} failed={loadFailed} what="archive maintenance" />
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {error ? <StatusBanner tone="danger" title="Maintenance read needs attention" detail={error} /> : null}
         {notice ? <StatusBanner tone="success" title="Maintenance action accepted" detail={notice} /> : null}
 
-        <div className="grid gap-2 md:grid-cols-4" aria-label="Archive maintenance posture">
+        <div className="grid gap-2 md:grid-cols-4" aria-label="Archive maintenance status">
           {metrics.map((metric) => (
             <div key={metric.id} className="rounded-[2px] border border-border bg-secondary/20 p-3">
               <div className={cn("text-xs text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase tracking-wide")}>{metric.label}</div>
@@ -259,7 +259,7 @@ function badgeVariant(tone: MaintenanceTone): "default" | "success" | "warning" 
 }
 
 function formatTimestamp(value: string): string {
-  return formatUtcTimestamp(new Date(value));
+  return formatDisplayTimestamp(new Date(value));
 }
 
 function errorMessage(reason: unknown): string {

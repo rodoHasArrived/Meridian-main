@@ -24,7 +24,7 @@ export const BACKTEST_EVIDENCE_LABELS: Record<keyof StrategyBacktestEvidence, st
   accountingRecordReferences: "Accounting record references",
   approvalReferences: "Approval references",
   paperValidationReferences: "Paper validation references",
-  governedReportReferences: "Governed report references"
+  governedReportReferences: "Report references"
 };
 
 export type BacktestRequestBuildResult =

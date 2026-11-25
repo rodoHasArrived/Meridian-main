@@ -1,3 +1,4 @@
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
@@ -56,7 +57,8 @@ public sealed record AssetAccountingCandidateAuthorityContext(
     long ExpectedPeriodVersion,
     string RulePackId,
     string RulePackVersion,
-    long SecurityVersion = 0);
+    long SecurityVersion = 0,
+    string? CanonicalInstrumentSymbol = null);
 
 public sealed record AccountingPostingCandidateWriteResult(
     PostingRuleJournalCandidateResultDto Candidate,
@@ -77,6 +79,7 @@ public sealed partial class AccountingPostingCandidateService :
     private readonly IAssetOperationsQueryService? _assetOperationsQueryService;
     private readonly IFactorPaydownProjectionService? _factorPaydownProjector;
     private readonly ILedgerJournalStore? _taxLotStore;
+    private readonly Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore? _instrumentPositions;
 
     public AccountingPostingCandidateService(
         IAccountingConfigurationService configurationService,
@@ -85,7 +88,8 @@ public sealed partial class AccountingPostingCandidateService :
         IAccountingPolicyService? accountingPolicyService = null,
         IAssetOperationsQueryService? assetOperationsQueryService = null,
         IFactorPaydownProjectionService? factorPaydownProjector = null,
-        ILedgerJournalStore? taxLotStore = null)
+        ILedgerJournalStore? taxLotStore = null,
+        Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore? instrumentPositions = null)
     {
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _journalDraftService = journalDraftService ?? throw new ArgumentNullException(nameof(journalDraftService));
@@ -94,6 +98,7 @@ public sealed partial class AccountingPostingCandidateService :
         _assetOperationsQueryService = assetOperationsQueryService;
         _factorPaydownProjector = factorPaydownProjector;
         _taxLotStore = taxLotStore;
+        _instrumentPositions = instrumentPositions;
     }
 
     public async Task<PostingRuleJournalCandidateResultDto> BuildCandidateAsync(
@@ -120,11 +125,18 @@ public sealed partial class AccountingPostingCandidateService :
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
 
+        if (request.BondCouponRecognition is not null && (authority is null
+            || request.SourceEventType != AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.Income)
+            || request.AssetLotMutation is not null))
+            throw new InvalidOperationException("Coupon posting lines require canonical Income-event authority without a lot mutation.");
+
         var authorityIssues = ValidateAssetAccountingAuthority(request, authority);
         if (authorityIssues.Any(static issue => issue.BlocksCandidate))
         {
             return BuildPreDryRunBlockedResult(request, authorityIssues);
         }
+        var adoptedOwner = await ResolveAdoptedAcquisitionOwnerAsync(request, authority, ct).ConfigureAwait(false);
+        var adoptedIncomeLot = await ResolveAdoptedIncomeLotAsync(request, authority, ct).ConfigureAwait(false);
 
         var typedProjectionIssues = new List<PostingRuleJournalCandidateIssueDto>();
         var authoritativeEventAmount = await ResolveTypedInstrumentProjectionAsync(
@@ -157,6 +169,27 @@ public sealed partial class AccountingPostingCandidateService :
                 ct)
             .ConfigureAwait(false);
 
+        if (adoptedOwner is { } owner && request.AssetLotMutation?.Acquisition is { } adopted)
+            dryRun = dryRun with
+            {
+                GeneratedPostingLines = dryRun.GeneratedPostingLines.Select(line => line with
+                {
+                    Dimensions = Meridian.Contracts.Accounting.Lots.BondIncomeAcquisitionOwnership.StampDimensions(
+                line.Dimensions, owner, request.LedgerBookId!.Value, authority!.SecurityId,
+                authority.BookPositionId, adopted.LotId)
+                }).ToArray()
+            };
+        if (adoptedIncomeLot is { } incomeLot)
+            dryRun = dryRun with
+            {
+                GeneratedPostingLines = dryRun.GeneratedPostingLines.Select(line => line with
+                {
+                    Dimensions = BondIncomeAcquisitionOwnership.StampDimensions(line.Dimensions,
+                        Guid.Parse(incomeLot.Account.FinancialAccountId!), incomeLot.LedgerBookId,
+                        incomeLot.SecurityId, incomeLot.BookPositionId, incomeLot.LotId)
+                }).ToArray()
+            };
+
         var issues = dryRun.ValidationIssues
             .Select(ToCandidateIssue)
             .ToList();
@@ -168,6 +201,13 @@ public sealed partial class AccountingPostingCandidateService :
             .Select(static match => match.RuleVersion)
             .FirstOrDefault();
 
+        if (request.BondCouponRecognition is { } couponRecognition)
+            dryRun = dryRun with
+            {
+                GeneratedPostingLines = couponRecognition.Lines.Select((line, index) => new GeneratedPostingLineDto(
+                $"bond-coupon-{index}", line.AccountId, line.Debit > 0m ? AccountingTemplateLineSideDto.Debit : AccountingTemplateLineSideDto.Credit,
+                "bond-coupon-recognition-v1", line.Debit + line.Credit, line.Currency, line.Dimensions, line.Description)).ToArray()
+            };
         await ValidateBookContextAsync(request, dryRun, issues, ct).ConfigureAwait(false);
         ValidateEconomicEvent(request, issues);
         ValidateProjectionLineage(request, issues);
@@ -330,8 +370,23 @@ public sealed partial class AccountingPostingCandidateService :
                 continue;
             }
 
-            var amount = Math.Abs(line.Amount);
+            var amount = PrepareBondPostingAmount(line.Amount, adoptedOwner);
             var account = new LedgerAccount(chartNode.AccountName, accountType);
+            if (authority?.CanonicalInstrumentSymbol is { } canonicalSymbol)
+            {
+                if (!string.IsNullOrWhiteSpace(chartNode.Symbol) && !TextEquals(chartNode.Symbol, canonicalSymbol)
+                    || !string.IsNullOrWhiteSpace(chartNode.FinancialAccountId) && !TextEquals(chartNode.FinancialAccountId, line.Dimensions?.AccountId))
+                {
+                    issues.Add(Issue("posting-candidate.canonical-instrument-mapping-mismatch",
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        $"Generated posting line '{line.LineId}' conflicts with its authoritative security or financial-account mapping.",
+                        line.LineId, "Use chart mappings consistent with the retained Security Master and book position."));
+                    continue;
+                }
+                account = new LedgerAccount(chartNode.AccountName, accountType, canonicalSymbol,
+                    line.Dimensions?.AccountId);
+            }
+            account = BindBondAccountingAccount(account, request, line.AccountPath, amount, adoptedOwner, adoptedIncomeLot);
             if (predecessorLot is not null && IsCanonicalSuccessorLine(request, line))
             {
                 if (account.Name != predecessorLot.Account.Name || account.AccountType != predecessorLot.Account.AccountType)
@@ -391,6 +446,8 @@ public sealed partial class AccountingPostingCandidateService :
                 ct)
             .ConfigureAwait(false);
 
+        if (adoptedOwner is not null && draft.Write is { } adoptedWrite)
+            BondIncomeAcquisitionJournalPrecision.RequireRepresentable(adoptedWrite.Entry);
         issues.AddRange(draft.ValidationIssues.Select(ToCandidateIssue));
 
         var postingCommand = draft.Write?.PostingCommand is { } command
@@ -403,6 +460,7 @@ public sealed partial class AccountingPostingCandidateService :
                 EconomicEvent = request.EconomicEvent,
                 ProjectionLineage = request.ProjectionLineage,
                 RulePackReference = request.RulePackReference,
+                BondCouponRecognition = request.BondCouponRecognition,
                 LotAmortization = request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.Amortize }
                     ? request.AssetLotMutation.Amortization : null,
                 LotCorporateAction = request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.CorporateAction }
@@ -418,7 +476,7 @@ public sealed partial class AccountingPostingCandidateService :
             : draft.Write with
             {
                 Entry = WithSecurityMasterLineage(
-                    WithCanonicalCashFlow(draft.Write.Entry, request, authority, dryRun.GeneratedPostingLines), authority,
+                    WithAdoptedIncomeCurrency(WithCanonicalCashFlow(draft.Write.Entry, request, authority, dryRun.GeneratedPostingLines), adoptedIncomeLot), authority,
                     request.AssetLotMutation?.CorporateAction?.ExpectedLot.Acquisition.AcquisitionCurrency
                         ?? request.AssetLotMutation?.CapitalReturn?.ExpectedLot.Acquisition.AcquisitionCurrency
                         ?? request.AssetLotMutation?.FactorPaydown?.Currency ?? request.Currency,
@@ -949,6 +1007,9 @@ public sealed partial class AccountingPostingCandidateService :
         }
 
         var issues = new List<PostingRuleJournalCandidateIssueDto>();
+        AddMismatch(issues, authority.CanonicalInstrumentSymbol is null ||
+            string.Equals(authority.CanonicalInstrumentSymbol, request.InstrumentSymbol, StringComparison.Ordinal),
+            "posting-candidate.asset-authority-symbol-mismatch", "The candidate symbol must be the retained server-resolved Security Master ticker.", "instrumentSymbol");
         AddMismatch(issues, authority.EventKind == eventKind, "posting-candidate.asset-authority-kind-mismatch", "Resolved asset-event kind must match the canonical source-event type.", "sourceEventType");
         AddMismatch(issues, authority.EventId != Guid.Empty && request.SourceEventId == authority.EventId && request.EconomicEvent?.EventId == authority.EventId, "posting-candidate.asset-authority-event-mismatch", "Resolved asset-event identity must match the posting request.", "sourceEventId");
         AddMismatch(issues, authority.EventVersion > 0 && request.EconomicEvent?.EventVersion == authority.EventVersion, "posting-candidate.asset-authority-event-version-mismatch", "Resolved source-event version must match the typed economic event.", "economicEvent.eventVersion");
@@ -1032,8 +1093,9 @@ public sealed partial class AccountingPostingCandidateService :
         var provenance =
             $"security-master:{securityIdToken};server-resolved:true;approved:true;status:{status};version:{authority.SecurityVersion};currency:{currency.Trim().ToUpperInvariant()}";
         var referenceApproval = status == SecurityStatusDto.Active ? "security-master-active" : "security-master-reviewed";
+        var lineageSymbol = authority.CanonicalInstrumentSymbol ?? "asset-spine";
         var lineage =
-            $"asset-spine:{securityIdToken}:ledger-map:asset-spine:{authority.RulePackId}:{authority.RulePackVersion}:{securityIdToken}:sm-approval:{referenceApproval}:{securityIdToken}:security-status:{status}:{provenance}";
+            $"{lineageSymbol}:{securityIdToken}:ledger-map:asset-spine:{authority.RulePackId}:{authority.RulePackVersion}:{securityIdToken}:sm-approval:{referenceApproval}:{securityIdToken}:security-status:{status}:{provenance}";
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         if (entry.Metadata.Tags is { } existing)
         {
@@ -1050,7 +1112,7 @@ public sealed partial class AccountingPostingCandidateService :
             entry.Timestamp,
             entry.Description,
             entry.Lines,
-            entry.Metadata with { Tags = tags });
+            entry.Metadata with { Tags = tags, Symbol = authority.CanonicalInstrumentSymbol ?? entry.Metadata.Symbol });
     }
 
     private static bool IsBareReferenceFor(
@@ -1739,6 +1801,8 @@ public sealed partial class AccountingPostingCandidateService :
         ValidateOptionalDimension(typed.CapitalAccountId, candidate?.CapitalAccountId, "capitalAccountId", issues);
         ValidateOptionalDimension(typed.InstrumentId, candidate?.InstrumentId, "instrumentId", issues);
         ValidateOptionalDimension(typed.PositionId, candidate?.PositionId, "positionId", issues);
+        ValidateOptionalDimension(typed.IntercompanyAgreementId, candidate?.IntercompanyAgreementId, "intercompanyAgreementId", issues);
+        ValidateOptionalDimension(typed.IntercompanyAgreementVersion?.ToString(System.Globalization.CultureInfo.InvariantCulture), candidate?.IntercompanyAgreementVersion?.ToString(System.Globalization.CultureInfo.InvariantCulture), "intercompanyAgreementVersion", issues);
         ValidateOptionalDimension(typed.TaxLotId, candidate?.TaxLotId, "taxLotId", issues);
         ValidateOptionalDimension(typed.CostCenterId, candidate?.CostCenterId, "costCenterId", issues);
         ValidateOptionalDimension(typed.CounterpartyId, candidate?.CounterpartyId, "counterpartyId", issues);

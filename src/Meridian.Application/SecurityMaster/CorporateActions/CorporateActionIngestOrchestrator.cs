@@ -51,7 +51,16 @@ public sealed record CorporateActionProposal(
     string? EvidenceHash = null,
     string? EvidenceReference = null,
     IReadOnlyList<CorporateActionDissentFieldDto>? DissentingFields = null,
-    CorporateActionProviderReleaseStatusDto ProviderReleaseStatus = CorporateActionProviderReleaseStatusDto.ReviewOnly);
+    CorporateActionProviderReleaseStatusDto ProviderReleaseStatus = CorporateActionProviderReleaseStatusDto.ReviewOnly)
+{
+    public JsonElement? Payload { get; init; }
+
+    public decimal? DistributionRatio { get; init; }
+
+    public decimal? ExchangeRatio { get; init; }
+
+    public CorporateActionRetainedSourceEvidenceDto? SourceEvidence { get; init; }
+}
 
 public sealed record CorporateActionIngestResult(
     int SecuritiesScanned,
@@ -60,7 +69,21 @@ public sealed record CorporateActionIngestResult(
     int Staged,
     int DuplicatesSkipped,
     IReadOnlyList<CorporateActionProposal> Proposals,
-    IReadOnlyList<string> Errors);
+    IReadOnlyList<string> Errors)
+{
+    public IReadOnlyList<CorporateActionProviderFetchOutcome> FetchOutcomes { get; init; } = [];
+}
+
+/// <summary>Per-provider, per-security coverage, independent of proposal acceptance authority.</summary>
+public sealed record CorporateActionProviderFetchOutcome(
+    string ProviderId,
+    string Ticker,
+    CorporateActionFetchStatus Status,
+    int ActionsFetched,
+    IReadOnlyList<CorporateActionFetchFailure> Failures)
+{
+    public CorporateActionFetchCoverage? Coverage { get; init; }
+}
 
 /// <summary>
 /// Fans out to every registered <see cref="ICorporateActionProvider"/> for mastered symbols,
@@ -112,9 +135,28 @@ public sealed class CorporateActionIngestOrchestrator
 
         var proposals = new List<CorporateActionProposal>();
         var errors = new List<string>();
+        var fetchOutcomes = new List<CorporateActionProviderFetchOutcome>();
         var applied = 0;
         var staged = 0;
         var duplicates = 0;
+
+        void RecordFetchOutcome(string providerId, string ticker, CorporateActionFetchResult outcome)
+        {
+            fetchOutcomes.Add(new(providerId, ticker, outcome.Status, outcome.Actions.Count, outcome.Failures)
+            {
+                Coverage = outcome.Coverage,
+            });
+            if (outcome.Status == CorporateActionFetchStatus.Complete)
+                return;
+
+            var codes = outcome.Failures.Count == 0
+                ? "coverage-unreported"
+                : string.Join(", ", outcome.Failures.Select(failure => failure.Scope is null
+                    ? failure.Code : $"{failure.Scope}:{failure.Code}"));
+            errors.Add($"{providerId}/{ticker}: corporate-action fetch coverage {outcome.Status} " +
+                $"({outcome.Status.ToString().ToLowerInvariant()}; {codes}). {outcome.Reason} " +
+                $"{outcome.WithheldObservationCount.ToString(CultureInfo.InvariantCulture)} observation(s) withheld.");
+        }
 
         foreach (var (record, ticker) in securities)
         {
@@ -131,26 +173,11 @@ public sealed class CorporateActionIngestOrchestrator
             {
                 try
                 {
-                    var fetch = await provider.FetchWithOutcomeAsync(ticker!, record.SecurityId, ct)
-                        .ConfigureAwait(false);
-                    if (!fetch.IsComplete)
-                    {
-                        // A fetch that failed or was cut short is not "no actions": it is reported
-                        // with the other fetch errors, and nothing from it is staged as if it were
-                        // the provider's whole history.
-                        var outcome = fetch.Status == CorporateActionFetchStatus.Unavailable
-                            ? "unavailable"
-                            : "incomplete";
-                        errors.Add(
-                            $"{provider.ProviderId}/{ticker}: corporate-action fetch {outcome}: {fetch.Reason} " +
-                            $"{fetch.WithheldObservationCount.ToString(CultureInfo.InvariantCulture)} observation(s) withheld.");
-                        _logger.LogWarning(
-                            "Corporate action fetch {FetchStatus} for {Ticker} from {ProviderId}: {Reason} {WithheldObservations} observation(s) withheld",
-                            fetch.Status, ticker, provider.ProviderId, fetch.Reason, fetch.WithheldObservationCount);
+                    var fetched = await provider.FetchWithOutcomeAsync(ticker!, record.SecurityId, ct).ConfigureAwait(false);
+                    RecordFetchOutcome(provider.ProviderId, ticker!, fetched);
+                    if (!fetched.IsComplete)
                         continue;
-                    }
-
-                    foreach (var command in fetch.Observations)
+                    foreach (var command in fetched.Actions)
                     {
                         if (command.SecurityId != record.SecurityId)
                         {
@@ -177,8 +204,8 @@ public sealed class CorporateActionIngestOrchestrator
                 }
                 catch (Exception ex)
                 {
-                    errors.Add($"{provider.ProviderId}/{ticker}: {ex.Message}");
-                    _logger.LogWarning(ex,
+                    RecordFetchOutcome(provider.ProviderId, ticker!, CorporateActionFetchResult.FromException(ex));
+                    _logger.LogWarning(
                         "Corporate action fetch failed for {Ticker} from {ProviderId}", ticker, provider.ProviderId);
                 }
             }
@@ -365,7 +392,10 @@ public sealed class CorporateActionIngestOrchestrator
             Staged: staged,
             DuplicatesSkipped: duplicates,
             Proposals: proposals,
-            Errors: errors);
+            Errors: errors)
+        {
+            FetchOutcomes = fetchOutcomes,
+        };
     }
 
     private static IReadOnlyList<CorporateActionProposal> BuildProposals(
@@ -421,7 +451,13 @@ public sealed class CorporateActionIngestOrchestrator
                 AutoApplied: releaseStatus == CorporateActionProviderReleaseStatusDto.AcceptanceEligible
                              && dissenting.Length == 0
                              && agreeing.Length >= Math.Max(1, minimumSourcesToApply),
-                ProviderReleaseStatus: releaseStatus);
+                ProviderReleaseStatus: releaseStatus)
+            {
+                Payload = representative.Payload?.Clone(),
+                DistributionRatio = representative.DistributionRatio,
+                ExchangeRatio = representative.ExchangeRatio,
+                SourceEvidence = representative.SourceEvidence,
+            };
         }).ToArray();
     }
 
@@ -489,7 +525,13 @@ public sealed class CorporateActionIngestOrchestrator
                     EvidenceHash: observation.EvidenceHash,
                     EvidenceReference: observation.EvidenceReference,
                     DissentingFields: dissenting.Length == 0 ? [] : dissentingFields,
-                    ProviderReleaseStatus: observation.ReleaseStatus));
+                    ProviderReleaseStatus: observation.ReleaseStatus)
+                {
+                    Payload = observation.Payload?.Clone(),
+                    DistributionRatio = observation.DistributionRatio,
+                    ExchangeRatio = observation.ExchangeRatio,
+                    SourceEvidence = observation.SourceEvidence,
+                });
             }
         }
 
@@ -525,6 +567,18 @@ public sealed class CorporateActionIngestOrchestrator
             nameof(CorporateActionDto.PayDate),
             static command => command.PayableDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "null",
             static command => command.PayableDate);
+        AddField(
+            nameof(CorporateActionDto.DistributionRatio),
+            static command => command.DistributionRatio?.ToString("G29", CultureInfo.InvariantCulture) ?? "null",
+            static command => command.DistributionRatio);
+        AddField(
+            nameof(CorporateActionDto.ExchangeRatio),
+            static command => command.ExchangeRatio?.ToString("G29", CultureInfo.InvariantCulture) ?? "null",
+            static command => command.ExchangeRatio);
+        AddField(
+            nameof(CorporateActionDto.Payload),
+            PayloadValueKey,
+            static command => command.Payload);
         return fields;
 
         void AddField(
@@ -563,7 +617,17 @@ public sealed class CorporateActionIngestOrchestrator
             command.SplitFromFactor?.ToString("G29", CultureInfo.InvariantCulture) ?? "-",
             command.SplitToFactor?.ToString("G29", CultureInfo.InvariantCulture) ?? "-",
             command.RecordDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "-",
-            command.PayableDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "-");
+            command.PayableDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "-",
+            command.DistributionRatio?.ToString("G29", CultureInfo.InvariantCulture) ?? "-",
+            command.ExchangeRatio?.ToString("G29", CultureInfo.InvariantCulture) ?? "-",
+            PayloadValueKey(command));
+
+    private static string PayloadValueKey(CorporateActionCommand command)
+        => command.Payload is null
+            ? "-"
+            : CorporateActionEconomicFingerprint.Compute(new CorporateActionDto(
+                Guid.Empty, Guid.Empty, command.ActionType, default, null, null, null, null,
+                null, null, null, null, null, null, Payload: command.Payload));
 
     private static string SyntheticProviderEventKey(CorporateActionProposal proposal)
     {
@@ -649,7 +713,7 @@ public sealed class CorporateActionIngestOrchestrator
         {
             ActionType = CorporateActionEventTypes.Normalize(command.ActionType),
             Currency = NormalizeCurrency(command.Currency) ??
-                (command.Amount.HasValue ? NormalizeCurrency(defaultCurrency) : null)
+                (command.Amount.HasValue && !command.PreserveUnknownCurrency ? NormalizeCurrency(defaultCurrency) : null)
         };
 
     private static bool HasAcceptanceGradeProviderEvidence(CorporateActionCommand command) =>
@@ -699,11 +763,15 @@ public sealed class CorporateActionIngestOrchestrator
             Currency: proposal.Currency,
             SplitRatio: splitRatio,
             NewSecurityId: null,
-            DistributionRatio: null,
+            DistributionRatio: proposal.DistributionRatio,
             AcquirerSecurityId: null,
-            ExchangeRatio: null,
+            ExchangeRatio: proposal.ExchangeRatio,
             SubscriptionPricePerShare: null,
             RightsPerShare: null,
-            RecordDate: proposal.RecordDate);
+            RecordDate: proposal.RecordDate,
+            Payload: proposal.Payload?.Clone())
+        {
+            SourceEvidence = proposal.SourceEvidence,
+        };
     }
 }

@@ -7,6 +7,13 @@ export interface ApprovePromotionRequest {
   evidenceReferences?: string[];
   reviewNotes?: string;
   manualOverrideId?: string;
+  liveAuthorization?: {
+    expectedStrategyArtifactId: string;
+    allowedSymbols: string[];
+    maxOrderNotional: number;
+    currency: "USD";
+    expiresAt: string;
+  };
 }
 
 export const PAPER_PROMOTION_APPROVAL_CHECKLIST = [

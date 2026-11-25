@@ -4,6 +4,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import * as maintenanceApi from "@/lib/api/archive-maintenance.api";
 import { ArchiveMaintenanceOperations } from "@/screens/data-operations-maintenance";
 import type { ArchiveMaintenanceExecution } from "@/types/archive-maintenance.types";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
+
+function HeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence(value => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
+}
 
 vi.mock("@/lib/api/archive-maintenance.api", () => ({
   getMaintenanceServiceStatus: vi.fn(),
@@ -103,7 +110,7 @@ describe("ArchiveMaintenanceOperations", () => {
     // behavior so userEvent's Tab traversal does not enter hidden menu controls.
     render(<><style>{"details:not([open]) > :not(summary) { display: none; }"}</style><ArchiveMaintenanceOperations /></>);
 
-    const posture = await screen.findByLabelText("Archive maintenance posture");
+    const posture = await screen.findByLabelText("Archive maintenance status");
     expect(within(posture).getByText("Running")).toBeInTheDocument();
     expect(within(posture).getByText("95.0%")).toBeInTheDocument();
     expect(within(posture).getByText("Next due: Nightly health check")).toBeInTheDocument();
@@ -118,7 +125,12 @@ describe("ArchiveMaintenanceOperations", () => {
     expect(api.getMaintenanceExecutions).toHaveBeenCalledWith(25);
     const toolbar = screen.getByRole("group", { name: "Maintenance execution history table controls" });
     expect(within(toolbar).getByText("Columns", { selector: "summary", exact: true }).closest("details")).not.toHaveAttribute("open");
-    expect(within(toolbar).getByText("Save view", { selector: "summary", exact: true }).closest("details")).not.toHaveAttribute("open");
+    // A short table carries two small controls: Columns, and one menu for export and saved views.
+    const moreActions = within(toolbar).getByLabelText("Maintenance execution history more table actions");
+    expect(moreActions.closest("details")).not.toHaveAttribute("open");
+    // This history is server-backed, so search stays even with two loaded rows.
+    expect(within(toolbar).getByRole("searchbox", { name: "Search" })).toBeInTheDocument();
+    expect(within(toolbar).queryByRole("combobox", { name: "Maintenance execution history density" })).not.toBeInTheDocument();
     screen.getByRole("combobox", { name: "Maintenance task type" }).focus();
     await user.tab();
     expect(screen.getByRole("button", { name: "Run maintenance now" })).toHaveFocus();
@@ -129,11 +141,7 @@ describe("ArchiveMaintenanceOperations", () => {
     await user.tab();
     expect(within(toolbar).getByText("Columns", { selector: "summary", exact: true })).toHaveFocus();
     await user.tab();
-    expect(within(toolbar).getByRole("combobox", { name: "Maintenance execution history density" })).toHaveFocus();
-    await user.tab();
-    expect(within(toolbar).getByRole("button", { name: "Export CSV" })).toHaveFocus();
-    await user.tab();
-    expect(within(toolbar).getByText("Save view", { selector: "summary", exact: true })).toHaveFocus();
+    expect(moreActions).toHaveFocus();
     await user.tab();
     const scrollArea = screen.getByRole("region", { name: "Maintenance execution history scroll area" });
     expect(scrollArea).toHaveFocus();
@@ -150,7 +158,7 @@ describe("ArchiveMaintenanceOperations", () => {
     const user = userEvent.setup();
     render(<ArchiveMaintenanceOperations />);
 
-    await screen.findByLabelText("Archive maintenance posture");
+    await screen.findByLabelText("Archive maintenance status");
     await user.selectOptions(screen.getByLabelText("Maintenance task type"), "Cleanup");
     await user.click(screen.getByRole("button", { name: "Run maintenance now" }));
 
@@ -165,7 +173,7 @@ describe("ArchiveMaintenanceOperations", () => {
     const user = userEvent.setup();
     render(<ArchiveMaintenanceOperations />);
 
-    await screen.findByLabelText("Archive maintenance posture");
+    await screen.findByLabelText("Archive maintenance status");
     const cancelButtons = screen.getAllByRole("button", { name: "Cancel" });
     expect(cancelButtons).toHaveLength(1);
 
@@ -179,7 +187,7 @@ describe("ArchiveMaintenanceOperations", () => {
     const user = userEvent.setup();
     render(<ArchiveMaintenanceOperations />);
 
-    await screen.findByLabelText("Archive maintenance posture");
+    await screen.findByLabelText("Archive maintenance status");
     await user.click(screen.getByRole("button", { name: "Show failed only" }));
 
     await waitFor(() => expect(api.getFailedMaintenanceExecutions).toHaveBeenCalledWith(25));
@@ -206,9 +214,27 @@ describe("ArchiveMaintenanceOperations", () => {
     render(<ArchiveMaintenanceOperations />);
 
     expect(await screen.findByText(/1 of 5 maintenance reads failed/)).toBeInTheDocument();
-    const posture = screen.getByLabelText("Archive maintenance posture");
+    const posture = screen.getByLabelText("Archive maintenance status");
     expect(within(posture).getByText("Running")).toBeInTheDocument();
     // Both statistics-backed metrics fall back together; neither reports a zero.
     expect(within(posture).getAllByText("Execution statistics have not loaded.")).toHaveLength(2);
+  });
+
+  it("re-reads with the header refresh and offers Retry only after a failed read", async () => {
+    primeReads();
+    const user = userEvent.setup();
+    render(<HeaderRefresh><ArchiveMaintenanceOperations /></HeaderRefresh>);
+    await screen.findByLabelText("Archive maintenance status");
+    await waitFor(() => expect(api.getMaintenanceExecutions).toHaveBeenCalledTimes(1));
+    expect(screen.queryByRole("button", { name: /Refresh/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Retry loading archive maintenance" })).not.toBeInTheDocument();
+
+    api.getMaintenanceStatistics.mockRejectedValueOnce(new Error("statistics unavailable"));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    expect(await screen.findByText(/1 of 5 maintenance reads failed/)).toBeInTheDocument();
+    expect(api.getMaintenanceExecutions).toHaveBeenCalledTimes(2);
+    await user.click(screen.getByRole("button", { name: "Retry loading archive maintenance" }));
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Retry loading archive maintenance" })).not.toBeInTheDocument());
+    expect(api.getMaintenanceExecutions).toHaveBeenCalledTimes(3);
   });
 });

@@ -78,7 +78,7 @@ export function buildWorkflowContinuityViewModel(
     symbol: operatingContextScope?.symbol ?? operatingContextSymbol
   }, pathname);
   const subjectSymbol = operatingScope.subjectSymbol;
-  const isShellHome = pathname === "/";
+  const isShellHome = pathname === "/" || pathname === "/today";
   const currentRoute = `${pathname}${search}${hash}`;
   const routeResolution = resolveWorkflowContinuityRoute(pathname, hash);
   const trail = routeResolution.trail;
@@ -91,7 +91,7 @@ export function buildWorkflowContinuityViewModel(
   const nextStep = nextIndex === null ? null : steps[nextIndex] ?? activeStep;
   const stepStatuses = steps.map((step) => buildWorkflowContinuityStepStatus(step.id, statusContext));
   const attentionCount = stepStatuses.filter((status) => status.tone === "blocked" || status.tone === "review").length;
-  const operatorFocus = buildOperatorFocusViewModel(statusContext, operatingScope, pathname === "/");
+  const operatorFocus = buildOperatorFocusViewModel(statusContext, operatingScope, isShellHome);
   const evidenceTimeline = buildEvidenceTimelineViewModel(statusContext, operatingScope);
   const linkedContext = buildLinkedContextViewModel(statusContext, subjectSymbol, operatingScope);
   const disclosure = buildWorkflowContinuityDisclosureState(statusContext, operatorFocus, evidenceTimeline, linkedContext);
@@ -108,12 +108,15 @@ export function buildWorkflowContinuityViewModel(
     : routeResolution.mode === "choose-task"
       ? `No continuity step is selected for ${activeWorkspace.label}. Choose a task from the local workspace navigation; the current operating scope will be preserved.`
       : "The requested route is not part of a Meridian workspace. Open the Daily Control Tower to choose a task.";
-  const contextOwnerLabel = isShellHome ? "Daily Control Tower" : activeWorkspace.label;
+  // The home page is named "Today" in the sidebar and the breadcrumb, so the context says so too.
+  const contextOwnerLabel = isShellHome ? "Today" : activeWorkspace.label;
   const contextValue = subjectSymbol
     ? `${contextOwnerLabel} / ${subjectSymbol}`
     : operatingScope.hasScope
       ? `${contextOwnerLabel} / Scoped workflow`
-      : `${contextOwnerLabel} / ${activeStep?.label ?? "Choose a task"}`;
+      : activeStep?.label === contextOwnerLabel
+        ? contextOwnerLabel
+        : `${contextOwnerLabel} / ${activeStep?.label ?? "Choose a task"}`;
   const nextActionLabel = routeResolution.mode === "matched"
     ? activeStep && nextStep && activeStep.id === nextStep.id
       ? `Stay on ${activeStep.label}`
@@ -149,7 +152,7 @@ export function buildWorkflowContinuityViewModel(
     title,
     summary,
     primaryOperatorFlowLabel: "Primary operator workflow",
-    primaryOperatorFlowSummary: "Import -> Validate -> Reconcile -> Investigate -> Approve -> Report",
+    primaryOperatorFlowSummary: "Import → Validate → Reconcile → Investigate → Approve → Report",
     primaryOperatorFlowStepsLabel: "Primary operator workflow steps",
     primaryOperatorFlowSteps,
     contextLabel: "Operating context",
@@ -159,7 +162,6 @@ export function buildWorkflowContinuityViewModel(
     operatingScope,
     routeLabel: currentRoute || "/",
     stepsLabel: trail ? `${trail.title} workflow steps` : `${contextOwnerLabel} task workflow steps`,
-    ariaLabel: trail ? `${trail.title} continuity` : `${contextOwnerLabel} task choice`,
     nextActionLabel,
     nextActionAriaLabel,
     nextActionHref,
@@ -544,7 +546,7 @@ function buildOperatorFocusViewModel(
 ): OperatorFocusViewModel {
   if (context.loading) {
     return {
-      summary: "Loading cross-workspace operator posture.",
+      summary: "Loading status across workspaces.",
       emptyText: "Ranked focus actions will appear after workspace data loads.",
       overflowLabel: null,
       items: [],
@@ -602,7 +604,7 @@ function buildWorkflowContinuityDisclosureState(
   return {
     label: "Supporting workflow evidence",
     summary: degraded
-      ? "Supporting context is collapsed while the workstation recovers. Expand sections for diagnostics and handoffs."
+      ? "Supporting context is collapsed while the workstation recovers. Expand sections for diagnostics and next steps."
       : "Expand supporting context when you need linked routes, ranked focus items, or recent evidence.",
     panels: [
       {
@@ -768,7 +770,7 @@ function buildLinkedContextViewModel(
       primaryActionLabel: null,
       primaryActionHref: null,
       primaryActionAriaLabel: null,
-      emptyText: "Open a symbol route or load portfolio positions to link data, trading, portfolio, accounting, and evidence routes.",
+      emptyText: "Open a symbol route or load portfolio positions to link data, trading, portfolio, accounting, and supporting records.",
       items: []
     };
   }

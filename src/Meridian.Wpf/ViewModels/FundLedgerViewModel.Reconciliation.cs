@@ -517,7 +517,7 @@ public sealed partial class FundLedgerViewModel
             : activeFund.BaseCurrency;
         ReconciliationScopeText = HumanizeLedgerScope(activeFund.DefaultLedgerScope);
         ReconciliationWorkspaceAsOfText = ResolveWorkspaceAsOfText(snapshot.Summary);
-        ReconciliationLastRefreshText = UtcFormat.FormatUtcTimestamp(snapshot.RefreshedAt);
+        ReconciliationLastRefreshText = UtcFormat.FormatDisplayTimestamp(snapshot.RefreshedAt);
         OpenBreaksText = readPresentation.OpenBreaksText;
         ReconciliationRunsText = readPresentation.ReconciliationRunsText;
         InReviewBreaksText = readPresentation.InReviewBreaksText;
@@ -632,7 +632,7 @@ public sealed partial class FundLedgerViewModel
                 .GetSnapshotAsync(activeFund.FundProfileId, ct)
                 ;
             await ApplyReconciliationWorkbenchAsync(activeFund, snapshot, ct);
-            ReconciliationActionFeedbackText = $"Reconciliation workbench refreshed at {UtcFormat.FormatUtcTimestamp(snapshot.RefreshedAt)}.";
+            ReconciliationActionFeedbackText = $"Reconciliation workbench refreshed at {UtcFormat.FormatDisplayTimestamp(snapshot.RefreshedAt)}.";
         }
         finally
         {
@@ -1523,7 +1523,7 @@ public sealed partial class FundLedgerViewModel
     private static string HumanizeLedgerScope(FundLedgerScope scope)
         => scope switch
         {
-            FundLedgerScope.Consolidated => "Consolidated",
+            FundLedgerScope.Consolidated => "Gross fund",
             FundLedgerScope.Entity => "Entity default",
             FundLedgerScope.Sleeve => "Sleeve default",
             FundLedgerScope.Vehicle => "Vehicle default",

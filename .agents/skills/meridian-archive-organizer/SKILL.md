@@ -86,7 +86,7 @@ Use for code or tests that may need historical retention.
 - Downgrade README or sibling-doc references when they explicitly frame the target as a historical snapshot, prior review context, or archived background rather than current guidance.
 - Treat references from generated tree listings, stale validation reports, and inventory-style snapshots as weak evidence; they do not by themselves keep a dated document active.
 - Treat references coming only from already archived material as weak historical evidence, not proof that the active copy must stay where it is.
-- Ignore `.codex/`, `.Codex/`, and similar AI/worktree mirror content as archive evidence unless the user explicitly asks to audit those surfaces too.
+- Ignore `.codex/`, `.claude/`, and similar AI/worktree mirror content as archive evidence unless the user explicitly asks to audit those surfaces too.
 - Archive documentation instead of deleting it when it has historical, audit, migration, or planning value.
 - Archive code instead of deleting it when it is no longer part of the active build or test graph but may still matter for migration context, rollback archaeology, or reference.
 - Delete only low-value artifacts with no reference value, such as transient outputs, duplicates, or generated clutter that should not live in git.

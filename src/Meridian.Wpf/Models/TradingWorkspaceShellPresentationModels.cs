@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using Meridian.Wpf.Copy;
 
 namespace Meridian.Wpf.Models;
 
@@ -40,10 +41,10 @@ internal readonly record struct TradingWorkspaceShellActionRequest(
 
 internal sealed class TradingWorkspaceShellPresentationState
 {
-    public string ActiveFundText { get; init; } = "No operating context selected";
+    public string ActiveFundText { get; init; } = WorkspaceCopyCatalog.Scope.AllAuthorized;
 
     public string ActiveFundDetailText { get; init; } =
-        "Runs, allocations, and accounting posture scope to the active operating context.";
+        "Runs, allocations, and accounting status narrow to an operating context once one is selected.";
 
     public string PaperRunsText { get; init; } = "-";
 
@@ -118,7 +119,7 @@ internal static class TradingWorkspaceShellPresentationDefaults
             },
             new TradingWorkspaceStatusItem
             {
-                Label = "No operating context selected",
+                Label = WorkspaceCopyCatalog.Scope.NoneSelected,
                 Detail = "Paper review, live posture, and governance consequences scope to the active context.",
                 Tone = TradingWorkspaceStatusTone.Info
             },

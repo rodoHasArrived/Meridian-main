@@ -100,7 +100,7 @@ public sealed class SecurityAssetPackReadinessMappingTests
             ["CreditDefaultSwap"] = "OTC derivative; no readiness projector accepted.",
             ["Swaption"] = "OTC rate option; no readiness projector accepted.",
             ["CapFloor"] = "OTC rate option; no readiness projector accepted.",
-            ["StructuredNote"] = "No explicit accounting class yet (review D10); no readiness projector accepted.",
+            ["StructuredNote"] = "Valuation-mark FVTPL; no accrual/readiness projector accepted.",
             ["InvestmentFund"] = "Fund units; no readiness projector accepted."
         };
 

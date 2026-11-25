@@ -3,6 +3,7 @@ using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Copy;
 using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Services;
@@ -104,7 +105,7 @@ public sealed class WorkspaceShellContextService
             new()
             {
                 Label = "As Of",
-                Value = ResolveValue(input.AsOfValue, "Awaiting scope"),
+                Value = ResolveValue(input.AsOfValue, profile is null && operatingContext is null ? WorkspaceCopyCatalog.Scope.NoneSelected : "Awaiting scope"),
                 Glyph = "\uE823",
                 Tone = WorkspaceTone.Neutral
             },
@@ -257,7 +258,7 @@ public sealed class WorkspaceShellContextService
         }
 
         return profile is null
-            ? "No fund selected"
+            ? WorkspaceCopyCatalog.Scope.NoneSelected
             : $"{profile.DisplayName} · {profile.BaseCurrency}";
     }
 

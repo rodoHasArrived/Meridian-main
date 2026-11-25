@@ -1,4 +1,7 @@
+import type { LedgerDimensionQueryOptions, LedgerJournalQueryOptions, LedgerTrialBalanceQueryOptions } from "./ledger-query-options";
+export type { LedgerDimensionQueryOptions, LedgerJournalQueryOptions, LedgerTrialBalanceQueryOptions } from "./ledger-query-options";
 import { UI_API_ROUTES } from "./ui-api-routes.generated";
+import { queryString } from "./endpoint-query-string";
 
 export const WORKSTATION_API_ENDPOINTS = {
   systemStatus: UI_API_ROUTES.Status,
@@ -14,6 +17,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   tradingBrokerageRecovery: UI_API_ROUTES.WorkstationTradingBrokerageRecovery,
   operatorInbox: UI_API_ROUTES.WorkstationOperatorInbox,
   crossScreenCounts: UI_API_ROUTES.WorkstationCrossScreenCounts,
+  scopeOptions: UI_API_ROUTES.WorkstationScopeOptions,
   portfolio: UI_API_ROUTES.WorkstationPortfolio,
   portfolioSummary: UI_API_ROUTES.WorkstationPortfolioSummary,
   portfolioMultiAssetCoverage: UI_API_ROUTES.WorkstationPortfolioMultiAssetCoverage,
@@ -137,8 +141,12 @@ export function ledgerPeriodPnlSummaryEndpoint(periodId: string): string {
   return routeWithParam(WORKSTATION_API_ENDPOINTS.ledgerPeriodPnlSummary, "periodId", periodId);
 }
 
-export function ledgerPeriodJournalEntriesEndpoint(periodId: string): string {
-  return routeWithParam(WORKSTATION_API_ENDPOINTS.ledgerPeriodJournalEntries, "periodId", periodId);
+export function ledgerPeriodJournalEntriesEndpoint(periodId: string, query: { instrumentId?: string | null; accountId?: string | null } = {}): string {
+  const route = routeWithParam(WORKSTATION_API_ENDPOINTS.ledgerPeriodJournalEntries, "periodId", periodId);
+  const params = new URLSearchParams();
+  if (query.instrumentId) params.set("instrumentId", query.instrumentId);
+  if (query.accountId) params.set("dimensionAccountId", query.accountId);
+  return params.size ? `${route}?${params}` : route;
 }
 
 export function workstationIngestionOperationActionEndpoint(jobId: string, action: string): string {
@@ -207,6 +215,7 @@ export const EXECUTION_API_ENDPOINTS = {
   sessions: UI_API_ROUTES.ExecutionSessions,
   sessionsCreate: UI_API_ROUTES.ExecutionSessionCreate,
   audit: UI_API_ROUTES.ExecutionAudit,
+  cancelIncidents: "/api/execution/cancel-incidents",
   controls: UI_API_ROUTES.ExecutionControls,
   circuitBreaker: UI_API_ROUTES.ExecutionControlsCircuitBreaker,
   defaultPositionLimit: UI_API_ROUTES.ExecutionControlsDefaultPositionLimit,
@@ -524,10 +533,16 @@ export const BACKFILL_API_ENDPOINTS = {
   checkpointsResumable: UI_API_ROUTES.BackfillCheckpointsResumable,
   checkpointsValidation: UI_API_ROUTES.BackfillCheckpointsValidation,
   executions: UI_API_ROUTES.BackfillExecutions,
+  receipts: UI_API_ROUTES.BackfillReceipts,
+  clone: UI_API_ROUTES.BackfillClone,
   progress: UI_API_ROUTES.BackfillProgress,
   run: UI_API_ROUTES.BackfillRun,
   runPreview: UI_API_ROUTES.BackfillRunPreview
 } as const;
+
+export function backfillCloneEndpoint(receiptId: string): string {
+  return BACKFILL_API_ENDPOINTS.clone.replace("{receiptId:guid}", encodeURIComponent(receiptId));
+}
 
 export const PROVIDER_API_ENDPOINTS = {
   configure: UI_API_ROUTES.ProviderConfigure,
@@ -1119,31 +1134,6 @@ export function workstationOperationsPrivateCapitalCloseCockpitEndpoint(options:
   return `${WORKSTATION_API_ENDPOINTS.operationsPrivateCapitalCloseCockpit}${queryString(options)}`;
 }
 
-export interface LedgerDimensionQueryOptions {
-  fundId?: string;
-  entityId?: string;
-  sleeveId?: string;
-  strategyId?: string;
-  portfolioId?: string;
-  accountId?: string;
-  investorId?: string;
-  capitalAccountId?: string;
-  instrumentId?: string;
-  taxLotId?: string;
-  costCenterId?: string;
-  counterpartyId?: string;
-  externalGlDimensions?: Record<string, string | null | undefined>;
-}
-
-export interface LedgerJournalQueryOptions extends LedgerDimensionQueryOptions {
-  from?: string;
-  to?: string;
-}
-
-export interface LedgerTrialBalanceQueryOptions extends LedgerDimensionQueryOptions {
-  accountType?: string;
-}
-
 function ledgerDimensionQueryParams(options: LedgerDimensionQueryOptions): Record<string, string | undefined> {
   const params: Record<string, string | undefined> = {
     fundId: options.fundId,
@@ -1175,10 +1165,15 @@ export function workstationRunLedgerEndpoint(runId: string): string {
   return routeWithParam(UI_API_ROUTES.RunsLedger, "runId", runId);
 }
 
+export function workstationRunLedgerExportEndpoint(runId: string, format: string = "Csv", asOf?: string): string {
+  return `${routeWithParam(UI_API_ROUTES.RunsLedgerExport, "runId", runId)}${queryString({ format, asOf })}`;
+}
+
 export function workstationRunLedgerJournalEndpoint(runId: string, options: LedgerJournalQueryOptions = {}): string {
   return `${workstationRunLedgerEndpoint(runId)}/journal${queryString({
     from: options.from,
     to: options.to,
+    asOf: options.asOf,
     ...ledgerDimensionQueryParams(options)
   })}`;
 }
@@ -1273,6 +1268,10 @@ export function promotionEvaluateEndpoint(runId: string): string {
   return routeWithParam(UI_API_ROUTES.PromotionEvaluate, "runId", runId);
 }
 
+export function promotionLiveAuthorizationRevokeEndpoint(authorizationId: string): string {
+  return routeWithParam(UI_API_ROUTES.PromotionLiveAuthorizationRevoke, "id", authorizationId);
+}
+
 export function executionOrderCancelEndpoint(orderId: string): string {
   return routeWithParam(UI_API_ROUTES.ExecutionOrderCancel, "orderId", orderId);
 }
@@ -1303,6 +1302,14 @@ export function executionAuditSearchEndpoint(
   return `${EXECUTION_API_ENDPOINTS.audit}/search${queryString(query)}`;
 }
 
+export function executionCancelIncidentsEndpoint(fundAccountId: string): string {
+  return `${EXECUTION_API_ENDPOINTS.cancelIncidents}${queryString({ fundAccountId })}`;
+}
+
+export function executionCancelIncidentEndpoint(incidentId: string, fundAccountId: string): string {
+  return `${EXECUTION_API_ENDPOINTS.cancelIncidents}/${encodeURIComponent(incidentId)}${queryString({ fundAccountId })}`;
+}
+
 export function executionManualOverrideClearEndpoint(overrideId: string): string {
   return routeWithParam(UI_API_ROUTES.ExecutionControlsManualOverrideClear, "overrideId", overrideId);
 }
@@ -1315,8 +1322,8 @@ export function replayFilesEndpoint(symbol?: string): string {
   return `${REPLAY_API_ENDPOINTS.files}${queryString({ symbol })}`;
 }
 
-export function portfolioHouseholdEndpoint(provider = "alpaca"): string {
-  return `${PORTFOLIO_API_ENDPOINTS.household}${queryString({ provider })}`;
+export function portfolioHouseholdEndpoint(provider = "alpaca", fundAccountId?: string | null): string {
+  return `${PORTFOLIO_API_ENDPOINTS.household}${queryString({ provider, fundAccountId })}`;
 }
 
 export function portfolioSymbolExposureEndpoint(symbol: string): string {
@@ -1427,6 +1434,7 @@ export function workstationRunLedgerTrialBalanceEndpoint(
     typeof accountTypeOrOptions === "string" ? { accountType: accountTypeOrOptions } : accountTypeOrOptions ?? {};
   return `${routeWithParam(UI_API_ROUTES.RunsLedgerTrialBalance, "runId", runId)}${queryString({
     accountType: options.accountType,
+    asOf: options.asOf,
     ...ledgerDimensionQueryParams(options)
   })}`;
 }
@@ -1445,6 +1453,25 @@ export function workstationSecurityMasterEntryEndpoint(securityId: string): stri
 
 export function workstationAssetOperationsEndpoint(securityId: string): string {
   return routeWithParam(UI_API_ROUTES.WorkstationAssetOperations, "securityId", securityId);
+}
+
+/** Exact-security economic terms, preserving source numeric tokens and schema state. */
+export function securityInstrumentTermsEndpoint(securityId: string): string {
+  return routeWithParam(UI_API_ROUTES.SecurityMasterInstrumentTerms, "securityId", securityId);
+}
+
+export interface AssetMarketValuationQuery {
+  positionId: string;
+  ledgerBookId: string;
+  accountId: string;
+  valuationDate: string;
+  economicStateId: string;
+  economicStateVersion: number;
+  knownAt?: string;
+}
+
+export function workstationAssetMarketValuationEndpoint(securityId: string, query: AssetMarketValuationQuery): string {
+  return `${routeWithParam(UI_API_ROUTES.WorkstationAssetMarketValuation, "securityId", securityId)}${queryString({ ...query })}`;
 }
 
 /**
@@ -1739,6 +1766,14 @@ export function qualityStaleSymbolsEndpoint(): string {
   return QUALITY_API_ENDPOINTS.anomaliesStale;
 }
 
+export function qualityCrossProviderPolicyEndpoint(): string {
+  return UI_API_ROUTES.QualityCrossProviderPolicy;
+}
+
+export function qualityCrossProviderPreviewEndpoint(): string {
+  return UI_API_ROUTES.QualityCrossProviderPreview;
+}
+
 export function reconciliationBreakRebuiltSnapshotEndpoint(breakId: string): string {
   return routeWithParam(UI_API_ROUTES.ReconciliationBreakRebuiltSnapshot, "breakId", breakId);
 }
@@ -1951,39 +1986,4 @@ export function routeWithParam(route: string, paramName: string, value: string):
   }
 
   return route.replace(new RegExp(`\\{${paramName}:[^}]+\\}`, "g"), encodedValue);
-}
-
-function queryString(params: Record<string, string | number | boolean | readonly string[] | null | undefined>): string {
-  const search = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (Array.isArray(value)) {
-      const normalizedValues = value.map((entry) => entry.trim()).filter(Boolean);
-      if (normalizedValues.length > 0) {
-        search.set(key, normalizedValues.join(","));
-      }
-      continue;
-    }
-
-    if (typeof value === "string") {
-      const trimmed = value.trim();
-      if (trimmed) {
-        search.set(key, trimmed);
-      }
-      continue;
-    }
-
-    if (typeof value === "number") {
-      if (Number.isFinite(value)) {
-        search.set(key, String(value));
-      }
-      continue;
-    }
-
-    if (typeof value === "boolean") {
-      search.set(key, String(value));
-    }
-  }
-
-  const value = search.toString();
-  return value ? `?${value}` : "";
 }

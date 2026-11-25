@@ -80,6 +80,7 @@ public static partial class LedgerEndpoints
     private static void MapRecurringJournalEndpoints(WebApplication app, JsonSerializerOptions jsonOptions)
     {
         MapFixedAssetRegisterEndpoints(app, jsonOptions);
+        MapAccrualScheduleEndpoints(app, jsonOptions);
         app.MapGet(UiApiRoutes.LedgerJournalAutomationRecurringOccurrences, async (HttpContext context) =>
         {
             if (!HasLedgerReadPermission(context))
@@ -109,15 +110,21 @@ public static partial class LedgerEndpoints
         {
             if (!TryResolveActor(context, out _))
                 return EndpointHelpers.Forbidden();
-            var store = context.RequestServices.GetService<FileRecurringJournalStore>();
-            if (store is null)
+            // Provision whichever store the host composed (file or ledger database), never a fallback.
+            var composed = context.RequestServices.GetService<IRecurringJournalStore>();
+            if (composed is not IRecurringJournalStoreProvisioning store)
                 return ServiceUnavailable();
             try
             {
-                await store.InitializeAsync(context.RequestAborted).ConfigureAwait(false);
+                // A host moving to the ledger database carries its retained file state forward once,
+                // so earlier claims and draft identities are not reissued.
+                if (composed is PostgresRecurringJournalStore database)
+                    await database.InitializeAsync(context.RequestServices.GetService<FileRecurringJournalStore>(), context.RequestAborted).ConfigureAwait(false);
+                else
+                    await store.InitializeAsync(context.RequestAborted).ConfigureAwait(false);
                 return Results.Ok(new { initialized = true });
             }
-            catch (Exception ex) when (ex is IOException or InvalidOperationException)
+            catch (Exception ex) when (ex is IOException or InvalidOperationException or System.Data.Common.DbException)
             { return ApiProblemDetails.Conflict(context, "Recurring state cannot be initialized. Restore its retained snapshot and initialization marker."); }
         }).WithName("InitializeRecurringJournalStore").RequirePermission(UserPermission.AdminMaintenance)
             .RequireAuthenticatedSession().RequireWorkstationTenantCompanyScope()

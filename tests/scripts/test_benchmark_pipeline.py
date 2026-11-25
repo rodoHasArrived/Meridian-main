@@ -8,10 +8,12 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import signal
 import subprocess
 import sys
 import tempfile
+import textwrap
 import time
 import unittest
 from unittest.mock import patch
@@ -99,6 +101,55 @@ else:
     print("Unexpected dotnet invocation: " + repr(args), file=sys.stderr)
     sys.exit(64)
 '''
+
+
+class PipelineBenchmarkSdkWorkflowTests(unittest.TestCase):
+    def test_sdk_configuration_preserves_root_version_and_only_disables_roll_forward(self):
+        workflow = (ROOT / ".github/workflows/pipeline-benchmark.yml").read_text()
+        step = re.search(
+            r"      - name: Derive exact benchmark SDK configuration\n(.*?)"
+            r"(?=      - uses: actions/setup-dotnet@)",
+            workflow, re.DOTALL,
+        )
+        self.assertIsNotNone(step)
+        self.assertIn("        id: benchmark-sdk\n", step.group(1))
+        self.assertIn("        shell: python\n", step.group(1))
+        script = textwrap.dedent(step.group(1).split("        run: |\n", 1)[1])
+        self.assertIn(
+            "global-json-file: ${{ steps.benchmark-sdk.outputs.global-json-file }}", workflow)
+        self.assertIn("skip-lts-prepass: true", workflow)
+        self.assertNotIn("dotnet-version:", workflow)
+
+        for version in ("10.0.100", "10.0.999"):
+            with self.subTest(version=version), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
+                directory = Path(temporary)
+                workspace = directory / "checkout"
+                workspace.mkdir()
+                runner_temp = directory / "runner-temp"
+                runner_temp.mkdir()
+                source = workspace / "global.json"
+                config = {
+                    "sdk": {"version": version, "rollForward": "latestMinor",
+                            "allowPrerelease": False},
+                    "msbuild-sdks": {"Example.Sdk": "1.2.3"},
+                }
+                original = json.dumps(config, indent=4).encode() + b"\n"
+                source.write_bytes(original)
+                output = directory / "github-output"
+                output.write_text("existing=value\n")
+                completed = subprocess.run(
+                    [sys.executable, "-c", script], cwd=workspace,
+                    env={**os.environ, "RUNNER_TEMP": str(runner_temp),
+                         "GITHUB_OUTPUT": str(output)},
+                    capture_output=True, text=True, timeout=10,
+                )
+                self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
+                self.assertEqual(original, source.read_bytes())
+                destination = runner_temp / "pipeline-global.json"
+                expected = {**config, "sdk": {**config["sdk"], "rollForward": "disable"}}
+                self.assertEqual(expected, json.loads(destination.read_text()))
+                self.assertEqual(
+                    f"existing=value\nglobal-json-file={destination}\n", output.read_text())
 
 
 @unittest.skipUnless(sys.platform.startswith("linux"), "The pipeline lane records Linux hardware")

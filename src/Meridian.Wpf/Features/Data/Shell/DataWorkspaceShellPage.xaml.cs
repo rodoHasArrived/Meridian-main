@@ -59,6 +59,10 @@ public partial class DataWorkspaceShellPage : DataWorkspaceShellPageBase
     private async System.Threading.Tasks.Task QueueStateActionClickCoreAsync(object sender, RoutedEventArgs e)
         => await ExecuteTaggedActionAsync(sender, actionId => ExecuteActionAsync(actionId, navigate: false));
 
+    /// <inheritdoc />
+    protected override Task RefreshShellInPlaceAsync()
+        => RefreshShellAsync();
+
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
         => OpenDroppedPane(DataDockManager, e);
 

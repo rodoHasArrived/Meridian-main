@@ -174,7 +174,10 @@ public sealed record CoveredCallRunResult(
     CoveredCallMetricsDto Metrics,
     IReadOnlyList<CoveredCallEquityPoint> EquityCurve,
     IReadOnlyList<CoveredCallTradeDto> Trades,
-    IReadOnlyList<CoveredCallOpenPositionDto> OpenPositionsAtEnd);
+    IReadOnlyList<CoveredCallOpenPositionDto> OpenPositionsAtEnd)
+{
+    public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; init; }
+}
 
 /// <summary>Row in the run library / history list.</summary>
 public sealed record CoveredCallRunSummary(
@@ -214,7 +217,14 @@ public sealed record CoveredCallChainRow(
     long OpenInterest,
     long Volume,
     bool MeetsAllFilters,
-    string? RejectReason);
+    string? RejectReason)
+{
+    public bool DeltaAvailable { get; init; } = true;
+    public bool OpenInterestAvailable { get; init; } = true;
+    public bool VolumeAvailable { get; init; } = true;
+    public int? Multiplier { get; init; }
+    public double? SpreadFraction { get; init; }
+}
 
 /// <summary>Chain-preview response: candidate set plus headline counts.</summary>
 public sealed record CoveredCallChainPreview(
@@ -223,7 +233,15 @@ public sealed record CoveredCallChainPreview(
     decimal UnderlyingPrice,
     IReadOnlyList<CoveredCallChainRow> Candidates,
     int TotalContractsScanned,
-    int FiltersPassed);
+    int FiltersPassed)
+{
+    public CoveredCallChainPreviewRequest? Filters { get; init; }
+    public bool CoverageKnown { get; init; }
+    public IReadOnlyList<DateOnly> RequestedExpirations { get; init; } = [];
+    public IReadOnlyList<DateOnly> LoadedExpirations { get; init; } = [];
+    public IReadOnlyList<DateTimeOffset> SnapshotTimes { get; init; } = [];
+    public int? MaxStrikesPerExpiration { get; init; }
+}
 
 /// <summary>Standard problem-details payload returned on 4xx/5xx responses.</summary>
 public sealed record CoveredCallProblemDetails(string Title, int Status, string? Detail = null);

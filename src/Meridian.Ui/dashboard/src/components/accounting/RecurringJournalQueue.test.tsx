@@ -37,7 +37,7 @@ it("shows definition changes and locked period ownership and governed reopen wit
   expect(await screen.findByText(/DefinitionChanged · Approval: Not submitted/)).toBeInTheDocument();
   expect(screen.getByText(/Template version no longer matches/)).toBeInTheDocument();
   expect(screen.getByText("Period lock owner: controller-a")).toBeInTheDocument();
-  expect(screen.getByText(/Governed reopen: Accounting/)).toBeInTheDocument();
+  expect(screen.getByText(/Period reopen: Accounting/)).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "Review retained draft" })).not.toBeInTheDocument();
 });
 
@@ -46,7 +46,7 @@ it("refuses unavailable evidence as an empty queue and retries the shared read",
   render(<RecurringJournalQueue scope={scope} availableDraftIds={[]} onSelectDraft={vi.fn()} />);
   expect(await screen.findByRole("alert")).toHaveTextContent("Durable occurrence store unavailable");
   expect(screen.queryByText(/No retained recurring occurrences/)).not.toBeInTheDocument();
-  await userEvent.click(screen.getByRole("button", { name: "Retry recurring queue" }));
+  await userEvent.click(screen.getByRole("button", { name: "Retry loading recurring queue" }));
   expect(await screen.findByText("rent · v3")).toBeInTheDocument();
 });
 

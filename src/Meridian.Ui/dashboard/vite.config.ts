@@ -285,6 +285,20 @@ const { version: appVersion } = JSON.parse(
   readFileSync(path.resolve(__dirname, "package.json"), "utf8")
 ) as { version: string };
 
+// HTML-linked assets are emitted as files. Keep imports of the same asset on that URL too,
+// regardless of whether the HTML or JavaScript pipeline processes the asset first.
+const htmlLinkedAssets = new Set(
+  Array.from(
+    readFileSync(path.resolve(__dirname, "index.html"), "utf8").matchAll(/\shref="\/(src\/[^"?#]+)"/g),
+    (match) => path.resolve(appRoot, match[1])
+  )
+);
+
+/** Defers to Vite's size limit except for assets already linked by the entry HTML. */
+export function meridianAssetsInlineLimit(filePath: string): boolean | undefined {
+  return htmlLinkedAssets.has(path.resolve(filePath)) ? false : undefined;
+}
+
 export default defineConfig({
   root: appRoot,
   base: "/workstation/",
@@ -307,7 +321,8 @@ export default defineConfig({
   },
   build: {
     outDir: "../wwwroot/workstation",
-    emptyOutDir: true
+    emptyOutDir: true,
+    assetsInlineLimit: meridianAssetsInlineLimit
   },
   test: {
     globals: true,

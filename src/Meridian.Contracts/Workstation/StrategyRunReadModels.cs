@@ -143,7 +143,12 @@ public sealed record StrategyRunExecutionSummary(
     bool HasPortfolio,
     bool HasLedger,
     bool HasAuditTrail,
-    string? AuditReference);
+    string? AuditReference)
+{
+    public string? FinancingCoverageStatus { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
+    public decimal? RunAttributedMarginInterest { get; init; }
+}
 
 /// <summary>
 /// Shared promotion summary used by Strategy, Trading, and Accounting workflows.
@@ -233,7 +238,13 @@ public sealed record StrategyRunSummary(
     string? SweepObjective = null,
     // PR-02: paper/live-compatible status shapes
     StrategyRunLiveStatus? LiveStatus = null,
-    StrategyRunPaperStatus? PaperStatus = null);
+    StrategyRunPaperStatus? PaperStatus = null,
+    IReadOnlyDictionary<string, string>? Parameters = null)
+{
+    public string? StrategyVersionSha256 { get; init; }
+    public string? DataProvenanceToken { get; init; }
+    public Guid? FundAccountId { get; init; }
+}
 
 public sealed record StrategySweepObjectiveRanking(
     string RunId,
@@ -251,7 +262,10 @@ public sealed record StrategySweepResultGroup(
     DateTimeOffset StartedAt,
     int RunCount,
     IReadOnlyList<StrategyRunSummary> Runs,
-    IReadOnlyList<StrategySweepObjectiveRanking> ObjectiveRankings);
+    IReadOnlyList<StrategySweepObjectiveRanking> ObjectiveRankings,
+    bool ComparisonContextVerified = false,
+    bool HistoryMayBeTruncated = false,
+    string CoverageDescription = "Expected grid was not retained; missing cells are inferred from observed parameter values.");
 
 /// <summary>
 /// One disclosed simulation assumption or detected data-quality issue for a backtest run.
@@ -459,13 +473,22 @@ public sealed record StrategyRunDetail(
     IReadOnlyList<StrategyRunGovernanceHook>? GovernanceHooks = null,
     BiasDisclosureDto? BiasDisclosure = null)
 {
+    public string? StrategyArtifactId { get; init; }
+
     private IReadOnlyList<StrategyRunAcceptanceChecklistItemDto> _acceptanceChecklist = [];
+
+    /// <summary>Observed replay sources and verified backfill revisions from a completed run.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public StrategyRunReplayProvenanceDto? ReplayProvenance { get; init; }
 
     /// <summary>
     /// Optional W6 evidence-loop projection. Kept outside the primary constructor so the
     /// established CLR constructor and deconstruction signatures remain compatible.
     /// </summary>
     public StrategyRunEvidenceLoop? EvidenceLoop { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; init; }
 
     /// <summary>
     /// Read-only canonical promotion requirements and their durable decision posture. Kept outside
@@ -478,6 +501,17 @@ public sealed record StrategyRunDetail(
         init => _acceptanceChecklist = value ?? [];
     }
 }
+
+public sealed record StrategyRunReplayProvenanceDto(
+    IReadOnlyList<StrategyRunReplaySourceCountDto> SourceMix,
+    IReadOnlyList<StrategyRunReplayRevisionDto> Revisions,
+    string? SourceMixHash,
+    string? CompletedInputHashSha256);
+
+public sealed record StrategyRunReplaySourceCountDto(string Symbol, string Source, long Bars);
+
+public sealed record StrategyRunReplayRevisionDto(
+    string RevisionId, string ContentHash, string ServingProvider, string Instrument, string Granularity);
 
 /// <summary>
 /// Security Master coverage state associated with a workstation security reference.
@@ -555,7 +589,12 @@ public sealed record PortfolioSummary(
     string? RuleId = null,
     string? RuleVersion = null,
     string? SourceEventId = null,
-    Guid? SourceJournalEntryId = null);
+    Guid? SourceJournalEntryId = null)
+{
+    public string? FinancingCoverageStatus { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
+    public decimal? RunAttributedMarginInterest { get; init; }
+}
 
 /// <summary>
 /// Shared position row for workstation portfolio views.
@@ -625,7 +664,10 @@ public sealed record LedgerTrialBalanceLine(
     [property: JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null,
     [property: JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null,
     [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null,
-    LedgerDimensionSetDto? Dimensions = null);
+    LedgerDimensionSetDto? Dimensions = null)
+{
+    public string BalanceExact => Balance.ToString(System.Globalization.CultureInfo.InvariantCulture);
+}
 
 /// <summary>
 /// Shared journal row for workstation audit surfaces.
@@ -667,7 +709,15 @@ public sealed record StrategyRunComparison(
     bool HasLedger = false,
     bool HasAuditTrail = false,
     IReadOnlyList<string>? CompatibilityWarnings = null,
-    StrategyRunArtifactCompleteness? ArtifactCompleteness = null);
+    StrategyRunArtifactCompleteness? ArtifactCompleteness = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SourceMixHash { get; init; }
+
+    public string? FinancingCoverageStatus { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
+    public decimal? RunAttributedMarginInterest { get; init; }
+}
 
 /// <summary>
 /// Completeness indicator for run artifacts used by comparison workflows.
@@ -795,7 +845,15 @@ public sealed record RunComparisonDto(
     string LedgerCoverageStatus = "Missing",
     string CashFlowHealth = "Missing",
     IReadOnlyList<string>? CompatibilityWarnings = null,
-    StrategyRunArtifactCompleteness? ArtifactCompleteness = null);
+    StrategyRunArtifactCompleteness? ArtifactCompleteness = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SourceMixHash { get; init; }
+
+    public string? FinancingCoverageStatus { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
+    public decimal? RunAttributedMarginInterest { get; init; }
+}
 
 /// <summary>Request to compare multiple strategy runs side by side.</summary>
 public sealed record RunComparisonRequest(

@@ -27,15 +27,15 @@ with retained evidence and carries no ranking.
 | Plan | Purpose | Status |
 |---|---|---|
 | [What To Work On Next (2026-11-01)](next-work-determination-2026-11-01.md) | Prioritization input: `rc.2` bar still not met; `Production Certification` no longer runs on `main` pushes, so the precondition must be dispatched; delivery-system backlog largely closed and the product lane is next. Opens on a `main` head red from generated-doc drift that #3354 repaired the same day. | Latest dated snapshot |
-| [What To Work On Next (2026-10-27)](next-work-determination-2026-10-27.md) | Prioritization input: the `rc.2` bar is not met (untagged, signing secrets unrefused) although its engineering half is green on `main`. | Historical snapshot |
+| [What To Work On Next (2026-10-27)](../../../archive/docs/plans/next-work-determination-2026-10-27.md) | Prioritization input: the `rc.2` bar is not met (untagged, signing secrets unrefused) although its engineering half is green on `main`. | Historical snapshot |
 | [What To Work On Next (2026-10-25)](next-work-determination-2026-10-25.md) | Prioritization input: `rc.2` bar not met; pins `zod` to clear the dashboard advisory. | Historical snapshot |
-| [What To Work On Next (2026-10-24)](next-work-determination-2026-10-24.md) | Prioritization input: `rc.1` exists; finds it uncertifiable and names the `rc.2` blockers. | Historical snapshot |
-| [What To Work On Next (2026-10-20)](next-work-determination-2026-10-20.md) | Prioritization input: CI-green bar met, so the RC tag has a target; records W9 close-out drift. | Historical snapshot |
-| [What To Work On Next (2026-10-16)](next-work-determination-2026-10-16.md) | Carries the unmerged 2026-10-15 ranking forward and adds delivery-system findings. | Historical snapshot |
+| [What To Work On Next (2026-10-24)](../../../archive/docs/plans/next-work-determination-2026-10-24.md) | Prioritization input: `rc.1` exists; finds it uncertifiable and names the `rc.2` blockers. | Historical snapshot |
+| [What To Work On Next (2026-10-20)](../../../archive/docs/plans/next-work-determination-2026-10-20.md) | Prioritization input: CI-green bar met, so the RC tag has a target; records W9 close-out drift. | Historical snapshot |
+| [What To Work On Next (2026-10-16)](../../../archive/docs/plans/next-work-determination-2026-10-16.md) | Carries the unmerged 2026-10-15 ranking forward and adds delivery-system findings. | Historical snapshot |
 | [Certification Unblock Verification (2026-10-12)](certification-unblock-verification-2026-10-12.md) | Verification record: #3133 clears the `GHSA-vfj7-8cjw-p6xm` blocker; no ranking. | Historical snapshot |
-| [What To Work On Next (2026-10-05)](next-work-determination-2026-10-05.md) | Prioritization input carried forward by later determinations; the 2026-10-10 draft (#3132) was closed unmerged. | Historical snapshot |
-| [What To Work On Next (2026-10-04)](next-work-determination-2026-10-04.md) | Prioritization input, superseded by 2026-10-05. | Historical snapshot |
-| [What To Work On Next (2026-10-02)](next-work-determination-2026-10-02.md) | Prioritization input, superseded by 2026-10-05. | Historical snapshot |
+| [What To Work On Next (2026-10-05)](../../../archive/docs/plans/next-work-determination-2026-10-05.md) | Prioritization input carried forward by later determinations; the 2026-10-10 draft (#3132) was closed unmerged. | Historical snapshot |
+| [What To Work On Next (2026-10-04)](../../../archive/docs/plans/next-work-determination-2026-10-04.md) | Prioritization input, superseded by 2026-10-05. | Historical snapshot |
+| [What To Work On Next (2026-10-02)](../../../archive/docs/plans/next-work-determination-2026-10-02.md) | Prioritization input, superseded by 2026-10-05. | Historical snapshot |
 | [What To Work On Next (2026-09-27)](next-work-determination-2026-09-27.md) | Prioritization input, superseded by 2026-10-05; kept in place because `program-state.yml` and the readiness tracker cite it. | Historical snapshot |
 
 ## Delivery Plans and Slates

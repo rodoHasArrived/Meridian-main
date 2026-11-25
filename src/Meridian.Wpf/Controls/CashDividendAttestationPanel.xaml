@@ -1,0 +1,71 @@
+<UserControl x:Class="Meridian.Wpf.Controls.CashDividendAttestationPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.Name="Governed cash-dividend preparer attestation"
+             AutomationProperties.AutomationId="CashDividendAttestationPanel">
+    <UserControl.Resources><BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" /></UserControl.Resources>
+    <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,0,12">
+        <StackPanel>
+            <TextBlock Text="Governed cash-dividend preparer attestation" Style="{StaticResource CardHeaderStyle}" />
+            <TextBlock Text="Regular mandatory USD cash dividends only. Attested by preparer — not independently reviewed. This separate path does not grant ordinary approval or Verified Coverage."
+                       TextWrapping="Wrap" Margin="0,8,0,8" />
+            <TextBlock Text="Recognition follows the source ex-date: debit the declared dividend-receivable role and credit the declared dividend-income role."
+                       TextWrapping="Wrap" Margin="0,0,0,8" />
+            <Button Content="Load retained cases for this security" Command="{Binding LoadCasesCommand}" HorizontalAlignment="Left" />
+            <Label Content="Retained processing case" Target="{Binding ElementName=CashDividendCase}" />
+            <ComboBox x:Name="CashDividendCase" ItemsSource="{Binding Cases}" DisplayMemberPath="Label"
+                      SelectedItem="{Binding SelectedCase}" IsEnabled="{Binding CanChooseCase}"
+                      AutomationProperties.Name="Retained cash-dividend processing case" />
+            <Button Content="Refresh exact case workspace" Command="{Binding RefreshWorkspaceCommand}" HorizontalAlignment="Left" Margin="0,8,0,8" />
+            <TextBlock Text="{Binding Status}" TextWrapping="Wrap" Margin="0,0,0,8" AutomationProperties.LiveSetting="Polite" />
+            <TextBlock Text="{Binding PendingCommandText}" TextWrapping="Wrap" Margin="0,0,0,6"
+                       Visibility="{Binding HasPendingCommand, Converter={StaticResource BoolToVisibilityConverter}}" />
+            <Button Content="Retry the same uncertain command" Command="{Binding RetryCommand}" HorizontalAlignment="Left" Margin="0,0,0,8"
+                    Visibility="{Binding HasPendingCommand, Converter={StaticResource BoolToVisibilityConverter}}" />
+            <TextBlock Text="{Binding ScopeText}" TextWrapping="Wrap" Margin="0,0,0,6" />
+            <TextBlock Text="{Binding LimitsText}" TextWrapping="Wrap" Margin="0,0,0,6" />
+            <TextBlock Text="{Binding ProjectionText}" TextWrapping="Wrap" Margin="0,0,0,8" />
+            <ItemsControl ItemsSource="{Binding Blockers}" Margin="0,0,0,8">
+                <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,0,0,4" /></DataTemplate></ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Expander Header="Selected book, existing account roles and declaration" Margin="0,0,0,10">
+                <StackPanel Margin="0,8,0,0">
+                    <TextBlock Text="{Binding DeclarationText}" TextWrapping="Wrap" Margin="0,0,0,6" />
+                    <TextBlock Text="{Binding RoleBindingText}" TextWrapping="Wrap" Margin="0,0,0,6" />
+                    <CheckBox IsChecked="{Binding IsRoleBindingConfirmed}" IsEnabled="{Binding CanEdit}" Margin="0,0,0,6">
+                        <TextBlock Text="I inspected this exact selected USD book, the existing dividend-receivable and dividend-income roles and promoted rule binding."
+                                   TextWrapping="Wrap" />
+                    </CheckBox>
+                    <Label Content="Declaration reason" Target="{Binding ElementName=CashDividendDeclarationReason}" />
+                    <TextBox x:Name="CashDividendDeclarationReason" Text="{Binding DeclarationReason, UpdateSourceTrigger=PropertyChanged}"
+                             IsEnabled="{Binding CanEdit}" MaxLength="4000" />
+                    <Button Content="{Binding DeclarationAction}" Command="{Binding ChangeDeclarationCommand}" HorizontalAlignment="Left" Margin="0,8,0,0" />
+                </StackPanel>
+            </Expander>
+            <Label Content="Preparer attestation reason" Target="{Binding ElementName=CashDividendAttestationReason}" />
+            <TextBox x:Name="CashDividendAttestationReason" Text="{Binding Reason, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEdit}" MaxLength="4000" />
+            <CheckBox IsChecked="{Binding IsConfirmed}" IsEnabled="{Binding CanEdit}" Margin="0,8,0,8"
+                      AutomationProperties.Name="Confirm exact regular mandatory cash-dividend preparer attestation">
+                <TextBlock Text="{Binding Confirmation}" TextWrapping="Wrap" />
+            </CheckBox>
+            <Button Content="Attest dividend projection as preparer" Command="{Binding AttestCommand}" HorizontalAlignment="Left"
+                    AutomationProperties.AutomationId="AttestCashDividendProjection" />
+            <TextBlock Text="{Binding ReceiptText}" TextWrapping="Wrap" Margin="0,10,0,8" />
+            <Expander Header="Separate governed posting" Margin="0,0,0,8">
+                <StackPanel Margin="0,8,0,0">
+                    <TextBlock Text="Posting still requires current book/period authority, complete evidence, a current declaration and the original exact preparer decision. No independent approval is asserted."
+                               TextWrapping="Wrap" Margin="0,0,0,6" />
+                    <Label Content="Posting reason" Target="{Binding ElementName=CashDividendPostingReason}" />
+                    <TextBox x:Name="CashDividendPostingReason" Text="{Binding PostingReason, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEdit}" MaxLength="4000" />
+                    <CheckBox IsChecked="{Binding IsPostingConfirmed}" IsEnabled="{Binding CanEdit}" Margin="0,8,0,8">
+                        <TextBlock Text="I reviewed the retained preparer attestation and authorize this separate governed journal posting for the exact case and scope."
+                                   TextWrapping="Wrap" />
+                    </CheckBox>
+                    <Button Content="Post attested cash dividend" Command="{Binding PostCommand}" HorizontalAlignment="Left"
+                            AutomationProperties.AutomationId="PostAttestedCashDividend" />
+                </StackPanel>
+            </Expander>
+            <TextBlock Text="{Binding PostingText}" TextWrapping="Wrap" Margin="0,6,0,0" />
+        </StackPanel>
+    </Border>
+</UserControl>

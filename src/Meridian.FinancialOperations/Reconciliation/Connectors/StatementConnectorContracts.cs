@@ -67,6 +67,17 @@ public sealed record StatementParseIssue(
 }
 
 /// <summary>
+/// Which booked balance a statement connector emits as its <see cref="StatementRecordKind.CashBalance"/> row.
+/// Reconciliation runs always use <see cref="Closing"/>; <see cref="Opening"/> is an explicit opt-in used only
+/// by shadow-mode onboarding to read the incumbent's opening booked balance (camt.053 OPBD, BAI2 010 only).
+/// </summary>
+public enum StatementBalanceRole
+{
+    Closing,
+    Opening
+}
+
+/// <summary>
 /// The kind of statement data a canonical record carries. Mirrors the Domain
 /// <c>StatementRowKind</c> taxonomy so mixed statements (positions + transactions +
 /// cash + fees + dividends) classify identically across every connector.
@@ -102,7 +113,17 @@ public sealed record StatementCanonicalRecord(
     string? ProviderActivityCode = null,
     string? RelatedTransactionId = null,
     string? OrderId = null,
-    string? Description = null);
+    string? Description = null)
+{
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SecurityId { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ReceiptAllocations { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ObligationKey { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? ProjectedCashFlowId { get; init; }
+}
 
 /// <summary>
 /// Structural fingerprint of a parsed source used for format-drift detection: when a

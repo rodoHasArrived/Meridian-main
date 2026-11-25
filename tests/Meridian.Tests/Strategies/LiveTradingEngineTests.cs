@@ -77,8 +77,11 @@ public sealed partial class LiveTradingEngineTests
             await using var auditTrail = new ExecutionAuditTrailService(
                 new ExecutionAuditTrailOptions(Path.Combine(dataRoot, "audit")),
                 NullLogger<ExecutionAuditTrailService>.Instance);
+            // Strategy orders route under typed run authority, which binds them to an active run
+            // that an approved live promotion targets.
             await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
-                brokerageConfiguration: brokerage, liveOrderReadinessGate: gate, auditTrail: auditTrail);
+                brokerageConfiguration: brokerage, liveOrderReadinessGate: gate, auditTrail: auditTrail,
+                strategyRunAuthority: await LivePromotionAuthorityAsync(repository, run.RunId));
             await oms.StartAsync();
             await using var engine = CreateEngine(repository, hub, cache, oms,
                 options: new LiveTradingEngineOptions { AllowLiveRuns = true }, brokerageConfiguration: brokerage);
@@ -164,8 +167,11 @@ public sealed partial class LiveTradingEngineTests
         recorded!.EndedAt.Should().NotBeNull("stopping a run must record its terminal state");
         recorded.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
         recorded.Metrics.Should().NotBeNull("completed live runs must retain summary metrics for promotion evaluation");
-        recorded.Metrics!.Metrics.TotalTrades.Should().Be(1, "the buy-and-hold entry fill must be recorded");
+        recorded.Metrics!.Metrics.TotalTrades.Should().Be(0, "entry fills do not establish completed trade outcomes");
         recorded.Metrics.Fills.Should().ContainSingle(fill => fill.Symbol == "AAPL" && fill.FilledQuantity == 5);
+        double.IsNaN(recorded.Metrics.Metrics.WinRate).Should().BeTrue();
+        double.IsNaN(recorded.Metrics.Metrics.ProfitFactor).Should().BeTrue();
+        recorded.Metrics.EngineMetadata!.ResultKind.Should().Be(BacktestResultKinds.SummaryOnly);
     }
 
     [Fact]
@@ -400,7 +406,13 @@ public sealed partial class LiveTradingEngineTests
             "synchronous fills are processed inline on the sole event loop rather than written to its own full inbox");
         (await engine.StopRunAsync(run.RunId)).Should().BeTrue();
         var recorded = await ((IStrategyRepository)repository).GetRunByIdAsync(run.RunId);
-        recorded!.Metrics!.Metrics.TotalTrades.Should().Be(orderCount);
+        recorded!.Metrics!.Fills.Should().HaveCount(orderCount,
+            "every admitted synchronous fill must be retained before the run stops");
+        recorded.Metrics.Fills.Select(fill => fill.OrderId).Should().OnlyHaveUniqueItems();
+        recorded.Metrics.Metrics.TotalTrades.Should().Be(0, "entry fills do not establish completed trade outcomes");
+        double.IsNaN(recorded.Metrics.Metrics.WinRate).Should().BeTrue();
+        double.IsNaN(recorded.Metrics.Metrics.ProfitFactor).Should().BeTrue();
+        recorded.Metrics.EngineMetadata!.ResultKind.Should().Be(BacktestResultKinds.SummaryOnly);
     }
 
     [Fact]
@@ -1300,7 +1312,8 @@ public sealed partial class LiveTradingEngineTests
         ILiveStrategyCatalog? catalog = null,
         LiveTradingEngineOptions? options = null,
         BrokerageConfiguration? brokerageConfiguration = null,
-        StrategyLifecycleManager? lifecycleManager = null)
+        StrategyLifecycleManager? lifecycleManager = null,
+        Meridian.Execution.Models.IPortfolioState? portfolio = null)
     {
         // `Meridian.Execution` and `Meridian.Execution.Adapters` both declare `PaperTradingGateway`
         // and this file imports both. Only the Adapters one implements `IOrderGateway`, which is
@@ -1316,7 +1329,7 @@ public sealed partial class LiveTradingEngineTests
             cache,
             gateway,
             orderManager,
-            new PaperTradingPortfolio(100_000m),
+            portfolio ?? new PaperTradingPortfolio(100_000m),
             repository,
             options: options ?? new LiveTradingEngineOptions(),
             loggerFactory: NullLoggerFactory.Instance,
@@ -1749,6 +1762,10 @@ public sealed partial class LiveTradingEngineTests
     {
         public ConcurrentQueue<ExecutionSdk.OrderRequest> Requests { get; } = new();
 
+        // Strategy runs with a fund account submit under typed authority; record the order the same way.
+        public Task<ExecutionSdk.OrderResult> SubmitAsync(ExecutionSdk.OrderSubmitCommand command, CancellationToken ct = default) =>
+            PlaceOrderAsync(command.Order, ct);
+
         public Task<ExecutionSdk.OrderResult> PlaceOrderAsync(
             ExecutionSdk.OrderRequest request,
             CancellationToken ct = default)
@@ -1873,6 +1890,32 @@ public sealed partial class LiveTradingEngineTests
             }
         }
     };
+
+    /// <summary>
+    /// Production run authority over the test's own run store, with an approved live promotion
+    /// targeting <paramref name="runId"/> (the promotion the readiness fakes already assume).
+    /// </summary>
+    private static async Task<Meridian.Execution.OrderManagement.IStrategyRunAuthoritySource> LivePromotionAuthorityAsync(
+        IStrategyRepository runs,
+        string runId)
+    {
+        var promotions = new InMemoryPromotionRecordStore();
+        await promotions.AppendAsync(new StrategyPromotionRecord(
+            PromotionId: $"promotion-{runId}",
+            StrategyId: "live-strategy",
+            StrategyName: "Live strategy",
+            SourceRunType: RunType.Paper,
+            TargetRunType: RunType.Live,
+            SourceRunId: "paper-source",
+            TargetRunId: runId,
+            QualifyingSharpe: 1.0,
+            QualifyingMaxDrawdownPercent: 1m,
+            QualifyingTotalReturn: 0.1m,
+            Decision: PromotionDecisionKinds.Approved,
+            PromotedAt: DateTimeOffset.UtcNow,
+            AuditReference: "AUDIT-LIVE-001"));
+        return new StrategyRunAuthoritySource(runs, promotions);
+    }
 
     private sealed class AccountReadinessProvider(string runId, Guid authorizedAccountId)
         : ITradingOperatorReadinessProvider

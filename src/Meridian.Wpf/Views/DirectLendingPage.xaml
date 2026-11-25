@@ -77,13 +77,6 @@
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 AutomationProperties.AutomationId="DirectLendingPostAccrualButton"
                                 Margin="0,0,8,8" />
-                        <Button Content="Refresh"
-                                Command="{Binding RefreshCommand}"
-                                ToolTip="{Binding RefreshTooltip}"
-                                ToolTipService.ShowOnDisabled="True"
-                                Style="{StaticResource PrimaryButtonStyle}"
-                                AutomationProperties.AutomationId="DirectLendingRefreshButton"
-                                Margin="0,0,0,8" />
                     </WrapPanel>
                 </Grid>
             </Border>

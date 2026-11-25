@@ -42,7 +42,7 @@ public sealed class WriteAheadLogFuzzTests : TempDirectoryAsyncTestBase
     }
 
     [Fact]
-    public async Task Recovery_TruncatedLastRecord_CorruptedCountIsNonZero()
+    public async Task Recovery_TruncatedLastRecord_DoesNotReportCompleteRecordCorruption()
     {
         // Arrange
         await WriteValidRecordsAndTruncateLastAsync(validRecords: 2);
@@ -51,15 +51,18 @@ public sealed class WriteAheadLogFuzzTests : TempDirectoryAsyncTestBase
         await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,
-            CorruptionMode = WalCorruptionMode.Skip
+            CorruptionMode = WalCorruptionMode.Alert
         });
+        var alerts = 0;
+        wal.CorruptionDetected += _ => alerts++;
         await wal.InitializeAsync();
 
-        // Assert — the truncated line must be counted as corrupted.
-        // InitializeAsync makes two passes (recovery + sequence-scan), so each corrupt
-        // line increments the counter twice.
-        wal.CorruptedRecordCount.Should().BeGreaterThan(0,
-            "a truncated partial record is a corrupted record");
+        // A missing final frame terminator is expected after a crash. Complete-record
+        // corruption retains its alerts; a torn suffix no longer raises that alarm.
+        wal.LastRecoveryEventCount.Should().Be(2);
+        wal.CorruptedRecordCount.Should().Be(0);
+        wal.SkippedRecordCount.Should().Be(0);
+        alerts.Should().Be(0);
     }
 
     [Fact]

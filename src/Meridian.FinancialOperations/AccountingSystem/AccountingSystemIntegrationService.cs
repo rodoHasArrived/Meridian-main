@@ -7,8 +7,10 @@ using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
+using Meridian.FinancialOperations.Intercompany;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage.Ledger;
 using static Meridian.Contracts.Text.TextPrimitives;
@@ -66,16 +68,48 @@ public sealed partial class AccountingSystemIntegrationService
 
     private readonly IReadOnlyList<IAccountingSystemProvider> _providers;
     private readonly ILedgerJournalStore? _ledgerJournalStore;
+    private readonly IIntercompanyBalanceScheduleSource? _intercompanyBalances;
     private readonly ConcurrentDictionary<string, AccountingSystemImportDetailDto> _latestImports = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, ScopedExternalGlMappingProfile> _mappingProfiles = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, ExternalGlExportPackageDto> _exportPackages = new(StringComparer.OrdinalIgnoreCase);
+    private readonly AccountingSystemIntegrationStateStore? _stateStore;
+    private const string ImportsCollection = "latest-imports";
+    private const string MappingProfilesCollection = "mapping-profiles";
+    private const string ExportPackagesCollection = "export-packages";
 
     public AccountingSystemIntegrationService(
         IEnumerable<IAccountingSystemProvider> providers,
-        ILedgerJournalStore? ledgerJournalStore = null)
+        ILedgerJournalStore? ledgerJournalStore = null,
+        IIntercompanyBalanceScheduleSource? intercompanyBalances = null,
+        AccountingSystemIntegrationStateStore? stateStore = null)
     {
         _providers = providers?.ToArray() ?? [];
         _ledgerJournalStore = ledgerJournalStore;
+        _intercompanyBalances = intercompanyBalances;
+        _stateStore = stateStore;
+        if (stateStore is null)
+            return;
+
+        foreach (var (key, value) in stateStore.Load<AccountingSystemImportDetailDto>(ImportsCollection, JsonOptions))
+            _latestImports[key] = value;
+        foreach (var (key, value) in stateStore.Load<ScopedExternalGlMappingProfile>(MappingProfilesCollection, JsonOptions))
+            _mappingProfiles[key] = value;
+        foreach (var (key, value) in stateStore.Load<ExternalGlExportPackageDto>(ExportPackagesCollection, JsonOptions))
+            _exportPackages[key] = value;
+    }
+
+    /// <summary>
+    /// Retains a record durably before publishing it when a state store is configured; without one
+    /// the record lives for the process lifetime only.
+    /// </summary>
+    private Task RetainAsync<T>(
+        string collection, ConcurrentDictionary<string, T> rows, string key, T value, CancellationToken ct)
+    {
+        if (_stateStore is not null)
+            return _stateStore.RetainAsync(collection, rows, key, value, JsonOptions, ct);
+
+        rows[key] = value;
+        return Task.CompletedTask;
     }
 
     public async Task<IReadOnlyList<AccountingSystemProviderDto>> ListProvidersAsync(CancellationToken ct = default)
@@ -163,6 +197,7 @@ public sealed partial class AccountingSystemIntegrationService
             DisplayName = RequireText(request.Profile.DisplayName, "Mapping profile display name"),
             UpdatedAtUtc = DateTimeOffset.UtcNow,
             CertificationState = certificationState,
+            CertifiedPostingDestination = null,
             AccountMappings = NormalizeAccountMappings(request.Profile.AccountMappings),
             DimensionMappings = (request.Profile.DimensionMappings ?? [])
                 .Select(mapping => mapping with { ProviderId = providerId })
@@ -174,10 +209,39 @@ public sealed partial class AccountingSystemIntegrationService
             normalizedProfile = normalizedProfile with { CertificationState = AccountingCertificationStateDto.Draft };
         }
 
-        _mappingProfiles[MappingProfileKey(providerId, fundProfileId, request.LedgerBookId, profileId, tenantId, companyId)] =
-            new ScopedExternalGlMappingProfile(providerId, fundProfileId, request.LedgerBookId, normalizedProfile, actor, evidenceLinks, tenantId, companyId);
+        var postingDestination = request.PostingDestination;
+        var scoped = request.LedgerBookId.HasValue && TenantReadPredicate.IsResolvedTenant(tenantId) &&
+            TenantReadPredicate.IsResolvedTenant(companyId);
+        if (postingDestination is not null)
+        {
+            if (!scoped || _ledgerJournalStore is not PostgresLedgerJournalStore ||
+                normalizedProfile.CertificationState != AccountingCertificationStateDto.Certified ||
+                !string.Equals(providerId, postingDestination.ProviderId, StringComparison.Ordinal))
+                throw new ArgumentException("Posting mapping certification requires the certified profile and exact owned book destination.");
+            normalizedProfile = normalizedProfile with { CertifiedPostingDestination = postingDestination };
+        }
 
-        return Task.FromResult(normalizedProfile);
+        return RetainProfileAsync();
+
+        async Task<ExternalGlMappingProfileDto> RetainProfileAsync()
+        {
+            var retained = new ScopedExternalGlMappingProfile(providerId, fundProfileId, request.LedgerBookId,
+                normalizedProfile, actor, evidenceLinks, tenantId, companyId);
+            if (postingDestination is not null && _ledgerJournalStore is PostgresLedgerJournalStore postgres &&
+                request.LedgerBookId is { } bookId)
+            {
+                await postgres.RetainExternalGlMappingProfileAsync(bookId, tenantId!, companyId!, fundProfileId,
+                    providerId, profileId, JsonSerializer.Serialize(retained, JsonOptions), postingDestination, ct).ConfigureAwait(false);
+            }
+            else
+            {
+                await RetainAsync(MappingProfilesCollection, _mappingProfiles,
+                    MappingProfileKey(providerId, fundProfileId, request.LedgerBookId, profileId, tenantId, companyId), retained, ct)
+                    .ConfigureAwait(false);
+            }
+
+            return normalizedProfile;
+        }
     }
 
     public async Task<ExternalGlExportPackageDto> CreateExportPackageAsync(
@@ -215,6 +279,18 @@ public sealed partial class AccountingSystemIntegrationService
             generatedLines,
             packageReconciliationSnapshotHash: reconciliationSnapshotHash);
         var evidenceLinks = BuildExportEvidenceLinks(request, mappingProfile, reconciliation);
+        if (IsNetSuiteProvider(providerId))
+        {
+            // Only this source-backed calculation can mint a structured schedule reference.
+            evidenceLinks = evidenceLinks.Where(x => !x.StartsWith("intercompany-schedule:", StringComparison.Ordinal)).ToArray();
+            if (_intercompanyBalances is not null)
+            {
+                var schedule = await _intercompanyBalances.GetAsync(tenantId, companyId, fundProfileId,
+                    request.LedgerBookId, periodEnd, ct).ConfigureAwait(false);
+                if (schedule.Available)
+                    evidenceLinks = [.. evidenceLinks, $"intercompany-schedule:{schedule.ContentHash}"];
+            }
+        }
         validationIssues = [.. validationIssues, .. await ValidateProviderExportAsync(providerId, fundProfileId,
             request.LedgerBookId, periodStart, periodEnd, generatedLines, evidenceLinks, tenantId, companyId, ct).ConfigureAwait(false)];
         var hasCritical = validationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
@@ -261,7 +337,7 @@ public sealed partial class AccountingSystemIntegrationService
             tenantId,
             companyId,
             reconciliationSnapshotHash);
-        _exportPackages[package.ExportPackageId] = package;
+        await RetainAsync(ExportPackagesCollection, _exportPackages, package.ExportPackageId, package, ct).ConfigureAwait(false);
         return package;
     }
 
@@ -360,7 +436,7 @@ public sealed partial class AccountingSystemIntegrationService
                 package.ReconciliationSafeguardIssueCodes,
                 certification.State)
         };
-        _exportPackages[certified.ExportPackageId] = certified;
+        await RetainAsync(ExportPackagesCollection, _exportPackages, certified.ExportPackageId, certified, ct).ConfigureAwait(false);
         return certified;
     }
 
@@ -424,7 +500,12 @@ public sealed partial class AccountingSystemIntegrationService
 
         if (request.PersistPreview)
         {
-            _latestImports[ImportKey(detail.Summary.ProviderId, detail.Summary.FundProfileId, detail.Summary.LedgerBookId, tenantId, companyId)] = detail;
+            await RetainAsync(
+                ImportsCollection,
+                _latestImports,
+                ImportKey(detail.Summary.ProviderId, detail.Summary.FundProfileId, detail.Summary.LedgerBookId, tenantId, companyId),
+                detail,
+                ct).ConfigureAwait(false);
         }
 
         return detail;
@@ -573,17 +654,39 @@ public sealed partial class AccountingSystemIntegrationService
             package.TenantId, package.CompanyId, ct).ConfigureAwait(false)];
     }
 
-    private Task<IReadOnlyList<AccountingConfigurationValidationIssueDto>> ValidateProviderExportAsync(
+    private async Task<IReadOnlyList<AccountingConfigurationValidationIssueDto>> ValidateProviderExportAsync(
         string providerId, string fundProfileId, Guid? ledgerBookId, DateOnly periodStart, DateOnly periodEnd,
         IReadOnlyList<ExternalGlExportLineDto> lines, IReadOnlyList<string> evidenceLinks,
         string? tenantId, string? companyId, CancellationToken ct)
     {
         var provider = _providers.FirstOrDefault(p => string.Equals(p.ProviderId, providerId, StringComparison.OrdinalIgnoreCase));
-        if (provider is not IAccountingSystemExportValidator validator)
-            return Task.FromResult<IReadOnlyList<AccountingConfigurationValidationIssueDto>>([]);
-        _latestImports.TryGetValue(ImportKey(providerId, fundProfileId, ledgerBookId, tenantId, companyId), out var import);
-        return validator.ValidateExportAsync(new(ledgerBookId, periodStart, periodEnd, import, lines, evidenceLinks), ct);
+        var issues = new List<AccountingConfigurationValidationIssueDto>();
+        if (provider is IAccountingSystemExportValidator validator)
+        {
+            _latestImports.TryGetValue(ImportKey(providerId, fundProfileId, ledgerBookId, tenantId, companyId), out var import);
+            issues.AddRange(await validator.ValidateExportAsync(new(ledgerBookId, periodStart, periodEnd, import, lines, evidenceLinks), ct).ConfigureAwait(false));
+        }
+        if (!IsNetSuiteProvider(providerId))
+            return issues;
+        if (_intercompanyBalances is null)
+        {
+            issues.Add(IntercompanyExportIssue("Unavailable", "The structured intercompany balance/mapping authority is unavailable."));
+            return issues;
+        }
+        var schedule = await _intercompanyBalances.GetAsync(tenantId, companyId, fundProfileId, ledgerBookId, periodEnd, ct).ConfigureAwait(false);
+        if (!schedule.IsMappingComplete)
+            issues.Add(IntercompanyExportIssue("Incomplete", "Posted due-to/due-from facts contain unavailable, ambiguous or unmapped legacy agreement/account/party evidence."));
+        if (!schedule.Available || !evidenceLinks.Contains($"intercompany-schedule:{schedule.ContentHash}", StringComparer.Ordinal))
+            issues.Add(IntercompanyExportIssue("Changed", "The structured intercompany schedule changed or was not retained with this export package; regenerate and review it."));
+        return issues;
     }
+
+    private static bool IsNetSuiteProvider(string providerId)
+        => providerId.Equals("netsuite", StringComparison.OrdinalIgnoreCase) || providerId.Equals("netsuite-fixture", StringComparison.OrdinalIgnoreCase);
+
+    private static AccountingConfigurationValidationIssueDto IntercompanyExportIssue(string suffix, string message)
+        => new($"ExternalGlProviderIntercompanySchedule{suffix}", AccountingConfigurationValidationSeverityDto.Critical,
+            message, "netsuite:intercompany-controls", "Resolve structured agreement/account mapping and retain current schedule plus external NetSuite control evidence before certification.");
 
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildExportValidationIssues(
         string providerId,
@@ -1237,9 +1340,10 @@ public sealed partial class AccountingSystemIntegrationService
             dimensions.VendorId ?? string.Empty,
             dimensions.ProjectId ?? string.Empty);
 
-        return dimensions.PositionId.HasValue
+        var withPosition = dimensions.PositionId.HasValue
             ? $"{signature}\u001epositionId={dimensions.PositionId.Value:D}"
             : signature;
+        return Meridian.Contracts.Ledger.LedgerAgreementDimensions.AppendSignature(withPosition, dimensions.IntercompanyAgreementId, dimensions.IntercompanyAgreementVersion, "\u001e");
     }
 
     private static AccountingSystemImportDetailDto NormalizeImportedDetail(
@@ -1734,7 +1838,7 @@ public sealed partial class AccountingSystemIntegrationService
                     $"{normalizedProviderId}:intercompany-controls",
                     "Intercompany controls",
                     journalEvidenceKind,
-                    "Retain intercompany elimination and due-to/due-from mapping evidence before NetSuite export packages can be certified.")
+                    "Validate posted due-to/due-from facts against approved agreement/account/party mappings, retain the structured schedule hash, and retain external NetSuite intercompany elimination/mapping evidence before certification.")
             ],
             _ => []
         };
@@ -2194,6 +2298,8 @@ public sealed partial class AccountingSystemIntegrationService
         public string AccountName { get; }
 
         public string Currency { get; }
+
+        public string? SourceCurrency { get; init; }
 
         public decimal Debit { get; set; }
 

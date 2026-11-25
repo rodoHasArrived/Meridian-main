@@ -537,7 +537,7 @@ let processLargeFile path =
 - [F# for Fun and Profit](https://fsharpforfunandprofit.com/) - Comprehensive F# learning resource
 - [Railway-Oriented Programming](https://fsharpforfunandprofit.com/rop/) - Error handling pattern
 - [Domain Modeling Made Functional](https://pragprog.com/titles/swdddf/domain-modeling-made-functional/) - F# domain modeling
-- [language-strategy.md](language-strategy.md) - Overall language strategy document
+- [language-strategy.md](../../archive/docs/summaries/language-strategy.md) - Overall language strategy document
 
 ---
 

@@ -5,6 +5,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.OpenFigi;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Storage.Services;
+using Meridian.Storage.Interfaces;
 using Meridian.Application.UI;
 using Meridian.Application.SecurityMaster;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +25,8 @@ internal sealed class SymbolManagementFeatureRegistration : IServiceFeatureRegis
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
         // Canonical symbol registry - identity resolution for canonicalization
-        services.AddSingleton<CanonicalSymbolRegistry>();
+        services.AddSingleton(sp =>
+            ProcessSymbolRegistries.ResolverFor(sp.GetRequiredService<ISymbolRegistryService>()));
         services.AddSingleton<Contracts.Catalog.ICanonicalSymbolRegistry>(sp =>
             sp.GetRequiredService<CanonicalSymbolRegistry>());
         services.AddSingleton<SymbolResolutionMismatchTracker>();
@@ -44,10 +46,13 @@ internal sealed class SymbolManagementFeatureRegistration : IServiceFeatureRegis
             var mismatchTracker = sp.GetRequiredService<SymbolResolutionMismatchTracker>();
             return new Infrastructure.Adapters.Core.SymbolResolution.CanonicalRegistrySymbolResolver(
                 sp.GetRequiredService<Contracts.Catalog.ICanonicalSymbolRegistry>(),
-                new OpenFigiSymbolResolver(apiKey, log: LoggingSetup.ForContext<OpenFigiSymbolResolver>()),
+                new OpenFigiSymbolResolver(apiKey, log: LoggingSetup.ForContext<OpenFigiSymbolResolver>(),
+                    credentialResolver: sp.GetRequiredService<IProviderCredentialResolver>(),
+                    options: config.Backfill?.Providers?.OpenFigi),
                 LoggingSetup.ForContext<Infrastructure.Adapters.Core.SymbolResolution.CanonicalRegistrySymbolResolver>(),
                 mode,
-                reportMismatches ? mismatchTracker.Report : null);
+                reportMismatches ? mismatchTracker.Report : null,
+                config.DataSources?.SymbolMappings?.ProviderResolutionModes);
         });
         services.AddHostedService<CanonicalSymbolRegistryMigrationService>();
 
@@ -61,7 +66,11 @@ internal sealed class SymbolManagementFeatureRegistration : IServiceFeatureRegis
         services.AddSingleton<PortfolioImportService>();
 
         // Symbol search providers - consolidated through SymbolSearchService
-        services.AddSingleton<OpenFigiClient>();
+        services.AddSingleton<OpenFigiClient>(sp => new OpenFigiClient(
+            sp.GetRequiredService<ConfigStore>().Load().Backfill?.Providers?.OpenFigi?.ApiKey,
+            log: LoggingSetup.ForContext<OpenFigiClient>(),
+            credentialResolver: sp.GetRequiredService<IProviderCredentialResolver>(),
+            options: sp.GetRequiredService<ConfigStore>().Load().Backfill?.Providers?.OpenFigi));
         services.AddSingleton<SymbolSearchService>(sp =>
         {
             var metadataService = sp.GetRequiredService<MetadataEnrichmentService>();

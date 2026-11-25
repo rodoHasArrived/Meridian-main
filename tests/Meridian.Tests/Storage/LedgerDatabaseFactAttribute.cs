@@ -1,3 +1,4 @@
+using Meridian.TestSupport;
 using Xunit;
 
 namespace Meridian.Tests.Storage;
@@ -10,7 +11,7 @@ public sealed class LedgerDatabaseFactAttribute : FactAttribute
 
     public LedgerDatabaseFactAttribute()
     {
-        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(ConnectionStringVariable)))
+        if (!string.IsNullOrWhiteSpace(PostgresTestServer.ResolveExternalConnectionString(ConnectionStringVariable)))
         {
             return;
         }

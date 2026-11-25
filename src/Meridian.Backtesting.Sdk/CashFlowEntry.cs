@@ -73,6 +73,9 @@ public sealed record AssetEventCashFlow(
     decimal PositionFactor = 1m,
     string? Description = null) : CashFlowEntry(Timestamp, Amount)
 {
+    /// <summary>Basis returned as capital, excluded from income.</summary>
+    public decimal BasisReturned { get; init; }
+
     /// <summary>Exact non-whole successor quantity settled as cash in lieu.</summary>
     public decimal FractionalUnits { get; init; }
 

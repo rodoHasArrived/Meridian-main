@@ -65,8 +65,7 @@ Use the narrowest relevant command:
 bash scripts/ci.sh
 dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true
-dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true
-dotnet test tests/Meridian.FSharp.Tests -c Release /p:EnableWindowsTargeting=true
+python3 build/scripts/ci/run-dotnet-ci-tests.py
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 python3 build/scripts/docs/check-ai-inventory.py --summary
@@ -76,6 +75,11 @@ python3 build/scripts/docs/validate-skill-packages.py
 GNU Make targets are optional convenience wrappers. In Windows shells where `where.exe make` finds
 nothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above instead of `make ...`.
 For PR-ready work, use risk-appropriate checks first and state honestly if the full local `bash scripts/ci.sh` was not run; the GitHub-hosted `quality-gate` remains authoritative where required before merge.
+
+`make test` and `make pre-pr` use that same CI .NET test roster, excluding integration and
+performance tests. `make test-unit` remains a focused C# helper. `make verify-fast` calls
+`bash scripts/ci.sh --lane verify-fast`: the complete .NET and browser lanes, including their
+formatting and ratchet checks.
 
 For incremental .NET iteration, `buildctl.py recommend-validation` selects a stable session profile
 per test project; add `--fresh` for independent-output recommendations. The local full gate overlaps
@@ -210,3 +214,7 @@ The four-lane `Meridian CI / quality-gate` keeps its identity. The always-report
 `Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
 Production Certification, including pull requests and merge groups.
 All CI governance changes require human review.
+
+Generated-file delivery: run `python build/python/cli/buildctl.py regen --fix` after merging.
+Commit reviewed views only; declared machine inventories and workstation builds are CI artifacts.
+Preserve reviewed source hashes. See [generated output delivery](docs/engineering/generated-output-delivery.md).

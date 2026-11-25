@@ -3,6 +3,8 @@ import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
 export const OPERATING_CONTEXT_STORAGE_KEY = "meridian.workstation.operatingContext.v1";
 
 const OPERATING_SCOPE_STORAGE_FIELDS = [
+  "entityId",
+  "fundId",
   "symbol",
   "fundAccountId",
   "runId",
@@ -15,15 +17,33 @@ const OPERATING_SCOPE_STORAGE_FIELDS = [
 
 type OperatingScopeStorageField = typeof OPERATING_SCOPE_STORAGE_FIELDS[number];
 
+/**
+ * The operating scope is per tab (Phase 1, P2 step 1). Each tab keeps its own scope in
+ * sessionStorage, so two tabs on different funds no longer overwrite each other. localStorage keeps
+ * the last scope used in any tab, which is the starting scope for a new tab.
+ *
+ * A tab that cleared its scope stores an empty object rather than nothing, so a reload keeps it
+ * unscoped instead of picking up another tab's last-used scope.
+ */
 export function readStoredOperatingScope(): AppShellOperatingScopeInput {
   if (typeof window === "undefined") {
     return {};
   }
 
+  const tabScope = readStorageItem(() => window.sessionStorage);
+  if (tabScope !== null) {
+    return parseStoredOperatingScope(tabScope);
+  }
+
+  return parseStoredOperatingScope(readStorageItem(() => window.localStorage));
+}
+
+function readStorageItem(store: () => Storage): string | null {
   try {
-    return parseStoredOperatingScope(window.localStorage.getItem(OPERATING_CONTEXT_STORAGE_KEY));
+    return store().getItem(OPERATING_CONTEXT_STORAGE_KEY);
   } catch {
-    return {};
+    // Browser storage can be unavailable in private or locked-down contexts.
+    return null;
   }
 }
 
@@ -58,9 +78,16 @@ export function writeStoredOperatingScope(scope: AppShellOperatingScopeInput) {
     return;
   }
 
+  const nextScope = compactOperatingScope(scope);
+  const hasValues = hasOperatingScopeValues(nextScope);
   try {
-    const nextScope = compactOperatingScope(scope);
-    if (!hasOperatingScopeValues(nextScope)) {
+    window.sessionStorage.setItem(OPERATING_CONTEXT_STORAGE_KEY, JSON.stringify(hasValues ? nextScope : {}));
+  } catch {
+    // Browser storage can be unavailable in private or locked-down contexts.
+  }
+
+  try {
+    if (!hasValues) {
       window.localStorage.removeItem(OPERATING_CONTEXT_STORAGE_KEY);
       return;
     }
@@ -76,6 +103,8 @@ export function mergeOperatingScopes(
   routeScope: AppShellOperatingScopeInput
 ): AppShellOperatingScopeInput {
   return compactOperatingScope({
+    entityId: routeScope.entityId ?? storedScope.entityId ?? null,
+    fundId: routeScope.fundId ?? storedScope.fundId ?? null,
     symbol: routeScope.symbol ?? storedScope.symbol ?? null,
     fundAccountId: routeScope.fundAccountId ?? storedScope.fundAccountId ?? null,
     runId: routeScope.runId ?? storedScope.runId ?? null,
@@ -89,6 +118,8 @@ export function mergeOperatingScopes(
 
 export function compactOperatingScope(scope: AppShellOperatingScopeInput): AppShellOperatingScopeInput {
   return {
+    ...(scope.entityId ? { entityId: scope.entityId } : {}),
+    ...(scope.fundId ? { fundId: scope.fundId } : {}),
     ...(scope.symbol ? { symbol: scope.symbol } : {}),
     ...(scope.fundAccountId ? { fundAccountId: scope.fundAccountId } : {}),
     ...(scope.runId ? { runId: scope.runId } : {}),
@@ -102,7 +133,9 @@ export function compactOperatingScope(scope: AppShellOperatingScopeInput): AppSh
 
 export function hasOperatingScopeValues(scope: AppShellOperatingScopeInput): boolean {
   return Boolean(
-    scope.symbol
+    scope.entityId
+    || scope.fundId
+    || scope.symbol
     || scope.fundAccountId
     || scope.runId
     || scope.provider

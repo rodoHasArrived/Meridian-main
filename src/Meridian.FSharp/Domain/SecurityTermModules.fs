@@ -324,6 +324,22 @@ module BondRedemptionTerms =
 /// Exact coupon structure shared by the domain and the flat codec (ADR-027 S3-E).
 type BondCouponTerms = { Structure: BondCouponStructure; PaymentFrequency: PaymentFrequency option }
 
+/// Contractual overnight, indexation and coupon-entitlement conventions. Absence is distinct
+/// from an explicitly declared zero, false, calendar or method; the flat v5 admission owns vocabulary.
+type BondWorkflowTerms = {
+    FloatingMethod: string option
+    FixingCalendarId: string option
+    LookbackBusinessDays: int option
+    ObservationMethod: string option
+    ObservationWeighting: string option
+    LockoutBusinessDays: int option
+    LagMonths: int option
+    InterpolateMonthly: bool option
+    CouponFloorRatio: decimal option
+    RedemptionFloorRatio: decimal option
+    ExCouponBusinessDays: int option
+}
+
 /// Contractual payments retain stored order and amounts.
 type PrincipalScheduleTerms = { Payments: PrincipalPaymentEntry list }
 
@@ -1060,6 +1076,7 @@ type SecurityTermModules = {
     FundShare: FundShareTerms option
     ReferenceDataSource: ReferenceDataSourceTerms option
     BondCoupon: BondCouponTerms option
+    BondWorkflow: BondWorkflowTerms option
     PrincipalSchedule: PrincipalScheduleTerms option
     SwapLegs: SwapLegTerms option
     LoanCovenants: LoanCovenantTerms option
@@ -1227,6 +1244,7 @@ module SecurityTermModules =
         DebtClassification = None
         BondRedemption = None
         BondCoupon = None
+        BondWorkflow = None
         PrincipalSchedule = None
         SwapLegs = None
         LoanCovenants = None

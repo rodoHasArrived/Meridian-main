@@ -65,6 +65,11 @@ public sealed record OptionCandidateInfo(
     /// <summary>Expected dividend amount. Null when unknown.</summary>
     decimal? NextDividendAmount = null)
 {
+    /// <summary>Missing provider measurements must not masquerade as measured zeros.</summary>
+    public bool DeltaAvailable { get; init; } = true;
+    public bool OpenInterestAvailable { get; init; } = true;
+    public bool VolumeAvailable { get; init; } = true;
+
     /// <summary>Mid-point price.</summary>
     public decimal Mid => Bid > 0 && Ask > 0 ? (Bid + Ask) / 2m : Bid;
 

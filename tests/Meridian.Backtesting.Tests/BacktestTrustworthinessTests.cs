@@ -190,6 +190,30 @@ public sealed class BacktestTrustworthinessTests : IDisposable
     }
 
     [Fact]
+    public async Task DelistedSymbol_FullHaircut_WritesOffTheRetainedBasisWithoutCashProceeds()
+    {
+        WriteBars("GONE", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 5), basePrice: 100m);
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 20),
+            DataRoot: _dataRoot,
+            SlippageBasisPoints: 0m,
+            DelistingHaircutPercent: 1m);
+
+        var result = await _engine.RunAsync(request, new BuyOnFirstBarStrategy("GONE", quantity: 10));
+
+        result.Fills.Should().ContainSingle(fill => fill.OrderId == Guid.Empty && fill.FillPrice == 0m);
+        result.Snapshots.Last().Positions.Should().NotContainKey("GONE");
+        result.Ledger.GetBalance(LedgerAccounts.Securities("GONE", BacktestDefaults.DefaultBrokerageAccountId))
+            .Should().Be(0m);
+        result.Ledger.GetBalance(LedgerAccounts.RealizedLossFor(BacktestDefaults.DefaultBrokerageAccountId))
+            .Should().Be(1_000m);
+        var liquidation = result.Ledger.GetJournalEntries(new LedgerQuery(OrderId: Guid.Empty)).Should().ContainSingle().Subject;
+        liquidation.IsBalanced.Should().BeTrue();
+        liquidation.Lines.Should().OnlyContain(line => line.Account.Name != "Cash");
+    }
+
+    [Fact]
     public async Task DelistedSymbol_HoldPolicy_KeepsPositionAndWarnsInDisclosure()
     {
         WriteBars("GONE", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 5), basePrice: 100m);
@@ -307,9 +331,9 @@ public sealed class BacktestTrustworthinessTests : IDisposable
     }
 
     [Theory]
-    [InlineData("Bond")]
     [InlineData("Option")]
-    public async Task KnownNonShareSecurity_RejectsIncompatiblePricingBeforeReplay(string assetClass)
+    [InlineData("Future")]
+    public async Task KnownContractSecurity_RejectsIncompatiblePricingBeforeReplay(string assetClass)
     {
         var from = new DateOnly(2024, 1, 2);
         var to = new DateOnly(2024, 1, 3);
@@ -325,6 +349,35 @@ public sealed class BacktestTrustworthinessTests : IDisposable
 
         await act.Should().ThrowAsync<NotSupportedException>()
             .WithMessage("*compatible asset pricing model*");
+    }
+
+    [Fact]
+    public async Task KnownBondSecurity_BooksFaceValueLotsAtPercentOfPar()
+    {
+        var from = new DateOnly(2024, 1, 2);
+        var to = new DateOnly(2024, 1, 3);
+        var cutoff = new DateTimeOffset(2024, 1, 3, 0, 0, 0, TimeSpan.Zero);
+        WriteBars("BOND", from, to, basePrice: 101.25m);
+        var identity = new DatedIdentityQuery(Guid.NewGuid(), cutoff, "Bond");
+        var engine = new BacktestEngine(NullLogger<BacktestEngine>.Instance,
+            new StorageCatalogService(_dataRoot, new StorageOptions()),
+            new RecordingTradingParametersQuery(), securityIdentityQueryService: identity);
+        var request = new BacktestRequest(From: from, To: to, Symbols: ["BOND"], DataRoot: _dataRoot,
+            InitialCash: 1_000_000m, CommissionKind: BacktestCommissionKind.Free);
+
+        var result = await engine.RunAsync(request, new BuyOnFirstBarStrategy("BOND", 100_000));
+
+        var fill = result.Fills.Should().ContainSingle().Which;
+        var snapshot = result.Snapshots.Last();
+        var position = snapshot.Positions["BOND"];
+        var lot = position.OpenLots!.Should().ContainSingle().Which;
+        lot.UnitKind.Should().Be(SecurityLotUnitKind.FaceValue);
+        lot.Quantity.Should().Be(100_000m);
+        lot.CostBasis().Should().Be(100_000m * fill.FillPrice / 100m);
+        snapshot.Cash.Should().Be(1_000_000m - 100_000m * fill.FillPrice / 100m,
+            "100,000 face at a percent-of-par quote settles face × price / 100, not face × price");
+        position.AverageCostBasis.Should().Be(fill.FillPrice, "average cost stays in the percent-of-par quote convention");
+        snapshot.LongMarketValue.Should().Be(100_000m * 101.25m / 100m, "the position marks at the last bar close");
     }
 
     [Fact]

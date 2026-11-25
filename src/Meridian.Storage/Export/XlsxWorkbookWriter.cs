@@ -32,7 +32,8 @@ public static class XlsxWorkbookWriter
             WriteTextEntry(archive, "_rels/.rels", GetRelsXml());
             WriteTextEntry(archive, "xl/workbook.xml", GetWorkbookXml(sheetNames));
             WriteTextEntry(archive, "xl/_rels/workbook.xml.rels", GetWorkbookRelsXml(normalized.Count));
-            WriteTextEntry(archive, "xl/styles.xml", GetStylesXml());
+            var usesGroupedNumbers = normalized.Any(static sheet => sheet.Columns?.Any(static column => column.GroupNumbers) == true);
+            WriteTextEntry(archive, "xl/styles.xml", GetStylesXml(usesGroupedNumbers));
 
             for (var index = 0; index < normalized.Count; index++)
             {
@@ -58,6 +59,16 @@ public static class XlsxWorkbookWriter
         var xml = new StringBuilder();
         xml.AppendLine("""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>""");
         xml.AppendLine("""<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">""");
+        if (worksheet.Columns is { Count: > 0 } columns)
+        {
+            xml.AppendLine("<cols>");
+            for (var index = 0; index < columns.Count; index++)
+            {
+                var column = index + 1;
+                xml.AppendLine($"<col min=\"{column}\" max=\"{column}\" width=\"{columns[index].Width}\" customWidth=\"1\"/>");
+            }
+            xml.AppendLine("</cols>");
+        }
         xml.AppendLine("<sheetData>");
 
         if (worksheet.Headers.Count > 0)
@@ -84,7 +95,8 @@ public static class XlsxWorkbookWriter
                     continue;
                 }
 
-                xml.Append(GetCellXml(GetCellReference(col, rowIndex + 1), row[col]!, sharedStrings, sharedStringIndex));
+                var groupNumbers = worksheet.Columns is { } layout && col < layout.Count && layout[col].GroupNumbers;
+                xml.Append(GetCellXml(GetCellReference(col, rowIndex + 1), row[col]!, sharedStrings, sharedStringIndex, groupNumbers));
             }
 
             xml.AppendLine("</row>");
@@ -99,10 +111,14 @@ public static class XlsxWorkbookWriter
         string cellRef,
         object value,
         List<string> sharedStrings,
-        Dictionary<string, int> sharedStringIndex)
+        Dictionary<string, int> sharedStringIndex,
+        bool groupNumbers)
     {
         return value switch
         {
+            decimal number when groupNumbers =>
+                $"<c r=\"{cellRef}\" s=\"{(number == decimal.Truncate(number) ? 2 : 3)}\"><v>{number.ToString(CultureInfo.InvariantCulture)}</v></c>",
+            string numberText when groupNumbers => GetStringCellXml(cellRef, numberText, sharedStrings, sharedStringIndex, rightAlign: true),
             byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal =>
                 $"<c r=\"{cellRef}\"><v>{Convert.ToString(value, CultureInfo.InvariantCulture)}</v></c>",
             bool boolean => $"<c r=\"{cellRef}\" t=\"b\"><v>{(boolean ? "1" : "0")}</v></c>",
@@ -117,7 +133,8 @@ public static class XlsxWorkbookWriter
         string cellRef,
         string value,
         List<string> sharedStrings,
-        Dictionary<string, int> sharedStringIndex)
+        Dictionary<string, int> sharedStringIndex,
+        bool rightAlign = false)
     {
         if (!sharedStringIndex.TryGetValue(value, out var index))
         {
@@ -126,7 +143,8 @@ public static class XlsxWorkbookWriter
             sharedStrings.Add(value);
         }
 
-        return $"<c r=\"{cellRef}\" t=\"s\"><v>{index}</v></c>";
+        var style = rightAlign ? " s=\"4\"" : string.Empty;
+        return $"<c r=\"{cellRef}\" t=\"s\"{style}><v>{index}</v></c>";
     }
 
     private static IReadOnlyList<string> BuildSheetNames(IReadOnlyList<XlsxWorksheet> worksheets)
@@ -256,16 +274,21 @@ public static class XlsxWorkbookWriter
             """;
     }
 
-    private static string GetStylesXml() => """
+    private static string GetStylesXml(bool usesGroupedNumbers)
+    {
+        const string fractionFormat = """<numFmt numFmtId="165" formatCode="#,##0.############################"/>""";
+        const string groupedStyles = """<xf numFmtId="3" fontId="0" fillId="0" borderId="0" applyNumberFormat="1" applyAlignment="1"><alignment horizontal="right"/></xf><xf numFmtId="165" fontId="0" fillId="0" borderId="0" applyNumberFormat="1" applyAlignment="1"><alignment horizontal="right"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="0" applyAlignment="1"><alignment horizontal="right"/></xf>""";
+        return $$"""
         <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
         <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-            <numFmts count="1"><numFmt numFmtId="164" formatCode="yyyy-mm-dd hh:mm:ss"/></numFmts>
+            <numFmts count="{{(usesGroupedNumbers ? 2 : 1)}}"><numFmt numFmtId="164" formatCode="yyyy-mm-dd hh:mm:ss"/>{{(usesGroupedNumbers ? fractionFormat : string.Empty)}}</numFmts>
             <fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts>
             <fills count="1"><fill><patternFill patternType="none"/></fill></fills>
             <borders count="1"><border><left/><right/><top/><bottom/></border></borders>
-            <cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" applyNumberFormat="1"/></cellXfs>
+            <cellXfs count="{{(usesGroupedNumbers ? 5 : 2)}}"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" applyNumberFormat="1"/>{{(usesGroupedNumbers ? groupedStyles : string.Empty)}}</cellXfs>
         </styleSheet>
         """;
+    }
 
     private static string GetSharedStringsXml(List<string> strings)
     {
@@ -290,7 +313,13 @@ public static class XlsxWorkbookWriter
             .Replace("'", "&apos;", StringComparison.Ordinal);
 }
 
+/// <summary>Display width and numeric formatting for a worksheet column that opts into a layout.</summary>
+public sealed record XlsxColumnLayout(int Width, bool GroupNumbers = false);
+
 public sealed record XlsxWorksheet(
     string Name,
     IReadOnlyList<string> Headers,
-    IReadOnlyList<IReadOnlyList<object?>> Rows);
+    IReadOnlyList<IReadOnlyList<object?>> Rows)
+{
+    public IReadOnlyList<XlsxColumnLayout>? Columns { get; init; }
+}

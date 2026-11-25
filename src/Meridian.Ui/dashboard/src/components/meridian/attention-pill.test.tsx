@@ -12,6 +12,7 @@ function attention(overrides: Partial<AppShellAttentionState> = {}): AppShellAtt
     statusLabel: "All clear",
     title: "No open issues",
     moreCount: 0,
+    items: [],
     counts: { blocked: 0, review: 0, unconfirmed: 0 },
     href: "/",
     ariaLabel: "Workstation attention: All clear. No open issues. Open Today.",

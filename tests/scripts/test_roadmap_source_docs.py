@@ -35,6 +35,18 @@ def _registry_root(temp_dir: str, sequence_line: str | None) -> Path:
     """Clone the real registries into a temp root, optionally injecting a sequence on one item."""
     root = Path(temp_dir)
     shutil.copytree(ROOT / "docs" / "roadmap" / "data", root / "docs" / "roadmap" / "data")
+    shutil.copytree(ROOT / "docs/roadmap/snapshots", root / "docs/roadmap/snapshots")
+    shutil.copytree(ROOT / "docs/product/history", root / "docs/product/history")
+    readiness = common.load_data(ROOT / "docs/roadmap/data/production-readiness.yml")
+    for item in readiness["items"]:
+        for link in item["evidence_links"]:
+            if "://" in link:
+                continue
+            source = ROOT / link.split("#", 1)[0]
+            target = root / link.split("#", 1)[0]
+            if source.is_file() and not target.exists():
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy(source, target)
     (root / "docs" / "source" / "data").mkdir(parents=True)
     shutil.copy(
         ROOT / "docs" / "source" / "data" / "source-modules.yml",
@@ -347,15 +359,17 @@ modules:
                 encoding="utf-8",
             )
             baseline = doc_hashes.build_manifest(root)
-            manifest_path = root / "docs/source/generated/source-hash-manifest.json"
-            manifest_path.write_text(common.json.dumps(baseline, indent=2, sort_keys=True), encoding="utf-8")
+            manifest_path = root / "docs/source/generated/source-hashes"
+            doc_hashes.write_manifest_directory(manifest_path, baseline)
+            before = {child.name: child.read_bytes() for child in manifest_path.iterdir()}
 
             (root / "src/ExampleA/ExampleA.cs").write_text("namespace ExampleA;\npublic sealed class NewType {}\n", encoding="utf-8")
             (root / "src/ExampleB/ExampleB.cs").write_text("namespace ExampleB;\npublic sealed class UnreviewedType {}\n", encoding="utf-8")
             actual = doc_hashes.build_manifest(root)
 
             changed, refreshed = doc_hashes.refresh_source_hash_manifest(root, actual, ["SRC-EXAMPLE-A"])
-            updated = common.json.loads(manifest_path.read_text(encoding="utf-8"))
+            updated = doc_hashes.load_reviewed_manifest(root)
+            after = {child.name: child.read_bytes() for child in manifest_path.iterdir()}
             updated_by_id = {entry["id"]: entry for entry in updated["modules"]}
             baseline_by_id = {entry["id"]: entry for entry in baseline["modules"]}
             actual_by_id = {entry["id"]: entry for entry in actual["modules"]}
@@ -364,6 +378,10 @@ modules:
         self.assertEqual(1, refreshed)
         self.assertEqual(actual_by_id["SRC-EXAMPLE-A"]["source_hash"], updated_by_id["SRC-EXAMPLE-A"]["source_hash"])
         self.assertEqual(baseline_by_id["SRC-EXAMPLE-B"]["source_hash"], updated_by_id["SRC-EXAMPLE-B"]["source_hash"])
+        # Only the reviewed module's own file changes, so concurrent reviews of
+        # other modules cannot conflict with this one in Git.
+        self.assertEqual(sorted(before), sorted(after))
+        self.assertEqual(["SRC-EXAMPLE-A.json"], sorted(name for name in after if after[name] != before[name]))
 
     def test_stale_doc_marker_reports_source_hash_drift(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
@@ -412,10 +430,7 @@ modules:
                 encoding="utf-8",
             )
             baseline = doc_hashes.build_manifest(root)
-            (root / "docs/source/generated/source-hash-manifest.json").write_text(
-                common.json.dumps(baseline, indent=2, sort_keys=True) if hasattr(common, "json") else __import__("json").dumps(baseline, indent=2, sort_keys=True),
-                encoding="utf-8",
-            )
+            doc_hashes.write_manifest_directory(root / "docs/source/generated/source-hashes", baseline)
             (root / "src/Example/Example.cs").write_text("namespace Example;\npublic sealed class ExampleType {}\n", encoding="utf-8")
 
             report = mark_stale.build_stale_report(root)

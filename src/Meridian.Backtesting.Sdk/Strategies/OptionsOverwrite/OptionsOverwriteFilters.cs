@@ -23,6 +23,9 @@ public static class OptionsOverwriteFilters
     /// </summary>
     public static bool PassesLiquidityFilter(OptionCandidateInfo opt, OptionsOverwriteParams p)
     {
+        if ((!opt.OpenInterestAvailable && p.MinOpenInterest > 0)
+            || (!opt.VolumeAvailable && p.MinVolume > 0) || opt.Ask < opt.Bid)
+            return false;
         if (opt.Bid <= 0m)
             return false;
 
@@ -54,6 +57,8 @@ public static class OptionsOverwriteFilters
     /// </summary>
     public static bool PassesRiskFilter(OptionCandidateInfo opt, OptionsOverwriteParams p)
     {
+        if (!opt.DeltaAvailable || !double.IsFinite(opt.Delta))
+            return false;
         if (opt.Strike < p.MinStrike)
             return false;
 

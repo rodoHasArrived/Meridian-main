@@ -132,7 +132,7 @@ class ProgramStateSummaryGeneratorTests(unittest.TestCase):
 
             self.assertIn("docs/roadmap/data/program-state.yml", markdown)
             self.assertIn("docs/roadmap/data/roadmap-items.yml", markdown)
-            self.assertIn('"schemaVersion": "program-state-summary/v3"', json_payload)
+            self.assertIn('"schemaVersion": "program-state-summary/v4"', json_payload)
             self.assertIn('"roadmapSource": "docs/roadmap/data/roadmap-items.yml"', json_payload)
             self.assertNotIn("docs/status/PROGRAM_STATE.md", markdown)
 

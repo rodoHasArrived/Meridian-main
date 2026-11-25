@@ -1,6 +1,7 @@
-import { Fragment } from "react";
-import { AmountCell } from "./AmountCell";
-import { toNumber } from "./money";
+import { Fragment, useId } from "react";
+import { FinancialValue } from "@/components/meridian/financial-value";
+import { exactDecimalText, parseExactDecimal, sumExactDecimals } from "@/lib/exact-financial-value";
+import { trialBalanceAmountPassport } from "@/lib/trial-balance-amount-passport";
 import type { AccountingTrialBalanceRowViewModel } from "@/screens/accounting-screen.view-model";
 
 export interface TrialBalanceTableProps {
@@ -24,12 +25,12 @@ function inject(): void {
 .tbl-wrap:focus-visible{outline:var(--focus-ring,2px solid var(--focus,#2D6FB3));outline-offset:-2px;}
 .tbl-wrap{overflow-x:auto;border:1px solid var(--border-color,#D2CDC3);border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
 .tbl{width:100%;min-width:760px;border-collapse:separate;border-spacing:0;font-family:var(--font-data,monospace);font-size:12px;}
-.tbl thead th{padding:9px 12px;text-align:left;white-space:nowrap;position:sticky;top:0;background:var(--bg-medium,#EBE8E1);z-index:1;font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);border-bottom:1px solid var(--border-strong,#AAA49A);border-right:1px solid var(--border-divider,#E2DED5);}
+.tbl thead th{padding:9px 12px;text-align:left;white-space:nowrap;position:sticky;top:0;background:var(--bg-medium,#EBE8E1);z-index:1;font-family:var(--font-body,inherit);font-size:0.75rem;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);border-bottom:1px solid var(--border-strong,#AAA49A);border-right:1px solid var(--border-divider,#E2DED5);}
 .tbl thead th:last-child,.tbl td:last-child{border-right:none;}
 .tbl th.tbl--r,.tbl td.tbl--r{text-align:right;}
 .tbl td{padding:10px 12px;white-space:nowrap;color:var(--text-primary,#20252B);border-top:1px solid var(--border-color,#D2CDC3);border-right:1px solid var(--border-divider,#E2DED5);vertical-align:top;}
 .tbl tbody tr:first-child td{border-top:none;}
-.tbl__sec td{background:var(--bg-medium,#EBE8E1);font-family:var(--font-body,inherit);font-size:11px;font-weight:700;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-secondary,#535C65);}
+.tbl__sec td{background:var(--bg-medium,#EBE8E1);font-family:var(--font-body,inherit);font-size:0.75rem;font-weight:700;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-secondary,#535C65);}
 .tbl__acct{font-family:var(--font-body,inherit);white-space:normal;min-width:210px;}
 .tbl__code{color:var(--text-secondary,#535C65);}
 .tbl__row--click{cursor:pointer;}
@@ -38,8 +39,8 @@ function inject(): void {
 .tbl__row--on td{background:var(--interaction-selected-surface,#E7EDF2);}
 .tbl__sub td{background:var(--bg-subtle,#EBE8E1);font-weight:600;color:var(--text-secondary,#535C65);}
 .tbl tfoot td{padding:10px 12px;background:var(--bg-medium,#EBE8E1);font-weight:700;border-top:2px solid var(--border-strong,#AAA49A);color:var(--text-primary,#20252B);}
-.tbl__foot-label{font-family:var(--font-body,inherit);font-variant:all-small-caps;letter-spacing:.03em;font-size:11px;color:var(--text-secondary,#535C65);}
-.tbl__foot-note{margin-left:12px;font-size:11px;font-variant:normal;letter-spacing:0;}
+.tbl__foot-label{font-family:var(--font-body,inherit);font-variant:all-small-caps;letter-spacing:.03em;font-size:0.75rem;color:var(--text-secondary,#535C65);}
+.tbl__foot-note{margin-left:12px;font-size:0.75rem;font-variant:normal;letter-spacing:0;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-meridian-component", "trial-balance-table");
@@ -62,18 +63,28 @@ function normalSide(row: AccountingTrialBalanceRowViewModel): "debit" | "credit"
   return /liab|equity|capital|revenue|income|gain/.test(value) ? "credit" : "debit";
 }
 
-function debitCredit(row: AccountingTrialBalanceRowViewModel): { debit: number; credit: number } {
-  const balance = toNumber(row.balance);
-  if (!Number.isFinite(balance) || balance === 0) {
-    return { debit: 0, credit: 0 };
-  }
+function debitCredit(row: AccountingTrialBalanceRowViewModel): { debit: string | null; credit: string | null } {
+  const balance = parseExactDecimal(row.balanceExact ?? row.balance);
+  if (!balance) return { debit: null, credit: null };
+  const side = balance.coefficient >= 0n ? normalSide(row) : normalSide(row) === "debit" ? "credit" : "debit";
+  const magnitude = exactDecimalText({ ...balance, coefficient: balance.coefficient < 0n ? -balance.coefficient : balance.coefficient });
+  return side === "debit" ? { debit: magnitude, credit: "0" } : { debit: "0", credit: magnitude };
+}
 
-  const side = balance >= 0
-    ? normalSide(row)
-    : normalSide(row) === "debit" ? "credit" : "debit";
-  return side === "debit"
-    ? { debit: Math.abs(balance), credit: 0 }
-    : { debit: 0, credit: Math.abs(balance) };
+function sumSide(rows: Array<{ debit: string | null; credit: string | null }>, side: "debit" | "credit"): string | null {
+  const values = rows.map((row) => row[side]);
+  return values.some((value) => value === null) ? null : sumExactDecimals(values as string[]);
+}
+
+const conditionReason = "Posted account balance; the source has not supplied a reconciled data condition.";
+
+function BalanceSide({ row, value, currency, side, conditionContextId }: { row: AccountingTrialBalanceRowViewModel; value: string | null; currency?: string; side: "debit" | "credit"; conditionContextId: string }) {
+  const source = row.balanceExact ?? row.balance;
+  const active = parseExactDecimal(value)?.coefficient !== 0n || parseExactDecimal(source)?.coefficient === 0n;
+  const passport = active ? trialBalanceAmountPassport(row) : null;
+  return <FinancialValue value={passport ? source : value} absolute currency={currency}
+    passport={passport} condition="unavailable" reason={conditionReason} conditionContextId={conditionContextId}
+    basis={`Net account balance shown on the ${side} side; the passport retains its original sign.`} />;
 }
 
 export function TrialBalanceTable({
@@ -84,11 +95,13 @@ export function TrialBalanceTable({
   grouped = true,
   onRowSelect
 }: TrialBalanceTableProps) {
+  const conditionContextId = useId();
   inject();
   const computedRows = rows.map((row) => ({ row, ...debitCredit(row), section: sectionOf(row) }));
-  const totalDebits = computedRows.reduce((sum, row) => sum + row.debit, 0);
-  const totalCredits = computedRows.reduce((sum, row) => sum + row.credit, 0);
-  const balanced = Math.abs(totalDebits - totalCredits) < 0.005;
+  const totalDebits = sumSide(computedRows, "debit");
+  const totalCredits = sumSide(computedRows, "credit");
+  const variance = totalDebits !== null && totalCredits !== null ? sumExactDecimals([totalDebits, totalCredits.startsWith("-") ? totalCredits.slice(1) : `-${totalCredits}`]) : null;
+  const balanced = variance !== null && parseExactDecimal(variance)?.coefficient === 0n;
   const groups = grouped
     ? SECTIONS.map((section) => ({
         section,
@@ -98,6 +111,9 @@ export function TrialBalanceTable({
 
   return (
     <div className="tbl-wrap" tabIndex={0} role="region" aria-label={caption || "Trial balance"}>
+      <p id={conditionContextId} className="border-b border-border px-3 py-2 font-sans text-xs text-muted-foreground">
+        Data condition unavailable. A reconciliation data condition has not been supplied for these posted balances or their displayed totals.
+      </p>
       <table className="tbl">
         <thead>
           <tr>
@@ -141,15 +157,15 @@ export function TrialBalanceTable({
                   >
                     <td className="tbl__acct">
                       <span className="block font-semibold">{row.accountLabel}</span>
-                      <span className="tbl__code mt-1 block break-words font-mono text-[11px]">{row.dimensionLabel}</span>
+                      <span className="tbl__code mt-1 block break-words font-mono text-xs">{row.dimensionLabel}</span>
                     </td>
                     <td className="tbl__code">{row.accountTypeLabel}</td>
                     <td className="tbl__code">{row.basisLabel}</td>
                     <td className="tbl--r">
-                      <AmountCell value={debit} currency={currency} zeroDash />
+                      <BalanceSide row={row} value={debit} currency={currency} side="debit" conditionContextId={conditionContextId} />
                     </td>
                     <td className="tbl--r">
-                      <AmountCell value={credit} currency={currency} zeroDash />
+                      <BalanceSide row={row} value={credit} currency={currency} side="credit" conditionContextId={conditionContextId} />
                     </td>
                     <td className="tbl--r">{row.entryCountLabel}</td>
                   </tr>
@@ -159,10 +175,10 @@ export function TrialBalanceTable({
                 <tr className="tbl__sub">
                   <td colSpan={3}>{group.section} subtotal</td>
                   <td className="tbl--r">
-                    <AmountCell value={group.rows.reduce((sum, row) => sum + row.debit, 0)} currency={currency} zeroDash mode="muted" />
+                    <FinancialValue value={sumSide(group.rows, "debit")} currency={currency} condition="unavailable" reason={conditionReason} conditionContextId={conditionContextId} />
                   </td>
                   <td className="tbl--r">
-                    <AmountCell value={group.rows.reduce((sum, row) => sum + row.credit, 0)} currency={currency} zeroDash mode="muted" />
+                    <FinancialValue value={sumSide(group.rows, "credit")} currency={currency} condition="unavailable" reason={conditionReason} conditionContextId={conditionContextId} />
                   </td>
                   <td />
                 </tr>
@@ -177,15 +193,15 @@ export function TrialBalanceTable({
               {!balanced ? (
                 <span className="tbl__foot-note text-danger">
                   out of balance by{" "}
-                  <AmountCell value={totalDebits - totalCredits} currency={currency} mode="pnl" parens />
+                  <FinancialValue value={variance} currency={currency} decimals={Math.max(2, parseExactDecimal(variance)?.scale ?? 2)} condition="unavailable" reason={conditionReason} conditionContextId={conditionContextId} signed />
                 </span>
               ) : null}
             </td>
             <td className="tbl--r">
-              <AmountCell value={totalDebits} currency={currency} strong />
+              <FinancialValue value={totalDebits} currency={currency} condition="unavailable" reason={conditionReason} conditionContextId={conditionContextId} />
             </td>
             <td className="tbl--r">
-              <AmountCell value={totalCredits} currency={currency} strong />
+              <FinancialValue value={totalCredits} currency={currency} condition="unavailable" reason={conditionReason} conditionContextId={conditionContextId} />
             </td>
             <td />
           </tr>

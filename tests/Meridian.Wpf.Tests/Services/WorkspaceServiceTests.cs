@@ -1055,6 +1055,50 @@ public sealed class WorkspaceServiceTests : IDisposable
         imported.Should().BeNull();
     }
 
+    [Fact]
+    public async Task ImportWorkspaceAsync_EmptyObject_ShouldReturnNull()
+    {
+        var svc = CreateService();
+
+        var imported = await svc.ImportWorkspaceAsync("{}");
+
+        imported.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ExportThenImport_ShouldRoundTripNamePagesFiltersAndQuickActions()
+    {
+        var svc = CreateService();
+        var source = await svc.CreateWorkspaceAsync("Close review " + Guid.NewGuid(), "Month-end close", WorkspaceCategory.Accounting);
+        source.Pages.Add(new WorkspacePage { PageTag = "FundLedger", Title = "Fund ledger", IsDefault = true });
+        source.Pages.Add(new WorkspacePage { PageTag = "Reconciliation", Title = "Reconciliation" });
+        source.Filters["Reconciliation.status"] = "open";
+        source.QuickActions.Add(new WorkspaceQuickAction { ActionId = "open-breaks", Label = "Open breaks", TargetPageTag = "Reconciliation" });
+        await svc.UpdateWorkspaceAsync(source);
+
+        var json = await svc.ExportWorkspaceAsync(source.Id);
+        var imported = await svc.ImportWorkspaceAsync(json);
+
+        try
+        {
+            imported.Should().NotBeNull();
+            imported!.Id.Should().NotBe(source.Id);
+            imported.Name.Should().Be(source.Name);
+            imported.Description.Should().Be("Month-end close");
+            imported.Category.Should().Be(WorkspaceCategory.Accounting);
+            imported.Pages.Select(page => (page.PageTag, page.Title, page.IsDefault)).Should().Equal(
+                ("FundLedger", "Fund ledger", true), ("Reconciliation", "Reconciliation", false));
+            imported.Filters.Should().Contain("Reconciliation.status", "open");
+            imported.QuickActions.Should().ContainSingle(action => action.ActionId == "open-breaks" && action.Label == "Open breaks");
+        }
+        finally
+        {
+            await svc.DeleteWorkspaceAsync(source.Id);
+            if (imported is not null)
+                await svc.DeleteWorkspaceAsync(imported.Id);
+        }
+    }
+
     // ── Data Model: WorkspaceTemplate ────────────────────────────────
 
     [Fact]

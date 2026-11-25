@@ -46,11 +46,13 @@ function portfolioExplorerFigureKey(label: string): PortfolioFigureKey | null {
 export function buildPortfolioFigureDifferenceNote({
   headerMetrics,
   headerProvenance,
-  explorer
+  explorer,
+  retainedRunLabel
 }: {
   headerMetrics: readonly MetricSnapshot[];
   headerProvenance: MetricProvenance;
   explorer: FinancialRecordExplorerDto | null;
+  retainedRunLabel?: string;
 }): FigureDifferenceNote | null {
   if (!explorer || explorer.isBlocked) {
     return null;
@@ -68,19 +70,57 @@ export function buildPortfolioFigureDifferenceNote({
   });
 
   return buildFigureDifferenceNote(
-    { name: "Header strip", provenance: headerProvenance, figures: headerFigures },
+    { name: "Live holdings", provenance: headerProvenance, figures: headerFigures },
     {
-      name: "Portfolio Explorer",
+      name: "Retained run records",
       provenance: {
-        // The presented explorer relabels its source with the page's own source label, which
-        // would make the two panels look like one feed; name the record set instead.
+        // Identify the retained record set independently of the current source selection.
         source: /^demo\b/i.test(scopeValue("source") ?? "")
           ? "Retained run records (demo portfolio data)"
           : "Retained run records",
         asOf: scopeValue("as of"),
-        scope: scopeValue("run") ?? scopeValue("run id")
+        scope: retainedRunLabel ?? scopeValue("run") ?? scopeValue("run id")
       },
       figures: explorerFigures
     }
   );
+}
+
+interface ComparablePosition {
+  symbol: string;
+  quantity: string;
+  averagePrice: string;
+}
+
+function decimalOf(value: string | null | undefined): number | null {
+  const text = value?.replace(/[$,\s]/g, "").replace(/−/g, "-");
+  if (!text) return null;
+  const parsed = Number(text);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+/**
+ * Symbols that read differently in Portfolio's live holdings (every account) and Trading's
+ * brokerage session (the selected account). Neither figure is wrong: they come from different
+ * sources, and the page names both instead of leaving two unexplained numbers on two screens.
+ */
+export function buildPositionSourceDifferences({
+  holdings,
+  session,
+  sessionLabel
+}: {
+  holdings: readonly ComparablePosition[] | null | undefined;
+  session: readonly ComparablePosition[] | null | undefined;
+  sessionLabel: string;
+}): string[] {
+  if (!holdings?.length || !session?.length) return [];
+  const sessionBySymbol = new Map(session.map((position) => [position.symbol.trim().toUpperCase(), position]));
+  return holdings.flatMap((holding) => {
+    const match = sessionBySymbol.get(holding.symbol.trim().toUpperCase());
+    if (!match) return [];
+    const quantityDiffers = decimalOf(holding.quantity) !== decimalOf(match.quantity);
+    const priceDiffers = decimalOf(holding.averagePrice) !== decimalOf(match.averagePrice);
+    if (!quantityDiffers && !priceDiffers) return [];
+    return [`${holding.symbol}: ${holding.quantity} at ${holding.averagePrice} in live holdings vs ${match.quantity} at ${match.averagePrice} in the ${sessionLabel.charAt(0).toLowerCase()}${sessionLabel.slice(1)}. Different sources, not a conflict.`];
+  });
 }

@@ -1,8 +1,9 @@
 import { axe } from "jest-axe";
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as governanceApi from "@/lib/reporting-governance-api";
 import { getReportAmountBindings } from "@/lib/report-amount-proof-api";
+import { getReportRunReview, type ReportRunReview } from "@/lib/report-run-review-api";
 import { ReportRunGovernanceScreen } from "@/screens/report-run-governance-screen";
 import { renderWithRouter } from "@/test/render";
 import type {
@@ -29,6 +30,7 @@ vi.mock("@/lib/reporting-governance-api", () => ({
   validateGovernedReportingRun: vi.fn()
 }));
 vi.mock("@/lib/report-amount-proof-api", () => ({ getReportAmountBindings: vi.fn() }));
+vi.mock("@/lib/report-run-review-api", () => ({ getReportRunReview: vi.fn() }));
 
 const draftRun = buildRun();
 const seriesHistory: ReportingGovernanceSeriesHistory = {
@@ -65,12 +67,42 @@ describe("ReportRunGovernanceScreen", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getReportAmountBindings).mockResolvedValue([]);
+    vi.mocked(getReportRunReview).mockRejectedValue(new Error("Review not retained"));
     vi.mocked(governanceApi.getGovernedReportingRun).mockResolvedValue(draftRun);
     vi.mocked(governanceApi.getGovernedReportingSeriesHistory).mockResolvedValue(seriesHistory);
     vi.mocked(governanceApi.getSecureReportingDeliveryHistory).mockResolvedValue([]);
     vi.mocked(governanceApi.getSecureReportingAccessGrantHistory).mockResolvedValue([]);
     vi.mocked(governanceApi.getSecureReportingTransportCapabilities).mockResolvedValue(distributionCapabilities);
     vi.mocked(governanceApi.validateGovernedReportingRun).mockResolvedValue(draftRun);
+  });
+
+  it("retains one loaded review through parent updates and gates approval on its exact version", async () => {
+    const run = buildRun({
+      governanceState: "InReview",
+      actionAvailability: [{ action: "approve", isAllowed: true, blockedReason: null, expectedVersion: 7 }]
+    });
+    vi.mocked(governanceApi.getGovernedReportingRun).mockResolvedValue(run);
+    let completeReview!: (value: ReportRunReview) => void;
+    vi.mocked(getReportRunReview).mockReturnValue(new Promise((resolve) => { completeReview = resolve; }));
+    renderGovernance();
+
+    const note = await screen.findByLabelText("Approval decision note");
+    fireEvent.change(note, { target: { value: "Reviewed the retained comparison." } });
+    expect(screen.getByRole("button", { name: "Approve independently · materiality not assessed" })).toBeDisabled();
+
+    await act(async () => completeReview({
+      reviewId: "a".repeat(64), runId: run.runId, version: run.version, snapshotHash: "b".repeat(64),
+      periodId: run.scope.periodId, currency: "USD", accountingBasis: "Gaap", baselineRunId: null, baselineVersion: null,
+      parameters: [], sourceChanges: [], lines: [], materialityOutcome: "NotAssessed", materialChangeCount: null,
+      unavailableReasons: ["No prior approved comparable run is retained."]
+    }));
+    expect(await screen.findByText("Current retained version 7")).toBeVisible();
+    fireEvent.change(note, { target: { value: "Reviewed again before approval." } });
+
+    await waitFor(() => expect(screen.getByRole("button", { name: "Approve independently · materiality not assessed" })).toBeEnabled());
+    expect(getReportRunReview).toHaveBeenCalledExactlyOnceWith(run.runId, expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    expect(screen.queryByText("Loading retained review evidence…")).not.toBeInTheDocument();
+    expect(governanceApi.approveGovernedReportingRun).not.toHaveBeenCalled();
   });
 
   it("loads the exact query run and enables only server-authorized lifecycle actions", async () => {
@@ -112,7 +144,7 @@ describe("ReportRunGovernanceScreen", () => {
   it("does not fall back to a recent or fixture run when runId is missing", async () => {
     renderWithRouter(<ReportRunGovernanceScreen />, { initialEntries: ["/reporting/runs/detail"] });
 
-    expect(screen.getByRole("alert")).toHaveTextContent("Select a governed report run");
+    expect(screen.getByRole("alert")).toHaveTextContent("Select a report run");
     expect(governanceApi.getGovernedReportingRun).not.toHaveBeenCalled();
   });
 

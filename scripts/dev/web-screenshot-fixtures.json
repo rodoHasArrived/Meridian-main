@@ -936,30 +936,30 @@
     "/api/workstation/strategy": {
       "metrics": [
         {
-          "id": "runs",
-          "label": "Runs",
-          "value": "24",
-          "delta": "+8%",
+          "id": "active-runs",
+          "label": "Active Runs",
+          "value": "1",
+          "delta": "+1",
           "tone": "success"
         },
         {
-          "id": "queued",
-          "label": "Queued",
-          "value": "3",
+          "id": "queued-runs",
+          "label": "Queued Promotions",
+          "value": "0",
           "delta": "0%",
           "tone": "default"
         },
         {
-          "id": "review",
+          "id": "review-runs",
           "label": "Needs Review",
-          "value": "2",
-          "delta": "-1%",
+          "value": "0",
+          "delta": "0%",
           "tone": "warning"
         },
         {
-          "id": "promotions",
-          "label": "Promotions",
-          "value": "5",
+          "id": "winning-runs",
+          "label": "Positive P&L",
+          "value": "2",
           "delta": "+2",
           "tone": "default"
         }
@@ -1697,6 +1697,12 @@
         }
       }
     ],
+    "/api/ledger/intercompany/capabilities": {
+      "canManageAgreements": false,
+      "canManageLifecycle": false,
+      "canManageLedger": false,
+      "canViewLedger": true
+    },
     "/api/ledger/books": [
       {
         "ledgerBookId": "00000000-0000-0000-0000-0000000000aa",
@@ -3109,7 +3115,7 @@
       "warnings": [],
       "accounts": [
         {
-          "fundAccountId": "fixture-roth",
+          "fundAccountId": "rh-fund-roth",
           "providerId": "alpaca",
           "externalAccountId": "alpaca-roth",
           "displayName": "Alpaca Roth IRA",
@@ -3123,11 +3129,45 @@
           "positionCount": 2,
           "cashTransactionCount": 4,
           "warnings": []
+        },
+        {
+          "fundAccountId": "rh-fund-traditional",
+          "providerId": "alpaca",
+          "externalAccountId": "alpaca-traditional",
+          "displayName": "Alpaca Traditional IRA",
+          "accountKind": "TraditionalIra",
+          "health": "Healthy",
+          "cash": 24000,
+          "equity": 98200,
+          "buyingPower": 24000,
+          "currency": "USD",
+          "syncedAt": "2026-05-07T12:00:00Z",
+          "positionCount": 1,
+          "cashTransactionCount": 2,
+          "warnings": []
+        },
+        {
+          "fundAccountId": "rh-fund-taxable",
+          "providerId": "alpaca",
+          "externalAccountId": "alpaca-taxable",
+          "displayName": "Alpaca Brokerage",
+          "accountKind": "TaxableBrokerage",
+          "health": "Stale",
+          "cash": 45000,
+          "equity": 110000,
+          "buyingPower": 45000,
+          "currency": "USD",
+          "syncedAt": "2026-05-07T10:30:00Z",
+          "positionCount": 2,
+          "cashTransactionCount": 5,
+          "warnings": [
+            "Brokerage sync is stale."
+          ]
         }
       ],
       "positions": [
         {
-          "fundAccountId": "fixture-roth",
+          "fundAccountId": "rh-fund-roth",
           "providerId": "alpaca",
           "externalAccountId": "alpaca-roth",
           "accountKind": "RothIra",
@@ -3138,9 +3178,62 @@
           "marketValue": 7159.2,
           "unrealizedPnl": 1755.6,
           "assetClass": "equity",
-          "security": null,
+          "security": {
+            "securityId": "sec-dev-001",
+            "displayName": "Apple Inc.",
+            "assetClass": "Equity",
+            "currency": "USD",
+            "status": "Active",
+            "primaryIdentifier": "AAPL",
+            "subType": "Common Stock"
+          },
           "description": "Apple Inc.",
-          "positionId": "fixture-roth-aapl",
+          "positionId": "rh-roth-aapl",
+          "currency": "USD",
+          "markFreshness": {
+            "symbol": "AAPL",
+            "securityId": "sec-dev-001",
+            "financialAccountId": "rh-fund-roth",
+            "valuationDate": "2026-05-07",
+            "observedOn": "2026-05-07",
+            "ageDays": 0,
+            "policyVersion": "screenshot-retained-mark-policy-v1",
+            "status": "Current",
+            "blockReason": null
+          }
+        },
+        {
+          "fundAccountId": "rh-fund-traditional",
+          "providerId": "alpaca",
+          "externalAccountId": "alpaca-traditional",
+          "accountKind": "TraditionalIra",
+          "symbol": "VTI",
+          "quantity": 120,
+          "averageEntryPrice": 205,
+          "marketPrice": 254.5,
+          "marketValue": 30540,
+          "unrealizedPnl": 5940,
+          "assetClass": "etf",
+          "security": null,
+          "description": "Vanguard Total Stock Market ETF",
+          "positionId": "rh-traditional-vti",
+          "currency": "USD"
+        },
+        {
+          "fundAccountId": "rh-fund-taxable",
+          "providerId": "alpaca",
+          "externalAccountId": "alpaca-taxable",
+          "accountKind": "TaxableBrokerage",
+          "symbol": "MSFT",
+          "quantity": 16,
+          "averageEntryPrice": 312,
+          "marketPrice": 421.7,
+          "marketValue": 6747.2,
+          "unrealizedPnl": 1755.2,
+          "assetClass": "equity",
+          "security": null,
+          "description": "Microsoft Corporation",
+          "positionId": "rh-taxable-msft",
           "currency": "USD"
         }
       ]
@@ -4650,7 +4743,7 @@
         "recipient": "investor-anchor-lp",
         "recipientKind": "Company",
         "destination": "Secure portal package",
-        "subject": "Investor Monthly Statement \u2014 May 2026",
+        "subject": "Investor Monthly Statement — May 2026",
         "state": "Delivered",
         "attemptCount": 1,
         "maxAttempts": 3,
@@ -4691,7 +4784,7 @@
         "recipient": "investor-anchor-lp",
         "recipientKind": "Company",
         "destination": "statements@anchor-lp.example",
-        "subject": "Investor Monthly Statement \u2014 May 2026",
+        "subject": "Investor Monthly Statement — May 2026",
         "state": "Retrying",
         "attemptCount": 2,
         "maxAttempts": 3,
@@ -4776,7 +4869,7 @@
       "scopeItems": [
         {
           "label": "Ledger source",
-          "value": "Strategy run (simulation) \u2014 not the posted journal",
+          "value": "Strategy run (simulation) — not the posted journal",
           "tone": "Default"
         },
         {
@@ -4840,7 +4933,7 @@
             "recordId": "ledger:run-42:acct-cash",
             "recordType": "ledger-account",
             "title": "Cash",
-            "subtitle": "Asset \u00b7 Strategy run run-42",
+            "subtitle": "Asset · Strategy run run-42",
             "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
             "tone": "Success",
             "fields": [
@@ -4921,7 +5014,7 @@
             "recordId": "ledger:run-42:acct-investments",
             "recordType": "ledger-account",
             "title": "Public Investments",
-            "subtitle": "Asset \u00b7 Strategy run run-42",
+            "subtitle": "Asset · Strategy run run-42",
             "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
             "tone": "Default",
             "fields": [
@@ -5002,7 +5095,7 @@
             "recordId": "ledger:run-42:acct-capital",
             "recordType": "ledger-account",
             "title": "Contributed Capital",
-            "subtitle": "Equity \u00b7 Strategy run run-42",
+            "subtitle": "Equity · Strategy run run-42",
             "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
             "tone": "Default",
             "fields": [
@@ -5060,7 +5153,7 @@
         "recordId": "ledger:run-42:acct-cash",
         "recordType": "ledger-account",
         "title": "Cash",
-        "subtitle": "Asset \u00b7 Strategy run run-42",
+        "subtitle": "Asset · Strategy run run-42",
         "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
         "tone": "Success",
         "fields": [
@@ -6941,6 +7034,567 @@
     "/api/workstation/operator/scope-preference": {
       "defaultScope": null,
       "updatedAt": null
+    },
+    "/api/fund-structure/nav-comparison": {
+      "status": "Ready",
+      "reason": null,
+      "subject": "Alpha Income Fund",
+      "currency": "USD",
+      "current": {
+        "label": "As of Jul 13, 2026",
+        "start": null,
+        "end": "2026-07-13",
+        "isPartial": true
+      },
+      "baseline": {
+        "label": "As of Jun 30, 2026",
+        "start": null,
+        "end": "2026-06-30",
+        "isPartial": false
+      },
+      "lines": [
+        {
+          "key": "total",
+          "label": "Total NAV",
+          "current": 12450000,
+          "prior": 12010000,
+          "change": 440000,
+          "percentChange": 3.6636136553,
+          "isTotal": true
+        },
+        {
+          "key": "asset-class:Cash",
+          "label": "Cash",
+          "current": 1250000,
+          "prior": 1610000,
+          "change": -360000,
+          "percentChange": -22.3602484472,
+          "isTotal": false
+        },
+        {
+          "key": "asset-class:Equity",
+          "label": "Equity",
+          "current": 8900000,
+          "prior": 8200000,
+          "change": 700000,
+          "percentChange": 8.5365853659,
+          "isTotal": false
+        },
+        {
+          "key": "asset-class:Fixed income",
+          "label": "Fixed income",
+          "current": 2300000,
+          "prior": 2200000,
+          "change": 100000,
+          "percentChange": 4.5454545455,
+          "isTotal": false
+        }
+      ],
+      "notes": [
+        "NAV is rebuilt from the posted ledger as of each date. Cash, financing and strategy cuts that do not take a date are not included.",
+        "Asset classes come from the ledger's NAV attribution; a class present on only one side is compared with zero."
+      ],
+      "generatedAt": "2026-07-13T18:55:00Z"
+    },
+    "/api/fund-structure/nav-trend": {
+      "fundProfileId": "alpha-income",
+      "subject": "Alpha Income Fund",
+      "currency": "USD",
+      "points": [
+        {
+          "asOf": "2025-08-31",
+          "totalNav": 10850000,
+          "componentCount": 6,
+          "longExposure": 7812000,
+          "shortExposure": 868000,
+          "grossExposure": 8680000,
+          "netExposure": 6944000
+        },
+        {
+          "asOf": "2025-09-30",
+          "totalNav": 10920000,
+          "componentCount": 6,
+          "longExposure": 7862000,
+          "shortExposure": 874000,
+          "grossExposure": 8736000,
+          "netExposure": 6988000
+        },
+        {
+          "asOf": "2025-10-31",
+          "totalNav": 11140000,
+          "componentCount": 6,
+          "longExposure": 8021000,
+          "shortExposure": 891000,
+          "grossExposure": 8912000,
+          "netExposure": 7130000
+        },
+        {
+          "asOf": "2025-11-30",
+          "totalNav": 11080000,
+          "componentCount": 6,
+          "longExposure": 7978000,
+          "shortExposure": 886000,
+          "grossExposure": 8864000,
+          "netExposure": 7092000
+        },
+        {
+          "asOf": "2025-12-31",
+          "totalNav": 11310000,
+          "componentCount": 6,
+          "longExposure": 8143000,
+          "shortExposure": 905000,
+          "grossExposure": 9048000,
+          "netExposure": 7238000
+        },
+        {
+          "asOf": "2026-01-31",
+          "totalNav": 11460000,
+          "componentCount": 6,
+          "longExposure": 8251000,
+          "shortExposure": 917000,
+          "grossExposure": 9168000,
+          "netExposure": 7334000
+        },
+        {
+          "asOf": "2026-02-28",
+          "totalNav": 11390000,
+          "componentCount": 6,
+          "longExposure": 8201000,
+          "shortExposure": 911000,
+          "grossExposure": 9112000,
+          "netExposure": 7290000
+        },
+        {
+          "asOf": "2026-03-31",
+          "totalNav": 11620000,
+          "componentCount": 6,
+          "longExposure": 8366000,
+          "shortExposure": 930000,
+          "grossExposure": 9296000,
+          "netExposure": 7436000
+        },
+        {
+          "asOf": "2026-04-30",
+          "totalNav": 11810000,
+          "componentCount": 6,
+          "longExposure": 8503000,
+          "shortExposure": 945000,
+          "grossExposure": 9448000,
+          "netExposure": 7558000
+        },
+        {
+          "asOf": "2026-05-31",
+          "totalNav": 11940000,
+          "componentCount": 6,
+          "longExposure": 8597000,
+          "shortExposure": 955000,
+          "grossExposure": 9552000,
+          "netExposure": 7642000
+        },
+        {
+          "asOf": "2026-06-30",
+          "totalNav": 12010000,
+          "componentCount": 6,
+          "longExposure": 8647000,
+          "shortExposure": 961000,
+          "grossExposure": 9608000,
+          "netExposure": 7686000
+        },
+        {
+          "asOf": "2026-07-13",
+          "totalNav": 12450000,
+          "componentCount": 6,
+          "longExposure": 8964000,
+          "shortExposure": 996000,
+          "grossExposure": 9960000,
+          "netExposure": 7968000
+        }
+      ],
+      "notes": [
+        "Each point is ledger NAV rebuilt as of that date, at the end of each month; the last point is NAV now.",
+        "Cash, financing and strategy cuts that do not take a date are not included.",
+        "Exposure is the ledger's securities held long and the short securities payable, at the last posted mark on or before each date."
+      ],
+      "generatedAt": "2026-07-13T18:55:00Z"
+    },
+    "/api/fund-structure/reporting/runs/report-run-investor-202605/review": {
+      "reviewId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "runId": "report-run-investor-202605",
+      "version": 6,
+      "snapshotHash": "sha256:595c41b11cc11b6a0f6e478b02a8fd945b619bc2160ffcb722da1bc578c35d8f",
+      "periodId": "2026-05",
+      "currency": "USD",
+      "accountingBasis": "Gaap",
+      "baselineRunId": null,
+      "baselineVersion": null,
+      "parameters": [],
+      "sourceChanges": [],
+      "lines": [],
+      "materialityOutcome": "NotAssessed",
+      "materialChangeCount": null,
+      "unavailableReasons": [
+        "Materiality not assessed: no authoritative report/template policy is configured.",
+        "No prior approved comparable run is retained in this series."
+      ]
+    },
+    "/api/workstation/reconciliation/break-queue/run-42%3Acash": {
+      "breakId": "run-42:cash",
+      "version": 1,
+      "permittedCommands": [
+        {
+          "action": "Resolve",
+          "enabled": true,
+          "disabledReason": null
+        },
+        {
+          "action": "Assign",
+          "enabled": true,
+          "disabledReason": null
+        },
+        {
+          "action": "Waive",
+          "enabled": true,
+          "disabledReason": null
+        }
+      ],
+      "measures": [
+        {
+          "kind": "Value",
+          "expected": 120000,
+          "actual": 120500,
+          "variance": 500,
+          "tolerance": 1,
+          "unit": "USD"
+        }
+      ],
+      "runId": "run-42",
+      "strategyName": "Paper Index Mean Reversion",
+      "category": "AmountMismatch",
+      "status": "Open",
+      "variance": 500,
+      "reason": "Cash variance over tolerance.",
+      "assignedTo": null,
+      "detectedAt": "2026-01-01T00:00:00Z",
+      "lastUpdatedAt": "2026-01-01T00:00:00Z",
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "resolvedBy": null,
+      "resolvedAt": null,
+      "resolutionNote": null
+    },
+    "/api/workstation/reconciliation/break-queue/run-42%3Acash/audit": [],
+    "/api/workstation/security-master/securities/sec-dev-001/passport": {
+      "securityId": "sec-dev-001",
+      "identity": {
+        "securityId": "sec-dev-001",
+        "displayName": "Apple Inc.",
+        "assetClass": "Equity",
+        "status": "Active",
+        "version": 3,
+        "effectiveFrom": "2020-01-01",
+        "effectiveTo": null,
+        "identifiers": [
+          {
+            "kind": "Ticker",
+            "value": "AAPL",
+            "isPrimary": true,
+            "validFrom": "2020-01-01",
+            "validTo": null,
+            "provider": "Synthetic QA"
+          }
+        ],
+        "aliases": []
+      },
+      "economicDefinition": {
+        "assetClass": "Equity",
+        "currency": "USD",
+        "riskCountry": "US",
+        "issuerType": "Corporate",
+        "winningSourceSystem": "Synthetic QA vendor",
+        "winningSourceAsOf": "2026-11-21T10:00:00Z"
+      },
+      "identifierSummary": {
+        "summary": "Identifiers retained"
+      },
+      "providerMappings": [],
+      "lifecycleEvents": [],
+      "corporateActions": [],
+      "pricing": {
+        "status": "Ready",
+        "summary": "Trading parameters available",
+        "tradingParameters": null,
+        "lotSize": 100,
+        "tickSize": 0.01,
+        "contractMultiplier": null,
+        "tradingHoursUtc": "13:30-20:00",
+        "circuitBreakerThresholdPct": 10
+      },
+      "usage": {
+        "summary": "Synthetic QA context"
+      },
+      "trustPosture": {
+        "tone": "Review",
+        "summary": "One identifier conflict requires review."
+      },
+      "providerConfidence": [
+        {
+          "provider": "Synthetic QA",
+          "providerSource": "qa-feed",
+          "mappingKind": "Ticker",
+          "symbol": "AAPL",
+          "normalizedSymbol": "AAPL",
+          "isPrimary": true,
+          "isActive": true,
+          "freshnessAsOf": "2026-11-21T10:00:00Z",
+          "freshnessMinutes": 1,
+          "confidenceScore": 0.8,
+          "confidenceReason": "Review",
+          "identifierConflictIds": [
+            "conflict-1"
+          ],
+          "identifierConflictSummaries": [
+            "CUSIP differs between retained sources."
+          ],
+          "overrideHistory": []
+        }
+      ],
+      "operationsWorkbench": {
+        "status": "Review",
+        "summary": "One check requires review",
+        "panels": [],
+        "handoffs": [],
+        "readiness": [
+          {
+            "readinessId": "price-evidence",
+            "label": "Price readiness",
+            "status": "Blocked",
+            "isReady": false,
+            "summary": "Price evidence requires review.",
+            "evidenceCount": 1,
+            "blockingIssueCount": 1,
+            "nextAction": "Inspect retained price evidence."
+          }
+        ]
+      },
+      "retrievedAtUtc": "2026-11-21T10:01:00Z"
+    },
+    "/api/workstation/assets/sec-dev-001/operations": {
+      "subject": {
+        "securityId": "sec-dev-001",
+        "displayName": "Apple Inc.",
+        "assetClass": "Equity",
+        "primaryIdentifier": "AAPL",
+        "operationalProfile": []
+      },
+      "termsHistory": [],
+      "lifecycleEvents": [],
+      "cashFlowProjectionRuns": [],
+      "projectedCashFlows": [],
+      "actualActivity": [],
+      "reconciliationRuns": [],
+      "reconciliationResults": [],
+      "ledgerProjections": [],
+      "workflowAudit": [],
+      "readiness": {
+        "securityId": "sec-dev-001",
+        "status": "Ready",
+        "capabilities": [],
+        "readyCapabilities": [],
+        "missingCapabilities": [],
+        "blockers": [],
+        "evaluatedAt": "2026-11-21T10:00:00Z",
+        "sourceDomain": "Synthetic QA",
+        "sourceEntityId": "sec-dev-001"
+      },
+      "bookPositions": [
+        {
+          "positionId": "position-sec-dev-001",
+          "securityId": "sec-dev-001",
+          "roleId": "holder",
+          "positionSide": "Long",
+          "status": "Open",
+          "effectiveFrom": "2026-01-01",
+          "version": 1,
+          "primaryAccountId": "account-qa",
+          "evidenceLinks": [],
+          "bookContext": {
+            "ledgerBookId": "book-qa",
+            "fundProfileId": "fund-qa",
+            "fundStructureNodeId": "node-qa",
+            "fundStructureNodeKind": "Fund",
+            "displayName": "Primary GAAP book",
+            "baseCurrency": "USD",
+            "accountingBasis": "Gaap",
+            "accountingPolicyId": "policy-qa",
+            "accountingPolicyVersion": "1"
+          },
+          "currentEconomicState": {
+            "economicStateId": "state-sec-dev-001",
+            "positionId": "position-sec-dev-001",
+            "asOfDate": "2026-11-21",
+            "currency": "USD",
+            "version": 2,
+            "quantity": 100,
+            "unitCost": 180.25,
+            "carryingAmount": 18025,
+            "evidenceLinks": []
+          }
+        }
+      ]
+    },
+    "/api/data/quotes-snapshot": {
+      "timestamp": "2026-11-21T10:00:00Z",
+      "count": 1,
+      "quotes": [
+        {
+          "symbol": "AAPL",
+          "timestamp": "2026-11-21T10:00:00Z",
+          "bidPrice": 210.2,
+          "askPrice": 210.3,
+          "bidSize": 100,
+          "askSize": 100,
+          "midPrice": 210.25,
+          "spread": 0.1,
+          "lastPrice": 210.25,
+          "lastSize": 50,
+          "lastTradeTimestamp": "2026-11-21T09:59:00Z",
+          "sequenceNumber": 1,
+          "streamId": "synthetic-qa-stream",
+          "venue": "NASDAQ",
+          "session": null
+        }
+      ]
+    },
+    "/api/security-master/sec-dev-001/instrument-terms": {
+      "securityId": "sec-dev-001",
+      "assetClass": "Equity",
+      "currency": "USD",
+      "version": 3,
+      "effectiveFrom": "2020-01-01",
+      "effectiveTo": null,
+      "retrievedAtUtc": "2026-11-21T10:00:00Z",
+      "status": "Ready",
+      "fingerprint": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "termsFormat": "flat",
+      "assetClassTermsVersion": 1,
+      "schema": {
+        "assetClass": "Equity",
+        "writeVersion": 1,
+        "readVersion": 1,
+        "lotUnit": "Shares",
+        "cashFlowBehavior": "Dividends",
+        "profileId": null,
+        "profileVersion": null,
+        "profileStatus": null
+      },
+      "source": {
+        "status": "Matched",
+        "summary": "Retained synthetic provenance matches economic-definition v3.",
+        "provenanceJson": "{\"sourceSystem\":\"Synthetic QA\",\"version\":3}"
+      },
+      "commonTermsJson": "{\"currency\":\"USD\"}",
+      "assetSpecificTermsJson": "{\"classification\":\"Common\",\"shareClass\":\"Common\",\"votingRightsCat\":\"Ordinary\"}",
+      "fields": [
+        {
+          "path": "/assetSpecificTerms/classification",
+          "key": "classification",
+          "label": "Classification",
+          "group": "Asset-specific terms",
+          "declaredType": "String",
+          "jsonType": "String",
+          "state": "Present",
+          "isDeclared": true,
+          "required": false,
+          "role": "Economic",
+          "valueText": "Common",
+          "rawJson": "\"Common\"",
+          "unit": null,
+          "unitStatus": "NotApplicable",
+          "unitPath": null,
+          "validationMessage": null,
+          "children": []
+        },
+        {
+          "path": "/assetSpecificTerms/shareClass",
+          "key": "shareClass",
+          "label": "Share class",
+          "group": "Asset-specific terms",
+          "declaredType": "String",
+          "jsonType": "String",
+          "state": "Present",
+          "isDeclared": true,
+          "required": false,
+          "role": "Economic",
+          "valueText": "Common",
+          "rawJson": "\"Common\"",
+          "unit": null,
+          "unitStatus": "NotApplicable",
+          "unitPath": null,
+          "validationMessage": null,
+          "children": []
+        },
+        {
+          "path": "/assetSpecificTerms/votingRightsCat",
+          "key": "votingRightsCat",
+          "label": "Voting rights",
+          "group": "Asset-specific terms",
+          "declaredType": "String",
+          "jsonType": "String",
+          "state": "Present",
+          "isDeclared": true,
+          "required": false,
+          "role": "Economic",
+          "valueText": "Ordinary",
+          "rawJson": "\"Ordinary\"",
+          "unit": null,
+          "unitStatus": "NotApplicable",
+          "unitPath": null,
+          "validationMessage": null,
+          "children": []
+        }
+      ],
+      "diagnostics": []
+    },
+    "/api/workstation/assets/sec-dev-001/market-valuation": {
+      "securityId": "sec-dev-001",
+      "positionId": "position-sec-dev-001",
+      "ledgerBookId": "book-qa",
+      "accountId": "account-qa",
+      "valuationDate": "2026-11-21",
+      "economicStateId": "state-sec-dev-001",
+      "economicStateVersion": 2,
+      "status": "Ready",
+      "fundProfileId": "fund-qa",
+      "positionVersion": 1,
+      "currency": "USD",
+      "accountingBasis": "Gaap",
+      "positionSide": "Long",
+      "modelKey": "quoted-price",
+      "modelVersion": "1",
+      "calculationBasis": "Retained share quantity \u00d7 selected currency-per-unit price.",
+      "unrealizedPnlBasis": "Market value less retained carrying amount. This is a mark-to-carrying comparison, not total-return or tax-cost P/L.",
+      "quantity": "100",
+      "carryingAmount": "18025.00",
+      "price": "210.25",
+      "priceUnit": "CurrencyPerUnit",
+      "marketValue": "21025.00",
+      "unrealizedPnl": "3000.00",
+      "observedAsOf": "2026-11-21T10:00:00Z",
+      "knowledgeAsOf": "2026-11-21T10:00:00Z",
+      "freshnessStatus": "Current",
+      "isStaleFallback": false,
+      "daysStale": 0,
+      "selectedSource": "Synthetic QA selected equity price",
+      "selectionReceiptId": "receipt-1",
+      "inputs": [
+        {
+          "kind": "PriceSelectionReceipt",
+          "reference": "receipt-1",
+          "contentSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "diagnostics": [],
+      "blockers": []
     }
   }
 }

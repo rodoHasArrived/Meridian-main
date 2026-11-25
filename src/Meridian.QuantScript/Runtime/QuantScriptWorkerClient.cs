@@ -385,6 +385,13 @@ internal sealed class QuantScriptWorkerClient(ILogger logger) : IQuantScriptWork
                     await dataContext.SecMasterAsync(RequireSymbol(request), ct).ConfigureAwait(false)),
                 WorkerDataOperation.CorporateActions => CreateCorporateActionPayload(
                     await dataContext.CorporateActionsAsync(RequireSymbol(request), ct).ConfigureAwait(false)),
+                WorkerDataOperation.CanonicalSecurityMaster => CreateSecurityMasterPayload(
+                    await dataContext.CanonicalSecurityMasterAsync(RequireSymbol(request),
+                        request.Timestamp ?? throw new WorkerProtocolException("Canonical identity request omitted cutoff."), ct).ConfigureAwait(false)),
+                WorkerDataOperation.CanonicalCorporateActions => CreateCorporateActionPayload(
+                    await dataContext.CanonicalCorporateActionsAsync(RequireSymbol(request),
+                        request.ExpectedSecurityId ?? throw new WorkerProtocolException("Canonical action request omitted security identity."),
+                        request.Timestamp ?? throw new WorkerProtocolException("Canonical action request omitted cutoff."), ct).ConfigureAwait(false)),
                 _ => throw new WorkerProtocolException($"Unknown host data operation '{request.Operation}'.")
             };
 

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScreenLayout } from "@/components/ui/screen-layout";
-import { MetricSnapshotCard } from "@/components/meridian/metric-card";
+import { SnapshotMetricTile } from "@/components/meridian/snapshot-metric-tile";
 import { PopOutPaneButton } from "@/components/meridian/pop-out-pane-button";
 import { DenseDataTable, type DenseDataTableColumn, ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
 import { isCompanionPaneRoute } from "@/lib/companion-pane/pane-window";
@@ -129,7 +129,7 @@ export function WatchlistScreen() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {vm.stats.map((stat) => (
-              <MetricSnapshotCard key={stat.id} {...stat} />
+              <SnapshotMetricTile key={stat.id} {...stat} />
             ))}
           </div>
 
@@ -163,19 +163,6 @@ export function WatchlistScreen() {
               <Plus className="h-4 w-4" aria-hidden="true" />
               <span className="ml-1.5">{vm.addButtonLabel}</span>
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => void vm.refresh()}
-              aria-label={vm.refreshButtonAriaLabel}
-              disabled={vm.refreshDisabled}
-              busy={vm.refreshing}
-              busyLabel={vm.refreshButtonLabel}
-            >
-              <RefreshCw className={`h-4 w-4 ${vm.refreshing ? "animate-spin" : ""}`} aria-hidden="true" />
-              <span className="ml-1.5">{vm.refreshButtonLabel}</span>
-            </Button>
           </form>
           <p id={vm.addSymbolField.helperId} className="mt-2 text-xs text-muted-foreground">
             {vm.addSymbolField.helperText}
@@ -198,7 +185,7 @@ export function WatchlistScreen() {
               >
                 <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>{pack.label}</span>
-                <span className="break-all text-left font-mono text-[11px] font-normal text-muted-foreground">{pack.symbolsLabel}</span>
+                <span className="break-all text-left font-mono text-xs font-normal text-muted-foreground">{pack.symbolsLabel}</span>
               </Button>
             ))}
           </div>
@@ -616,7 +603,7 @@ function WatchlistDetailPanel({
             <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
               {detail.fields.map((field) => (
                 <div key={field.label} className="rounded-sm border border-border/60 bg-background/35 px-2.5 py-2">
-                  <dt className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.14em]")}>{field.label}</dt>
+                  <dt className={cn("text-xs text-muted-foreground", usesTrackedCaps(field.label) && "type-label--caps")}>{field.label}</dt>
                   <dd className={`mt-1 break-words font-mono text-xs ${detailFieldToneClass[field.tone]}`}>
                     {field.value}
                   </dd>

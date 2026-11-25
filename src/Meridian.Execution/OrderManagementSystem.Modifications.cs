@@ -16,6 +16,14 @@ public sealed partial class OrderManagementSystem
     {
         using var operation = EnterOperation();
 
+        if (_portfolioState is PaperTradingPortfolio { UsesCanonicalAccounting: true })
+            return new OrderResult
+            {
+                Success = false,
+                OrderId = orderId,
+                ErrorMessage = "Canonical accounting supports immediate synthetic fills only; order amendments require a separate reviewed mode."
+            };
+
         if (!_orders.TryGetValue(orderId, out var state))
         {
             await _executionAudit.RecordLifecycleAsync(
@@ -100,16 +108,46 @@ public sealed partial class OrderManagementSystem
         PendingOrderAmendment? amendment = null;
         try
         {
+            await RecordJournalOperationAsync(state, "ReplaceIntent", ct, modification).ConfigureAwait(false);
             amendment = await BeginOrderAmendmentAsync(orderId, state, modification, ct).ConfigureAwait(false);
             ct.ThrowIfCancellationRequested();
-            amendmentDispatchAttempted = true;
-            report = _gateway is IExplicitOrderModificationGateway explicitModification
-                ? await explicitModification.ModifyOrderAsync(
-                    _brokerIdentities.TryGetActiveId(orderId, out var brokerOrderId)
-                        ? new OrderCancellationIdentifier(brokerOrderId, OrderCancellationIdentifierKind.BrokerOrderId)
-                        : new OrderCancellationIdentifier(orderId, OrderCancellationIdentifierKind.ClientOrderId),
-                    modification, ct).ConfigureAwait(false)
-                : await _gateway.ModifyOrderAsync(orderId, modification, ct).ConfigureAwait(false);
+            if (RequiresRiskRevalidation(state, modification))
+            {
+                var dispatchProbe = BuildAmendmentProbe(state, modification);
+                if (await _admissionPolicy.EvaluateDispatchMarketChecksAsync(dispatchProbe, ct).ConfigureAwait(false) is { } marketRefusal)
+                    throw new BrokerageRequestNotSentException(marketRefusal.Reason ?? "Current market conditions do not allow replacement dispatch.");
+            }
+            var replacement = BuildAmendedRequest(state, modification);
+            var identifier = _brokerIdentities.TryGetActiveId(orderId, out var brokerOrderId)
+                ? new OrderCancellationIdentifier(brokerOrderId, OrderCancellationIdentifierKind.BrokerOrderId)
+                : new OrderCancellationIdentifier(orderId, OrderCancellationIdentifierKind.ClientOrderId);
+            if (_admissionPolicy.UsesLiveStrategyAuthorization)
+            {
+                if (_gateway is not IGuardedOrderModificationGateway guarded)
+                    throw new BrokerageRequestNotSentException("This gateway does not support live authorization at the replacement send. Cancel and submit an authorized new order.");
+                report = await guarded.ModifyOrderAsync(identifier, modification, async sendToken =>
+                {
+                    if (await _admissionPolicy.EvaluateReplacementAuthorityAsync(state, replacement, sendToken).ConfigureAwait(false) is { } refusal)
+                        throw new BrokerageRequestNotSentException(refusal.Reason ?? "Live replacement authority was withdrawn.");
+
+                    var authorization = await _admissionPolicy.AcquireLiveStrategyAuthorizationAsync(
+                        replacement, state.RunId, state.StrategyArtifactId, resolved: null, sendToken).ConfigureAwait(false);
+                    if (authorization.Refusal is { } reason)
+                    {
+                        await authorization.DisposeAsync().ConfigureAwait(false);
+                        throw new BrokerageRequestNotSentException(reason);
+                    }
+                    amendmentDispatchAttempted = true;
+                    return authorization;
+                }, ct).ConfigureAwait(false);
+            }
+            else
+            {
+                amendmentDispatchAttempted = true;
+                report = _gateway is IExplicitOrderModificationGateway explicitModification
+                    ? await explicitModification.ModifyOrderAsync(identifier, modification, ct).ConfigureAwait(false)
+                    : await _gateway.ModifyOrderAsync(orderId, modification, ct).ConfigureAwait(false);
+            }
             // The operation itself proves which local order this replacement belongs to.
             report = report with { ClientOrderId = orderId };
         }
@@ -162,7 +200,11 @@ public sealed partial class OrderManagementSystem
                 RollBackSpeculativeReservation(orderId, speculativeReservation, state);
             }
             else
+            {
                 MarkBrokerageRecoveryRequired(orderId);
+                await RecordJournalOperationAsync(state, "ReplaceOutcomeUnconfirmed", CancellationToken.None, modification,
+                    "Replacement acknowledgement unavailable. Reconcile predecessor and candidate identities before retrying.").ConfigureAwait(false);
+            }
             throw;
         }
 

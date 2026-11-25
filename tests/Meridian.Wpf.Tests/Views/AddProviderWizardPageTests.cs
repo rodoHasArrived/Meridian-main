@@ -21,7 +21,7 @@ public sealed partial class AddProviderWizardPageTests
     [Theory]
     [InlineData("alpaca")]
     [InlineData("nasdaqdatalink")]
-    public void TestThenSave_PreservesVerificationWithoutReplacingCredentials(string providerId)
+    public void TestThenSave_VerifiesTheDraftAndPersistsOnlyFromSave(string providerId)
     {
         WpfTestThread.Run(async () =>
         {
@@ -30,9 +30,11 @@ public sealed partial class AddProviderWizardPageTests
 
             await fixture.Page.TestProviderConnectionAsync();
 
-            fixture.Key.Text.Should().BeEmpty();
-            fixture.Secret.Secret.Should().BeEmpty();
-            fixture.ViewModel.ConnectionTestStatusText.Should().Contain("Credentials verified");
+            fixture.Key.Text.Should().Be("fixture-key");
+            fixture.Secret.Secret.Should().Be("fixture-secret");
+            fixture.ViewModel.ConnectionTestStatusText.Should().Contain("Verified");
+            fixture.Writes.Should().BeEmpty();
+            fixture.Drafts.Should().ContainSingle().Which.ConnectionId.Should().Be(Fixture.ConnectionId(providerId));
 
             await fixture.Page.SaveProviderAsync();
 
@@ -42,9 +44,9 @@ public sealed partial class AddProviderWizardPageTests
             fixture.StatusQueries.Should().HaveCount(3);
             fixture.StatusQueries.Skip(1).Should().OnlyContain(query => query == "?connectionId=" + Fixture.ConnectionId(providerId));
             fixture.Writes[0].ConnectionId.Should().Be(Fixture.ConnectionId(providerId));
-            fixture.ViewModel.ConnectionTestStatusText.Should().Contain("Credentials verified");
+            fixture.ViewModel.ConnectionTestStatusText.Should().Contain("not verified");
             fixture.ViewModel.SaveStatusText.Should().Contain("Credentials saved for owned connection");
-            fixture.Records[ProviderIdentity.NormalizeId(providerId)].Verified.Should().BeTrue();
+            fixture.Records[ProviderIdentity.NormalizeId(providerId)].Verified.Should().BeFalse();
         });
     }
 
@@ -61,15 +63,15 @@ public sealed partial class AddProviderWizardPageTests
             fixture.ViewModel.ConnectionTestStatusText.Should().Contain("Credentials changed");
             await fixture.Page.SaveProviderAsync();
 
-            fixture.Writes.Should().HaveCount(2);
-            fixture.Writes[1].Fields.Should().ContainSingle().Which.Key.Should().Be("SecretKey");
+            fixture.Writes.Should().ContainSingle().Which.Fields["SecretKey"].Should().Be("rotated-fixture-secret");
+            fixture.Drafts.Should().ContainSingle().Which.Fields["SecretKey"].Should().Be("fixture-secret");
             fixture.ViewModel.ConnectionTestStatusText.Should().Contain("not verified");
             fixture.Records["alpaca"].Verified.Should().BeFalse();
 
             await fixture.Page.TestProviderConnectionAsync();
             await fixture.Page.SaveProviderAsync();
 
-            fixture.Writes.Should().HaveCount(2);
+            fixture.Writes.Should().ContainSingle();
             fixture.VerificationCalls.Should().Be(2);
             fixture.ViewModel.ConnectionTestStatusText.Should().Contain("Credentials verified");
         });
@@ -88,7 +90,7 @@ public sealed partial class AddProviderWizardPageTests
             fixture.ViewModel.ConnectionTestStatusText.Should().Be("Not tested yet");
             await fixture.Page.SaveProviderAsync();
 
-            fixture.Writes.Should().ContainSingle();
+            fixture.Writes.Should().BeEmpty();
             fixture.ViewModel.SaveStatusText.Should().Contain("Failed to save");
             fixture.ViewModel.ConnectionTestStatusText.Should().NotContain("Credentials verified");
         });
@@ -101,28 +103,26 @@ public sealed partial class AddProviderWizardPageTests
         {
             using var fixture = await Fixture.CreateAsync();
             fixture.EnterCredentials();
-            fixture.PendingWrite = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            fixture.PendingVerification = new(TaskCreationOptions.RunContinuationsAsynchronously);
             var test = fixture.Page.TestProviderConnectionAsync();
-            await fixture.WriteStarted.Task;
+            await fixture.VerificationStarted.Task;
 
             fixture.Secret.Secret = "newer-fixture-secret";
             fixture.Page.SelectProvider("polygon");
             await fixture.Page.SaveProviderAsync();
             await fixture.Page.TestProviderConnectionAsync();
             fixture.ViewModel.SelectedProviderName.Should().Be("Alpaca Markets");
-            fixture.Writes.Should().ContainSingle();
+            fixture.Writes.Should().BeEmpty();
 
-            fixture.PendingWrite.SetResult();
+            fixture.PendingVerification.SetResult();
             await test;
 
-            fixture.Key.Text.Should().BeEmpty();
+            fixture.Key.Text.Should().Be("fixture-key");
             fixture.Secret.Secret.Should().Be("newer-fixture-secret");
             fixture.ViewModel.ConnectionTestStatusText.Should().Contain("Credentials changed");
-            fixture.PendingWrite = null;
             await fixture.Page.SaveProviderAsync();
 
-            fixture.Writes.Should().HaveCount(2);
-            fixture.Writes[1].Fields.Should().ContainSingle().Which.Value.Should().Be("newer-fixture-secret");
+            fixture.Writes.Should().ContainSingle().Which.Fields["SecretKey"].Should().Be("newer-fixture-secret");
             fixture.ViewModel.ConnectionTestStatusText.Should().Contain("not verified");
         });
     }
@@ -186,6 +186,8 @@ public sealed partial class AddProviderWizardPageTests
             fixture.FailVerification = true;
 
             await fixture.Page.TestProviderConnectionAsync();
+            fixture.ViewModel.SaveCredentialActionLabel.Should().Be("Save anyway");
+            fixture.Writes.Should().BeEmpty();
             await fixture.Page.SaveProviderAsync();
 
             fixture.Writes.Should().ContainSingle();
@@ -205,19 +207,19 @@ public sealed partial class AddProviderWizardPageTests
             fixture.EnterCredentials();
             fixture.RefuseWrites = true;
 
-            await fixture.Page.TestProviderConnectionAsync();
+            await fixture.Page.SaveProviderAsync();
 
             fixture.Key.Text.Should().Be("fixture-key");
             fixture.Secret.Secret.Should().Be("fixture-secret");
             fixture.VerificationCalls.Should().Be(0);
-            fixture.ViewModel.ConnectionTestStatusText.Should().Contain("refused");
+            fixture.ViewModel.SaveStatusText.Should().Contain("refused");
 
             fixture.RefuseWrites = false;
             await fixture.Page.TestProviderConnectionAsync();
             await fixture.Page.SaveProviderAsync();
 
             fixture.Writes.Should().HaveCount(2);
-            fixture.ViewModel.ConnectionTestStatusText.Should().Contain("Credentials verified");
+            fixture.ViewModel.ConnectionTestStatusText.Should().Contain("not verified");
         });
     }
 
@@ -232,7 +234,7 @@ public sealed partial class AddProviderWizardPageTests
             using var fixture = await Fixture.CreateAsync();
             fixture.EnterCredentials();
             await fixture.Page.TestProviderConnectionAsync();
-            fixture.Records["alpaca"] = new(configured, verifiedWithoutDate, null);
+            fixture.StatusAfterWrite = new(configured, verifiedWithoutDate, null);
 
             await fixture.Page.SaveProviderAsync();
 
@@ -246,7 +248,7 @@ public sealed partial class AddProviderWizardPageTests
     }
 
     [Fact]
-    public void UnavailableStatusAfterTest_FailsClosedWithoutReplacingVerifiedCredentials()
+    public void UnavailableStatusAfterTest_DoesNotClaimTheSaveWasConfirmed()
     {
         WpfTestThread.Run(async () =>
         {
@@ -285,6 +287,7 @@ public sealed partial class AddProviderWizardPageTests
         public TextBox Key => Editors.Children.OfType<TextBox>().Single();
         public SecretInputControl Secret => Editors.Children.OfType<SecretInputControl>().Single();
         public List<Write> Writes { get; } = [];
+        public List<Write> Drafts { get; } = [];
         public List<string> StatusQueries { get; } = [];
         public Dictionary<string, RetainedCredentials> Records { get; } = new()
         {
@@ -302,6 +305,7 @@ public sealed partial class AddProviderWizardPageTests
         public bool RefuseWrites { get; set; }
         public bool RefuseStatus { get; set; }
         public bool FailVerification { get; set; }
+        public RetainedCredentials? StatusAfterWrite { get; set; }
         public TaskCompletionSource? PendingWrite { get; set; }
         public TaskCompletionSource? PendingVerification { get; set; }
         public TaskCompletionSource WriteStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -317,7 +321,8 @@ public sealed partial class AddProviderWizardPageTests
                 .Where(provider => fixture.Records.ContainsKey(ProviderIdentity.NormalizeId(provider.Id)))
                 .Select(provider => provider with { SupportsHistorical = false }), []);
             fixture.Page.SelectProvider(selectedProvider);
-            if (selectOwned) await fixture.Page.SelectOwnedConnectionAsync(ConnectionId(selectedProvider));
+            if (selectOwned)
+                await fixture.Page.SelectOwnedConnectionAsync(ConnectionId(selectedProvider));
             return fixture;
         }
 
@@ -339,25 +344,27 @@ public sealed partial class AddProviderWizardPageTests
                 StatusQueries.Add(request.RequestUri!.Query);
                 if (RefuseStatus)
                     return Json(new { }, HttpStatusCode.Forbidden);
-                if (connectionId.Length > 0 && owned is null) return Json(new { }, HttpStatusCode.NotFound);
+                if (connectionId.Length > 0 && owned is null)
+                    return Json(new { }, HttpStatusCode.NotFound);
                 return Json(Records.Where(pair => connectionId.Length == 0 || pair.Key == (connectionId == ConnectionId(owned!.ProviderFamilyId)
                     ? ProviderIdentity.NormalizeId(owned.ProviderFamilyId) : connectionId)).Select(pair => new
-                {
-                    providerId = connectionId.Length > 0 ? owned!.ProviderFamilyId : pair.Key,
-                    displayName = pair.Key,
-                    credentialState = pair.Value.Configured ? ProviderCredentialStateDto.Configured : ProviderCredentialStateDto.Missing,
-                    verificationState = pair.Value.Verified ? ProviderVerificationStateDto.Verified : ProviderVerificationStateDto.NotVerified,
-                    lastVerifiedAt = pair.Value.LastVerifiedAt,
-                    credentialFields = new[]
+                    {
+                        providerId = connectionId.Length > 0 ? owned!.ProviderFamilyId : pair.Key,
+                        displayName = pair.Key,
+                        credentialState = pair.Value.Configured ? ProviderCredentialStateDto.Configured : ProviderCredentialStateDto.Missing,
+                        verificationState = pair.Value.Verified ? ProviderVerificationStateDto.Verified : ProviderVerificationStateDto.NotVerified,
+                        lastVerifiedAt = pair.Value.LastVerifiedAt,
+                        credentialFields = new[]
                     {
                         new ProviderCredentialFieldMetadataDto("KeyId", "Key ID", true, ProviderCredentialInputKindDto.Text),
                         new ProviderCredentialFieldMetadataDto("SecretKey", "Secret key", true, ProviderCredentialInputKindDto.Password)
                     }
-                }));
+                    }));
             }
 
             var providerId = request.RequestUri!.Segments[^2].Trim('/');
-            if (owned is null || !ProviderIdentity.EqualsId(owned.ProviderFamilyId, providerId)) return Json(new { }, HttpStatusCode.Forbidden);
+            if (owned is null || !ProviderIdentity.EqualsId(owned.ProviderFamilyId, providerId))
+                return Json(new { }, HttpStatusCode.Forbidden);
             var recordKey = connectionId == ConnectionId(providerId) ? providerId : connectionId;
             if (request.Method == HttpMethod.Delete)
             {
@@ -375,14 +382,27 @@ public sealed partial class AddProviderWizardPageTests
                     await PendingWrite.Task;
                 if (RefuseWrites)
                     return Json(new { }, HttpStatusCode.Forbidden);
-                Records[recordKey] = new(true, false, null);
+                Records[recordKey] = StatusAfterWrite ?? new(true, false, null);
                 return Json(new { providerId, credentialState = ProviderCredentialStateDto.Configured });
             }
 
             VerificationCalls++;
+            var draftRequest = request.RequestUri.AbsolutePath.EndsWith("/verify-draft", StringComparison.Ordinal);
+            if (draftRequest)
+            {
+                var payload = JsonSerializer.Deserialize<ProviderCredentialDraftRequestDto>(
+                    await request.Content!.ReadAsStringAsync(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+                Drafts.Add(new(providerId, new Dictionary<string, string?>(payload.Credentials!), connectionId));
+            }
             VerificationStarted.TrySetResult();
             if (PendingVerification is not null)
                 await PendingVerification.Task;
+            if (draftRequest)
+            {
+                return Json(new ProviderCredentialDraftVerificationResultDto(providerId,
+                    FailVerification ? ProviderCredentialDraftStatusDto.Rejected : ProviderCredentialDraftStatusDto.Verified,
+                    FailVerification ? "Draft refused." : "Draft accepted."));
+            }
             if (FailVerification)
                 return Json(new { providerId, success = false, verificationState = ProviderVerificationStateDto.Failed });
             var verifiedAt = DateTimeOffset.UtcNow;

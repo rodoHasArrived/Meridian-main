@@ -159,7 +159,7 @@ export function buildStatementRunBreaksViewModel(
 
 export function buildStatementRunBreakRow(item: StatementRunBreak): StatementRunBreakRowViewModel {
   const typeLabel = resolveOrdinalLabel(item.breakType, STATEMENT_BREAK_TYPE_LABELS, "Break type");
-  const deltaLabel = formatSignedAmount(item.delta);
+  const deltaLabel = formatNumber(item.delta, { signed: true, minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const toleranceLabel = formatAmount(item.tolerance);
 
   return {
@@ -288,13 +288,4 @@ function resolveOrdinalLabel(
 
 function formatAmount(value: number): string {
   return formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function formatSignedAmount(value: number): string {
-  const formatted = formatAmount(Math.abs(value));
-  if (value > 0) {
-    return `+${formatted}`;
-  }
-
-  return value < 0 ? `-${formatted}` : formatted;
 }

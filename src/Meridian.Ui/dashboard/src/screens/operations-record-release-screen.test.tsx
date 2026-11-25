@@ -72,7 +72,7 @@ describe("OperationsRecordReleaseScreen", () => {
     const sourceStep = screen.getByRole("button", { name: /Select release step Source data/i });
     expect(sourceStep).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("region", { name: "Selected release step inspector" })).toHaveTextContent(
-      "Provider posture"
+      "Provider health"
     );
 
     fireEvent.click(screen.getByRole("button", { name: /Select release step Reconcile/i }));

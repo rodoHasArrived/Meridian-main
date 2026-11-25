@@ -76,10 +76,12 @@ public sealed class OpenFigiClientAmbiguityTests
     public async Task LookupByTickerAsync_AmbiguousTicker_SendsExchangeScopedMappingRequestAndPreservesCandidates()
     {
         HttpRequestMessage? observedRequest = null;
+        string? requestJson = null;
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         using var handler = new StubHttpMessageHandler(request =>
         {
             observedRequest = request;
+            requestJson = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
             return JsonResponse(AmbiguousAaplMappingResponse);
         });
         using var httpClient = new HttpClient(handler);
@@ -99,7 +101,6 @@ public sealed class OpenFigiClientAmbiguityTests
         observedRequest.Headers.GetValues("X-OPENFIGI-APIKEY").Should().Contain(ApiKey);
         observedRequest.Headers.UserAgent.ToString().Should().Contain("Meridian/1.0");
 
-        var requestJson = await observedRequest.Content!.ReadAsStringAsync(cts.Token);
         requestJson.Should().Contain("\"idType\":\"TICKER\"")
             .And.Contain("\"idValue\":\"AAPL\"")
             .And.Contain("\"exchCode\":\"US\"")
@@ -133,10 +134,12 @@ public sealed class OpenFigiClientAmbiguityTests
     public async Task SearchAsync_FilterRequest_SendsAmbiguityNarrowingFieldsAndHonorsLimit()
     {
         HttpRequestMessage? observedRequest = null;
+        string? requestJson = null;
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         using var handler = new StubHttpMessageHandler(request =>
         {
             observedRequest = request;
+            requestJson = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
             return JsonResponse(FilterAmbiguityResponse);
         });
         using var httpClient = new HttpClient(handler);
@@ -157,7 +160,6 @@ public sealed class OpenFigiClientAmbiguityTests
         observedRequest.Should().NotBeNull();
         observedRequest!.RequestUri.Should().NotBeNull();
         observedRequest.RequestUri!.AbsoluteUri.Should().Be("https://api.openfigi.com/v3/filter");
-        var requestJson = await observedRequest.Content!.ReadAsStringAsync(cts.Token);
         requestJson.Should().Contain("\"query\":\"Apple\"")
             .And.Contain("\"exchCode\":\"US\"")
             .And.Contain("\"marketSecDes\":\"Equity\"")

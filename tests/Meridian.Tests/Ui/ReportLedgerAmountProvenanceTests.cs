@@ -543,6 +543,36 @@ public sealed class ReportLedgerAmountProvenanceTests
     }
 
     [Fact]
+    public async Task AmountPassport_UsesTheCertifiedBalanceAndLinksOriginalPeriodPostingSubjects()
+    {
+        using var fixture = new Fixture();
+        await fixture.CaptureAsync();
+        var permissions = UserPermission.ViewReporting | UserPermission.ViewLedgerReports;
+        await using var app = await fixture.CreateAppAsync(permissions, includeRestatement: true);
+        var client = app.GetTestClient();
+        var rows = await client.GetFromJsonAsync<ReportLedgerAmountBindingDto[]>(fixture.AmountsRoute, Json);
+        var reference = rows!.Single(row => row.SubjectId == fixture.ReportSubject).AmountPassport!;
+        var route = Meridian.Tests.TestHelpers.AmountPassportTestRoutes.PassportRoute(reference.Identity);
+        var passport = (await client.GetFromJsonAsync<AmountPassportDto>(route, Json))!;
+
+        passport.Reference.Identity.Should().Be(reference.Identity);
+        passport.ExactValue.Should().Be("100", "the certified balance includes the 125 opening debit and 25 current credit");
+        passport.Reference.Origin.Should().Be("calculated");
+        var source = passport.Sources.Single(record => record.Id == fixture.OpeningSubject).Passport!;
+        source.Scope.PeriodId.Should().Be(fixture.Opening.PeriodId);
+        source.Revision.Should().Be("1");
+        passport.History.Should().ContainSingle(record => record.Kind == "successor" && record.Id == "retained-restatement");
+        passport.Status.Should().Be("superseded");
+        passport.Gaps.Should().BeEmpty();
+        fixture.LiveJournals.VerifyNoOtherCalls();
+
+        await using var mismatched = await fixture.CreateAppAsync(permissions, certifiedCheckpoint: new string('d', 64));
+        (await mismatched.GetTestClient().GetAsync(route)).StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await using var denied = await fixture.CreateAppAsync(UserPermission.ViewReporting);
+        (await denied.GetTestClient().GetAsync(route)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task OpeningSourceRoute_RevalidatesTheCompleteRetainedBalanceBeforeOpeningManifest()
     {
         using var fixture = new Fixture();
@@ -586,6 +616,83 @@ public sealed class ReportLedgerAmountProvenanceTests
         };
     }
 
+    [Fact]
+    public async Task FrozenNativeAccountingDecision_DisclosesUpstreamPreparerWithoutOrdinaryApprovalCredit()
+    {
+        using var fixture = new Fixture();
+        await fixture.CaptureAsync(preparerAttested: true);
+        var retained = fixture.Opening.Entry.Metadata.PreparerAttestation!;
+        // Current records are irrelevant to an already retained report's classification.
+        fixture.LiveRecords.Clear();
+
+        var packet = await fixture.Service.GetPacketAsync(fixture.ReportSubject, fixture.Scope, fixture.Access);
+
+        var amount = packet!.LedgerAmount!;
+        amount.Status.Should().Be(EvidenceStatusDto.Ready);
+        amount.Amount.Should().Be(100m);
+        var disclosure = amount.AccountingPreparerAttestations.Should().ContainSingle().Which;
+        disclosure.Classification.Should().Be(LedgerAmountApprovalClassification.PreparerAttestation);
+        disclosure.AttestationId.Should().Be(retained.Receipt.AttestationId);
+        disclosure.SourceScope.PeriodId.Should().Be(fixture.Opening.PeriodId).And.NotBe(fixture.Scope.PeriodId);
+        amount.OrdinaryRecordedApprovalSatisfied.Should().BeFalse();
+        // Even an independent report-level approval does not reclassify the upstream posting.
+        LedgerAmountApprovalClassification.MayCountAsOrdinaryApproval(amount, true).Should().BeFalse();
+        JsonSerializer.Serialize(packet, Json).Should().NotContain("private-retained-operands")
+            .And.NotContain("entitlementSnapshotJson");
+        fixture.LiveJournals.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task MissingNativeContributorsSource_BlocksProofButDoesNotEraseAccountingDecision()
+    {
+        using var fixture = new Fixture();
+        await fixture.CaptureAsync(preparerAttested: true);
+        var attestationId = fixture.Opening.Entry.Metadata.PreparerAttestation!.Receipt.AttestationId;
+        File.Delete(fixture.OpeningSourcePath!);
+
+        var packet = await fixture.Service.GetPacketAsync(fixture.ReportSubject, fixture.Scope, fixture.Access);
+
+        AssertBlocked(packet);
+        packet!.LedgerAmount!.AccountingPreparerAttestations.Should().ContainSingle()
+            .Which.AttestationId.Should().Be(attestationId);
+        packet.LedgerAmount.OrdinaryRecordedApprovalSatisfied.Should().BeFalse();
+        fixture.LiveJournals.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task InvalidFrozenNativeScope_IsUnknownWithoutBorrowingCurrentOrReportApproval()
+    {
+        using var fixture = new Fixture();
+        await fixture.CaptureAsync("invalid-native-scope", preparerAttested: true);
+
+        var amount = (await fixture.Service.GetPacketAsync(fixture.ReportSubject, fixture.Scope, fixture.Access))!.LedgerAmount!;
+
+        amount.Status.Should().Be(EvidenceStatusDto.Ready);
+        var disclosure = amount.AccountingPreparerAttestations.Should().ContainSingle().Which;
+        disclosure.Classification.Should().Be(LedgerAmountApprovalClassification.Unknown);
+        disclosure.AttestationId.Should().BeNull();
+        disclosure.ValidationIssues.Should().NotBeEmpty();
+        LedgerAmountApprovalClassification.MayCountAsOrdinaryApproval(amount, true).Should().BeFalse();
+        JsonSerializer.Serialize(amount, Json).Should().NotContain("foreign-private-tenant");
+        fixture.LiveJournals.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void NativeDecisionUnion_DeduplicatesExactReceiptsAndRejectsConflictingBindings()
+    {
+        var scope = new LedgerAmountScopeDto("tenant", "company", "fund", Guid.NewGuid(), Guid.NewGuid());
+        var item = new AccountingPreparerAttestationDisclosureDto(1,
+            LedgerAmountApprovalClassification.PreparerAttestation, "Attested by preparer", scope, [Guid.NewGuid()], [])
+        { AttestationId = Guid.NewGuid(), EventId = Guid.NewGuid() };
+
+        AccountingPreparerAttestationDisclosure.Union([item, item])!.Should().ContainSingle().Which.Should().Be(item);
+        var conflicting = item with { EventId = Guid.NewGuid(), JournalEntryIds = [Guid.NewGuid()] };
+        var result = AccountingPreparerAttestationDisclosure.Union([item, conflicting])!.Should().ContainSingle().Which;
+        result.Classification.Should().Be(LedgerAmountApprovalClassification.Unknown);
+        result.AttestationId.Should().BeNull();
+        result.JournalEntryIds.Should().HaveCount(2);
+    }
+
     private sealed class Fixture : IDisposable
     {
         public const string RunId = "retained-trial-balance";
@@ -620,6 +727,7 @@ public sealed class ReportLedgerAmountProvenanceTests
         public string PacketRoute => $"/api/workstation/evidence/subjects/ledger-amount/{ReportSubject}/packet"
             + $"?fundProfileId={Scope.FundProfileId}&ledgerBookId={Scope.LedgerBookId:D}&periodId={Scope.PeriodId:D}";
         public string? CurrentSourcePath { get; private set; }
+        public string? OpeningSourcePath { get; private set; }
         public string? CurrentManifestPath { get; private set; }
 
         public Fixture()
@@ -633,7 +741,7 @@ public sealed class ReportLedgerAmountProvenanceTests
                 new PostedLedgerAmountProvenanceService(LiveJournals.Object, null, null, _artifacts));
         }
 
-        public async Task CaptureAsync(string? condition = null)
+        public async Task CaptureAsync(string? condition = null, bool preparerAttested = false)
         {
             // "shared-source" retains one document identity against both contributing lines.
             var sharedSource = condition == "shared-source";
@@ -650,6 +758,15 @@ public sealed class ReportLedgerAmountProvenanceTests
                 1, 125m, [opening], _openingJournalId, _openingCashId);
             Current = NewRecord(Scope.PeriodId, new DateTimeOffset(2026, 10, 5, 12, 0, 0, TimeSpan.Zero),
                 2, -25m, [current], _currentJournalId, _currentCashId);
+            if (preparerAttested)
+            {
+                Opening = AccountingPreparerAttestationTestData.Attach(Opening, Scope with { PeriodId = _openingPeriodId });
+                if (condition == "invalid-native-scope")
+                    Opening = AccountingPreparerAttestationTestData.WithMetadata(Opening, Opening.Entry.Metadata with
+                    {
+                        PreparerAttestation = Opening.Entry.Metadata.PreparerAttestation! with { TenantId = "foreign-private-tenant" }
+                    });
+            }
             LiveRecords.AddRange([Opening, Current]);
             var periodStart = new DateTimeOffset(2026, 10, 1, 0, 0, 0, TimeSpan.Zero);
             var cutoff = new DateTimeOffset(2026, 10, 31, 23, 59, 59, TimeSpan.Zero);
@@ -714,6 +831,8 @@ public sealed class ReportLedgerAmountProvenanceTests
                 CurrentManifestPath = Path.Combine(_root, identity!.ManifestPath);
                 CurrentSourcePath = Path.Combine(_root, identity.Artifacts[0].RelativePath);
             }
+            if (evidenceId == "opening-source")
+                OpeningSourcePath = Path.Combine(_root, identity!.Artifacts[0].RelativePath);
             return new JournalEvidenceReference(evidenceId, "vault:" + identity!.VaultId,
                 "source-document", "bank", identity.RetainedAt, "preparer", retainedSubject,
                 identity.ContentHashSha256, evidenceId, ReviewStatus: "Accepted", ReviewedBy: "reviewer",
@@ -772,17 +891,25 @@ public sealed class ReportLedgerAmountProvenanceTests
             };
         }
 
-        public async Task<WebApplication> CreateAppAsync(UserPermission permission, string? companyId = null)
+        public async Task<WebApplication> CreateAppAsync(UserPermission permission, string? companyId = null,
+            bool includeRestatement = false, string? certifiedCheckpoint = null)
         {
             var coordinator = new Mock<IReportingGovernanceEndpointCoordinator>(MockBehavior.Strict);
+            var snapshot = Manifest.CertifiedSnapshot!;
             var run = new GovernedReportingRun(RunId, "series-alpha", 1, TemplateId, "1",
-                Manifest.OperationalScope!, Manifest.ImmutableAccessScope!, Manifest.CertifiedSnapshot!,
+                Manifest.OperationalScope!, Manifest.ImmutableAccessScope!,
+                certifiedCheckpoint is null ? snapshot : snapshot with { SourceCheckpointHash = certifiedCheckpoint },
                 new ReportingAuthorityScope("controller", Scope.TenantId, OrganizationId, Scope.CompanyId,
                     [ReportingGovernancePermission.CreateRun], ReportingCommandOrigin.HumanOperator, "request-alpha"),
                 DateTimeOffset.UtcNow, null, GovernedReportingExecutionState.Succeeded, GovernedReportingState.Draft,
                 1, null, null, null, []);
             coordinator.Setup(service => service.GetAsync(RunId, It.IsAny<ReportingGovernanceCallerContext>(),
                 It.IsAny<CancellationToken>())).ReturnsAsync(run);
+            coordinator.Setup(service => service.ListAsync(run.SeriesId, It.IsAny<ReportingGovernanceCallerContext>(),
+                It.IsAny<CancellationToken>())).ReturnsAsync(includeRestatement
+                ? [run, run with { RunId = "retained-restatement", RestatementOfRunId = run.RunId,
+                    Revision = 2, GovernanceState = GovernedReportingState.Released }]
+                : [run]);
             var builder = WebApplication.CreateBuilder();
             builder.WebHost.UseTestServer();
             builder.Services.AddSingleton(coordinator.Object);

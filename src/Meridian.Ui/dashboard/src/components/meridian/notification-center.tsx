@@ -24,7 +24,7 @@ const SEVERITY_LABELS: Record<NotificationSeverity, string> = {
   critical: "Critical",
   warning: "Warning",
   info: "Info",
-  success: "Resolved"
+  success: "Success"
 };
 const SEVERITY_DOT: Record<NotificationSeverity, string> = {
   critical: "bg-danger",
@@ -33,6 +33,7 @@ const SEVERITY_DOT: Record<NotificationSeverity, string> = {
   success: "bg-success"
 };
 const SOURCE_LABELS: Record<NotificationEnvelope["source"], string> = {
+  execution: "Execution",
   inbox: "Operator inbox",
   system: "System",
   "price-alert": "Price alert"
@@ -81,9 +82,12 @@ export function NotificationCenter({ overview, fundAccountId }: NotificationCent
     }
   };
 
-  const bellLabel = unreadCount > 0
+  const unreadLabel = unreadCount > 0
     ? `Notifications — ${unreadCount} unread`
     : "Notifications — none unread";
+  const bellLabel = center.inboxStatus === "ready"
+    ? unreadLabel
+    : `${unreadLabel}; operator inbox ${center.inboxStatus}`;
 
   return (
     <>
@@ -98,7 +102,7 @@ export function NotificationCenter({ overview, fundAccountId }: NotificationCent
         {unreadCount > 0 ? (
           <span
             aria-hidden="true"
-            className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full border border-background bg-warning px-1 font-mono text-[10px] font-semibold leading-none text-background"
+            className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full border border-background bg-warning px-1 font-mono text-xs font-semibold leading-none text-background"
           >
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
@@ -112,7 +116,7 @@ export function NotificationCenter({ overview, fundAccountId }: NotificationCent
               <div className="min-w-0">
                 <SheetTitle id="notification-center-title">Notifications</SheetTitle>
                 <SheetDescription id="notification-center-summary">
-                  {notifications.length === 0
+                  {notifications.length === 0 && center.inboxStatus === "ready"
                     ? "You're all caught up."
                     : `${unreadCount} unread of ${notifications.length}.`}
                 </SheetDescription>
@@ -129,8 +133,24 @@ export function NotificationCenter({ overview, fundAccountId }: NotificationCent
             </div>
           </SheetHeader>
           <SheetBody>
+            {center.inboxStatus !== "ready" ? (
+              <div className="space-y-2 rounded-md border border-border p-3">
+                <p role="status" className="text-sm text-muted-foreground">
+                  {center.inboxStatus === "loading"
+                    ? "Loading the operator inbox for the current account scope. Counts include loaded feeds only."
+                    : "Operator inbox unavailable for the current account scope. Counts include loaded feeds only."}
+                </p>
+                {center.inboxStatus === "unavailable" ? (
+                  <Button size="sm" variant="outline" type="button" onClick={center.retryInbox}>Retry inbox</Button>
+                ) : null}
+              </div>
+            ) : null}
             {notifications.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No operator, system, or price-alert notifications right now.</p>
+              <p className="text-sm text-muted-foreground">
+                {center.inboxStatus === "ready"
+                  ? "No operator, system, or price-alert notifications right now."
+                  : "No notifications from the loaded feeds."}
+              </p>
             ) : (
               SEVERITY_ORDER.map((severity) => {
                 const rows = notifications.filter((entry) => entry.severity === severity);
@@ -191,7 +211,7 @@ function NotificationRow({ entry, onMarkRead, onDismiss, onOpenRoute }: Notifica
             {!entry.read ? <span className="sr-only">(unread)</span> : null}
           </div>
           <p className="mt-0.5 text-xs leading-5 text-muted-foreground">{entry.detail}</p>
-          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs uppercase tracking-[0.1em] text-muted-foreground">
             <span>{SOURCE_LABELS[entry.source]}</span>
             <span aria-hidden="true">·</span>
             <span>{formatRelativeAge(entry.timestamp)}</span>

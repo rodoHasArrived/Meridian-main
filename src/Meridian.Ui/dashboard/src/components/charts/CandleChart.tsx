@@ -2,8 +2,11 @@
 // readout with a right-axis price chip, and an optional volume histogram subpane. Up candles use
 // --chart-equity (green, hollow body); down use --chart-drawdown (red, filled). SVG, flex-fills
 // its container — give the wrapper a definite height (see ChartCard).
-import { ChartInteractionOverlay } from "./chart-interaction";
+import { AXIS_LABEL_STYLE } from "./axis-ticks";
+import { ChartSvg, type ChartA11yProps } from "./chart-a11y";
+import { ChartInteractionOverlay, isChartInteractive } from "./chart-interaction";
 import { niceTicks } from "./ticks";
+import { useChartSize } from "./use-chart-size";
 
 export interface Candle {
   /** X-axis time label, e.g. "10:48". */
@@ -24,7 +27,7 @@ export interface CandleOverlay {
   win: number;
 }
 
-export interface CandleChartProps {
+export interface CandleChartProps extends ChartA11yProps {
   bars: Candle[];
   /** MA overlays. @default MA20 (accent) + MA50 (warning) */
   overlays?: CandleOverlay[];
@@ -68,10 +71,14 @@ export function CandleChart({
   onPointActivate,
   showVolume = true,
   priceTicks = 6,
-  timeTicks = 7
+  timeTicks = 7,
+  ariaLabel = "Candlestick price chart",
+  ariaDescription,
+  accessibleData
 }: CandleChartProps) {
-  const W = 960;
-  const H = 540;
+  const [plotRef, size] = useChartSize({ width: 960, height: 540 });
+  const W = size.width;
+  const H = size.height;
   const padL = 48;
   const padT = 14;
   const axisR = 64;
@@ -121,15 +128,31 @@ export function CandleChart({
   const tStep = Math.max(1, Math.round((bars.length || 1) / timeTicks));
   const ch = crosshairIndex != null && bars[crosshairIndex] ? bars[crosshairIndex] : null;
 
-  const axFont = { fontFamily: "var(--font-data, monospace)", fontSize: 11 };
+  const axFont = { fontFamily: AXIS_LABEL_STYLE.fontFamily, fontVariantNumeric: "tabular-nums", fontSize: 12 };
 
   return (
-    <svg
+    <div ref={plotRef} style={{ width: "100%", height: "100%", minHeight: 0 }}>
+    <ChartSvg
       viewBox={`0 0 ${W} ${H}`}
-      preserveAspectRatio="none"
       style={{ width: "100%", height: "100%", display: "block" }}
-      role="img"
-      aria-label="Candlestick price chart"
+      ariaLabel={ariaLabel}
+      ariaDescription={ariaDescription}
+      accessibleData={accessibleData}
+      overlay={
+        isChartInteractive(bars.length, onCrosshairChange, onPointActivate) ? (
+          <ChartInteractionOverlay
+            x={plotL}
+            y={priceT}
+            width={plotR - plotL}
+            height={volB - priceT}
+            count={bars.length}
+            crosshairIndex={crosshairIndex}
+            onCrosshairChange={onCrosshairChange}
+            onPointActivate={onPointActivate}
+            ariaLabel="Move crosshair across price bars; activate to drill into the selected bar"
+          />
+        ) : null
+      }
     >
       <rect x="0" y="0" width={W} height={H} fill={PLOT} />
       {/* price gridlines + right-axis labels */}
@@ -221,20 +244,8 @@ export function CandleChart({
           </text>
         </g>
       )}
-
-      {/* interaction overlay (crosshair + activation) */}
-      <ChartInteractionOverlay
-        x={plotL}
-        y={priceT}
-        width={plotR - plotL}
-        height={volB - priceT}
-        count={bars.length}
-        crosshairIndex={crosshairIndex}
-        onCrosshairChange={onCrosshairChange}
-        onPointActivate={onPointActivate}
-        ariaLabel="Move crosshair across price bars; activate to drill into the selected bar"
-      />
-    </svg>
+    </ChartSvg>
+    </div>
   );
 }
 

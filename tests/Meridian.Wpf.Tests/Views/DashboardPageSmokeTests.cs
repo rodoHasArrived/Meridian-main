@@ -28,7 +28,11 @@ public sealed class DashboardPageSmokeTests
             viewModel.PageTitle.Should().Be("Strategy Operations");
             viewModel.OperationsMetrics.Should().BeEmpty("normal mode must wait for authoritative shared read models");
             viewModel.Actions.Select(action => action.Label).Should().Contain(
-                ["Refresh", "Activity Log", "Quality Worklist"]);
+                ["Activity Log", "Quality Worklist"]);
+            viewModel.Actions.Select(action => action.Label).Should().NotContain(
+                "Refresh",
+                "the shell Refresh reloads the dashboard through IPageRefreshTarget");
+            PageRefreshResolver.Resolve(page).Should().BeSameAs(viewModel.RefreshStatusCommand);
             viewModel.HoldingsSnapshotItems.Should().BeEmpty("normal mode must not seed synthetic holdings");
             viewModel.HoldingsSnapshotCountText.Should().Be("0 holdings");
             viewModel.PortfolioDataServiceStatuses.Should().BeEmpty();

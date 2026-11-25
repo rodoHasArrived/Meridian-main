@@ -72,24 +72,12 @@ public sealed partial class SecurityAssetTermsSchemaDecodeSweepTests
         {
             ["CustomAsset.maturity"] = "\"2031-03-15\"",
             ["CustomAsset.issuerName"] = "\"Probe Issuer\"",
-            ["CustomAsset.settlementType"] = "\"Physical\"",
-            ["Equity.preferredTerms.dividendRate"] = "7.75",
-            ["Equity.preferredTerms.dividendType"] = "\"Fixed\"",
-            ["Equity.preferredTerms.redemptionPrice"] = "101.25",
-            ["Equity.preferredTerms.redemptionDate"] = "\"2032-06-30\"",
-            ["Equity.preferredTerms.callableDate"] = "\"2029-06-30\"",
-            ["Equity.preferredTerms.participationTerms"] = "null",
-            ["Equity.preferredTerms.participationTerms.participatesInCommonDividends"] = "false",
-            ["Equity.preferredTerms.participationTerms.additionalDividendThreshold"] = "2.5",
-            ["Equity.preferredTerms.liquidationPreference"] = "{\"kind\":\"Pari\"}",
-            ["Equity.preferredTerms.liquidationPreference.kind"] = "\"Subordinated\"",
-            ["Equity.preferredTerms.liquidationPreference.multiple"] = "3.5"
+            ["CustomAsset.settlementType"] = "\"Physical\""
         };
 
     /// <summary>
     /// The stored row each class's unbound reads are reached on: the envelope-less legacy
-    /// CustomAsset row the read path salvages as OtherSecurity, and otherwise the class twin (the
-    /// Equity twin is convertible-preferred with every preferred term populated).
+    /// CustomAsset row the read path salvages as OtherSecurity, and otherwise the class twin.
     /// </summary>
     private static JsonObject UnboundReadBase(string assetClass)
         => assetClass == "CustomAsset"
@@ -202,13 +190,19 @@ public sealed partial class SecurityAssetTermsSchemaDecodeSweepTests
             .Should().Throw<InvalidOperationException>()
             .WithMessage("Codec/schema drift: 'Equity.convertibleTerms.conversionRatio' is declared Decimal but the codec reads it as String.");
 
-        // preferredTerms has no registered inner shape, which is why its members are ledgered:
-        // read as bound, they are drift.
+        // preferredTerms is bound the same way, and so are the blocks nested in it; a member it
+        // does not declare is drift, and its declared members can no longer be read as unbound.
         var preferred = Read(equity, "RequiredObject", "preferredTerms")!;
-        FluentActions.Invoking(() => Read(preferred, "OptionalDecimal", "dividendRate"))
+        Read(preferred, "OptionalDecimal", "dividendRate").Should().Be(6.25m);
+        FluentActions.Invoking(() => Read(preferred, "OptionalDecimal", "notDeclared"))
             .Should().Throw<InvalidOperationException>()
-            .WithMessage("Codec/schema drift: the codec reads 'Equity.preferredTerms.dividendRate', which the schema does not declare.");
-        Read(Unbound(preferred), "OptionalDecimal", "dividendRate").Should().Be(6.25m);
+            .WithMessage("Codec/schema drift: the codec reads 'Equity.preferredTerms.notDeclared', which the schema does not declare.");
+        FluentActions.Invoking(() => Read(Unbound(preferred), "OptionalDecimal", "dividendRate"))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("*'Equity.preferredTerms.dividendRate' is read as an unbound compatibility read, but the schema declares it Decimal*");
+        var nested = View("Equity", """{"preferredTerms":{"liquidationPreference":{"kind":"Senior","multiple":1.5}}}""");
+        var liquidation = Read(Read(nested, "RequiredObject", "preferredTerms")!, "RequiredObject", "liquidationPreference")!;
+        Read(liquidation, "RequiredDecimal", "multiple").Should().Be(1.5m);
     }
 
     [Fact]

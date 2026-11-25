@@ -69,13 +69,6 @@
                                 AutomationProperties.AutomationId="AggregatePortfolioActionStatePanel"
                                 AutomationProperties.Name="{Binding PortfolioActionStateTitle}">
                         <WrapPanel HorizontalAlignment="Right">
-                            <Button Content="Refresh Portfolio"
-                                    Command="{Binding RefreshCommand}"
-                                    ToolTip="{Binding RefreshTooltip}"
-                                    ToolTipService.ShowOnDisabled="True"
-                                    Style="{StaticResource PrimaryButtonStyle}"
-                                    AutomationProperties.AutomationId="AggregatePortfolioRefreshButton"
-                                    Margin="0,0,8,8" />
                             <Button Content="Security Master"
                                     Command="{Binding OpenSelectedSecurityCommand}"
                                     ToolTip="{Binding SelectedSecurityTooltip}"
@@ -194,13 +187,6 @@
                                         ToolTipService.ShowOnDisabled="True"
                                         Style="{StaticResource PrimaryButtonStyle}"
                                         AutomationProperties.AutomationId="AggregatePortfolioInspectorOpenSecurityButton"
-                                        Margin="0,0,8,8" />
-                                <Button Content="Refresh"
-                                        Command="{Binding RefreshCommand}"
-                                        ToolTip="{Binding RefreshTooltip}"
-                                        ToolTipService.ShowOnDisabled="True"
-                                        Style="{StaticResource SecondaryButtonStyle}"
-                                        AutomationProperties.AutomationId="AggregatePortfolioInspectorRefreshButton"
                                         Margin="0,0,8,8" />
                             </WrapPanel>
                         </StackPanel>

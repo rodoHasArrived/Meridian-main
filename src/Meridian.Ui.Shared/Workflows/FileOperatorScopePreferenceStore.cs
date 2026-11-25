@@ -90,7 +90,9 @@ public sealed class FileOperatorScopePreferenceStore
             Clean(scope.From, nameof(scope.From)),
             Clean(scope.To, nameof(scope.To)),
             Clean(scope.Date, nameof(scope.Date)),
-            Clean(scope.AsOf, nameof(scope.AsOf)));
+            Clean(scope.AsOf, nameof(scope.AsOf)),
+            Clean(scope.EntityId, nameof(scope.EntityId)),
+            Clean(scope.FundId, nameof(scope.FundId)));
         return normalized == new OperatingScopeValuesDto() ? null : normalized;
     }
 

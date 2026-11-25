@@ -1,6 +1,6 @@
 // Notification center — shared envelope shape merging the operator inbox,
 // system events, and price-alert triggers into one client-side feed.
-export type NotificationSource = "inbox" | "system" | "price-alert";
+export type NotificationSource = "inbox" | "system" | "price-alert" | "execution";
 export type NotificationSeverity = "critical" | "warning" | "info" | "success";
 
 export interface NotificationEnvelope {

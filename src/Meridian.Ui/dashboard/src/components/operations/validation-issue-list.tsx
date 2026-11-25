@@ -22,10 +22,10 @@ const CSS = `
 .mds-issue--action .mds-issue__dot{background:var(--severity-action-fg,#724D11);}
 .mds-issue--review .mds-issue__dot{background:var(--severity-review-fg,#944A32);}
 .mds-issue--ready .mds-issue__dot{background:var(--severity-ready-fg,#225840);}
-.mds-issue__code{font-family:var(--font-data,monospace);font-size:11px;font-weight:700;
+.mds-issue__code{font-family:var(--font-data,monospace);font-size:0.75rem;font-weight:700;
   color:var(--text-secondary,#535C65);white-space:nowrap;}
 .mds-issue__msg{font-family:var(--font-body);font-size:12px;color:var(--text-primary,#20252B);line-height:1.4;min-width:0;}
-.mds-issue__gate{font-family:var(--font-data,monospace);font-size:9px;font-weight:700;text-transform:uppercase;
+.mds-issue__gate{font-family:var(--font-data,monospace);font-size:0.75rem;font-weight:700;text-transform:uppercase;
   letter-spacing:.04em;color:var(--text-muted,#606870);white-space:nowrap;}
 `;
 

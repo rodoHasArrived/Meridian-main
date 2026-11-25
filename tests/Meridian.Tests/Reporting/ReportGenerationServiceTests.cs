@@ -329,6 +329,31 @@ public sealed class ReportGenerationServiceTests
     }
 
     [Fact]
+    public async Task GenerateAsync_TotalNetAssets_IsAssetsLessLiabilities()
+    {
+        var service = new ReportGenerationService(new StubSecurityMasterQueryService(
+            new Dictionary<string, SecurityDetailDto>(),
+            new Dictionary<Guid, SecurityEconomicDefinitionRecord>()));
+        var asOf = new DateTimeOffset(2026, 4, 11, 12, 0, 0, TimeSpan.Zero);
+        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
+        var capital = new LedgerAccount("Capital", LedgerAccountType.Equity);
+        var loan = new LedgerAccount("Margin loan", LedgerAccountType.Liability);
+        var income = new LedgerAccount("Fee income", LedgerAccountType.Revenue);
+        var expense = new LedgerAccount("Interest expense", LedgerAccountType.Expense);
+        var ledgerBook = new FundLedgerBook("fund-1");
+        var at = asOf.AddHours(-1);
+        ledgerBook.FundLedger.PostLines(at, "Contribution", [(cash, 1_000m, 0m), (capital, 0m, 1_000m)]);
+        ledgerBook.FundLedger.PostLines(at, "Borrowing", [(cash, 400m, 0m), (loan, 0m, 400m)]);
+        ledgerBook.FundLedger.PostLines(at, "Fee earned", [(cash, 50m, 0m), (income, 0m, 50m)]);
+        ledgerBook.FundLedger.PostLines(at, "Interest paid", [(expense, 20m, 0m), (cash, 0m, 20m)]);
+
+        var report = await service.GenerateAsync(new ReportRequest("fund-1", asOf, ledgerBook));
+
+        // Assets 1,430 less liabilities 400; equals capital 1,000 plus net income 30.
+        report.TotalNetAssets.Should().Be(1_030m);
+    }
+
+    [Fact]
     public async Task GenerateAsync_UsesOneAsOfBoundaryForBalancesDimensionsAndReceipt()
     {
         var securityId = Guid.NewGuid();

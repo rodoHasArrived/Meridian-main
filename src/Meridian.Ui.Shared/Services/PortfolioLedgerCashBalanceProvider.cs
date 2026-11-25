@@ -26,7 +26,7 @@ namespace Meridian.Ui.Shared.Services;
 /// rather than applying FX conversion.
 /// </para>
 /// </remarks>
-public sealed class PortfolioLedgerCashBalanceProvider : IPortfolioCashBalanceProvider
+public sealed class PortfolioLedgerCashBalanceProvider : IPortfolioCashBalanceProvider, IPortfolioCashBalanceHistoryProvider
 {
     /// <summary>
     /// Currency assumed for the unscoped <c>"Cash"</c> account, matching the cash
@@ -85,6 +85,47 @@ public sealed class PortfolioLedgerCashBalanceProvider : IPortfolioCashBalancePr
                 DisplayName: account.FinancialAccountId is { } scope ? $"{account.Name} — {scope}" : account.Name,
                 Amount: amount,
                 Currency: currency,
+                SourceDomain: "Ledger",
+                SourceEntityId: account.FinancialAccountId));
+        }
+
+        return Task.FromResult<IReadOnlyList<PortfolioCashBalanceDto>>(balances);
+    }
+
+    /// <summary>
+    /// Cash at the end of <paramref name="asOf"/> (UTC), from the same actuals-view cash accounts,
+    /// read from the ledger's dated snapshot rather than its current summaries.
+    /// </summary>
+    public Task<IReadOnlyList<PortfolioCashBalanceDto>> GetCashBalancesAsOfAsync(DateOnly asOf, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        if (_ledgerBook is null)
+        {
+            return Task.FromResult<IReadOnlyList<PortfolioCashBalanceDto>>([]);
+        }
+
+        var endOfDay = new DateTimeOffset(asOf.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+        var snapshot = _ledgerBook.ConsolidatedSnapshotAsOf(endOfDay, ledgerView: LedgerViewKind.Actual);
+        var balances = new List<PortfolioCashBalanceDto>();
+        foreach (var (account, balance) in snapshot.Balances.OrderBy(static pair => pair.Key.ToString(), StringComparer.Ordinal))
+        {
+            if (!IsCashAccount(account))
+            {
+                continue;
+            }
+
+            var amount = decimal.Round(balance, 4, MidpointRounding.AwayFromZero);
+            if (amount == 0m)
+            {
+                continue;
+            }
+
+            balances.Add(new PortfolioCashBalanceDto(
+                AccountId: account.ToString(),
+                DisplayName: account.FinancialAccountId is { } scope ? $"{account.Name} — {scope}" : account.Name,
+                Amount: amount,
+                Currency: string.IsNullOrWhiteSpace(account.Symbol) ? ReportingCurrency : account.Symbol!.Trim().ToUpperInvariant(),
                 SourceDomain: "Ledger",
                 SourceEntityId: account.FinancialAccountId));
         }

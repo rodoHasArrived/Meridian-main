@@ -595,7 +595,7 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
             var side = imbalance > 0 ? "Bid-side" : "Ask-side";
             return new OrderBookPosture(
                 $"{side} pressure building",
-                $"{side} depth is leading by {absoluteImbalance:F1}% with a {spreadText} spread and {deltaText} cumulative delta.",
+                $"{side} depth is leading by {absoluteImbalance:F1}% with a spread of {spreadText} and {deltaText} cumulative delta.",
                 scope,
                 "Monitor liquidity wall");
         }

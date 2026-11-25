@@ -62,8 +62,10 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(request.ProposedAction);
         RequireActor(request.Actor);
         ValidateProviderIdentity(request.ProviderIdentity);
+        ValidateRetainedSourceEvidence(request.ProposedAction.SourceEvidence);
 
         var proposedAction = CorporateActionValidation.Normalize(request.ProposedAction);
         if (proposedAction.SecurityId == Guid.Empty)
@@ -525,6 +527,13 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
                 "Corporate-action evidence reference must use an approved typed evidence URI scheme.");
         }
 
+        if (request.EvidenceKind == CorporateActionDeadlinePolicy.EvidenceKind)
+        {
+            var deadline = CorporateActionDeadlinePolicy.Read(request.Metadata);
+            if (CorporateActionDeadlinePolicy.ValidateCapture(deadline, request.EvidenceReference, request.EvidenceHash, request.Description) is { } deadlineError)
+                throw new CorporateActionValidationException(deadlineError);
+        }
+
         var trustedRequest = request with
         {
             TenantId = request.TenantId.Trim(),
@@ -860,6 +869,7 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
             .ToArray();
         return processingCase with
         {
+            ElectionCalendar = CorporateActionElectionCalendar.Read(processingCase.SourceSnapshot?.ProposedAction.Payload),
             ActionAvailability = new CorporateActionCaseActionAvailabilityDto(
                 CanAddEvidence: !immutable,
                 CanRecordConflict: canRecordConflict,
@@ -898,7 +908,10 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
             proposal.Version,
             proposal.State,
             scope,
-            proposal.ActionAvailability ?? new CorporateActionSourceProposalActionAvailabilityDto(false, false, false, ["Action availability was not projected."]));
+            proposal.ActionAvailability ?? new CorporateActionSourceProposalActionAvailabilityDto(false, false, false, ["Action availability was not projected."]))
+        {
+            ElectionCalendar = CorporateActionElectionCalendar.Read(proposal.ProposedAction.Payload),
+        };
     }
 
     private static CorporateActionProviderEventIdentityDto NormalizeProviderIdentity(
@@ -1047,6 +1060,32 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
         if (!Enum.IsDefined(identity.ReleaseStatus))
         {
             throw new CorporateActionValidationException("Corporate-action provider identity has an unknown release status.");
+        }
+    }
+
+    private static void ValidateRetainedSourceEvidence(CorporateActionRetainedSourceEvidenceDto? evidence)
+    {
+        if (evidence is null)
+            return;
+
+        RequireBoundedCorporateActionText(evidence.ProviderEventType, "ProviderEventType", MaximumIndexedIdentityUtf8Bytes);
+        RequireBoundedCorporateActionText(evidence.Schema, "SourceEvidence.Schema", MaximumIndexedIdentityUtf8Bytes);
+        if (string.IsNullOrWhiteSpace(evidence.RawPayloadJson)
+            || !Sha256Digest.IsCanonical(evidence.RawPayloadSha256)
+            || !Sha256Digest.FixedEquals(Sha256Digest.ComputeUtf8(evidence.RawPayloadJson), evidence.RawPayloadSha256))
+        {
+            throw new CorporateActionValidationException("Retained corporate-action source payload does not match its SHA-256 digest.");
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(evidence.RawPayloadJson);
+            if (document.RootElement.ValueKind != JsonValueKind.Object)
+                throw new CorporateActionValidationException("Retained corporate-action source payload must be a JSON object.");
+        }
+        catch (JsonException)
+        {
+            throw new CorporateActionValidationException("Retained corporate-action source payload is not valid JSON.");
         }
     }
 

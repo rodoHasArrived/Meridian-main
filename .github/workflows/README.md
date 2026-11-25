@@ -24,7 +24,13 @@ Its workflow changes require **human governance review**. Sustained-load soak re
 
 Meridian CI also calls `service-backed-integrations.yml` on pull requests (including forks),
 merge groups, main pushes and manual/reusable runs. Its always-reported `integration-gate`
-companion requires a successful PostgreSQL run; the four canonical `scripts/ci.sh` lanes and
+companion requires a successful PostgreSQL run. The one exception shares the .NET lane's change
+classification: a pull request that changes only recognized documentation skips the
+integration job, and the gate passes only for that explicit, successfully classified skip.
+The Meridian suite runs as the two complementary processes declared in
+`integration_evidence.MERIDIAN_PROCESSES` (the serial `AtomicTaxLotJournalStoreTests` class
+against its own `meridian_tax_lot` database, every other test against `meridian`), started by
+`run-meridian-integrations.py` from one build with isolated outputs. The four canonical `scripts/ci.sh` lanes and
 their `quality-gate` remain unchanged. Production Certification calls the same implementation.
 Within the release coordinator it consumes CI's immutable integration artifact and revalidates
 the exact commit/run/attempt, producer workflow, suite results, coverage and file digests.
@@ -54,10 +60,17 @@ in `release-governance`, which exits with their real status. Neither job is a
 required check and the canonical lanes are unchanged. Its workflow changes require **human
 governance review**. See [ownership](../../docs/engineering/ci-cd-optimization.md#design-system-package).
 
-Documentation Automation and canonical `verify-docs` share the maintained generation catalog and
-comprehensive freshness checker. Generated conflict recovery has a separate explicit policy;
+Canonical `verify-docs` owns automatic documentation checks, generation and reviewed-output freshness on all PRs,
+main pushes and merge groups. Documentation Automation uses the same catalog and checker only
+for manual refreshes. Generated conflict recovery has a separate explicit policy;
 protected prose and reviewed hashes retain their own merge and review rules. See the
 [recovery guide](../../docs/engineering/generated-merge-recovery.md).
+
+Machine-only outputs are ignored and exported under `artifacts/docs/generated/` with revision/digests.
+The browser lane builds and validates the bundle; the .NET lane consumes that same-run artifact
+before project evaluation. Local merges use `buildctl.py regen --fix` via the installed hook.
+See [file-by-file delivery](../../docs/engineering/generated-output-delivery.md). CI governance
+changes require human review; required lane identities and publisher write boundaries remain.
 
 Meridian keeps the Actions surface scoped to the current .NET 10 solution, browser workstation,
 retained Windows desktop shell, provider smoke checks, safe publish output, release packaging, and
@@ -97,8 +110,12 @@ collector and desktop publication still run their publish and release-evidence s
 Lane artifacts use compression level 1 to reduce compression CPU time, with a possible increase
 in archive size. Browser evidence includes the actual Vite output in
 `src/Meridian.Ui/wwwroot/workstation/` plus build logs; workflow evidence also retains its hygiene
-log. Every lane still runs on every applicable trigger, uploads evidence on success or failure,
-and must succeed before the stable `quality-gate` can pass. Cache savings depend on cache warmth
+log. The .NET lane skips PRs only when the complete git diff contains recognized narrative docs
+or diagram/image assets. Root Markdown and those assets under `docs/` and `archive/docs/`
+qualify; source, build/workflow changes, metadata and unknown paths require .NET. Empty diffs
+also require .NET. Main, merge queues and manual runs always run it. The stable `quality-gate`
+always reports, requires successful change detection, and accepts only that explicit .NET skip;
+failed, cancelled or unexpectedly skipped lanes fail the gate. Cache savings depend on cache warmth
 and network conditions; compare lane durations in `artifacts/ci-summary/` and Actions step timings
 before claiming an end-to-end speedup.
 
@@ -110,9 +127,9 @@ before claiming an end-to-end speedup.
 | `quality-gate` | `Meridian CI` (`meridian-ci.yml`) fans out parallel evidence lanes and finishes with one stable `quality-gate` aggregator. `quality-gate` is one of four GitHub Actions contexts the administrator rollout in [CI/CD ownership and rollout](../../docs/engineering/ci-cd-optimization.md#administrator-rollout) asks to be required for `main` (`quality-gate`, `Secret Scan`, `Analyze csharp`, `Analyze javascript-typescript`); `integration-gate` is an optional companion. Required contexts are set in repository settings, not by these files; the owner confirms them, and path-filtered specialist checks are not required. Which tier of local verification applies to a change is defined in [solo-developer workflow](../../docs/ai/solo-developer-workflow.md#verification-tiers). |
 | `verify-dotnet` | `Meridian CI` .NET lane plus local `bash scripts/ci.sh --lane verify-dotnet`. |
 | `verify-browser` | `Meridian CI` browser lane plus local `bash scripts/ci.sh --lane verify-browser`. |
-| `verify-docs` | `Meridian CI` docs/source/AI lane and shared maintained generation; Documentation Automation retains diagram/rules validation, and Roadmap Source Docs retains phase scope/schema checks plus standalone manual generation. |
+| `verify-docs` | `Meridian CI` owns automatic docs/source/AI, rules/memory, diagram generation, dashboard regression and freshness checks. Documentation Automation is manual-only; Roadmap Source Docs retains phase scope/schema checks and standalone manual generation. |
 | `verify-workflows` | `Meridian CI` workflow hygiene lane plus lane manifest validation. |
-| `verify-fast` | Local aggregate of `verify-dotnet` and `verify-browser`. |
+| `verify-fast` | `make verify-fast` and `bash scripts/ci.sh --lane verify-fast` both run the complete `verify-dotnet` and `verify-browser` lanes, including their static ratchets. |
 | `targeted-test` | `Targeted Test` (`targeted-test.yml`) for manually dispatched GitHub-hosted curated lanes. |
 | `schema-control` | `PostgreSQL Schema Control` (`schema-control.yml`) for migration execution, catalog/policy validation, and generated schema/data-object drift checks. |
 | `verify-full` | Nightly/manual CI coverage lane and local `make verify-full`. |
@@ -131,36 +148,91 @@ fatal even if those diagnostic builds pass, and no test shards start. The runner
 the solution enables every selected project in `Release` without remapping its configuration.
 Explicit `--project` overrides and other configurations keep the serial build path.
 
-`verify-dotnet` sets `MERIDIAN_CI_TEST_MAX_PARALLEL=2` on its hosted runner. Restore,
+Hosted `verify-dotnet` and `verify-browser` each run as one job that executes the lane, proves
+its roster and reports the verdict. Measured PR runs spent far longer waiting for hosted runners
+than executing, and every job in a chain is a fresh wait, so the earlier builder → shard →
+verdict chain (`build-workstation`, `dotnet-shard (K/N)`, `browser-shard (K/N)`) was folded
+into the lane jobs. The `.NET` lane went from five queued hops before `quality-gate` to one.
+
+`verify-dotnet` sets `MERIDIAN_CI_DOTNET_SHARD=1/1` and runs the complete
+`bash scripts/ci.sh --lane verify-dotnet`, which builds and validates the workstation bundle from
+the lockfile (`ensure-workstation-assets.py`) before MSBuild evaluates the host. The same job then
+runs `merge-dotnet-shard-summaries.py --expected-shards 1` over its own summary, which rejects the
+run unless the lane reported for one commit, ran every default roster entry exactly once, and no
+entry failed. It publishes `meridian-ci-dotnet-<run>-<attempt>`. A local or unsharded run still
+executes the whole lane.
+
+`verify-dotnet` also classifies the pull request itself with `detect-dotnet-changes.py`, so it
+does not queue behind the `changes` job. On a docs-only PR it runs, skips its .NET steps and
+reports success; `quality-gate` fails unless its decision equals the `changes` job's decision.
+`changes` still feeds `service-backed-integrations` and `integration-gate`.
+
+`verify-browser` sets `MERIDIAN_CI_BROWSER_SHARD=1/1`, runs install, UI contract generation,
+lint, the strict typecheck, the test files (`run-vitest-stable.mjs`), the production bundle and
+its validation, then `merge-vitest-shards.mjs --expected-shards 1`, which rejects the run unless
+every dashboard test file in the checkout ran exactly once with no failure. It publishes
+`meridian-ci-browser-<run>-<attempt>`. `vitest-files.mjs` is the single definition of the
+test-file roster for both the runner and the verdict. No change classification may skip it.
+
+`run-dotnet-ci-tests.py --shard K/N` and `run-vitest-stable.mjs --shard K/N` still derive
+deterministic disjoint slices. To shard again when runner capacity allows, restore a shard
+matrix and a downstream verdict job together and raise `--expected-shards` to match; two .NET
+runners with two processes each reach the floor set by the longest single test process.
+
+The .NET lane sets `MERIDIAN_CI_TEST_MAX_PARALLEL=2` on its hosted runner, the reviewed
+per-runner process count. Restore,
 formatting, static checks, the web-host build, and test-project build retain their order; only
 the already-built test shards overlap. The runner defaults to one test process locally and accepts an explicit
 `--max-parallel` override. Each shard writes separate TRX and console logs; its temporary
 fixture files are isolated outside uploaded results and removed after the process exits.
 The JSON/Markdown summaries retain every result in roster order and include elapsed durations.
 All shards are attempted after a test failure, and the lane fails if any shard fails. The
-test filters, complete project roster, catch-all shard, and hang timeout are unchanged.
+complete project roster, catch-all shard, and hang timeout are unchanged.
 
-Golden Path starts its browser, WPF, and pilot harness jobs independently. The existing
-`Pilot Acceptance Evidence` check waits for all three and rejects failure, cancellation,
-or skipped validation. Uploaded harness artifacts are diagnostic evidence, not a substitute
-for that final gate. These scheduling changes require human governance review. Compare
-hosted job and shard timings separately from runner queue delays before claiming a speedup.
+`Meridian.Tests.Ui.WorkstationEndpointsTests` starts a host for each test and xUnit runs one class
+serially, so it was the longest unit in the roster: about 13 of the lane's 20 minutes on one
+process. The runner now selects it as three disjoint process shards by method-name prefix
+(`core-ui-workstation-endpoints-map`, `core-ui-workstation-endpoints-a-c`, and the base
+`core-ui-workstation-endpoints`, which keeps every method the other two do not name, including
+tests added later). The same tests run once each; only the process they run in changes. With two
+processes the lane's test time is unchanged. The shorter longest shard is what lets a higher
+process count help, and that promotion still follows the
+[benchmark criteria](../../docs/engineering/ci-cd-optimization.md#benchmark-promotion-criteria).
+
+`make test` and `make pre-pr` restore the solution and use the same default test-project/shard
+roster as `run-dotnet-ci-tests.py`. `test-unit` remains the focused C# iteration command.
+
+Demo Smoke builds the focused `Meridian.Demo.Tests` project instead of compiling all of
+`Meridian.Tests` and filtering execution. Its 26 cases retain their existing assertions and
+namespaces. The CLI seed keeps normal `dotnet run` restore/build behavior; serve and reset
+reuse that Release output with `--no-build`, with the same cleared environment defaults.
+The solution and canonical test roster include the project, and the shared PostgreSQL gate
+runs its eight integration cases as the required `demo-integrations` evidence suite.
+
+Golden Path starts its browser and pilot harness jobs independently on pull requests and
+`main` pushes. Its `WPF W4 Acceptance` Windows job runs only on manual dispatch: Windows Desktop
+Build already runs the whole WPF suite, `Category=W4Acceptance` included, for every change to
+WPF or any project WPF compiles against, and a test walks the project graph to keep that path
+filter complete. The `Pilot Acceptance Evidence` check waits for all three jobs; it requires
+success from each on manual runs and accepts only a skipped WPF job otherwise. Failure,
+cancellation, an unexpected skip or an unknown event fails it. Uploaded harness artifacts are
+diagnostic evidence, not a substitute for that final gate. These scheduling changes require
+human governance review. Compare hosted job timings separately from runner queue delays before
+claiming a speedup.
 
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
-| Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET`, browser workstation, docs/source/AI, and workflow-hygiene lanes in parallel, then reports the stable `quality-gate` aggregator. Calls shared PostgreSQL integrations and always reports their separate `integration-gate` companion. Required-check changes need administrator rollout and human review. | Lane summaries, build logs, TRX summaries, docs outputs, workflow-hygiene and PostgreSQL integration evidence |
-| Service-backed Integrations | `service-backed-integrations.yml` | Reusable calls from Meridian CI and Production Certification | Runs both deterministic integration projects independently against disposable PostgreSQL, validates every TRX and both required prefixes, and retains coverage plus schema evidence. Fork PRs use the event commit and read-only permissions without production secrets. | TRX/Cobertura/skip evidence, PostgreSQL schema dump and table/migration-ledger inventories |
+| Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET` and browser workstation (one job each that runs the lane and proves its roster), docs/source/AI, and workflow-hygiene lanes in parallel, then reports the stable `quality-gate` aggregator. Calls shared PostgreSQL integrations and always reports their separate `integration-gate` companion. Required-check changes need administrator rollout and human review. | Lane summaries, build logs, TRX summaries, docs outputs, workflow-hygiene and PostgreSQL integration evidence |
+| Service-backed Integrations | `service-backed-integrations.yml` | Reusable calls from Meridian CI and Production Certification | Runs the Meridian, Direct Lending and Demo integration projects independently against disposable PostgreSQL, runs the Meridian suite as two declared processes with separate databases, validates every TRX, all three required suite prefixes and both process prefixes, and retains coverage plus schema evidence for each database. Fork PRs use the event commit and read-only permissions without production secrets. | TRX/Cobertura/skip evidence, PostgreSQL schema dump and table/migration-ledger inventories |
 | CI | `ci.yml` | Pull requests, pushes to `main`, merge groups, nightly, manual | Runs Secret Scan on PRs, main pushes and merge groups. Nightly/manual `main` runs retain full coverage and scenario evidence; canonical Meridian CI owns .NET/browser/docs checks. | Secret scan SARIF/evidence and nightly coverage artifacts |
-| CodeQL | `codeql.yml` | Pull requests, pushes to `main`, weekly schedule, manual, reusable release gate | Runs GitHub CodeQL static analysis for C# and JavaScript/TypeScript. C# uses an explicit .NET 10 restore/build (`build-mode: manual`); JavaScript/TypeScript uses `build-mode: none`. | Security alerts and retained SARIF evidence |
-| Targeted Test | `targeted-test.yml` | Manual only | Runs a whitelisted hosted validation mode when local machine capacity, locks, or long-running suites make local validation impractical. Modes include filtered .NET, browser workstation, docs/source, WPF dev loop, WPF route, and desktop smoke. | Targeted TRX, browser bundle, docs/source, WPF validation, or desktop smoke artifacts |
-| Golden Path Validation | `golden-path-validation.yml` | Golden-path contract, browser W4, WPF W4, or manual changes | Runs browser `test:w4`, Windows `Category=W4Acceptance`, and the pilot harness/dashboard checks in parallel. The stable `Pilot Acceptance Evidence` gate requires all three jobs to succeed; diagnostic evidence remains available on failure. | `pilot-acceptance-evidence`, `wpf-w4-acceptance-evidence` |
+| CodeQL | `codeql.yml` | Pull requests, pushes to `main`, weekly schedule, manual, reusable release gate | Runs GitHub CodeQL static analysis for C# and JavaScript/TypeScript. C# uses an explicit .NET 10 restore/build (`build-mode: manual`); JavaScript/TypeScript uses `build-mode: none`. On pull requests, `detect-codeql-languages.py` skips a language whose analysis the change cannot affect (documentation for both; dashboard-only changes for C#; .NET source and project files for JavaScript/TypeScript). The required `Analyze <language>` check still runs and passes; unknown paths and empty diffs analyze, and every other event always analyzes. | Security alerts and retained SARIF evidence |
+| Targeted Test | `targeted-test.yml` | Manual only | Runs a whitelisted hosted validation mode when local machine capacity, locks, or long-running suites make local validation impractical. Modes include filtered .NET, browser workstation, docs/source, WPF dev loop (optional filter or `build_only`), WPF route (`wpf_route=both` by default, or one route), and desktop smoke. | Targeted TRX, browser bundle, docs/source, WPF validation, or desktop smoke artifacts |
+| Golden Path Validation | `golden-path-validation.yml` | Golden-path contract, browser W4, or manual changes | Runs browser `test:w4` and the pilot harness/dashboard checks in parallel; Windows `Category=W4Acceptance` runs only on manual dispatch because Windows Desktop Build covers it otherwise. The stable `Pilot Acceptance Evidence` gate requires every expected job; diagnostic evidence remains available on failure. | `pilot-acceptance-evidence`, `wpf-w4-acceptance-evidence` |
 | Demo Smoke | `demo-smoke.yml` | Demo seed/CLI/onboarding changes or manual | Seeds the isolated demo workspace and boots the workstation on it, asserting the reconciliation and strategy screens render populated (HTTP 200, not empty, not 501), that seeded records survive a restart with `Seeded` provenance, and that `--reset-demo` refuses any non-demo root. A broken first-run fails here instead of a first evaluation. | `demo-smoke-evidence` |
-| Windows Desktop Build | `windows-desktop-build.yml` | WPF or WPF dependency changes, pushes to `main`, manual | Restores and builds one isolated Windows graph, then runs full WPF, dev-loop, both routes, supervisor and setup slices with separate TRX files and aggregate failure reporting. Desktop smoke publish runs on `main`, manual request, or PR changes to the WPF/publish graph. | WPF validation bundle and optional desktop smoke publish output |
-| WPF Dev Loop Validation | `wpf-dev-validation.yml` | Manual only | Calls the shared Windows runner for the dev-loop slice, with optional filter/build-only input. | WPF dev-loop evidence |
-| WPF Route Validation | `wpf-route-validation.yml` | Manual only | Calls the shared Windows runner for both retained route filters, reusing one build. | Route validation evidence |
-| Documentation Automation | `documentation.yml` | All pull requests, pushes to `main`, merge groups, manual | Retains the docs rules and memory checks on every event. Meridian CI `verify-docs` owns the shared docs-only catalog convergence and freshness validation for pull requests to `main`, `main` pushes and merge groups; this workflow runs that same catalog (core docs, Mermaid/UI diagrams, advisory UML, workflow outputs) only for the events Meridian CI does not receive (pull requests to other branches and manual runs), so each event is validated once. Unrestricted triggers cover every tracked-file input. UML binaries remain outside the required freshness delta; a documentation `health_score` drop of more than 10 points still fails when a baseline exists. | Dashboard delta, generated-repair patch/drift report, maintained-generation report and logs |
+| Windows Desktop Build | `windows-desktop-build.yml` | Changes to WPF or any project in its reference graph (kept complete by a test), pushes to `main`, manual | Restores and builds one isolated Windows graph, then runs full WPF, dev-loop, both routes, supervisor and setup slices with separate TRX files and aggregate failure reporting. Desktop smoke publish runs on `main`, manual request, or PR changes to the WPF/publish graph. | WPF validation bundle and optional desktop smoke publish output |
+| Documentation Automation | `documentation.yml` | Manual only | Explicit documentation refresh using the shared catalog, rules/memory checks, dashboard regression check and freshness validation. All automatic documentation validation belongs to Meridian CI `verify-docs`. UML binaries remain outside the required freshness delta. | Dashboard delta, generated-repair patch/drift report, maintained-generation report and logs |
 | PostgreSQL Schema Control | `schema-control.yml` | PostgreSQL migrations, public contracts, schema-control registry/policies/tooling, generated database docs, or manual | Applies all registered SQL migrations to disposable PostgreSQL 16, extracts `pg_catalog`, inventories public C# data objects, evaluates policy and migration safety rules, and rejects stale deterministic manifests or diagrams. PRs compare against the event's base SHA; manual runs require `baseline_ref`. Manual `snapshot` mode uploads refresh candidates without writing to the repository. | Candidate manifests, generated docs/diagrams, policy report, schema diff, resolved baseline/candidate SHAs, and run summary |
-| Roadmap Source Docs | `roadmap-source-docs.yml` | Roadmap/source/status/architecture/source-README changes, PR description/label corrections, or manual | Enforces PR phase scope and validates roadmap/source registries. Metadata edits receive a fresh scope check. Automatic rendering belongs to Documentation Automation; manual runs use the shared catalog and freshness checker. | Manual generation evidence |
+| Roadmap Source Docs | `roadmap-source-docs.yml` | Roadmap/source/status/architecture/source-README changes, PR description/label corrections, or manual | Enforces PR phase scope and validates roadmap/source registries. Metadata edits receive a fresh scope check. Automatic rendering belongs to Meridian CI `verify-docs`; manual runs use the shared catalog and freshness checker. | Manual generation evidence |
 | Roadmap Tools (Manual) | `roadmap-tools-manual.yml` | Manual only | Runs individual roadmap tooling operations on demand — fixture-enum validation, roadmap evidence-file validation, normalized render, or phase-scope enforcement — selected through the `script` dispatch input. | Normalized roadmap render output when `render`/`all` is selected |
 | Maintenance | `maintenance.yml` | Workflow/docs/tooling changes, weekly schedule, manual | Validates tooling metadata and its distinct actionlint configuration. Canonical lanes own duplicate hygiene/AI contract/navigation checks on PR/push; weekly/manual Maintenance repeats those checks. Schedule/manual runs cannot be cancelled by ordinary pushes. | None |
 | Dependency Lock Candidates | `dependency-locks.yml` | Restore-input PRs, manual | Generates and verifies isolated Linux portable and Windows portable/x64/ARM64 NuGet lock profiles. Adoption remains explicit after native proof and review; ordinary restores retain their defaults. | Candidate lockfiles, input fingerprints, inventory and restore logs |
@@ -169,14 +241,13 @@ hosted job and shard timings separately from runner queue delays before claiming
 | Generated Repair Publisher | `generated-repair-publish.yml` | Completed Generated Repair workflow; PR merges into `main`, main pushes, daily 05:23 UTC, manual refresh | Validates provenance, refs, paths, generated blocks and a reproduced merge before an App writes an eligible PR branch. Per-source-run concurrency and bounded stale-ref retries preserve independent repairs. Serialized refresh scans queue every eligible stale same-repository open PR, follow API pagination and pace dispatches. Active/successful trusted requests suppress duplicates; failed/cancelled requests remain retryable. Unmerged closures are excluded. No protected-main writes. | Publisher outcome, refresh dispatch counts and workflow summary |
 | AI Navigation Refresh | `ai-navigation-refresh.yml` | Weekly, manual on the default ref | Coordinates navigation/recent changes, structure/workflow overview and documentation health; retains the 14-day freshness check. A separate trusted publisher opens or updates `automation/ai-navigation-refresh` using an App token so checks run. | Maintenance patch/report and ordinary refresh PR |
 | Provider Validation | `provider-validation.yml` | Weekly or manual | Runs Wave 1 validation and prepares the DK1 review packet plus pending operator sign-off template. Final DK1 exit evidence remains fail-closed until the required owners sign and validate the template. | Provider validation review evidence |
-| Publish Smoke | `publish-smoke.yml` | Manual, reusable release gate | Runs `build/scripts/publish/publish.ps1` for a selected Windows runtime. The `web-workstation`/`win-x64` lane starts the exact published artifact through an isolated production-authenticated install, fetches readiness, health, the workstation shell, and a referenced asset, then generates `release-evidence.json`. | Publish output, installed-startup receipt/probes, and release evidence manifest |
-| Desktop Standalone Publish | `desktop-standalone-publish.yml` | Manual only | Publishes a desktop standalone `win-x64` executable and uploads the output. | Desktop standalone output |
-| Desktop Installer Packaging | `desktop-installer-packaging.yml` | Tag pushes (`v*`), manual signed rehearsal, opt-in Sunday rehearsal | Validates tag eligibility, increasing MSIX versions and signing prerequisites before same-commit CI, security, certification and installed startup smoke. Shared Windows preflight gates x64/ARM64 MSIX packaging and native lifecycle certification; a clean x64 job certifies the exact consumer EXE through startup, repair, preservation and N-1 upgrade/rollback. Promotion requires all three digest-bound lifecycle receipts. Manual/scheduled rehearsals cannot publish. An always-run readiness summary identifies missing gates and next actions. Human governance review precedes activation. | Family/runtime-qualified SBOMs, checksums, release manifests, lifecycle receipts, predecessor evidence, certified packages and readiness summary |
+| Publish Smoke | `publish-smoke.yml` | Manual, reusable release gate | Runs `build/scripts/publish/publish.ps1` for a selected Windows runtime; dispatch `project=desktop` for a standalone desktop executable. The `web-workstation`/`win-x64` lane starts the exact published artifact through an isolated production-authenticated install, fetches readiness, health, the workstation shell, and a referenced asset, then generates `release-evidence.json`. | Publish output, installed-startup receipt/probes, and release evidence manifest |
+| Desktop Installer Packaging | `desktop-installer-packaging.yml` | Tag pushes (`v*`), manual signed rehearsal, opt-in Sunday rehearsal | Validates tag eligibility, increasing MSIX versions and signing prerequisites before same-commit CI, security, certification and installed startup smoke. Shared Windows preflight gates MSIX packaging and native lifecycle certification for the version-defined envelope (Windows x64 for 0.1.0, x64/ARM64 otherwise); a clean x64 job certifies the exact consumer EXE through startup, repair, preservation and N-1 upgrade/rollback. Promotion requires all supported-family digest-bound lifecycle receipts and the P0 candidate evidence check. Manual/scheduled rehearsals cannot publish. An always-run readiness summary identifies missing gates and next actions. Human governance review precedes activation. | Family/runtime-qualified SBOMs, checksums, release manifests, lifecycle receipts, predecessor evidence, certified packages, durable audit bundle, P0 candidate report and readiness summary |
 | Release Readiness | `release-readiness.yml` | Monday at 08:23 UTC, manual | Checks certificate validity through the protected signing environment and recent successful native lifecycle/packaging runner assignments through the read-only Actions API. Missing, stale or unavailable evidence is unknown; this does not reserve runners or certify a release. | Commit/run/attempt-bound prerequisite JSON/Markdown and Actions summary, retained 90 days |
 | Desktop Evaluation Prerelease | `desktop-evaluation-prerelease.yml` | Manual | Publishes a **self-signed** `eval-v*` prerelease so people can install and evaluate Meridian before a production signing certificate exists. The preflight validates the entire dispatch version against an anchored allowlist, and PowerShell receives dispatch and matrix values only through environment variables. Runs the same WPF preflight gate, mints a throwaway certificate, and ships the public `.cer` so the MSIX is sideloadable. Deliberately separate from the production lane: its artifacts carry no verified publisher identity, are never `PRD-014` evidence, and are excluded from the production N-1 lookup. | Self-signed MSIX, signing certificate, checksums, SBOM |
-| Production Certification | `production-certification.yml` | Weekly, manual, reusable release gate (called on `v*` tags by `desktop-installer-packaging.yml`); no push trigger | Runs deterministic API/auth/PostgreSQL integrations with Cobertura coverage and zero tolerated skips, fails on current NuGet/npm vulnerabilities, executes an encrypted database plus data-root backup/clean-restore drill with RPO/RTO receipt, and rejects same-commit documentation drift. `Category=LiveProvider` tests remain outside the deterministic lane. | TRX/Cobertura/skip evidence, PostgreSQL schema dump plus table/migration-ledger inventories, dependency reports, encrypted recovery drill, and docs automation evidence |
-| Windows Desktop Build Support | `desktop-workflow-runner.yml`, `desktop-screenshot-capture.yml`, `desktop-user-manual.yml` | Manual only | Runs selected desktop workflows, captures desktop screenshots, or generates the desktop user manual. These workflows always upload artifacts; `desktop-screenshot-capture.yml` can additionally open a `peter-evans/create-pull-request` PR with the refreshed catalog when dispatched with `commit: true`. They never push commits directly. | Desktop workflow, screenshot, or manual artifacts; optional screenshot refresh PR |
-| Web Screenshot Capture | `web-screenshot-capture.yml` | Manual; relevant pull requests | Captures the default branch on dispatch and the proposed head on PRs, using lockfile-pinned dependencies and cached Chromium. Runs the screenshot harness tests, isolates and retries route failures, checkpoints the manifest, and validates fresh images before publication. Each run retains one archive with PNGs, manifest, and route summary, even on failure; setup failures never upload the committed catalog as fresh captures. Dispatch defaults to a refresh PR on `automation/web-screenshot-capture`; set `create_pr: false` for artifacts only. PR validation has read-only permissions. Duplicate dispatches share one concurrency lane. See the [browser screenshot guide](../../docs/screenshots/README.md#browser-screenshot-workflow). | One complete screenshot archive; Actions summary; optional refresh PR |
+| Production Certification | `production-certification.yml` | Weekly, manual, reusable release gate (called on `v*` tags by `desktop-installer-packaging.yml`); no push trigger | Runs deterministic API/auth/PostgreSQL integrations with Cobertura coverage and zero tolerated skips, fails on current NuGet/npm vulnerabilities, executes an encrypted database plus data-root backup/clean-restore drill with RPO/RTO receipt, and rejects same-commit documentation drift. Release calls also require a protected, exact-bound owner recovery completion and an independent objective evaluation. `Category=LiveProvider` tests remain outside the deterministic lane. | TRX/Cobertura/skip evidence, PostgreSQL schema dump plus table/migration-ledger inventories, dependency reports, encrypted recovery drill, and docs automation evidence |
+| Windows Desktop Build Support | `desktop-workflow-runner.yml`, `desktop-screenshot-capture.yml` | Manual only | Runs selected desktop workflows (the `full-manual` option generates the complete desktop user manual) or captures desktop screenshots. These workflows always upload artifacts; `desktop-screenshot-capture.yml` also runs every Monday, captures to `artifacts/` and validates before replacing `docs/screenshots/desktop/`, and opens a `peter-evans/create-pull-request` PR with the refreshed catalog on a per-run `automation/desktop-screenshot-capture-*` branch, closing older refresh PRs (dispatch input `create_pr`, default `true`). They never push commits directly. | Desktop workflow, screenshot, or manual artifacts; optional screenshot refresh PR |
+| Web Screenshot Capture | `web-screenshot-capture.yml` | Manual; weekly (Monday); relevant pull requests | Captures the default branch on dispatch and the proposed head on PRs, using lockfile-pinned dependencies and two isolated capture workers with explicit render readiness. Runs the screenshot harness tests, retries route failures, serializes manifest checkpoints, and validates fresh images before publication. The version-specific Chromium headless-shell cache is saved before capture; npm prefers cached downloads and emits timing data. Each run retains one archive with PNGs, manifest, and route summary, even on failure; setup failures never upload the committed catalog as fresh captures. Dispatch defaults to a refresh PR on a per-run `automation/web-screenshot-capture-<run>-<attempt>` branch (repository rules forbid force-pushing a shared branch) and closes older refresh PRs through `.github/actions/close-superseded-refresh-prs`; set `create_pr: false` for artifacts only. PR validation has read-only permissions. Dispatches and the weekly run share one concurrency lane. The `config` input must name a JSON file under `scripts/dev/`. Both screenshot workflows open refresh PRs with the `SCREENSHOT_PR_TOKEN` secret when set (so required checks run; the default token starts none) and share the bounded Chromium install in `.github/actions/install-playwright-chromium`. See the [browser screenshot guide](../../docs/screenshots/README.md#browser-screenshot-workflow). | One complete screenshot archive; Actions summary; optional refresh PR |
 | Provider Smoke Checks | `ibapi-smoke.yml`, `ibapi-runtime.yml`, `robinhood-options-smoke.yml` | Path-filtered/manual for stub smoke; scheduled/manual protected environment for official IB runtime | Runs provider smoke checks that are too specialized for the normal PR fast path. `IB API Smoke Build` compiles the local stub and runs `IBMarketDataClientRuntimeReconnectTests` with `EnableIbApiSmoke=true`; missing callbacks, missing/empty TRX, and failed or skipped results fail the lane. `IB API Official Runtime` builds against the official SDK on the protected paper runner and verifies paper socket reachability; it never receives credentials or runs on pull requests. | Reconnect TRX plus validated test-evidence JSON, smoke artifacts, and protected-run logs |
 | Copilot Setup Steps | `copilot-setup-steps.yml` | Copilot setup, relevant pushes/PRs, manual | Validates the GitHub Copilot hosted setup path for repository dependencies. | None |
 | Branch Cleanup | `branch-cleanup.yml` | Manual only | Deletes remote branches whose tips are already merged into `main` (by ancestry). Defaults to a dry run; it deletes only when dispatched with `confirm` set to `delete-merged-branches`, and never deletes the dispatching ref. | None |
@@ -312,6 +383,17 @@ Scheduled rehearsals use a separate concurrency group so even a disabled schedul
 cannot evict a pending production release; production tags and manual rehearsals keep their
 existing serialized group.
 
+For the first release, dispatch the existing coordinator with
+`rehearsal_version=0.1.0-rc.2` at the reviewed commit. The bounded ADR-019 envelope
+requires native Windows x64 MSIX and consumer EXE lifecycle receipts. Later versions
+retain ARM64 certification. `check-release-candidate.py` checks the durable bundle
+against `PRD-000` and `PRD-013`–`PRD-017` before upload or publication; publication
+recomputes that check, including on retries. The report covers candidate evidence,
+not tracker closure or administrator activation of required checks. The protected
+recovery-acceptance job consumes `MDC_RECOVERY_COMPLETION_JSON` only after the owner
+has reconciled and accepted that run's actual drill; missing or stale completion
+fails closed. See [the release procedure](../../docs/operators/deployment-packaging.md#one-commit-candidate-train).
+
 ```powershell
 pwsh ./build/scripts/install/install.ps1 -Mode Desktop -Architecture x64 -SkipInstall -EnableReadyToRun -NoTrustCert -NoNotify
 pwsh ./build/scripts/install/install.ps1 -Mode Desktop -Architecture ARM64 -SkipInstall -EnableReadyToRun -NoTrustCert -NoNotify
@@ -345,7 +427,7 @@ Documentation automation and generated repair:
 ```powershell
 # Complete browser/documentation generation in the current checkout.
 python build/scripts/run-maintained-generation.py
-# Documentation-only convergence used by Documentation Automation.
+# Documentation-only convergence used by verify-docs and manual Documentation Automation.
 python build/scripts/run-maintained-generation.py --docs-only
 # Pinned merge and full generation in a disposable checkout; leaves this branch unchanged.
 git fetch origin main

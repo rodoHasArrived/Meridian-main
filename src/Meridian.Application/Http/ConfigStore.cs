@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Meridian.Application.ProviderRouting;
 using Meridian.Application.Backfill;
 using Meridian.Core.Config;
 using Meridian.Core.IO;
@@ -38,6 +39,7 @@ public sealed class ConfigStore
     private static readonly TimeSpan WriteLockTimeout = TimeSpan.FromSeconds(30);
     // Resolved per use so loads after logging bootstrap reach the configured sinks.
     private static Serilog.ILogger Log => LoggingSetup.ForContext<ConfigStore>();
+    private readonly ProviderCredentialOwnershipPolicy _ownershipPolicy;
 
     /// <summary>
     /// Gets the path to the configuration file.
@@ -48,17 +50,16 @@ public sealed class ConfigStore
     /// Creates a new ConfigStore with the default configuration path resolution.
     /// </summary>
     public ConfigStore()
-    {
-        ConfigPath = ResolvePath(null);
-    }
+        : this(null) { }
 
     /// <summary>
     /// Creates a new ConfigStore with a custom configuration path.
     /// </summary>
     /// <param name="configPath">Full or relative path to the configuration file.</param>
-    public ConfigStore(string? configPath)
+    public ConfigStore(string? configPath, ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
     {
         ConfigPath = ResolvePath(configPath);
+        _ownershipPolicy = ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
     }
 
     private static string ResolvePath(string? configPath)
@@ -110,6 +111,12 @@ public sealed class ConfigStore
     /// </summary>
     public AppConfig Load() => LoadConfig(ConfigPath);
 
+    /// <summary>Saved setting impacts and host-lifetime pending activation; contains no setting values.</summary>
+    public ConfigurationChangeStatus GetChangeStatus() => ConfigurationChangeTracker.ForPath(ConfigPath).Status;
+
+    /// <summary>Conservative activation requirement for a configuration field, also exposed by effective settings.</summary>
+    public static ConfigurationChangeImpact GetSettingImpact(string path) => ConfigurationChangeTracker.Classify(path);
+
     /// <summary>Loads existing configuration without substituting defaults when authoritative state cannot be read.</summary>
     public AppConfig LoadRequired()
     {
@@ -121,6 +128,28 @@ public sealed class ConfigStore
 
     // The callback must be synchronous and must not reenter configuration persistence.
     internal Task<T> UpdateRequiredAsync<T>(Func<AppConfig, (AppConfig Config, T Result)> update, CancellationToken ct = default)
+        => UpdateCoreAsync(LoadRequired, update, ct);
+
+    // Vault checks and template publication share the same ownership lease as credential writes.
+    internal async Task<T> UpdateRequiredWithLeaseAsync<T>(
+        Func<AppConfig, CancellationToken, Task<(AppConfig Config, T Result)>> update, CancellationToken ct)
+    {
+        using var lease = await AcquireWriteLockAsync(ct).ConfigureAwait(false);
+        var current = LoadRequired();
+        var (next, result) = await update(current, ct).ConfigureAwait(false);
+        ct.ThrowIfCancellationRequested();
+        if (!ReferenceEquals(current, next))
+            await SaveCoreAsync(next, ct).ConfigureAwait(false);
+        return result;
+    }
+
+    /// <summary>
+    /// Applies a checked update to persisted configuration. The callback may read local evidence
+    /// under the same lock as the commit. It must not perform network I/O or reenter configuration writes.
+    /// </summary>
+    public Task<T> UpdateRequiredCheckedAsync<T>(
+        Func<AppConfig, CancellationToken, Task<(AppConfig Config, T Result)>> update,
+        CancellationToken ct = default)
         => UpdateCoreAsync(LoadRequired, update, ct);
 
     /// <summary>
@@ -146,18 +175,32 @@ public sealed class ConfigStore
         return UpdateCoreAsync<object?>(LoadForUpdate, current => (update(current), null), ct);
     }
 
-    private async Task<T> UpdateCoreAsync<T>(
+    private Task<T> UpdateCoreAsync<T>(
         Func<AppConfig> load,
         Func<AppConfig, (AppConfig Config, T Result)> update,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(update);
+        return UpdateCoreAsync(load, (current, _) => Task.FromResult(update(current)), ct);
+    }
+
+    private async Task<T> UpdateCoreAsync<T>(
+        Func<AppConfig> load,
+        Func<AppConfig, CancellationToken, Task<(AppConfig Config, T Result)>> update,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(update);
         using var lease = await AcquireWriteLockAsync(ct).ConfigureAwait(false);
         var current = load();
-        var (next, result) = update(current);
+        var (next, result) = await update(current, ct).ConfigureAwait(false);
         ct.ThrowIfCancellationRequested();
         if (!ReferenceEquals(current, next))
-            await SaveCoreAsync(next, ct).ConfigureAwait(false);
+        {
+            var snapshot = ProviderConfigurationCredentialGuard.Prepare(next, _ownershipPolicy);
+            await SaveCoreAsync(snapshot, ct).ConfigureAwait(false);
+            var applied = await ApplyToRuntimeAsync(current, snapshot, ct).ConfigureAwait(false);
+            ConfigurationChangeTracker.ForPath(ConfigPath).Record(current, snapshot, applied);
+        }
         return result;
     }
 
@@ -194,15 +237,76 @@ public sealed class ConfigStore
     /// </summary>
     public async Task SaveAsync(AppConfig cfg, CancellationToken ct = default)
     {
+        var snapshot = ProviderConfigurationCredentialGuard.Prepare(cfg, _ownershipPolicy);
         using var lease = await AcquireWriteLockAsync(ct).ConfigureAwait(false);
-        await SaveCoreAsync(cfg, ct).ConfigureAwait(false);
+        var current = LoadForUpdate();
+        await SaveCoreAsync(snapshot, ct).ConfigureAwait(false);
+        var applied = await ApplyToRuntimeAsync(current, snapshot, ct).ConfigureAwait(false);
+        ConfigurationChangeTracker.ForPath(ConfigPath).Record(current, snapshot, applied);
+    }
+
+    /// <summary>
+    /// Offers a durably saved document to the runtime appliers attached to this file. The save has already
+    /// succeeded, so applier failures and cancellation become <see cref="ConfigurationApplyKind.Deferred"/>
+    /// outcomes (restart required) instead of failing the save.
+    /// </summary>
+    private async Task<IReadOnlyList<ConfigurationApplyEntry>?> ApplyToRuntimeAsync(
+        AppConfig previous,
+        AppConfig next,
+        CancellationToken ct)
+    {
+        var appliers = ConfigurationRuntimeAppliers.For(ConfigPath);
+        if (appliers.Count == 0)
+            return null;
+
+        var changedPaths = ConfigurationChangeTracker.ChangedPaths(previous, next);
+        if (changedPaths.Count == 0)
+            return null;
+
+        var entries = new List<ConfigurationApplyEntry>();
+        foreach (var applier in appliers)
+        {
+            var handled = changedPaths.Where(applier.Handles).ToArray();
+            if (handled.Length == 0)
+                continue;
+            if (applier.ReconcilePendingPaths)
+            {
+                handled = handled.Concat(GetChangeStatus().PendingChanges.Select(change => change.Path).Where(applier.Handles))
+                    .Distinct(StringComparer.Ordinal).ToArray();
+            }
+
+            try
+            {
+                var result = await applier.ApplyAsync(previous, next, handled, ct).ConfigureAwait(false);
+                entries.AddRange(result.Where(entry => handled.Contains(entry.Path, StringComparer.Ordinal)));
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                Log.Warning("Runtime apply by {Applier} was cancelled after the configuration was saved; {PathCount} setting(s) need a restart",
+                    applier.Name, handled.Length);
+                entries.AddRange(handled.Select(path => new ConfigurationApplyEntry(path, ConfigurationApplyKind.Deferred,
+                    "The runtime apply was cancelled; restart the host to use the saved value.")));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Runtime apply by {Applier} failed after the configuration was saved; {PathCount} setting(s) need a restart",
+                    applier.Name, handled.Length);
+                entries.AddRange(handled.Select(path => new ConfigurationApplyEntry(path, ConfigurationApplyKind.Deferred,
+                    "The running host could not apply this change; restart the host to use the saved value.")));
+            }
+        }
+
+        return entries.Count == 0 ? null : entries;
     }
 
     private async Task SaveCoreAsync(AppConfig cfg, CancellationToken ct)
     {
+        // Both whole-document saves and every read-modify-write reach this final check.
+        // Keep raw legacy reads available so explicit migration/purge can remove the fields.
+        var snapshot = ProviderConfigurationCredentialGuard.Prepare(cfg, _ownershipPolicy);
         try
         {
-            var json = JsonSerializer.Serialize(cfg, AppConfigJsonOptions.Write);
+            var json = JsonSerializer.Serialize(snapshot, AppConfigJsonOptions.Write);
             var dir = Path.GetDirectoryName(ConfigPath);
             if (!string.IsNullOrEmpty(dir))
             {
@@ -236,10 +340,11 @@ public sealed class ConfigStore
             }
 
             JsonObject root;
+            string? previousJson = null;
             if (File.Exists(ConfigPath))
             {
-                var json = await File.ReadAllTextAsync(ConfigPath, ct).ConfigureAwait(false);
-                root = ParseConfigRoot(json);
+                previousJson = await File.ReadAllTextAsync(ConfigPath, ct).ConfigureAwait(false);
+                root = ParseConfigRoot(previousJson);
             }
             else
             {
@@ -258,7 +363,14 @@ public sealed class ConfigStore
             root["FeatureCapabilities"] = section;
 
             var output = root.ToJsonString(AppConfigJsonOptions.Write);
+            using var candidate = JsonDocument.Parse(output);
+            ProviderConfigurationCredentialGuard.Validate(candidate.RootElement, _ownershipPolicy);
             await AtomicFileWriter.WriteAsync(ConfigPath, output, ct).ConfigureAwait(false);
+            RecordFeatureCapabilityChange(previousJson, output);
+        }
+        catch (ProviderConfigurationCredentialException)
+        {
+            throw;
         }
         catch (OperationCanceledException)
         {
@@ -268,6 +380,29 @@ public sealed class ConfigStore
         {
             throw new InvalidOperationException($"Failed to save feature capability overrides: {ex.Message}", ex);
         }
+    }
+
+    private void RecordFeatureCapabilityChange(string? previousJson, string nextJson)
+    {
+        try
+        {
+            var previous = string.IsNullOrWhiteSpace(previousJson)
+                ? CreateDefaultConfig(ConfigPath)
+                : ProjectDocument(previousJson);
+            ConfigurationChangeTracker.ForPath(ConfigPath).RecordFeatureCapabilities(previous, ProjectDocument(nextJson));
+        }
+        catch (Exception ex) when (ex is JsonException or InvalidDataException or NotSupportedException)
+        {
+            // A projection error cannot undo the durable save, and may include a literal config value.
+            Log.Warning("Saved configuration {ConfigPath} could not be tracked ({FailureType})", ConfigPath, ex.GetType().Name);
+        }
+
+        AppConfig ProjectDocument(string json)
+            => NormalizeLoadedConfig(
+                ConfigPath,
+                json,
+                JsonSerializer.Deserialize<AppConfig>(json, AppConfigJsonOptions.Read)
+                    ?? throw new InvalidDataException("Configuration document is JSON null."));
     }
 
     public string? TryLoadStatusJson()

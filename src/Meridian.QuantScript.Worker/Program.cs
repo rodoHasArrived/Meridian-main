@@ -44,7 +44,10 @@ internal static class Program
                 new StorageOptions { RootPath = request.Options.DefaultDataRoot });
             var backtestEngine = new BacktestEngine(
                 NullLogger<BacktestEngine>.Instance,
-                catalog);
+                catalog)
+            {
+                CanonicalCorporateActionQueries = new QuantDataBacktestSecurityMaster(dataContext)
+            };
             var executor = new InProcessQuantScriptExecutor(dataContext, backtestEngine, request.Options);
             var result = await executor.ExecuteAsync(
                 request.ReplayCells,

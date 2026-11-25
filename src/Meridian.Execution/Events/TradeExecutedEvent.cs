@@ -1,4 +1,6 @@
+using System.Text.Json.Serialization;
 using Meridian.Execution.Sdk;
+using Meridian.Ledger;
 
 namespace Meridian.Execution.Events;
 
@@ -61,6 +63,48 @@ public sealed record TradeExecutedEvent(
     string? StrategyId = null,
     string? RunId = null)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SettlementCurrency { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SourceMode { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<TradeExecutionFee>? Fees { get; init; }
+
+    /// <summary>Exact broker statement activity identity when the source supplied one.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? BrokerActivityId { get; init; }
+
+    internal TradeExecutedEvent FreezeFees() => this with
+    {
+        Fees = Fees is { Count: > 0 }
+            ? Array.AsReadOnly(Fees.OrderBy(fee => fee.FeeId, StringComparer.Ordinal).ToArray()) : null
+    };
+
+    internal bool HasSameEconomics(TradeExecutedEvent other)
+        => this with { Fees = null, BrokerActivityId = null } == other with { Fees = null, BrokerActivityId = null }
+            && (BrokerActivityId is null || other.BrokerActivityId is null
+                || string.Equals(BrokerActivityId, other.BrokerActivityId, StringComparison.Ordinal))
+            && (Fees ?? []).OrderBy(fee => fee.FeeId, StringComparer.Ordinal)
+                .SequenceEqual((other.Fees ?? []).OrderBy(fee => fee.FeeId, StringComparer.Ordinal));
+
+    /// <summary>
+    /// Accounting-evidence contract used by the producer. Zero identifies historical events;
+    /// current OMS fills use version one even when their accounting context is unavailable.
+    /// An absent version-one payload must block posting rather than imply a position direction.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int AccountingEvidenceVersion { get; init; }
+
+    /// <summary>
+    /// Exact opening and closing economics captured while the portfolio applies this fill.
+    /// A null value does not authorize reconstructing basis or short direction from realized P&amp;L.
+    /// Historical event JSON and the positional constructor remain unchanged when absent.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public TradeFillAccountingEvidence? AccountingEvidence { get; init; }
+
     /// <summary>
     /// Gross trade value, always positive. For a face-value fill the clean price is a
     /// percentage of par, so the price is scaled to a fraction of par before multiplying —
@@ -74,3 +118,6 @@ public sealed record TradeExecutedEvent(
             ? FillPrice / 100m
             : FillPrice * (ContractMultiplier > 0m ? ContractMultiplier : 1m));
 }
+
+/// <summary>A separately identified source fee; commission is not repeated here.</summary>
+public sealed record TradeExecutionFee(string FeeId, string Kind, decimal Amount, string Currency);

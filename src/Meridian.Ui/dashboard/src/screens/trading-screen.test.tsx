@@ -1,4 +1,7 @@
+import { useState, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { screen, fireEvent, waitFor, within } from "@testing-library/react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import userEvent from "@testing-library/user-event";
 import { resolveTradingRouteView, TradingScreen } from "@/screens/trading-screen";
 import * as api from "@/lib/api";
@@ -6,12 +9,26 @@ import { renderWithRouter, TestMemoryRouter, waitForAsyncEffects } from "@/test/
 import { WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
 import type { PaperSessionSummary, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
+vi.mock("@/lib/api/execution-audit.api", () => ({
+  searchExecutionAuditTrail: vi.fn().mockResolvedValue({ asOf: "2026-01-01T00:00:00Z", totalMatched: 0, returned: 0, entries: [], sourceAvailability: { executionAudit: true, operationsContinuity: false } })
+}));
+
 const paperPromotionEvidenceReferences = [
   "DK1_TRUST_PACKET_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
   "RUN_LINEAGE_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
   "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
   "RISK_CONTROLS_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567"
 ];
+
+vi.mock("@/lib/api/execution-workflows.api", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/api/execution-workflows.api")>("@/lib/api/execution-workflows.api");
+  return { ...actual,
+    previewExecutionOrder: vi.fn().mockImplementation(async () => ({ fingerprint: "test", canSubmit: true, requiresApproval: false,
+      evaluatedAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 30_000).toISOString(), checks: [] })),
+    getJournal: vi.fn().mockResolvedValue([]),
+    getJournalSummary: vi.fn().mockResolvedValue({ orders: 0, fills: 0, coverage: "incomplete", method: "FIFO operational attribution" })
+  };
+});
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -151,6 +168,7 @@ vi.mock("@/lib/api", async () => {
     evaluatePromotion: vi.fn().mockResolvedValue({ runId: "run-1", strategyId: "strat-1", strategyName: "S1", sourceMode: "backtest", targetMode: "paper", isEligible: true, sharpeRatio: 1.2, maxDrawdownPercent: 5, totalReturn: 10, reason: "Eligible", found: true, ready: true }),
     approvePromotion: vi.fn().mockResolvedValue({ success: true, promotionId: "promo-1", newRunId: "paper-1", reason: "approved", auditReference: "audit-promo-1", approvedBy: "operator-7" }),
     rejectPromotion: vi.fn().mockResolvedValue({ success: true, promotionId: "promo-reject-1", newRunId: null, reason: "Promotion rejected: Run breached risk gate.", auditReference: "audit-reject-1", approvedBy: "operator-7" }),
+    revokeLiveAuthorization: vi.fn(),
     getPromotionHistory: vi.fn().mockResolvedValue([{
       promotionId: "promo-1",
       strategyId: "strat-1",
@@ -178,10 +196,10 @@ vi.mock("@/lib/api", async () => {
 
 const data: TradingWorkspaceResponse = {
   metrics: [
-    { id: "m1", label: "Net P&L", value: "+$3,100", delta: "+2.1%", tone: "success" },
-    { id: "m2", label: "Open Orders", value: "4", delta: "+1", tone: "default" },
-    { id: "m3", label: "Fills", value: "13", delta: "+3", tone: "success" },
-    { id: "m4", label: "Risk", value: "Observe", delta: "0%", tone: "warning" }
+    { id: "pnl", label: "Net P&L", value: "+$3,100", delta: "+2.1%", tone: "success" },
+    { id: "orders", label: "Open Orders", value: "4", delta: "+1", tone: "default" },
+    { id: "fills", label: "Fills", value: "13", delta: "+3", tone: "success" },
+    { id: "risk", label: "Risk", value: "Observe", delta: "0%", tone: "warning" }
   ],
   positions: [{ symbol: "AAPL", side: "Long", quantity: "100", averagePrice: "188.10", markPrice: "189.00", dayPnl: "+$90", unrealizedPnl: "+$90", exposure: "$18,900" }],
   openOrders: [{ orderId: "PO-1", symbol: "MSFT", side: "Buy", type: "Limit", quantity: "20", limitPrice: "414.20", status: "Working", submittedAt: "09:42:00 ET" }],
@@ -324,9 +342,20 @@ async function renderTradingScreen(
   initialEntry = "/trading",
   fundAccountId?: string | null
 ) {
-  const result = renderWithRouter(<TradingScreen data={screenData} fundAccountId={fundAccountId} />, { initialEntries: [initialEntry] });
+  const result = renderWithRouter(<WithHeaderRefresh><TradingScreen data={screenData} fundAccountId={fundAccountId} /></WithHeaderRefresh>, { initialEntries: [initialEntry] });
   await waitForAsyncEffects();
   return result;
+}
+
+/** Stands in for the shell: its button is the header Refresh, the one refresh control. */
+function WithHeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return (
+    <GlobalRefreshProvider sequence={sequence}>
+      <button type="button" onClick={() => setSequence((value) => value + 1)}>Header refresh</button>
+      {children}
+    </GlobalRefreshProvider>
+  );
 }
 
 async function openPromotionGate(user: ReturnType<typeof userEvent.setup>) {
@@ -345,6 +374,38 @@ async function openStrategyControls(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("TradingScreen", () => {
+  it("reopens a closed tool on a second explicit visit to the same task link and preserves its draft", async () => {
+    const user = userEvent.setup();
+    const route = "/trading#promotion-gate-panel";
+    renderWithRouter(<WithHeaderRefresh>
+      <Link to={route}>Follow promotion task</Link>
+      <TradingScreen data={data} />
+    </WithHeaderRefresh>, { initialEntries: [route] });
+    const gate = await screen.findByRole("dialog", { name: /backtest.*paper promotion gate/i });
+    await user.type(within(gate).getByLabelText("Approval reason"), "Retained review draft");
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog", { name: /backtest.*paper promotion gate/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    await waitForAsyncEffects();
+    expect(screen.queryByRole("dialog", { name: /backtest.*paper promotion gate/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("link", { name: "Follow promotion task" }));
+    const reopened = await screen.findByRole("dialog", { name: /backtest.*paper promotion gate/i });
+    expect(within(reopened).getByLabelText("Approval reason")).toHaveValue("Retained review draft");
+    expect(api.approvePromotion).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["#session-replay-panel", /session replay controls/i],
+    ["#promotion-gate-panel", /backtest.*paper promotion gate/i]
+  ])("opens the requested tool from an attention deep link %s", async (hash, name) => {
+    await renderTradingScreen(data, `/trading?fundAccountId=account-b${hash}`);
+    expect(await screen.findByRole("dialog", { name })).toBeVisible();
+    expect(api.approvePromotion).not.toHaveBeenCalled();
+    expect(api.startReplay).not.toHaveBeenCalled();
+  });
+
   it("retains source order and fill prices and identifies their unavailable currency", async () => {
     const user = userEvent.setup();
     await renderTradingScreen(data, "/trading/orders");
@@ -354,11 +415,10 @@ describe("TradingScreen", () => {
     expect(within(fill).getByText("948.20")).toBeInTheDocument();
     expect(order).not.toHaveTextContent("$414.20");
     expect(fill).not.toHaveTextContent("$948.20");
-    const basis = "Prices in source quote units · currency not supplied.";
-    expect(screen.getAllByText(basis)).toHaveLength(3);
-    expect(screen.getByRole("region", { name: /order detail for po-1/i })).toHaveTextContent(basis);
+    // The price basis is stated once for the page, not repeated under each table and the detail pane.
+    expect(screen.getAllByText("Prices are as quoted by the source; no currency was supplied.")).toHaveLength(1);
     await user.click(fill);
-    expect(screen.getByRole("region", { name: /fill detail for fl-1/i })).toHaveTextContent(basis);
+    expect(screen.getByRole("region", { name: /fill detail for fl-1/i })).toBeInTheDocument();
   });
 
   it("renders a VM-owned pending state while the cockpit data loads", async () => {
@@ -372,25 +432,52 @@ describe("TradingScreen", () => {
     expect(within(loading).getByLabelText("Trading loading dependencies")).toHaveTextContent("SnapshotsPending");
   });
 
-  it("renders the overview posture with the workflow strip and no blotters", async () => {
+  it("leads the overview with figures, then positions and orders, then secondary sections", async () => {
     await renderTradingScreen();
-    expect(screen.getByRole("region", { name: "Execution cockpit context" })).toBeInTheDocument();
+    const follows = (earlier: Element, later: Element) => Boolean(earlier.compareDocumentPosition(later) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const heading = screen.getByRole("region", { name: "Execution cockpit context" });
+    const headline = screen.getByLabelText("Trading headline metrics");
+    const positions = screen.getByRole("region", { name: "Position book and selected detail" });
+    const orders = screen.getByRole("region", { name: "Order blotter and selected detail" });
+    const posture = screen.getByRole("region", { name: "Trading readiness" });
+    const history = screen.getByRole("region", { name: "Paper session history and execution evidence" });
+    // One layout: title, headline figures, the main lists, then secondary sections.
+    expect([heading, headline, positions, orders, posture, history].every((element, index, all) => index === 0 || follows(all[index - 1], element))).toBe(true);
+    expect(within(positions).getByTestId("trading-position-source")).toHaveTextContent(/^Source: (Paper|Live) session/);
+    expect(within(positions).getByRole("link", { name: "Compare with Portfolio holdings" })).toHaveAttribute("href", "/portfolio#compare-sources");
+    expect(within(orders).getByRole("heading", { name: "Open orders" })).toBeInTheDocument();
+    // Secondary sections are collapsed by default, and no section is a heading with no content.
+    expect(posture.querySelector("details")).not.toHaveAttribute("open");
+    expect(history.querySelector("details")).not.toHaveAttribute("open");
+    expect(screen.queryByText("Trading readiness")).not.toBeInTheDocument();
+    // With no account in scope, one row picks it into the header scope; there is no picker box.
+    const accountSetup = screen.getByRole("region", { name: "Brokerage recovery" });
+    expect(within(accountSetup).queryByRole("heading", { name: "Brokerage recovery" })).not.toBeInTheDocument();
+    expect(follows(headline, accountSetup)).toBe(true);
     const workflowStrip = screen.getByRole("region", { name: "Workflow control strip" });
     expect(within(workflowStrip).getByRole("button", { name: /strategy controls/i })).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /session replay/i })).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /promotion gate/i })).toBeInTheDocument();
-    expect(within(workflowStrip).getByLabelText("Panel: None")).toBeInTheDocument();
+    expect(within(workflowStrip).queryByLabelText(/^Open panel:/)).not.toBeInTheDocument();
+    expect(within(workflowStrip).queryByText(/^Connection$/)).not.toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /open strategy controls panel/i })).toHaveAttribute("aria-expanded", "false");
-    // Route-scoped views: blotters live on their focused routes, not the overview.
-    expect(screen.queryByText("Live positions")).not.toBeInTheDocument();
-    expect(screen.queryByText("Open orders")).not.toBeInTheDocument();
   });
 
   it("renders the position book with wiring state on the positions route", async () => {
     await renderTradingScreen(data, "/trading/positions");
-    expect(screen.getByText("Live positions")).toBeInTheDocument();
+    expect(screen.getByTestId("trading-position-source")).toHaveTextContent(/^Source: (Paper|Live) session/);
+    expect(screen.queryByLabelText("Trading headline metrics")).not.toBeInTheDocument();
     expect(screen.queryByText("Open orders")).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Workflow control strip" })).not.toBeInTheDocument();
+  });
+
+  it("keeps account setup visible on orders and links to the full recovery workspace", async () => {
+    await renderTradingScreen(data, "/trading/orders");
+    expect(screen.queryByLabelText("Trading headline metrics")).not.toBeInTheDocument();
+    const recovery = screen.getByRole("region", { name: "Brokerage recovery" });
+    expect(within(recovery).getByRole("status", { name: "Brokerage recovery readiness" })).toHaveTextContent("No fund account in scope");
+    expect(within(recovery).getByRole("link", { name: "Review brokerage recovery" })).toHaveAttribute("href", "/trading#brokerage-recovery");
+    expect(within(recovery).queryByRole("button", { name: "Synchronize and reconcile" })).not.toBeInTheDocument();
   });
 
   it("resolves route views by exact path segment, not substring", () => {
@@ -408,16 +495,18 @@ describe("TradingScreen", () => {
 
     // No in-page route tab strip duplicating the sidebar.
     expect(screen.queryByRole("tablist", { name: "Trading routes" })).not.toBeInTheDocument();
-    // The route heading leads, ahead of the workspace-wide metrics.
+    // The route heading leads; workspace-wide metrics belong to the overview.
     const heading = screen.getByRole("region", { name: "Execution cockpit context" });
-    const metrics = screen.getByLabelText("Trading headline metrics");
-    expect(heading.compareDocumentPosition(metrics) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(heading).toBeInTheDocument();
+    expect(screen.queryByLabelText("Trading headline metrics")).not.toBeInTheDocument();
     expect(await screen.findByText("Open orders")).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Workflow control strip" })).not.toBeInTheDocument();
   });
 
   it("collapses brokerage recovery to one blocked row that reviews on the overview", async () => {
-    await renderTradingScreen(data, "/trading/orders?symbol=MSFT");
+    // A live brokerage with no account in scope stays blocked: only a known non-live
+    // environment turns the missing account into setup.
+    await renderTradingScreen({ ...data, brokerage: { ...data.brokerage, environment: "live" } }, "/trading/orders?symbol=MSFT");
 
     const recovery = screen.getByRole("region", { name: "Brokerage recovery" });
     expect(within(recovery).getByRole("status")).toHaveTextContent("Live trading blocked — recovery required");
@@ -427,13 +516,25 @@ describe("TradingScreen", () => {
       .toHaveAttribute("href", "/trading?symbol=MSFT#brokerage-recovery");
   });
 
-  it("keeps the full brokerage recovery panel on the trading overview", async () => {
-    await renderTradingScreen(data, "/trading?symbol=MSFT");
+  it("shows a paper brokerage with no account in scope as setup, not a recovery block", async () => {
+    await renderTradingScreen(data, "/trading/positions");
 
     const recovery = screen.getByRole("region", { name: "Brokerage recovery" });
-    // No fund account is in scope here, so the full panel's one next step is choosing one.
+    const status = within(recovery).getByRole("status", { name: "Brokerage recovery readiness" });
+    expect(status).toHaveTextContent("No fund account in scope");
+    expect(recovery).not.toHaveTextContent(/recovery required/i);
+    expect(recovery).not.toHaveTextContent("Live trading blocked");
+    // No scope picker is mounted here, so the row keeps its Review link to the overview.
+    expect(within(recovery).getByRole("link", { name: "Review brokerage recovery" }))
+      .toHaveAttribute("href", "/trading#brokerage-recovery");
+  });
+
+  it("shows the full brokerage recovery panel on the overview once a fund account is in scope", async () => {
+    await renderTradingScreen(data, "/trading?symbol=MSFT", "53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+
+    const recovery = screen.getByRole("region", { name: "Brokerage recovery" });
     expect(within(recovery).getByRole("heading", { name: "Brokerage recovery" })).toBeInTheDocument();
-    expect(within(recovery).getByText("Choose a fund account")).toBeInTheDocument();
+    expect(within(recovery).queryByText("Choose a fund account")).not.toBeInTheDocument();
     expect(within(recovery).queryByRole("link", { name: "Review brokerage recovery" })).not.toBeInTheDocument();
   });
 
@@ -527,7 +628,7 @@ describe("TradingScreen", () => {
     await user.click(strategyButton);
 
     expect(screen.getByRole("dialog", { name: /strategy lifecycle/i })).toHaveAttribute("id", "strategy-lifecycle-panel");
-    expect(within(workflowStrip).getByLabelText("Panel: Strategy controls")).toBeInTheDocument();
+    expect(within(workflowStrip).getByLabelText("Open panel: Strategy controls")).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /strategy controls panel is open/i })).toHaveAttribute("aria-expanded", "true");
   });
 
@@ -554,10 +655,10 @@ describe("TradingScreen", () => {
     await renderTradingScreen(data, "/trading/risk");
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalled());
     expect(screen.getByText(/Execution controls snapshot/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/Breaker Closed/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/breaker closed/i).length).toBeGreaterThan(0);
     const controls = screen.getByLabelText(/Execution controls snapshot: breaker closed/i);
     expect(within(controls).getByText("5000")).toBeInTheDocument();
-    expect(within(controls).getByText("BypassOrderControls (AAPL)")).toBeInTheDocument();
+    expect(within(controls).getByText("Bypass order controls (AAPL)")).toBeInTheDocument();
   });
 
   it("exposes a reachable kill switch on the browser lane and routes it through the confirmation gate", async () => {
@@ -671,7 +772,7 @@ describe("TradingScreen", () => {
     expect(screen.getAllByText("Blocked").length).toBeGreaterThan(0);
     expect(screen.getByText("Replay mismatch in server gate.")).toBeInTheDocument();
     expect(screen.getByText("DK1 trust gate")).toBeInTheDocument();
-    expect(screen.getAllByText("Review required")).toHaveLength(2);
+    expect(within(screen.getByRole("region", { name: "Trading readiness" })).getAllByText("Review required")).toHaveLength(2);
     expect(screen.getByText("Operator work items")).toBeInTheDocument();
     expect(screen.getByText("Execution evidence incomplete")).toBeInTheDocument();
     expect(screen.getByText("OrderRejected is missing actor, scope, and rationale.")).toBeInTheDocument();
@@ -702,7 +803,7 @@ describe("TradingScreen", () => {
     expect(within(confidence).queryByText("Disconnected")).not.toBeInTheDocument();
     expect(within(confidence).getByText("Complete and consistent broker evidence")).toBeInTheDocument();
     expect(screen.getByText("Overall: Blocked")).toBeInTheDocument();
-    rerender(<TestMemoryRouter initialEntries={["/trading"]}><TradingScreen data={{ ...data, readiness }} fundAccountId="22222222-2222-2222-2222-222222222222" /></TestMemoryRouter>);
+    rerender(<TestMemoryRouter initialEntries={["/trading"]}><WithHeaderRefresh><TradingScreen data={{ ...data, readiness }} fundAccountId="22222222-2222-2222-2222-222222222222" /></WithHeaderRefresh></TestMemoryRouter>);
     expect(within(confidence).queryByText("Connected · healthy")).not.toBeInTheDocument();
     expect(within(confidence).getAllByText("Broker unavailable")[0]).toBeInTheDocument();
   });
@@ -835,7 +936,7 @@ describe("TradingScreen", () => {
     });
 
     await renderTradingScreen(serverReadinessData);
-    await user.click(screen.getByRole("button", { name: /refresh trading readiness/i }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
 
     await waitFor(() => expect(api.getTradingReadiness).toHaveBeenCalledTimes(1));
     expect(screen.getByText("Overall: Review required")).toBeInTheDocument();
@@ -854,7 +955,7 @@ describe("TradingScreen", () => {
     vi.mocked(api.getTradingReadiness).mockResolvedValueOnce(serverReadinessData.readiness!);
 
     await renderTradingScreen(serverReadinessData, "/trading", fundAccountId);
-    await user.click(screen.getByRole("button", { name: /refresh trading readiness/i }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
 
     await waitFor(() => expect(api.getTradingReadiness).toHaveBeenCalledTimes(1));
     expect(api.getTradingReadiness).toHaveBeenCalledWith(expect.objectContaining({
@@ -902,7 +1003,7 @@ describe("TradingScreen", () => {
 
   it("refreshes execution controls after control-affecting actions", async () => {
     const user = userEvent.setup();
-    await renderTradingScreen(data, "/trading/orders");
+    await renderTradingScreen(data, "/trading/orders", "53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(1));
 
     await user.click(screen.getByRole("button", { name: /new order/i }));
@@ -910,6 +1011,7 @@ describe("TradingScreen", () => {
     const quantityInput = screen.getAllByRole("spinbutton")[0];
     await user.clear(quantityInput);
     await user.type(quantityInput, "10");
+    await waitFor(() => expect(screen.getByText("Checked; submission will revalidate.")).toBeVisible());
     const submitButton = screen.getByRole("button", { name: /submit order/i });
     expect(submitButton).toBeDisabled();
     expect(submitButton).toHaveAttribute("title", "Review the order preview and acknowledge before submitting.");
@@ -918,6 +1020,42 @@ describe("TradingScreen", () => {
     await user.click(submitButton);
 
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(2));
+  });
+
+  it("requires a reason to revoke a live grant and displays its retained outcome", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.getPromotionHistory).mockResolvedValueOnce([{
+      promotionId: "live-grant-1",
+      strategyId: "buy-and-hold",
+      strategyName: "Buy and Hold",
+      sourceRunType: "Paper",
+      targetRunType: "Live",
+      qualifyingSharpe: 1.2,
+      qualifyingMaxDrawdownPercent: 5,
+      qualifyingTotalReturn: 10,
+      promotedAt: "2026-01-01",
+      liveAuthorizationStatus: { state: "Active" },
+      liveAuthorization: {
+        fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749", allowedSymbols: ["AAPL"],
+        maxOrderNotional: 1200, currency: "USD", expiresAt: "2026-01-02T00:00:00Z"
+      }
+    }]);
+    vi.mocked(api.revokeLiveAuthorization).mockResolvedValueOnce({
+      authorizationId: "live-grant-1", actor: "operator-7",
+      reason: "Account mandate ended", revokedAt: "2026-01-01T12:00:00Z"
+    });
+
+    await renderTradingScreen();
+    const promotion = within(await openPromotionGate(user));
+    await user.click(await promotion.findByText("Revoke live authorization"));
+    const confirm = promotion.getByRole("button", { name: "Confirm revocation" });
+    expect(confirm).toBeDisabled();
+    await user.type(promotion.getByLabelText("Revocation reason"), "Account mandate ended");
+    await user.click(confirm);
+
+    expect(api.revokeLiveAuthorization).toHaveBeenCalledWith("live-grant-1", "Account mandate ended");
+    expect(await promotion.findByText(/Live authorization Revoked.*Account mandate ended/)).toBeVisible();
+    expect(promotion.queryByText("Revoke live authorization")).not.toBeInTheDocument();
   });
 
   it("passes valid operating fund account scope when submitting an order", async () => {
@@ -930,6 +1068,7 @@ describe("TradingScreen", () => {
     const quantityInput = screen.getAllByRole("spinbutton")[0];
     await user.clear(quantityInput);
     await user.type(quantityInput, "10");
+    await waitFor(() => expect(screen.getByText("Checked; submission will revalidate.")).toBeVisible());
     await user.click(screen.getByRole("checkbox", { name: /i reviewed the order preview and risk warnings/i }));
     await user.click(screen.getByRole("button", { name: /submit order/i }));
 
@@ -953,7 +1092,7 @@ describe("TradingScreen", () => {
 
   it("rejects direct order-ticket submits until the preview is acknowledged", async () => {
     const user = userEvent.setup();
-    await renderTradingScreen(data, "/trading/orders");
+    await renderTradingScreen(data, "/trading/orders", "53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
 
     await user.click(screen.getByRole("button", { name: /new order/i }));
     await user.type(screen.getByPlaceholderText("AAPL"), "AAPL");
@@ -991,7 +1130,8 @@ describe("TradingScreen", () => {
 
   it.each(["Limit", "Stop"] as const)("preserves decimal %s price typing and submits its reviewed numeric value", async (orderType) => {
     const user = userEvent.setup();
-    await renderTradingScreen(data, "/trading/orders");
+    const fundAccountId = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
+    await renderTradingScreen(data, "/trading/orders", fundAccountId);
     await user.click(screen.getByRole("button", { name: "New order" }));
     await user.type(screen.getByLabelText("Order symbol"), "AAPL");
     await user.type(screen.getByLabelText("Order quantity"), "25");
@@ -1004,15 +1144,17 @@ describe("TradingScreen", () => {
     const submit = screen.getByRole("button", { name: "Submit order request" });
     expect(submit).toBeDisabled();
     expect(api.submitOrder).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.getByText("Checked; submission will revalidate.")).toBeVisible());
     await user.click(screen.getByRole("checkbox", { name: /I reviewed the order preview and risk warnings/i }));
     expect(submit).toBeEnabled();
     await user.click(submit);
-    await waitFor(() => expect(api.submitOrder).toHaveBeenCalledWith({ symbol: "AAPL", side: "Buy", type: orderType, quantity: 25, limitPrice: 188.05 }));
+    await waitFor(() => expect(api.submitOrder).toHaveBeenCalledWith({ symbol: "AAPL", side: "Buy", type: orderType, quantity: 25, limitPrice: 188.05, fundAccountId, sessionIntent: "RegularOnly", clientOrderId: expect.stringMatching(/^meridian-/) }));
   });
 
   it("invalidates reviewed decimal inputs before allowing another submission", async () => {
     const user = userEvent.setup();
-    await renderTradingScreen(data, "/trading/orders");
+    const fundAccountId = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
+    await renderTradingScreen(data, "/trading/orders", fundAccountId);
     await user.click(screen.getByRole("button", { name: "New order" }));
     await user.type(screen.getByLabelText("Order symbol"), "AAPL");
     await user.type(screen.getByLabelText("Order quantity"), "25");
@@ -1020,6 +1162,7 @@ describe("TradingScreen", () => {
     const price = screen.getByLabelText("Limit order price") as HTMLInputElement;
     await user.type(price, "188.05");
     const acknowledgement = screen.getByRole("checkbox", { name: /I reviewed the order preview and risk warnings/i });
+    await waitFor(() => expect(screen.getByText("Checked; submission will revalidate.")).toBeVisible());
     await user.click(acknowledgement);
     const submit = screen.getByRole("button", { name: "Submit order request" });
     expect(submit).toBeEnabled();
@@ -1249,8 +1392,8 @@ describe("TradingScreen", () => {
     // Choosing it opens the same confirmation step; nothing is cancelled yet.
     expect(api.cancelAllOrders).not.toHaveBeenCalled();
     expect(await screen.findByRole("button", { name: /confirm cancel all open orders/i })).toBeDisabled();
-    expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent(/\d+ positions?/);
-    expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent("Latest brokerage heartbeat");
+    // The page's own facts are ready, so it adds no trust row to what the masthead already says.
+    expect(screen.queryByLabelText("Trading data confidence")).not.toBeInTheDocument();
   });
 
   it("keeps strategy lifecycle commands disabled until the view model has a strategy ID", async () => {
@@ -1312,7 +1455,7 @@ describe("TradingScreen", () => {
     await waitFor(() => expect(api.getPaperSessionReplayVerification).toHaveBeenCalledWith("sess-1"));
 
     // Operator refreshes readiness — stale work item clears
-    await user.click(screen.getByRole("button", { name: /refresh trading readiness/i }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
 
     await waitFor(() =>
       expect(screen.queryByText(/Replay stale/i)).not.toBeInTheDocument()

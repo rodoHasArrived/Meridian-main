@@ -63,6 +63,9 @@ public abstract class LoggingServiceBase : Contracts.ILoggingService
     public void LogError(string message, Exception? ex = null)
         => Log(LogLevel.Error, message, ex, []);
 
+    public void LogError(string message, Exception? ex, params (string key, string value)[] properties)
+        => Log(LogLevel.Error, message, ex, properties);
+
     public void LogDebug(string message, params (string key, string value)[] properties)
         => Log(LogLevel.Debug, message, null, properties);
 
@@ -96,7 +99,8 @@ public abstract class LoggingServiceBase : Contracts.ILoggingService
             WriteOutput(formattedMessage);
         }
 
-        LogWritten?.Invoke(this, new LogEntryEventArgs(level, timestamp, message, exception, properties));
+        LogWritten?.Invoke(this, new LogEntryEventArgs(
+            level, timestamp, LogMessageTemplate.Render(message, properties), exception, properties));
     }
 
     /// <summary>
@@ -118,7 +122,7 @@ public abstract class LoggingServiceBase : Contracts.ILoggingService
         sb.Append("] [");
         sb.Append(GetLevelString(level));
         sb.Append("] ");
-        sb.Append(message);
+        sb.Append(LogMessageTemplate.Render(message, properties));
 
         if (properties.Length > 0)
         {

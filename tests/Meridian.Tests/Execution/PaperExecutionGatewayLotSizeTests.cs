@@ -24,7 +24,9 @@ public sealed class PaperExecutionGatewayLotSizeTests
     public async Task SubmitOrderAsync_WithSecurityMaster_ValidLot_Accepts()
     {
         var sm = new StubSecurityMaster(securityId: Guid.NewGuid(), lotSize: 100m);
-        var gateway = new Meridian.Execution.PaperTradingGateway(NullLogger<Meridian.Execution.PaperTradingGateway>.Instance, sm);
+        var feed = new Meridian.Execution.Adapters.LiveMarketDataCache();
+        feed.RecordTrade("XYZ", new Meridian.Contracts.Domain.Models.Trade(DateTimeOffset.UtcNow, "XYZ", 50m, 100, Meridian.Contracts.Domain.Enums.AggressorSide.Buy, 1));
+        await using var gateway = new Meridian.Execution.PaperTradingGateway(NullLogger<Meridian.Execution.PaperTradingGateway>.Instance, sm, liveFeed: feed);
 
         var report = await gateway.SubmitOrderAsync(MarketBuy("XYZ", 200, simulatedPrice: 50m));
 

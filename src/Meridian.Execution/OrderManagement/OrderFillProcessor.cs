@@ -3,6 +3,7 @@ using Meridian.Execution.Events;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Ledger;
 using OrderStatus = Meridian.Execution.Sdk.OrderStatus;
 using ExecutionReportDeliveryException = Meridian.Execution.OrderManagementSystem.ExecutionReportDeliveryException;
 
@@ -19,7 +20,8 @@ internal sealed class OrderFillProcessor(
     AccountingHandoffCoordinator accounting,
     ExecutionReportHub executionReports,
     OrderExecutionAudit audit,
-    ILogger logger)
+    ILogger logger,
+    OrderIntentJournal? paperIntentJournal = null)
 {
     private readonly OrderFillContext _context = context;
     private readonly IPortfolioState? _portfolioState = portfolioState;
@@ -242,10 +244,21 @@ internal sealed class OrderFillProcessor(
             // durable session record all read the same classification.
             var usesFaceValuePercentageOfPar = fillIncrement.UsesFaceValuePercentageOfPar;
 
+            // Native simulation owns an independent session journal. Confirm this scope before the
+            // hosted portfolio or execution subscribers can observe an accepted fill.
+            if (!progress.SessionRecorded && progress.IsTrackedOrder && sessionId is not null
+                && _portfolioState is PaperTradingPortfolio { UsesCanonicalAccounting: false }
+                && _sessionPersistence is { } persistence && persistence.IsNativeDurableSession(sessionId))
+            {
+                _context.TryGetOrder(orderId!, out var trackedOrder);
+                await persistence.RecordFillAsync(sessionId, PaperSessionFillRecord.ComputeCanonicalFillId(fillIncrement),
+                    fillIncrement, accountingEvidenceVersion: 0, ResolveFinancialAccountId(orderId), CancellationToken.None,
+                    trackedOrder?.StrategyId, trackedOrder?.RunId).ConfigureAwait(false);
+                progress.SessionRecorded = true;
+            }
+
             if (!progress.PortfolioApplied)
             {
-                var realisedPnlBefore = _portfolioState?.RealisedPnl ?? 0m;
-
                 // Only fills for orders this OMS placed may mutate the paper portfolio;
                 // stream reports for external/untracked orders are still published below.
                 if (_portfolioState is PaperTradingPortfolio paperPortfolio
@@ -256,25 +269,32 @@ internal sealed class OrderFillProcessor(
                     // position no fund can be shown to own and an option position measured
                     // as if each contract were a single share.
                     var fillOrderId = fillIncrement.ClientOrderId ?? fillIncrement.OrderId;
-                    paperPortfolio.ApplyFill(
+                    var result = paperPortfolio.ApplyFillWithAccountingEvidence(
                         fillIncrement,
-                        ownerAccountId: _context.GetFinancialAccountId(fillOrderId),
+                        ownerAccountId: ResolveFinancialAccountId(fillOrderId),
                         contractMultiplier: _context.GetContractMultiplier(fillOrderId),
                         usesFaceValuePercentageOfPar: usesFaceValuePercentageOfPar);
-                    progress.RealizedPnl = paperPortfolio.RealisedPnl - realisedPnlBefore;
+                    progress.AccountingEvidence = result.Evidence;
+                    progress.RealizedPnl = result.RealizedPnl;
+                    progress.NewCash = result.NewCash;
                 }
-
-                progress.NewCash = _portfolioState?.Cash ?? 0m;
+                else
+                {
+                    // A read-only/live portfolio supplies no exact lot mutation evidence.
+                    // Retain the fill for reconciliation without asserting a zero-basis close.
+                    progress.NewCash = _portfolioState?.Cash ?? 0m;
+                }
                 progress.PortfolioApplied = true;
             }
 
             if (!progress.TradeEventPublished)
             {
+                var isScopedPaper = _context.TryGetOrder(orderId, out var scopedOrder) && scopedOrder.IntentId.HasValue;
                 // Materialise the deterministic identity even when no accounting publisher is
                 // configured. Paper-session durability uses the same FillId as the accounting
                 // handoff rather than inventing a second replay identity.
                 if (progress.IsTrackedOrder
-                    && (_accounting.HasPublisher || !string.IsNullOrWhiteSpace(sessionId)))
+                    && (isScopedPaper || _accounting.HasPublisher || !string.IsNullOrWhiteSpace(sessionId)))
                 {
                     // Created once and reused by every handoff retry. Strategy lineage lets the
                     // ledger attribute the fill's P&L to the strategy and run that placed the order.
@@ -295,10 +315,40 @@ internal sealed class OrderFillProcessor(
                               ?? (_portfolioState is PaperTradingPortfolio
                                   ? 1m
                                   : fillIncrement.LotMultiplier
-                                    ?? _context.GetContractMultiplier(fillIncrement.ClientOrderId ?? fillIncrement.OrderId))));
+                                    ?? _context.GetContractMultiplier(fillIncrement.ClientOrderId ?? fillIncrement.OrderId)))) with
+                    {
+                        AccountingEvidenceVersion = 1,
+                        AccountingEvidence = progress.AccountingEvidence
+                    };
+                    if (_context.CaptureAccountingSource)
+                    {
+                        var fees = new List<TradeExecutionFee>();
+                        if (_context.SyntheticSource && fillIncrement.Fees is > 0m)
+                            fees.Add(new($"{progress.TradeEvent.FillId:D}:paper-fees", "SyntheticModelFee", fillIncrement.Fees.Value, "USD"));
+                        if (_context.SyntheticSource && fillIncrement.SlippageCost is > 0m)
+                            fees.Add(new($"{progress.TradeEvent.FillId:D}:paper-slippage", "SyntheticSlippageCost", fillIncrement.SlippageCost.Value, "USD"));
+                        progress.TradeEvent = progress.TradeEvent with
+                        {
+                            SourceMode = _context.SyntheticSource ? "Synthetic" : "Live",
+                            Fees = fees.Count == 0 ? null : Array.AsReadOnly(fees.ToArray())
+                        };
+                    }
                 }
 
-                if (_accounting.HasPublisher && progress.IsTrackedOrder)
+                if (isScopedPaper)
+                {
+                    try
+                    {
+                        if (paperIntentJournal is null)
+                            throw new InvalidOperationException("The simulated accounting journal is unavailable.");
+                        await paperIntentJournal.RetainFillAsync(progress.TradeEvent!).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new AccountingHandoffException(progress.TradeEvent!, wasRetained: false, ex);
+                    }
+                }
+                else if (_accounting.HasPublisher && progress.IsTrackedOrder)
                 {
                     await _accounting.PublishAsync(progress.TradeEvent!).ConfigureAwait(false);
                 }
@@ -319,7 +369,7 @@ internal sealed class OrderFillProcessor(
                     {
                         await RecordSessionFillAsync(
                                 sessionId,
-                                progress.TradeEvent!.FillId,
+                                progress.TradeEvent!,
                                 fillIncrement,
                                 CancellationToken.None)
                             .ConfigureAwait(false);
@@ -400,13 +450,12 @@ internal sealed class OrderFillProcessor(
     }
 
     private string? ResolveFinancialAccountId(string? orderId)
-        => !string.IsNullOrWhiteSpace(orderId)
-            ? _context.GetFinancialAccountId(orderId)
-            : null;
+        => (!string.IsNullOrWhiteSpace(orderId) ? _context.GetFinancialAccountId(orderId) : null)
+            ?? (_context.CaptureAccountingSource && _portfolioState is PaperTradingPortfolio paper ? paper.PrimaryAccountId : null);
 
     private async Task RecordSessionFillAsync(
         string? sessionId,
-        Guid fillId,
+        TradeExecutedEvent tradeEvent,
         ExecutionReport report,
         CancellationToken ct)
     {
@@ -415,7 +464,11 @@ internal sealed class OrderFillProcessor(
             return;
         }
 
-        await _sessionPersistence.RecordFillAsync(sessionId, fillId, report, ct).ConfigureAwait(false);
+        await _sessionPersistence.RecordFillAsync(sessionId, tradeEvent.FillId, report,
+            accountingEvidenceVersion: _accounting.HasPublisher && tradeEvent.AccountingEvidenceVersion == 1
+                && tradeEvent.AccountingEvidence is not null ? 1 : 0,
+            financialAccountId: tradeEvent.FinancialAccountId,
+            ct).ConfigureAwait(false);
     }
 
     private sealed class FillProcessingProgress(
@@ -428,6 +481,7 @@ internal sealed class OrderFillProcessor(
         public decimal CumulativeFilledQuantity { get; } = cumulativeFilledQuantity;
         public bool IsTrackedOrder { get; } = isTrackedOrder;
         public TradeExecutedEvent? TradeEvent { get; set; }
+        public TradeFillAccountingEvidence? AccountingEvidence { get; set; }
         public decimal RealizedPnl { get; set; }
         public decimal NewCash { get; set; }
         public bool PortfolioApplied { get; set; }
@@ -471,7 +525,11 @@ internal sealed class OrderFillProcessor(
             financialAccountId,
             usesFaceValuePercentageOfPar,
             contractMultiplier,
-            fillIncrement.BookedVariationMargin == true);
+            fillIncrement.BookedVariationMargin == true)
+        {
+            BrokerActivityId = string.IsNullOrWhiteSpace(fillIncrement.BrokerActivityId)
+                ? null : fillIncrement.BrokerActivityId.Trim()
+        };
     }
 
     /// <summary>

@@ -204,6 +204,10 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
         representativeDocuments.Add(SecurityEconomicDefinitionAdapter.ToEconomicRecord(
             SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond",
                 SecurityDeclaredScheduleModuleContractionTests.DeclaringFlat("Bond"))).EconomicTerms);
+        representativeDocuments.Add(SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond",
+                Workbench.BondWorkflowAdmissionFixtures.Terms("Floating", 5,
+                    Workbench.BondWorkflowAdmissionFixtures.Overnight))).EconomicTerms);
         var emitted = representativeDocuments.SelectMany(PropertyNames)
             .Where(name => !SecurityTermsEnvelope.IsReservedKey(name))
             .Distinct(StringComparer.Ordinal)
@@ -430,7 +434,7 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(flattened).Should().BeTrue();
 
         // A payload that was always flat carries no marker, and the v0 stamping route adds none.
-        var retained = SecurityAssetSpecificTermsUpcasterChain.Normalize(Json("""{"maturity":"2030-01-15","couponType":"Fixed"}""")).Payload;
+        var retained = SecurityAssetSpecificTermsUpcasterChain.Normalize(Json("""{"termsFormat":"flat","maturity":"2030-01-15","couponType":"Fixed"}""")).Payload;
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(retained).Should().BeFalse();
     }
 

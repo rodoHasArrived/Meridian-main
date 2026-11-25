@@ -6,10 +6,123 @@ module_id: SRC-UI-SERVICES
 path: src/Meridian.Ui.Services
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Ui.Services
+
+Provider health keeps unavailable numeric metrics null in snapshots and history. Ranking uses
+measured values, and composite scores require every weighted component.
+
+The existing accounting agreement workspace/client carries optional structured legal declarations,
+dates-only schedule previews and explicit external-review attestations through the native host API.
+It keeps exact decimal strings, submitted hashes and reviewer/operator roles distinct. Obligation
+monitoring uses the canonical posted schedule and remains advisory rather than a local calculation
+or approval. See [the intercompany procedure](../../docs/operators/intercompany-entity-controls.md).
+
+The default shared configuration service re-reads existing JSON under the common host write lease
+and applies the same whole-document save guard as desktop settings before atomic publication.
+Missing files allow validated first-run creation; malformed or empty existing files are never
+replaced by fallback defaults. Loaded drafts retain only a source fingerprint, so a stale draft
+cannot erase a concurrent host change. Plaintext credentials, host tenancy and live activation,
+provider ceilings, audit ownership and stored-data semantics use the central guard.
+
+Backfill provider metadata consumes the same Core tier catalog as the HTTP editor and adapter
+constructors. Shared option validation enforces vendor ceilings; tier IDs and Twelve Data/OpenFIGI
+options survive DTO roundtrips. Nested extension data also retains validation profiles/audit, failover
+rules/audit/timing and symbol mappings. Common provider-option edits preserve existing provider-specific
+host fields from the locked read. Offline metadata does not imply a connected or credentialed runtime.
+
+Intercompany accounting profiles link to the canonical legal registry through exact approved
+GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
+profiles own operational templates, party-book/account mappings and bounded validity only. Native
+legal line dimensions and accounting-profile dimensions remain separate through storage, review,
+source evidence and both workstations. See [the implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
+`Services/Accounting/WorkstationEntityConsolidationApiClient` consumes the shared entity timeline,
+period list and consolidation preview/draft routes without calculating finance locally. Responses
+must retain the requested organization/entity/as-of or consolidation scope. Its companion
+`WorkstationManualJournalApiClient` lets Accounting Configure review the same retained server
+drafts through existing workbench and lifecycle routes; the authenticated host resolves actor and
+tenant authority. Refused, stale and unavailable responses never produce local success.
+
+`Services/Accounting/WorkstationFiscalYearCloseApiClient` reads the governed fiscal-year close plan
+for one book and year. It refuses a plan for another book or year, and a "ready" plan without a
+hash or with blockers; workstations present the server's sections and never recompute balances.
+
+The shared entity/consolidation API client supplies authorized organization/entity/book/period
+choices, entity timeline and consolidation preview/draft operations to WPF. Requests preserve host
+scope and server-calculated capabilities; no workstation client derives financial truth locally.
+See [intercompany operations](../../docs/operators/intercompany-entity-controls.md).
+
+`WorkstationIntercompanyAgreementApiClient` and `IntercompanyAgreementWorkspace` consume the shared
+tenant-scoped registry and advisory journal-line routes. The workspace retains unsaved/conflicting
+input, server capabilities, exact approved versions, evidence and review history without duplicating
+agreement authority in the desktop client. Source-line responses verify agreement/book/date identity
+and retain exact amount strings. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
+`IntercompanyManagementFeeWorkspace` is the desktop state for fixed management fees over the client's fee
+preview and draft calls; the agreement workspace carries the fixed-fee basis. See
+[governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
+`IntercompanyRateFixingWorkspace` is the desktop state for reviewed fixings over the client's
+list, propose and decide calls; the agreement workspace carries the fixing lag and accrual slices
+name their pinned fixing. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
+`IntercompanyBalanceConfirmationWorkspace` is the desktop state for reciprocal balance confirmation
+over the client's exact-decimal confirmation reads and actions; a refused action keeps its request
+identity only for an identical retry. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
+The interest accrual workspace shows each slice's compounded interest for rule v3 previews. See
+[periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
+
+`IntercompanyCounterpartQueueWorkspace` is the desktop state for counterpart delivery records and
+booking breaks over the same `/api/ledger/intercompany/proposals` and `/breaks` routes as the
+browser queue. Retry, explicit linking and FX repricing send a reasoned request whose identity is
+reused for an identical retry; the server decides permission, target-book authority and every
+amount. Responses for another book, proposal, link target or repricing request are refused, a
+break outage reads as unknown rather than empty, and amounts render from exact decimals.
+The source book is chosen from `/api/ledger/books`, the route the browser uses, and the existing
+counterpart book from that list's books owned by the proposal's counterparty entity.
+
+`IntercompanyInterestAccrualWorkspace` is the desktop state for requesting a governed loan-interest
+accrual over `/api/ledger/intercompany/accruals/preview` and `/drafts`, the routes the browser uses.
+It sends the source book, the two accounting profiles and the half-open window only; the rate,
+principal and amount are the server's. A draft is bound to the evidence digest of the preview that
+was shown, any change to the selection withdraws that preview, and a response for another window,
+book or computation is refused. It never approves or posts. The book is chosen from
+`/api/ledger/books`; its approved LoanInterest profiles come from the book-scoped
+`/api/ledger/intercompany-accounting-arrangements` read, and the principal choices are the Loan
+profiles of the same legal agreement. The lists only fill the selection; the server still
+authorizes every identifier, and a profile read for a book no longer chosen is ignored.
+
+`IntercompanyAccrualScheduleWorkspace` is the desktop state for opt-in, reviewed accrual schedules
+over `/api/ledger/intercompany/accrual-schedules*`, the routes the browser uses. Choosing a book
+lists its schedules and, for ledger managers, the LoanInterest profiles and same-agreement Loan
+principal profiles to propose one with a reason. A selected schedule is approved, rejected or
+disabled (reject and disable need a reason) against its exact version; due periods are previewed
+as of today's UTC date and an active schedule can be run now. Schedules only draft for ordinary
+review; nothing posts, and the server refuses approval by the proposer. A request identity is
+reused only for an identical retry, read-only operators get no mutation commands, and responses
+for another book, schedule, date or request are refused.
+
+`WorkstationOnboardingApiClient` and `OnboardingShadowWorkspace` bring shadow-mode onboarding
+(W11-SHADOW-001) to the desktop over the browser's onboarding routes. The panel covers:
+
+- designation and withdrawal
+- opening-balance import, with file content sent base64-encoded
+- the combined opening report and uncovered kinds
+- explanations for opening breaks and period differences
+- the parallel-run certificate and promotion
+
+Onboarding refusals surface the server's `{ "error": ... }` sentence. Responses for another workspace,
+certificate or book are refused with 502. Every mutation carries the workspace version. A 409 reloads the
+server copy and keeps the operator's inputs. Late responses from an earlier selection are discarded.
+
+Shared API response options accept exact decimal strings as well as legacy numeric tokens, so
+typed fixed-income reads preserve nullable and nested financial values. API request serialization
+continues to emit numbers; compact storage, pretty-print and retained calculation serializers are
+unchanged. The endpoint precision regression exercises the real shared client against both wire forms.
 
 `DataSamplingService.EstimateSampleSizeAsync` calls `GET /api/sampling/estimate?symbol=...` once per requested symbol and combines the server's population and recommended size; it previously POSTed a body the route does not accept.
 
@@ -38,10 +151,60 @@ omits (QuickBooks, Plaid, IB Flex). Verification treats a successful `NotRequire
 Removal accepts `Missing`, or `NotRequired` with an explicit `NotRequired` credential source;
 a missing or default source cannot confirm a `NotRequired` result.
 `providerWideOnly: true` reads provider-wide records only, without the tenant's connection credentials.
+`OAuthRefreshService` refreshes tokens through the host's `ICredentialService`; the shared
+`CredentialService` is a no-op test and fallback base that never yields a token. Provider ids come
+from the host's `OAuthTokenResourcePrefix` (WPF: `Meridian.OAuth.<provider>`), and `.refresh`
+companion entries are skipped. The WPF host starts the service after desktop activation and disposes
+it on exit. `TimeSeriesAlignmentService` reports an HTTP 501 as `IsServiceUnavailable` so callers can
+present alignment as unavailable rather than as a failed run.
 Provider IDs use the shared ProviderSdk identity map for request paths, mutation acknowledgements,
 status joins and catalog deduplication. Aliases resolve to one canonical status row and retain the
 service field schema; ambiguous duplicate service rows remain unavailable. Status projections retain
 verification state and timestamp so callers can distinguish configured from verified credentials.
+
+`DesktopOperatorPreferenceSync` keeps the desktop theme, density and keyboard shortcut overrides in
+step with the operator's host preferences (`/api/workstation/operator/preferences`, the set the browser workstation syncs).
+`DesktopOperatorPreferenceMapping` maps the shared vocabulary to `AppTheme` and `ShellDensityMode`:
+`default` and `spacious` both show as Standard, and a desktop Standard save keeps a stored
+`spacious`. On start the host values are applied and nothing is saved, because the desktop does not
+persist its theme and its startup theme is a default rather than a choice. An operator change on the
+desktop re-reads the host set and saves it with only appearance and density replaced, so the time
+zone, page-descriptions setting and browser shortcut overrides are kept. Desktop shortcut overrides
+travel as `DesktopKeyBindings`: a host set (an empty set included) replaces this desktop's at start;
+when the host has none yet, this desktop's own overrides are saved up to seed it; and an operator
+rebind, toggle or reset saves only that set. `ToHostShortcuts`, `ToDesktopShortcuts` and
+`SameShortcuts` map and compare the two forms. Notification choices travel as `Notifications`: a host
+set replaces the desktop's `NotificationSettings` at start (unset values take the defaults; the sound
+choice stays desktop-only), and a desktop change saves only that set (`ToNotificationSettings`,
+`ToHostNotifications`).
+
+`NotificationServiceBase` judges quiet hours with `QuietHours.IsActive` against its `TimeProvider`
+and the shared `DisplayTimeZone`, so the window is wall-clock time in the operator's display zone; a
+window ending earlier than it starts runs past midnight, the end minute is not quiet, and equal times
+never hold anything. `IsQuietHoursNow` exposes the state, `UpdateSettings` raises `SettingsChanged`,
+and `NotificationSettings.Copy()` builds a change without editing the settings in use. A host that cannot be read at
+start leaves the desktop local for the run; a failed save keeps the local change and the next change
+retries. The display time zone is resolved with this machine's zone data at start and again whenever
+the desktop saves, and applied to the shared `DisplayTimeZone` (UTC when unset or unknown here).
+`OperatorPreferencesApiClient` is the HTTP client and `IDesktopPreferenceSurface` the seam the WPF
+shell implements.
+
+`FormatHelpers.FormatDisplayTimestamp` (with `DateTime`, nullable and `FormatDisplayTimeRange`
+overloads) formats an instant in `DisplayTimeZone.Current`. In UTC the label is exactly the
+`FormatUtcTimestamp` form ("2026-07-05 12:00 UTC"); in any other zone the local time carries its
+offset for that instant ("2026-07-05 13:00 UTC+01:00"), so a zone that is at +00:00 for part of the
+year is never labelled UTC. `TryParseDisplayTimestamp` reads either form back to UTC. Display only:
+stored, audit and ledger values are unchanged. `DisplayTimestampTests` set the process-wide zone and
+run in a serial test collection.
+
+`DesktopShellPreferences` holds the desktop shell density and the operator's keyboard shortcut
+overrides (`ShortcutOverrides`, keyed by action id, with keys and modifiers stored as WPF enum
+names so this contract stays free of WPF types). `SettingsConfigurationService` persists both in
+`%LOCALAPPDATA%\Meridian\desktop-shell-preferences.json` through a temp-file-then-move write:
+`SetShortcutOverrides` replaces the whole set (empty restores defaults) and preserves density,
+density changes preserve overrides, files without overrides still load, and null or blank entries
+in a hand-edited file are skipped. Validating overrides against registered shortcuts belongs to the
+WPF `KeyboardShortcutService`.
 
 `SettingsConfigurationService.GetProviderCredentialStatusesAsync` reads the authenticated service's
 credential states. Missing, ambiguous or refused responses remain unavailable, even when environment
@@ -79,6 +242,12 @@ Provider health caches and history use ProviderSdk canonical family identities s
 configuration and telemetry aliases address the same health row.
 
 
+`Services/Comparisons/PeriodComparisonProjection.cs` formats any `PeriodComparisonDto` for the
+desktop exactly as the browser comparison panel does: two-place amounts with negatives in
+parentheses, whole counts, the server's percent (never recomputed), "Not comparable · prior zero",
+and the Portfolio materiality threshold. `PeriodComparisonApiClient` reads the portfolio cash ladder
+comparison over `UiApiRoutes.PortfolioCashLadderComparison`.
+
 `Services/Accounting/AccountingProjectionQueryService.cs` exposes shared accounting close projections for desktop and browser surfaces: trial balance, dimension-scoped roll-forward, source-linked audit rows, and close-state evidence gates.
 
 `Services/Accounting/WorkstationAccountingCloseApiClient.cs` implements the
@@ -102,6 +271,12 @@ contracts aligned with shared UI models and compatibility gates.
 - Project metadata - service dependencies shared by browser and desktop surfaces.
 
 ## Important workflows
+
+UI logging accepts named message placeholders with the existing string tuple properties, for
+example `LogError("Failed to load {Symbol}", exception, ("Symbol", symbol))`. The shared formatter
+retains property fields and renders the message for desktop Activity Log consumers. Unknown
+placeholders remain visible, property values are not parsed as templates, and messages without
+properties retain their literal text. `LoggingServiceBaseTests` covers rendering and exception retention.
 
 Reporting status projections translate application report manifests into operator read models with template family, approval status, retry attempt, artifact, audit, and section lineage counts. Keep these projections aligned with browser and WPF Reporting surfaces so both shells show the same generated-run state.
 Preview and estimate services must fail closed when the API cannot return source-backed numbers.
@@ -162,6 +337,7 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
@@ -170,9 +346,19 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 - No registry-backed TODOs are open for this module.
 <!-- source-todos:end -->
 
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+`IntercompanyCounterpartQueueWorkspace` loads `TargetJournalChoices` from the counterpart-candidate read when the
+target book changes and exposes `OpenTargetJournalCommand` through a host-supplied `JournalOpener`.
+`IntercompanyBalanceConfirmationWorkspace.ClosePolicy` shows the book's confirmation close policy and proposes,
+approves, rejects or disables it over `/api/ledger/intercompany/confirmation-close-policies`; an unreadable policy is
+reported, never shown as none. The matching `WorkstationIntercompanyAgreementApiClient` partials check that each
+response belongs to the requested proposal, book and request.
+
 ## Validation
 
 ```bash
+dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~LoggingServiceBaseTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~WorkstationAccountingCloseApiClientTests" --logger "console;verbosity=normal"
 ```

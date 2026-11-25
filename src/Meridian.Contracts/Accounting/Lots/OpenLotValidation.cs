@@ -9,6 +9,17 @@ namespace Meridian.Contracts.Accounting.Lots;
 /// </summary>
 public static class OpenLotValidation
 {
+    /// <summary>
+    /// Certifies the stored twelve-decimal quote derived from a unit successor's exact allocated
+    /// basis. Callers must separately validate its retained lineage and posting authority; this
+    /// quote predicate never changes the basis or permits rounding an ordinary acquisition.
+    /// </summary>
+    public static bool IsDerivedSuccessorUnitCost(
+        OpenLotAcquisitionDto acquisition, decimal originalQuantity, decimal unitCost, decimal retainedBasis)
+        => acquisition.QuantityBasis == LotQuantityBasis.Units
+            && acquisition.CorporateActionLineage is not null && originalQuantity > 0m
+            && unitCost == decimal.Round(retainedBasis / originalQuantity, 12, MidpointRounding.ToEven);
+
     public static void Validate(OpenLotDto lot)
     {
         ArgumentNullException.ThrowIfNull(lot);

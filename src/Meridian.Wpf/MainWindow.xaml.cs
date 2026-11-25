@@ -86,6 +86,7 @@ public partial class MainWindow : Window
         _windowStateStore = windowStateStore ?? throw new ArgumentNullException(nameof(windowStateStore));
         DataContext = _viewModel;
         _viewModel.LogoutRequested += OnLogoutRequested;
+        _viewModel.ShellRefreshRequested += OnShellRefreshRequested;
 
         // Subscribe to keyboard shortcuts
         _keyboardShortcutService.ShortcutInvoked += OnShortcutInvoked;
@@ -202,6 +203,7 @@ public partial class MainWindow : Window
 
         // Unsubscribe from all events to prevent memory leaks
         _keyboardShortcutService.ShortcutInvoked -= OnShortcutInvoked;
+        _viewModel.ShellRefreshRequested -= OnShellRefreshRequested;
         _notificationService.NotificationReceived -= OnNotificationReceived;
         _tourService.StepChanged -= OnTourStepChanged;
         _tourService.TourCompleted -= OnTourCompleted;
@@ -312,6 +314,15 @@ public partial class MainWindow : Window
         }
 
         _viewModel.HandleShortcut(e.ActionId);
+    }
+
+    private void OnShellRefreshRequested(object? sender, EventArgs e)
+    {
+        // F5 runs the same shell refresh as the toolbar Refresh button.
+        if (RootFrame.Content is MainPage mainPage)
+        {
+            mainPage.RefreshCurrentPage();
+        }
     }
 
     private void OnLogoutRequested(object? sender, EventArgs e)
@@ -607,15 +618,20 @@ public partial class MainWindow : Window
         {
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
             {
-                _ = _navigationService.NavigateTo(restorePlan.DeferredPageTag);
+                _ = NavigateToShellPage(restorePlan.DeferredPageTag);
             });
         }
 
         if (!string.IsNullOrWhiteSpace(restorePlan.TargetPageTag))
         {
-            _navigationService.NavigateTo(restorePlan.TargetPageTag);
+            _ = NavigateToShellPage(restorePlan.TargetPageTag);
         }
     }
+
+    private bool NavigateToShellPage(string pageTag)
+        => RootFrame.Content is MainPage mainPage
+            ? mainPage.NavigateToLaunchPage(pageTag)
+            : _navigationService.NavigateTo(pageTag);
 
     /// <summary>
     /// Saves the current workspace session state for next launch.
@@ -783,7 +799,7 @@ public partial class MainWindow : Window
         using var stream = File.Create(targetPath);
         encoder.Save(stream);
 
-        Meridian.Wpf.Services.LoggingService.Instance.LogInfo($"Saved automation screenshot to '{targetPath}'.");
+        Meridian.Wpf.Services.LoggingService.Instance.LogInfo("Saved automation screenshot to '{Path}'.", ("Path", targetPath));
     }
 
     private async Task EnsureMainPageShellReadyAsync(CancellationToken ct = default)

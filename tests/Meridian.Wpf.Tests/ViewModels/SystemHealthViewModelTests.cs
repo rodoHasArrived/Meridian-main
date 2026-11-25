@@ -218,9 +218,11 @@ public sealed class SystemHealthViewModelTests
         xaml.Should().Contain("SystemHealthEventEmptyStatePanel");
         xaml.Should().Contain("SystemHealthEventEmptyStateTitle");
         xaml.Should().Contain("SystemHealthEventEmptyStateDetail");
-        xaml.Should().Contain("Command=\"{Binding RefreshCommand}\"");
+        // The shell Refresh reloads system health through the view model's RefreshCommand.
+        xaml.Should().NotContain("SystemHealthRefreshButton");
+        xaml.Should().NotContain("SystemHealthInspectorRefreshButton");
+        xaml.Should().NotContain("Command=\"{Binding RefreshCommand}\"");
         xaml.Should().Contain("Command=\"{Binding GenerateDiagnosticsCommand}\"");
-        xaml.Should().Contain("ToolTip=\"{Binding RefreshTooltip}\"");
         xaml.Should().Contain("ToolTip=\"{Binding DiagnosticsTooltip}\"");
         xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
         xaml.Should().NotContain("Refresh_Click");

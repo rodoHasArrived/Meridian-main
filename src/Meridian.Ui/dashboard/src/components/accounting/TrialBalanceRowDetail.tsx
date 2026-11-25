@@ -1,9 +1,12 @@
 import { Link } from "react-router-dom";
+import type { ReactNode } from "react";
 import { DenseDataTableColumn, EntitySummary } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
+import { FinancialValue } from "@/components/meridian/financial-value";
+import { trialBalanceAmountPassport } from "@/lib/trial-balance-amount-passport";
 import type {
   AccountingTrialBalanceRowViewModel,
   AccountingTrialBalanceDetailViewState
@@ -25,7 +28,7 @@ export const trialBalanceColumns: DenseDataTableColumn<AccountingTrialBalanceRow
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.accountLabel}</span>
-        <span className="mt-1 block break-words font-mono text-[11px] text-muted-foreground">{row.dimensionLabel}</span>
+        <span className="mt-1 block break-words font-mono text-xs text-muted-foreground">{row.dimensionLabel}</span>
       </span>
     )
   },
@@ -42,7 +45,10 @@ export const trialBalanceColumns: DenseDataTableColumn<AccountingTrialBalanceRow
           row.balanceTone === "success" ? "text-success" : row.balanceTone === "danger" ? "text-danger" : "text-foreground"
         )}
       >
-        {row.balanceLabel}
+        <FinancialValue value={row.balanceExact ?? row.balance} currency={row.currency ?? undefined}
+          passport={trialBalanceAmountPassport(row)}
+          condition="unavailable" basis={row.basisLabel}
+          reason="The posted source has not supplied a reconciled data condition." />
       </span>
     )
   },
@@ -51,10 +57,12 @@ export const trialBalanceColumns: DenseDataTableColumn<AccountingTrialBalanceRow
 
 export function AccountingTrialBalanceSelectedDetailPanel({
   panelId,
-  detail
+  detail,
+  identity
 }: {
   panelId: string;
   detail: AccountingTrialBalanceDetailViewState;
+  identity?: ReactNode;
 }) {
   const technicalFields = detail.fields.filter((field) => TRIAL_BALANCE_TECHNICAL_FIELD_LABELS.has(field.label));
   const operationalFields = detail.fields.filter((field) => !TRIAL_BALANCE_TECHNICAL_FIELD_LABELS.has(field.label));
@@ -70,6 +78,7 @@ export function AccountingTrialBalanceSelectedDetailPanel({
         fields={operationalFields}
         ariaLabel={detail.ariaLabel}
       />
+      {identity}
       {technicalFields.length > 0 ? (
         <TechnicalDetails label="Record identifiers" className="mt-3">
           <dl className="grid gap-2 text-xs sm:grid-cols-2">
@@ -106,11 +115,11 @@ export function AccountingTrialBalanceSelectedDetailPanel({
                 <div className="flex items-start justify-between gap-3">
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-semibold text-foreground">{line.description}</span>
-                    <span className="mt-1 block text-[11px] text-muted-foreground">Retained journal posting</span>
+                    <span className="mt-1 block text-xs text-muted-foreground">Retained journal posting</span>
                   </span>
                   <Badge variant="outline">{line.balanceLabel}</Badge>
                 </div>
-                <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+                <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
                   <span className="font-mono">Debit {line.debitLabel}</span>
                   <span className="font-mono">Credit {line.creditLabel}</span>
                 </div>

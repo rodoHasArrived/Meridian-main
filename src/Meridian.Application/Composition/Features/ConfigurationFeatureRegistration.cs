@@ -14,9 +14,12 @@ internal sealed class ConfigurationFeatureRegistration : IServiceFeatureRegistra
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
-        // ConfigStore - unified configuration access
+        services.AddProviderCredentialOwnershipPolicy();
+        // The registration-time store only reads. Resolve the writer with the final host policy,
+        // including production posture declarations added after feature registration.
         var configStore = new ConfigStore(options.ConfigPath);
-        services.AddSingleton(configStore);
+        services.AddSingleton(sp => new ConfigStore(configStore.ConfigPath,
+            sp.GetRequiredService<ProviderCredentialOwnershipPolicy>()));
 
         // Register telemetry before workers so it starts first and is disposed after them.
         // Desktop child graphs share the parent host's process-wide ActivitySource listener.
@@ -40,7 +43,8 @@ internal sealed class ConfigurationFeatureRegistration : IServiceFeatureRegistra
 
         // ConfigurationService - consolidated configuration operations
         services.AddSingleton(sp => new ConfigurationService(
-            providerSelectorAccessor: () => sp.GetService<IBestOfBreedProviderSelector>()));
+            providerSelectorAccessor: () => sp.GetService<IBestOfBreedProviderSelector>(),
+            ownershipPolicy: sp.GetRequiredService<ProviderCredentialOwnershipPolicy>()));
 
         // Configuration utilities
         services.AddSingleton<ConfigTemplateGenerator>();

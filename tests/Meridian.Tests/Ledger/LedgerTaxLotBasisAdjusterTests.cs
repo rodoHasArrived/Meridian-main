@@ -11,7 +11,7 @@ namespace Meridian.Tests.Ledger;
 /// factor, and corporate-action basis adjustments into cost-basis relief.
 /// </summary>
 [Trait("Category", "Unit")]
-public sealed class LedgerTaxLotBasisAdjusterTests
+public sealed partial class LedgerTaxLotBasisAdjusterTests
 {
     private static readonly Guid SecurityId = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000010");
     private static readonly Guid OtherSecurityId = Guid.Parse("bbbbbbbb-0000-0000-0000-000000000020");

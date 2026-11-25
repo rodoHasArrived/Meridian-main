@@ -35,6 +35,9 @@ public sealed record LedgerEntryCurrency
         if (fxRateToFunctional <= 0m)
             throw new LedgerValidationException($"FX rate to functional currency must be positive (was {fxRateToFunctional}).");
 
+        if (TransactionCurrency == FunctionalCurrency && fxRateToFunctional != 1m)
+            throw new LedgerValidationException("An amount in the functional currency must use an FX rate of one.");
+
         TransactionDebit = transactionDebit;
         TransactionCredit = transactionCredit;
         FxRateToFunctional = fxRateToFunctional;

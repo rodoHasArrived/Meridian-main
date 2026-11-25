@@ -2,6 +2,8 @@ import { createContext, createElement, useCallback, useContext, useEffect, useMe
 import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { getLiveQuotesSnapshot } from "@/lib/api";
 import { isAbortError, isApiError } from "@/lib/api-errors";
+import { formatTimestamp } from "@/lib/format";
+import { popUpsAllowed } from "@/lib/notification-preferences";
 import type { QuotesSnapshotItem, QuotesSnapshotResponse } from "@/types";
 import { describeCondition, shouldTrigger } from "./evaluator";
 import {
@@ -82,6 +84,11 @@ export function usePriceAlertsService(options: ServiceOptions = {}): PriceAlerts
   }, [storage]);
 
   const fireNotification = useCallback((title: string, body: string) => {
+    // The operator's pop-up switch and quiet hours hold the system pop-up only; the trigger is still
+    // recorded and shown in the notification center.
+    if (!popUpsAllowed(now())) {
+      return;
+    }
     if (notify) {
       notify(title, body);
       return;
@@ -97,7 +104,7 @@ export function usePriceAlertsService(options: ServiceOptions = {}): PriceAlerts
     } catch {
       // Browser refused notification — ignore.
     }
-  }, [notify]);
+  }, [notify, now]);
 
   const evaluateSnapshot = useCallback((snapshot: QuotesSnapshotResponse) => {
     const current = stateRef.current;
@@ -176,7 +183,7 @@ export function usePriceAlertsService(options: ServiceOptions = {}): PriceAlerts
     if (triggeredNow.length > 0) {
       for (const trigger of triggeredNow) {
         const title = `${trigger.symbol} — ${describeCondition(trigger.condition, trigger.threshold, trigger.field)}`;
-        const body = `Triggered at ${formatPrice(trigger.triggeredPrice)} (${new Date(trigger.triggeredAt).toLocaleTimeString()})`;
+        const body = `Triggered at ${formatPrice(trigger.triggeredPrice)} (${formatTimestamp(trigger.triggeredAt)})`;
         fireNotification(title, body);
       }
     }

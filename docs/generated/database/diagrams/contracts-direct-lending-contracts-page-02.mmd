@@ -1,5 +1,8 @@
 classDiagram
     %% direct-lending-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_DirectLending_PostDailyAccrualRequest["PostDailyAccrualRequest"] {
+        +DateOnly AccrualDate
+    }
     class Meridian_Contracts_DirectLending_ProjectedCashFlowDto["ProjectedCashFlowDto"] {
         +DateOnly? AccrualEndDate
         +DateOnly? AccrualStartDate

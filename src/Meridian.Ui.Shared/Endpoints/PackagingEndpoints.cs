@@ -25,7 +25,7 @@ public static class PackagingEndpoints
     {
         var resolvedDataRoot = Path.GetFullPath(dataRoot);
         var packagesRoot = Path.GetFullPath(Path.Combine(resolvedDataRoot, "..", "packages"));
-        var packager = new PortableDataPackager(resolvedDataRoot);
+        var packager = PortableLedgerPackaging.CreatePackager(resolvedDataRoot);
 
         // ==================== PACKAGE CREATION ====================
 

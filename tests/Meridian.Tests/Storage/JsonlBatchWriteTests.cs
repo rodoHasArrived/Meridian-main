@@ -16,6 +16,65 @@ public class JsonlBatchWriteTests : TempDirectoryTestBase
 {
 
     [Fact]
+    public async Task FlushAsync_ReleasesEmptyPartitionBuffersAndAcceptsLateWrites()
+    {
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        await using var sink = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot),
+            new JsonlBatchOptions { Enabled = true, BatchSize = 1000, FlushInterval = TimeSpan.FromHours(1) });
+        for (var day = 1; day <= 10; day++)
+            await sink.AppendAsync(CreateTestEvent($"DAY{day}", day));
+        sink.GetStatistics().BufferCount.Should().Be(10);
+
+        await sink.FlushAsync();
+        sink.GetStatistics().BufferCount.Should().Be(0);
+        await sink.AppendAsync(CreateTestEvent("DAY1", 11));
+        await sink.FlushAsync();
+
+        sink.GetStatistics().BufferCount.Should().Be(0);
+        sink.EventsWritten.Should().Be(11);
+        sink.EventsBuffered.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task FlushAsync_ConcurrentAppendDuringWrite_RetainsTheNextBatchBeforeRetirement()
+    {
+        var enteredWrite = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseWrite = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var written = new List<long>();
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        await using var sink = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot),
+            new JsonlBatchOptions { Enabled = true, BatchSize = 1000, FlushInterval = TimeSpan.FromHours(1) },
+            writeBatchAsync: async (_, events, ct) =>
+            {
+                if (events[0].Sequence == 1)
+                {
+                    enteredWrite.SetResult();
+                    await releaseWrite.Task.WaitAsync(ct);
+                }
+                written.AddRange(events.Select(e => e.Sequence));
+            });
+        await sink.AppendAsync(CreateTestEvent("SPY", 1));
+        var flush = sink.FlushAsync();
+        try
+        {
+            await enteredWrite.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await sink.AppendAsync(CreateTestEvent("SPY", 2));
+        }
+        finally
+        {
+            releaseWrite.TrySetResult();
+        }
+        await flush;
+        sink.GetStatistics().BufferCount.Should().Be(1,
+            "the buffer receiving a concurrent append must not be retired with an unfinished batch");
+
+        await sink.FlushAsync();
+
+        written.Should().Equal(1, 2);
+        sink.GetStatistics().BufferCount.Should().Be(0);
+    }
+
+    [Fact]
     public async Task AppendAsync_WithBatchingDisabled_WritesImmediately()
     {
         // Arrange
@@ -382,8 +441,10 @@ public class JsonlBatchWriteTests : TempDirectoryTestBase
 
         await sink.AppendAsync(CreateTestEvent("SPY", 1));
 
-        var failingAppend = () => sink.AppendAsync(CreateTestEvent("SPY", 2)).AsTask();
-        await failingAppend.Should().ThrowAsync<IOException>("the size-triggered flush surfaces the write failure");
+        // The event is buffered before the size-triggered flush runs, so the append has been
+        // accepted. Throwing here would make the pipeline append the same event again.
+        var bufferedAppend = () => sink.AppendAsync(CreateTestEvent("SPY", 2)).AsTask();
+        await bufferedAppend.Should().NotThrowAsync("a buffered event must not be reported as rejected");
 
         sink.EventsBuffered.Should().Be(2, "both events must survive the failed size-triggered flush");
         sink.EventsWritten.Should().Be(0);
@@ -392,6 +453,50 @@ public class JsonlBatchWriteTests : TempDirectoryTestBase
 
         writeAttempts.Should().Be(2);
         sink.EventsWritten.Should().Be(2);
+        sink.EventsBuffered.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task AppendAsync_WhenSizeTriggeredFlushFails_CallerRetryCannotDuplicateEvent()
+    {
+        var batchOptions = new JsonlBatchOptions { BatchSize = 2, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var policy = new TestStoragePolicy(TestDataRoot);
+        var writeAttempts = 0;
+        var written = new List<MarketEvent>();
+        await using var sink = new JsonlStorageSink(
+            options,
+            policy,
+            batchOptions,
+            writeBatchAsync: (_, events, _) =>
+            {
+                writeAttempts++;
+                if (writeAttempts == 1)
+                    throw new IOException("simulated size-triggered flush failure");
+                written.AddRange(events);
+                return Task.CompletedTask;
+            });
+
+        var first = CreateTestEvent("SPY", 1);
+        var second = CreateTestEvent("SPY", 2);
+
+        // Mirror EventPipeline's contract: an append that throws is retried, one that returns
+        // is acknowledged and never appended again.
+        foreach (var evt in new[] { first, second })
+        {
+            try
+            {
+                await sink.AppendAsync(evt);
+            }
+            catch (IOException)
+            {
+                await sink.AppendAsync(evt);
+            }
+        }
+
+        await sink.FlushAsync();
+
+        written.Should().Equal(new[] { first, second }, "each accepted event must be written exactly once, in order");
         sink.EventsBuffered.Should().Be(0);
     }
 

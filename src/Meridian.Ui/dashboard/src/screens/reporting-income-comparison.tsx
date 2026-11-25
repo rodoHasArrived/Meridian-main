@@ -7,6 +7,8 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { Sheet, SheetBody, SheetCloseButton, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ReportWriterGridDiffView } from "@/components/meridian/report-writer-grid-diff-view";
+import { IncomeMovementWaterfall } from "@/components/meridian/income-movement-waterfall";
+import { buildIncomeWaterfall, formatIncomeAmount as amount } from "@/lib/income-movement-waterfall";
 import { createIncomeComparison, getIncomeComparison, getIncomeComparisonCandidates, getIncomeContributionSupport } from "@/lib/reporting-income-comparison-api";
 import type { IncomeComparison, IncomeComparisonRun, IncomeContributionSupport } from "@/types/reporting-income-comparison";
 
@@ -222,19 +224,10 @@ function isZeroAmount(value: string | null) {
   return value !== null && /^-?0(?:\.0+)?$/.test(value);
 }
 
-function amount(value: string | null, currency: string) {
-  if (value === null) return "Not comparable";
-  const negative = value.startsWith("-");
-  const [integer, retainedFraction = ""] = (negative ? value.slice(1) : value).split(".");
-  const groupedInteger = integer.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  // Group and pad decimal text directly: every significant retained digit remains visible.
-  const fraction = retainedFraction.replace(/0+$/, "").padEnd(2, "0");
-  const sign = negative && !isZeroAmount(value) ? "-" : "";
-  return `${sign}${groupedInteger}.${fraction} ${currency}`;
-}
-
 function ComparisonExplanation({ comparison: c, onSupport }: { comparison: IncomeComparison; onSupport: (id: string) => void }) {
-  const reconciled = c.compatible && c.status === "Reconciled" && isZeroAmount(c.residualAmount);
+  const reconciled = c.compatible && c.status === "Reconciled" && isZeroAmount(c.residualAmount)
+    && buildIncomeWaterfall(c).reason === null
+    && !c.contributions.some((item) => item.kind === "Unexplained" && !isZeroAmount(item.amount));
   const currency = c.baseline.currency === c.current.currency ? c.current.currency : "(different currencies)";
   return (
     <section aria-label="Retained income explanation" className="space-y-4">
@@ -258,6 +251,7 @@ function ComparisonExplanation({ comparison: c, onSupport }: { comparison: Incom
         <AmountFact label="Unexplained residual" value={amount(c.residualAmount, currency)} />
         <div><dt className="text-xs text-muted-foreground">Retained on</dt><dd className="mt-1 break-all font-mono text-sm">{c.retainedAtUtc}</dd></div>
       </dl>
+      <IncomeMovementWaterfall comparison={c} onSupport={onSupport} />
       {c.warnings.length ? <ul aria-label="Comparison warnings" className="space-y-1 text-sm text-warning">{c.warnings.map((warning, index) => <li key={index}>{warning}</li>)}</ul> : null}
       {["Journal", "Population", "Methodology", "Unexplained"].map((kind) => {
         const contributions = c.contributions.filter((item) => item.kind === kind);

@@ -8,7 +8,7 @@ import { compactOperatingScope, hasOperatingScopeValues, parseStoredOperatingSco
 export const RECENT_SCOPES_STORAGE_KEY = "meridian.workstation.operatingScope.recent.v1";
 export const RECENT_SCOPES_LIMIT = 5;
 
-const SCOPE_FIELDS = ["symbol", "fundAccountId", "provider", "runId", "from", "to", "date", "asOf"] as const;
+const SCOPE_FIELDS = ["entityId", "fundId", "symbol", "fundAccountId", "provider", "runId", "from", "to", "date", "asOf"] as const;
 
 /** A stable identity for a scope, so the same scope applied twice is remembered once. */
 export function operatingScopeKey(scope: AppShellOperatingScopeInput): string {
@@ -52,17 +52,22 @@ export function rememberRecentScope(
   return next;
 }
 
-/** "AAPL · fund 1111…1111 · alpaca · 2026-06-01 to 2026-06-30" for a picker button. */
+/**
+ * "entity 2222…2222 · fund 3333…3333 · account 1111…1111 · AAPL · alpaca · 2026-06-01 to
+ * 2026-06-30" for a picker button, in the scope bar's order. The fund account reads "account" so
+ * it is never mistaken for the fund dimension.
+ */
 export function describeOperatingScope(scope: AppShellOperatingScopeInput): string {
   const parts: string[] = [];
+  const shortId = (id: string) => (id.length > 12 ? `${id.slice(0, 4)}…${id.slice(-4)}` : id);
+  if (scope.entityId) parts.push(`entity ${shortId(scope.entityId)}`);
+  if (scope.fundId) parts.push(`fund ${shortId(scope.fundId)}`);
+  if (scope.fundAccountId) parts.push(`account ${shortId(scope.fundAccountId)}`);
   if (scope.symbol) parts.push(scope.symbol);
-  if (scope.fundAccountId) {
-    const id = scope.fundAccountId;
-    parts.push(`fund ${id.length > 12 ? `${id.slice(0, 4)}…${id.slice(-4)}` : id}`);
-  }
   if (scope.provider) parts.push(scope.provider);
   if (scope.runId) parts.push(`run ${scope.runId}`);
-  if (scope.from || scope.to) parts.push(`${scope.from ?? "…"} to ${scope.to ?? "…"}`);
+  if (scope.from && scope.from === scope.to) parts.push(scope.from);
+  else if (scope.from || scope.to) parts.push(`${scope.from ?? "…"} to ${scope.to ?? "…"}`);
   if (scope.date) parts.push(scope.date);
   if (scope.asOf) parts.push(`as of ${scope.asOf}`);
   return parts.length > 0 ? parts.join(" · ") : "No scope";

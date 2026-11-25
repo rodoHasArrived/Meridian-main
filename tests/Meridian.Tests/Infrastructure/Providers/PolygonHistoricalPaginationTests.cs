@@ -148,9 +148,11 @@ public sealed class PolygonHistoricalPaginationTests
     public async Task SecondPageHttpFailure_PropagatesTypedFailure(string kind, HttpStatusCode status)
     {
         var clock = new AdvancingClock();
-        using var handler = new SequenceHandler(clock,
-            Page([Row(kind, 1)], NextPage),
-            Response("{}", status));
+        var expectedAttempts = status == HttpStatusCode.InternalServerError ? 5 : 2;
+        var responses = new[] { Page([Row(kind, 1)], NextPage) }
+            .Concat(Enumerable.Range(1, expectedAttempts - 1).Select(_ => Response("{}", status)))
+            .ToArray();
+        using var handler = new SequenceHandler(clock, responses);
         using var http = new HttpClient(handler);
         using var provider = new PolygonHistoricalDataProvider(ApiKey, http, timeProvider: clock);
 
@@ -162,7 +164,9 @@ public sealed class PolygonHistoricalPaginationTests
             await act.Should().ThrowAsync<RateLimitException>();
         else
             await act.Should().ThrowAsync<DataProviderException>();
-        handler.Requests.Should().HaveCount(2);
+        handler.Requests.Should().HaveCount(expectedAttempts,
+            "a retryable continuation failure gets four attempts after the successful first page");
+        handler.Requests.Skip(1).Should().AllSatisfy(uri => uri.Query.Should().Contain("cursor=second"));
     }
 
     [Theory]

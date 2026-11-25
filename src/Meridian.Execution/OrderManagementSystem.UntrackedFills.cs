@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
@@ -401,7 +402,7 @@ public sealed partial class OrderManagementSystem
     /// class is treated as unknown rather than as equity.
     /// </summary>
     internal static bool IsBookableFromReportAlone(string? assetClass) =>
-        assetClass?.Trim().ToLowerInvariant() is "us_equity" or "equity" or "crypto";
+        ProviderAssetClassCodeCatalog.IsBookableFromReportAlone(assetClass);
 
     /// <summary>
     /// Whether the report was produced from a broker snapshot or activity history rather than

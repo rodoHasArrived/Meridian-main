@@ -1,9 +1,23 @@
+import { buildBackfillLiveProgressState, buildBackfillRemediationQueueState, formatBackfillRange, formatBackfillValue } from "./data-screen.backfill-progress";
+export { buildBackfillLiveProgressState, buildBackfillRemediationQueueState } from "./data-screen.backfill-progress";
+import { resolveProviderStatus, worstProviderStatus, type ListedProviderStatus } from "@/lib/cross-screen-counts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { openPlaidLink, type PlaidLinkSuccessMetadata } from "@/lib/plaid-link";
+import { supportsProviderDraft } from "@/lib/provider-credential-scope";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import { useProviderSetupDraftVerification } from "./data-screen.draft-verification";
+import {
+  ALL_CAPABILITIES,
+  defaultProviderSetupForm,
+  formatProviderCapabilityLabel,
+  PROVIDER_KIND_CATALOG,
+  resolveProviderKindMeta,
+  resolveProviderSetupNextStep
+} from "./data-screen.provider-setup.catalog";
+export { ALL_CAPABILITIES, PROVIDER_KIND_CATALOG } from "./data-screen.provider-setup.catalog";
 import {
   buildProviderReadinessSummaryText,
   credentialToneFromLabel,
@@ -12,7 +26,7 @@ import {
   formatLastGoodProviderResponse,
   formatProviderReasonLabel,
   formatProviderRoutingCapability,
-  formatProviderUtcMinute,
+  formatProviderMinute,
   joinProviderDetailSentences,
   normalizeProviderToken,
   normalizeProviderTrustScore,
@@ -29,6 +43,8 @@ import {
   uniqueStrings,
   verificationToneFromLabel
 } from "@/screens/data-provider-display-view-model";
+import { assessEvidenceStaleness, type ProviderEvidenceStaleness } from "@/screens/data-provider-display-view-model";
+export { PROVIDER_EVIDENCE_STALE_AFTER_MS, type ProviderEvidenceStaleness } from "@/screens/data-provider-display-view-model";
 import {
   buildDataLoadingState,
   buildRouteFocusCardState,
@@ -55,8 +71,10 @@ import type {
 import { buildDataUploadWorkbookReviewState } from "@/screens/data-screen.workbook-review";
 import type {
   BackfillPreviewResult,
+  BackfillProviderAlternative,
+  BackfillSubmissionReceipt,
+  BackfillSubmissionRequest,
   BackfillExecutionHistoryResponse,
-  BackfillProviderProgressSnapshot,
   BackfillProgressResponse,
   BackfillTriggerRequest,
   BackfillTriggerResult,
@@ -72,7 +90,6 @@ import type {
   ProviderConnectionRow,
   ProviderCredentialVerificationResult,
   ProviderReadinessRow,
-  ProviderReadinessStatus,
   ProviderReadinessSummary,
   ProviderKindMeta,
   PlaidInstitution,
@@ -85,7 +102,7 @@ import type {
   ProviderSetupResult
 } from "@/types";
 
-import { formatCount, formatNumber, formatPercent } from "@/lib/format";
+import { formatCount, formatDecimal, formatTimestamp } from "@/lib/format";
 export {
   DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
   buildDataLoadingState,
@@ -128,6 +145,7 @@ export interface BackfillFormState {
   symbols: string;
   from: string;
   to: string;
+  resumeFromCheckpoint?: boolean;
 }
 
 export type BackfillPhase = "idle" | "previewing" | "running";
@@ -280,6 +298,7 @@ export interface BackfillRemediationQueueState {
 export interface BackfillTriggerServices {
   preview: (request: BackfillTriggerRequest) => Promise<BackfillPreviewResult>;
   run: (request: BackfillTriggerRequest) => Promise<BackfillTriggerResult>;
+  submit?: (request: BackfillSubmissionRequest) => Promise<BackfillSubmissionReceipt>;
   getProgress: (signal?: AbortSignal) => Promise<BackfillProgressResponse>;
   getExecutions?: (signal?: AbortSignal) => Promise<BackfillExecutionHistoryResponse>;
 }
@@ -338,13 +357,6 @@ export interface DataOperationsProviderSectionState extends DataOperationsSectio
   selectedDetail: DataOperationsProviderDetailState | null;
   detailEmptyState: DataOperationsEmptyState | null;
   diagnosticsSummary: string;
-  refreshAction: {
-    label: string;
-    ariaLabel: string;
-    busy: boolean;
-    disabled: boolean;
-    disabledReason: string | null;
-  };
 }
 
 export type DataOperationsProviderStatus = DataProviderRecord["status"] | "Blocked";
@@ -377,6 +389,13 @@ export interface DataOperationsProviderSummaryCardState {
 export interface DataOperationsProviderRow {
   providerId: string;
   provider: string;
+  /**
+   * True for a provider in use: one the Data workspace lists, or one with a saved connection,
+   * a routing connection or a trust snapshot. That is the population the server lists and the
+   * "Providers healthy" count covers. False for a provider known only from the readiness
+   * catalog, which is available to set up but not in use.
+   */
+  inUse: boolean;
   rowId: string;
   detailPanelId: string;
   status: DataOperationsProviderStatus;
@@ -388,10 +407,19 @@ export interface DataOperationsProviderRow {
   affectedWorkflowsText: string;
   actionLabel: string;
   actionHref: string;
+  /** Reported latency only; "Latency not reported" when the source reports none. Never a timestamp. */
   latencyText: string;
+  /** Reported latency, else the last successful (or last verified) time. Only for surfaces labelled "last good". */
+  latencyOrLastGoodText: string;
   trustScoreText: string;
   signalSourceText: string;
   note: string;
+  /** Why a provider reported healthy is shown as review: its newest evidence is past the staleness threshold. */
+  staleEvidenceReason: string | null;
+  /** Newest timestamped evidence for the provider, or null when none carries a time. */
+  latestEvidenceAt: string | null;
+  /** Whether that newest evidence is past the staleness threshold. */
+  evidenceStale: boolean;
   statusTone: "success" | "warning" | "danger";
   trustFields: DataOperationsDetailField[];
   reasonLabelText: string;
@@ -413,6 +441,7 @@ export interface DataOperationsBackfillRow {
   detailPanelId: string;
   scope: string;
   provider: string;
+  usedFallback: boolean;
   status: DataBackfillRecord["status"];
   rowClassName: DataOperationsStatusRowClassName;
   progress: string;
@@ -438,6 +467,7 @@ export interface DataOperationsBackfillDetailState {
 export interface DataOperationsProviderDetailState {
   id: string;
   providerId: string;
+  qualityProfileProviderId: string;
   title: string;
   subtitle: string;
   description: string;
@@ -458,7 +488,14 @@ export interface DataOperationsProviderDetailState {
   gateImpactText: string;
 }
 
-export type DataOperationsProviderTabId = "overview" | "credentials" | "diagnostics";
+const providerDetailTabLabels = {
+  overview: "Overview",
+  credentials: "Credentials",
+  diagnostics: "Diagnostics",
+  "quality-rules": "Data quality rules"
+} as const;
+
+export type DataOperationsProviderTabId = keyof typeof providerDetailTabLabels;
 
 export interface DataOperationsProviderTabState {
   id: DataOperationsProviderTabId;
@@ -640,98 +677,6 @@ export type DataOperationsStatusRowClassName =
   | "bg-danger/5"
   | "bg-paper/5";
 
-export const PROVIDER_KIND_CATALOG: ProviderKindMeta[] = [
-  {
-    kind: "polygon",
-    label: "Polygon.io",
-    description: "Real-time and historical US equities, options, forex, and crypto.",
-    needsApiKey: true,
-    needsApiSecret: false,
-    needsEndpoint: false,
-    defaultCapabilities: ["streaming", "backfill", "reference"]
-  },
-  {
-    kind: "databento",
-    label: "Databento",
-    description: "High-quality historical bars and tick data across asset classes.",
-    needsApiKey: true,
-    needsApiSecret: false,
-    needsEndpoint: false,
-    defaultCapabilities: ["backfill", "reference"]
-  },
-  {
-    kind: "alpaca",
-    label: "Alpaca",
-    description: "Commission-free US equities broker with market data and paper trading.",
-    needsApiKey: true,
-    needsApiSecret: true,
-    needsEndpoint: false,
-    defaultCapabilities: ["streaming", "backfill", "brokerage"]
-  },
-  {
-    kind: "interactivebrokers",
-    label: "Interactive Brokers",
-    description: "Full-service brokerage with live order routing and market data.",
-    needsApiKey: false,
-    needsApiSecret: false,
-    needsEndpoint: true,
-    defaultCapabilities: ["streaming", "brokerage"]
-  },
-  {
-    kind: "plaid",
-    label: "Plaid",
-    description: "Bank, balance, transaction, identity, and investment account evidence for treasury and reconciliation workflows.",
-    needsApiKey: true,
-    needsApiSecret: true,
-    needsEndpoint: false,
-    defaultCapabilities: ["banking", "identity", "investments"],
-    apiKeyLabel: "Client ID",
-    apiKeyAriaLabel: "Plaid client ID",
-    apiSecretLabel: "Secret",
-    apiSecretAriaLabel: "Plaid secret"
-  },
-  {
-    kind: "yahoo",
-    label: "Yahoo Finance",
-    description: "Free end-of-day historical prices. No API key required.",
-    needsApiKey: false,
-    needsApiSecret: false,
-    needsEndpoint: false,
-    defaultCapabilities: ["backfill"]
-  },
-  {
-    kind: "custom",
-    label: "Custom data connection",
-    description: "Connect a custom or internal data provider using its service URL.",
-    needsApiKey: true,
-    needsApiSecret: false,
-    needsEndpoint: true,
-    defaultCapabilities: []
-  }
-];
-
-export const ALL_CAPABILITIES: Array<{ id: string; label: string; description: string }> = [
-  { id: "streaming", label: "Live streaming", description: "Real-time price ticks and quote updates" },
-  { id: "backfill", label: "Historical backfill", description: "OHLCV bars and tick history" },
-  { id: "reference", label: "Reference data", description: "Security master, identifiers, corporate actions" },
-  { id: "brokerage", label: "Brokerage / order routing", description: "Order submission and fill feed" },
-  { id: "banking", label: "Bank account evidence", description: "Balances, transactions, and bank-link evidence" },
-  { id: "identity", label: "Identity verification", description: "Account-owner identity and verification evidence" },
-  { id: "investments", label: "Investment holdings", description: "Investment account holdings and activity" },
-  { id: "transfers", label: "Sandbox transfers", description: "Sandbox transfer authorization and payment evidence" }
-];
-
-const defaultProviderSetupForm: ProviderSetupFormState = {
-  kind: "yahoo",
-  displayName: "Yahoo Finance",
-  environment: "paper",
-  liveAcknowledged: false,
-  apiKey: "",
-  apiSecret: "",
-  endpoint: "",
-  capabilities: ["backfill"]
-};
-
 // --- Backfill setup defaults ---
 
 export const BACKFILL_PROVIDER_OPTIONS: BackfillProviderOptionState[] = [
@@ -770,6 +715,7 @@ export const BACKFILL_PROVIDER_OPTIONS: BackfillProviderOptionState[] = [
 const defaultBackfillServices: BackfillTriggerServices = {
   preview: (request) => workstationApi.previewBackfill(request),
   run: (request) => workstationApi.triggerBackfill(request),
+  submit: (request) => workstationApi.submitBackfill(request),
   getProgress: (signal) => workstationApi.getBackfillProgress({ signal }),
   getExecutions: (signal) => workstationApi.getBackfillExecutionHistory(100, { signal })
 };
@@ -793,7 +739,7 @@ export const defaultDataUploadTemplateCatalog: DataUploadTemplateCatalog = {
       label: "Trade data",
       description: "Executions or fills that should enter validation before paper or accounting workflows consume them.",
       dataDomain: "Trading",
-      targetWorkflow: "Import -> Validate -> Reconcile -> Approve -> Report",
+      targetWorkflow: "Import → Validate → Reconcile → Approve → Report",
       fileName: "meridian-trade-data-template.csv",
       contentType: "text/csv",
       headerLine: "trade_id,trade_date,account_code,symbol,side,quantity,price,currency,strategy_id,source_system,source_document_id",
@@ -823,7 +769,7 @@ export const defaultDataUploadTemplateCatalog: DataUploadTemplateCatalog = {
       label: "Transaction data",
       description: "Cash, dividend, fee, interest, transfer, or adjustment activity used as retained source evidence.",
       dataDomain: "Transactions",
-      targetWorkflow: "Import -> Validate -> Reconcile -> Approve -> Report",
+      targetWorkflow: "Import → Validate → Reconcile → Approve → Report",
       fileName: "meridian-transaction-data-template.csv",
       contentType: "text/csv",
       headerLine: "transaction_id,effective_date,account_code,transaction_type,amount,currency,security_id,counterparty,source_system,source_document_id",
@@ -852,7 +798,7 @@ export const defaultDataUploadTemplateCatalog: DataUploadTemplateCatalog = {
       label: "Asset information",
       description: "Security Master candidate facts and instrument metadata for operator review.",
       dataDomain: "Security Master",
-      targetWorkflow: "Import -> Validate -> Reconcile -> Approve -> Report",
+      targetWorkflow: "Import → Validate → Reconcile → Approve → Report",
       fileName: "meridian-asset-information-template.csv",
       contentType: "text/csv",
       headerLine: "asset_id,symbol,asset_name,asset_class,issuer,currency,country,maturity_date,coupon_rate,source_system",
@@ -872,7 +818,7 @@ export const defaultDataUploadTemplateCatalog: DataUploadTemplateCatalog = {
         "AST-30001,91282CHT1,US Treasury 4.25 2034,Bond,US Treasury,USD,US,2034-05-15,4.25,Custodian Security Master"
       ],
       validationNotes: [
-        "Asset information uploads are candidate facts and should not override governed Security Master approvals.",
+        "Asset information uploads are candidate facts and should not override Security Master approvals.",
         "Include durable source identifiers so conflicting facts can be traced during review."
       ]
     },
@@ -881,7 +827,7 @@ export const defaultDataUploadTemplateCatalog: DataUploadTemplateCatalog = {
       label: "Entity configuration",
       description: "Fund, vehicle, sleeve, legal entity, or account structure candidates for governance review.",
       dataDomain: "Entity setup",
-      targetWorkflow: "Import -> Validate -> Reconcile -> Approve -> Report",
+      targetWorkflow: "Import → Validate → Reconcile → Approve → Report",
       fileName: "meridian-entity-configuration-template.csv",
       contentType: "text/csv",
       headerLine: "entity_id,entity_name,entity_type,parent_entity_id,base_currency,jurisdiction,ownership_percent,effective_from,source_system",
@@ -957,6 +903,11 @@ export const DATA_BACKFILL_DETAIL_PANEL_ID = "data-backfill-detail-panel";
 export const DATA_EXPORT_DETAIL_PANEL_ID = "data-export-detail-panel";
 export const DATA_PROVIDER_DETAIL_PANEL_ID = "data-provider-detail-panel";
 
+// Matches the sentinel the server writes for providers without latency metrics
+// (src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataProviders.cs:128), so fixture and
+// production rows read the same.
+const LATENCY_NOT_REPORTED = "Latency not reported";
+
 export function useDataViewModel(
   data: DataWorkspaceResponse | null,
   pathname: string,
@@ -972,6 +923,11 @@ export function useDataViewModel(
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState<BackfillFormState>(defaultBackfillForm);
   const [preview, setPreview] = useState<BackfillPreviewResult | null>(null);
+  const [submission, setSubmission] = useState<BackfillSubmissionReceipt | null>(null);
+  const [scheduleForLater, setScheduleForLater] = useState(false);
+  const [scheduledStart, setScheduledStart] = useState("");
+  const [approvedAlternative, setApprovedAlternative] = useState<(BackfillProviderAlternative & { original: string }) | null>(null);
+  const submissionAttempt = useRef<{ key: string; id: string } | null>(null);
   const [result, setResult] = useState<BackfillTriggerResult | null>(null);
   const [liveProgress, setLiveProgress] = useState<BackfillProgressResponse | null>(null);
   const [remediationHistory, setRemediationHistory] = useState<BackfillExecutionHistoryResponse | null>(null);
@@ -1024,6 +980,9 @@ export function useDataViewModel(
   // Provider setup state
   const [providerSetupOpen, setProviderSetupOpen] = useState(false);
   const [providerForm, setProviderForm] = useState<ProviderSetupFormState>(defaultProviderSetupForm);
+  const providerDraftTest = useProviderSetupDraftVerification();
+  const resetProviderDraftTest = providerDraftTest.reset;
+  const providerSupportsDraft = supportsProviderDraft(providerForm.kind);
   const [providerPhase, setProviderPhase] = useState<ProviderSetupPhase>("idle");
   const [providerSetupResult, setProviderSetupResult] = useState<ProviderSetupResult | null>(null);
   const [providerSetupError, setProviderSetupError] = useState<ApiErrorDisplay | null>(null);
@@ -1048,6 +1007,12 @@ export function useDataViewModel(
     () => data?.providers ?? [],
     [data?.providers]
   );
+  const approvedProvider: BackfillProviderOptionState | undefined = useMemo(() => approvedAlternative ? {
+    value: normalizeBackfillProviderValue(approvedAlternative.provider),
+    label: approvedAlternative.displayName,
+    description: `Provider administrator approved this equivalent for ${approvedAlternative.original}.`,
+    badge: "Approved equivalent"
+  } : undefined, [approvedAlternative]);
 
 
   const nextProviderSetupCommandRevision = useCallback(() => {
@@ -1071,14 +1036,14 @@ export function useDataViewModel(
 
   const workstream = useMemo(() => resolveDataWorkstream(pathname), [pathname]);
   const getBackfillExecutions = services.getExecutions;
-  const refreshRemediationHistory = useCallback(async (signal?: AbortSignal) => {
+  const refreshRemediationHistory = useCallback(async (signal?: AbortSignal, background = false) => {
     if (!getBackfillExecutions) {
       return;
     }
 
     const revision = remediationHistoryRevisionRef.current + 1;
     remediationHistoryRevisionRef.current = revision;
-    setRemediationHistoryLoading(true);
+    if (!background) setRemediationHistoryLoading(true);
     setRemediationHistoryError(null);
 
     try {
@@ -1109,6 +1074,25 @@ export function useDataViewModel(
 
     return () => controller.abort();
   }, [refreshRemediationHistory, workstream]);
+
+  const queuedBackfills = useMemo(
+    () => remediationHistory?.executions.filter((row) => row.submissionEstimate != null) ?? [],
+    [remediationHistory]
+  );
+  const hasOutstandingBackfills = queuedBackfills.some((row) => ["Scheduled", "Queued", "Running", "Throttled"].includes(row.status)) ||
+    (submission !== null && !queuedBackfills.some((row) => row.executionId === submission.executionId));
+  useEffect(() => {
+    if (workstream !== "backfills" || !hasOutstandingBackfills) return;
+    const controller = new AbortController();
+    const refresh = async () => {
+      while (!controller.signal.aborted) {
+        await waitForBackfillProgressPoll(3000, controller.signal);
+        if (!controller.signal.aborted) await refreshRemediationHistory(controller.signal, true);
+      }
+    };
+    void refresh();
+    return () => controller.abort();
+  }, [hasOutstandingBackfills, refreshRemediationHistory, workstream]);
 
   const remediationQueueState = useMemo(
     () => buildBackfillRemediationQueueState(remediationHistory, remediationQueueSort),
@@ -1185,9 +1169,10 @@ export function useDataViewModel(
       preview,
       result,
       configuredProviders: configuredBackfillProviders,
+      approvedProvider,
       requestStatus: backfillLifecycle.status
     }),
-    [backfillLifecycle.status, busy, configuredBackfillProviders, error, form, phase, preview, result]
+    [approvedProvider, backfillLifecycle.status, busy, configuredBackfillProviders, error, form, phase, preview, result]
   );
   const previewResultCard = useMemo(
     () => preview ? buildBackfillResultCardState(preview, "preview") : null,
@@ -1235,6 +1220,9 @@ export function useDataViewModel(
     setDialogOpen(true);
     setPreview(null);
     setResult(null);
+    setSubmission(null);
+    setScheduleForLater(false);
+    setScheduledStart("");
     setLiveProgress(null);
     setError(null);
     setBusy(false);
@@ -1243,7 +1231,7 @@ export function useDataViewModel(
 
   useEffect(() => {
     setForm((current) => {
-      const options = buildBackfillProviderOptions(current.provider, configuredBackfillProviders);
+      const options = buildBackfillProviderOptions(current.provider, configuredBackfillProviders, approvedProvider);
       if (options.length === 0) {
         return current.provider.length > 0 ? { ...current, provider: "" } : current;
       }
@@ -1256,7 +1244,7 @@ export function useDataViewModel(
 
       return { ...current, provider: options[0].value };
     });
-  }, [configuredBackfillProviders]);
+  }, [approvedProvider, configuredBackfillProviders]);
 
   const closeBackfillDialog = useCallback(() => {
     if (busy) {
@@ -1266,13 +1254,21 @@ export function useDataViewModel(
     setDialogOpen(false);
   }, [busy]);
 
-  const updateBackfillForm = useCallback((field: keyof BackfillFormState, value: string) => {
+  const updateBackfillForm = useCallback(<Field extends keyof BackfillFormState>(field: Field, value: BackfillFormState[Field]) => {
+    if (field === "provider" && value !== approvedProvider?.value) setApprovedAlternative(null);
     setForm((current) => ({ ...current, [field]: value }));
     setPreview(null);
     setResult(null);
+    setSubmission(null);
     setLiveProgress(null);
     setError(null);
-  }, []);
+  }, [approvedProvider?.value]);
+
+  const selectBackfillAlternative = useCallback((alternative: BackfillProviderAlternative) => {
+    if (!preview) return;
+    updateBackfillForm("provider", normalizeBackfillProviderValue(alternative.provider));
+    setApprovedAlternative({ ...alternative, original: preview.provider });
+  }, [preview, updateBackfillForm]);
 
   const selectUploadTemplate = useCallback((templateId: string) => {
     setSelectedUploadTemplateId(templateId);
@@ -1395,7 +1391,7 @@ export function useDataViewModel(
   ]);
 
   const previewBackfill = useCallback(async () => {
-    const validationError = validateBackfillForm(form, configuredBackfillProviders);
+    const validationError = validateBackfillForm(form, configuredBackfillProviders, approvedProvider);
     if (validationError) {
       setError(buildDataErrorState(validationError));
       return;
@@ -1431,10 +1427,10 @@ export function useDataViewModel(
       }
       backfillLifecycle.finish(token);
     }
-  }, [backfillLifecycle.fail, backfillLifecycle.finish, backfillLifecycle.markStale, backfillLifecycle.start, backfillLifecycle.succeed, configuredBackfillProviders, form, services]);
+  }, [approvedProvider, backfillLifecycle.fail, backfillLifecycle.finish, backfillLifecycle.markStale, backfillLifecycle.start, backfillLifecycle.succeed, configuredBackfillProviders, form, services]);
 
   const runBackfill = useCallback(async () => {
-    const validationError = validateBackfillForm(form, configuredBackfillProviders);
+    const validationError = validateBackfillForm(form, configuredBackfillProviders, approvedProvider);
     if (validationError) {
       setError(buildDataErrorState(validationError));
       return;
@@ -1445,12 +1441,53 @@ export function useDataViewModel(
       return;
     }
 
-    const token = backfillLifecycle.start({ runningMessage: "Running historical backfill request." });
+    const queuedSubmission = preview.quota && services.submit;
+    if (queuedSubmission && submission) return;
+    if (queuedSubmission && normalizeBackfillProviderValue(preview.provider) !== normalizeBackfillProviderValue(form.provider)) {
+      setError(buildDataErrorState("Preview again after changing the provider."));
+      return;
+    }
+
+    const scheduledTime = scheduleForLater ? new Date(`${scheduledStart}Z`).getTime() : null;
+    if (queuedSubmission && scheduledTime !== null && (!Number.isFinite(scheduledTime) || scheduledTime <= Date.now())) {
+      setError(buildDataErrorState("Choose a future UTC start time."));
+      return;
+    }
+
+    const token = backfillLifecycle.start({ runningMessage: queuedSubmission ? "Submitting historical backfill." : "Running historical backfill request." });
     if (!token) return;
     token.safeSetState(setBusy, true);
     token.safeSetState(setPhase, "running");
     token.safeSetState(setError, null);
     token.safeSetState(setLiveProgress, null);
+
+    if (queuedSubmission) {
+      try {
+        const request = {
+          ...buildBackfillRequest(form), provider: preview.provider, from: preview.from, to: preview.to,
+          executionPolicy: scheduledTime === null ? "queued" as const : "scheduled" as const,
+          scheduledAt: scheduledTime === null ? null : new Date(scheduledTime).toISOString(),
+          approvedAlternativeFor: approvedAlternative?.original
+        };
+        const key = JSON.stringify(request);
+        if (submissionAttempt.current?.key !== key) submissionAttempt.current = { key, id: crypto.randomUUID() };
+        const receipt = await queuedSubmission({ ...request, submissionId: submissionAttempt.current.id });
+        if (!token.isCurrent()) return;
+        token.safeSetState(setSubmission, receipt);
+        submissionAttempt.current = null;
+        backfillLifecycle.succeed(token, { message: `Backfill ${receipt.status.toLowerCase()}.` });
+        await refreshRemediationHistory(token.signal);
+      } catch (err) {
+        if (!token.isCurrent()) return;
+        token.safeSetState(setError, buildDataErrorState(err, "Backfill submission failed."));
+        backfillLifecycle.fail(token, err, { fallback: "Backfill submission failed." });
+      } finally {
+        token.safeSetState(setBusy, false);
+        token.safeSetState(setPhase, "idle");
+        backfillLifecycle.finish(token);
+      }
+      return;
+    }
 
     const pollingController = new AbortController();
     const abortPolling = () => pollingController.abort();
@@ -1509,7 +1546,7 @@ export function useDataViewModel(
       }
       backfillLifecycle.finish(token);
     }
-  }, [backfillLifecycle.fail, backfillLifecycle.finish, backfillLifecycle.markStale, backfillLifecycle.start, backfillLifecycle.succeed, configuredBackfillProviders, form, preview, refreshRemediationHistory, services]);
+  }, [approvedAlternative?.original, approvedProvider, backfillLifecycle.fail, backfillLifecycle.finish, backfillLifecycle.markStale, backfillLifecycle.start, backfillLifecycle.succeed, configuredBackfillProviders, form, preview, refreshRemediationHistory, scheduleForLater, scheduledStart, services, submission]);
 
   const resetPlaidInstitutionSearch = useCallback(() => {
     plaidInstitutionSearchRevisionRef.current += 1;
@@ -1527,26 +1564,30 @@ export function useDataViewModel(
 
   const openProviderSetup = useCallback(() => {
     nextProviderSetupCommandRevision();
+    resetProviderDraftTest();
     setProviderSetupOpen(true);
     setProviderForm(clearProviderSetupCredentials);
     setProviderSetupResult(null);
     setProviderSetupError(null);
     setProviderPhase("idle");
     resetPlaidInstitutionSearch();
-  }, [nextProviderSetupCommandRevision, resetPlaidInstitutionSearch]);
+  }, [nextProviderSetupCommandRevision, resetPlaidInstitutionSearch, resetProviderDraftTest]);
 
   const closeProviderSetup = useCallback(() => {
     if (providerPhase === "submitting") return;
     nextProviderSetupCommandRevision();
+    resetProviderDraftTest();
     setProviderForm(clearProviderSetupCredentials);
     setProviderSetupOpen(false);
     setProviderSetupResult(null);
     setProviderSetupError(null);
     setProviderPhase("idle");
     resetPlaidInstitutionSearch();
-  }, [nextProviderSetupCommandRevision, providerPhase, resetPlaidInstitutionSearch]);
+  }, [nextProviderSetupCommandRevision, providerPhase, resetPlaidInstitutionSearch, resetProviderDraftTest]);
 
   const updateProviderForm = useCallback((field: Exclude<keyof ProviderSetupFormState, "capabilities" | "liveAcknowledged">, value: string) => {
+    if (field === "kind" || (providerSupportsDraft && (field === "environment" || field === "apiKey" || field === "apiSecret")))
+      resetProviderDraftTest();
     setProviderForm((current) => {
       if (field === "kind") {
         const meta = PROVIDER_KIND_CATALOG.find((p) => p.kind === value);
@@ -1569,7 +1610,7 @@ export function useDataViewModel(
     if (field === "kind" && value !== "plaid") {
       resetPlaidInstitutionSearch();
     }
-  }, [resetPlaidInstitutionSearch]);
+  }, [providerSupportsDraft, resetPlaidInstitutionSearch, resetProviderDraftTest]);
 
   const updatePlaidInstitutionQuery = useCallback((value: string) => {
     setPlaidInstitutionQuery(value);
@@ -1903,6 +1944,13 @@ export function useDataViewModel(
     closeBackfillDialog,
     form,
     updateBackfillForm,
+    selectBackfillAlternative,
+    submission,
+    scheduleForLater,
+    setScheduleForLater,
+    scheduledStart,
+    setScheduledStart,
+    queuedBackfills,
     preview,
     previewResultCard,
     result,
@@ -1925,6 +1973,7 @@ export function useDataViewModel(
     openProviderSetup,
     closeProviderSetup,
     providerForm,
+    providerDraftTest,
     updateProviderForm,
     plaidInstitutionQuery,
     updatePlaidInstitutionQuery,
@@ -2210,27 +2259,8 @@ export function buildProviderSection(
   const selectedRowId = selectedRecord ? buildProviderCenterRowId(selectedRecord) : null;
   const rows = records.map((record) => buildProviderRow(record, selectedRowId));
   const selectedDetail = buildSelectedProviderDetail(records, selectedRowId, selectedTab, verifyAction);
-  const blockedCount = rows.filter((row) => row.status === "Blocked").length;
-  const degradedCount = rows.filter((row) => row.status === "Degraded").length;
-  const reviewCount = rows.filter((row) => row.statusTone === "warning").length;
-  const readyCount = rows.filter((row) => row.statusTone === "success").length;
+  const { blockedCount, degradedCount, reviewCount, readyCount, statusLabel, statusTone } = summarizeProviderRows(rows);
   const verifiedCount = rows.filter((row) => row.credentialText === "Verified" || row.credentialText === "Not required").length;
-  const statusLabel = rows.length === 0
-    ? "No providers"
-    : blockedCount > 0
-      ? `${blockedCount} blocked`
-      : degradedCount > 0
-        ? `${degradedCount} degraded`
-        : reviewCount > 0
-          ? `${reviewCount} need review`
-        : "Continuity ready";
-  const statusTone = rows.length === 0
-    ? "warning"
-    : blockedCount > 0 || degradedCount > 0
-      ? "danger"
-      : reviewCount > 0
-        ? "warning"
-        : "success";
 
   return {
     title: "Provider Management",
@@ -2255,16 +2285,17 @@ export function buildProviderSection(
         disabledReason: null,
         busy: false
       },
-      {
-        id: "refresh",
-        label: evidence.providerRoutingRefreshing ? "Refreshing..." : "Refresh Status",
-        ariaLabel: evidence.providerRoutingRefreshing ? "Provider status refresh in progress" : "Refresh provider status and routing evidence",
+      // The header Refresh re-reads provider status; a local control appears only while that evidence is missing.
+      ...(evidence.onProviderRoutingRefresh && evidence.providerConnections == null ? [{
+        id: "refresh" as const,
+        label: evidence.providerRoutingRefreshing ? "Retrying..." : "Retry",
+        ariaLabel: evidence.providerRoutingRefreshing ? "Provider status reload in progress" : "Retry loading provider status and routing evidence",
         href: null,
-        variant: "outline",
+        variant: "outline" as const,
         disabled: Boolean(evidence.providerRoutingRefreshing),
-        disabledReason: evidence.providerRoutingRefreshing ? "Provider routing refresh is already in progress." : null,
+        disabledReason: evidence.providerRoutingRefreshing ? "Provider status is already reloading." : null,
         busy: Boolean(evidence.providerRoutingRefreshing)
-      },
+      }] : []),
       {
         id: "diagnostics",
         label: "Run Diagnostics",
@@ -2308,13 +2339,6 @@ export function buildProviderSection(
     diagnosticsSummary: selectedDetail
       ? selectedDetail.diagnostics.map((item) => `${item.label}: ${item.statusLabel}`).join("; ")
       : "Select a provider before running diagnostics.",
-    refreshAction: {
-      label: evidence.providerRoutingRefreshing ? "Refreshing..." : "Refresh Status",
-      ariaLabel: evidence.providerRoutingRefreshing ? "Provider status refresh in progress" : "Refresh provider status and routing evidence",
-      busy: Boolean(evidence.providerRoutingRefreshing),
-      disabled: Boolean(evidence.providerRoutingRefreshing),
-      disabledReason: evidence.providerRoutingRefreshing ? "Provider routing refresh is already in progress." : null
-    },
     emptyState: {
       title: "No providers configured",
       description: "Add a provider before relying on live quotes, historical backfill, brokerage, Security Master, or export data."
@@ -2322,9 +2346,51 @@ export function buildProviderSection(
   };
 }
 
+/** The posture of a set of provider rows: counts per status and the one-line label. */
+export function summarizeProviderRows(rows: readonly DataOperationsProviderRow[]) {
+  const blockedCount = rows.filter((row) => row.status === "Blocked").length;
+  const degradedCount = rows.filter((row) => row.status === "Degraded").length;
+  const reviewCount = rows.filter((row) => row.statusTone === "warning").length;
+  const readyCount = rows.filter((row) => row.statusTone === "success").length;
+  const statusLabel = rows.length === 0
+    ? "No providers"
+    : blockedCount > 0
+      ? `${blockedCount} blocked`
+      : degradedCount > 0
+        ? `${degradedCount} degraded`
+        : reviewCount > 0
+          ? `${reviewCount} need review`
+        : "Continuity ready";
+  const statusTone: "success" | "warning" | "danger" = rows.length === 0
+    ? "warning"
+    : blockedCount > 0 || degradedCount > 0
+      ? "danger"
+      : reviewCount > 0
+        ? "warning"
+        : "success";
+  return { blockedCount, degradedCount, reviewCount, readyCount, statusLabel, statusTone };
+}
+
+/**
+ * The providers in use, each with the status the page shows. The overview's health cards and the
+ * "Providers healthy" figure both read this list, so the figure is a count of the cards beneath
+ * it. Providers that are only available to set up are not in it.
+ */
+export function selectProvidersInUse(rows: readonly DataOperationsProviderRow[]): DataOperationsProviderRow[] {
+  return rows.filter((row) => row.inUse);
+}
+
+/** The provider's evidence times (last response, verification, readiness evidence) judged for staleness. */
+export function assessProviderEvidenceStaleness(record: DataOperationsProviderCenterRecord, now: number = Date.now()): ProviderEvidenceStaleness {
+  const connection = resolveProviderConnection(record);
+  return assessEvidenceStaleness([connection?.lastSuccessfulAt, connection?.lastVerifiedAt,
+    ...(record.readiness?.evidence ?? []).map((item) => item.observedAt)], now);
+}
+
 export function buildProviderRow(
   provider: DataProviderRecord | DataOperationsProviderCenterRecord,
-  selectedProviderId: string | null = null
+  selectedProviderId: string | null = null,
+  now: number = Date.now()
 ): DataOperationsProviderRow {
   const record = isProviderCenterRecord(provider) ? provider : buildProviderCenterRecordFromWorkspace(provider);
   const rowId = buildProviderCenterRowId(record);
@@ -2333,7 +2399,11 @@ export function buildProviderRow(
   const readiness = record.readiness;
   const trust = record.trustSnapshot;
   const bindings = record.bindings;
-  const latencyText = formatProviderValue(providerRecord?.latency, connection ? formatLastGoodProviderResponse(connection) : "Latency not reported");
+  const providerLatency = formatProviderValue(providerRecord?.latency, "");
+  const reportedLatency = providerLatency === LATENCY_NOT_REPORTED ? "" : providerLatency;
+  const latencyText = reportedLatency || LATENCY_NOT_REPORTED;
+  const latencyOrLastGoodText = reportedLatency
+    || (connection ? formatLastGoodProviderResponse(connection) : LATENCY_NOT_REPORTED);
   const trustScoreText = trust
     ? `${normalizeProviderTrustScore(trust.score)}% · ${trust.healthStatus}`
     : readiness?.degradationScore !== null && readiness?.degradationScore !== undefined
@@ -2347,8 +2417,12 @@ export function buildProviderRow(
   const reasonCodeText = readiness
     ? `READINESS_${readiness.status.toUpperCase()}`
     : formatProviderValue(providerRecord?.reasonCode, record.routingConnection?.productionReady === false ? "CERTIFICATION_PENDING" : "Reason code not reported");
-  const reasonLabelText = formatProviderReasonLabel(reasonCodeText);
-  const recommendedActionText = readiness?.recommendedAction
+  // A provider reported healthy on evidence past the staleness threshold is capped at review.
+  const reportedStatus = resolveProviderDisplayStatus(record);
+  const staleness = assessProviderEvidenceStaleness(record, now);
+  const cappedByStaleEvidence = reportedStatus === "Healthy" && staleness.stale;
+  const reasonLabelText = cappedByStaleEvidence ? "Evidence is stale" : formatProviderReasonLabel(reasonCodeText);
+  const recommendedActionText = cappedByStaleEvidence ? `${staleness.reason} Run verification to refresh it.` : readiness?.recommendedAction
     ?? (record.routingConnection
       ? providerRoutingRecommendedAction(record.routingConnection, trust, bindings, record.routingConnection.enabled)
       : connection
@@ -2358,7 +2432,7 @@ export function buildProviderRow(
     ? `Impacts ${readiness.affectedWorkflows.join(", ")}.`
     : formatProviderValue(providerRecord?.gateImpact, providerGateImpactText(record.routingConnection, trust));
   const selected = rowId === selectedProviderId;
-  const status = resolveProviderDisplayStatus(record);
+  const status: DataOperationsProviderStatus = cappedByStaleEvidence ? "Warning" : reportedStatus;
   const statusTone = resolveProviderStatusTone(status);
   const credentialText = connection ? providerCredentialLabel(connection.credentialState) : "Not reported";
   const verificationText = connection ? providerVerificationLabel(connection.verificationState) : providerRoutingVerificationLabel(record.routingConnection, trust);
@@ -2370,6 +2444,7 @@ export function buildProviderRow(
   return {
     providerId: record.providerId,
     provider: record.displayName,
+    inUse: Boolean(providerRecord || record.connection || record.routingConnection || trust),
     rowId,
     detailPanelId: DATA_PROVIDER_DETAIL_PANEL_ID,
     status,
@@ -2382,9 +2457,13 @@ export function buildProviderRow(
     actionLabel: primaryAction?.label ?? (connection?.providerId === "alpaca" ? "Manage Alpaca" : "View Details"),
     actionHref: primaryAction?.target ?? connection?.actionHref ?? readiness?.actionHref ?? `/settings#provider-${record.providerId}-connection`,
     latencyText,
+    latencyOrLastGoodText,
     trustScoreText,
     signalSourceText,
     note: recommendedActionText ?? providerRecord?.note ?? "No operator action reported",
+    staleEvidenceReason: cappedByStaleEvidence ? staleness.reason : null,
+    latestEvidenceAt: staleness.latestEvidenceAt,
+    evidenceStale: staleness.stale,
     statusTone,
     trustFields: [
       {
@@ -2421,7 +2500,7 @@ export function buildProviderRow(
       providerRecord?.note ?? recommendedActionText,
       `Credential ${credentialText}`,
       `Verification ${verificationText}`,
-      `Latency ${latencyText}`,
+      latencyText === LATENCY_NOT_REPORTED ? LATENCY_NOT_REPORTED : `Latency ${latencyText}`,
       `Trust score ${trustScoreText}`,
       `Gate impact ${gateImpactText}`,
       `Recommended action ${recommendedActionText}`
@@ -2457,6 +2536,10 @@ export function buildSelectedProviderDetail(
   return {
     id: DATA_PROVIDER_DETAIL_PANEL_ID,
     providerId: selected.providerId,
+    qualityProfileProviderId: selected.workspaceProvider?.routingSummary?.providerFamilyId ??
+      (selected.routingConnection?.connectionId === selected.providerId
+        ? selected.routingConnection.providerFamilyId
+        : selected.providerId),
     title: selected.displayName,
     subtitle: row.capability,
     description: joinProviderDetailSentences(row.note, row.gateImpactText),
@@ -2469,9 +2552,9 @@ export function buildSelectedProviderDetail(
     diagnostics,
     diagnosticsEmptyState: buildProviderDiagnosticsEmptyState(selected),
     activeTab: selectedTab,
-    tabs: (["overview", "credentials", "diagnostics"] satisfies DataOperationsProviderTabId[]).map((tab) => ({
+    tabs: (Object.keys(providerDetailTabLabels) as DataOperationsProviderTabId[]).map((tab) => ({
       id: tab,
-      label: tab === "overview" ? "Overview" : tab === "credentials" ? "Credentials" : "Diagnostics",
+      label: providerDetailTabLabels[tab],
       selected: selectedTab === tab,
       ariaControls: `${DATA_PROVIDER_DETAIL_PANEL_ID}-${tab}`
     })),
@@ -2815,44 +2898,25 @@ function providerConnectionFromReadiness(readiness: ProviderReadinessRow): Provi
   };
 }
 
+/**
+ * The status a provider row shows: the worst of everything known about it. The Data workspace's
+ * own status (already the server's worse-of listed and readiness), the connection health and the
+ * readiness status this page loaded may be of different ages, so the page takes the worst rather
+ * than letting a fresher "ready" hide an older warning. With none of those, routing trust decides.
+ * Same rule as the server's provider list, through the shared resolveProviderStatus.
+ */
 function resolveProviderDisplayStatus(record: DataOperationsProviderCenterRecord): DataOperationsProviderStatus {
-  if (record.readiness) {
-    return dataProviderStatusFromReadiness(record.readiness.status);
+  const connectionHealth = record.connection && record.connection.health !== "Unknown" ? record.connection.health : null;
+  const listed = [record.workspaceProvider?.status, connectionHealth]
+    .filter((status): status is NonNullable<typeof status> => status != null)
+    .reduce<ListedProviderStatus | null>((worst, status) => worst === null ? worstProviderStatus(status, status) : worstProviderStatus(worst, status), null);
+  if (listed === null && !record.readiness) {
+    return record.trustSnapshot ? record.trustSnapshot.isHealthy ? "Healthy" : "Degraded" : "Warning";
   }
-
-  if (record.connection) {
-    switch (record.connection.health) {
-      case "Healthy":
-        return "Healthy";
-      case "Blocked":
-        return "Blocked";
-      case "Degraded":
-        return "Degraded";
-      case "Warning":
-        return "Warning";
-      default:
-        return record.workspaceProvider?.status ?? "Warning";
-    }
-  }
-
-  if (record.trustSnapshot) {
-    return record.trustSnapshot.isHealthy ? "Healthy" : "Degraded";
-  }
-
-  return record.workspaceProvider?.status ?? "Warning";
-}
-
-function dataProviderStatusFromReadiness(status: ProviderReadinessStatus): DataOperationsProviderStatus {
-  switch (status) {
-    case "Ready":
-      return "Healthy";
-    case "Blocked":
-      return "Blocked";
-    case "Degraded":
-      return "Degraded";
-    default:
-      return "Warning";
-  }
+  // A provider known only from readiness has no listed warning to keep, so readiness decides.
+  return record.readiness
+    ? resolveProviderStatus(listed ?? "Healthy", record.readiness.status) as ListedProviderStatus
+    : listed ?? "Warning";
 }
 
 function resolveProviderCapability(record: DataOperationsProviderCenterRecord): string {
@@ -2921,7 +2985,7 @@ function buildProviderSummaryCards(
     { id: "health", label: "Connection Health", value: health, detail: detail.description, tone: detail.statusTone },
     { id: "credentials", label: "Credential State", value: credential, detail: `${verifiedCount}/${rows.length} providers are verified or credential-free.`, tone: credentialToneFromLabel(credential) },
     { id: "verification", label: "Verification State", value: verification, detail: "Verification is separate from configured state.", tone: verificationToneFromLabel(verification) },
-    { id: "latency", label: "Latency / Last Response", value: latency, detail: "Last successful heartbeat or reported latency.", tone: "default" },
+    { id: "latency", label: "Latency / Last Response", value: latency, detail: "Last successful call or verification.", tone: "default" },
     { id: "workflows", label: "Affected Workflows", value: workflows, detail: "Workflow impact before routing changes.", tone: "default" },
     { id: "action", label: "Recommended Action", value: detail.actionText, detail: detail.gateImpactText, tone: detail.statusTone }
   ];
@@ -2944,9 +3008,9 @@ function buildProviderOverviewFields(
     },
     { id: "credential-state", label: "Credential state", value: row.credentialText },
     { id: "verification-state", label: "Verification", value: row.verificationText },
-    { id: "last-verified", label: "Last verified", value: formatProviderUtcMinute(connection?.lastVerifiedAt) },
+    { id: "last-verified", label: "Last verified", value: formatProviderMinute(connection?.lastVerifiedAt) },
     { id: "last-response", label: "Last successful call", value: row.lastSuccessfulText },
-    { id: "last-failure", label: "Last failure", value: formatProviderUtcMinute(connection?.lastFailureAt) },
+    { id: "last-failure", label: "Last failure", value: formatProviderMinute(connection?.lastFailureAt) },
     { id: "last-error", label: "Last error", value: connection?.lastError ?? "None reported" },
     {
       id: "fallback",
@@ -3029,7 +3093,7 @@ function buildProviderDiagnostics(record: DataOperationsProviderCenterRecord): D
       statusLabel: providerReadinessStatusLabel(item.status),
       detail: [
         item.detail,
-        item.observedAt ? `Observed ${formatProviderUtcMinute(item.observedAt)}.` : null
+        item.observedAt ? `Observed ${formatProviderMinute(item.observedAt)}.` : null
       ].filter(Boolean).join(" ")
     }));
   }
@@ -3178,6 +3242,7 @@ export function buildBackfillSection(
         detailPanelId: DATA_BACKFILL_DETAIL_PANEL_ID,
         scope: backfill.scope,
         provider: backfill.provider,
+        usedFallback: backfill.providerProvenance?.fallbackOccurred === true,
         status: backfill.status,
         rowClassName: backfillRowClassName(backfill.status),
         progress: backfill.progress,
@@ -3222,7 +3287,7 @@ export function buildSelectedBackfillDetail(
     description,
     ariaLabel: `Backfill detail for ${selected.jobId}: ${selected.scope}. ${description}`,
     statusLabel: selected.status,
-    statusVariant: selected.status === "Review" ? "warning" : selected.status === "Running" ? "default" : "outline",
+    statusVariant: selected.status === "Review" || selected.status === "Failed" ? "warning" : selected.status === "Running" ? "default" : "outline",
     rows: [
       { id: "provider", label: "Provider", value: selected.provider },
       { id: "status", label: "Status", value: selected.status },
@@ -3296,7 +3361,7 @@ export function buildExportSection(
     detailEmptyState: exports.length === 0
       ? {
           title: "No export selected",
-          description: "Generated packages and governed export evidence will appear here after a report or package job runs."
+          description: "Generated packages and export evidence will appear here after a report or package job runs."
         }
       : null
   };
@@ -3365,7 +3430,7 @@ function backfillRowClassName(status: DataBackfillRecord["status"]): DataOperati
     return "bg-paper/5";
   }
 
-  if (status === "Review") {
+  if (status === "Review" || status === "Failed") {
     return "bg-warning/5";
   }
 
@@ -3390,7 +3455,7 @@ function exportActionText(status: DataExportRecord["status"]): string {
   }
 
   if (status === "Running") {
-    return "Wait for the package writer to finish before handoff.";
+    return "Wait for the package writer to finish before delivery.";
   }
 
   return "Review export profile and target before report-pack use.";
@@ -3432,6 +3497,7 @@ export function buildBackfillTriggerState({
   preview,
   result,
   configuredProviders = [],
+  approvedProvider,
   requestStatus
 }: {
   form: BackfillFormState;
@@ -3441,9 +3507,10 @@ export function buildBackfillTriggerState({
   preview: BackfillPreviewResult | null;
   result: BackfillTriggerResult | null;
   configuredProviders?: DataProviderRecord[];
+  approvedProvider?: BackfillProviderOptionState;
   requestStatus?: RequestLifecycleStatus;
 }): BackfillTriggerState {
-  const validationError = validateBackfillForm(form, configuredProviders);
+  const validationError = validateBackfillForm(form, configuredProviders, approvedProvider);
   const feedbackText = error?.summary ?? null;
   const feedbackDetails = error?.details ?? [];
   const feedbackTone = error
@@ -3475,7 +3542,7 @@ export function buildBackfillTriggerState({
           : "Run previewed backfill request",
     symbolsHelpText: "Separate symbols with spaces or commas. At least one symbol is required.",
     statusAnnouncement: buildBackfillStatusAnnouncement({ phase, error, preview, result }),
-    dialogState: buildBackfillDialogState({ form, busy, phase, validationError, preview, error, result, configuredProviders }),
+    dialogState: buildBackfillDialogState({ form, busy, phase, validationError, preview, error, result, configuredProviders, approvedProvider }),
     requestStatus: requestStatus ?? idleBackfillRequestStatus
   };
 }
@@ -3488,7 +3555,8 @@ export function buildBackfillDialogState({
   preview,
   error = null,
   result = null,
-  configuredProviders = []
+  configuredProviders = [],
+  approvedProvider
 }: {
   form: BackfillFormState;
   busy: boolean;
@@ -3498,10 +3566,11 @@ export function buildBackfillDialogState({
   error?: ApiErrorDisplay | null;
   result?: BackfillTriggerResult | null;
   configuredProviders?: DataProviderRecord[];
+  approvedProvider?: BackfillProviderOptionState;
 }): BackfillDialogState {
   const previewDisabledReason = resolveBackfillPreviewDisabledReason({ busy, phase, validationError });
   const runDisabledReason = resolveBackfillRunDisabledReason({ busy, phase, validationError, preview });
-  const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders);
+  const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders, approvedProvider);
   const fieldDisabledReason = busy
     ? "Backfill request is running; wait for the current request to finish before editing."
     : providerOptions.length === 0
@@ -3514,7 +3583,7 @@ export function buildBackfillDialogState({
     formLabel: "Backfill request form",
     closeButtonLabel: "Close backfill dialog",
     closeButtonDisabledReason: busy ? "Backfill request is running; wait for the current request to finish before closing." : null,
-    summaryItems: buildBackfillDialogSummaryItems(form, configuredProviders),
+    summaryItems: buildBackfillDialogSummaryItems(form, configuredProviders, approvedProvider),
     providerField: {
       id: "backfill-provider",
       label: "Provider",
@@ -3524,7 +3593,7 @@ export function buildBackfillDialogState({
       disabledReason: fieldDisabledReason
     },
     providerOptions,
-    selectedProviderDetail: buildBackfillProviderDetail(form.provider, configuredProviders),
+    selectedProviderDetail: buildBackfillProviderDetail(form.provider, configuredProviders, approvedProvider),
     symbolsField: {
       id: "backfill-symbols",
       label: "Symbols",
@@ -3582,14 +3651,15 @@ export function buildBackfillDialogState({
 
 export function buildBackfillDialogSummaryItems(
   form: BackfillFormState,
-  configuredProviders: DataProviderRecord[] = []
+  configuredProviders: DataProviderRecord[] = [],
+  approvedProvider?: BackfillProviderOptionState
 ): BackfillDialogSummaryItemState[] {
-  const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders);
+  const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders, approvedProvider);
   const provider = providerOptions.length > 0
-    ? resolveBackfillProviderLabel(form.provider, configuredProviders)
+    ? resolveBackfillProviderLabel(form.provider, configuredProviders, approvedProvider)
     : "None configured";
   const symbols = parseSymbols(form.symbols);
-  const range = formatBackfillRange(form.from.trim() || null, form.to.trim() || null);
+  const range = form.from || form.to ? formatBackfillRange(form.from.trim() || null, form.to.trim() || null) : "Default date range";
 
   return [
     { id: "provider", label: "Provider", value: provider, tone: providerOptions.length > 0 ? "default" : "warning" },
@@ -3605,7 +3675,8 @@ export function buildBackfillDialogSummaryItems(
 
 export function buildBackfillProviderOptions(
   selectedProvider: string,
-  configuredProviders: DataProviderRecord[] = []
+  configuredProviders: DataProviderRecord[] = [],
+  approvedProvider?: BackfillProviderOptionState
 ): BackfillProviderOptionState[] {
   const options = new Map<string, BackfillProviderOptionState>();
 
@@ -3626,20 +3697,18 @@ export function buildBackfillProviderOptions(
     });
   }
 
-  const selected = normalizeBackfillProviderValue(selectedProvider);
-  const result = Array.from(options.values());
-  if (!selected || options.has(selected)) {
-    return result;
+  if (approvedProvider?.value === normalizeBackfillProviderValue(selectedProvider)) {
+    options.set(approvedProvider.value, approvedProvider);
   }
-
-  return result;
+  return Array.from(options.values());
 }
 
 export function buildBackfillProviderDetail(
   provider: string,
-  configuredProviders: DataProviderRecord[] = []
+  configuredProviders: DataProviderRecord[] = [],
+  approvedProvider?: BackfillProviderOptionState
 ): string {
-  const options = buildBackfillProviderOptions(provider, configuredProviders);
+  const options = buildBackfillProviderOptions(provider, configuredProviders, approvedProvider);
   if (options.length === 0) {
     return NO_CONFIGURED_BACKFILL_PROVIDER_MESSAGE;
   }
@@ -3651,10 +3720,11 @@ export function buildBackfillProviderDetail(
 
 function resolveBackfillProviderLabel(
   provider: string,
-  configuredProviders: DataProviderRecord[] = []
+  configuredProviders: DataProviderRecord[] = [],
+  approvedProvider?: BackfillProviderOptionState
 ): string {
   const trimmed = provider.trim();
-  const options = buildBackfillProviderOptions(provider, configuredProviders);
+  const options = buildBackfillProviderOptions(provider, configuredProviders, approvedProvider);
   const option = options.find((item) => item.value === normalizeBackfillProviderValue(trimmed));
   return option?.label ?? (trimmed.length > 0 ? trimmed : "Default provider");
 }
@@ -3805,9 +3875,7 @@ export function buildBackfillResultCardState(
     ? formatCount((result as BackfillPreviewResult).symbols.reduce((total, entry) => total + entry.estimatedBars, 0))
     : formatCount((result as BackfillTriggerResult).barsWritten);
   const rangeText = formatBackfillRange(result.from, result.to);
-  const timingText = isPreview
-    ? `${formatCount((result as BackfillPreviewResult).estimatedDurationSeconds)} sec est.`
-    : formatBackfillTiming((result as BackfillTriggerResult).startedUtc, (result as BackfillTriggerResult).completedUtc);
+  const timingText = isPreview ? null : formatBackfillTiming((result as BackfillTriggerResult).startedUtc, (result as BackfillTriggerResult).completedUtc);
   const tone = isPreview ? "warning" : resolveBackfillResultTone(result as BackfillTriggerResult, kind);
   const statusLabel = isPreview ? "Preview only" : resolveBackfillResultStatusLabel(result as BackfillTriggerResult, kind);
   const title = kind === "preview"
@@ -3820,7 +3888,7 @@ export function buildBackfillResultCardState(
     { id: "symbols", label: "Symbols", value: symbolsText },
     { id: "range", label: "Range", value: rangeText },
     { id: "bars", label: "Bars", value: barsText },
-    { id: "timing", label: "Timing", value: timingText }
+    ...(timingText === null ? [] : [{ id: "timing", label: "Timing", value: timingText }])
   ];
 
   return {
@@ -3835,142 +3903,10 @@ export function buildBackfillResultCardState(
       `Symbols ${symbolsText}`,
       `Bars ${barsText}`,
       `Range ${rangeText}`,
-      `Timing ${timingText}`,
+      timingText ? `Timing ${timingText}` : null,
       !isPreview && (result as BackfillTriggerResult).error ? `Error ${(result as BackfillTriggerResult).error}` : null
     ].filter(Boolean).join(". ")
   };
-}
-
-export function buildBackfillLiveProgressState(
-  response: BackfillProgressResponse | null
-): BackfillLiveProgressState | null {
-  const snapshot = response?.providerProgress;
-  if (!snapshot) {
-    return null;
-  }
-
-  const symbols = Object.values(snapshot.symbols)
-    .sort((left, right) => left.symbol.localeCompare(right.symbol))
-    .map((symbol) => ({
-      symbol: symbol.symbol,
-      range: formatBackfillRange(symbol.rangeStart, symbol.rangeEnd),
-      provider: formatBackfillValue(symbol.currentProvider, "Waiting for provider"),
-      attempt: symbol.providerAttempt > 0
-        ? `Attempt ${symbol.providerAttempt}${symbol.retryRound > 0 ? `, retry ${symbol.retryRound}` : ""}`
-        : "Not started",
-      status: resolveBackfillProviderProgressStatus(symbol),
-      progress: `${formatPercent(clampBackfillProgress(symbol.percentComplete), { maximumFractionDigits: 1 })}`,
-      error: symbol.error
-    }));
-  const recentAttempts = snapshot.recentProviderAttempts.slice(-8).reverse().map((attempt) => ({
-    id: [attempt.symbol, attempt.provider, attempt.providerAttempt, attempt.retryRound, attempt.observedAt].join("-"),
-    label: `${attempt.symbol} · ${attempt.provider}`,
-    detail: [
-      formatBackfillRange(attempt.rangeStart, attempt.rangeEnd),
-      `attempt ${attempt.providerAttempt}${attempt.retryRound > 0 ? `, retry ${attempt.retryRound}` : ""}`,
-      attempt.status ?? attempt.operation ?? "provider update",
-      `${formatCount(attempt.barsDownloaded)} bars`,
-      attempt.error
-    ].filter(Boolean).join(" · "),
-    tone: attempt.error
-      ? "danger" as const
-      : attempt.status?.toLowerCase().includes("skip")
-        ? "warning" as const
-        : "default" as const
-  }));
-  const overallPercent = clampBackfillProgress(snapshot.overallPercentComplete);
-  const active = response.isActive ?? response.active ?? false;
-  const observedAt = formatBackfillProgressTimestamp(snapshot.timestamp || response.timestamp);
-
-  return {
-    ariaLabel: `Live backfill provider progress. ${snapshot.completedSymbols} of ${snapshot.totalSymbols} symbols complete. ${formatNumber(overallPercent, { maximumFractionDigits: 1 })} percent.`,
-    title: active ? "Live provider progress" : "Final provider progress",
-    summary: `${snapshot.completedSymbols} of ${snapshot.totalSymbols} symbols complete · ${snapshot.failedSymbols} failed · ${formatPercent(overallPercent, { maximumFractionDigits: 1 })} overall`,
-    active,
-    overallPercent,
-    symbols,
-    recentAttempts,
-    droppedNotificationWarning: snapshot.droppedProviderNotifications > 0
-      ? `${formatCount(snapshot.droppedProviderNotifications)} older provider notification${snapshot.droppedProviderNotifications === 1 ? " was" : "s were"} dropped from the bounded live stream; the latest per-symbol state remains authoritative.`
-      : null,
-    observedAt
-  };
-}
-
-export function buildBackfillRemediationQueueState(
-  response: BackfillExecutionHistoryResponse | null,
-  sort: BackfillRemediationQueueSortState = { columnId: "tier", direction: "asc" }
-): BackfillRemediationQueueState | null {
-  if (!response) return null;
-
-  const defaultProvider = formatBackfillValue(response.autoRemediation.defaultProvider, "Not configured");
-  const rows = response.executions
-    .filter((execution) => execution.autoRemediationSla !== null)
-    .map((execution): BackfillRemediationQueueRow => {
-      const sla = execution.autoRemediationSla!;
-      const dueAt = new Date(sla.dueAtUtc);
-      const deadlineSort = Number.isNaN(dueAt.getTime()) ? Number.MAX_SAFE_INTEGER : dueAt.getTime();
-      return {
-        executionId: execution.executionId,
-        symbols: execution.symbols.length > 0 ? execution.symbols.join(", ") : `${execution.symbolsProcessed} symbol${execution.symbolsProcessed === 1 ? "" : "s"}`,
-        provider: formatBackfillValue(sla.provider, defaultProvider),
-        tier: sla.tier === "SameBusinessDay" ? "Same business day" : "Standard",
-        tierSort: sla.tier === "SameBusinessDay" ? 0 : 1,
-        status: formatBackfillRemediationStatus(sla.status),
-        deadline: Number.isNaN(dueAt.getTime()) ? "Deadline unavailable" : `${formatUtcMinute(dueAt)} UTC`,
-        deadlineSort,
-        workflow: formatBackfillValue(sla.downstreamWorkflow, "Unassigned"),
-        owner: sla.requiresOwnerAssignment ? "Assignment required" : "Not required",
-        outcome: formatBackfillValue(execution.autoRemediationLastOutcome, execution.status),
-        evidence: [
-          formatBackfillValue(sla.reasonCode, "Reason unavailable"),
-          sla.triggerSource,
-          sla.isCompatibilityDerived ? "Compatibility-derived legacy evidence" : null
-        ].filter(Boolean).join(" · ")
-      };
-    });
-
-  const direction = sort.direction === "asc" ? 1 : -1;
-  rows.sort((left, right) => {
-    const comparison = sort.columnId === "deadline"
-      ? left.deadlineSort - right.deadlineSort
-      : left.tierSort - right.tierSort || left.deadlineSort - right.deadlineSort;
-    return comparison === 0
-      ? left.executionId.localeCompare(right.executionId)
-      : comparison * direction;
-  });
-
-  return {
-    rows,
-    summary: `${rows.length} retained remediation execution${rows.length === 1 ? "" : "s"}; ${response.autoRemediation.withReason} carry typed reason evidence.`,
-    defaultProvider,
-    observedAt: formatBackfillProgressTimestamp(response.timestamp)
-  };
-}
-
-function formatBackfillRemediationStatus(status: string): string {
-  return status
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/^./, (value) => value.toUpperCase());
-}
-
-function resolveBackfillProviderProgressStatus(
-  symbol: BackfillProviderProgressSnapshot["symbols"][string]
-): string {
-  if (symbol.isFailed) return "Failed";
-  if (symbol.isSkipped) return "Skipped";
-  if (symbol.isCompleted) return "Completed";
-  return symbol.currentStatus ?? symbol.operation ?? "Pending";
-}
-
-function clampBackfillProgress(value: number): number {
-  return Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 0;
-}
-
-function formatBackfillProgressTimestamp(value: string | null | undefined): string {
-  if (!value) return "Time unavailable";
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? "Time unavailable" : `${formatUtcMinute(parsed)} UTC`;
 }
 
 function waitForBackfillProgressPoll(delayMs: number, signal: AbortSignal): Promise<void> {
@@ -3994,15 +3930,17 @@ export function buildBackfillRequest(form: BackfillFormState): BackfillTriggerRe
     provider: form.provider.trim() || null,
     symbols: parseSymbols(form.symbols),
     from: form.from.trim() || null,
-    to: form.to.trim() || null
+    to: form.to.trim() || null,
+    ...(form.resumeFromCheckpoint ? { resumeFromCheckpoint: true } : {})
   };
 }
 
 export function validateBackfillForm(
   form: BackfillFormState,
-  configuredProviders: DataProviderRecord[] = []
+  configuredProviders: DataProviderRecord[] = [],
+  approvedProvider?: BackfillProviderOptionState
 ): string | null {
-  const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders);
+  const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders, approvedProvider);
   if (providerOptions.length === 0) {
     return NO_CONFIGURED_BACKFILL_PROVIDER_MESSAGE;
   }
@@ -4033,6 +3971,14 @@ export function validateBackfillForm(
 }
 
 export function buildBackfillNarrative(backfill: DataBackfillRecord): string {
+  if (backfill.status === "Completed") {
+    return `Historical backfill completed for ${backfill.scope}.`;
+  }
+
+  if (backfill.status === "Failed") {
+    return `Historical backfill ended with failures for ${backfill.scope}.`;
+  }
+
   if (backfill.status === "Running") {
     return `Replay is currently advancing for ${backfill.scope}; monitor provider pressure before adding more symbols.`;
   }
@@ -4083,30 +4029,6 @@ function formatProviderValue(value: string | null | undefined, fallback: string)
   return trimmed ? trimmed : fallback;
 }
 
-function formatBackfillValue(value: string | null | undefined, fallback: string): string {
-  const trimmed = value?.trim();
-  return trimmed ? trimmed : fallback;
-}
-
-function formatBackfillRange(from: string | null, to: string | null): string {
-  const fromText = formatBackfillValue(from, "");
-  const toText = formatBackfillValue(to, "");
-
-  if (fromText && toText) {
-    return `${fromText} to ${toText}`;
-  }
-
-  if (fromText) {
-    return `From ${fromText}`;
-  }
-
-  if (toText) {
-    return `Through ${toText}`;
-  }
-
-  return "Full available history";
-}
-
 function formatBackfillTiming(startedUtc: string, completedUtc: string): string {
   const started = new Date(startedUtc);
   const completed = new Date(completedUtc);
@@ -4116,19 +4038,9 @@ function formatBackfillTiming(startedUtc: string, completedUtc: string): string 
   }
 
   const elapsedSeconds = Math.max(0, Math.round((completed.getTime() - started.getTime()) / 1000));
-  return `${formatUtcMinute(started)} · ${elapsedSeconds}s elapsed`;
+  return `${formatTimestamp(started)} · ${elapsedSeconds}s elapsed`;
 }
 
-function formatUtcMinute(date: Date): string {
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const month = months[date.getUTCMonth()];
-  const day = String(date.getUTCDate()).padStart(2, "0");
-  const year = date.getUTCFullYear();
-  const hour = String(date.getUTCHours()).padStart(2, "0");
-  const minute = String(date.getUTCMinutes()).padStart(2, "0");
-
-  return `${month} ${day}, ${year} ${hour}:${minute} UTC`;
-}
 
 function dataUploadField(
   name: string,
@@ -4223,7 +4135,7 @@ function formatDataUploadFileSize(bytes: number): string {
 
   if (bytes >= 1024 * 1024) {
     const megabytes = bytes / (1024 * 1024);
-    return `${Number.isInteger(megabytes) ? megabytes.toFixed(0) : megabytes.toFixed(1)} MB`;
+    return `${formatDecimal(megabytes, Number.isInteger(megabytes) ? 0 : 1)} MB`;
   }
 
   return `${Math.ceil(bytes / 1024)} KB`;
@@ -4493,7 +4405,7 @@ export function buildProviderSetupWorkflowSteps(phase: ProviderSetupPhase): Prov
     {
       id: "validate-data",
       label: "Validate Data",
-      description: "Verify credential posture, trust score, freshness, and quality gates.",
+      description: "Verify credential status, trust score, freshness, and quality gates.",
       status: "pending",
       statusLabel: "Pending"
     },
@@ -4648,42 +4560,6 @@ function isValidEndpointUrl(value: string): boolean {
   } catch {
     return false;
   }
-}
-
-function resolveProviderKindMeta(kind: ProviderSetupFormState["kind"]): ProviderKindMeta | undefined {
-  return PROVIDER_KIND_CATALOG.find((provider) => provider.kind === kind);
-}
-
-function formatProviderCapabilityLabel(capabilityId: string): string {
-  return ALL_CAPABILITIES.find((capability) => capability.id === capabilityId)?.label ?? capabilityId;
-}
-
-function resolveProviderSetupNextStep(capabilities: string[]): string {
-  if (capabilities.includes("banking") || capabilities.includes("identity") || capabilities.includes("investments")) {
-    return "Link account evidence";
-  }
-
-  if (capabilities.includes("transfers")) {
-    return "Review sandbox transfers";
-  }
-
-  if (capabilities.includes("backfill")) {
-    return "Preview a historical backfill";
-  }
-
-  if (capabilities.includes("streaming")) {
-    return "Validate live quotes";
-  }
-
-  if (capabilities.includes("brokerage")) {
-    return "Check Trading readiness";
-  }
-
-  if (capabilities.includes("reference")) {
-    return "Review Security Master";
-  }
-
-  return "Select a capability";
 }
 
 export function buildProviderSetupSuccessActions(form: ProviderSetupFormState): ProviderSetupNextActionState[] {

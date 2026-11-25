@@ -263,7 +263,7 @@ public sealed class SecurityAssetClassTermsHistoryTests
             {
                 "Swap" => new[] { 1, 2, 3, 4 },
                 "CertificateOfDeposit" => new[] { 1, 2, 3, 4, 5 },
-                _ => new[] { 1, 2, 3, 4 }
+                _ => new[] { 1, 2, 3, 4, 5 }
             });
         var added = manifest.Versions[1].Fields.Select(Describe).Except(manifest.Versions[0].Fields.Select(Describe)).ToArray();
         var removed = manifest.Versions[0].Fields.Select(Describe).Except(manifest.Versions[1].Fields.Select(Describe)).ToArray();
@@ -290,11 +290,28 @@ public sealed class SecurityAssetClassTermsHistoryTests
         var manifest = LoadCommittedManifests().Should().ContainKey(assetClass).WhoseValue;
 
         manifest.Versions.Select(static version => version.TermsVersion)
-            .Should().Equal(assetClass == "CertificateOfDeposit" ? new[] { 1, 2, 3, 4, 5 } : new[] { 1, 2, 3, 4 });
+            .Should().Equal(1, 2, 3, 4, 5);
         manifest.Versions[2].Fields.Select(Describe).Except(manifest.Versions[1].Fields.Select(Describe))
             .Should().Equal("callSchedule:Array:optional", "putSchedule:Array:optional");
         manifest.Versions[1].Fields.Select(Describe).Except(manifest.Versions[2].Fields.Select(Describe))
             .Should().BeEmpty("version 3 adds the call and put schedules and changes nothing version 2 declares");
+    }
+
+    [Fact]
+    public void BondVersionFive_AddsOnlyTheOptionalWorkflow_WithoutChangingVersionFour()
+    {
+        var manifest = LoadCommittedManifests().Should().ContainKey("Bond").WhoseValue;
+        var before = manifest.Versions[3].Fields.Select(Describe).ToArray();
+        var after = manifest.Versions[4].Fields.Select(Describe).ToArray();
+
+        after.Except(before).Should().Equal("bondWorkflow:Object:optional");
+        before.Except(after).Should().BeEmpty("v5 adds explicit conventions without changing historical terms");
+        var workflow = SecurityAssetTermsSchema.Field("Bond", "bondWorkflow")!;
+        workflow.SinceTermsVersion.Should().Be(5);
+        workflow.Required.Should().BeFalse();
+        workflow.AuthoringEnabled.Should().BeTrue();
+        SecurityAssetClassCatalog.GetTermsVersion("Bond").Should().Be(5);
+        SecurityAssetClassCatalog.GetReadsTermsThrough("Bond").Should().Be(5);
     }
 
     [Theory]
@@ -383,9 +400,7 @@ public sealed class SecurityAssetClassTermsHistoryTests
         foreach (var assetClass in new[] { "Bond", "CertificateOfDeposit" })
         {
             var steps = SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsUpgrades;
-            var expected = assetClass == "CertificateOfDeposit"
-                ? new[] { (1, 2), (2, 3), (3, 4), (4, 5) }
-                : new[] { (1, 2), (2, 3), (3, 4) };
+            var expected = new[] { (1, 2), (2, 3), (3, 4), (4, 5) };
             steps.Should().HaveCount(expected.Length);
             steps!.Select(static step => (step.FromVersion, step.ToVersion)).Should().Equal(expected);
             steps.Should().OnlyContain(static step => step.Kind == SecurityTermsUpgradeKind.Identity && step.Transform == null);

@@ -1,4 +1,5 @@
 using FluentAssertions;
+using System.Net;
 using Meridian.Ui.Services;
 
 namespace Meridian.Ui.Tests.Services;
@@ -9,6 +10,7 @@ namespace Meridian.Ui.Tests.Services;
 /// </summary>
 public sealed class ProviderHealthServiceTests : IDisposable
 {
+    private readonly ProviderHealthService _service = new();
     // ── Singleton ────────────────────────────────────────────────────
 
     [Fact]
@@ -24,7 +26,7 @@ public sealed class ProviderHealthServiceTests : IDisposable
     [Fact]
     public void GetHealthHistory_NonExistentProvider_ShouldReturnEmptyList()
     {
-        var svc = ProviderHealthService.Instance;
+        var svc = _service;
 
         var history = svc.GetHealthHistory("non-existent-provider-" + Guid.NewGuid(), TimeSpan.FromHours(1));
 
@@ -37,7 +39,7 @@ public sealed class ProviderHealthServiceTests : IDisposable
     [Fact]
     public void StartMonitoring_ShouldNotThrow()
     {
-        var svc = ProviderHealthService.Instance;
+        var svc = _service;
 
         var act = () => svc.StartMonitoring();
 
@@ -48,7 +50,7 @@ public sealed class ProviderHealthServiceTests : IDisposable
     [Fact]
     public void StopMonitoring_ShouldNotThrow()
     {
-        var svc = ProviderHealthService.Instance;
+        var svc = _service;
 
         var act = () => svc.StopMonitoring();
 
@@ -58,12 +60,100 @@ public sealed class ProviderHealthServiceTests : IDisposable
     [Fact]
     public void StartAndStopMonitoring_ShouldNotThrow()
     {
-        var svc = ProviderHealthService.Instance;
+        var svc = _service;
 
-        svc.StartMonitoring();
-        svc.StopMonitoring();
-        svc.StartMonitoring();
-        svc.StopMonitoring();
+        var act = () =>
+        {
+            svc.StartMonitoring();
+            svc.StopMonitoring();
+            svc.StartMonitoring();
+            svc.StopMonitoring();
+        };
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public async Task TimerRefresh_SkipsOverlappingTickAndReleasesGuardAfterCompletion()
+    {
+        using var handler = new GatedHealthHandler();
+        using var api = new ApiClientService(new TestClientFactory(handler));
+        using var service = new ProviderHealthService(api);
+        var first = service.RefreshFromTimerAsync();
+        await handler.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        await service.RefreshFromTimerAsync();
+        handler.Requests.Should().Be(1, "a later timer tick must not overlap the first request");
+        handler.Release.TrySetResult();
+        await first.WaitAsync(TimeSpan.FromSeconds(5));
+        await service.RefreshFromTimerAsync();
+
+        handler.Requests.Should().Be(2, "the guard must be released after the first request finishes");
+    }
+
+    private sealed class TestClientFactory(HttpMessageHandler handler) : IHttpClientFactory
+    {
+        public HttpClient CreateClient(string name) => new(handler, disposeHandler: false);
+    }
+
+    [Fact]
+    public async Task CompareProvidersAsync_UnmeasuredMetricsStayUnavailableInRankingsAndHistory()
+    {
+        using var handler = new GatedHealthHandler("""
+            {
+              "providers": [
+                {
+                  "providerId": "unmeasured",
+                  "providerName": "Unmeasured",
+                  "isConnected": true,
+                  "averageLatencyMs": null,
+                  "latencyConsistencyScore": null,
+                  "dataCompletenessPercent": null,
+                  "reconnectsLastHour": null
+                },
+                {
+                  "providerId": "observed",
+                  "providerName": "Observed",
+                  "isConnected": true,
+                  "averageLatencyMs": 42.5
+                }
+              ]
+            }
+            """);
+        handler.Release.TrySetResult();
+        using var api = new ApiClientService(new TestClientFactory(handler));
+        using var service = new ProviderHealthService(api);
+        var alerts = new List<HealthAlertEventArgs>();
+        service.HealthAlert += (_, args) => alerts.Add(args);
+
+        var comparison = await service.CompareProvidersAsync();
+
+        comparison.Providers.Should().HaveCount(2).And.OnlyContain(provider => provider.OverallScore == null);
+        comparison.BestLatency.Should().Be("observed");
+        comparison.BestOverall.Should().BeNull();
+        comparison.BestCompleteness.Should().BeNull();
+        comparison.BestStability.Should().BeNull();
+        var history = service.GetHealthHistory("unmeasured", TimeSpan.FromMinutes(1)).Should().ContainSingle().Subject;
+        history.LatencyMs.Should().BeNull();
+        history.OverallScore.Should().BeNull();
+        alerts.Should().BeEmpty();
+    }
+
+    private sealed class GatedHealthHandler(string responseBody = "{\"providers\":[]}") : HttpMessageHandler
+    {
+        public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public int Requests { get; private set; }
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Requests++;
+            Started.TrySetResult();
+            await Release.Task.WaitAsync(cancellationToken);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(responseBody, System.Text.Encoding.UTF8, "application/json")
+            };
+        }
     }
 
     // ── Data Model: ProviderHealthData ────────────────────────────────
@@ -75,7 +165,7 @@ public sealed class ProviderHealthServiceTests : IDisposable
         data.ProviderId.Should().BeEmpty();
         data.ProviderName.Should().BeEmpty();
         data.IsConnected.Should().BeFalse();
-        data.OverallScore.Should().Be(0);
+        data.OverallScore.Should().BeNull();
         data.Metrics.Should().NotBeNull();
         data.Breakdown.Should().NotBeNull();
     }
@@ -86,14 +176,14 @@ public sealed class ProviderHealthServiceTests : IDisposable
     public void HealthMetrics_ShouldHaveDefaults()
     {
         var metrics = new HealthMetrics();
-        metrics.ConnectionStabilityScore.Should().Be(0);
-        metrics.AverageLatencyMs.Should().Be(0);
-        metrics.LatencyP99Ms.Should().Be(0);
-        metrics.DataCompletenessPercent.Should().Be(0);
-        metrics.ReconnectsLastHour.Should().Be(0);
-        metrics.UptimePercent.Should().Be(0);
-        metrics.MessagesPerSecond.Should().Be(0);
-        metrics.ErrorsLastHour.Should().Be(0);
+        metrics.ConnectionStabilityScore.Should().BeNull();
+        metrics.AverageLatencyMs.Should().BeNull();
+        metrics.LatencyP99Ms.Should().BeNull();
+        metrics.DataCompletenessPercent.Should().BeNull();
+        metrics.ReconnectsLastHour.Should().BeNull();
+        metrics.UptimePercent.Should().BeNull();
+        metrics.MessagesPerSecond.Should().BeNull();
+        metrics.ErrorsLastHour.Should().BeNull();
     }
 
     // ── Data Model: HealthScoreBreakdown ─────────────────────────────
@@ -113,8 +203,8 @@ public sealed class ProviderHealthServiceTests : IDisposable
     {
         var component = new ScoreComponent();
         component.Weight.Should().Be(0);
-        component.Score.Should().Be(0);
-        component.WeightedScore.Should().Be(0);
+        component.Score.Should().BeNull();
+        component.WeightedScore.Should().BeNull();
     }
 
     // ── Data Model: FailoverThresholds ───────────────────────────────
@@ -149,9 +239,9 @@ public sealed class ProviderHealthServiceTests : IDisposable
     public void HealthHistoryPoint_ShouldHaveDefaults()
     {
         var point = new HealthHistoryPoint();
-        point.OverallScore.Should().Be(0);
-        point.LatencyMs.Should().Be(0);
-        point.CompletenessPercent.Should().Be(0);
+        point.OverallScore.Should().BeNull();
+        point.LatencyMs.Should().BeNull();
+        point.CompletenessPercent.Should().BeNull();
     }
 
     // ── Data Model: ProviderHealthInfo ───────────────────────────────
@@ -163,8 +253,8 @@ public sealed class ProviderHealthServiceTests : IDisposable
         info.ProviderId.Should().BeEmpty();
         info.ProviderName.Should().BeEmpty();
         info.IsConnected.Should().BeFalse();
-        info.ConnectionStabilityScore.Should().Be(0);
-        info.AverageLatencyMs.Should().Be(0);
+        info.ConnectionStabilityScore.Should().BeNull();
+        info.AverageLatencyMs.Should().BeNull();
     }
 
     // ── Event Args ───────────────────────────────────────────────────
@@ -203,6 +293,6 @@ public sealed class ProviderHealthServiceTests : IDisposable
     public void Dispose()
     {
         // Ensure monitoring is stopped after tests
-        ProviderHealthService.Instance.StopMonitoring();
+        _service.Dispose();
     }
 }

@@ -54,6 +54,14 @@ export function EditableCell({
   const returnFocus = React.useRef(false);
   const hintId = React.useId();
   React.useEffect(() => { if (!editing) setDraft(String(value ?? "")); }, [value, editing]);
+  React.useEffect(() => {
+    if (disabled) {
+      returnFocus.current = false;
+      setDraft(String(value ?? ""));
+      setError(null);
+      setEditing(false);
+    }
+  }, [disabled]);
   const startEdit = () => { if (disabled) return; setDraft(String(value ?? "")); setError(null); setEditing(true); };
 
   const validate = (val) => {
@@ -69,6 +77,9 @@ export function EditableCell({
   };
 
   const commit = () => {
+    // Disabling an active input can blur it immediately or leave it focused until
+    // later, depending on the browser. Neither path may commit a revoked edit.
+    if (disabled || inputRef.current?.disabled) return false;
     if (!validate(draft)) return false;
     onCommit?.(draft);
     setEditing(false);

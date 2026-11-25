@@ -449,10 +449,10 @@ public sealed class ScheduleSpecFactoryTests
     [Fact]
     public void AnUnreadableStamp_ComesBeforeLegs()
     {
-        var terms = Json(Flat(5, BondBody + ",\"cashFlowLegs\":[" + PlainLeg + "],\"scheduleConventions\":{\"accrualAdjusted\":false}"));
+        var terms = Json(Flat(6, BondBody + ",\"cashFlowLegs\":[" + PlainLeg + "],\"scheduleConventions\":{\"accrualAdjusted\":false}"));
         SecurityTermsEnvelope.TryGetReadRefusal("Bond", terms, out var reason).Should().BeTrue();
 
-        const string message = "Declared schedule conventions cannot be read: Unsupported assetClassTermsVersion '5' for asset class 'Bond'; this node reads versions 1 through 4.";
+        const string message = "Declared schedule conventions cannot be read: Unsupported assetClassTermsVersion '6' for asset class 'Bond'; this node reads versions 1 through 5.";
         message.Should().Be($"Declared schedule conventions cannot be read: {reason}");
         ShouldRefuse(Resolve(Security("Bond", terms)), DeclaredScheduleRefusalCode.TermsVersionUnreadable, message);
         Resolve(Security("Bond", terms)).Conventions.Should().BeSameAs(ScheduleConventionTerms.Empty);
@@ -647,10 +647,11 @@ public sealed class ScheduleSpecFactoryTests
     [Fact]
     public void AnUntaggedBondCarryingAProfileShape_IsDeclared()
     {
-        // ResolveFormat reads this row as a custom profile, but a Bond is not profile-governed: the
-        // mapping decodes its root block by its own stamp, and so does the factory.
+        // The historical shape rule (now only the legacy event classifier) reads this row as a custom
+        // profile, but a Bond is not profile-governed: the mapping decodes its root block by its own
+        // stamp, and so does the factory.
         var security = Bond("""{"accrualAdjusted":false}""", body: BondBody + ",\"customProfileId\":\"bond-profile\",\"profileFields\":{\"issuerName\":\"ACME Corp\"}");
-        SecurityTermsEnvelope.ResolveFormat(security.AssetSpecificTerms).Should().Be(SecurityTermsFormats.CustomProfile);
+        SecurityTermsLegacyEventClassifier.Classify(security.AssetSpecificTerms).Should().Be(SecurityTermsFormats.CustomProfile);
 
         DeclaredSpec(Resolve(security)).Should().Be(DeclaredSpec(Resolve(Bond("""{"accrualAdjusted":false}"""))));
     }

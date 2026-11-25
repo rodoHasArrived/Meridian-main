@@ -18,7 +18,7 @@ namespace Meridian.Tests.SecurityMaster;
 /// period, balanced journals, valid lot mutations, retained evidence, and the required
 /// maker-checker approval (exit criterion four of W9-CORPACT-011).
 /// </summary>
-public sealed class CorporateActionCaseAccountingServiceTests
+public sealed partial class CorporateActionCaseAccountingServiceTests
 {
     private static readonly Guid CaseId = Guid.Parse("3f2c4b7a-1e5d-4c88-9d21-73f2ab9de101");
     private static readonly Guid SecurityId = Guid.Parse("15c4a1de-7c40-4f83-9a5e-6dbb0182a202");

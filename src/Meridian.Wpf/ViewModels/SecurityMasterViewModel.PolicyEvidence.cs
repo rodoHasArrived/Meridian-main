@@ -13,7 +13,7 @@ public sealed partial class SecurityMasterViewModel
         if (exercise is not null)
         {
             ScheduleBookFields.Add(new("Declared call/put schedule", exercise.Status.ToString()));
-            ScheduleBookFields.Add(new("Schedule evaluated as of", FormatNullableDate(exercise.AsOf)));
+            ScheduleBookFields.Add(new("Schedule evaluated as of", SecurityMasterPresentation.FormatNullableDate(exercise.AsOf)));
             ScheduleBookFields.Add(new("Schedule security version", exercise.SecurityVersion?.ToString(CultureInfo.InvariantCulture) ?? "Unavailable"));
             ScheduleBookFields.Add(new("Exercise windows", exercise.WindowCount.ToString(CultureInfo.InvariantCulture)));
             foreach (var blocker in exercise.Blockers)

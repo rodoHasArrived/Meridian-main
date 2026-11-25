@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { PricingSourceHierarchyPanel } from "@/components/meridian/pricing-source-hierarchy-panel";
 import { approveClosePriceSet, createClosePriceSet, getClosePriceSet, listClosePriceSets } from "@/lib/api/account-oversight.api";
 import { describeApiError, isApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import type { ClosePriceLine, ClosePriceSet, CreateClosePriceSetRequest, OversightContext, OversightScope, PriceUnit } from "@/types/account-oversight";
@@ -87,9 +88,11 @@ function ScopedClosePricesPanel({ scope, context, onDirtyChange }: Props) {
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [notice, setNotice] = useState("");
   const [draftDirty, setDraftDirty] = useState(false);
+  const [hierarchyDirty, setHierarchyDirty] = useState(false);
+  const [showHierarchy, setShowHierarchy] = useState(false);
   // An unverified write is unsaved work: the pending approval or capture needed to verify it lives only
   // in this panel, so scope navigation must confirm before the remount discards it.
-  const dirty = draftDirty || reviewRationale.length > 0 || uncertainWrite;
+  const dirty = draftDirty || hierarchyDirty || reviewRationale.length > 0 || uncertainWrite;
   const active = useRef<AbortController | null>(null);
   const contextMatches = context.accountId === scope.accountId && context.bookId === scope.ledgerBookId;
   const canRead = contextMatches && context.canReadPrices;
@@ -348,8 +351,10 @@ function ScopedClosePricesPanel({ scope, context, onDirtyChange }: Props) {
           </FormGrid>
           <div className="flex flex-wrap items-center gap-3">
             <Button type="button" variant="outline" disabled={busy !== null || !date} onClick={() => void reload()}>{busy === "history" ? "Loading history…" : "Reload price history"}</Button>
+            <Button type="button" variant="outline" aria-expanded={showHierarchy} aria-controls="close-price-source-maintenance" onClick={() => setShowHierarchy(true)}>Maintain pricing sources</Button>
             {!canManage ? <p className="text-xs text-muted-foreground">Read only · preparing and approving require ledger and pricing management permission.</p> : null}
           </div>
+          {showHierarchy ? <div id="close-price-source-maintenance" className="rounded border border-border p-4"><PricingSourceHierarchyPanel accountId={accountId} canRead={canRead} canModify={canManage} initialSecurityId={visible?.snapshot.lines[0]?.securityId ?? ""} onDirtyChange={setHierarchyDirty} /></div> : null}
           {error ? <StatusBanner role="alert" tone="danger" title={<span className="text-foreground">{error.summary}</span>} detail={error.details.join(" ")} /> : null}
           {uncertainWrite ? <StatusBanner tone="warning" title={<span className="text-foreground">Write outcome needs verification</span>} detail={uncertainCapture && capture.current ? `A capture may have reached the server for valuation date ${capture.current.request.valuationDate}. Reload that date's history, then verify or retry the unchanged command with its retained request identity ${capture.current.request.requestId}. New captures and approval remain locked until the server confirms the original command.` : pendingApproval.current ? `An approval may have reached the server for valuation date ${pendingApproval.current.valuationDate}. Reload that date's history to verify the retained approval before approving or preparing again.` : "A request may have reached the server. Reload retained history and inspect its versions and approvals before retrying."} /> : null}
           <p role="status" aria-live="polite" className="text-xs text-muted-foreground">{notice || (busy ? "Reading or retaining authoritative close-price evidence…" : historyReady && sets.length === 0 ? "No close-price input is retained for this account, book and date." : "Select a version to inspect its retained source evidence.")}</p>

@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Infrastructure.Adapters.Core;
+using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
 namespace Meridian.Tests.Backfill;
@@ -11,6 +12,35 @@ namespace Meridian.Tests.Backfill;
 public class RateLimiterTests : IDisposable
 {
     private RateLimiter? _rateLimiter;
+
+    [Fact]
+    public async Task WaitForSlotAsync_ExactlyAtWindowBoundaryExpiresTheOldRequest()
+    {
+        var clock = new FakeTimeProvider();
+        _rateLimiter = new RateLimiter(1, TimeSpan.FromMinutes(1), timeProvider: clock);
+        await _rateLimiter.WaitForSlotAsync();
+        clock.Advance(TimeSpan.FromMinutes(1));
+
+        // Confirm expiry before admission so a regression fails without spinning a test thread.
+        _rateLimiter.GetStatus().RequestsInWindow.Should().Be(0);
+        await _rateLimiter.WaitForSlotAsync().WaitAsync(TimeSpan.FromSeconds(5));
+
+        _rateLimiter.GetStatus().RequestsInWindow.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task UpdateLimits_AppliesNewCapacityWithoutDiscardingRecentRequests()
+    {
+        var clock = new FakeTimeProvider();
+        _rateLimiter = new RateLimiter(1, TimeSpan.FromMinutes(1), timeProvider: clock);
+        await _rateLimiter.WaitForSlotAsync();
+
+        _rateLimiter.UpdateLimits(2, TimeSpan.FromMinutes(1));
+        await _rateLimiter.WaitForSlotAsync();
+
+        _rateLimiter.GetStatus().RequestsInWindow.Should().Be(2);
+        _rateLimiter.GetStatus().MaxRequests.Should().Be(2);
+    }
 
     public void Dispose()
     {
@@ -102,19 +132,14 @@ public class RateLimiterTests : IDisposable
     [Fact]
     public async Task WaitForSlotAsync_ExceedsLimit_WaitsForWindowToExpire()
     {
-        // Arrange - Use longer window for CI stability
-        _rateLimiter = new RateLimiter(maxRequestsPerWindow: 2, window: TimeSpan.FromMilliseconds(100));
-
-        // Act - Make 2 requests (at limit)
+        var clock = new FakeTimeProvider();
+        _rateLimiter = new RateLimiter(2, TimeSpan.FromMinutes(1), timeProvider: clock);
         await _rateLimiter.WaitForSlotAsync();
         await _rateLimiter.WaitForSlotAsync();
-
-        var sw = System.Diagnostics.Stopwatch.StartNew();
-        await _rateLimiter.WaitForSlotAsync(); // Should wait for window
-        sw.Stop();
-
-        // Assert - Should have waited a meaningful amount (wide tolerance for slow CI)
-        sw.ElapsedMilliseconds.Should().BeGreaterThan(30);
+        var pending = _rateLimiter.WaitForSlotAsync();
+        pending.IsCompleted.Should().BeFalse();
+        clock.Advance(TimeSpan.FromMinutes(1));
+        (await pending.WaitAsync(TimeSpan.FromSeconds(5))).Should().Be(TimeSpan.FromMinutes(1));
     }
 
     #endregion
@@ -124,42 +149,23 @@ public class RateLimiterTests : IDisposable
     [Fact]
     public async Task WaitForSlotAsync_WithMinDelay_EnforcesDelayBetweenRequests()
     {
-        // Arrange - Use longer delay for CI stability
-        _rateLimiter = new RateLimiter(
-            maxRequestsPerWindow: 100,
-            window: TimeSpan.FromSeconds(60),
-            minDelayBetweenRequests: TimeSpan.FromMilliseconds(80));
-
-        // Act - Make first request
+        var clock = new FakeTimeProvider();
+        _rateLimiter = new RateLimiter(100, TimeSpan.FromSeconds(60), TimeSpan.FromMilliseconds(80), timeProvider: clock);
         await _rateLimiter.WaitForSlotAsync();
-
-        var sw = System.Diagnostics.Stopwatch.StartNew();
-        await _rateLimiter.WaitForSlotAsync(); // Should wait for min delay
-        sw.Stop();
-
-        // Assert - Wider tolerance for slow CI runners
-        sw.ElapsedMilliseconds.Should().BeGreaterThanOrEqualTo(50);
+        var pending = _rateLimiter.WaitForSlotAsync();
+        pending.IsCompleted.Should().BeFalse();
+        clock.Advance(TimeSpan.FromMilliseconds(80));
+        (await pending.WaitAsync(TimeSpan.FromSeconds(5))).Should().Be(TimeSpan.FromMilliseconds(80));
     }
 
     [Fact]
     public async Task WaitForSlotAsync_AfterDelayElapsed_DoesNotWait()
     {
-        // Arrange
-        _rateLimiter = new RateLimiter(
-            maxRequestsPerWindow: 100,
-            window: TimeSpan.FromSeconds(60),
-            minDelayBetweenRequests: TimeSpan.FromMilliseconds(50));
-
-        // Act
+        var clock = new FakeTimeProvider();
+        _rateLimiter = new RateLimiter(100, TimeSpan.FromSeconds(60), TimeSpan.FromMilliseconds(50), timeProvider: clock);
         await _rateLimiter.WaitForSlotAsync();
-        await Task.Delay(60); // Wait well beyond min delay for CI stability
-
-        var sw = System.Diagnostics.Stopwatch.StartNew();
-        await _rateLimiter.WaitForSlotAsync();
-        sw.Stop();
-
-        // Assert - Should return quickly (wider tolerance for CI)
-        sw.ElapsedMilliseconds.Should().BeLessThan(100);
+        clock.Advance(TimeSpan.FromMilliseconds(60));
+        (await _rateLimiter.WaitForSlotAsync()).Should().Be(TimeSpan.Zero);
     }
 
     #endregion
@@ -187,19 +193,14 @@ public class RateLimiterTests : IDisposable
     [Fact]
     public async Task RecordRequest_CountsTowardLimit()
     {
-        // Arrange - Use longer window for CI stability
-        _rateLimiter = new RateLimiter(maxRequestsPerWindow: 2, window: TimeSpan.FromMilliseconds(100));
-
-        // Act - Record 2 requests (at limit)
+        var clock = new FakeTimeProvider();
+        _rateLimiter = new RateLimiter(2, TimeSpan.FromMinutes(1), timeProvider: clock);
         _rateLimiter.RecordRequest();
         _rateLimiter.RecordRequest();
-
-        var sw = System.Diagnostics.Stopwatch.StartNew();
-        await _rateLimiter.WaitForSlotAsync(); // Should wait
-        sw.Stop();
-
-        // Assert - Wider tolerance for slow CI runners
-        sw.ElapsedMilliseconds.Should().BeGreaterThan(30);
+        var pending = _rateLimiter.WaitForSlotAsync();
+        pending.IsCompleted.Should().BeFalse();
+        clock.Advance(TimeSpan.FromMinutes(1));
+        (await pending.WaitAsync(TimeSpan.FromSeconds(5))).Should().Be(TimeSpan.FromMinutes(1));
     }
 
     #endregion
@@ -243,20 +244,12 @@ public class RateLimiterTests : IDisposable
     [Fact]
     public async Task GetStatus_AfterWindowExpires_CleansUpOldRequests()
     {
-        // Arrange - Short window for testing
-        _rateLimiter = new RateLimiter(maxRequestsPerWindow: 10, window: TimeSpan.FromMilliseconds(50));
-
-        // Act
+        var clock = new FakeTimeProvider();
+        _rateLimiter = new RateLimiter(10, TimeSpan.FromMilliseconds(50), timeProvider: clock);
         await _rateLimiter.WaitForSlotAsync();
         await _rateLimiter.WaitForSlotAsync();
-
-        // Wait for window to expire
-        await Task.Delay(60);
-
-        var (requestsInWindow, _, _) = _rateLimiter.GetStatus();
-
-        // Assert
-        requestsInWindow.Should().Be(0);
+        clock.Advance(TimeSpan.FromMilliseconds(60));
+        _rateLimiter.GetStatus().RequestsInWindow.Should().Be(0);
     }
 
     #endregion
@@ -266,16 +259,13 @@ public class RateLimiterTests : IDisposable
     [Fact]
     public async Task WaitForSlotAsync_WithCancellation_ThrowsOperationCanceledException()
     {
-        // Arrange
-        _rateLimiter = new RateLimiter(maxRequestsPerWindow: 1, window: TimeSpan.FromSeconds(60));
-        await _rateLimiter.WaitForSlotAsync(); // Use up the slot
-
-        using var cts = new CancellationTokenSource();
-        cts.CancelAfter(50);
-
-        // Act & Assert
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => _rateLimiter.WaitForSlotAsync(cts.Token));
+        _rateLimiter = new RateLimiter(1, TimeSpan.FromHours(1));
+        await _rateLimiter.WaitForSlotAsync();
+        using var cancellation = new CancellationTokenSource();
+        var pending = _rateLimiter.WaitForSlotAsync(cancellation.Token);
+        pending.IsCompleted.Should().BeFalse();
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending);
     }
 
     [Fact]
@@ -337,45 +327,27 @@ public class RateLimiterTests : IDisposable
     [Fact]
     public async Task WaitForSlotAsync_ConcurrentRequests_RespectLimit()
     {
-        // Arrange - Use a much shorter window (100ms) to make test fast
-        // With limit of 3 and 6 concurrent requests, the second batch must wait
-        _rateLimiter = new RateLimiter(maxRequestsPerWindow: 3, window: TimeSpan.FromMilliseconds(100));
-
-        // Act - Launch 6 concurrent requests (2x limit)
-        var tasks = Enumerable.Range(0, 6)
-            .Select(_ => _rateLimiter.WaitForSlotAsync())
-            .ToList();
-
-        var waitTimes = await Task.WhenAll(tasks);
-
-        // Assert - Some tasks should have waited (rate limited), others should not
-        // First 3 requests should complete immediately (or near-zero wait)
-        var immediateRequests = waitTimes.Count(t => t.TotalMilliseconds < 50);
-        var delayedRequests = waitTimes.Count(t => t.TotalMilliseconds >= 50);
-
-        immediateRequests.Should().BeGreaterThanOrEqualTo(3, "at least 3 requests should proceed immediately");
-        delayedRequests.Should().BeGreaterThanOrEqualTo(3, "at least 3 requests should be delayed by rate limiting");
-
-        // At least some requests should have waited a non-trivial duration (>= window/2)
-        waitTimes.Should().Contain(t => t.TotalMilliseconds >= 50, "some requests should wait for rate limit window");
+        var clock = new FakeTimeProvider();
+        _rateLimiter = new RateLimiter(3, TimeSpan.FromMinutes(1), timeProvider: clock);
+        var requests = Enumerable.Range(0, 6).Select(_ => _rateLimiter.WaitForSlotAsync()).ToArray();
+        requests.Count(task => task.IsCompletedSuccessfully).Should().Be(3);
+        clock.Advance(TimeSpan.FromMinutes(1));
+        var waits = await Task.WhenAll(requests).WaitAsync(TimeSpan.FromSeconds(5));
+        waits.Count(value => value == TimeSpan.Zero).Should().Be(3);
+        waits.Count(value => value == TimeSpan.FromMinutes(1)).Should().Be(3);
     }
 
     [Fact]
     public async Task WaitForSlotAsync_ConcurrentRequestsWithShortWindow_EnforcesLimit()
     {
-        // Arrange
-        _rateLimiter = new RateLimiter(maxRequestsPerWindow: 3, window: TimeSpan.FromMilliseconds(100));
-
-        var sw = System.Diagnostics.Stopwatch.StartNew();
-
-        // Act - Launch 6 concurrent requests (2x limit)
-        var tasks = Enumerable.Range(0, 6).Select(_ => _rateLimiter.WaitForSlotAsync()).ToList();
-        await Task.WhenAll(tasks);
-
-        sw.Stop();
-
-        // Assert - Should have taken at least one window period
-        sw.ElapsedMilliseconds.Should().BeGreaterThan(50);
+        var clock = new FakeTimeProvider();
+        _rateLimiter = new RateLimiter(3, TimeSpan.FromMilliseconds(100), timeProvider: clock);
+        var requests = Enumerable.Range(0, 6).Select(_ => _rateLimiter.WaitForSlotAsync()).ToArray();
+        requests.Count(task => task.IsCompletedSuccessfully).Should().Be(3);
+        clock.Advance(TimeSpan.FromMilliseconds(100));
+        var waits = await Task.WhenAll(requests).WaitAsync(TimeSpan.FromSeconds(5));
+        waits.Max().Should().Be(TimeSpan.FromMilliseconds(100));
+        _rateLimiter.GetStatus().RequestsInWindow.Should().Be(3);
     }
 
     #endregion
@@ -385,22 +357,12 @@ public class RateLimiterTests : IDisposable
     [Fact]
     public async Task SlidingWindow_OldRequestsExpire_NewRequestsAllowed()
     {
-        // Arrange
-        _rateLimiter = new RateLimiter(maxRequestsPerWindow: 2, window: TimeSpan.FromMilliseconds(50));
-
-        // Act - Use up the limit
+        var clock = new FakeTimeProvider();
+        _rateLimiter = new RateLimiter(2, TimeSpan.FromMilliseconds(50), timeProvider: clock);
         await _rateLimiter.WaitForSlotAsync();
         await _rateLimiter.WaitForSlotAsync();
-
-        // Wait for window to expire
-        await Task.Delay(60);
-
-        var sw = System.Diagnostics.Stopwatch.StartNew();
-        await _rateLimiter.WaitForSlotAsync();
-        sw.Stop();
-
-        // Assert - Should not need to wait much since old requests expired
-        sw.ElapsedMilliseconds.Should().BeLessThan(50);
+        clock.Advance(TimeSpan.FromMilliseconds(60));
+        (await _rateLimiter.WaitForSlotAsync()).Should().Be(TimeSpan.Zero);
     }
 
     #endregion
@@ -412,6 +374,21 @@ public class RateLimiterTests : IDisposable
 public class RateLimiterRegistryTests : IDisposable
 {
     private RateLimiterRegistry? _registry;
+
+    [Fact]
+    public void GetOrCreate_ChangedProviderLimitsUpdatesExistingLimiter()
+    {
+        _registry = new RateLimiterRegistry();
+        var limiter = _registry.GetOrCreate("provider", 1, TimeSpan.FromMinutes(1));
+        limiter.RecordRequest();
+
+        var updated = _registry.GetOrCreate("provider", 20, TimeSpan.FromMinutes(2));
+
+        updated.Should().BeSameAs(limiter);
+        updated.GetStatus().MaxRequests.Should().Be(20);
+        updated.GetStatus().RequestsInWindow.Should().Be(1);
+        updated.GetStatus().WindowRemaining.Should().BeGreaterThan(TimeSpan.FromMinutes(1));
+    }
 
     public void Dispose()
     {

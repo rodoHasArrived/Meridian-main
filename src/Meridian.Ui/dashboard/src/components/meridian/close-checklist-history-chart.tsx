@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { ChartCard } from "@/components/charts/ChartCard";
 import { SegmentedLineChart } from "@/components/charts/SegmentedLineChart";
 import { Button } from "@/components/ui/button";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { getCloseChecklistHistory, type CloseChecklistHistory } from "@/lib/api/close-checklist-history.api";
-import { formatDateTimeUtc } from "@/lib/time";
+import { TimeText } from "@/components/ui/time-text";
 
 export function CloseChecklistHistoryView({ history }: { history: CloseChecklistHistory }) {
   const points = history.observations;
@@ -13,7 +14,7 @@ export function CloseChecklistHistoryView({ history }: { history: CloseChecklist
     <h3 className="text-sm font-semibold">Close task burndown</h3>
     {history.status !== "Ready" || !latest ? <p role="status" className="text-sm text-muted-foreground">{history.reason ?? "No retained checklist snapshots are available. Coverage begins with new canonical committed transitions."}</p>
       : <>
-        <p className="text-xs text-muted-foreground">{latest.remainingTasks} of {latest.totalTasks} tasks remaining · {latest.blockedTasks} blocked · as of {formatDateTimeUtc(latest.recordedAtUtc)}</p>
+        <p className="text-xs text-muted-foreground">{latest.remainingTasks} of {latest.totalTasks} tasks remaining · {latest.blockedTasks} blocked · as of <TimeText value={latest.recordedAtUtc} fallback="Timestamp unavailable" /></p>
         {points.length >= 2 ? <ChartCard title="Remaining close tasks" subtitle="Retained committed workflow snapshots · gaps remain unconnected" height={215}>
           <SegmentedLineChart label="Remaining close tasks over retained history" maximum={Math.max(...points.map((point) => point.totalTasks))}
             points={points.map((point) => ({ timestamp: point.recordedAtUtc, value: point.remainingTasks, segment: point.segment }))} />
@@ -24,7 +25,7 @@ export function CloseChecklistHistoryView({ history }: { history: CloseChecklist
             sourceDescription="Retained committed checklist snapshots for this exact workflow; no legacy states are reconstructed."
             ariaLabel="Retained close checklist observations" rows={points} getRowId={(point) => point.auditId}
             columns={[{ id: "version", label: "Workflow version", render: (point) => point.workflowVersion, exportValue: (point) => point.workflowVersion },
-              { id: "recorded", label: "Recorded at UTC", render: (point) => formatDateTimeUtc(point.recordedAtUtc), exportValue: (point) => point.recordedAtUtc },
+              { id: "recorded", label: "Recorded at", render: (point) => <TimeText value={point.recordedAtUtc} fallback="Timestamp unavailable" />, exportValue: (point) => point.recordedAtUtc },
               { id: "remaining", label: "Remaining tasks", render: (point) => point.remainingTasks, exportValue: (point) => point.remainingTasks },
               { id: "blocked", label: "Blocked tasks", render: (point) => point.blockedTasks, exportValue: (point) => point.blockedTasks },
               { id: "total", label: "Total tasks", render: (point) => point.totalTasks, exportValue: (point) => point.totalTasks },
@@ -49,9 +50,10 @@ export function CloseChecklistHistoryChart({ workflowId, workflowVersion }: { wo
     );
     return () => controller.abort();
   }, [key, retry, workflowId]);
+  useOnGlobalRefresh(() => setRetry((value) => value + 1));
   return active?.history ? <CloseChecklistHistoryView history={active.history} /> : <section aria-label="Retained close task history" className="space-y-2">
     <h3 className="text-sm font-semibold">Close task burndown</h3>
     <p role="status" className="text-xs text-muted-foreground">{active?.failed ? "Retained checklist history is unavailable. Current task states remain available; no earlier completion history is inferred." : "Loading retained checklist history…"}</p>
-    {active?.failed ? <Button size="sm" variant="outline" onClick={() => setRetry((value) => value + 1)}>Retry close task history</Button> : null}
+    {active?.failed ? <Button size="sm" variant="outline" onClick={() => setRetry((value) => value + 1)} aria-label="Retry loading close task history">Retry</Button> : null}
   </section>;
 }

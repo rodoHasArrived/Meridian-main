@@ -755,24 +755,30 @@ describe("dashboard design-system contract", () => {
     const screen = readAccountingScreen();
     const securityMasterPanels = readAccountingSecurityMasterPanels();
     const viewModel = readAccountingViewModel();
+    const securityProjections = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/accounting-screen.security-projections.ts");
 
     expect(screen).toContain('from "@/screens/accounting-screen.security-master-panels"');
+    expect(screen).toContain("view={securityMaster.schedulesView}");
     expect(securityMasterPanels).toContain("export function SecuritySchedulesPanel");
     expect(securityMasterPanels).toContain("<DenseDataTable");
     expect(securityMasterPanels).toContain("<ToolbarStrip");
     expect(securityMasterPanels).toContain("<EntitySummary");
     expect(viewModel).toContain("buildSecuritySchedulesViewState");
     expect(viewModel).toContain("SecuritySchedulesViewState");
-    expect(viewModel).toContain("Cash-flow and factor schedules");
-    expect(viewModel).toContain("statusAnnouncement");
-    expect(viewModel).toContain("emptyText");
+    expect(viewModel).toMatch(/export\s+\{[^}]*\bbuildSecuritySchedulesViewState\b[^}]*\}\s+from "\.\/accounting-screen\.security-projections";/);
+    expect(viewModel).toMatch(/export\s+type\s+\{[^}]*\bSecuritySchedulesViewState\b[^}]*\}\s+from "\.\/accounting-screen\.security-projections";/);
+    expect(securityProjections).toContain("export function buildSecuritySchedulesViewState");
+    expect(securityProjections).toContain("export interface SecuritySchedulesViewState");
+    expect(securityProjections).toContain("Cash-flow and factor schedules");
+    expect(securityProjections).toContain("statusAnnouncement");
+    expect(securityProjections).toContain("emptyText");
   });
 
   it("keeps evidence semantic states aligned across browser, WPF, docs, and screenshot gates", () => {
     // The badge variant vocabulary now lives in the design-system primitive adapter that
     // `@/components/ui/badge` re-exports, so assert the semantic tones at their source.
     const badge = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/badge.tsx");
-    const sharedToneMappings = readRepositoryFile("src/Meridian.Ui/dashboard/src/lib/shared-tone-mappings.ts");
+    const statusStyles = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/status-styles.ts");
     const evidenceScreen = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.tsx");
     const evidenceAssuranceLists = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-assurance-lists.tsx");
     const evidenceViewModel = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.view-model.ts");
@@ -787,14 +793,14 @@ describe("dashboard design-system contract", () => {
     }
 
     expect(evidenceViewModel).toContain('export type EvidenceStatusTone = "success" | "warning" | "danger" | "muted";');
-    expect(sharedToneMappings).toContain("export function readinessToneToBadgeVariant");
-    expect(sharedToneMappings).toContain("case \"success\":");
-    expect(sharedToneMappings).toContain("return \"outline\"");
-    expect(evidenceScreen).toContain('import { evidenceStatusToneToTextClass, readinessToneToBadgeVariant } from "@/lib/shared-tone-mappings"');
-    expect(evidenceScreen).toContain("readinessToneToBadgeVariant(panel.statusTone)");
-    expect(evidenceAssuranceLists).toContain('import { readinessToneToBadgeVariant } from "@/lib/shared-tone-mappings"');
-    expect(evidenceAssuranceLists).toContain("readinessToneToBadgeVariant(row.tone)");
-    expect(evidenceScreen).toContain("evidenceStatusToneToTextClass(tone)");
+    expect(statusStyles).toContain("export function statusBadgeVariant");
+    expect(statusStyles).toContain('ready: "success"');
+    expect(statusStyles).toContain('info: "outline"');
+    expect(evidenceScreen).toContain('import { statusBadgeVariant, statusTextClass } from "@/design-system/status-styles"');
+    expect(evidenceScreen).toContain("statusBadgeVariant(panel.statusTone)");
+    expect(evidenceAssuranceLists).toContain('import { statusBadgeVariant } from "@/design-system/status-styles"');
+    expect(evidenceAssuranceLists).toContain("statusBadgeVariant(row.tone)");
+    expect(evidenceScreen).toContain("statusTextClass(tone)");
     expect(evidenceScreen).toContain("actionBadgeVariant[action.tone]");
 
     for (const state of ["Success", "Warning", "Danger"]) {

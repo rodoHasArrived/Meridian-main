@@ -111,6 +111,8 @@ export interface ContractualCashFlowEvidence {
 }
 
 export interface ContractualCashFlowResult {
+  /** Selected fields of the authoritative contract returned with calculated results. */
+  resolvedContract?: { streams: Array<{ streamId: string; prepaymentAllowed: boolean }> } | null;
   events: ContractualCashFlowEvent[];
   exerciseEligibility: CashFlowExerciseEligibility[];
   exerciseCalculations: CashFlowExerciseCalculation[];

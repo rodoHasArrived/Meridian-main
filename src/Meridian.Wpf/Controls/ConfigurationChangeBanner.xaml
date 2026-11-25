@@ -1,0 +1,29 @@
+<UserControl x:Class="Meridian.Wpf.Controls.ConfigurationChangeBanner"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Loaded="OnLoaded" Unloaded="OnUnloaded"
+             AutomationProperties.AutomationId="ConfigurationChangeBanner">
+    <Border x:Name="BannerRoot" Style="{StaticResource CardStyle}"
+            BorderBrush="{StaticResource InfoColorBrush}" Margin="0,0,0,16">
+        <StackPanel>
+            <TextBlock Text="{Binding Title}" Style="{StaticResource CardHeaderStyle}"
+                       TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+            <TextBlock Text="{Binding Detail}" Style="{StaticResource CardDescriptionStyle}"
+                       Margin="0,6,0,0" TextWrapping="Wrap" />
+            <ScrollViewer MaxHeight="96" VerticalScrollBarVisibility="Auto" Margin="0,6,0,0">
+                <TextBlock Text="{Binding Paths}" Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                           TextWrapping="Wrap" FontSize="12" />
+            </ScrollViewer>
+            <Button Content="Refresh setting activation" HorizontalAlignment="Left" Margin="0,8,0,0"
+                    Click="OnRefreshClick" AutomationProperties.AutomationId="RefreshConfigurationChangeStatus">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsBusy}" Value="True"><Setter Property="IsEnabled" Value="False" /></DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+    </Border>
+</UserControl>

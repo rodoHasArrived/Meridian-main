@@ -111,6 +111,12 @@ public sealed record Order(
     Guid? ParentOrderId = null,
     Guid? OcoGroupId = null)
 {
+    /// <summary>Commission already charged on accepted fills of this order.</summary>
+    public decimal CommissionCharged { get; init; }
+
+    /// <summary>Absolute notional of accepted fills, used for cumulative commission tiers.</summary>
+    public decimal FilledNotional { get; init; }
+
     /// <summary>Absolute quantity that still needs to be executed.</summary>
     public long RemainingQuantity => Math.Max(0L, Math.Abs(Quantity) - Math.Abs(FilledQuantity));
 

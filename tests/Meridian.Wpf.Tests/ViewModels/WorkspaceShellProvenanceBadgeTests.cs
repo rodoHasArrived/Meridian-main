@@ -23,7 +23,7 @@ public sealed class WorkspaceShellProvenanceBadgeTests
 
         await viewModel.RefreshShellContextAsync();
 
-        viewModel.ShellContext.WorkspaceTitle.Should().Be("Portfolio");
+        viewModel.ShellContext.WorkspaceTitle.Should().Be("Portfolio Workspace");
         viewModel.ShellContext.Badges.Should().ContainSingle(
             b => b.Label == "Environment" && b.Value == "SEEDED data" && b.Tone == WorkspaceTone.Warning);
     }
@@ -46,7 +46,7 @@ public sealed class WorkspaceShellProvenanceBadgeTests
 
         await viewModel.RefreshAsync();
 
-        viewModel.ShellContext.WorkspaceTitle.Should().Be("Reporting");
+        viewModel.ShellContext.WorkspaceTitle.Should().Be("Reporting Workspace");
         viewModel.ShellContext.Badges.Should().ContainSingle(
             b => b.Label == "Environment" && b.Value == "SEEDED data" && b.Tone == WorkspaceTone.Warning);
     }

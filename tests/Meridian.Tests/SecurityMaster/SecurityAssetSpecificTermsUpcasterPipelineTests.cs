@@ -8,8 +8,8 @@ namespace Meridian.Tests.SecurityMaster;
 /// <summary>
 /// The registered <see cref="SecurityAssetSpecificTermsUpcasterPipeline"/> is the injectable
 /// <see cref="Meridian.Contracts.Schema.ISchemaUpcaster{T}"/> form of the asset-specific-terms
-/// migrate-on-read chain. It must compose the full chain (v0 stamping plus cross-family
-/// economic-terms v2 -> v1 flattening) so a caller resolving upcasters through that seam reads the
+/// migrate-on-read chain. It must compose the full chain (v0 stamping plus declared
+/// economic-terms v2 -> v1 flattening, refusing untagged payloads) so a caller resolving upcasters through that seam reads the
 /// same normalized payload the chain produces, while preserving unknown future versions. The
 /// projection store's <c>schema_version</c> column is no longer derived from it: that column records
 /// the version stamped on the stored blob, so a v2 document in the slot is selectable by audit queries.
@@ -22,7 +22,7 @@ public sealed class SecurityAssetSpecificTermsUpcasterPipelineTests
     [Fact]
     public void Upcast_UnstampedLegacyPayload_ResolvesToLegacyVersion()
     {
-        var json = JsonSerializer.Serialize(new { shareClass = "Common" });
+        var json = JsonSerializer.Serialize(new { termsFormat = SecurityTermsFormats.Flat, shareClass = "Common" });
 
         var result = _pipeline.Upcast(json);
 
@@ -38,6 +38,7 @@ public sealed class SecurityAssetSpecificTermsUpcasterPipelineTests
         var json = JsonSerializer.Serialize(new
         {
             schemaVersion = EconomicTermsSchema.Current,
+            termsFormat = SecurityTermsFormats.Economic,
             maturity = new { maturityDate = "2030-06-30" },
             coupon = new { couponType = "Fixed", couponRate = 5.25m }
         });
@@ -56,6 +57,7 @@ public sealed class SecurityAssetSpecificTermsUpcasterPipelineTests
         var json = JsonSerializer.Serialize(new
         {
             schemaVersion = AssetSpecificTermsSchema.CustomAssetProfile,
+            termsFormat = SecurityTermsFormats.CustomProfile,
             customProfileId = "co-invest-spv",
             profileVersion = 1
         });
@@ -64,6 +66,15 @@ public sealed class SecurityAssetSpecificTermsUpcasterPipelineTests
 
         result.Should().NotBeNull();
         result!.SchemaVersion.Should().Be(AssetSpecificTermsSchema.CustomAssetProfile);
+    }
+
+    [Fact]
+    public void Upcast_UntaggedPayload_IsRefusedPrecisely()
+    {
+        // ADR-024 amendment 2026-11-13 step 5: the pipeline dispatches on the declared tag alone.
+        var upcast = () => _pipeline.Upcast(JsonSerializer.Serialize(new { schemaVersion = 1, shareClass = "Common" }));
+
+        upcast.Should().Throw<SecurityTermsFormatUndeclaredException>();
     }
 
     [Fact]

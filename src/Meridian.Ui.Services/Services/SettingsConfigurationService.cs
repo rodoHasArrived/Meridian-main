@@ -17,7 +17,7 @@ namespace Meridian.Ui.Services.Services;
 /// Provides settings configuration capabilities including storage path preview generation,
 /// provider catalog data, and configuration profile management.
 /// </summary>
-public sealed class SettingsConfigurationService
+public sealed partial class SettingsConfigurationService
 {
     private static readonly Lazy<SettingsConfigurationService> LazyInstance = new(() => new SettingsConfigurationService());
     private static string? _desktopPreferencesFilePathOverride;
@@ -146,11 +146,15 @@ public sealed class SettingsConfigurationService
     /// </summary>
     public async Task<ProviderCredentialStateDto> SaveProviderCredentialsAsync(string providerId, IReadOnlyDictionary<string, string?> fields,
         string? connectionId = null, CancellationToken ct = default)
+        => await SaveProviderCredentialFieldsAsync(providerId, fields,
+            CredentialRoute(UiApiRoutes.ProviderCredentialMutation, providerId, connectionId), null, ct).ConfigureAwait(false);
+
+    private async Task<ProviderCredentialStateDto> SaveProviderCredentialFieldsAsync(string providerId,
+        IReadOnlyDictionary<string, string?> fields, string route, string? environment, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(fields);
-        var route = CredentialRoute(UiApiRoutes.ProviderCredentialMutation, providerId, connectionId);
         var response = await _apiClient.PutWithResponseAsync<ProviderCredentialMutationResultDto>(route,
-            new ProviderCredentialUpsertRequestDto(fields), ct).ConfigureAwait(false);
+            new ProviderCredentialUpsertRequestDto(fields, environment), ct).ConfigureAwait(false);
         ThrowIfRefused(response.StatusCode, "persistence");
         if (!response.Success || response.Data is null ||
             !ProviderIdentity.EqualsId(response.Data.ProviderId, providerId) ||
@@ -184,6 +188,19 @@ public sealed class SettingsConfigurationService
             (result is { VerificationState: ProviderVerificationStateDto.Verified, LastVerifiedAt: not null } ||
              result.VerificationState == ProviderVerificationStateDto.NotRequired) &&
             ProviderIdentity.EqualsId(result.ProviderId, providerId);
+    }
+
+    /// <summary>Tests an unsaved draft on the selected owned connection.</summary>
+    public async Task<ProviderCredentialDraftVerificationResultDto> VerifyDraftProviderCredentialsAsync(
+        string providerId, IReadOnlyDictionary<string, string?> fields, string connectionId, CancellationToken ct = default)
+    {
+        var route = CredentialRoute(UiApiRoutes.ProviderCredentialVerifyDraft, providerId, connectionId);
+        var response = await _apiClient.PostWithResponseAsync<ProviderCredentialDraftVerificationResultDto>(route,
+            new ProviderCredentialDraftRequestDto(fields), ct).ConfigureAwait(false);
+        ThrowIfRefused(response.StatusCode, "draft verification");
+        return response.Success && response.Data is { } result && ProviderIdentity.EqualsId(result.ProviderId, providerId)
+            ? result
+            : new(providerId, ProviderCredentialDraftStatusDto.Unavailable, "The host could not confirm the draft test. Retry when it is reachable.");
     }
 
     private static void ThrowIfRefused(int statusCode, string operation)
@@ -293,7 +310,8 @@ public sealed class SettingsConfigurationService
             _ => "Credential status is unavailable from the service."
         };
         return new ProviderCredentialStatus(providerId, displayName, state, message, [], row.CredentialFields,
-            row.VerificationState, row.LastVerifiedAt);
+            row.VerificationState, row.LastVerifiedAt)
+        { RotationDueAt = row.RotationDueAt };
     }
 
     /// <summary>
@@ -339,6 +357,66 @@ public sealed class SettingsConfigurationService
         {
             DesktopShellPreferencesChanged?.Invoke(this, updatedPreferences);
         }
+    }
+
+    /// <summary>
+    /// Gets the operator's persisted desktop keyboard shortcut overrides, keyed by action id.
+    /// </summary>
+    public IReadOnlyDictionary<string, DesktopShortcutOverride> GetShortcutOverrides() =>
+        GetDesktopShellPreferences().ShortcutOverrides;
+
+    /// <summary>
+    /// Replaces the persisted desktop keyboard shortcut overrides. An empty set restores every
+    /// shortcut to its default binding. Density and other shell preferences are preserved.
+    /// </summary>
+    public void SetShortcutOverrides(IReadOnlyDictionary<string, DesktopShortcutOverride> overrides)
+    {
+        ArgumentNullException.ThrowIfNull(overrides);
+
+        var snapshot = new Dictionary<string, DesktopShortcutOverride>(StringComparer.Ordinal);
+        foreach (var (actionId, shortcutOverride) in overrides)
+        {
+            if (!string.IsNullOrWhiteSpace(actionId) && shortcutOverride is not null)
+            {
+                snapshot[actionId] = shortcutOverride;
+            }
+        }
+
+        DesktopShellPreferences updatedPreferences;
+        lock (_desktopPreferencesGate)
+        {
+            EnsureDesktopShellPreferencesLoaded();
+            if (ShortcutOverridesEqual(_desktopShellPreferences.ShortcutOverrides, snapshot))
+            {
+                return;
+            }
+
+            updatedPreferences = _desktopShellPreferences with { ShortcutOverrides = snapshot };
+            PersistDesktopShellPreferencesCore(updatedPreferences);
+            _desktopShellPreferences = updatedPreferences;
+        }
+
+        DesktopShellPreferencesChanged?.Invoke(this, updatedPreferences);
+    }
+
+    private static bool ShortcutOverridesEqual(
+        IReadOnlyDictionary<string, DesktopShortcutOverride> left,
+        IReadOnlyDictionary<string, DesktopShortcutOverride> right)
+    {
+        if (left.Count != right.Count)
+        {
+            return false;
+        }
+
+        foreach (var (actionId, shortcutOverride) in left)
+        {
+            if (!right.TryGetValue(actionId, out var other) || other != shortcutOverride)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static ProviderCatalogEntry MapProviderCatalogEntry(Meridian.Contracts.Api.ProviderCatalogEntry entry)
@@ -542,7 +620,10 @@ public sealed class SettingsConfigurationService
             var model = JsonSerializer.Deserialize<DesktopShellPreferencesStorageModel>(json, DesktopShellJsonOptions);
             _desktopShellPreferences = model is null
                 ? DesktopShellPreferences.Default
-                : new DesktopShellPreferences(ResolveShellDensityMode(model));
+                : new DesktopShellPreferences(ResolveShellDensityMode(model))
+                {
+                    ShortcutOverrides = ResolveShortcutOverrides(model)
+                };
         }
         catch
         {
@@ -565,7 +646,18 @@ public sealed class SettingsConfigurationService
 
         var model = new DesktopShellPreferencesStorageModel
         {
-            ShellDensityMode = preferences.ShellDensityMode.ToString()
+            ShellDensityMode = preferences.ShellDensityMode.ToString(),
+            ShortcutOverrides = preferences.ShortcutOverrides.Count == 0
+                ? null
+                : preferences.ShortcutOverrides.ToDictionary(
+                    pair => pair.Key,
+                    pair => (DesktopShortcutOverrideStorageModel?)new DesktopShortcutOverrideStorageModel
+                    {
+                        Key = pair.Value.Key,
+                        Modifiers = pair.Value.Modifiers,
+                        IsEnabled = pair.Value.IsEnabled
+                    },
+                    StringComparer.Ordinal)
         };
         var json = JsonSerializer.Serialize(model, DesktopShellJsonOptions);
         var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
@@ -587,6 +679,28 @@ public sealed class SettingsConfigurationService
             false => ShellDensityMode.Standard,
             null => ShellDensityMode.Standard
         };
+    }
+
+    private static IReadOnlyDictionary<string, DesktopShortcutOverride> ResolveShortcutOverrides(
+        DesktopShellPreferencesStorageModel model)
+    {
+        if (model.ShortcutOverrides is not { Count: > 0 } stored)
+        {
+            return DesktopShellPreferences.Default.ShortcutOverrides;
+        }
+
+        var overrides = new Dictionary<string, DesktopShortcutOverride>(StringComparer.Ordinal);
+        foreach (var (actionId, entry) in stored)
+        {
+            if (string.IsNullOrWhiteSpace(actionId) || entry is null)
+            {
+                continue;
+            }
+
+            overrides[actionId] = new DesktopShortcutOverride(entry.Key, entry.Modifiers, entry.IsEnabled);
+        }
+
+        return overrides;
     }
 
     private static string GetDesktopPreferencesFilePath()
@@ -612,6 +726,17 @@ public sealed class SettingsConfigurationService
         public string? ShellDensityMode { get; init; }
 
         public bool? IsCompactMode { get; init; }
+
+        public Dictionary<string, DesktopShortcutOverrideStorageModel?>? ShortcutOverrides { get; init; }
+    }
+
+    private sealed class DesktopShortcutOverrideStorageModel
+    {
+        public string? Key { get; init; }
+
+        public string? Modifiers { get; init; }
+
+        public bool? IsEnabled { get; init; }
     }
 }
 
@@ -676,6 +801,8 @@ public sealed record ProviderCredentialStatus(
     ProviderVerificationStateDto VerificationState = ProviderVerificationStateDto.NotVerified,
     DateTimeOffset? LastVerifiedAt = null)
 {
+    public DateTimeOffset? RotationDueAt { get; init; }
+
     /// <summary>
     /// True when the authenticated credential service reported this provider together with the
     /// field names its vault accepts. Editors must use these names; the local provider catalog's

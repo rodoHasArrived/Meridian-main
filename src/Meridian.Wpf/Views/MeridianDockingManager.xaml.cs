@@ -144,6 +144,15 @@ public partial class MeridianDockingManager : UserControl
         };
     }
 
+    /// <summary>
+    /// Gets the content of every open docked or floating pane, so the workspace shell can
+    /// reload its panes in place when the shell Refresh control is used.
+    /// </summary>
+    public IReadOnlyList<object?> GetOpenPageContents()
+        => _openDocuments.Values
+            .Select(static descriptor => descriptor.FloatingWindow?.Content ?? descriptor.Document?.Content)
+            .ToList();
+
     public void ClearAllPanes()
     {
         foreach (var descriptor in _openDocuments.Values.ToList())

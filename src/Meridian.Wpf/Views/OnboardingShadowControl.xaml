@@ -1,0 +1,229 @@
+<UserControl x:Class="Meridian.Wpf.Views.OnboardingShadowControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.Name="Shadow-mode parallel run">
+    <UserControl.Resources>
+        <Style x:Key="ShadowGrid" TargetType="DataGrid">
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="MaxHeight" Value="280" />
+            <Setter Property="Margin" Value="0,8,0,12" />
+            <Setter Property="EnableRowVirtualization" Value="True" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        </Style>
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,0,0,4" />
+            <Setter Property="Foreground" Value="{DynamicResource ConsoleTextSecondaryBrush}" />
+        </Style>
+        <Style x:Key="FieldBox" TargetType="TextBox">
+            <Setter Property="Margin" Value="0,0,12,10" />
+            <Setter Property="MinWidth" Value="220" />
+        </Style>
+    </UserControl.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="0,16,0,0">
+            <TextBlock Text="SHADOW-MODE PARALLEL RUN" Style="{DynamicResource CardHeaderStyle}" />
+            <TextBlock Text="Run Meridian beside the incumbent administrator or GL. A shadow book cannot release reports or hard-close as the book of record until an independent reviewer promotes it with a parallel-run certificate."
+                       TextWrapping="Wrap" Margin="0,6,0,12" Foreground="{DynamicResource ConsoleTextSecondaryBrush}" />
+
+            <WrapPanel>
+                <Button Content="Load onboarding workspaces" Command="{Binding LoadCommand}" Margin="0,0,12,10"
+                        AutomationProperties.AutomationId="ShadowOnboardingLoad" />
+                <StackPanel Width="320" Margin="0,0,12,10">
+                    <TextBlock Text="Onboarding workspace" Style="{StaticResource FieldLabel}" />
+                    <ComboBox ItemsSource="{Binding Workspaces}" SelectedItem="{Binding SelectedWorkspace}" DisplayMemberPath="Name"
+                              AutomationProperties.Name="Onboarding workspace" AutomationProperties.AutomationId="ShadowOnboardingWorkspace" />
+                </StackPanel>
+                <Button Content="Refresh" Command="{Binding RefreshCommand}" Margin="0,0,12,10"
+                        AutomationProperties.AutomationId="ShadowOnboardingRefresh" />
+            </WrapPanel>
+            <TextBlock Text="{Binding Status}" TextWrapping="Wrap" Margin="0,0,0,12"
+                       AutomationProperties.LiveSetting="Polite" AutomationProperties.AutomationId="ShadowOnboardingStatus" />
+
+            <Border Style="{DynamicResource SectionCardStyle}" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="{Binding DesignationTitle}" FontWeight="SemiBold" AutomationProperties.AutomationId="ShadowOnboardingDesignationTitle" />
+                    <TextBlock Text="{Binding DesignationDetail}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    <TextBlock Text="{Binding ReadinessSummary}" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="{DynamicResource ConsoleTextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <StackPanel Visibility="{Binding IsNotDesignated, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0,0,0,12">
+                <TextBlock Text="Designation rationale" Style="{StaticResource FieldLabel}" />
+                <TextBox Text="{Binding ShadowRationale, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"
+                         AutomationProperties.Name="Designation rationale" />
+                <Button Content="Designate shadow book" Command="{Binding DesignateCommand}" HorizontalAlignment="Left"
+                        AutomationProperties.AutomationId="ShadowOnboardingDesignate" />
+            </StackPanel>
+
+            <StackPanel Visibility="{Binding IsInShadow, Converter={StaticResource BoolToVisibilityConverter}}">
+                <TextBlock Text="IMPORT INCUMBENT OPENING BALANCES" Style="{DynamicResource CardHeaderStyle}" Margin="0,8,0,4" />
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{DynamicResource ConsoleTextSecondaryBrush}"
+                           Text="Sources combine. A bank statement or GL trial balance covers cash balances only, so add an administrator pack for positions and NAV. An empty amount is missing, never zero. Re-importing a source replaces only that source." />
+                <WrapPanel>
+                    <StackPanel Margin="0,0,12,10">
+                        <TextBlock Text="Opening source" Style="{StaticResource FieldLabel}" />
+                        <ComboBox ItemsSource="{Binding OpeningSourceKinds}" SelectedItem="{Binding OpeningSourceKind}" MinWidth="200"
+                                  AutomationProperties.Name="Opening source" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,12,10" Visibility="{Binding IsGlTrialBalance, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}">
+                        <TextBlock Text="Opening file" Style="{StaticResource FieldLabel}" />
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Choose file…" Click="OnChooseOpeningFile" Margin="0,0,8,0"
+                                    AutomationProperties.AutomationId="ShadowOnboardingChooseFile" />
+                            <TextBlock Text="{Binding OpeningFileName}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Visibility="{Binding IsGlTrialBalance, Converter={StaticResource BoolToVisibilityConverter}}" Orientation="Horizontal">
+                        <StackPanel>
+                            <TextBlock Text="GL provider ID" Style="{StaticResource FieldLabel}" />
+                            <TextBox Text="{Binding OpeningProviderId, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"
+                                     AutomationProperties.Name="GL provider ID" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="GL import ID" Style="{StaticResource FieldLabel}" />
+                            <TextBox Text="{Binding OpeningImportId, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"
+                                     AutomationProperties.Name="GL import ID" />
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Mapping profile ID" Style="{StaticResource FieldLabel}" />
+                        <TextBox Text="{Binding MappingProfileId, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"
+                                 AutomationProperties.Name="Mapping profile ID" />
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Mapping version" Style="{StaticResource FieldLabel}" />
+                        <TextBox Text="{Binding MappingVersion, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"
+                                 AutomationProperties.Name="Mapping version" />
+                    </StackPanel>
+                </WrapPanel>
+                <TextBlock Text="Account mappings (one EXTERNAL=account-id per line)" Style="{StaticResource FieldLabel}" />
+                <TextBox Text="{Binding AccountMappings, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="60" Margin="0,0,0,10"
+                         TextWrapping="Wrap" AutomationProperties.Name="Account mappings" />
+                <TextBlock Text="Import notes" Style="{StaticResource FieldLabel}" />
+                <TextBox Text="{Binding OpeningNotes, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"
+                         AutomationProperties.Name="Import notes" />
+                <Button Content="Import opening balances" Command="{Binding ImportOpeningCommand}" HorizontalAlignment="Left" Margin="0,0,0,12"
+                        AutomationProperties.AutomationId="ShadowOnboardingImportOpening" />
+            </StackPanel>
+
+            <TextBlock Text="OPENING-BALANCE RECONCILIATION" Style="{DynamicResource CardHeaderStyle}" Margin="0,8,0,4" />
+            <TextBlock Text="{Binding OpeningSummary}" TextWrapping="Wrap" AutomationProperties.AutomationId="ShadowOnboardingOpeningSummary" />
+            <TextBlock Text="{Binding UncoveredKindsMessage}" TextWrapping="Wrap" Margin="0,4,0,0" Foreground="{DynamicResource WarningColorBrush}"
+                       Visibility="{Binding HasUncoveredKinds, Converter={StaticResource BoolToVisibilityConverter}}" />
+            <ItemsControl ItemsSource="{Binding OpeningSources}" Margin="0,6,0,0" AutomationProperties.Name="Opening sources" />
+            <DataGrid ItemsSource="{Binding OpeningLines}" Style="{StaticResource ShadowGrid}" AutomationProperties.Name="Opening balance lines">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Kind" Binding="{Binding Kind}" Width="90" />
+                    <DataGridTextColumn Header="Source" Binding="{Binding SourceKind}" Width="140" />
+                    <DataGridTextColumn Header="Account" Binding="{Binding AccountId}" Width="180" />
+                    <DataGridTextColumn Header="Currency" Binding="{Binding Currency}" Width="70" />
+                    <DataGridTextColumn Header="Instrument" Binding="{Binding InstrumentId}" Width="120" />
+                    <DataGridTextColumn Header="Meridian" Binding="{Binding MeridianAmount}" Width="110" />
+                    <DataGridTextColumn Header="Incumbent" Binding="{Binding IncumbentAmount}" Width="110" />
+                    <DataGridTextColumn Header="Difference" Binding="{Binding Difference}" Width="100" />
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" />
+                    <DataGridTextColumn Header="Reason" Binding="{Binding MissingReason}" Width="*" />
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <TextBlock Text="PARALLEL-RUN PERIOD AGREEMENT" Style="{DynamicResource CardHeaderStyle}" Margin="0,8,0,4" />
+            <DataGrid ItemsSource="{Binding Periods}" Style="{StaticResource ShadowGrid}" AutomationProperties.Name="Parallel-run period agreement">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Period" Binding="{Binding AsOfDate, StringFormat=yyyy-MM-dd}" Width="100" />
+                    <DataGridTextColumn Header="Meridian NAV" Binding="{Binding MeridianNav}" Width="120" />
+                    <DataGridTextColumn Header="Incumbent NAV" Binding="{Binding ExternalNav}" Width="120" />
+                    <DataGridTextColumn Header="Variance" Binding="{Binding NavVariance}" Width="100" />
+                    <DataGridTextColumn Header="Matched" Binding="{Binding MatchedCount}" Width="80" />
+                    <DataGridTextColumn Header="Explained" Binding="{Binding ExplainedCount}" Width="80" />
+                    <DataGridTextColumn Header="Unexplained" Binding="{Binding UnexplainedCount}" Width="90" />
+                    <DataGridCheckBoxColumn Header="Clean" Binding="{Binding IsClean, Mode=OneWay}" Width="60" />
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <StackPanel Visibility="{Binding IsInShadow, Converter={StaticResource BoolToVisibilityConverter}}">
+                <TextBlock Text="EXPLAIN PARALLEL-RUN DIFFERENCES" Style="{DynamicResource CardHeaderStyle}" Margin="0,8,0,4" />
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{DynamicResource ConsoleTextSecondaryBrush}"
+                           Text="Classify each opening break or period difference with retained evidence. A Meridian error never clears, a timing difference lapses after its expected reversal date, and any change in the compared amounts needs a new explanation." />
+                <ListBox ItemsSource="{Binding Explainable}" SelectedItem="{Binding SelectedDifference}" DisplayMemberPath="Summary" MaxHeight="180"
+                         AutomationProperties.Name="Explainable differences" />
+                <WrapPanel Margin="0,8,0,0">
+                    <StackPanel Margin="0,0,12,10">
+                        <TextBlock Text="Classification" Style="{StaticResource FieldLabel}" />
+                        <ComboBox ItemsSource="{Binding Classifications}" SelectedItem="{Binding Classification}" MinWidth="160"
+                                  AutomationProperties.Name="Classification" />
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Expected reversal date (yyyy-MM-dd, timing only)" Style="{StaticResource FieldLabel}" />
+                        <TextBox Text="{Binding ExpectedReversalDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"
+                                 AutomationProperties.Name="Expected reversal date" />
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Explanation" Style="{StaticResource FieldLabel}" />
+                        <TextBox Text="{Binding ExplanationNotes, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"
+                                 AutomationProperties.Name="Explanation" />
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Evidence IDs" Style="{StaticResource FieldLabel}" />
+                        <TextBox Text="{Binding ExplanationEvidence, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"
+                                 AutomationProperties.Name="Evidence IDs" />
+                    </StackPanel>
+                </WrapPanel>
+                <Button Content="Retain explanation" Command="{Binding ExplainCommand}" HorizontalAlignment="Left" Margin="0,0,0,12"
+                        AutomationProperties.AutomationId="ShadowOnboardingExplain" />
+
+                <TextBlock Text="PARALLEL-RUN CERTIFICATE" Style="{DynamicResource CardHeaderStyle}" Margin="0,8,0,4" />
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{DynamicResource ConsoleTextSecondaryBrush}"
+                           Text="Issue the certificate once opening balances reconcile, every required period is clean and independent review has approved the current revision." />
+                <Button Content="Issue parallel-run certificate" Command="{Binding IssueCertificateCommand}" HorizontalAlignment="Left" Margin="0,0,0,12"
+                        AutomationProperties.AutomationId="ShadowOnboardingIssueCertificate" />
+            </StackPanel>
+
+            <StackPanel Visibility="{Binding HasCertificates, Converter={StaticResource BoolToVisibilityConverter}}">
+                <TextBlock Text="Certificate" Style="{StaticResource FieldLabel}" />
+                <ComboBox ItemsSource="{Binding Certificates}" SelectedItem="{Binding SelectedCertificate}" DisplayMemberPath="CertificateId"
+                          MinWidth="320" HorizontalAlignment="Left" AutomationProperties.Name="Parallel-run certificate" />
+                <TextBlock Text="{Binding CertificateDetail}" TextWrapping="Wrap" Margin="0,8,0,12" AutomationProperties.AutomationId="ShadowOnboardingCertificateDetail" />
+            </StackPanel>
+
+            <StackPanel Visibility="{Binding IsInShadow, Converter={StaticResource BoolToVisibilityConverter}}">
+                <TextBlock Text="PROMOTE OR WITHDRAW" Style="{DynamicResource CardHeaderStyle}" Margin="0,8,0,4" />
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{DynamicResource ConsoleTextSecondaryBrush}"
+                           Text="Promotion is the cutover decision. A designated reviewer independent of the onboarding owner makes it, and the selected certificate must still match the current revision." />
+                <WrapPanel>
+                    <StackPanel>
+                        <TextBlock Text="Promotion rationale" Style="{StaticResource FieldLabel}" />
+                        <TextBox Text="{Binding PromotionRationale, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"
+                                 AutomationProperties.Name="Promotion rationale" />
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Supporting evidence IDs (optional)" Style="{StaticResource FieldLabel}" />
+                        <TextBox Text="{Binding PromotionEvidence, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"
+                                 AutomationProperties.Name="Supporting evidence IDs" />
+                    </StackPanel>
+                </WrapPanel>
+                <Button Content="Promote to book of record" Command="{Binding PromoteCommand}" HorizontalAlignment="Left" Margin="0,0,0,12"
+                        AutomationProperties.AutomationId="ShadowOnboardingPromote" />
+                <TextBlock Text="Withdrawal reason" Style="{StaticResource FieldLabel}" />
+                <TextBox Text="{Binding WithdrawalReason, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldBox}"
+                         AutomationProperties.Name="Withdrawal reason" />
+                <Button Content="Withdraw shadow trial" Command="{Binding WithdrawCommand}" HorizontalAlignment="Left" Margin="0,0,0,12"
+                        AutomationProperties.AutomationId="ShadowOnboardingWithdraw" />
+            </StackPanel>
+
+            <Expander Header="Shadow-mode audit trail" Margin="0,8,0,0">
+                <DataGrid ItemsSource="{Binding AuditEntries}" Style="{StaticResource ShadowGrid}" AutomationProperties.Name="Shadow-mode audit entries">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="#" Binding="{Binding Sequence}" Width="40" />
+                        <DataGridTextColumn Header="When (UTC)" Binding="{Binding OccurredAtUtc}" Width="170" />
+                        <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="140" />
+                        <DataGridTextColumn Header="Actor" Binding="{Binding ActorId}" Width="140" />
+                        <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*" />
+                        <DataGridTextColumn Header="Entry hash" Binding="{Binding EntryHash}" Width="160" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Expander>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

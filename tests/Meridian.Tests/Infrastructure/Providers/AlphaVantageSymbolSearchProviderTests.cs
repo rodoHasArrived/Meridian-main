@@ -92,7 +92,7 @@ public sealed class AlphaVantageSymbolSearchProviderTests
             return JsonResponse(SearchResponse);
         });
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageSymbolSearchProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageSymbolSearchProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var results = await provider.SearchAsync("ibm", 10, CancellationToken.None);
 
@@ -120,7 +120,7 @@ public sealed class AlphaVantageSymbolSearchProviderTests
     {
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(RegionalSearchResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageSymbolSearchProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageSymbolSearchProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var results = await provider.SearchAsync(
             "shop",
@@ -141,7 +141,7 @@ public sealed class AlphaVantageSymbolSearchProviderTests
         using var handler = new StubHttpMessageHandler(_ =>
             throw new InvalidOperationException("Credential-gated search should not call Alpha Vantage."));
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageSymbolSearchProvider(string.Empty, httpClient);
+        using var provider = new AlphaVantageSymbolSearchProvider(string.Empty, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var results = await provider.SearchAsync("IBM", 10, CancellationToken.None);
 
@@ -154,7 +154,7 @@ public sealed class AlphaVantageSymbolSearchProviderTests
     {
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(RateLimitResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageSymbolSearchProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageSymbolSearchProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var act = () => provider.SearchAsync("IBM", 10, CancellationToken.None);
 
@@ -174,7 +174,7 @@ public sealed class AlphaVantageSymbolSearchProviderTests
             return response;
         });
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageSymbolSearchProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageSymbolSearchProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var act = () => provider.SearchAsync("IBM", 10, CancellationToken.None);
 
@@ -189,7 +189,7 @@ public sealed class AlphaVantageSymbolSearchProviderTests
     {
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(SearchResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageSymbolSearchProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageSymbolSearchProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var details = await provider.GetDetailsAsync(new SymbolId("IBM"), CancellationToken.None);
 
@@ -210,7 +210,7 @@ public sealed class AlphaVantageSymbolSearchProviderTests
         await cts.CancelAsync();
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(SearchResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageSymbolSearchProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageSymbolSearchProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         Func<Task> act = () => provider.SearchAsync("IBM", 10, cts.Token);
 

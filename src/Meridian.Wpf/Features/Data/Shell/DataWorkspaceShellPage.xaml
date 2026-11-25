@@ -208,12 +208,12 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Data"
+                    <TextBlock Text="Data Workspace"
                                FontFamily="{StaticResource MeridianDisplayFontFamily}"
                                FontSize="22"
                                FontWeight="SemiBold"
                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                    <TextBlock Text="Provider readiness, queue pressure, storage posture, and export delivery from one operator shell."
+                    <TextBlock Text="Check that data providers are healthy and that data is arriving."
                                Margin="0,4,0,0"
                                FontSize="12"
                                Foreground="{StaticResource ConsoleTextSecondaryBrush}"
@@ -255,7 +255,7 @@
                         BorderThickness="1">
                     <StackPanel>
                         <DockPanel LastChildFill="False">
-                            <TextBlock Text="Next Handoff"
+                            <TextBlock Text="Next step"
                                        FontSize="11"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -403,6 +403,7 @@
                                           Grid.Row="3"
                                           CommandGroup="{Binding CommandGroup}"
                                           CommandInvoked="OnCommandBarCommandInvoked"
+                                          ResetLayoutCommand="{Binding ResetLayoutCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                           Margin="16,10,16,10"
                                           AutomationProperties.AutomationId="WorkspaceCommandSurfaceData" />
 
@@ -543,7 +544,7 @@
                                                    Style="{StaticResource DataShellSummaryMetricValueTextStyle}"
                                                    Tag="{Binding SummaryProvidersTone}"
                                                    Text="{Binding SummaryProvidersText}" />
-                                        <TextBlock Text="Connectivity posture"
+                                        <TextBlock Text="Connectivity status"
                                                    Margin="0,4,0,0"
                                                    FontSize="10"
                                                    Foreground="{StaticResource ConsoleTextSecondaryBrush}" />

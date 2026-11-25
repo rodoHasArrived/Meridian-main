@@ -10,6 +10,7 @@ internal static class WpfTestThread
     private static readonly object Sync = new();
     private static Thread? _thread;
     private static Dispatcher? _dispatcher;
+    private static ExceptionDispatchInfo? _startupFailure;
     private static readonly ManualResetEventSlim Ready = new(false);
 
     public static void Run(Action action)
@@ -48,8 +49,9 @@ internal static class WpfTestThread
 
     private static void EnsureStarted()
     {
-        if (_dispatcher is not null)
+        if (_dispatcher is not null && Ready.IsSet)
         {
+            _startupFailure?.Throw();
             return;
         }
 
@@ -57,6 +59,7 @@ internal static class WpfTestThread
         {
             if (_dispatcher is not null)
             {
+                _startupFailure?.Throw();
                 return;
             }
 
@@ -68,7 +71,23 @@ internal static class WpfTestThread
                 };
                 RunMatUiAutomationFacade.EnsureApplicationResources();
                 _dispatcher = Dispatcher.CurrentDispatcher;
-                Ready.Set();
+                // Mirror desktop startup: service factories read an asynchronously primed
+                // configuration snapshot, including in isolated shell tests run first.
+                _ = _dispatcher.InvokeAsync(async () =>
+                {
+                    try
+                    {
+                        await Meridian.Wpf.Services.ConfigService.Instance.InitializeAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        _startupFailure = ExceptionDispatchInfo.Capture(ex);
+                    }
+                    finally
+                    {
+                        Ready.Set();
+                    }
+                });
                 Dispatcher.Run();
             });
 
@@ -79,6 +98,7 @@ internal static class WpfTestThread
             {
                 throw new TimeoutException($"WPF test dispatcher did not start within {DispatchTimeout.TotalSeconds:N0} seconds.");
             }
+            _startupFailure?.Throw();
         }
     }
 

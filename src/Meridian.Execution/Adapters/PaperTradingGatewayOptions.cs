@@ -24,4 +24,22 @@ public sealed class PaperTradingGatewayOptions
     /// time it is used.
     /// </summary>
     public decimal ScaffoldMarketFillPrice { get; set; } = 1m;
+
+    /// <summary>
+    /// Maximum age, in seconds, of a quote or trade print that may still price, trigger, or
+    /// fill a paper order. Unset (the default) applies no freshness window: orders match
+    /// against the feed cache as it is, however old. When set, a market order whose only tick
+    /// data is older than this is rejected, resting orders do not fill or trigger off it, and
+    /// scaffold pricing does not stand in for it. Bar-only symbols are unaffected. Must be
+    /// positive when set. See <see cref="PaperMatching.PaperObservationFreshnessPolicy"/>.
+    /// </summary>
+    public int? MaxObservationAgeSeconds { get; set; }
+
+    /// <summary>
+    /// Reject face-value bond fills unless shared analytics supplies reconciled clean/dirty
+    /// prices and purchased accrued interest for the exact security and settlement date.
+    /// Opt in for supported bond demonstrations; unset preserves legacy clean-only fallback.
+    /// This does not enable canonical bond accounting or change short-sale entitlement rules.
+    /// </summary>
+    public bool RequireBondAccruedInterest { get; set; }
 }

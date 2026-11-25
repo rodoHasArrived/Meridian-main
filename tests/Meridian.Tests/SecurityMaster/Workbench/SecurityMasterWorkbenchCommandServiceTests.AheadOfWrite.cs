@@ -324,6 +324,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         (await revisions.GetAsync(staged.RevisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Published);
         var expected = JsonNode.Parse(ProfileBackedStructuredCreditEnvelope)!.AsObject();
         expected["profileFields"]!["scheduleConventions"] = JsonNode.Parse(EditedProfileConventions);
+        expected[SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.CustomProfile;
         var persisted = canonical.Upserted.Should().ContainSingle("the approved profile edit merges into the canonical terms").Subject;
         JsonNode.DeepEquals(JsonNode.Parse(persisted.AssetSpecificTerms.GetRawText()), expected)
             .Should().BeTrue("the merged envelope persists verbatim, its root scheduleConventions included");
@@ -384,6 +385,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         (await revisions.GetAsync(staged.RevisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Published);
         var expected = envelope.DeepClone().AsObject();
         expected["profileFields"]![fieldPath["assetSpecificTerms.profileFields.".Length..]] = JsonNode.Parse(newValue);
+        expected[SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.CustomProfile;
         var persisted = canonical.Upserted.Should().ContainSingle("the approved profile edit merges into the canonical terms").Subject;
         JsonNode.DeepEquals(JsonNode.Parse(persisted.AssetSpecificTerms.GetRawText()), expected)
             .Should().BeTrue("the merged envelope persists verbatim, its root callSchedule and putSchedule included");

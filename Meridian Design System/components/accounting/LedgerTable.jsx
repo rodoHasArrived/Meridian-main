@@ -120,6 +120,8 @@ export function LedgerTable({
   inject();
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState(1);
+  const [focusedRow, setFocusedRow] = useState(null);
+  const rowRefs = React.useRef(new Map());
   const open = opening != null ? opening : openingBalance;
 
   const handleSort = (key) => {
@@ -153,6 +155,24 @@ export function LedgerTable({
   if (sortKey && !onSort) {
     display = [...computed].sort((a, b) => sortDir * compareRows(a, b, sortKey));
   }
+
+  const tabStop = display.some((row) => row._i === focusedRow) ? focusedRow
+    : display.some((row) => row._i === selectedIndex) ? selectedIndex : display[0]?._i;
+  const onRowKeyDown = (event, originalIndex) => {
+    // Descendant links and controls retain their own activation and navigation.
+    if (event.target !== event.currentTarget || !onRowClick) return;
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault(); onRowClick(rows[originalIndex], originalIndex); return;
+    }
+    const index = display.findIndex((row) => row._i === originalIndex);
+    let next;
+    if (event.key === "ArrowDown") next = Math.min(display.length - 1, index + 1);
+    else if (event.key === "ArrowUp") next = Math.max(0, index - 1);
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = display.length - 1;
+    else return;
+    event.preventDefault(); rowRefs.current.get(display[next]?._i)?.focus();
+  };
 
   const live = computed.filter((r) => !r._void);
   const totalD = sumKnown(live.map(row=>row._debit));
@@ -201,9 +221,16 @@ export function LedgerTable({
               selectedIndex === r._i ? "ldg__row--on" : "",
             ].filter(Boolean).join(" ") || undefined;
             return (
-              <tr key={r._i} className={cls} tabIndex={onRowClick ? 0 : undefined}
-                onKeyDown={onRowClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onRowClick(rows[r._i], r._i); } } : undefined}
-                onClick={onRowClick ? () => onRowClick(rows[r._i], r._i) : undefined}>
+              <tr key={r._i} className={cls}
+                tabIndex={onRowClick ? (tabStop === r._i ? 0 : -1) : undefined}
+                aria-selected={selectedIndex == null ? undefined : selectedIndex === r._i}
+                ref={(element) => { if (element) rowRefs.current.set(r._i, element); else rowRefs.current.delete(r._i); }}
+                onFocus={onRowClick ? (event) => { if (event.target === event.currentTarget) setFocusedRow(r._i); } : undefined}
+                onKeyDown={onRowClick ? (event) => onRowKeyDown(event, r._i) : undefined}
+                onClick={onRowClick ? (event) => {
+                  if (event.defaultPrevented || event.target.closest?.("a,button,input,select,textarea,[role='button']")) return;
+                  onRowClick(rows[r._i], r._i);
+                } : undefined}>
                 <td className="ldg__date">{r.date}</td>
                 <td>
                   <span className="ldg__ref">{r.ref}</span>

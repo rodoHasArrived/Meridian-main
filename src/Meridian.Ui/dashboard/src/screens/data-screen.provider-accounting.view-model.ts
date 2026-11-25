@@ -9,7 +9,7 @@ import type {
   ProviderRateLimitsResponse,
   ProviderRegistrationFailure
 } from "@/types";
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatTimestamp as formatDisplayTimestamp } from "@/lib/format";
 
 export interface ProviderAccountingServices {
   getCatalog: (signal?: AbortSignal) => Promise<ProviderCatalogResponse>;
@@ -33,6 +33,8 @@ export interface ProviderRateLimitRow {
   status: string;
   statusTone: "success" | "warning" | "danger";
   requestUsage: string;
+  backfillAttempts: string;
+  dailyUsage: string;
   remaining: string;
   resetCountdown: string;
   failureReason: string;
@@ -52,7 +54,7 @@ export interface ProviderAccountingPanelState {
   observedAt: string | null;
 }
 
-const HISTORY_UNAVAILABLE = "Unavailable — runtime rate-limit history is not retained.";
+const HISTORY_GUIDANCE = "Rate-limit and quota history shows recent events and seven UTC days of retained daily totals.";
 
 const defaultServices: ProviderAccountingServices = {
   getCatalog: (signal) => workstationApi.getProviderCatalog({ signal }),
@@ -161,7 +163,7 @@ export function buildProviderAccountingPanelState(
         ? "No provider runtime exposed a current rate-limit snapshot."
         : `${rateLimitRows.length} current provider surface${rateLimitRows.length === 1 ? "" : "s"} observed ${formatTimestamp(rateLimits.timestamp)}.`,
     rateLimits: rateLimitRows,
-    historyPosture: HISTORY_UNAVAILABLE,
+    historyPosture: HISTORY_GUIDANCE,
     observedAt: rateLimits?.timestamp ?? null
   };
 }
@@ -184,6 +186,7 @@ function buildRateLimitRow(
   const resetCountdown = formatResetCountdown(provider.resetAt, now);
   const limited = provider.stateAvailable && provider.isRateLimited;
   const reason = normalizeReason(provider.reason);
+  const unit = provider.quotaUnit ?? "requests";
 
   return {
     source: provider,
@@ -193,18 +196,26 @@ function buildRateLimitRow(
     status: !provider.stateAvailable ? "State unavailable" : limited ? "Rate limited" : "Available",
     statusTone: !provider.stateAvailable ? "warning" : limited ? "danger" : "success",
     requestUsage: provider.requestsInWindow === null
-      ? `Unavailable / ${provider.maxRequestsPerWindow}`
-      : `${provider.requestsInWindow} / ${provider.maxRequestsPerWindow}`,
-    remaining: provider.remainingRequests === null ? "Unavailable" : provider.remainingRequests.toString(),
+      ? `Unavailable / ${provider.maxRequestsPerWindow} ${unit}`
+      : `${provider.requestsInWindow} / ${provider.maxRequestsPerWindow} ${unit}`,
+    backfillAttempts: provider.backfillAttemptsInWindow == null
+      ? "Unavailable"
+      : `${provider.backfillAttemptsInWindow} per ${provider.backfillAttemptWindowSeconds}s`,
+    remaining: provider.remainingRequests === null ? "Unavailable" : `${provider.remainingRequests} ${unit}`,
+    dailyUsage: !provider.stateAvailable || provider.dailyMaximum === undefined
+      ? "Unavailable"
+      : provider.dailyMaximum === null
+        ? "No daily cap modeled"
+        : `${provider.dailyUnitsUsed ?? "Unavailable"} / ${provider.dailyMaximum} ${unit} · ${provider.dailyResetPolicy === "utc-midnight" ? "midnight UTC" : provider.dailyResetPolicy === "rolling-24-hours" ? "rolling 24 hours" : "reset policy unavailable"}`,
     resetCountdown,
     failureReason: limited
       ? `Current rate-limit reason: ${reason ?? "reason unavailable"}.`
       : reason
         ? `Current runtime reason: ${reason}.`
-        : "Last rate-limit failure unavailable — history is not retained.",
+        : "No current failure reported. Inspect quota history for retained past observations.",
     retryPosture: buildRetryPosture(provider, resetCountdown),
     connectionPosture: buildConnectionPosture(connection),
-    historyPosture: HISTORY_UNAVAILABLE
+    historyPosture: HISTORY_GUIDANCE
   };
 }
 
@@ -244,7 +255,7 @@ function normalizeProviderId(value: string): string {
 }
 
 function buildRetryPosture(provider: ProviderRateLimitSnapshot, resetCountdown: string): string {
-  if (!provider.stateAvailable) return "Retry posture unavailable until runtime diagnostics are exposed.";
+  if (!provider.stateAvailable) return "Retry status unavailable until runtime diagnostics are exposed.";
   if (!provider.isRateLimited) return "Requests may proceed within the reported window.";
   if (provider.resetAt) return `Retry after ${resetCountdown.toLowerCase()}.`;
   return "Retry is blocked; the provider did not report a reset time.";
@@ -276,5 +287,5 @@ function formatToken(value: string): string {
 
 function formatTimestamp(value: string): string {
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : formatUtcTimestamp(parsed);
+  return Number.isNaN(parsed.getTime()) ? value : formatDisplayTimestamp(parsed);
 }

@@ -102,7 +102,13 @@ public sealed record CorporateActionCaseAccountingStatusDto(
     Guid? ApprovalId,
     string? ApprovedBy,
     Guid? PostedJournalEntryId,
-    DateTimeOffset? PostedAtUtc);
+    DateTimeOffset? PostedAtUtc,
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    Guid? CashDividendAttestationId = null,
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    string? AttestedBy = null,
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    string? DecisionKind = null);
 
 /// <summary>
 /// Server-stamped downstream accounting authority. Deliberately separate from

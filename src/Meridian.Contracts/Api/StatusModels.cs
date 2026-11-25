@@ -268,6 +268,10 @@ public sealed class BackfillResultDto
 
     [JsonPropertyName("symbolResults")]
     public SymbolBackfillResult[]? SymbolResults { get; set; }
+
+    [JsonPropertyName("batchReceipts")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<Meridian.Contracts.Backfill.BackfillBatchReceipt>? BatchReceipts { get; set; }
 }
 
 /// <summary>
@@ -310,6 +314,10 @@ public sealed class BackfillRequest
 
     [JsonPropertyName("granularity")]
     public string Granularity { get; set; } = "Daily";
+
+    [JsonPropertyName("resumeFromCheckpoint")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool ResumeFromCheckpoint { get; set; }
 }
 
 /// <summary>
