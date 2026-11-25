@@ -69,6 +69,8 @@ public sealed partial class AccountingSystemIntegrationService
                     : BuildDetail(status, variance),
                 external?.EvidenceRef)
             {
+                ExternalCurrency = string.IsNullOrWhiteSpace(external?.Currency) ? null : external.Currency,
+                MeridianCurrency = meridian?.SourceCurrency,
                 PeriodDebit = latest.Summary.TrialBalanceBasis is null ? null : meridian?.PeriodDebit ?? 0m,
                 PeriodCredit = latest.Summary.TrialBalanceBasis is null ? null : meridian?.PeriodCredit ?? 0m,
                 ExternalEvidenceReferences = rowExternalEvidenceReferences,
@@ -162,7 +164,10 @@ public sealed partial class AccountingSystemIntegrationService
         MeridianAccountTotal Total(string code)
         {
             if (!totals.TryGetValue(code, out var total))
-                totals[code] = total = new MeridianAccountTotal(code, currency);
+                totals[code] = total = new MeridianAccountTotal(code, currency)
+                {
+                    SourceCurrency = string.IsNullOrWhiteSpace(book?.BaseCurrency) ? null : book.BaseCurrency
+                };
             return total;
         }
         foreach (var period in periods.Where(period => period.StartDate <= summary.PeriodEnd &&

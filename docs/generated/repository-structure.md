@@ -10585,6 +10585,7 @@ Meridian-main
 │   │   │   │   │   ├── reconciliation-run-picker.test.tsx
 │   │   │   │   │   ├── reconciliation-source-observation.test.ts
 │   │   │   │   │   ├── reconciliation-source-observation.ts
+│   │   │   │   │   ├── reconciliation-value-consistency.test.tsx
 │   │   │   │   │   ├── reconciliation-view-state.test.tsx
 │   │   │   │   │   ├── reconciliation-view-state.ts
 │   │   │   │   │   ├── report-library-screen.test.tsx
@@ -10775,6 +10776,7 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.view-model.test.ts
 │   │   │   │   │   ├── trading-screen.view-model.ts
 │   │   │   │   │   ├── trading-screen.workflow-continuity.ts
+│   │   │   │   │   ├── trading-screen.workflow-navigation.test.tsx
 │   │   │   │   │   ├── trial-balance-screen.test.tsx
 │   │   │   │   │   ├── trial-balance-screen.tsx
 │   │   │   │   │   ├── trial-balance-screen.view-model.test.ts
@@ -10935,6 +10937,7 @@ Meridian-main
 │   │   │   │   ├── app-shell.workflow-continuity-view-model.ts
 │   │   │   │   ├── app-shell.workflow-continuity.test.ts
 │   │   │   │   ├── app-shell.workflow-continuity.ts
+│   │   │   │   ├── app-shell.workflow-routing.test.ts
 │   │   │   │   ├── app-shell.workflow-routing.ts
 │   │   │   │   ├── app.test.tsx
 │   │   │   │   ├── app.tsx
@@ -14812,7 +14815,6 @@ Meridian-main
 │   │   │   ├── SecurityMaturityModuleContractionTests.cs
 │   │   │   ├── SecurityProjectionRecordTestExtensions.cs
 │   │   │   ├── SecurityQuoteConventionCoverageTests.cs
-│   │   │   ├── SecurityRateFieldUnitsValidatorParityTests.cs
 │   │   │   ├── SecurityRateIngestionRulesTests.cs
 │   │   │   ├── SecurityRateModuleContractionReplayTests.cs
 │   │   │   ├── SecurityRecordRateUnitTests.cs

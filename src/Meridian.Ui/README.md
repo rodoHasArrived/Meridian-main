@@ -6,7 +6,7 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Ui
@@ -228,10 +228,11 @@ No shared contract changed in that step.
 Dashboard source also carries the P4 entity, fund and period step (host bundle not yet rebuilt):
 - The scope bar reads `Scope  Entity … › Fund … › Account … › Period …`. An unset Entity, Fund
   or Account reads "All authorized"; an unset Period reads "All periods". Entity and fund are the
-  `entityId` and `fundId` URL parameters, carried on every route and in storage, recent scopes,
-  saved layouts, Copy link and the server-side default scope. Accounting applies `entityId`.
+  `entityId` and `fundId` URL parameters, carried in ordinary workspace links and in storage, recent scopes,
+  saved layouts, Copy link and the server-side default scope. Record links marked `recordScope=1`
+  use their explicit route scope without adding remembered dimensions. Accounting applies `entityId`.
   Portfolio > Brokerage sync (household accounts and positions), Accounting > Close calendar
-  (close workflows), Accounting > Operations continuity (workflow list) and Accounting > Statement
+  (close workflows), Accounting > Close (workflow list at `/accounting/close`) and Accounting > Statement
   import (saved fetch schedules) narrow their fund-account rows to the chosen fund or entity client-side, using
   the organization graph; there the bar shows Entity and Fund as applied. Elsewhere, and on those
   screens when the structure read is unavailable, a set fund shows as retained (muted) and nothing is hidden.

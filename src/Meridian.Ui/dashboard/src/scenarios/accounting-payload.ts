@@ -98,7 +98,7 @@ export const accountingPayload: AccountingScenarioPayload = {
         {
           approvalId: "close-2026-06-controller-review",
           label: "Controller review of the June close package",
-          status: "Pending review",
+          status: "Submitted",
           owner: "Fund Controller",
           dueAtUtc: "2026-07-13T20:00:00Z",
           changedSummary: "Cash variance evidence and the final trial balance were added.",

@@ -115,7 +115,7 @@ const reconciliationBreakColumns: TableWorkbenchColumn<ReconciliationBreakRowVie
     },
     render: (row) => {
       const residual = caseQueueResidual(row);
-      return <span className="block tabular-nums">{residual.amount}{residual.unit ? <span className="block text-xs text-muted-foreground">{residual.unit}</span> : null}</span>;
+      return <span className="block tabular-nums whitespace-nowrap">{residual.amount}{residual.unit ? <span className="block whitespace-nowrap text-xs text-muted-foreground">{residual.unit}</span> : null}</span>;
     }
   },
   { id: "owner", label: "Owner", hideable: true, priority: "medium", render: (row) => <span className="font-mono text-muted-foreground">{row.ownerLabel}</span> },
