@@ -20800,6 +20800,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ProposeHistoricalIdentifierWindowRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ProviderCorporateActionEvidenceCandidateDto"
     },
     {
@@ -56601,6 +56607,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ProposeHistoricalIdentifierWindowRequest",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ProviderCorporateActionEvidenceCandidateDto",
       "target": "contract:Meridian.Contracts.Workstation.ProviderLedgerReconciliationCheckStatusDto"
     },
@@ -72118,7 +72130,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "782e2112c771980a650d0aed4b32a487d14025de678d921d02ef0e7dc2b579ea",
+  "fingerprint": "7ad5568415e9cee91661109b90347a00b2f928476b8b226aed7492dc9df24984",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -92968,6 +92980,12 @@
       "label": "Meridian.Contracts.Workstation.PromoteShadowBookRequestDto"
     },
     {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Workstation.ProposeHistoricalIdentifierWindowRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ProposeHistoricalIdentifierWindowRequest"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.ProviderCorporateActionEvidenceCandidateDto",
       "kind": "contract-type",
@@ -105965,11 +105983,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4416,
-    "contract_set_memberships": 5821,
-    "edges": 11980,
+    "contract_references": 4417,
+    "contract_set_memberships": 5822,
+    "edges": 11982,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5886
+    "nodes": 5887
   }
 }
