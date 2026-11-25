@@ -238,6 +238,12 @@ public static class HttpClientFactoryProvider
     internal static IHttpClientFactory CompatibilityFactory { get; } = new CompatibilityHttpClientFactory();
 
     /// <summary>
+    /// Test seam: wraps the primary handler of every compatibility client created after it is set.
+    /// Production never assigns it, so compatibility clients keep their plain handler.
+    /// </summary>
+    internal static Func<HttpMessageHandler, HttpMessageHandler>? PrimaryHandlerDecoratorForTests { get; set; }
+
+    /// <summary>
     /// Gets an HttpClient for the specified named client.
     /// The returned fallback client is owned by the caller.
     /// </summary>
@@ -274,7 +280,7 @@ public static class HttpClientFactoryProvider
                 UseCookies = sharesApiSession,
                 CookieContainer = sharesApiSession ? ApiClientSession.Cookies : new System.Net.CookieContainer()
             };
-            var client = new HttpClient(handler, disposeHandler: true);
+            var client = new HttpClient(PrimaryHandlerDecoratorForTests?.Invoke(handler) ?? handler, disposeHandler: true);
             ConfigureClient(client, name);
             return client;
         }

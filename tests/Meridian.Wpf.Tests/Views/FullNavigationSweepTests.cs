@@ -41,9 +41,12 @@ public sealed class FullNavigationSweepTests
             pageTags.Should().NotBeEmpty();
 
             var failures = new List<string>();
+            var timings = new List<(string PageTag, TimeSpan Host, TimeSpan Navigate, TimeSpan Close)>();
 
             foreach (var pageTag in pageTags)
             {
+                var phase = System.Diagnostics.Stopwatch.StartNew();
+                TimeSpan hostElapsed = default, navigateElapsed = default;
                 Window? hostWindow = null;
                 Exception? dispatcherFailure = null;
                 DispatcherUnhandledExceptionEventHandler? unhandledHandler = null;
@@ -75,6 +78,8 @@ public sealed class FullNavigationSweepTests
 
                     hostWindow.Show();
                     navigationService.Initialize(frame);
+                    hostElapsed = phase.Elapsed;
+                    phase.Restart();
 
                     var exception = Record.Exception(() =>
                     {
@@ -94,6 +99,7 @@ public sealed class FullNavigationSweepTests
                             throw new InvalidOperationException($"Frame content was null after navigating to '{pageTag}'.");
                         }
                     });
+                    navigateElapsed = phase.Elapsed;
 
                     if (exception is not null)
                     {
@@ -115,14 +121,43 @@ public sealed class FullNavigationSweepTests
                         System.Windows.Application.Current!.DispatcherUnhandledException -= unhandledHandler;
                     }
 
+                    phase.Restart();
                     hostWindow?.Close();
                     RunMatUiAutomationFacade.DrainDispatcher();
                     navigationService.ResetForTests();
+                    timings.Add((pageTag, hostElapsed, navigateElapsed, phase.Elapsed));
                 }
             }
 
+            WriteTimingSummary(timings);
+
             failures.Should().BeEmpty(string.Join(Environment.NewLine, failures));
         });
+    }
+
+    /// <summary>
+    /// Where the sweep's wall-clock time went, so a slow run names the phase and the pages
+    /// responsible instead of reporting one opaque duration for more than a hundred pages.
+    /// </summary>
+    private static void WriteTimingSummary(
+        IReadOnlyCollection<(string PageTag, TimeSpan Host, TimeSpan Navigate, TimeSpan Close)> timings)
+    {
+        static double Seconds(IEnumerable<TimeSpan> values) => values.Sum(value => value.TotalSeconds);
+
+        Console.WriteLine(
+            $"[FullNavigationSweep] Timing: {timings.Count} pages; " +
+            $"host window {Seconds(timings.Select(t => t.Host)):F1}s, " +
+            $"navigate and layout {Seconds(timings.Select(t => t.Navigate)):F1}s, " +
+            $"close and drain {Seconds(timings.Select(t => t.Close)):F1}s");
+
+        foreach (var timing in timings.OrderByDescending(t => t.Host + t.Navigate + t.Close).Take(15))
+        {
+            Console.WriteLine(
+                $"[FullNavigationSweep] Slowest: {timing.PageTag} " +
+                $"host {timing.Host.TotalMilliseconds:F0}ms, " +
+                $"navigate {timing.Navigate.TotalMilliseconds:F0}ms, " +
+                $"close {timing.Close.TotalMilliseconds:F0}ms");
+        }
     }
 
     private static void ConfigureOfflineServiceOverrides(IServiceCollection services)
