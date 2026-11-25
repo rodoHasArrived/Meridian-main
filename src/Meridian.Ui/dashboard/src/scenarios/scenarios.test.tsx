@@ -89,7 +89,7 @@ describe("shared accounting scenarios", () => {
     installScenario("accounting.empty");
     const workspace = await getAccountingWorkspace();
     renderWithRouter(<ApprovalInboxScreen data={workspace} />);
-    expect(screen.getByText("No approvals in the supplied accounting scope")).toBeVisible();
+    expect(screen.getByText("No pending approvals in the supplied accounting scope")).toBeVisible();
     expect(screen.queryByRole("heading", { name: "Approval queue" })).not.toBeInTheDocument();
   });
 

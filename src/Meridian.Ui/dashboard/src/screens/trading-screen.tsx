@@ -30,6 +30,7 @@ import { TradingOrderTicketForm } from "@/screens/trading-screen.order-ticket-fo
 import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TradingRiskControls } from "@/components/ui/trading-risk-controls";
+import { CancelAllIncidentPanel } from "@/screens/trading-screen.cancel-incidents";
 import {
   dataToneClass,
   promotionChecklistDotTone,
@@ -460,13 +461,13 @@ export function TradingScreen(props: TradingScreenProps) {
 }
 
 function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
-  const { pathname, search } = useLocation();
+  const { pathname, search, hash, key: navigationKey } = useLocation();
   const sharedCounts = useSharedCrossScreenCounts();
   const figureContext = useWorkspaceFigureContext();
   // One open-order count for the headline card, the completeness card and every other screen.
   const crossCounts = selectCrossScreenCounts({ shared: sharedCounts, openOrders: data?.openOrders });
   const headlineMetrics = applyCrossScreenCounts(data?.metrics ?? [], crossCounts);
-  const shellVm = useTradingScreenShellViewModel({ pathname, data });
+  const shellVm = useTradingScreenShellViewModel({ pathname, data, hash, navigationKey });
   const blotterVm = useTradingBlotterViewModel(data, new URLSearchParams(search).get("positionRef"));
   const positionSource = describeBrokerageSessionSource(data?.brokerage);
   const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId);
@@ -1051,6 +1052,7 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
           </CardContent>
         </Card>
       </section>
+      <CancelAllIncidentPanel fundAccountId={operatingFundAccountId} />
       </section>
       ) : null}
 

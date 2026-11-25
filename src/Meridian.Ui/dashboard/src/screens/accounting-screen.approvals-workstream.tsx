@@ -2,7 +2,7 @@
 // Pure approval helpers live in accounting-screen.approvals.ts.
 import { RefreshCcw, UserCheck } from "lucide-react";
 import { useLocation } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useScreenPaletteActions } from "@/components/meridian/command-palette.actions";
 import { ApprovalCollaborationPanel } from "@/components/meridian/approval-collaboration-panel";
 import { focusDenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
@@ -35,23 +35,26 @@ export function AccountingApprovalsWorkstream() {
   const [detailError, setDetailError] = useState<string | null>(null);
   const [action, setAction] = useState<"approve" | "reject" | "request-changes" | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const requestedApprovalId = useMemo(() => new URLSearchParams(search).get("approvalId"), [search]);
+  const requestedApprovalId = useMemo(() => new URLSearchParams(search).get("approvalId")?.trim() || null, [search]);
+  const requestedWorkflowId = useMemo(() => new URLSearchParams(search).get("workflowId")?.trim() || null, [search]);
   // Changed since you last looked (UX Phase E). Workflow summaries carry only an update time, so a
   // workflow that moved after the previous visit reads "Updated"; none reads "New".
   const approvalsVisit = useSinceLastVisit(APPROVALS_VISIT_SURFACE);
   const approvalsVisitTimes = (workflow: OperationsContinuityWorkflowSummary) => ({ lastUpdatedAt: workflow.updatedAtUtc });
   const approvalsVisitLine = describeSinceLastVisit(approvalsVisit, summarizeSinceLastVisit(workflows.map(approvalsVisitTimes), approvalsVisit.baseline), "Workflows");
 
-  const refreshWorkflows = async () => {
+  const refreshWorkflows = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const rows = await getOperationsContinuityWorkflows();
       const sorted = [...rows].sort((left, right) => right.updatedAtUtc.localeCompare(left.updatedAtUtc));
       setWorkflows(sorted);
-      setSelectedWorkflowId((current) => current && sorted.some((row) => row.workflowId === current)
-        ? current
-        : sorted[0]?.workflowId ?? null);
+      setSelectedWorkflowId((current) => requestedWorkflowId
+        ? sorted.find((row) => row.workflowId === requestedWorkflowId)?.workflowId ?? null
+        : current && sorted.some((row) => row.workflowId === current)
+          ? current
+          : sorted[0]?.workflowId ?? null);
     } catch (err) {
       setError(formatApprovalError(err, "Approval queue could not be loaded."));
       setWorkflows([]);
@@ -60,7 +63,7 @@ export function AccountingApprovalsWorkstream() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [requestedWorkflowId]);
 
   useScreenPaletteActions("approvals", [{
     id: "approvals.refresh",
@@ -75,7 +78,7 @@ export function AccountingApprovalsWorkstream() {
 
   useEffect(() => {
     void refreshWorkflows();
-  }, []);
+  }, [refreshWorkflows]);
 
   useEffect(() => {
     if (!selectedWorkflowId) {
@@ -111,12 +114,22 @@ export function AccountingApprovalsWorkstream() {
 
   const selectedApproval = selectApproval(detail, requestedApprovalId);
   const selectedWorkflow = detail ?? workflows.find((workflow) => workflow.workflowId === selectedWorkflowId) ?? null;
-  const approveDisabledReason = buildApprovalActionDisabledReason(selectedWorkflow, selectedApproval, action);
-  const rejectDisabledReason = action ? "Wait for the current approval action to finish." : selectedWorkflow ? null : "Select an approval before rejecting.";
-  const requestChangesDisabledReason = action ? "Wait for the current approval action to finish." : selectedWorkflow ? null : "Select an approval before requesting changes.";
+  const requestedSelectionBlockedReason = requestedWorkflowId && selectedWorkflowId !== requestedWorkflowId
+    ? loading ? "Loading the requested approval workflow." : "The requested workflow is unavailable in this approval queue. No other workflow was selected for this link."
+    : !requestedApprovalId && !requestedWorkflowId ? null
+      : loading || detailLoading ? "Loading the requested approval before a decision can be made."
+        : !detail ? "Decision actions are unavailable because the requested workflow detail could not be verified."
+          : !requestedApprovalId ? null
+            : !selectedApproval ? "The requested approval is not present in this workflow. Choose its workflow or open the approval queue without a selected record."
+            : detail.approvals.at(-1)?.approvalId !== requestedApprovalId
+              ? "The requested approval is a historical record. Open the current approval before making a decision."
+              : null;
+  const approveDisabledReason = requestedSelectionBlockedReason ?? buildApprovalActionDisabledReason(selectedWorkflow, selectedApproval, action);
+  const rejectDisabledReason = requestedSelectionBlockedReason ?? (action ? "Wait for the current approval action to finish." : selectedWorkflow ? null : "Select an approval before rejecting.");
+  const requestChangesDisabledReason = requestedSelectionBlockedReason ?? (action ? "Wait for the current approval action to finish." : selectedWorkflow ? null : "Select an approval before requesting changes.");
 
   const runDecision = async (decision: "approve" | "reject" | "request-changes") => {
-    if (!selectedWorkflow) {
+    if (!selectedWorkflow || requestedSelectionBlockedReason) {
       return;
     }
 
@@ -195,6 +208,9 @@ export function AccountingApprovalsWorkstream() {
           Refresh
         </Button>
       </div>
+      {requestedSelectionBlockedReason ? <StatusBanner role="status" tone={loading || detailLoading ? "info" : "warning"}
+        title={loading || detailLoading ? "Loading requested approval" : "Requested approval unavailable"}
+        detail={requestedSelectionBlockedReason} /> : null}
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_26rem]">
         <Card className="panel-surface">
           <CardHeader className="flex flex-wrap items-center gap-2 px-3 py-1">
@@ -243,7 +259,7 @@ export function AccountingApprovalsWorkstream() {
           fields={selectedWorkflow ? [
             { label: "Period", value: selectedWorkflow.periodId },
             { label: "Workflow state", value: approvalWorkflowStatusLabel(selectedWorkflow, detail) },
-            { label: "Approval decision", value: selectedApproval ? splitApprovalWords(selectedApproval.status) : "Not submitted" },
+            { label: "Approval decision", value: selectedApproval ? splitApprovalWords(selectedApproval.status) : requestedApprovalId ? "Requested approval unavailable" : "Not submitted" },
             { label: "Required signers", value: approvalSignerLabel(detail?.approvals ?? []) },
             { label: "Missing evidence", value: missingApprovalEvidenceLabel(detail) }
           ] : []}
@@ -273,7 +289,7 @@ export function AccountingApprovalsWorkstream() {
                   <div className="text-xs font-semibold uppercase text-muted-foreground">Next action</div>
                   <p className="mt-2 leading-6 text-muted-foreground">{approvalNextAction(detail, selectedWorkflow)}</p>
                 </div>
-                {detail?.workflowId === selectedWorkflowId ? <ApprovalCollaborationPanel key={detail.workflowId} workflowId={detail.workflowId} onChanged={() => { setDetailReload((value) => value + 1); void refreshWorkflows(); }} /> : null}
+                {detail?.workflowId === selectedWorkflowId && !requestedSelectionBlockedReason ? <ApprovalCollaborationPanel key={detail.workflowId} workflowId={detail.workflowId} onChanged={() => { setDetailReload((value) => value + 1); void refreshWorkflows(); }} /> : null}
               </>
             ) : (
               <p className="text-muted-foreground">No approval workflow is selected.</p>
@@ -343,10 +359,7 @@ function selectApproval(workflow: OperationsContinuityWorkflow | null, requested
   }
 
   if (requestedApprovalId) {
-    const requested = workflow.approvals.find((approval) => approval.approvalId === requestedApprovalId);
-    if (requested) {
-      return requested;
-    }
+    return workflow.approvals.find((approval) => approval.approvalId === requestedApprovalId) ?? null;
   }
 
   return [...workflow.approvals].sort((left, right) => {

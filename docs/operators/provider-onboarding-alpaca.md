@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-11-10
+**Reviewed:** 2026-11-24
 
 This is the canonical operator procedure lane for configuring and validating Alpaca provider onboarding in Meridian.
 
@@ -11,6 +11,7 @@ This is the canonical operator procedure lane for configuring and validating Alp
 - credential setup and storage,
 - paper-first validation,
 - feed selection and reconciliation impact,
+- review-only corporate-action reference data,
 - operator-level validation handoff and rollback behavior.
 
 ## Quick operator flow
@@ -154,6 +155,25 @@ observe a partial fill, a network-level disconnect, or the trade-update stream; 
 manual or fixture evidence. The broker's open-order list can lag a confirmed cancel by a moment,
 so a synchronization immediately after a cancel may report a break that the next one clears.
 
+## Corporate-action reference data
+
+The same Alpaca credentials also let Meridian fetch Market Data corporate actions through
+`AlpacaCorporateActionProvider`. All 16 documented `v1/corporate-actions` families are mapped
+into **review-only** staging observations with retained raw evidence and amendment lineage.
+
+- Staged Alpaca observations never accept an event, change positions, post journals, or resolve a
+  successor security on their own, and agreement with other providers does not promote them.
+- A completed fetch describes the explicit process-date query only. An empty result means no
+  matching records were returned, not that the security had no corporate actions.
+- Pagination failures, repeated tokens, malformed or out-of-window process dates, and conflicting
+  revisions of one native event fail the fetch closed; keep the coverage outcome as a blocker
+  instead of treating partial results as complete.
+- Absence from a later REST response is not cancellation proof. The REST adapter does not consume
+  Alpaca's corporate-action event stream.
+
+See [Alpaca corporate-action coverage and corroboration](../testing/alpaca-corporate-action-coverage.md)
+for the family mapping, revision identity, and regression procedure.
+
 ## Failure and recovery
 
 - **Startup rejects missing persistence or authentication:** follow the
@@ -182,6 +202,7 @@ Keep evidence packets under sanitized paths used by team policy (for example: `a
 - [Provider Integration Status](../reference/provider-integration-status.md)
 - [Provider Validation Matrix](../reference/provider-validation-matrix.md)
 - [Provider Validation Evidence Schema](../reference/provider-validation-evidence-schema.md)
+- [Alpaca Corporate-Action Coverage](../testing/alpaca-corporate-action-coverage.md)
 
 ## Source and archive
 

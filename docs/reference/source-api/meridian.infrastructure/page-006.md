@@ -6,6 +6,75 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RobinhoodReadOnlyBrokerageSyncAdapter
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Robinhood.RobinhoodReadOnlyBrokerageSyncAdapter</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:42](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L42).
+
+Read-only Robinhood portfolio sync adapter for an authorized brokerage aggregation bridge. This adapter consumes normalized Meridian brokerage DTO payloads from configured endpoints; it intentionally does not call Robinhood&#x27;s unofficial trading endpoints or store passwords.
+
+```csharp
+public sealed class RobinhoodReadOnlyBrokerageSyncAdapter : IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public RobinhoodReadOnlyBrokerageSyncAdapter(IHttpClientFactory httpClientFactory, RobinhoodReadOnlyBrokerageOptions options, ILogger&lt;RobinhoodReadOnlyBrokerageSyncAdapter&gt; logger);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:56](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L56) |  |
+| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:66](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L66) |  |
+| <code>public string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:68](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L68) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;BrokerageExternalAccountDto&gt;&gt; GetAccountsAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:70](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L70) |  |
+| <code>public Task&lt;BrokeragePortfolioSnapshotDto&gt; GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:79](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L79) |  |
+| <code>public Task&lt;BrokerageActivitySnapshotDto&gt; GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:91](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L91) |  |
+
+## RobinhoodSymbolSearchProvider
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Robinhood.RobinhoodSymbolSearchProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:29](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L29).
+
+Symbol search provider backed by Robinhood&#x27;s public instruments API. No authentication required.
+
+```csharp
+public sealed class RobinhoodSymbolSearchProvider : BaseSymbolSearchProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:31](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L31) |  |
+| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:32](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L32) |  |
+| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:33](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L33) |  |
+| <code>public override IReadOnlyList&lt;string&gt; SupportedAssetTypes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:43](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L43) |  |
+| <code>public override IReadOnlyList&lt;string&gt; SupportedExchanges =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:48](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L48) |  |
+| <code>public RobinhoodSymbolSearchProvider(HttpClient? httpClient = null, ILogger? log = null) : base(apiKey : null, httpClient, log);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:56](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L56) |  |
+
+## StooqHistoricalDataProvider
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Stooq.StooqHistoricalDataProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:22](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L22).
+
+Pulls free end-of-day historical bars from Stooq (https://stooq.pl). Extends BaseHistoricalDataProvider for common functionality.
+
+```csharp
+public sealed class StooqHistoricalDataProvider : BaseHistoricalDataProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:26](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L26) |  |
+| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:27](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L27) |  |
+| <code>public override string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:28](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L28) |  |
+| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:32](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L32) |  |
+| <code>public StooqHistoricalDataProvider(HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(httpClient, log, runtimeOptions : runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L34) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:55](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L55) |  |
+
 ## SyntheticHistoricalDataProvider
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Synthetic.SyntheticHistoricalDataProvider</code>. Kind: `class`.
@@ -848,62 +917,3 @@ Declared public members:
 | <code>public static ProviderCapabilityDescriptor Descriptor { get; } = new (&quot;yahoo&quot;, Historical : typeof(YahooFinanceHistoricalDataProvider), InstrumentTypes :[InstrumentType.Equity, InstrumentType.Index, InstrumentType.Forex, InstrumentType.Crypto], HistoricalFactory : static factory =&gt; CreateHistorical(factory), FactoryOwner : ProviderCapabilityFactoryOwner.Module);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:20](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L20) |  |
 | <code>public override void Register(IServiceCollection services, DataSourceRegistry registry);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:26](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L26) |  |
 | <code>public bool IsCapabilityConfigured(Type contract, IServiceProvider services) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:33](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L33) |  |
-
-## ContractVerificationExtensions
-
-Qualified name: <code>Meridian.Infrastructure.Contracts.ContractVerificationExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:10](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L10).
-
-Extension methods for adding contract verification to the DI container.
-
-```csharp
-public static class ContractVerificationExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddContractVerification(this IServiceCollection services);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:15](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L15) | Adds contract verification services to the DI container. |
-| <code>public static IHost VerifyContracts(this IHost host);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:25](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L25) | Verifies contracts at startup and logs results. |
-
-## ContractVerificationHostedService
-
-Qualified name: <code>Meridian.Infrastructure.Contracts.ContractVerificationHostedService</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:52](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L52).
-
-Background service that verifies contracts on startup.
-
-```csharp
-public sealed class ContractVerificationHostedService : IHostedService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ContractVerificationHostedService(ContractVerificationService verifier, ILogger&lt;ContractVerificationHostedService&gt; logger);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:57](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L57) |  |
-| <code>public Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:65](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L65) |  |
-| <code>public Task StopAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:90](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L90) |  |
-
-## ContractVerificationService
-
-Qualified name: <code>Meridian.Infrastructure.Contracts.ContractVerificationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs:10](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs#L10).
-
-Service that verifies implementations satisfy documented ADR contracts at runtime. Run during application startup to catch contract violations early.
-
-```csharp
-public sealed class ContractVerificationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ContractVerificationService(ILogger&lt;ContractVerificationService&gt; logger);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs:15](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs#L15) |  |
-| <code>public IReadOnlyList&lt;ContractViolation&gt; Violations =&gt; …;</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs:23](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs#L23) | Gets all recorded violations from the last verification run. |
-| <code>public bool VerifyContracts(params Assembly[] assemblies);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs:30](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs#L30) | Verifies all ADR implementations in the specified assemblies. |

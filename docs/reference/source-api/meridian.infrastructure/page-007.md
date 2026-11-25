@@ -6,6 +6,65 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ContractVerificationExtensions
+
+Qualified name: <code>Meridian.Infrastructure.Contracts.ContractVerificationExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:10](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L10).
+
+Extension methods for adding contract verification to the DI container.
+
+```csharp
+public static class ContractVerificationExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddContractVerification(this IServiceCollection services);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:15](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L15) | Adds contract verification services to the DI container. |
+| <code>public static IHost VerifyContracts(this IHost host);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:25](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L25) | Verifies contracts at startup and logs results. |
+
+## ContractVerificationHostedService
+
+Qualified name: <code>Meridian.Infrastructure.Contracts.ContractVerificationHostedService</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:52](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L52).
+
+Background service that verifies contracts on startup.
+
+```csharp
+public sealed class ContractVerificationHostedService : IHostedService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ContractVerificationHostedService(ContractVerificationService verifier, ILogger&lt;ContractVerificationHostedService&gt; logger);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:57](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L57) |  |
+| <code>public Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:65](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L65) |  |
+| <code>public Task StopAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:90](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L90) |  |
+
+## ContractVerificationService
+
+Qualified name: <code>Meridian.Infrastructure.Contracts.ContractVerificationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs:10](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs#L10).
+
+Service that verifies implementations satisfy documented ADR contracts at runtime. Run during application startup to catch contract violations early.
+
+```csharp
+public sealed class ContractVerificationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ContractVerificationService(ILogger&lt;ContractVerificationService&gt; logger);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs:15](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs#L15) |  |
+| <code>public IReadOnlyList&lt;ContractViolation&gt; Violations =&gt; …;</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs:23](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs#L23) | Gets all recorded violations from the last verification run. |
+| <code>public bool VerifyContracts(params Assembly[] assemblies);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs:30](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs#L30) | Verifies all ADR implementations in the specified assemblies. |
+
 ## ContractViolation
 
 Qualified name: <code>Meridian.Infrastructure.Contracts.ContractViolation</code>. Kind: `record`.
@@ -1056,63 +1115,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static ProviderFailureKind Classify(Exception exception);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:1031](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L1031) |  |
 | <code>public static bool IsRetryable(ProviderFailureKind failureKind) =&gt; …;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:1054](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L1054) |  |
-
-## RateLimitEventArgs
-
-Qualified name: <code>Meridian.Infrastructure.Resilience.RateLimitEventArgs</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:356](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L356).
-
-Callback arguments for rate limit events.
-
-```csharp
-public sealed record RateLimitEventArgs(string ProviderName, TimeSpan? RetryAfter, int? RequestsMade = null, int? MaxRequests = null);
-```
-
-## ReconnectionGap
-
-Qualified name: <code>Meridian.Infrastructure.Resilience.ReconnectionGap</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:1079](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L1079).
-
-Represents a gap in data caused by a WebSocket disconnection and reconnection. Subscribers should use this to trigger backfill for the missed time window.
-
-```csharp
-public readonly record struct ReconnectionGap(string ProviderName, DateTimeOffset DisconnectedAt, DateTimeOffset ReconnectedAt, int ReconnectAttempts)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TimeSpan Duration =&gt; …;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:1088](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L1088) | Duration of the gap (time without data). |
-
-## WebSocketConnectionConfig
-
-Qualified name: <code>Meridian.Infrastructure.Resilience.WebSocketConnectionConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:49](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L49).
-
-Centralized configuration for WebSocket connections. Provides sensible defaults used by all streaming providers (Alpaca, Polygon, etc.) to eliminate duplicate configuration across providers.
-
-```csharp
-public sealed record WebSocketConnectionConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int MaxRetries { get; init; } = 5;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:54](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L54) | Maximum number of connection retry attempts. |
-| <code>public TimeSpan RetryBaseDelay { get; init; } = TimeSpan.FromSeconds(2);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:59](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L59) | Base delay for exponential backoff between retries. |
-| <code>public TimeSpan MaxRetryDelay { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:64](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L64) | Maximum delay between retries (caps exponential backoff). |
-| <code>public int CircuitBreakerFailureThreshold { get; init; } = 5;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:69](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L69) | Number of failures before circuit breaker opens. |
-| <code>public TimeSpan CircuitBreakerDuration { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:74](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L74) | Duration circuit breaker stays open before allowing retry. |
-| <code>public TimeSpan OperationTimeout { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:79](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L79) | Timeout for individual connection operations. |
-| <code>public TimeSpan HeartbeatInterval { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:84](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L84) | Interval between heartbeat pings. |
-| <code>public TimeSpan HeartbeatTimeout { get; init; } = TimeSpan.FromSeconds(10);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:89](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L89) | Timeout waiting for heartbeat response before considering connection stale. |
-| <code>public int MaxReconnectAttempts { get; init; } = 10;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:94](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L94) | Maximum number of reconnection attempts after connection loss. |
-| <code>public int MaxMessageSizeBytes { get; init; } = 10 * 1024 * 1024;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:101](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L101) | Maximum total size (bytes) of a single WebSocket message after all frames are assembled. Messages exceeding this limit are discarded and a warning is logged. Default is 10 MiB — large enough for any normal market data payload. |
-| <code>public static WebSocketConnectionConfig Default { get; } = new ();</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:107](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L107) | Default configuration used by all streaming providers. These values match the previously duplicated settings in Alpaca and Polygon clients. |
-| <code>public static WebSocketConnectionConfig HighFrequency { get; } = new () { RetryBaseDelay = TimeSpan.FromSeconds(1), MaxRetryDelay = TimeSpan.FromSeconds(15), OperationTimeout = TimeSpan.FromSeconds(15), HeartbeatInterval = TimeSpan.FromSeconds(15), HeartbeatTimeout = TimeSpan.FromSeconds(5) };</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:112](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L112) | Configuration optimized for high-frequency data (shorter timeouts). |
-| <code>public static WebSocketConnectionConfig Resilient { get; } = new () { MaxRetries = 10, RetryBaseDelay = TimeSpan.FromSeconds(3), MaxRetryDelay = TimeSpan.FromSeconds(60), CircuitBreakerDuration = TimeSpan.FromSeconds(60), OperationTimeout = TimeSpan.FromSeconds(60), MaxReconnectAttempts = 20 };</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:124](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L124) | Configuration optimized for unreliable networks (more retries, longer timeouts). |

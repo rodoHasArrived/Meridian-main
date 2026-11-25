@@ -1,10 +1,18 @@
-import { currencyMinorUnits, equalExactDecimals, formatExactDecimal, parseExactDecimal, readLegacyFinancialText, sumExactDecimals } from "./exact-financial-value";
+import { currencyMinorUnits, equalExactDecimals, formatExactDecimal, parseExactDecimal, readLegacyFinancialText, subtractExactDecimals, sumExactDecimals } from "./exact-financial-value";
 
 describe("exact financial values", () => {
   it("retains decimal digits beyond binary-number precision", () => {
     expect(formatExactDecimal("9007199254740993.125", { currency: "KWD" })).toBe("9,007,199,254,740,993.125");
     expect(sumExactDecimals(["9007199254740993.01", "0.02"])).toBe("9007199254740993.03");
     expect(sumExactDecimals(["0.1", "0.2", "-0.3"])).toBe("0.0");
+  });
+
+  it("subtracts exact operands and preserves missing inputs", () => {
+    expect(subtractExactDecimals("9007199254740993.00000001", "9007199254740993.00000000")).toBe("0.00000001");
+    expect(subtractExactDecimals("0.3", "0.2")).toBe("0.1");
+    expect(subtractExactDecimals("0.00", "0.00")).toBe("0.00");
+    expect(subtractExactDecimals(null, "0")).toBeNull();
+    expect(subtractExactDecimals("0", "Not recorded")).toBeNull();
   });
 
   it.each([["JPY", 0], ["KWD", 3], ["CLF", 4], ["USD", 2], ["jpy", 0]])("uses shared minor units for %s", (currency, digits) => {

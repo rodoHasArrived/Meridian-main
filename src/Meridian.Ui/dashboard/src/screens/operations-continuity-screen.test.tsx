@@ -1157,7 +1157,7 @@ describe("OperationsContinuityScreen", () => {
     expect(within(breakCases).getByText("recon-break-42")).toBeInTheDocument();
     expect(within(breakCases).getByText("fund-controller")).toBeInTheDocument();
     expect(within(breakCases).getByText("Level 2 at May 8, 2026, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
-    expect(within(breakCases).getByText("Expected 125,000.25 / Actual 124,998.25 / Variance -2")).toBeInTheDocument();
+    expect(within(breakCases).getByText("Expected 125,000.25 / Actual 124,998.25 / Variance −2.00 · Unit unavailable")).toBeInTheDocument();
     expect(within(breakCases).getByText("1 retained evidence link")).toBeInTheDocument();
     expect(within(breakCases).getByRole("link", { name: "Open retained evidence for break Cash Balance" }))
       .toHaveAttribute("href", "/accounting/reconciliation/recon-break-42/evidence");
