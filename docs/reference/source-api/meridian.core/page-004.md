@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AlertStatistics
+
+Qualified name: <code>Meridian.Core.Monitoring.Core.AlertStatistics</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:218](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L218).
+
+Statistics about published alerts.
+
+```csharp
+public sealed record AlertStatistics(long TotalAlerts, IReadOnlyDictionary<AlertSeverity, long> AlertsBySeverity, IReadOnlyDictionary<AlertCategory, long> AlertsByCategory, IReadOnlyDictionary<string, long> AlertsBySource, DateTimeOffset Since);
+```
+
 ## HealthCheckResult
 
 Qualified name: <code>Meridian.Core.Monitoring.Core.HealthCheckResult</code>. Kind: `record`.
@@ -1009,16 +1021,4 @@ Request to add multiple symbols at once.
 
 ```csharp
 public sealed record BatchAddRequest(string[] Symbols, BatchAddDefaults? Defaults = null, bool SkipExisting = true);
-```
-
-## BatchCopySettingsRequest
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.BatchCopySettingsRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/BatchOperations.cs:116](../../../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs#L116).
-
-Request to copy subscription settings from one symbol to others.
-
-```csharp
-public sealed record BatchCopySettingsRequest(string SourceSymbol, string[] TargetSymbols);
 ```

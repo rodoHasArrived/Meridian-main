@@ -6509,7 +6509,8 @@ Meridian-main
 │   │   │   ├── IAtomicFileWriter.cs
 │   │   │   └── RootedPathGuard.cs
 │   │   ├── Logging
-│   │   │   └── LoggingSetup.cs
+│   │   │   ├── LoggingSetup.cs
+│   │   │   └── ThreadIdEnricher.cs
 │   │   ├── Monitoring
 │   │   │   ├── Core
 │   │   │   │   ├── IAlertDispatcher.cs
@@ -13386,6 +13387,7 @@ Meridian-main
 │   │   │   │   ├── ProviderIntegrationSyncPlanningServiceTests.cs
 │   │   │   │   └── ProviderIntegrationTemplateCatalogTests.cs
 │   │   │   ├── Logging
+│   │   │   │   ├── LoggingSetupEnrichmentTests.cs
 │   │   │   │   └── LoggingSetupTests.cs
 │   │   │   ├── Monitoring
 │   │   │   │   ├── DetailedHealthCheckTests.cs
@@ -13405,6 +13407,7 @@ Meridian-main
 │   │   │   │   ├── DroppedEventAuditTrailTests.cs
 │   │   │   │   ├── DualPathEventPipelineTests.cs
 │   │   │   │   ├── EventPipelineAdmissionRetryTests.cs
+│   │   │   │   ├── EventPipelineLoggingTests.cs
 │   │   │   │   ├── EventPipelineMetricsTests.cs
 │   │   │   │   ├── EventPipelineTests.cs
 │   │   │   │   ├── EventPipelineTracePropagationTests.cs

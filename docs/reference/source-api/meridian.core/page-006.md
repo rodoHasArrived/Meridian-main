@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolSearchResponse
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.SymbolSearchResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:160](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L160).
+
+Response from symbol search.
+
+```csharp
+public sealed record SymbolSearchResponse(IReadOnlyList<SymbolSearchResult> Results, int TotalCount, IReadOnlyList<string> Sources, long ElapsedMs, string Query);
+```
+
 ## SymbolSearchResult
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.SymbolSearchResult</code>. Kind: `record`.

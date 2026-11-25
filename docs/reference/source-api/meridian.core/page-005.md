@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BatchCopySettingsRequest
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.BatchCopySettingsRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/BatchOperations.cs:116](../../../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs#L116).
+
+Request to copy subscription settings from one symbol to others.
+
+```csharp
+public sealed record BatchCopySettingsRequest(string SourceSymbol, string[] TargetSymbols);
+```
+
 ## BatchDeleteRequest
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.BatchDeleteRequest</code>. Kind: `record`.
@@ -711,16 +723,4 @@ Request for symbol search/autocomplete.
 
 ```csharp
 public sealed record SymbolSearchRequest(string Query, int Limit = 10, string? AssetType = null, string? Exchange = null, string? Country = null, string? Provider = null, bool IncludeFigi = true);
-```
-
-## SymbolSearchResponse
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.SymbolSearchResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:160](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L160).
-
-Response from symbol search.
-
-```csharp
-public sealed record SymbolSearchResponse(IReadOnlyList<SymbolSearchResult> Results, int TotalCount, IReadOnlyList<string> Sources, long ElapsedMs, string Query);
 ```
