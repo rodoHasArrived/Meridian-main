@@ -38,7 +38,6 @@
   },
   "dependencies": {
     "lucide-react": "1.80.0",
-    "meridian-tools": "file:../../..",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "react-router-dom": "7.18.7",

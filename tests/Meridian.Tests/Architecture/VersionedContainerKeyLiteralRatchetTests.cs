@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Tests.TestHelpers;
 
 namespace Meridian.Tests.Architecture;
 
@@ -75,7 +76,7 @@ public sealed class VersionedContainerKeyLiteralRatchetTests
             RegexOptions.CultureInvariant);
 
         var sites = new List<string>();
-        foreach (var file in Directory.EnumerateFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories))
+        foreach (var file in RepositoryFileWalker.EnumerateFiles(Path.Combine(root, "src"), "*.cs"))
         {
             var relative = Path.GetRelativePath(root, file).Replace('\\', '/');
             if (SkippedPathSegments.Any(segment => ("/" + relative).Contains(segment, StringComparison.Ordinal)))

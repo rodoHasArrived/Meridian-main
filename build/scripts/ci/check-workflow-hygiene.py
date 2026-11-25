@@ -109,6 +109,41 @@ def check_action_refs(failures: list[str]) -> None:
                 fail(f"{workflow.relative_to(REPO_ROOT)} uses {reference}; external actions require a full verified SHA and version comment.", failures)
 
 
+def check_action_pins_agree(failures: list[str]) -> None:
+    """One repository, one pin: a stale copy of an action is how a composite action drifts."""
+    uses_pattern = re.compile(r"^\s*(?:-\s*)?uses:\s*['\"]?([\w.-]+/[\w.-]+)(?:/[^\s@#]+)?@([a-f0-9]{40})", re.MULTILINE)
+    pins: dict[str, dict[str, set[str]]] = defaultdict(lambda: defaultdict(set))
+    local_actions = sorted(LOCAL_ACTION_DIR.glob("**/action.yml")) + sorted(LOCAL_ACTION_DIR.glob("**/action.yaml"))
+    for workflow in sorted(WORKFLOW_DIR.glob("*.yml")) + sorted(WORKFLOW_DIR.glob("*.yaml")) + local_actions:
+        for repository, sha in uses_pattern.findall(workflow.read_text(encoding="utf-8")):
+            pins[repository][sha].add(str(workflow.relative_to(REPO_ROOT)))
+    for repository, by_sha in sorted(pins.items()):
+        if len(by_sha) > 1:
+            detail = "; ".join(f"{sha[:12]} in {', '.join(sorted(files))}" for sha, files in sorted(by_sha.items()))
+            fail(f"{repository} is pinned to more than one commit ({detail}); use one pin everywhere.", failures)
+
+
+def check_jobs_declare_timeouts(failures: list[str]) -> None:
+    """A job without timeout-minutes can hold a runner for GitHub's six-hour default."""
+    for workflow in sorted(WORKFLOW_DIR.glob("*.yml")) + sorted(WORKFLOW_DIR.glob("*.yaml")):
+        jobs: dict[str, list[str]] = {}
+        current: str | None = None
+        in_jobs = False
+        for line in workflow.read_text(encoding="utf-8").splitlines():
+            if re.match(r"^\S", line):
+                in_jobs = line.rstrip() == "jobs:"
+                current = None
+            elif in_jobs and (match := re.match(r"^  ([\w-]+):\s*(?:#.*)?$", line)):
+                current = match.group(1)
+                jobs[current] = []
+            elif in_jobs and current and (match := re.match(r"^    ([\w-]+):", line)):
+                jobs[current].append(match.group(1))
+        for job, keys in jobs.items():
+            # Reusable-workflow callers cannot set a timeout; the called jobs carry their own.
+            if "uses" not in keys and "timeout-minutes" not in keys:
+                fail(f"{workflow.relative_to(REPO_ROOT)} job '{job}' has no timeout-minutes.", failures)
+
+
 def check_local_uses_exist(failures: list[str]) -> None:
     local_uses = re.compile(r"uses:\s*(\./[^\s#]+)")
     for workflow in sorted(WORKFLOW_DIR.glob("*.yml")) + sorted(WORKFLOW_DIR.glob("*.yaml")):
@@ -224,6 +259,8 @@ def main() -> int:
 
     check_duplicate_workflow_names(failures)
     check_action_refs(failures)
+    check_action_pins_agree(failures)
+    check_jobs_declare_timeouts(failures)
     check_local_uses_exist(failures)
     check_removed_workflows_stay_retired(failures)
     check_active_docs_do_not_reference_removed_workflows(failures)
