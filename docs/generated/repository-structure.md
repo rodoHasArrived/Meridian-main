@@ -1180,6 +1180,7 @@ Meridian-main
 │       │   ├── integration_evidence.py
 │       │   ├── local_gate.py
 │       │   ├── maintenance_refresh.py
+│       │   ├── merge-dotnet-shard-summaries.py
 │       │   ├── publish-certified-release.py
 │       │   ├── release-envelope.py
 │       │   ├── release-preflight.py
@@ -1187,6 +1188,7 @@ Meridian-main
 │       │   ├── requirements.txt
 │       │   ├── resolve-consumer-predecessor.py
 │       │   ├── run-dotnet-ci-tests.py
+│       │   ├── run-meridian-integrations.py
 │       │   ├── run-script-tests.py
 │       │   ├── run-windows-ci-tests.py
 │       │   ├── scan-commit-secrets.py
@@ -2682,9 +2684,6 @@ Meridian-main
 │   │   │   ├── web-accounting-trial-balance-detail.png
 │   │   │   ├── web-accounting-workspace-1024.png
 │   │   │   ├── web-accounting-workspace.png
-│   │   │   ├── web-close-legacy-redirect.png
-│   │   │   ├── web-close-legacy-route.png
-│   │   │   ├── web-close-retained-evidence.png
 │   │   │   ├── web-daily-control-tower.png
 │   │   │   ├── web-data-alerts.png
 │   │   │   ├── web-data-backfills.png
@@ -2698,8 +2697,6 @@ Meridian-main
 │   │   │   ├── web-data-storage-assurance.png
 │   │   │   ├── web-data-watchlist.png
 │   │   │   ├── web-data-workspace.png
-│   │   │   ├── web-import-start.png
-│   │   │   ├── web-instrument-dossier.png
 │   │   │   ├── web-operator-readiness-console.png
 │   │   │   ├── web-portfolio-asset-detail.png
 │   │   │   ├── web-portfolio-attribution.png
@@ -2709,10 +2706,7 @@ Meridian-main
 │   │   │   ├── web-portfolio-loan-book.png
 │   │   │   ├── web-portfolio-nav.png
 │   │   │   ├── web-portfolio-workspace.png
-│   │   │   ├── web-readiness-legacy-diagnostics-redirect.png
-│   │   │   ├── web-readiness-legacy-route.png
 │   │   │   ├── web-reporting-evidence-workbench.png
-│   │   │   ├── web-reporting-exact-run-review.png
 │   │   │   ├── web-reporting-exports.png
 │   │   │   ├── web-reporting-governance.png
 │   │   │   ├── web-reporting-library.png
@@ -2743,13 +2737,11 @@ Meridian-main
 │   │   │   ├── web-strategy-quant-lab.png
 │   │   │   ├── web-strategy-run-ledger.png
 │   │   │   ├── web-strategy-workspace.png
-│   │   │   ├── web-today-root-alias.png
 │   │   │   ├── web-trading-orders.png
 │   │   │   ├── web-trading-positions.png
 │   │   │   ├── web-trading-risk.png
 │   │   │   ├── web-trading-workspace-1024.png
-│   │   │   ├── web-trading-workspace.png
-│   │   │   └── web-valuation-period-operations.png
+│   │   │   └── web-trading-workspace.png
 │   │   ├── capture-manifest.json
 │   │   ├── README.md
 │   │   └── web-audit.md
@@ -9029,6 +9021,8 @@ Meridian-main
 │   │   │   │   ├── design-system-smoke.test.mjs
 │   │   │   │   ├── generate-contracts.mjs
 │   │   │   │   ├── generate-contracts.test.mjs
+│   │   │   │   ├── merge-vitest-shards.mjs
+│   │   │   │   ├── merge-vitest-shards.test.mjs
 │   │   │   │   ├── run-vitest-stable.mjs
 │   │   │   │   ├── smoke-design-system-adoption.mjs
 │   │   │   │   ├── smoke-design-system.mjs
@@ -9043,6 +9037,7 @@ Meridian-main
 │   │   │   │   ├── typography-floor-baseline.json
 │   │   │   │   ├── vitest-evidence.mjs
 │   │   │   │   ├── vitest-evidence.test.mjs
+│   │   │   │   ├── vitest-files.mjs
 │   │   │   │   ├── workstation-governance-baseline.json
 │   │   │   │   ├── workstation-governance.mjs
 │   │   │   │   └── workstation-governance.test.mjs
@@ -16260,6 +16255,7 @@ Meridian-main
 │   │   ├── test_check_test_skip_register.py
 │   │   ├── test_check_unimplemented_surfaces.py
 │   │   ├── test_check_workflow_docs_parity.py
+│   │   ├── test_ci_browser_results_dir.py
 │   │   ├── test_ci_evidence_controls.py
 │   │   ├── test_ci_metrics.py
 │   │   ├── test_ci_summary.py
@@ -16283,6 +16279,7 @@ Meridian-main
 │   │   ├── test_documentation_reference_integration.py
 │   │   ├── test_documentation_workflow.py
 │   │   ├── test_documentation_workflow_consolidation.py
+│   │   ├── test_dotnet_ci_shards.py
 │   │   ├── test_endpoint_benchmark.py
 │   │   ├── test_export_project_artifact_workflow.py
 │   │   ├── test_fund_economics_golden_consistency.py
