@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ReportingHub } from "@/components/meridian/reporting-hub";
 import { buildReportingHubModel } from "@/lib/reporting-hub";
 import type { ReportingHubDailyWorkInput, ReportingHubModel } from "@/lib/reporting-hub";
+import { backToWorkList, expectNarrowWorkbenchViewport, expectWorkbenchQueueShown, inspectSelection as inspectWorkbenchSelection, installViewportMatchMedia } from "@/test/narrow-workbench";
 type User = ReturnType<typeof userEvent.setup>;
 
 const dailyItems: ReportingHubDailyWorkInput[] = [
@@ -72,19 +73,9 @@ function HubHarness({ model, initialUrl = "/reporting" }: { model: ReportingHubM
 
 const PANEL_NAME = "Selected reporting work detail";
 
-// jsdom 31 applies @media rules at its fixed 1024px viewport, so the cockpit renders its
-// constrained layout: the switchable inspector (max-width: 1279px) stays hidden until the
-// operator asks for it, and the queue hides while it is open. jsdom has no matchMedia, so
-// answer width queries against the same viewport the CSS sees.
-function viewportMatchMedia(query: string) {
-  const width = window.innerWidth;
-  const max = /max-width:\s*(\d+)px/.exec(query);
-  const min = /min-width:\s*(\d+)px/.exec(query);
-  const matches = (!max || width <= Number(max[1])) && (!min || width >= Number(min[1]));
-  return { matches, media: query, onchange: null, addEventListener: vi.fn(), removeEventListener: vi.fn(),
-    addListener: vi.fn(), removeListener: vi.fn(), dispatchEvent: vi.fn() };
-}
-
+// The test viewport is the constrained layout (see @/test/narrow-workbench): the switchable
+// inspector stays hidden until the operator inspects a selection, and the queue hides while
+// it is open.
 /** The visible inspector; fails while the narrow layout shows the queue instead. */
 function selectedPanel() {
   return screen.getByRole("region", { name: PANEL_NAME });
@@ -97,20 +88,14 @@ function detailPane() {
 
 function expectQueueShown() {
   expect(screen.queryByRole("region", { name: PANEL_NAME })).not.toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "Inspect selection" })).toHaveAttribute("aria-expanded", "false");
+  expectWorkbenchQueueShown();
 }
 
 async function inspectSelection(user: User) {
   expectQueueShown();
-  await user.click(screen.getByRole("button", { name: "Inspect selection" }));
-  expect(screen.getByRole("button", { name: "Back to work list" })).toHaveAttribute("aria-expanded", "true");
+  await inspectWorkbenchSelection(user);
   expect(screen.queryByRole("treegrid", { name: "Daily reporting work" })).not.toBeInTheDocument();
   return selectedPanel();
-}
-
-async function backToWorkList(user: User) {
-  await user.click(screen.getByRole("button", { name: "Back to work list" }));
-  expectQueueShown();
 }
 
 function rowFor(title: string) {
@@ -119,7 +104,7 @@ function rowFor(title: string) {
 
 describe("ReportingHub", () => {
   beforeEach(() => {
-    vi.stubGlobal("matchMedia", vi.fn(viewportMatchMedia));
+    installViewportMatchMedia();
   });
 
   afterEach(() => {
@@ -127,7 +112,7 @@ describe("ReportingHub", () => {
   });
 
   it("renders the constrained layout at the test viewport", () => {
-    expect(window.innerWidth).toBeLessThanOrEqual(1279);
+    expectNarrowWorkbenchViewport();
     expect(window.matchMedia("(max-width: 1279px)").matches).toBe(true);
     render(<ReportingHub model={dailyModel()} />);
     expectQueueShown();
