@@ -99,6 +99,10 @@ and the routes in `UiApiRoutes`. The desktop transport is
 | Held amendments: `GET /api/security-master/held-amendments`, `POST .../{heldAmendmentId}/discard` | `security-master-held-amendments.tsx` below the review inbox (status filter, open security, discard) | Ported: a "Held amendments" tab (`SecurityMasterHeldAmendmentsViewModel`) with a status filter, **Open security** (to resolve the named conflict) and **Discard** for Held rows. |
 | Exception queue: `GET /api/security-master/exception-cases`, `POST .../sync`, `POST .../{caseId}/assign` | `security-master-exception-queue.tsx` below the held amendments (server SLA verdict, breach count, sync, assign) | Ported: an "Exception queue" tab (`SecurityMasterExceptionQueueViewModel`). It shows the server's SLA verdict and age without recomputing them, plus a breach count, **Sync cases**, and **Assign** (pre-filled with the session actor). |
 
+Provider-integration actor flags (`GET/POST /api/workstation/provider-integrations/actor-flags[/scan]`,
+`ProviderIntegrationActorFlagDto`): browser panel `settings-provider-integration-actor-flags.tsx` on the advanced
+provider route. **WPF gap:** no desktop consumer yet; a desktop panel should read the same routes.
+
 Host change: the held-amendment and exception-case routes now serialize those shared DTOs through
 `Meridian.Ui.Shared/Endpoints/SecurityMasterReviewQueueProjection`. Previously they returned an Application record and an
 anonymous wrapper. The JSON is unchanged; `SecurityMasterReviewQueueApiClientTests.ServerProjectionRoundTripsIntoTheSharedContracts`

@@ -829,6 +829,8 @@ public static class UiApiRoutes
     public const string WorkstationProviderIntegrationQuarantineReview = "/api/workstation/provider-integrations/connections/{connectionId}/quarantine";
     public const string WorkstationProviderIntegrationQuarantineResolve = "/api/workstation/provider-integrations/quarantine/resolve";
     public const string WorkstationProviderIntegrationQuarantineReplay = "/api/workstation/provider-integrations/quarantine/replay";
+    public const string WorkstationProviderIntegrationActorFlags = "/api/workstation/provider-integrations/actor-flags";
+    public const string WorkstationProviderIntegrationActorFlagsScan = "/api/workstation/provider-integrations/actor-flags/scan";
     public const string WorkstationGovernance = "/api/workstation/governance";
     public const string WorkstationAccounting = "/api/workstation/accounting";
     public const string WorkstationBookReceiptQueue = "/api/workstation/accounting/receipt-queue";

@@ -1,4 +1,5 @@
 // Provider connection center section of the Settings screen: its private state/handlers hook and
+import { ProviderIntegrationActorFlagsPanel } from "@/screens/settings-provider-integration-actor-flags";
 import { useSignedInUsername } from "@/hooks/use-signed-in-username";
 // presentational component.
 import { SeverityBadge } from "@/components/operations";
@@ -624,6 +625,7 @@ export function SettingsProviderSection({ vm, showProviderSetupControls, inlineP
         </div>
       </CardHeader>
       <CardContent className="grid gap-4">
+        {showProviderAdvancedControls ? <ProviderIntegrationActorFlagsPanel /> : null}
         {showProviderFilters ? (
         <section className="grid gap-3 rounded-md border border-border/70 bg-background/35 px-3 py-3">
           <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_11rem_11rem_11rem_9rem]">

@@ -1675,6 +1675,7 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<ProviderIntegrationReconciliationHandoffService>();
         services.AddSingleton<ProviderIntegrationQuarantineReviewService>();
         services.AddSingleton<ProviderIntegrationQuarantineReplayService>();
+        services.AddSingleton<ProviderIntegrationActorFlagService>();
     }
 
     private static async Task<FileProviderIntegrationManifestStore> CreateSeededProviderIntegrationStoreAsync(string testRoot)

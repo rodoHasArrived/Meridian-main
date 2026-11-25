@@ -400,6 +400,23 @@ python3 build/scripts/audit_provider_integration_actors.py --data-root <storage 
 - Each finding names the file, the field's JSON path, the stored value, why it was flagged, and the
   nearest timestamp.
 
+To keep the finding with the data, flag the records in place from **Settings → Provider management
+(advanced) → Unverified actors → Scan for unverified actors**, or by calling the API:
+
+- `POST /api/workstation/provider-integrations/actor-flags/scan`, which needs provider configure
+  permission. Its optional body is `{ "extraLabels": [...] }`.
+- `GET /api/workstation/provider-integrations/actor-flags` returns the flags.
+
+The scan covers the signed-in tenant's partition and applies the same rules as the script. For each
+finding it appends an "actor unverified" flag beside the record, under the store's `actor-flags`
+category:
+
+- **Never rewritten:** the flagged record keeps its content and digest.
+- **Append-only:** a flag is never changed or removed, and re-running the scan adds only new findings.
+- **Attributed:** each flag records the signed-in operator who ran the scan.
+
+Records outside tenant partitions (the legacy store root) are covered by the script only.
+
 Treat a flagged approval or review as unattributed. Re-approve or re-review it through the
 governed flow if the decision still matters; the new version records the signed-in operator.
 

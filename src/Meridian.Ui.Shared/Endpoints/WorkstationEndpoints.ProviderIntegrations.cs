@@ -1256,6 +1256,94 @@ public static partial class WorkstationEndpoints
             UserPermission.ManageProviders,
             UserPermission.ModifyConfig,
             UserPermission.AdminMaintenance);
+
+        // Records stored before the routes bound actors to the session may name a desk label instead of a
+        // person. Flags sit beside those records (append-only); nothing is rewritten.
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationActorFlags), async (HttpContext context) =>
+        {
+            if (!HasProviderIntegrationReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<ProviderIntegrationActorFlagService>();
+            if (service is null)
+            {
+                return Results.Problem("Provider integration actor flags are not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            if (!TryResolveRequiredTenantId(context, out var tenantId))
+            {
+                return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+            }
+
+            try
+            {
+                var flags = await service.ListAsync(tenantId, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(flags, jsonOptions);
+            }
+            catch (NotSupportedException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status501NotImplemented);
+            }
+        })
+        .WithName("ListWorkstationProviderIntegrationActorFlags")
+        .Produces<IReadOnlyList<ProviderIntegrationActorFlagDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireAnyPermission(
+            UserPermission.ViewConfig,
+            UserPermission.ManageProviders,
+            UserPermission.ModifyConfig,
+            UserPermission.AdminMaintenance);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationActorFlagsScan), async (
+            ProviderIntegrationActorFlagScanRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasProviderIntegrationConfigurePermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            // The flag records who ran the scan: the authenticated operator, never a client-supplied name.
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<ProviderIntegrationActorFlagService>();
+            if (service is null)
+            {
+                return Results.Problem("Provider integration actor flags are not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            if (!TryResolveRequiredTenantId(context, out var tenantId))
+            {
+                return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+            }
+
+            try
+            {
+                var result = await service
+                    .ScanAsync(tenantId, actor, request?.ExtraLabels, context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (NotSupportedException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status501NotImplemented);
+            }
+        })
+        .WithName("ScanWorkstationProviderIntegrationActorFlags")
+        .Produces<ProviderIntegrationActorFlagScanResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireAnyPermission(
+            UserPermission.ManageProviders,
+            UserPermission.ModifyConfig,
+            UserPermission.AdminMaintenance);
     }
 
     private static bool HasProviderIntegrationReadPermission(HttpContext context)

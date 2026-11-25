@@ -159,6 +159,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ProviderIntegrationReconciliationHandoffService>();
         services.TryAddSingleton<ProviderIntegrationQuarantineReviewService>();
         services.TryAddSingleton<ProviderIntegrationQuarantineReplayService>();
+        services.TryAddSingleton<ProviderIntegrationActorFlagService>();
         if (configuration.IsConfigured("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING"))
         {
             services.TryAddSingleton(new ScopedAccessStoreOptions

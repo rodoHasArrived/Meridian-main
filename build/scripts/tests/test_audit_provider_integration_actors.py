@@ -24,9 +24,12 @@ def _write(path: Path, document: object) -> None:
 def store(tmp_path: Path) -> Path:
     root = tmp_path / "_integrations"
     # A manifest version approved under the old session label (digest-bound; must stay untouched).
+    # Real shape: ProviderManifestVersionRecord wraps the manifest beside its reference.
     _write(root / "manifest-versions" / "abc123" / "3.json", {
-        "manifestId": "vendor-csv", "manifestVersion": 3, "approvedBy": "Meridian Operator",
-        "approvedAt": "2026-11-20T10:00:00Z", "contentDigest": "sha256:deadbeef"})
+        "formatVersion": 1,
+        "manifestReference": {"manifestId": "vendor-csv", "manifestVersion": 3, "contentDigest": "sha256:deadbeef"},
+        "manifest": {"manifestId": "vendor-csv", "manifestVersion": 3, "approvedBy": "Meridian Operator",
+                     "approvedAt": "2026-11-20T10:00:00Z"}})
     # Tenant-partitioned connection with a strategy desk label and a real owner.
     _write(root / "tenants" / "t1" / "connections" / "c1.json", {
         "connectionId": "c1", "ownerUserId": "Momentum Alpha Desk", "createdBy": "dana.ops",
@@ -50,7 +53,7 @@ def test_flags_only_actor_fields_that_do_not_name_a_person(store: Path) -> None:
 
     flagged = {(f.file, f.json_path, f.value, f.reason) for f in findings}
     assert flagged == {
-        ("manifest-versions/abc123/3.json", "approvedBy", "Meridian Operator", "session desk label"),
+        ("manifest-versions/abc123/3.json", "manifest.approvedBy", "Meridian Operator", "session desk label"),
         ("tenants/t1/connections/c1.json", "ownerUserId", "Momentum Alpha Desk", "strategy desk label"),
         ("sync-runs/r1.json", "handoffs[0].requestedBy", "settings-operator", "settings placeholder"),
         ("quarantine/q1.json", "reviewedBy", "  ", "blank actor"),
@@ -61,7 +64,7 @@ def test_flags_only_actor_fields_that_do_not_name_a_person(store: Path) -> None:
 def test_reports_when_the_flagged_action_happened(store: Path) -> None:
     findings, _ = audit.scan(audit.resolve_integrations_root(store))
     by_field = {f.json_path: f.timestamp for f in findings}
-    assert by_field["approvedBy"] == "2026-11-20T10:00:00Z"
+    assert by_field["manifest.approvedBy"] == "2026-11-20T10:00:00Z"
     assert by_field["handoffs[0].requestedBy"] == "2026-11-22T08:00:00Z"
     assert by_field["reviewedBy"] is None
 
