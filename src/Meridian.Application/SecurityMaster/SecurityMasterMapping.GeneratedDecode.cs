@@ -46,6 +46,42 @@ internal static partial class SecurityMasterMapping
         "InvestmentFund",
     ];
 
+    /// <summary>Executable contributions generated from the same per-class bindings.</summary>
+    private static IReadOnlyList<AssetPackDecoderContribution> CreateGeneratedAssetPackDecoders() =>
+    [
+        new("Equity", context => DecodeGeneratedEquity(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("Option", context => DecodeGeneratedOption(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("Future", context => DecodeGeneratedFuture(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("Bond", context => DecodeGeneratedBond(context.Root, context.Mode, context.AssetClass, context.Json, context.VersionedTerms, context.EconomicSchedules!)),
+        new("FxSpot", context => DecodeGeneratedFxSpot(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("Deposit", context => DecodeGeneratedDeposit(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("MoneyMarketFund", context => DecodeGeneratedMoneyMarketFund(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("CertificateOfDeposit", context => DecodeGeneratedCertificateOfDeposit(context.Root, context.Mode, context.AssetClass, context.Json, context.VersionedTerms)),
+        new("CommercialPaper", context => DecodeGeneratedCommercialPaper(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("TreasuryBill", context => DecodeGeneratedTreasuryBill(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("Repo", context => DecodeGeneratedRepo(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("CashSweep", context => DecodeGeneratedCashSweep(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("OtherSecurity", context => DecodeGeneratedOtherSecurity(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("Swap", context => DecodeGeneratedSwap(context.Root, context.Mode, context.AssetClass, context.Json, context.VersionedTerms)),
+        new("DirectLoan", context => DecodeGeneratedDirectLoan(context.Root, context.Mode, context.AssetClass, context.Json, context.EconomicSchedules!)),
+        new("StructuredCredit", context => DecodeGeneratedStructuredCredit(context.Resolved, context.Mode, context.AssetClass, context.Json, context.VersionedTerms, context.EconomicSchedules!)),
+        new("PrivateFundInterest", context => DecodeGeneratedPrivateFundInterest(context.Resolved, context.Mode, context.AssetClass, context.Json)),
+        new("PrivateCompanyEquity", context => DecodeGeneratedPrivateCompanyEquity(context.Resolved, context.Mode, context.AssetClass, context.Json)),
+        new("RealEstateHolding", context => DecodeGeneratedRealEstateHolding(context.Resolved, context.Mode, context.AssetClass, context.Json)),
+        new("CommitmentGuarantee", context => DecodeGeneratedCommitmentGuarantee(context.Resolved, context.Mode, context.AssetClass, context.Json, context.Terms)),
+        new("Commodity", context => DecodeGeneratedCommodity(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("CryptoCurrency", context => DecodeGeneratedCryptoCurrency(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("Cfd", context => DecodeGeneratedCfd(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("Warrant", context => DecodeGeneratedWarrant(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("FxForward", context => DecodeGeneratedFxForward(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("NonDeliverableForward", context => DecodeGeneratedNonDeliverableForward(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("CreditDefaultSwap", context => DecodeGeneratedCreditDefaultSwap(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("Swaption", context => DecodeGeneratedSwaption(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("CapFloor", context => DecodeGeneratedCapFloor(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("StructuredNote", context => DecodeGeneratedStructuredNote(context.Root, context.Mode, context.AssetClass, context.Json)),
+        new("InvestmentFund", context => DecodeGeneratedInvestmentFund(context.Root, context.Mode, context.AssetClass, context.Json)),
+    ];
+
     private static SecurityKind DecodeGeneratedEquity(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json)
         => SecurityKind.NewEquity(new EquityTerms(
             new EquityCapitalTerms(
