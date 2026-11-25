@@ -48,6 +48,39 @@ public interface ISecurityMasterStore
     Task<SecurityDetailDto?> GetDetailAsync(Guid securityId, CancellationToken ct = default);
     Task<SecurityProjectionRecord?> GetProjectionAsync(Guid securityId, CancellationToken ct = default);
     Task<SecurityProjectionRecord?> GetByIdentifierAsync(SecurityIdentifierKind kind, string value, string? provider, DateTimeOffset asOfUtc, bool includeInactive, CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns every security that claims <paramref name="value"/> as an identifier, alias, or legacy
+    /// primary identifier of <paramref name="kind"/>. Provider participates in identity only for
+    /// provider-scoped kinds (<see cref="SecurityIdentifierNormalizer.IsProviderScoped"/>); on every
+    /// other kind it is provenance and is ignored. Unlike <see cref="GetByIdentifierAsync"/> this never
+    /// picks one claimant, so a caller can tell a unique match from an ambiguous one. With
+    /// <paramref name="ignoreValidityWindow"/> the identifier and alias validity windows are not applied.
+    /// </summary>
+    /// <remarks>
+    /// The default wraps <see cref="GetByIdentifierAsync"/> for stores that predate this member and
+    /// therefore reports at most one claim; the PostgreSQL store overrides it.
+    /// </remarks>
+    async Task<IReadOnlyList<SecurityIdentityClaim>> FindIdentityClaimsAsync(
+        SecurityIdentifierKind kind,
+        string value,
+        string? provider,
+        DateTimeOffset asOfUtc,
+        bool ignoreValidityWindow = false,
+        CancellationToken ct = default)
+    {
+        var record = await GetByIdentifierAsync(
+                kind,
+                value,
+                SecurityIdentifierNormalizer.IsProviderScoped(kind) ? provider : null,
+                asOfUtc,
+                includeInactive: true,
+                ct)
+            .ConfigureAwait(false);
+        return record is null
+            ? []
+            : [new SecurityIdentityClaim(record.SecurityId, record.Status == SecurityStatusDto.Active)];
+    }
     /// <summary>
     /// Returns projections outside <paramref name="excludedSecurityIds"/> that claim at least one
     /// normalized kind/value pair in <paramref name="identifiers"/>. The caller applies validity-

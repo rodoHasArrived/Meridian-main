@@ -7,6 +7,13 @@ namespace Meridian.Application.SecurityMaster;
 /// <summary>
 /// Resolves security identifiers against canonical Security Master records.
 /// </summary>
+/// <remarks>
+/// A request with a <see cref="ResolveSecurityRequest.Provider"/> keeps the exact-provider contract of
+/// <see cref="ISecurityMasterStore.GetByIdentifierAsync"/>. A provider-less request resolves
+/// canonically: provider is identity only for provider-scoped kinds, so a ticker mastered by the
+/// Polygon or EDGAR ingest (which records its feed as provider) still resolves, and an identifier
+/// claimed by several securities resolves to none of them instead of an arbitrary one.
+/// </remarks>
 public sealed class SecurityResolver : ISecurityResolver
 #pragma warning restore CS0618
 {
@@ -19,6 +26,13 @@ public sealed class SecurityResolver : ISecurityResolver
 
     public async Task<Guid?> ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        if (UsesCanonicalPath(request))
+        {
+            var resolution = await ResolveCanonicalAsync(request, ct).ConfigureAwait(false);
+            return resolution.Status == SecurityResolutionStatus.Resolved ? resolution.SecurityId : null;
+        }
+
         var record = await _store.GetByIdentifierAsync(
             request.IdentifierKind,
             request.IdentifierValue,
@@ -29,4 +43,26 @@ public sealed class SecurityResolver : ISecurityResolver
 
         return record?.SecurityId;
     }
+
+    public async Task<SecurityCanonicalResolution> ResolveCanonicalAsync(ResolveSecurityRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (string.IsNullOrWhiteSpace(request.IdentifierValue))
+        {
+            return SecurityCanonicalResolution.NotFound;
+        }
+
+        var claims = await _store.FindIdentityClaimsAsync(
+                request.IdentifierKind,
+                request.IdentifierValue,
+                request.Provider,
+                request.AsOfUtc ?? DateTimeOffset.UtcNow,
+                ignoreValidityWindow: false,
+                ct)
+            .ConfigureAwait(false);
+        return SecurityCanonicalResolution.FromClaims(claims, request.ActiveOnly);
+    }
+
+    private static bool UsesCanonicalPath(ResolveSecurityRequest request)
+        => string.IsNullOrWhiteSpace(request.Provider);
 }

@@ -429,13 +429,28 @@ public sealed class SecurityMasterQueryService :
             return null;
         }
 
-        var normalizedProvider = SecurityIdentifierNormalizer.NormalizeProvider(provider);
-        var universe = await _store.LoadAllAsync(ct).ConfigureAwait(false);
-        var asOfMatch = universe.FirstOrDefault(candidate =>
-            MatchesIdentifier(candidate, identifierKind, normalizedValue, normalizedProvider, asOf));
-        if (asOfMatch is not null || !allowIdentityFallback)
+        // Canonical claims first: provider is identity only for provider-scoped kinds, so a
+        // provider-less lookup finds a ticker a provider ingest mastered. A claim is accepted only
+        // when it is unique; an identifier claimed by several securities resolves to none.
+        var claims = await _store.FindIdentityClaimsAsync(identifierKind, identifierValue, provider, asOf, ignoreValidityWindow: false, ct)
+            .ConfigureAwait(false);
+        if (claims.Count > 0)
         {
-            return asOfMatch;
+            return await ProjectionForUniqueClaimAsync(claims, ct).ConfigureAwait(false);
+        }
+
+        var normalizedProvider = SecurityIdentifierNormalizer.NormalizeProvider(provider);
+        if (normalizedProvider.Length == 0 && !SecurityIdentifierNormalizer.IsProviderScoped(identifierKind))
+        {
+            normalizedProvider = AnyProvider;
+        }
+
+        var universe = await _store.LoadAllAsync(ct).ConfigureAwait(false);
+        var asOfMatch = SelectUnique(universe.Where(candidate =>
+            MatchesIdentifier(candidate, identifierKind, normalizedValue, normalizedProvider, asOf)));
+        if (asOfMatch.Matched || !allowIdentityFallback)
+        {
+            return asOfMatch.Record;
         }
 
         // As-of fallback: an identifier row's recorded validity window is frequently its
@@ -444,10 +459,53 @@ public sealed class SecurityMasterQueryService :
         // requested as-of, resolve by identity while ignoring the temporal window. The caller's
         // as-of term rebuild still governs which economic terms are returned, so this only
         // restores identity resolution — it never hands back today's terms under yesterday's
-        // identity.
+        // identity. Only a UNIQUE claimant is returned: a recycled ticker whose window-free
+        // history names several securities must not resolve to whichever loaded first.
+        var windowFreeClaims = await _store.FindIdentityClaimsAsync(identifierKind, identifierValue, provider, asOf, ignoreValidityWindow: true, ct)
+            .ConfigureAwait(false);
+        if (windowFreeClaims.Count > 0)
+        {
+            return await ProjectionForUniqueClaimAsync(windowFreeClaims, ct).ConfigureAwait(false);
+        }
+
         var identifierKindText = identifierKind.ToString();
-        return universe.FirstOrDefault(candidate =>
-            MatchesIdentifierIgnoringWindow(candidate, identifierKind, identifierKindText, normalizedValue, normalizedProvider));
+        return SelectUnique(universe.Where(candidate =>
+            MatchesIdentifierIgnoringWindow(candidate, identifierKind, identifierKindText, normalizedValue, normalizedProvider))).Record;
+    }
+
+    /// <summary>Sentinel provider meaning "provider is provenance here; match any".</summary>
+    private const string AnyProvider = "\0any-provider";
+
+    private async Task<SecurityProjectionRecord?> ProjectionForUniqueClaimAsync(
+        IReadOnlyList<SecurityIdentityClaim> claims, CancellationToken ct)
+    {
+        var resolution = SecurityCanonicalResolution.FromClaims(claims, activeOnly: false);
+        if (resolution.Status != SecurityResolutionStatus.Resolved)
+        {
+            // Several claimants: prefer the single active one (a recycled ticker), else refuse.
+            resolution = SecurityCanonicalResolution.FromClaims(claims, activeOnly: true);
+        }
+
+        return resolution is { Status: SecurityResolutionStatus.Resolved, SecurityId: { } securityId }
+            ? await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
+            : null;
+    }
+
+    private static (bool Matched, SecurityProjectionRecord? Record) SelectUnique(IEnumerable<SecurityProjectionRecord> matches)
+    {
+        var distinct = matches.DistinctBy(static record => record.SecurityId).ToArray();
+        if (distinct.Length == 0)
+        {
+            return (false, null);
+        }
+
+        if (distinct.Length == 1)
+        {
+            return (true, distinct[0]);
+        }
+
+        var active = distinct.Where(static record => record.Status == SecurityStatusDto.Active).ToArray();
+        return (true, active.Length == 1 ? active[0] : null);
     }
 
     private static IReadOnlyList<string?> BuildLookupCandidates(string? value, Func<string?, string> normalize)
@@ -551,6 +609,11 @@ public sealed class SecurityMasterQueryService :
 
     private static bool ProviderMatches(string? provider, string normalizedProvider)
     {
+        if (normalizedProvider == AnyProvider)
+        {
+            return true;
+        }
+
         var candidateProvider = SecurityIdentifierNormalizer.NormalizeProvider(provider);
         return normalizedProvider.Length == 0
             ? candidateProvider.Length == 0
@@ -559,6 +622,11 @@ public sealed class SecurityMasterQueryService :
 
     private static bool ProviderMatches(string? provider, string? normalizedProvider, string expectedNormalizedProvider)
     {
+        if (expectedNormalizedProvider == AnyProvider)
+        {
+            return true;
+        }
+
         var candidateProvider = string.IsNullOrWhiteSpace(normalizedProvider)
             ? SecurityIdentifierNormalizer.NormalizeProvider(provider)
             : SecurityIdentifierNormalizer.NormalizeProvider(normalizedProvider);
@@ -574,7 +642,7 @@ public sealed class SecurityMasterQueryService :
         string normalizedValue,
         string normalizedProvider)
     {
-        if (normalizedProvider.Length != 0
+        if ((normalizedProvider.Length != 0 && normalizedProvider != AnyProvider)
             || !string.Equals(candidate.PrimaryIdentifierKind, identifierKindText, StringComparison.OrdinalIgnoreCase)
             || !SecurityIdentifierNormalizer.NormalizeValue(identifierKind, candidate.PrimaryIdentifierValue)
                 .Equals(normalizedValue, StringComparison.Ordinal))

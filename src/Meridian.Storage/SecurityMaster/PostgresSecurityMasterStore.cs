@@ -910,6 +910,81 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         return null;
     }
 
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<SecurityIdentityClaim>> FindIdentityClaimsAsync(
+        SecurityIdentifierKind kind,
+        string value,
+        string? provider,
+        DateTimeOffset asOfUtc,
+        bool ignoreValidityWindow = false,
+        CancellationToken ct = default)
+    {
+        var normalizedIdentifierValue = SecurityIdentifierNormalizer.NormalizeValue(kind, value);
+        if (normalizedIdentifierValue.Length == 0)
+        {
+            return [];
+        }
+
+        // Provider is identity only for provider-scoped kinds. A Polygon- or EDGAR-ingested ticker
+        // stores its feed as provider, and a provider-less consumer (order admission, backtest
+        // corporate-action adjustment) must still find it.
+        var scoped = SecurityIdentifierNormalizer.IsProviderScoped(kind);
+        var normalizedProvider = scoped
+            ? ToNullableString(SecurityIdentifierNormalizer.NormalizeProvider(provider))
+            : null;
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"""
+            select s.security_id, s.status = 'Active' as is_active
+            from (
+                select i.security_id
+                from {Qualified("security_identifiers")} i
+                where i.identifier_kind = @identifier_kind
+                  and i.normalized_identifier_value = @normalized_identifier_value
+                  and (@scoped = false or i.normalized_provider is not distinct from @normalized_provider)
+                  and (@ignore_window or (i.valid_from <= @as_of and (i.valid_to is null or i.valid_to > @as_of)))
+                union
+                select a.security_id
+                from {Qualified("security_aliases")} a
+                where a.alias_kind = @identifier_kind
+                  and a.normalized_alias_value = @normalized_identifier_value
+                  and (@scoped = false or a.normalized_provider is not distinct from @normalized_provider)
+                  and a.is_enabled = true
+                  and (@ignore_window or (a.valid_from <= @as_of and (a.valid_to is null or a.valid_to > @as_of)))
+                union
+                select p.security_id
+                from {Qualified("securities")} p
+                where p.primary_identifier_kind = @identifier_kind
+                  and p.normalized_primary_identifier_value = @normalized_identifier_value
+                  and (@scoped = false or @normalized_provider is null)
+                  and not exists (
+                      select 1
+                      from {Qualified("security_identifiers")} x
+                      where x.security_id = p.security_id
+                        and x.identifier_kind = @identifier_kind
+                        and x.normalized_identifier_value = @normalized_identifier_value)
+            ) c
+            join {Qualified("securities")} s on s.security_id = c.security_id
+            order by s.security_id;
+            """;
+        command.Parameters.AddWithValue("identifier_kind", kind.ToString());
+        command.Parameters.AddWithValue("normalized_identifier_value", normalizedIdentifierValue);
+        command.Parameters.AddWithValue("scoped", scoped);
+        command.Parameters.Add(new NpgsqlParameter("normalized_provider", NpgsqlTypes.NpgsqlDbType.Text) { Value = (object?)normalizedProvider ?? DBNull.Value });
+        command.Parameters.AddWithValue("as_of", asOfUtc.UtcDateTime);
+        command.Parameters.AddWithValue("ignore_window", ignoreValidityWindow);
+
+        var claims = new List<SecurityIdentityClaim>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            claims.Add(new SecurityIdentityClaim(reader.GetGuid(0), reader.GetBoolean(1)));
+        }
+
+        return claims;
+    }
+
     private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(_options.ConnectionString))

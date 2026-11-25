@@ -14,13 +14,22 @@ detection every other kind — `Ticker` included, whose `Provider` carries the i
 than a listing venue — is provider-independent and retains provider only as provenance, so the
 same ticker claimed by different feeds still collides.
 
-Durable point lookups do not inherit that provider-independence. `GetByIdentifierAsync` matches the
-stored `normalized_provider` exactly for every kind across all three of its passes (identifier
-rows, aliases, and the primary-identifier fallback), so a caller resolving a stored ISIN must pass
-the provider it was ingested with: the same ISIN queried with no provider, or with a different one,
-resolves to nothing. `SecurityMasterPostgresRoundTripTests.GetByIdentifierAsync_ResolvesNormalizedIdentifierAndProviderValues`
-pins that behavior. Widening resolution to honor `IsProviderScoped` the way detection does would be
-a deliberate behavior change to that contract, not an implementation detail.
+The store's `GetByIdentifierAsync` keeps an exact-provider contract: it matches the stored
+`normalized_provider` exactly for every kind across all three of its passes (identifier rows,
+aliases, and the primary-identifier fallback), and picks one claimant.
+`SecurityMasterPostgresRoundTripTests.GetByIdentifierAsync_ResolvesNormalizedIdentifierAndProviderValues`
+pins that behavior for callers that want it.
+
+Provider-less consumers resolve canonically instead (review P1, 2026-11-24). Order admission
+(`SecurityMasterGate`), the historical symbol timeline, backtest corporate-action adjustment, and
+every other caller of `ISecurityResolver` with no provider go through
+`ISecurityMasterStore.FindIdentityClaimsAsync`, which honors `IsProviderScoped` the way detection
+does: provider is identity only for `ProviderSymbol`. The outcome is typed
+(`SecurityCanonicalResolution`: `Resolved`, `Ambiguous`, `NotFound`, or `Inactive`). An identifier
+claimed by more than one eligible security never auto-picks one; the gate refuses it and names every
+claimant. `SecurityMasterQueryService.GetByIdentifierAsync` with no provider uses the same claims and
+accepts only a unique claimant, including in its window-free identity fallback.
+`SecurityCanonicalResolutionPostgresTests` pins the canonical path.
 
 An ambiguity exists only when two different `SecurityId` values claim the same canonical
 identifier during overlapping half-open validity windows (`[ValidFrom, ValidTo)`). Adjacent
