@@ -184,6 +184,93 @@ public sealed class SecurityMasterCashFlowValidTimeTests
         SecurityMasterCashFlowService.MergeEconomicallyEqualPeriods(single).Should().Equal(single);
     }
 
+    [Fact]
+    public async Task LegSetChangesBetweenTermPeriods_BlocksWithCompositionUnsupported()
+    {
+        // A swap restructured from one leg pair to another: the rows of different legs cannot be joined
+        // into one schedule, so the composition refuses rather than mixing them.
+        var id = Guid.NewGuid();
+        var before = Definition(id, version: 1, couponRate: 5m);
+        var after = Definition(id, version: 2, couponRate: 6m);
+        var reader = new FakeValidTimeReader(Segments((IssueInstant, before), (new DateTimeOffset(2028, 1, 1, 0, 0, 0, TimeSpan.Zero), after)));
+        var service = Service(reader);
+        var latest = SecurityMasterValidTimeQuery.ToDetail(after);
+
+        var result = await service.ComposeValidTimeProjectionAsync(
+            latest,
+            LegProjection(id, "fixed-pay", "float-receive"),
+            AsOf,
+            detail => detail.Version == 1
+                ? LegProjection(id, "fixed-pay", "float-receive")
+                : LegProjection(id, "fixed-pay", "float-receive-sofr"),
+            CancellationToken.None);
+
+        result.Schedule.Should().BeEmpty();
+        result.BlockedReason.Should().StartWith(SecurityMasterCashFlowService.ValidTimeCompositionUnsupportedCode)
+            .And.Contain("legs differ between term periods");
+        result.TermsPeriods.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SameLegSetAcrossTermPeriods_ComposesEachLegByPeriod()
+    {
+        var id = Guid.NewGuid();
+        var before = Definition(id, version: 1, couponRate: 5m);
+        var after = Definition(id, version: 2, couponRate: 6m);
+        var change = new DateTimeOffset(2028, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var reader = new FakeValidTimeReader(Segments((IssueInstant, before), (change, after)));
+        var service = Service(reader);
+
+        var result = await service.ComposeValidTimeProjectionAsync(
+            SecurityMasterValidTimeQuery.ToDetail(after),
+            LegProjection(id, ["fixed-pay", "float-receive"], interest: 6m),
+            AsOf,
+            detail => LegProjection(id, ["float-receive", "fixed-pay"], interest: detail.Version == 1 ? 5m : 6m),
+            CancellationToken.None);
+
+        result.BlockedReason.Should().BeNull();
+        result.TermsPeriods.Should().HaveCount(2);
+        result.LegSchedules.Should().HaveCount(2);
+        foreach (var leg in result.LegSchedules!)
+        {
+            leg.Schedule.Select(static row => row.InterestAmount).Should().Equal(5m, 5m, 6m, 6m);
+        }
+    }
+
+    private static SecurityMasterCashFlowService Service(ISecurityTermsValidTimeReader reader)
+        => new(
+            null,
+            Substitute.For<ISecurityMasterCashFlowStore>(),
+            Array.Empty<IStructuredCashFlowProvider>(),
+            Substitute.For<SecurityMasterQueryContract>(),
+            NullLogger<SecurityMasterCashFlowService>.Instance,
+            validTime: reader);
+
+    private static StructuredCashFlowProjectionDto LegProjection(Guid id, params string[] legIds)
+        => LegProjection(id, legIds, interest: 5m);
+
+    /// <summary>Annual rows on 2027-01-01 .. 2030-01-01, accruing from the prior anniversary.</summary>
+    private static StructuredCashFlowProjectionDto LegProjection(Guid id, string[] legIds, decimal interest)
+    {
+        var rows = Enumerable.Range(2027, 4)
+            .Select(year => new StructuredCashFlowScheduleEntry(
+                new DateTimeOffset(year, 1, 1, 0, 0, 0, TimeSpan.Zero), 0m, interest, 1m)
+            {
+                AccrualStart = new DateOnly(year - 1, 1, 1),
+                AccrualEnd = new DateOnly(year, 1, 1)
+            })
+            .ToArray();
+        return new StructuredCashFlowProjectionDto(
+            id,
+            StructuredCashFlowSourceKind.CalculatedBullet,
+            StructuredCashFlowScenario.Base,
+            AsOf,
+            rows,
+            LegSchedules: legIds
+                .Select(legId => new StructuredCashFlowLegSchedule(legId, CashFlowLegRateKind.Fixed, null, rows))
+                .ToArray());
+    }
+
     private static async Task<StructuredCashFlowProjectionDto?> Project(
         Guid id,
         SecurityEconomicDefinitionRecord latest,

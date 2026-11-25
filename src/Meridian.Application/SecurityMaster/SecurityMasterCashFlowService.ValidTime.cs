@@ -17,7 +17,7 @@ public sealed partial class SecurityMasterCashFlowService
     /// <paramref name="latestProjection"/> unchanged when no reader is composed, or when the economic
     /// terms never changed in valid time (identifier-only amendments, events written before ADR-034).
     /// </summary>
-    private async Task<StructuredCashFlowProjectionDto> ComposeValidTimeProjectionAsync(
+    internal async Task<StructuredCashFlowProjectionDto> ComposeValidTimeProjectionAsync(
         SecurityDetailDto latest,
         StructuredCashFlowProjectionDto latestProjection,
         DateTimeOffset asOf,
