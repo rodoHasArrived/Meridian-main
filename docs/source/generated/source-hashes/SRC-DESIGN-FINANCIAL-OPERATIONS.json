@@ -1,0 +1,7 @@
+{
+  "id": "SRC-DESIGN-FINANCIAL-OPERATIONS",
+  "path": "src/Meridian.FinancialOperations",
+  "readme": "src/Meridian.FinancialOperations/README.md",
+  "readme_hash": "60d325073ddfb7948dc23b599f4e8f94e9d8af3d05a41bac84b675a26eef2cdc",
+  "source_hash": "2f5fdf3a681a566674d8ea4df92a0fa2306dd3be64a8287529952a048276367c"
+}
