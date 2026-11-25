@@ -829,3 +829,41 @@ empty commit arrays. Those events use the same Gitleaks 8.25.1 scanner and repos
 through `scan-commit-secrets.py`, with a verified download checksum. It verifies the checkout
 SHA and scans complete reachable history, including merge-resolution changes. Fresh SARIF
 evidence is mandatory; unsupported events and empty webhook arrays cannot produce a false pass.
+
+## Runner-queue findings and docs-only CodeQL skip (2026-11-25)
+
+**Evidence.** The 60 most recent completed Meridian CI runs at the time of review were 52
+cancelled, 6 successful and 2 failed. The "has job failures" percentage in the Actions usage
+export counts cancellations, so its 55% figure for Meridian CI is mostly superseded pushes, not
+red builds. A representative successful PR run (45612764201) took about 95 minutes wall time for
+about 50 minutes of job execution: each job waited 8–32 minutes for a hosted runner, and the
+one-second `quality-gate` waited 17 minutes. Latency is dominated by runner queueing caused by
+per-push fan-out across workflows, not by test duration.
+
+**Changes.**
+
+- *CodeQL per-language skip.* Pull requests are classified per language by
+  `detect-codeql-languages.py`, which builds on the Meridian CI docs-only rule. Documentation
+  never requires analysis; dashboard-only changes skip C#; .NET source and project files skip
+  JavaScript/TypeScript. Unknown paths, workflows, scripts, Razor/cshtml and empty diffs analyze
+  both. The required `Analyze <language>` checks still run and report success; main pushes,
+  merge groups, schedules, manual runs and the reusable release gate always analyze, so release
+  SARIF evidence is unchanged. The skip is step-level on purpose: a skipped matrix job reports an
+  unexpanded check name and would leave the required contexts pending.
+- *Meridian CI lane jobs.* `build-workstation`, `dotnet-shard (1/1)` and `browser-shard (1/1)`
+  were folded into `verify-dotnet` and `verify-browser`. Each lane job runs the lane and the same
+  roster verdict (`--expected-shards 1`) over its own summary and publishes the same evidence
+  names. `verify-dotnet` classifies the PR in-job instead of waiting for `changes`; on docs-only
+  PRs it reports success with its .NET steps skipped, and `quality-gate` fails unless its decision
+  matches `changes`. The .NET path to `quality-gate` went from five queued jobs to two; check
+  identities `verify-dotnet`, `verify-browser` and `quality-gate` are unchanged.
+- *Golden Path WPF.* `WPF W4 Acceptance` (Windows) now runs only on manual dispatch, and WPF-only
+  paths no longer trigger Golden Path. Windows Desktop Build's `full` slice already runs every
+  `Category=W4Acceptance` test. Its path filter was missing 13 projects in WPF's reference graph
+  (including `Meridian.Ledger`, `Meridian.Risk`, `Meridian.Domain` and `Meridian.ProviderSdk`);
+  they were added, and a test now walks the `ProjectReference` graph so the filter cannot drift.
+- Roadmap Source Docs' phase-scope checkout uses a blobless full-history clone; the gate only
+  compares changed path names.
+
+**Still open (owner decision).** Larger or self-hosted runners raise the concurrency ceiling
+directly. Re-introduce .NET sharding only when runner capacity, not queueing, is the limit.
