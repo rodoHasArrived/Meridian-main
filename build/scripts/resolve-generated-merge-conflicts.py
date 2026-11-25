@@ -16,7 +16,8 @@ import tempfile
 from pathlib import Path, PurePosixPath
 
 
-REVIEWED_MANIFEST = "docs/source/generated/source-hash-manifest.json"
+# Reviewed fingerprints: one file per source module plus a shared header.
+REVIEWED_MANIFEST = "docs/source/generated/source-hashes"
 POLICY = Path(__file__).with_name("maintained-generation-outputs.json")
 
 
@@ -51,7 +52,10 @@ def load_conflict_policy(policy_path: Path = POLICY) -> dict:
             strategy = record.get("strategy")
             if strategy not in {"manual", "regenerate", "protected-suffix", "reviewed-hashes"}:
                 raise ValueError(f"Unknown conflict strategy: {path}")
-            if is_tree and (strategy != "regenerate" or path not in policy.get("whole_trees", [])):
+            if is_tree and strategy == "reviewed-hashes":
+                if path != REVIEWED_MANIFEST:
+                    raise ValueError(f"Unsupported reviewed manifest: {path}")
+            elif is_tree and (strategy != "regenerate" or path not in policy.get("whole_trees", [])):
                 raise ValueError(f"Conflict tree is not an authorized generated tree: {path}")
             if strategy == "regenerate":
                 if ((not is_tree and (path not in policy.get("whole_files", []) or path in protected))
@@ -59,8 +63,8 @@ def load_conflict_policy(policy_path: Path = POLICY) -> dict:
                     raise ValueError(f"Whole-file recovery would replace protected content: {path}")
             elif strategy == "protected-suffix" and path not in policy.get("protected_suffixes", {}):
                 raise ValueError(f"No protected suffix declared: {path}")
-            elif strategy == "reviewed-hashes" and path != REVIEWED_MANIFEST:
-                raise ValueError(f"Unsupported reviewed manifest: {path}")
+            elif strategy == "reviewed-hashes" and not is_tree:
+                raise ValueError(f"Reviewed fingerprints are a per-module tree, not a file: {path}")
             if strategy in {"regenerate", "protected-suffix"}:
                 generator = record.get("generator", "")
                 source, _, script = generator.partition("#") if isinstance(generator, str) else ("", "", "")
@@ -193,7 +197,7 @@ def recover(root: Path, main_ref: str, apply: bool) -> int:
             git(root, "add", "--", path)
         manual.remove(path)
         print(f"PROTECTED  {path}: handwritten suffix merged from all three parents")
-    if manual == [REVIEWED_MANIFEST] and conflict_strategy(REVIEWED_MANIFEST, policy) == "reviewed-hashes":
+    if manual and all(conflict_strategy(path, policy) == "reviewed-hashes" for path in manual):
         try:
             head_sha = git(root, "rev-parse", "HEAD").decode().strip()
             reviewed = merge_reviewed_hashes(root, head_sha, main_sha, apply)
