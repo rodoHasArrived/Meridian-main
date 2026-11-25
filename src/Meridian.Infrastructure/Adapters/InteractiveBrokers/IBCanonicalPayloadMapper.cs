@@ -91,18 +91,40 @@ internal static class IBCanonicalPayloadMapper
                 DateTimeStyles.None, out var local))
             return false;
 
-        TimeZoneInfo zone;
+        if (!TryFindTimeZone(parts[2], out var zone)
+            && !(LegacyTimeZoneAliases.TryGetValue(parts[2], out var canonical) && TryFindTimeZone(canonical, out zone)))
+            return false;
+
+        executedAt = new DateTimeOffset(local, zone!.GetUtcOffset(local)).ToUniversalTime();
+        return true;
+    }
+
+    // TWS still reports the legacy IANA aliases (US/Eastern and friends), which hosts without the
+    // tz "backward" links cannot resolve.
+    private static readonly IReadOnlyDictionary<string, string> LegacyTimeZoneAliases =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["US/Eastern"] = "America/New_York",
+            ["US/Central"] = "America/Chicago",
+            ["US/Mountain"] = "America/Denver",
+            ["US/Pacific"] = "America/Los_Angeles",
+            ["US/Alaska"] = "America/Anchorage",
+            ["US/Hawaii"] = "Pacific/Honolulu",
+            ["US/Arizona"] = "America/Phoenix"
+        };
+
+    private static bool TryFindTimeZone(string id, out TimeZoneInfo? zone)
+    {
         try
         {
-            zone = TimeZoneInfo.FindSystemTimeZoneById(parts[2]);
+            zone = TimeZoneInfo.FindSystemTimeZoneById(id);
+            return true;
         }
         catch (Exception ex) when (ex is TimeZoneNotFoundException or InvalidTimeZoneException)
         {
+            zone = null;
             return false;
         }
-
-        executedAt = new DateTimeOffset(local, zone.GetUtcOffset(local)).ToUniversalTime();
-        return true;
     }
 
     internal static bool TryParseKnownSide(string? action, out ExecutionOrderSide side)

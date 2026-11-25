@@ -40,7 +40,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
 
         foreach (var original in source.Lines)
         {
-            var index = unmatched.FindIndex(candidate => IsExactInverse(original, candidate));
+            var index = unmatched.FindIndex(candidate => IsExactInverse(original, candidate, source.Currency));
             if (index < 0)
                 return "A rebook's inverse lines no longer reproduce the journal it replaces; edit only the replacement lines.";
             unmatched.RemoveAt(index);
@@ -49,15 +49,32 @@ public sealed partial class ManualJournalEntryWorkbenchService
         return null;
     }
 
-    private static bool IsExactInverse(ManualJournalEntryLineDto original, ManualJournalEntryLineDto candidate)
-        => candidate.Side == ReverseSide(original.Side) &&
-           candidate with
-           {
-               LineId = original.LineId,
-               Side = original.Side,
-               Description = original.Description,
-               EvidenceLink = original.EvidenceLink,
-               Dimensions = null
-           } == original with { Dimensions = null } &&
-           SamePostingDimensions(original.Dimensions, candidate.Dimensions);
+    /// <summary>
+    /// Compares the posting economics of a candidate inverse line with the source line, side flipped.
+    /// Labels (line id, description, evidence link) are free. A value the source left for
+    /// normalization to derive (currency, entity, tax lot, dimensions) matches whatever was derived;
+    /// a value the source stated explicitly must be carried unchanged.
+    /// </summary>
+    private static bool IsExactInverse(
+        ManualJournalEntryLineDto original,
+        ManualJournalEntryLineDto candidate,
+        string? sourceCurrency)
+    {
+        var originalCurrency = string.IsNullOrWhiteSpace(original.Currency) ? sourceCurrency : original.Currency;
+        return candidate.Side == ReverseSide(original.Side) &&
+               candidate.Amount == original.Amount &&
+               string.Equals(candidate.AccountPath?.Trim(), original.AccountPath?.Trim(), StringComparison.Ordinal) &&
+               string.Equals(candidate.Currency?.Trim(), originalCurrency?.Trim(), StringComparison.OrdinalIgnoreCase) &&
+               candidate.SecurityId == original.SecurityId &&
+               candidate.TransactionCurrency == original.TransactionCurrency &&
+               SameOptional(candidate.LedgerAccountSymbol, original.LedgerAccountSymbol) &&
+               SameOptional(candidate.LedgerAccountFinancialAccountId, original.LedgerAccountFinancialAccountId) &&
+               SameOptional(candidate.FundAllocationId, original.FundAllocationId) &&
+               (NormalizeOptional(original.EntityId) is null || SameOptional(candidate.EntityId, original.EntityId)) &&
+               (NormalizeOptional(original.TaxLotId) is null || SameOptional(candidate.TaxLotId, original.TaxLotId)) &&
+               (original.Dimensions is null || SamePostingDimensions(original.Dimensions, candidate.Dimensions));
+    }
+
+    private static bool SameOptional(string? left, string? right)
+        => string.Equals(NormalizeOptional(left), NormalizeOptional(right), StringComparison.Ordinal);
 }
