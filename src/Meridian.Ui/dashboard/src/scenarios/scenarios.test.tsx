@@ -1,6 +1,6 @@
 import { screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getAccountingWorkspace, getReconciliationBreakQueue } from "@/lib/api";
+import { getAccountingWorkspace, getReconciliationBreakDetail, getReconciliationBreakQueue } from "@/lib/api";
 import { RECONCILIATION_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import { getScenario, resolveScenarioResponse, scenarioPreviewUrl } from "@/scenarios";
 import { accountingPayload } from "@/scenarios/accounting-payload";
@@ -40,6 +40,15 @@ describe("shared accounting scenarios", () => {
     const serialized = JSON.stringify(workspace);
     expect(serialized).toContain("\"EUR\"");
     expect(serialized).not.toContain("\"USD\"");
+  });
+
+  it("serves each rebooked break to the case inspector's per-break read", async () => {
+    installScenario("accounting.non-usd");
+    const workspace = await getAccountingWorkspace();
+    const queued = requireFirst(workspace.breakQueue, "non-USD break queue");
+    const detail = await getReconciliationBreakDetail(queued.breakId);
+    expect(detail).toEqual(queued);
+    expect(JSON.stringify(detail)).not.toContain("\"USD\"");
   });
 
   it("passes the one accounting payload through the real API client and production queue card", async () => {

@@ -1,6 +1,7 @@
 import { resolveDevFixture } from "../lib/dev-fixtures";
 import {
   RECONCILIATION_API_ENDPOINTS,
+  reconciliationBreakEndpoint,
   reconciliationStatementRunBreaksEndpoint,
   reconciliationStatementRunValidationEndpoint
 } from "../lib/workstation-endpoints";
@@ -66,6 +67,12 @@ export function createAccountingSupportRoutes(
       route(reconciliationStatementRunValidationEndpoint(runId), validation),
       route(reconciliationStatementRunBreaksEndpoint(runId), breaks)
     );
+  }
+  // The case inspector re-reads the selected break by id. Serve each break from this scenario's
+  // own queue so the inspector shows the same figures and currency as the queue row; otherwise it
+  // falls through to the default fixture and a rebooked (e.g. EUR) scenario shows USD beside EUR.
+  for (const item of workspace?.breakQueue ?? []) {
+    routes.push(route(reconciliationBreakEndpoint(item.breakId), item));
   }
   return routes;
 }
