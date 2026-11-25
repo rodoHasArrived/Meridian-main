@@ -18,6 +18,7 @@ state. Plans are working inputs, not status sources; live roadmap status stays i
 
 | [Browser Workstation UX Implementation (2026-11)](browser-workstation-ux-roadmap-2026-11.md) | Casework, financial-value provenance, Close/Today, dossiers, report review and import dispositions with scoped verification |
 | [Security Master Review Remediation](security-master-review-remediation-plan.md) | Draft slices consuming the consolidated October review; policy, unit and migration decisions remain explicit |
+| [Security Master Integrity and Traceability](security-master-integrity-implementation-plan.md) | Draft phases from the 2026-11-18 review: leg economics guards, identifier integrity, revision outbox and lineage, workbench parity, index fixings, valid-time terms |
 | [WPF / Web-UI Alignment Plan](wpf-web-ui-alignment-plan.md) | Closes WPF parity gaps with the browser workstation (`W8-WPF-PARITY-001`) |
 | [Desktop Workstation Screen Checklist Reference](desktop-workstation-screen-blueprint.md) | Preserves the twenty screen scopes and heading contract used by desktop checklist/workflow validation |
 | [God-File Burn-Down Plan](god-file-burn-down-plan.md) | Burn-down targets for oversized source files |
