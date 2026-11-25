@@ -6,6 +6,98 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReportingAuthoritativeSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingAuthoritativeSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:46](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L46).
+
+Durable, server-owned source boundary used by certification. Implementations must return the exact rows represented by the checkpoint hash; callers cannot contribute or replace rows.
+
+```csharp
+public interface IReportingAuthoritativeSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:48](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L48) |  |
+| <code>ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, ReportingAuthoritativeSourceCaptureIntent intent, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:58](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L58) | Captures the same template-neutral authoritative checkpoint while also retaining any explicitly required template presentation evidence. Existing sources that do not provide template-specific presentations retain their normal capture behavior. |
+
+## IReportingCertifiedArtifactProducer
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingCertifiedArtifactProducer</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:134](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L134).
+
+Narrow bridge to the renderer that owns the exact output bytes. Implementations must return the bytes actually rendered for the supplied manifest; callers and HTTP payloads are never an artifact source.
+
+```csharp
+public interface IReportingCertifiedArtifactProducer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;ReportingGovernedArtifactProduction&gt; ProduceAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:136](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L136) |  |
+
+## IReportingCertifiedLedgerPresentationSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingCertifiedLedgerPresentationSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:98](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L98).
+
+Resolves the canonical ledger report pack whose accounting presentation was certified for an exact reporting checkpoint. Returning null means that no authoritative presentation is available and callers that require it must fail closed.
+
+```csharp
+public interface IReportingCertifiedLedgerPresentationSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;ReportingCertifiedLedgerPresentationInput?&gt; ResolveExactAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:100](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L100) |  |
+
+## IReportingDeliveryGrantCredentialDeriver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingDeliveryGrantCredentialDeriver</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:26](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L26).
+
+Derives a stable, opaque delivery credential without persisting its plaintext bearer. The binding key must be the durable delivery idempotency identity plus its committed attempt.
+
+```csharp
+public interface IReportingDeliveryGrantCredentialDeriver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ReportingDerivedAccessGrantCredential Derive(string bindingKey);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L28) |  |
+
+## IReportingDeploymentReadinessService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingDeploymentReadinessService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:14](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L14).
+
+Evaluates whether the one canonical reporting authority is fully durable and operable.
+
+```csharp
+public interface IReportingDeploymentReadinessService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ReportingDeploymentCapabilityDto Evaluate();</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L16) |  |
+| <code>IReadOnlyList&lt;string&gt; GetScheduleWorkerCycleBlockingReasons() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:25](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L25) | Returns deployment blockers for the schedule worker&#x27;s own polling cycle. Implementations may exclude the scheduling-worker liveness receipt so it can earn its first receipt. A production implementation may also exclude the delivery-worker liveness receipt only while that peer explicitly reports its one-time initial-start window. The default remains fully fail-closed. |
+
 ## IReportingGovernanceEndpointCoordinator
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingGovernanceEndpointCoordinator</code>. Kind: `interface`.
@@ -42,7 +134,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingMigrationStartup</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1730](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1730).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1731](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1731).
 
 Completes the existing checksummed reporting migration workflow before services that query the reporting authority are constructed.
 
@@ -54,7 +146,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1732](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1732) |  |
+| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1733](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1733) |  |
 
 ## IReportingPrimaryDocumentRenderer
 
@@ -970,82 +1062,3 @@ Declared public members:
 | <code>public TimeSpan MaxCompletedAge { get; init; } = TimeSpan.FromDays(30);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs:32](../../../../src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs#L32) |  |
 | <code>public int MaxCompletedCount { get; init; } = 1000;</code> | [src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs:33](../../../../src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs#L33) |  |
 | <code>public long MaxCompletedBytes { get; init; } = 64 * 1024 * 1024;</code> | [src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs:34](../../../../src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs#L34) |  |
-
-## MarginCertificationStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.MarginCertificationStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/MarginCertificationStore.cs:10](../../../../src/Meridian.Ui.Shared/Services/MarginCertificationStore.cs#L10).
-
-Lists and persists margin certification results.
-
-```csharp
-public sealed class MarginCertificationStore(string dataRoot)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;MarginCertificationResultDto&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/MarginCertificationStore.cs:16](../../../../src/Meridian.Ui.Shared/Services/MarginCertificationStore.cs#L16) |  |
-| <code>public async Task&lt;MarginCertificationResultDto&gt; UpsertAsync(MarginCertificationResultDto certification, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/MarginCertificationStore.cs:29](../../../../src/Meridian.Ui.Shared/Services/MarginCertificationStore.cs#L29) |  |
-
-## MarginControlCenterReadService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.MarginControlCenterReadService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs:17](../../../../src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs#L17).
-
-Builds the multi-account margin operator view from retained connector evidence. Provider figures remain authoritative; shadow figures are transparent diagnostics only.
-
-```csharp
-public sealed class MarginControlCenterReadService(StatementCanonicalEvidenceReader evidenceReader, MarginCertificationStore certificationStore)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;MarginControlCenterDto&gt; GetAsync(Func&lt;MarginEvidenceOwner, bool&gt;? isAccountVisible = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs:31](../../../../src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs#L31) |  |
-| <code>public async Task&lt;MarginCertificationResultDto&gt; CertifyAsync(MarginCertificationRequestDto request, string actor, Func&lt;MarginEvidenceOwner, bool&gt;? isAccountVisible = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs:87](../../../../src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs#L87) |  |
-
-## MarginEvidenceOwner
-
-Qualified name: <code>Meridian.Ui.Shared.Services.MarginEvidenceOwner</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs:11](../../../../src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs#L11).
-
-Who a retained margin snapshot belongs to: the fund account its statement was imported for (null when the evidence predates that record) and the snapshot&#x27;s provider and external account.
-
-```csharp
-public sealed record MarginEvidenceOwner(string? FundAccountId, string ProviderId, string AccountId);
-```
-
-## MarginRequirement
-
-Qualified name: <code>Meridian.Ui.Shared.Services.MarginRequirement</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:27](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L27).
-
-```csharp
-public sealed record MarginRequirement(string Counterparty, decimal RequiredCollateral, decimal InitialMargin, decimal VariationMargin);
-```
-
-## MultiAssetCoverageReadService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.MultiAssetCoverageReadService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs:24](../../../../src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs#L24).
-
-Builds multi-asset coverage summaries from declared instruments and supporting services.
-
-```csharp
-public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public MultiAssetCoverageReadService(ISecurityMasterOperationalReadinessService readinessService, ProviderLedgerReconciliationService? providerLedgerReconciliation = null, FundAccountCloseReadinessService? closeReadiness = null, ISecurityMasterQueryService? securityMasterQuery = null);</code> | [src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs:31](../../../../src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs#L31) |  |
-| <code>public async Task&lt;MultiAssetCoverageSummaryDto&gt; GetCoverageAsync(string? fundAccountId, string? entity, string? assetClass, ReconciliationBreakQueueScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs:43](../../../../src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs#L43) |  |

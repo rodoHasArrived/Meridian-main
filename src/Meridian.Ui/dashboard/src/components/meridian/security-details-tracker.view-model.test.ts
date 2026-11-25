@@ -260,6 +260,28 @@ describe("buildLotsTrackerViewModel", () => {
 });
 
 describe("buildSecurityDetailsViewModel", () => {
+  it("keeps source and effective layers distinct and identifies missing source values", () => {
+    const vm = buildSecurityDetailsVm({ overrides: { ticker: "APPLE", marketPrice: "192" } });
+    const fields = vm.groups.flatMap((group) => group.fields);
+    expect(fields.find((field) => field.key === "ticker")).toMatchObject({
+      sourceDisplayValue: "AAPL",
+      overrideDisplayValue: "APPLE",
+      displayValue: "APPLE",
+      inspectionId: "security-detail-sec-1-ticker-inspection"
+    });
+    expect(fields.find((field) => field.key === "marketPrice")).toMatchObject({
+      sourceDisplayValue: "Not supplied",
+      overrideDisplayValue: "192",
+      displayValue: "192",
+      impactDescription: expect.stringContaining("manually entered unit price")
+    });
+    expect(fields.find((field) => field.key === "currency")).toMatchObject({
+      sourceDisplayValue: "USD",
+      overrideDisplayValue: "No override",
+      displayValue: "USD"
+    });
+  });
+
   it("shows equity fields while hiding bond-only detail groups", () => {
     const vm = buildSecurityDetailsVm({ assetClass: "Equity" });
     const keys = visibleFieldKeys(vm);

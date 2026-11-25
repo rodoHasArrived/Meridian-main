@@ -31,6 +31,9 @@ represented by its result rather than a failure category.
 tolerances (price/quote/close 0-5%, volume 0-50%, volume `Alert`/`Informational`/`Off`, backfill bars
 to compare, per-asset-class overrides) plus before/after audit; defaults reproduce the historical
 hard-coded thresholds. `FailoverRuleReferences` rejects failover rules naming unconfigured source IDs.
+`ProviderValidationProfile` resolves a canonical provider override first, then a legacy alias, then
+the deployment default. Profile audit entries retain before/after values and identify resets that
+remove an override.
 Twelve Data separates per-minute/daily credits, explicit fundamentals entitlement and explicit
 `NoDailyLimit`; Alpha Vantage declares per-minute/daily request capacity and `NoDailyLimit`.
 The explicit boolean survives configuration and desktop DTO round trips; an omitted nullable cap

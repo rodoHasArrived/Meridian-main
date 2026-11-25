@@ -1328,7 +1328,7 @@ describe("App", () => {
     expect(screen.getByRole("navigation", { name: /\d+ workstation commands/ })).toBeInTheDocument();
     expect(screen.getAllByRole("link", {
       name: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
-    }).some((link) => link.getAttribute("href") === "/settings#alpaca-provider-setup")).toBe(true);
+    }).map((link) => link.getAttribute("href"))).toContain("/settings?fundAccountId=fund-1&recordScope=1#alpaca-provider-setup");
     expect(screen.getByRole("link", {
       name: "Data: Alpaca provider warning. Review paper provider posture. Open provider trust."
     })).toHaveAttribute("href", "/data/providers?symbol=MSFT");

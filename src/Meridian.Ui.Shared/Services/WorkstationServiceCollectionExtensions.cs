@@ -319,7 +319,8 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetService<Meridian.Contracts.Services.IOperationalTradingCalendar>() ??
                 new Meridian.Platform.Scheduling.TradingCalendar(),
             sp.GetService<ISecurityIdentityQueryService>() ?? sp.GetService<ISecurityMasterQueryService>(),
-            sp.GetService<ISecurityCorporateActionsQueryService>() ?? sp.GetService<ISecurityMasterQueryService>()));
+            sp.GetService<ISecurityCorporateActionsQueryService>() ?? sp.GetService<ISecurityMasterQueryService>(),
+            sp.GetRequiredService<Meridian.Strategies.Artifacts.StrategyArtifactRegistry>()));
         services.TryAddSingleton<StrategyEngineRegistry>();
         services.TryAddSingleton<StrategyEngineValidationService>();
         services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();

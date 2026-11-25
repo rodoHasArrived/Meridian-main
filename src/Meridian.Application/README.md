@@ -11,6 +11,24 @@ last_reviewed: 2026-11-17
 
 # src/Meridian.Application
 
+Corporate-action ingest forwards specialized source terms and the provider's original JSON
+record into durable source proposals. Exact raw-text digests are checked before recording; source
+versions remain idempotent across JSON formatting changes without replacing the first retained
+payload. Amendments retain earlier versions. Providers can preserve unknown upstream currency,
+and fetch outcomes retain explicit endpoint/type coverage. These observations remain review-only;
+source agreement does not accept a canonical event or authorize accounting.
+
+`SecurityMaster/Valuation/AssetPositionMarketValuationService` adapts an owned book's exact dated
+instrument-position projection to registered valuation models. It resolves retained-only dated
+Security Master terms, validates their economic window, checks position/state identity and all
+book/policy/account/currency boundaries, and replays the exact golden-copy receipt for quoted
+prices. Stale or mismatched evidence blocks amounts. Supported long holder share/unit conventions
+and original-face DCF delegate to existing kernels; multiplier/notional and ambiguous signed
+conventions require dedicated adapters. DCF dirty values withhold P/L without a compatible
+carrying/accrual basis. The comparison is market value less retained carrying amount, separate
+from posted ledger, realized, tax-cost or total-return P/L. `KnownAt` is refused because projection
+history does not certify historical transaction visibility. Tests: `AssetPositionMarketValuationServiceTests`.
+
 Native intercompany legal rules validate structured declarations without turning them into accrual
 or settlement calculations. The shared preview reuses schedule/day-count/calendar kernels for
 dates only. The separate pure `IntercompanyAccrualPreviewService` (ADR-028) reuses the same schedule
@@ -65,6 +83,10 @@ also publishes its coordinator to `StreamingFailoverRegistry.Process` and honour
 `Sources[*].Enabled = false` at startup. A single-source collector acknowledges source toggles
 as changes to failover eligibility and reports a restart requirement when failover is configured.
 `SaveAsync` now also refuses to overwrite a malformed existing authoritative document.
+Feature-capability override saves record their setting changes after the document is durably saved.
+The effective configuration projection reads declared fields and reports activation impact and
+source. It summarizes dictionaries, leaves additional sections out of the response, and masks
+credentials and free-form text.
 
 Provider routing rejects disabled connections and policy-gated fallbacks consistently across direct
 and scored selection. Catalog metadata placeholders yield to the first concrete capability factory.
@@ -797,6 +819,10 @@ The host builds backfill adapters at startup using the active credentials, pacin
 Provider enablement and priority apply to jobs that start after the operator saves the edit. Each running
 job keeps its chosen route through retries. Scheduled jobs read their ordered provider preferences when
 they begin. Set `Backfill.Jobs.Scheduling.Enabled` to enable the schedule worker on a collector or workstation host.
+
+Workstation backfills and gap repair load the saved daily staleness tolerance when the job starts.
+`HistoricalBackfillService` uses the shared provider profile resolver for both validation and
+per-candidate daily fallback. Deployment-scheduled backfills use the profiles loaded at host startup.
 
 ## Purpose
 

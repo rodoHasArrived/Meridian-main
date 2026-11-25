@@ -63,6 +63,75 @@ that selector. For example, a quote desk accepts the instrument's ticker while a
 retains the source book and period for reference. Keep permissions and action availability tied
 to the destination's live read model.
 
+Use the shared dense-row/detail contract for selectable work: each row controls the selected
+inspector; Enter or Space selects it and moves focus into its panel, and Escape
+returns to its originating row. Keep the selected item's primary action before its supporting
+facts. Bind shareable selection to immutable item identity and current financial scope; show
+unavailable selection explicitly after removal rather than substituting another item's proof.
+
+### Asset records and source comparisons
+
+In the browser workstation, compose `ScreenLayout`, `AssetSwitcher`, `AssetPassportSummary`,
+and `AssetFinancialSummary` for record orientation, readiness, and exact-scope amounts. Keep
+instrument status separate from data trust. Use URL-controlled `Tabs` for shareable investigation;
+retain visited editors while hidden so tab changes do not discard inputs. Clear prior-asset data
+immediately on navigation and disclose input-reset behavior.
+
+Each data section owns loading, empty, error, and retry states. Unavailable evidence must not
+become a zero count or “not configured.” Amount rows show currency, basis, account/book, and
+as-of evidence; ambiguous positions require selection rather than cross-book totals. Quote
+snapshots and local estimates must remain distinguishable from retained financial amounts.
+
+Use the `SecurityDetailsPanel` field inspector to compare source, override, and effective panel
+value. The inspector is a labelled button with `aria-expanded`/`aria-controls`, opens inline with
+room for all three layers, and resets on asset changes. Attribute shared override-set metadata as
+such; never imply per-field history or governed economic approval from operator annotations.
+Browser-local lot tracking must declare storage/scope and manual-price calculation limits.
+
+Canonical economic terms use `SecurityInstrumentTerms`, separate from operator annotations.
+Its summary links to the full grouped read; nested schedules and raw JSON use native disclosures,
+with exact numeric text and distinct missing/null/invalid/ambiguous states. Version mismatches
+withhold the read and offer asset reload. `AssetMarketValuation` presents server-calculated metrics
+with currency and comparison basis, independent partial/error states, and inspectable model/input
+provenance. It must never reconstruct a missing amount from a symbol quote in the browser.
+
+### Shared unavailable-condition context
+
+Use browser `FinancialValue` for exact amounts with their supplied currency/unit, data condition,
+and proof. When several values share an unavailable condition, render one visible explanation
+with a `useId` identity and pass it as `conditionContextId` to each value. Individual reasons,
+basis, freshness, amount identity, and proof controls remain available; focused controls reference
+the shared explanation through `aria-describedby`. Other conditions keep their inline labels.
+The shared notice describes condition evidence, not whether an amount is present or reconciled.
+
+Keep immutable record IDs separate from display labels in read models. Use the exact ID for
+selection, commands, proof requests, and return links; retain it in a native technical disclosure.
+Render supplied business names, dates, and versions in primary summaries. Use the shared browser
+`Select` primitive so choices keep consistent labels, keyboard behavior, and focus treatment.
+
+### Reconciliation queue–inspector pilot
+
+The browser adapter combines `WorkspaceWorkbenchShell`, `DenseDataTable` and
+`DenseRowDetailPanel`. Use `inspectorRole="region"` when the shell is nested inside another
+named region, avoiding a nested complementary landmark. Default shell consumers retain their
+existing complementary semantics.
+
+Keep selected-record commands before supporting facts, with disabled reasons and explicit
+rationale for resolution. Show discrepancy, owner, status, source observation and required
+sign-off; retain technical metadata in a disclosure. Search and status filters must never silently
+replace the selected evidence. Show filtered versus loaded counts, keep controls available in
+empty/no-match states, and distinguish unavailable selection from an empty queue.
+
+Persist view choices in scoped URLs and scroll in navigation state; restore after data loads.
+Enter/Space enters the selected inspector and Escape returns to its row. At constrained widths,
+use explicit Inspect/Back controls without discarding queue state. Wide tables scroll locally.
+Loading and failed reads must prevent stale commands; old-scope responses cannot repopulate the
+current inspector. Success comes from the authoritative operation result, never optimistic approval.
+
+Use the shell's `WorkspaceStatus` disclosure for affected-area recovery detail. Retain distinct
+warnings for distinct problems, disable repeated retry while refreshing, and keep operating scope
+applicability explicit. These patterns add no new tokens or business-state vocabulary.
+
 ## 2 · Validated form
 
 **Goal:** an operator form that blocks submit until valid and states errors inline — new

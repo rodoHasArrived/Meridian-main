@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CashFlowRecastPolicy
+
+Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowRecastPolicy</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:14](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L14).
+
+```csharp
+public enum CashFlowRecastPolicy
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>PreservePayments</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:14](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L14) |  |
+| <code>Recast</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:14](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L14) |  |
+
+## ContractualCashFlowAttestationContextDto
+
+Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowAttestationContextDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:182](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L182).
+
+```csharp
+public sealed record ContractualCashFlowAttestationContextDto(string TenantId, string CompanyId, string PreparedBy, Meridian.Contracts.Workstation.OperationsActionOriginDto Origin, int SchemaVersion = 1);
+```
+
+## ContractualCashFlowContract
+
+Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowContract</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:21](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L21).
+
+Versioned calculation contract. Rates are fractions, prices are clean percentages.
+
+```csharp
+public sealed record ContractualCashFlowContract(DateOnly IssueDate, DateOnly MaturityDate, string Currency, IReadOnlyList<ContractualCashFlowStream> Streams, IReadOnlyList<ContractualExerciseEntry>? Exercises = null, int Version = 1);
+```
+
 ## ContractualCashFlowEngine
 
 Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowEngine</code>. Kind: `class`.
@@ -869,82 +908,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;figiToSymbol&quot;)] public Dictionary&lt;string, string&gt; FigiToSymbol { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:429](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L429) | FIGI to canonical symbol. |
 | <code>[JsonPropertyName(&quot;cusipToSymbol&quot;)] public Dictionary&lt;string, string&gt; CusipToSymbol { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:435](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L435) | CUSIP to canonical symbol. |
 | <code>[JsonPropertyName(&quot;sedolToSymbol&quot;)] public Dictionary&lt;string, string&gt; SedolToSymbol { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:441](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L441) | SEDOL to canonical symbol. |
-
-## IndexedFileEntry
-
-Qualified name: <code>Meridian.Contracts.Catalog.IndexedFileEntry</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:135](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L135).
-
-Individual file entry in the directory index.
-
-```csharp
-public sealed class IndexedFileEntry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;fileName&quot;)] public string FileName { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:141](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L141) | File name (without path). |
-| <code>[JsonPropertyName(&quot;relativePath&quot;)] public string RelativePath { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:147](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L147) | Relative path from storage root. |
-| <code>[JsonPropertyName(&quot;format&quot;)] public string Format { get; set; } = &quot;jsonl&quot;;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:153](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L153) | File format (jsonl, parquet, csv). |
-| <code>[JsonPropertyName(&quot;isCompressed&quot;)] public bool IsCompressed { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:159](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L159) | Whether the file is compressed. |
-| <code>[JsonPropertyName(&quot;compressionType&quot;)] public string? CompressionType { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:165](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L165) | Compression type if compressed. |
-| <code>[JsonPropertyName(&quot;symbol&quot;)] public string? Symbol { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:171](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L171) | Symbol this file contains data for. |
-| <code>[JsonPropertyName(&quot;eventType&quot;)] public string? EventType { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:177](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L177) | Event type in this file. |
-| <code>[JsonPropertyName(&quot;source&quot;)] public string? Source { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:183](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L183) | Data source/provider. |
-| <code>[JsonPropertyName(&quot;date&quot;)] public DateTime? Date { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:189](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L189) | Date of the data (for date-partitioned files). |
-| <code>[JsonPropertyName(&quot;schemaVersion&quot;)] public string? SchemaVersion { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:195](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L195) | Schema version used in this file. |
-| <code>[JsonPropertyName(&quot;sizeBytes&quot;)] public long SizeBytes { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:201](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L201) | Compressed size on disk in bytes. |
-| <code>[JsonPropertyName(&quot;uncompressedSizeBytes&quot;)] public long UncompressedSizeBytes { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:207](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L207) | Uncompressed size in bytes. |
-| <code>[JsonPropertyName(&quot;eventCount&quot;)] public long EventCount { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:213](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L213) | Number of events/records in the file. |
-| <code>[JsonPropertyName(&quot;checksumSha256&quot;)] public string ChecksumSha256 { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:219](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L219) | SHA256 checksum for integrity verification. |
-| <code>[JsonPropertyName(&quot;firstTimestamp&quot;)] public DateTime? FirstTimestamp { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:225](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L225) | Timestamp of the first event. |
-| <code>[JsonPropertyName(&quot;lastTimestamp&quot;)] public DateTime? LastTimestamp { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:231](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L231) | Timestamp of the last event. |
-| <code>[JsonPropertyName(&quot;firstSequence&quot;)] public long? FirstSequence { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:237](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L237) | Sequence number of the first event. |
-| <code>[JsonPropertyName(&quot;lastSequence&quot;)] public long? LastSequence { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:243](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L243) | Sequence number of the last event. |
-| <code>[JsonPropertyName(&quot;sequenceGaps&quot;)] public int SequenceGaps { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:249](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L249) | Number of sequence gaps detected within this file. |
-| <code>[JsonPropertyName(&quot;lastModified&quot;)] public DateTime LastModified { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:255](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L255) | File last modified time. |
-| <code>[JsonPropertyName(&quot;indexedAt&quot;)] public DateTime IndexedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:261](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L261) | When this entry was indexed. |
-| <code>[JsonPropertyName(&quot;verificationStatus&quot;)] public string VerificationStatus { get; set; } = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:267](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L267) | Verification status. |
-| <code>[JsonPropertyName(&quot;metadata&quot;)] public Dictionary&lt;string, string&gt;? Metadata { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:273](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L273) | Additional metadata. |
-
-## ISecurityMasterLegacyIdentifierCleanupWriter
-
-Qualified name: <code>Meridian.Contracts.Catalog.ISecurityMasterLegacyIdentifierCleanupWriter</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Catalog/SecurityMasterLegacyIdentifierCleanup.cs:54](../../../../src/Meridian.Contracts/Catalog/SecurityMasterLegacyIdentifierCleanup.cs#L54).
-
-Optional maintenance capability, separate from normal Security Master reconciliation. Callers must supply independently reviewed evidence for every legacy alias selected.
-
-```csharp
-public interface ISecurityMasterLegacyIdentifierCleanupWriter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;string&gt; GetLegacyIdentifierCleanupFingerprintAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/SecurityMasterLegacyIdentifierCleanup.cs:56](../../../../src/Meridian.Contracts/Catalog/SecurityMasterLegacyIdentifierCleanup.cs#L56) |  |
-| <code>Task&lt;SecurityMasterLegacyIdentifierCleanupValidation&gt; ValidateLegacyIdentifierCleanupAsync(SecurityMasterLegacyIdentifierCleanupManifest manifest, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/SecurityMasterLegacyIdentifierCleanup.cs:58](../../../../src/Meridian.Contracts/Catalog/SecurityMasterLegacyIdentifierCleanup.cs#L58) |  |
-| <code>Task&lt;SecurityMasterLegacyIdentifierCleanupReceipt&gt; ApplyLegacyIdentifierCleanupAsync(SecurityMasterLegacyIdentifierCleanupValidation validation, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/SecurityMasterLegacyIdentifierCleanup.cs:62](../../../../src/Meridian.Contracts/Catalog/SecurityMasterLegacyIdentifierCleanup.cs#L62) |  |
-
-## ISymbolResolutionMismatchReader
-
-Qualified name: <code>Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:355](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L355).
-
-Read-only comparison evidence emitted while symbol resolution runs in SymbolResolutionMode.Compare mode.
-
-```csharp
-public interface ISymbolResolutionMismatchReader
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>long TotalCount { get; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:358](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L358) | Total mismatches observed since this process started. |
-| <code>IReadOnlyList&lt;SymbolResolutionMismatch&gt; GetRecent();</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:361](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L361) | The most recent bounded set of mismatches, newest first. |

@@ -2,11 +2,25 @@
 
 # `security-master-contracts` data objects - page 4 of 8
 
-Objects 241-320 of 597. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 607. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_OtcCollateralAgreementDto["OtcCollateralAgreementDto"] {
+        +Guid CollateralAgreementId
+        +string Currency
+        +DateOnly EffectiveDate
+        +IReadOnlyList~OtcEligibleCollateralDto~ EligibleCollateral
+        +decimal? IndependentAmount
+        +Guid MasterAgreementId
+        +decimal MinimumTransferAmount
+        +string? Notes
+        +decimal? RoundingAmount
+        +DateOnly? TerminationDate
+        +decimal ThresholdOurs
+        +decimal ThresholdTheirs
+    }
     class Meridian_Contracts_SecurityMaster_OtcCollateralBalanceDto["OtcCollateralBalanceDto"] {
         +Guid BalanceId
         +Guid CollateralAgreementId
@@ -487,8 +501,7 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_ScheduleSpecFactory["ScheduleSpecFactory"] {
     }
-    class Meridian_Contracts_SecurityMaster_ScheduleTermsWriteRules["ScheduleTermsWriteRules"] {
-    }
+    Meridian_Contracts_SecurityMaster_OtcCollateralAgreementDto --> Meridian_Contracts_SecurityMaster_OtcEligibleCollateralDto
     Meridian_Contracts_SecurityMaster_OtcCollateralBalanceDto --> Meridian_Contracts_SecurityMaster_OtcCollateralDirection
     Meridian_Contracts_SecurityMaster_OtcCollateralBalanceDto --> Meridian_Contracts_SecurityMaster_OtcCollateralKind
     Meridian_Contracts_SecurityMaster_OtcCollateralHeldLineDto --> Meridian_Contracts_SecurityMaster_OtcCollateralDirection
@@ -523,6 +536,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_OtcMarginCallDto --> Meridian_Contracts_SecurityMaster_OtcMovementKind
     Meridian_Contracts_SecurityMaster_OtcMarginCallDto --> Meridian_Contracts_SecurityMaster_OtcMovementParty
     Meridian_Contracts_SecurityMaster_OtcMasterAgreementDto --> Meridian_Contracts_SecurityMaster_OtcMasterAgreementType
+    Meridian_Contracts_SecurityMaster_OtcNettingSetViewDto --> Meridian_Contracts_SecurityMaster_OtcCollateralAgreementDto
     Meridian_Contracts_SecurityMaster_OtcNettingSetViewDto --> Meridian_Contracts_SecurityMaster_OtcContractDto
     Meridian_Contracts_SecurityMaster_OtcNettingSetViewDto --> Meridian_Contracts_SecurityMaster_OtcMasterAgreementDto
     Meridian_Contracts_SecurityMaster_OtcNettingSetViewDto --> Meridian_Contracts_SecurityMaster_OtcNettingSetDto
