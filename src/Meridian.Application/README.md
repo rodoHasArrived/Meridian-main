@@ -301,8 +301,8 @@ Backfill resume checkpoints are written only after the final pipeline flush succ
 `PersistentDedupLedger.CommitDurableAsync` fsyncs committed (version-2) lines before publishing
 them, and syncs the ledger directory on first commit and after each compaction rename, because WAL
 recovery trusts those lines to suppress replay. A failed fsync or directory sync fails the commit
-and leaves the claims pending, so the caller retries instead of publishing unconfirmed entries. Pipeline durability state is split per
-`PipelineWorkload`: `CompositionOptions.PipelineWorkload` (`Collector` by default, `Backfill` for
+and leaves the claims pending, so the caller retries instead of publishing unconfirmed entries.
+Pipeline durability state is split per `PipelineWorkload`: `CompositionOptions.PipelineWorkload` (`Collector` by default, `Backfill` for
 `CompositionOptions.BackfillOnly`) selects `_wal/{collector|backfill}` and
 `_dedup/{collector|backfill}` through `PipelineDurabilityPaths`, so a collector and a backfill can
 share a data root while a second instance of the same workload is refused by the WAL owner lock.
