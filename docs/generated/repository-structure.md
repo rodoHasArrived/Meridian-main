@@ -908,8 +908,6 @@ Meridian-main
 │   │   ├── desktop-evaluation-prerelease.yml
 │   │   ├── desktop-installer-packaging.yml
 │   │   ├── desktop-screenshot-capture.yml
-│   │   ├── desktop-standalone-publish.yml
-│   │   ├── desktop-user-manual.yml
 │   │   ├── desktop-workflow-runner.yml
 │   │   ├── documentation.yml
 │   │   ├── generated-repair-publish.yml
@@ -932,9 +930,7 @@ Meridian-main
 │   │   ├── service-backed-integrations.yml
 │   │   ├── targeted-test.yml
 │   │   ├── web-screenshot-capture.yml
-│   │   ├── windows-desktop-build.yml
-│   │   ├── wpf-dev-validation.yml
-│   │   └── wpf-route-validation.yml
+│   │   └── windows-desktop-build.yml
 │   ├── CODEOWNERS
 │   ├── copilot-instructions.md
 │   ├── dependabot.yml
@@ -1169,6 +1165,7 @@ Meridian-main
 │       │   ├── ci-metrics.py
 │       │   ├── collect-actions.py
 │       │   ├── dependency-locks.py
+│       │   ├── detect-codeql-languages.py
 │       │   ├── detect-dotnet-changes.py
 │       │   ├── dispatch-targeted-test.py
 │       │   ├── duplicate-helper-baseline.json
@@ -2821,8 +2818,52 @@ Meridian-main
 │   │   │   ├── source-readme-ignore.yml
 │   │   │   └── source-todos.yml
 │   │   ├── generated
+│   │   │   ├── source-hashes
+│   │   │   │   ├── _manifest.json
+│   │   │   │   ├── SRC-APP.json
+│   │   │   │   ├── SRC-BACKTESTING-SDK.json
+│   │   │   │   ├── SRC-BACKTESTING.json
+│   │   │   │   ├── SRC-CONTRACTS.json
+│   │   │   │   ├── SRC-CORE.json
+│   │   │   │   ├── SRC-DESIGN-AUDIT.json
+│   │   │   │   ├── SRC-DESIGN-DATA-INTEGRATION.json
+│   │   │   │   ├── SRC-DESIGN-DOCUMENTS.json
+│   │   │   │   ├── SRC-DESIGN-ENTITIES.json
+│   │   │   │   ├── SRC-DESIGN-FINANCIAL-OPERATIONS.json
+│   │   │   │   ├── SRC-DESIGN-IDENTITY.json
+│   │   │   │   ├── SRC-DESIGN-INSTRUMENTS.json
+│   │   │   │   ├── SRC-DESIGN-PLATFORM.json
+│   │   │   │   ├── SRC-DESIGN-PORTFOLIO-RECORDS.json
+│   │   │   │   ├── SRC-DESIGN-REFERENCE-DATA.json
+│   │   │   │   ├── SRC-DESIGN-REPORTING.json
+│   │   │   │   ├── SRC-DESIGN-WORKFLOW.json
+│   │   │   │   ├── SRC-DOMAIN.json
+│   │   │   │   ├── SRC-EXECUTION-SDK.json
+│   │   │   │   ├── SRC-EXECUTION.json
+│   │   │   │   ├── SRC-FSHARP-DIRECTLENDING.json
+│   │   │   │   ├── SRC-FSHARP-LEDGER.json
+│   │   │   │   ├── SRC-FSHARP-TRADING.json
+│   │   │   │   ├── SRC-FSHARP.json
+│   │   │   │   ├── SRC-HOST.json
+│   │   │   │   ├── SRC-IBAPI-SMOKESTUB.json
+│   │   │   │   ├── SRC-INFRASTRUCTURE.json
+│   │   │   │   ├── SRC-LAUNCHER.json
+│   │   │   │   ├── SRC-LEDGER.json
+│   │   │   │   ├── SRC-LIFECYCLE-SUPERVISOR.json
+│   │   │   │   ├── SRC-MCP.json
+│   │   │   │   ├── SRC-PROVIDER-SDK.json
+│   │   │   │   ├── SRC-QUANTSCRIPT.json
+│   │   │   │   ├── SRC-REPORTING-READMODELS.json
+│   │   │   │   ├── SRC-RISK.json
+│   │   │   │   ├── SRC-STORAGE-ACCOUNTING.json
+│   │   │   │   ├── SRC-STORAGE.json
+│   │   │   │   ├── SRC-STRATEGIES.json
+│   │   │   │   ├── SRC-UI-DASHBOARD.json
+│   │   │   │   ├── SRC-UI-SERVICES.json
+│   │   │   │   ├── SRC-UI-SHARED.json
+│   │   │   │   ├── SRC-UI.json
+│   │   │   │   └── SRC-WPF.json
 │   │   │   ├── adapter-readiness-matrix.md
-│   │   │   ├── source-hash-manifest.json
 │   │   │   ├── source-module-index.md
 │   │   │   ├── source-roadmap-traceability.md
 │   │   │   ├── source-todo-checklist.md
@@ -16291,6 +16332,7 @@ Meridian-main
 │   │   ├── test_desktop_msix_packaging.py
 │   │   ├── test_desktop_screen_blueprint_checklist.py
 │   │   ├── test_desktop_workflow_fixture.py
+│   │   ├── test_detect_codeql_languages.py
 │   │   ├── test_detect_dotnet_changes.py
 │   │   ├── test_direct_lending_outbox_claim_sql.py
 │   │   ├── test_doc_health_dashboard_merge.py
