@@ -83,8 +83,11 @@ internal sealed class ConfigurationRevisionJournal(string configPath)
         {
             using var journal = OpenDocument(_journalPath);
             var record = JsonSerializer.Deserialize<ConfigurationRevisionRecord>(journal, Json);
-            if (record is not { CommittedAtUtc: not null, FileWriteTimeUtc: { } stamp,
-                Revision.Id: var revisionId, Changes: not null, CollectorPaths: not null } || revisionId == Guid.Empty)
+            if (record is not
+                {
+                    CommittedAtUtc: not null, FileWriteTimeUtc: { } stamp,
+                    Revision.Id: var revisionId, Changes: not null, CollectorPaths: not null
+                } || revisionId == Guid.Empty)
                 return null;
 
             using var document = OpenDocument(configPath);
@@ -150,7 +153,8 @@ internal sealed class ConfigurationRevisionJournal(string configPath)
 
     internal void ReleaseCollectorLease(Guid id)
     {
-        try { File.Delete(CollectorLeasePath(id)); }
+        try
+        { File.Delete(CollectorLeasePath(id)); }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
     }
 
