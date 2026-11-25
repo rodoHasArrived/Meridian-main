@@ -56,6 +56,7 @@ public sealed class JournalTemplateBook
     }
 
     /// <summary>Instantiates a registered template against the supplied inputs.</summary>
+    [PostingCalculationNotYetConnected("Recurring journals instantiate their retained JournalTemplate directly; no production path instantiates through this registry yet.")]
     public JournalTemplateInstance Instantiate(string templateId, JournalTemplateInstantiation instantiation)
         => Get(templateId).Instantiate(instantiation);
 }

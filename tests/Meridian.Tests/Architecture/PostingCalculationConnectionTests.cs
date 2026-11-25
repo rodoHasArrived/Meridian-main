@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.FinancialOperations.Ledger;
 using Meridian.Ledger;
 using Xunit;
 
@@ -60,6 +61,23 @@ public sealed class PostingCalculationConnectionTests
         Assert.Contains("FundEconomicsJournalFactory.BuildPerformanceFeeAccrualDraft", discovered);
         Assert.Contains("MultiCurrencyLedgerTranslator.BuildUnrealizedFxRevaluationLines", discovered);
         Assert.Contains("ISecurityMasterAmortizationLedgerBridge.PostProjectedCashFlowsAsync", discovered);
+        // Projectors that return a projection carrying journal lines, not the lines themselves.
+        Assert.Contains("PartnershipWaterfallProjector.Project", discovered);
+        Assert.Contains("MultiCurrencyJournalProjector.Project", discovered);
+        // Financial-operations services and their contracts.
+        Assert.Contains("IAccountingJournalDraftService.BuildDraftAsync", discovered);
+        // Instance methods on ledger aggregates.
+        Assert.Contains("JournalTemplateBook.Instantiate", discovered);
+    }
+
+    [Fact]
+    public void ACallerThatIsItselfUnused_DoesNotConnectACalculation()
+    {
+        // ShortCarryProjector.Lines is called only by ShortCarryPostingGuard, a static validator that no
+        // production code references, so the call must not count as a production posting path.
+        var lines = typeof(ShortCarryProjector).GetMethod(nameof(ShortCarryProjector.Lines))!;
+
+        Assert.False(HasProductionCaller(lines, LoadProductionSources()));
     }
 
     [Fact]
@@ -75,9 +93,18 @@ public sealed class PostingCalculationConnectionTests
 
     private static IEnumerable<MethodInfo> DiscoverPostingCalculations()
     {
-        var builders = typeof(FundEconomicsJournalFactory).Assembly.GetExportedTypes()
-            .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly))
-            .Where(method => !method.IsSpecialName && BuildsJournal(method.ReturnType));
+        // Journal builders and projectors: every public or internal method, static or instance, in the
+        // ledger kernel and the financial-operations services that returns journal drafts, journal
+        // lines, or a projection carrying them.
+        var builders = new[] { typeof(FundEconomicsJournalFactory).Assembly, typeof(BondCouponRecognitionService).Assembly }
+            .SelectMany(LoadableTypes)
+            .Where(type => !IsCompilerGenerated(type))
+            .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static |
+                                                 BindingFlags.Instance | BindingFlags.DeclaredOnly))
+            .Where(method => (method.IsPublic || method.IsAssembly) && !method.IsSpecialName &&
+                             !IsCompilerGenerated(method) && method.DeclaringType!.GetInterfaces().All(contract =>
+                                 !IsInterfaceImplementation(method, contract)) &&
+                             BuildsJournalOrProjection(method.ReturnType));
         // Ledger bridges post into a ledger instead of returning lines.
         var bridges = typeof(ISecurityMasterAmortizationLedgerBridge).Assembly.GetExportedTypes()
             .Where(type => type.IsInterface && type.Name.EndsWith("LedgerBridge", StringComparison.Ordinal))
@@ -90,6 +117,27 @@ public sealed class PostingCalculationConnectionTests
             .Where(method => !method.IsSpecialName && Unwrap(method.ReturnType).Name.EndsWith("LedgerPostingResult", StringComparison.Ordinal));
         return builders.Concat(bridges).Concat(postingBuilders).DistinctBy(Describe);
     }
+
+    private static IEnumerable<Type> LoadableTypes(Assembly assembly)
+    {
+        try
+        {
+            return assembly.GetTypes();
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            return ex.Types.OfType<Type>();
+        }
+    }
+
+    private static bool IsCompilerGenerated(MemberInfo member)
+        => member.Name.Contains('<') || member.GetCustomAttribute<CompilerGeneratedAttribute>() is not null;
+
+    // An implementation of an interface member is reached through the interface, which the bridge
+    // and posting-builder rules cover; it is not a separate calculation to connect.
+    private static bool IsInterfaceImplementation(MethodInfo method, Type contract)
+        => !method.IsStatic && !method.DeclaringType!.IsInterface &&
+           method.DeclaringType.GetInterfaceMap(contract).TargetMethods.Contains(method);
 
     private static Type Unwrap(Type type)
         => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>) ? type.GetGenericArguments()[0] : type;
@@ -105,6 +153,21 @@ public sealed class PostingCalculationConnectionTests
         return type.IsGenericType && type.GetGenericArguments().Any(BuildsJournal);
     }
 
+    // A projection record that carries journal lines, as a property or through a parameterless
+    // conversion such as ToLedgerLines(), is a posting calculation's result as well.
+    private static bool BuildsJournalOrProjection(Type type)
+    {
+        if (BuildsJournal(type))
+            return true;
+        var candidate = Unwrap(type);
+        if (candidate.IsGenericType || candidate.Namespace?.StartsWith("Meridian", StringComparison.Ordinal) != true)
+            return false;
+        return candidate.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                   .Any(property => BuildsJournal(property.PropertyType)) ||
+               candidate.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                   .Any(method => !method.IsSpecialName && method.GetParameters().Length == 0 && BuildsJournal(method.ReturnType));
+    }
+
     private static string Describe(MethodInfo method) => $"{method.DeclaringType!.Name}.{method.Name}";
 
     private static bool HasProductionCaller(MethodInfo method, IReadOnlyList<(string Path, string Code)> sources)
@@ -112,33 +175,76 @@ public sealed class PostingCalculationConnectionTests
         var typeName = method.DeclaringType!.Name;
         var declaration = new Regex($@"\b(class|interface|record|struct)\s+{Regex.Escape(typeName)}\b", RegexOptions.Compiled);
         // A static builder is called through its type; a bridge is called on an instance.
+        // A static builder may also be passed as a method group (Select(Type.Method)); nameof is not a call.
         var call = new Regex(method.IsStatic
-            ? $@"\b{Regex.Escape(typeName)}\s*\.\s*{Regex.Escape(method.Name)}\s*[(<]"
+            ? $@"(?<!nameof\(\s*)\b{Regex.Escape(typeName)}\s*\.\s*{Regex.Escape(method.Name)}\b(?!\s*=[^=>])"
             : $@"\.\s*{Regex.Escape(method.Name)}\s*[(<]", RegexOptions.Compiled);
+        // An instance call only counts where the caller also names the declaring type or one of its
+        // contracts; otherwise any method sharing a common name (Project, Build) would connect it.
+        var instanceOwners = method.IsStatic
+            ? []
+            : method.DeclaringType.GetInterfaces().Append(method.DeclaringType)
+                .Select(type => new Regex($@"\b{Regex.Escape(StripArity(type.Name))}\b", RegexOptions.Compiled))
+                .ToArray();
         // A sibling implementation or the interface declaring the method is not a caller.
         var implementers = method.IsStatic
             ? []
-            : method.DeclaringType.Assembly.GetTypes()
+            : LoadableTypes(method.DeclaringType.Assembly)
                 .Where(type => type != method.DeclaringType &&
                     (method.DeclaringType.IsAssignableFrom(type) || type.IsAssignableFrom(method.DeclaringType) ||
                      method.DeclaringType.GetInterfaces().Any(contract => contract.IsAssignableFrom(type))))
                 .Concat(method.DeclaringType.GetInterfaces())
                 .Where(type => type.Namespace?.StartsWith("Meridian", StringComparison.Ordinal) == true)
-                .Select(type => new Regex($@"\b(class|interface)\s+{Regex.Escape(type.Name)}\b", RegexOptions.Compiled))
+                .Select(type => new Regex($@"\b(class|interface)\s+{Regex.Escape(StripArity(type.Name))}\b", RegexOptions.Compiled))
                 .ToArray();
         return sources.Any(source =>
             !declaration.IsMatch(source.Code) &&
             !implementers.Any(implementer => implementer.IsMatch(source.Code)) &&
-            call.IsMatch(source.Code));
+            call.IsMatch(source.Code) &&
+            (method.IsStatic || instanceOwners.Any(owner => owner.IsMatch(source.Code))) &&
+            !IsUnreferencedStaticHolder(source, sources));
+    }
+
+    private static string StripArity(string name)
+    {
+        var tick = name.IndexOf('`');
+        return tick < 0 ? name : name[..tick];
+    }
+
+    private static readonly Regex StaticClassDeclaration = new(
+        @"\bstatic\s+(?:partial\s+)?class\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)", RegexOptions.Compiled);
+    private static readonly Regex AnyTypeDeclaration = new(
+        @"\b(?:class|record|struct|interface)\s+[A-Za-z_][A-Za-z0-9_]*", RegexOptions.Compiled);
+    private static readonly Regex ExtensionMethod = new(@"\(\s*this\s+", RegexOptions.Compiled);
+
+    /// <summary>
+    /// A caller that is itself unused does not connect a calculation. A file whose only declared types
+    /// are static classes that no other production file names (and that define no extension methods,
+    /// which are invoked without their class name) is a validator or helper nothing reaches.
+    /// </summary>
+    private static bool IsUnreferencedStaticHolder((string Path, string Code) caller, IReadOnlyList<(string Path, string Code)> sources)
+    {
+        var staticNames = StaticClassDeclaration.Matches(caller.Code).Select(match => match.Groups["name"].Value).Distinct().ToArray();
+        if (staticNames.Length == 0 || AnyTypeDeclaration.Matches(caller.Code).Count != staticNames.Length ||
+            ExtensionMethod.IsMatch(caller.Code))
+            return false;
+        return staticNames.All(name =>
+        {
+            var reference = new Regex($@"\b{Regex.Escape(name)}\b");
+            return !sources.Any(other => !string.Equals(other.Path, caller.Path, StringComparison.Ordinal) &&
+                                         reference.IsMatch(other.Code));
+        });
     }
 
     private static IReadOnlyList<(string Path, string Code)> LoadProductionSources()
     {
         var root = Path.Combine(FindRepositoryRoot(), "src");
         var comment = new Regex(@"^\s*//.*$", RegexOptions.Multiline | RegexOptions.Compiled);
+        var stringLiteral = new Regex(@"@?""(?:\\.|[^""\\\r\n])*""", RegexOptions.Compiled);
         return EnumerateCSharpFiles(root)
-            // Comments and XML docs mention calculations without calling them.
-            .Select(file => (file, comment.Replace(File.ReadAllText(file), string.Empty)))
+            // Comments, XML docs and string literals (marker reasons, messages) mention calculations
+            // and their callers without calling or referencing them.
+            .Select(file => (file, stringLiteral.Replace(comment.Replace(File.ReadAllText(file), string.Empty), "\"\"")))
             .ToArray();
     }
 

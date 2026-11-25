@@ -86,6 +86,7 @@ public static class PeriodCloseProjector
     /// The in-memory trial balance is dimension-flat, so the projected closing entries carry
     /// no dimensional scope.
     /// </summary>
+    [PostingCalculationNotYetConnected("In-memory ledger convenience overload; production closes project from retained trial balances through Project.")]
     public static PeriodCloseProjection ProjectFrom(
         Ledger ledger,
         string periodId,

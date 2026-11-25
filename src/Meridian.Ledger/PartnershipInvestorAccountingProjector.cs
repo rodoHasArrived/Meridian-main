@@ -10,6 +10,7 @@ public static class PartnershipInvestorAccountingProjector
 {
     private const decimal AllocationTolerance = LedgerToleranceConstants.Allocation;
 
+    [PostingCalculationNotYetConnected("Investor fee and capital allocation lines are projected and tested, but no production posting path calls this projector yet.")]
     public static PartnershipInvestorAllocationProjection Project(PartnershipInvestorAllocationInput input)
     {
         ArgumentNullException.ThrowIfNull(input);

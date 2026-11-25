@@ -5,6 +5,7 @@ namespace Meridian.Ledger;
 /// <summary>
 /// Converts local-currency journal lines into balanced base-currency ledger posting lines.
 /// </summary>
+[PostingCalculationNotYetConnected("Multi-currency journals post through governed workbench drafts carrying per-line transaction currency; no production workflow calls this projector or its projection yet.")]
 public static class MultiCurrencyJournalProjector
 {
     public static MultiCurrencyJournalProjection Project(MultiCurrencyJournalInput input)

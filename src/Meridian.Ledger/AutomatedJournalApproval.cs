@@ -64,6 +64,7 @@ public sealed record AutomatedJournalApproval
             requireEvidence: false);
     }
 
+    [PostingCalculationNotYetConnected("Automated drafts are approved and rejected through the manual journal workbench lifecycle; production submits this aggregate but never calls its own approve or reject transitions.")]
     public AutomatedJournalApproval Approve(
         string actor,
         DateTimeOffset occurredAtUtc,
@@ -77,6 +78,7 @@ public sealed record AutomatedJournalApproval
             evidenceLinks,
             requireEvidence: true);
 
+    [PostingCalculationNotYetConnected("Automated drafts are approved and rejected through the manual journal workbench lifecycle; production submits this aggregate but never calls its own approve or reject transitions.")]
     public AutomatedJournalApproval Reject(
         string actor,
         DateTimeOffset occurredAtUtc,

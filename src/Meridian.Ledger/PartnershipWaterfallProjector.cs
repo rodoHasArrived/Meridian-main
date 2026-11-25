@@ -10,6 +10,7 @@ public static class PartnershipWaterfallProjector
 {
     private const decimal AllocationTolerance = LedgerToleranceConstants.Allocation;
 
+    [PostingCalculationNotYetConnected("Tiered waterfall allocation lines are projected and tested, but no production posting path calls this projector yet.")]
     public static PartnershipWaterfallAllocationProjection Project(PartnershipWaterfallAllocationInput input)
     {
         ArgumentNullException.ThrowIfNull(input);
