@@ -149,8 +149,13 @@ class WindowsCiRunnerTests(unittest.TestCase):
         for path in ("scripts/dev/desktop-workflows.json", "scripts/dev/validate-position-blotter-route.ps1",
                      "scripts/dev/validate-operator-inbox-route.ps1", "tests/Meridian.Setup.Tests/**"):
             self.assertEqual(workflow.count(f'"{path}"'), 2)
+        # Manual WPF dev-loop and route dispatch lives in Targeted Test; the automatic lane above
+        # still runs every slice, including dev-loop and both routes.
         for name in ("wpf-dev-validation.yml", "wpf-route-validation.yml"):
-            text = (ROOT / ".github/workflows" / name).read_text()
-            self.assertNotIn("  pull_request:", text)
-            self.assertNotIn("  push:", text)
-            self.assertIn("run-windows-ci-tests.py", text)
+            self.assertFalse((ROOT / ".github/workflows" / name).exists())
+        targeted = (ROOT / ".github/workflows/targeted-test.yml").read_text()
+        self.assertNotIn("  pull_request:", targeted)
+        self.assertNotIn("  push:", targeted)
+        for script in ("validate-wpf-dev.ps1", "validate-position-blotter-route.ps1",
+                       "validate-operator-inbox-route.ps1"):
+            self.assertIn(f"scripts/dev/{script}", targeted)

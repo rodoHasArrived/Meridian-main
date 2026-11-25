@@ -1,0 +1,7 @@
+{
+  "id": "SRC-BACKTESTING",
+  "path": "src/Meridian.Backtesting",
+  "readme": "src/Meridian.Backtesting/README.md",
+  "readme_hash": "def038bcfbe15f95b00630a3d07cd0e6a724c052d67b89a205d616ee9c7d32fb",
+  "source_hash": "a613c2a6228efc063ca277fbce982b6fb1af5e83cebfd0c8605e3680c45abe9b"
+}

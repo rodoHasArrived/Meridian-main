@@ -187,11 +187,6 @@
         "generator": "build/scripts/docs/render-adapter-readiness.py",
         "required": true
       },
-      "docs/source/generated/source-hash-manifest.json": {
-        "strategy": "reviewed-hashes",
-        "generator": "build/scripts/merge-reviewed-doc-hashes.py",
-        "reason": "Reuse reviewed parent entries only when they match the merged module; never mint review evidence."
-      },
       "docs/source/generated/source-module-index.md": {
         "strategy": "regenerate",
         "generator": "build/scripts/docs/render-source-docs.py",
@@ -388,6 +383,11 @@
       }
     },
     "trees": {
+      "docs/source/generated/source-hashes": {
+        "strategy": "reviewed-hashes",
+        "generator": "build/scripts/merge-reviewed-doc-hashes.py",
+        "reason": "One reviewed file per module; reuse reviewed parent entries only when they match the merged module and never mint review evidence."
+      },
       "src/Meridian.Ui/wwwroot/workstation": {
         "strategy": "regenerate",
         "generator": "src/Meridian.Ui/dashboard/package.json#scripts.build",
@@ -443,7 +443,7 @@
       "src/Meridian.Ui/wwwroot/workstation"
     ],
     "reviewed_baselines": [
-      "docs/source/generated/source-hash-manifest.json",
+      "docs/source/generated/source-hashes",
       "docs/status/doc-health-dashboard.json",
       "docs/status/doc-health-dashboard.md"
     ],

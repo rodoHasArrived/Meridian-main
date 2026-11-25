@@ -1,0 +1,7 @@
+{
+  "id": "SRC-STORAGE-ACCOUNTING",
+  "path": "src/Meridian.Storage.Accounting",
+  "readme": "src/Meridian.Storage.Accounting/README.md",
+  "readme_hash": "b47e1160dee5c1355d3cfacf0f861b30cdd0b4a420aed1cd770b42b56d53c569",
+  "source_hash": "84521e5ad2eaed22ad508fb722fa3c72e9715677b4eae84507aa64fff1b2e815"
+}
