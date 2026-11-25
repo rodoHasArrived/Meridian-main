@@ -129,25 +129,6 @@ Declared public members:
 | <code>Task DeleteScopedAsync(string providerId, ProviderCredentialScope scope, string? actor = null, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:166](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L166) |  |
 | <code>Task RecordScopedVerificationAsync(ProviderCredentialVerificationUpdate update, ProviderCredentialScope scope, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:168](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L168) | Records a result only for the nonblank expected credential generation that was tested. |
 
-## LegacyCredentialFileMigration
-
-Qualified name: <code>Meridian.DataIntegration.Credentials.LegacyCredentialFileMigration</code>. Kind: `class`.
-
-Source: [src/Meridian.DataIntegration/Credentials/LegacyCredentialFileMigration.cs:8](../../../../src/Meridian.DataIntegration/Credentials/LegacyCredentialFileMigration.cs#L8).
-
-Serializes legacy secret import and restartable plaintext cleanup across processes.
-
-```csharp
-public static class LegacyCredentialFileMigration
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static async Task MigrateAsync(string sourcePath, Func&lt;string, CancellationToken, Task&gt; importSnapshot, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/LegacyCredentialFileMigration.cs:19](../../../../src/Meridian.DataIntegration/Credentials/LegacyCredentialFileMigration.cs#L19) | Imports a legacy JSON snapshot once it has been exclusively claimed. The callback must retain the imported data in both encrypted generations and finish its audit before returning. Completed imports move out of the discovery path before erasure, so cleanup can resume after interruption without parsing an erased or partially erased source. |
-| <code>public static void RestrictAccess(string sourcePath);</code> | [src/Meridian.DataIntegration/Credentials/LegacyCredentialFileMigration.cs:53](../../../../src/Meridian.DataIntegration/Credentials/LegacyCredentialFileMigration.cs#L53) | Restricts retained legacy credential and interrupted-migration snapshots without claiming their unassigned contents. Permission failures propagate to the scoped startup boundary. |
-
 ## OAuthProviderConfig
 
 Qualified name: <code>Meridian.DataIntegration.Credentials.OAuthProviderConfig</code>. Kind: `record`.
@@ -568,6 +549,24 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public QuickBooksProviderSetupHandler() : base(&quot;quickbooks&quot;, [&quot;qbo&quot;, &quot;quickbooks-online&quot;], true, ProviderConnectionMode.ReadOnly, false, credentialOnly : true);</code> | [src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs:231](../../../../src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs#L231) |  |
+
+## RetainedCredentialFileAccess
+
+Qualified name: <code>Meridian.DataIntegration.Credentials.RetainedCredentialFileAccess</code>. Kind: `class`.
+
+Source: [src/Meridian.DataIntegration/Credentials/RetainedCredentialFileAccess.cs:10](../../../../src/Meridian.DataIntegration/Credentials/RetainedCredentialFileAccess.cs#L10).
+
+Keeps plaintext credential files left behind by earlier releases owner-only. Their contents are never read, imported or erased; an operator removes them after rotating the credentials.
+
+```csharp
+public static class RetainedCredentialFileAccess
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void RestrictAccess(string sourcePath);</code> | [src/Meridian.DataIntegration/Credentials/RetainedCredentialFileAccess.cs:19](../../../../src/Meridian.DataIntegration/Credentials/RetainedCredentialFileAccess.cs#L19) | Restricts a retained plaintext credential file and its interrupted-import snapshot without claiming their contents. Permission failures propagate to the caller&#x27;s startup boundary. |
 
 ## StoredCredentialStatus
 

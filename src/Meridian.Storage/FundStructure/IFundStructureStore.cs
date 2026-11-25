@@ -100,17 +100,6 @@ public interface IFundStructureStore
     /// <remarks>A no-op in stores with no tenant partition.</remarks>
     Task StampNodeTenantAsync(Guid nodeId, string tenantId, CancellationToken ct = default)
         => Task.CompletedTask;
-
-    /// <summary>
-    /// Imports one legacy JSON snapshot as a single database transaction when the store is empty.
-    /// The source hash is committed in the same transaction so startup can safely recover a process
-    /// failure between database commit and source-file archival.
-    /// </summary>
-    Task<FundStructureLegacyImportResult> ImportLegacySnapshotIfEmptyAsync(
-        FundStructureLegacyImportRequest request,
-        CancellationToken ct = default)
-        => Task.FromException<FundStructureLegacyImportResult>(
-            new NotSupportedException("This fund-structure store does not support transactional legacy imports."));
 }
 
 /// <summary>
@@ -133,25 +122,4 @@ public sealed record FundStructureTenantMap(
     /// <summary>A store that does not model tenant ownership.</summary>
     public static FundStructureTenantMap Unpartitioned { get; } =
         new(IsPartitioned: false, new Dictionary<Guid, string>());
-}
-
-public sealed record FundStructureLegacyImportRequest(
-    string SourceHash,
-    IReadOnlyList<OrganizationSummaryDto> Organizations,
-    IReadOnlyList<BusinessSummaryDto> Businesses,
-    IReadOnlyList<ClientSummaryDto> Clients,
-    IReadOnlyList<FundSummaryDto> Funds,
-    IReadOnlyList<SleeveSummaryDto> Sleeves,
-    IReadOnlyList<VehicleSummaryDto> Vehicles,
-    IReadOnlyList<LegalEntitySummaryDto> Entities,
-    IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios,
-    IReadOnlyList<OwnershipLinkDto> OwnershipLinks,
-    IReadOnlyList<FundStructureAssignmentDto> Assignments,
-    IReadOnlyList<Guid> LinkedAccountIds);
-
-public enum FundStructureLegacyImportResult : byte
-{
-    Imported = 0,
-    AlreadyImported = 1,
-    StoreNotEmpty = 2
 }

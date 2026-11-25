@@ -417,20 +417,6 @@ public sealed class ReportingRunCertificationService
         }
     }
 
-    /// <summary>
-    /// Compatibility signature retained so old callers fail closed instead of silently certifying
-    /// caller-owned or mutable workflow rows. Governed code must use <see cref="CertifyAsync"/>.
-    /// </summary>
-    [Obsolete("Caller/workflow rows are not certifiable. Use CertifyAsync with a durable authoritative source.")]
-    public CertifiedReportingRunContext Certify(
-        ReportingTemplateMetadata template,
-        ReportingRunReadinessDto readiness,
-        IReadOnlyList<IReadOnlyDictionary<string, string>>? datasetRows,
-        string? datasetSourceId,
-        ReportAccessQueryContext accessContext) =>
-        throw new ReportingAuthoritativeSourceUnavailableException(
-            "Synchronous certification of caller or workflow rows is disabled. A durable authoritative source is required.");
-
     public ReportingReadinessReceipt BuildGovernanceReadiness(
         string runId,
         CertifiedReportingRunContext certified,

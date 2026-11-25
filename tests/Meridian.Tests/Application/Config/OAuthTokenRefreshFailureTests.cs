@@ -11,35 +11,6 @@ namespace Meridian.Tests.Application.Config;
 
 public sealed class OAuthTokenRefreshFailureTests
 {
-    [Fact]
-    public async Task MalformedPersistedToken_DoesNotExposeJsonPathInLogs()
-    {
-        const string secret = "secret-in-malformed-token-key";
-        var root = Path.Combine(Path.GetTempPath(), "meridian-oauth-errors", Guid.NewGuid().ToString("N"));
-        var sink = new CaptureSink();
-        using var logger = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.Sink(sink).CreateLogger();
-        try
-        {
-            Directory.CreateDirectory(Path.Combine(root, ".mdc"));
-            await File.WriteAllTextAsync(Path.Combine(root, ".mdc", "oauth_tokens.json"),
-                "{\"" + secret + "\":{\"AccessToken\":{}}}");
-
-            await using var service = new OAuthTokenRefreshService(root, logger: logger);
-            var initialize = () => service.InitializeAsync();
-            var failure = (await initialize.Should().ThrowAsync<InvalidOperationException>()).Which;
-            failure.ToString().Should().NotContain(secret);
-            File.Exists(Path.Combine(root, ".mdc", "oauth_tokens.json")).Should().BeTrue();
-            sink.Events.Should().Contain(entry => entry.Level == LogEventLevel.Warning);
-            sink.Events.Should().OnlyContain(entry => entry.Exception == null);
-            string.Join("\n", sink.Events.Select(entry => entry.RenderMessage())).Should().NotContain(secret);
-        }
-        finally
-        {
-            if (Directory.Exists(root))
-                Directory.Delete(root, recursive: true);
-        }
-    }
-
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]

@@ -825,10 +825,7 @@ protected; collisions refuse before persistence.
 The live registry selects one deterministic representative for each normalized alias/provider/source
 identity, preferring the supplied active state so expired or disabled windows cannot hide a renewed
 alias. Complete temporal history remains in Security Master's append-only alias revisions.
-Unknown legacy identifier ownership is never inferred from matching text:
-`ISecurityMasterLegacyIdentifierCleanupWriter` validates an
-explicit evidence-bound manifest against a registry fingerprint before atomically applying it and
-retaining an idempotent receipt. Resolver rebuilds serialize their read/build/publication step so an
+Resolver rebuilds serialize their read/build/publication step so an
 older rebuild cannot restore a superseded alias after a newer reconciliation.
 
 New WAL segments use `MDCWAL02|2` with BLAKE3-256 over length-framed, canonically

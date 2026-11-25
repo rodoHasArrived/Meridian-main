@@ -6,167 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## VerificationStatusValues
-
-Qualified name: <code>Meridian.Contracts.Manifest.VerificationStatusValues</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Manifest/DataManifest.cs:104](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L104).
-
-Verification status constants.
-
-```csharp
-public static class VerificationStatusValues
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Pending = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:109](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L109) | Indicates verification has not yet been performed. |
-| <code>public const string Verified = &quot;Verified&quot;;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:114](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L114) | Indicates verification completed successfully. |
-| <code>public const string Failed = &quot;Failed&quot;;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:119](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L119) | Indicates verification failed. |
-
-## MoneyMarketFundReferenceDto
-
-Qualified name: <code>Meridian.Contracts.MoneyMarketFunds.MoneyMarketFundReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/MoneyMarketFunds/MoneyMarketFundReferenceDtos.cs:3](../../../../src/Meridian.Contracts/MoneyMarketFunds/MoneyMarketFundReferenceDtos.cs#L3).
-
-```csharp
-public sealed record MoneyMarketFundReferenceDto(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool SweepEligible, int? WeightedAverageMaturityDays, bool LiquidityFeeEligible, string PrimaryIdentifier, long Version);
-```
-
-## IEventMetrics
-
-Qualified name: <code>Meridian.Contracts.Monitoring.IEventMetrics</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:8](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L8).
-
-Abstraction over event pipeline counters so that hot-path metrics can be injected rather than accessed through a static class. Default implementations should preserve zero-allocation / thread-safe behavior on the hot path.
-
-```csharp
-public interface IEventMetrics
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>long Published { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:10](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L10) |  |
-| <code>long Dropped { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:11](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L11) |  |
-| <code>long Integrity { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:12](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L12) |  |
-| <code>long Trades { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:13](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L13) |  |
-| <code>long DepthUpdates { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:14](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L14) |  |
-| <code>long Quotes { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:15](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L15) |  |
-| <code>long HistoricalBars { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:16](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L16) |  |
-| <code>double EventsPerSecond { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:17](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L17) |  |
-| <code>double DropRate { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:18](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L18) |  |
-| <code>void IncPublished();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:20](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L20) |  |
-| <code>void IncDropped();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:21](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L21) |  |
-| <code>void IncIntegrity();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:22](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L22) |  |
-| <code>void IncTrades();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:23](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L23) |  |
-| <code>void IncDepthUpdates();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:24](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L24) |  |
-| <code>void IncQuotes();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:25](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L25) |  |
-| <code>void IncHistoricalBars();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:26](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L26) |  |
-| <code>void RecordLatency(long startTimestamp);</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:27](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L27) |  |
-| <code>void Reset();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:29](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L29) |  |
-| <code>MetricsSnapshot GetSnapshot();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:30](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L30) |  |
-
-## IMonitoringWebhookSink
-
-Qualified name: <code>Meridian.Contracts.Monitoring.IMonitoringWebhookSink</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Monitoring/IMonitoringWebhookSink.cs:8](../../../../src/Meridian.Contracts/Monitoring/IMonitoringWebhookSink.cs#L8).
-
-Contract for delivery services that can publish monitoring alert messages.
-
-```csharp
-public interface IMonitoringWebhookSink
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task SendMonitoringMessageAsync(string message, string? title = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Monitoring/IMonitoringWebhookSink.cs:13](../../../../src/Meridian.Contracts/Monitoring/IMonitoringWebhookSink.cs#L13) | Sends a monitoring message to the configured notification destinations. |
-
-## MetricsSnapshot
-
-Qualified name: <code>Meridian.Contracts.Monitoring.MetricsSnapshot</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Contracts/Monitoring/MetricsSnapshot.cs:6](../../../../src/Meridian.Contracts/Monitoring/MetricsSnapshot.cs#L6).
-
-Immutable snapshot of event-pipeline metrics at a point in time.
-
-```csharp
-public readonly record struct MetricsSnapshot(long Published, long Dropped, long Integrity, long Trades, long DepthUpdates, long Quotes, long HistoricalBars, double EventsPerSecond, double TradesPerSecond, double DepthUpdatesPerSecond, double HistoricalBarsPerSecond, double DropRate, double AverageLatencyUs, double MinLatencyUs, double MaxLatencyUs, long LatencySampleCount, long Gc0Collections, long Gc1Collections, long Gc2Collections, long Gc0Delta, long Gc1Delta, long Gc2Delta, double MemoryUsageMb, double HeapSizeMb, DateTimeOffset Timestamp);
-```
-
-## DataProvenance
-
-Qualified name: <code>Meridian.Contracts.Operations.DataProvenance</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Operations/DataProvenance.cs:13](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L13).
-
-Origin classification carried by any figure or read model that can be produced from something other than real operational data. The point of the signal is fail-closed honesty: no operator, on either client, may mistake simulated, seeded, or sample output for real data. Every read model that can originate from non-real data carries this signal and propagates it outward; surfaces that only ever show real data may default to Real.
-
-```csharp
-public enum DataProvenance : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Real = 0</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:16](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L16) | Real operational data captured from a durable production source. |
-| <code>Simulated = 1</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:22](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L22) | Deterministically generated by a simulation, paper, or backtest path (e.g. a synthetic streaming source or a shadow-book valuation). Numbers move, but none of it is real. |
-| <code>Seeded = 2</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:28](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L28) | Deterministically seeded fixture data shipped so a new operator can explore the product without credentials (e.g. demo-mode market snapshots). |
-| <code>Sample = 3</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:31](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L31) | Illustrative sample or placeholder data with no operational meaning. |
-
-## DataProvenanceBadge
-
-Qualified name: <code>Meridian.Contracts.Operations.DataProvenanceBadge</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Operations/DataProvenance.cs:197](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L197).
-
-A persistent, non-dismissable provenance badge both clients render identically. Constructed only for non-real provenance; TryCreate returns null for real data so a real surface renders no badge at all.
-
-```csharp
-public sealed record DataProvenanceBadge(DataProvenance Provenance, string Label, string Detail)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Dismissable =&gt; …;</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:203](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L203) | Provenance badges are always persistent and can never be dismissed by the operator. |
-| <code>public static DataProvenanceBadge? TryCreate(DataProvenance provenance, string? detail = null);</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:208](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L208) | Builds the badge for a non-real provenance, or null for DataProvenance.Real. |
-
-## DataProvenanceExtensions
-
-Qualified name: <code>Meridian.Contracts.Operations.DataProvenanceExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Operations/DataProvenance.cs:38](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L38).
-
-Shared helpers for reasoning about and rendering a DataProvenance signal. Kept in the contracts layer so both clients, the API endpoints, and the DI policy render one label.
-
-```csharp
-public static class DataProvenanceExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool IsNonReal(this DataProvenance provenance) =&gt; …;</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:41](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L41) | True for anything other than real operational data. |
-| <code>public static bool RequiresBadge(this DataProvenance provenance) =&gt; …;</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:46](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L46) | True when the provenance must be surfaced as a persistent, non-dismissable operator badge. |
-| <code>public static string? Label(this DataProvenance provenance) =&gt; …;</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:52](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L52) | Short, uppercase operator-facing label (e.g. SIMULATED). Returns null for real data so callers can treat &quot;no label&quot; and &quot;real&quot; identically. |
-| <code>public static string Token(this DataProvenance provenance) =&gt; …;</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:61](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L61) | Lower-case token used on the wire and by clients (e.g. simulated). |
-| <code>public static DataProvenance ParseTokenOrSimulated(string? token) =&gt; …;</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:74](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L74) | Parses a loose provenance token (case-insensitive). Unknown tokens fall back to DataProvenance.Simulated — never DataProvenance.Real — so an unrecognized value can never be silently upgraded into &quot;real&quot;. |
-| <code>public static DataProvenance Strongest(IEnumerable&lt;DataProvenance&gt; provenances);</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:94](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L94) | Folds many origins into the one a derived figure must carry: the strongest non-real provenance among the inputs, or DataProvenance.Real only when every input is real. A derived figure — a valuation draft, a NAV, a report pack — is never more real than its least-real input, so this is the single rule every derivation uses. |
-| <code>public static bool IsSimulatedOriginToken(string? value);</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:136](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L136) | True when a source-system or source-type value is, exactly, one of the structured simulated-origin tokens. |
-| <code>public static bool CarriesSimulatedOriginToken(string? value);</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:163](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L163) | True when the value is, exactly, a simulated-origin token — or when any colon-delimited segment of a structured reference is one, so an evidence string like daily-close:AAPL:2026-08-18:synthetic declares its fabricated origin even though the whole string is not a bare token. Splitting only on : keeps free-text values like &quot;Sample Custodian&quot; and hyphenated names like &quot;fixture-bank&quot; from matching: those are whole values, not structured segments, and remain the exact-equality rule&#x27;s concern. |
-
 ## HumanOperatorRequiredException
 
 Qualified name: <code>Meridian.Contracts.Operations.HumanOperatorRequiredException</code>. Kind: `class`.
@@ -898,3 +737,137 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public SecurityOptionRight? Right =&gt; …;</code> | [src/Meridian.Contracts/Options/OptionReferenceDtos.cs:23](../../../../src/Meridian.Contracts/Options/OptionReferenceDtos.cs#L23) | PutCall as a typed right, or null when the stored text names neither. The raw text stays on PutCall. |
+
+## OptionScreenCandidate
+
+Qualified name: <code>Meridian.Contracts.Options.OptionScreenCandidate</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:18](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L18).
+
+```csharp
+public sealed record OptionScreenCandidate(string Id, string Symbol, string UnderlyingSymbol, string Right, string Expiration, int DaysToExpiration, string Strike, string? Delta, string Bid, string Ask, string? Mid, string? SpreadFraction, long? OpenInterest, long? Volume, string Multiplier, string Currency, string Exchange, string Style, string Source, DateTimeOffset ObservedAt, bool PassesScreen, IReadOnlyList<string> RejectionReasons);
+```
+
+## OptionScreenRequest
+
+Qualified name: <code>Meridian.Contracts.Options.OptionScreenRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:4](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L4).
+
+Neutral single-contract criteria. Passing these criteria is not trading permission.
+
+```csharp
+public sealed record OptionScreenRequest(string UnderlyingSymbol, int MinDte = 0, int MaxDte = 365, decimal MinDelta = - 1m, decimal MaxDelta = 1m, string Right = "Both", long MinOpenInterest = 0, long MinVolume = 0, decimal? MaxSpreadFraction = null, decimal? MinPremium = null, string PremiumBasis = "Bid", int StrikeRange = 20);
+```
+
+## OptionScreenResult
+
+Qualified name: <code>Meridian.Contracts.Options.OptionScreenResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:26](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L26).
+
+```csharp
+public sealed record OptionScreenResult(OptionScreenRequest Criteria, DateTimeOffset ScreenedAt, IReadOnlyList<OptionScreenCandidate> Candidates, IReadOnlyList<string> LoadedExpirations, IReadOnlyList<string> FailedExpirations, IReadOnlyList<string> OmittedExpirations, int StrikeRange, string CoverageNote, string AuthorityNote);
+```
+
+## OptionSeriesDto
+
+Qualified name: <code>Meridian.Contracts.Options.OptionSeriesDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Options/OptionReferenceDtos.cs:27](../../../../src/Meridian.Contracts/Options/OptionReferenceDtos.cs#L27).
+
+```csharp
+public sealed record OptionSeriesDto(string OptionChainId, string UnderlyingSymbol, DateOnly ExpiryDate, IReadOnlyList<OptionContractReferenceDto> Contracts);
+```
+
+## RetainedOptionAssessment
+
+Qualified name: <code>Meridian.Contracts.Options.RetainedOptionAssessment</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:70](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L70).
+
+```csharp
+public sealed record RetainedOptionAssessment(string AssessmentId, BrokerOptionAssessment Assessment, string BasketFingerprint, string ContentSha256, DateTimeOffset RecordedAt, string RecordedBy, string SourceVaultId, string SourceDocumentId, string SourceSha256, string AssessmentVaultId, string AssessmentDocumentId, string? CorrectsAssessmentId, bool IsSuperseded = false);
+```
+
+## IngestionCheckpointToken
+
+Qualified name: <code>Meridian.Contracts.Pipeline.IngestionCheckpointToken</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Pipeline/IngestionJob.cs:227](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L227).
+
+Checkpoint token enabling safe resume of an interrupted job.
+
+```csharp
+public sealed class IngestionCheckpointToken
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;lastSymbol&quot;)] public string? LastSymbol { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:233](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L233) | The symbol that was last successfully processed. |
+| <code>[JsonPropertyName(&quot;lastDate&quot;)] public DateTime? LastDate { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:239](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L239) | The date cursor for the last committed data point. |
+| <code>[JsonPropertyName(&quot;lastOffset&quot;)] public long? LastOffset { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:245](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L245) | The last durable offset (e.g., sequence number or stream position). |
+| <code>[JsonPropertyName(&quot;gapFillWindowStart&quot;)] public DateTime? GapFillWindowStart { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:251](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L251) | For realtime: the gap-fill window start (how far back to re-process on resume). |
+| <code>[JsonPropertyName(&quot;capturedAt&quot;)] public DateTime CapturedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:257](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L257) | UTC timestamp when this checkpoint was captured. |
+
+## IngestionJob
+
+Qualified name: <code>Meridian.Contracts.Pipeline.IngestionJob</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Pipeline/IngestionJob.cs:18](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L18).
+
+Unified ingestion job state machine that applies to both realtime and historical flows. Implements a single contract for all ingestion workload types, ensuring consistent status tracking, checkpoint semantics, and retry behavior.
+
+```csharp
+public sealed class IngestionJob
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;jobId&quot;)] public string JobId { get; set; } = Guid.NewGuid().ToString();</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:24](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L24) | Unique identifier for this ingestion job. |
+| <code>[JsonPropertyName(&quot;workloadType&quot;)] public IngestionWorkloadType WorkloadType { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:30](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L30) | The type of ingestion workload. |
+| <code>[JsonPropertyName(&quot;state&quot;)] public IngestionJobState State { get; set; } = IngestionJobState.Draft;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:36](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L36) | Current state of the job in the state machine. |
+| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:42](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L42) | Symbols targeted by this job. |
+| <code>[JsonPropertyName(&quot;provider&quot;)] public string Provider { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:48](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L48) | The data provider executing this job. |
+| <code>[JsonPropertyName(&quot;fromDate&quot;)] public DateTime? FromDate { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:54](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L54) | Optional time range start (historical workloads). |
+| <code>[JsonPropertyName(&quot;toDate&quot;)] public DateTime? ToDate { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:60](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L60) | Optional time range end (historical workloads). |
+| <code>[JsonPropertyName(&quot;checkpointToken&quot;)] public IngestionCheckpointToken? CheckpointToken { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:68](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L68) | Checkpoint token enabling resume from last durable offset. For historical: last committed bar cursor (symbol/date). For realtime: latest stream offset + gap-fill window. |
+| <code>[JsonPropertyName(&quot;retryEnvelope&quot;)] public RetryEnvelope RetryEnvelope { get; set; } = new ();</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:74](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L74) | Retry envelope tracking attempt count, schedule, and policy. |
+| <code>[JsonPropertyName(&quot;sla&quot;)] public IngestionSla? Sla { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:80](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L80) | SLA expectations for this job. |
+| <code>[JsonPropertyName(&quot;createdAt&quot;)] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:86](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L86) | UTC timestamp when the job was created. |
+| <code>[JsonPropertyName(&quot;startedAt&quot;)] public DateTime? StartedAt { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:92](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L92) | UTC timestamp when the job started running. |
+| <code>[JsonPropertyName(&quot;completedAt&quot;)] public DateTime? CompletedAt { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:98](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L98) | UTC timestamp when the job reached a terminal state. |
+| <code>[JsonPropertyName(&quot;errorMessage&quot;)] public string? ErrorMessage { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:104](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L104) | Error message if the job failed. |
+| <code>[JsonPropertyName(&quot;symbolProgress&quot;)] public List&lt;IngestionSymbolProgress&gt; SymbolProgress { get; set; } = new ();</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:110](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L110) | Per-symbol progress details. |
+| <code>[JsonIgnore] public bool IsTerminal =&gt; …;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:116](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L116) | Gets whether the job is in a terminal state. |
+| <code>[JsonIgnore] public bool IsResumable =&gt; …;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:124](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L124) | Gets whether the job can be resumed. |
+| <code>public bool TryTransition(IngestionJobState newState);</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:132](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L132) | Attempts to transition the job to a new state. Returns false if the transition is invalid. |
+| <code>public static bool IsValidTransition(IngestionJobState from, IngestionJobState to);</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:158](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L158) | Validates whether a state transition is allowed. |
+
+## IngestionJobState
+
+Qualified name: <code>Meridian.Contracts.Pipeline.IngestionJobState</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Pipeline/IngestionJob.cs:181](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L181).
+
+States for the unified ingestion job state machine.
+
+```csharp
+public enum IngestionJobState : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Draft</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:184](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L184) | Job is being configured but not yet submitted. |
+| <code>Queued</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:187](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L187) | Job is submitted and waiting to run. |
+| <code>Running</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:190](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L190) | Job is actively processing data. |
+| <code>Paused</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:193](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L193) | Job has been temporarily paused by user or system. |
+| <code>Completed</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:196](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L196) | Job has successfully completed all work. |
+| <code>Failed</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:199](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L199) | Job encountered a fatal error and stopped. |
+| <code>Cancelled</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:202](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L202) | Job was cancelled by user request. |

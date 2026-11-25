@@ -1217,12 +1217,9 @@ fund-structure stores refuse multiple companies in migration compatibility mode.
 enforcement, shared migration wrappers refuse every unpartitioned local read and mutation with an
 explicit retained-data migration message, while leaving server-backed capabilities available.
 
-The provider setup compatibility store passes a complete legacy sidecar snapshot to the
-Data Integration vault's atomic importer. It validates all entries before publication,
-preserves existing credentials and deletion markers on retries, and removes the plaintext
-sidecar only after both encrypted generations and the import audit are retained. Data Integration's
-shared migration helper owns the cross-process source lease and restartable rename/erasure sequence,
-so simultaneous setup adapters cannot race during cleanup.
+The provider setup compatibility store no longer imports a legacy plaintext sidecar. A retained
+`provider-credentials.json` is never read or erased; its Unix permissions are restricted to the
+owner on first access, and a failed restriction refuses the credential operation.
 
 Statement intake publishes durable run-over-run break observations from retained canonical rows
 and immutable match artifacts after exact accounting/access scope validation and case publication.
@@ -1385,7 +1382,7 @@ Journal automation exposes a read-only valuation freshness preview and retains d
 
 ## Credential migration recovery
 
-The provider-module compatibility adapter requires atomic legacy-import support from the credential vault. It removes the plaintext sidecar only after the complete import and audit succeed; retries preserve credentials already retained in the vault.
+The provider-module compatibility adapter does not import or remove a retained plaintext sidecar; it only restricts the file to its owner.
 ## Credential audit identity
 
 Canonical credential save, verify and delete routes accept `connectionId` as a query parameter.

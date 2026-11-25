@@ -529,23 +529,11 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     {
         try
         {
-            if (_ownershipScope is null)
-            {
-                // Only unscoped services may migrate tokens with no ownership evidence.
-                await LegacyCredentialFileMigration.MigrateAsync(_tokenPersistencePath, async (json, ct) =>
-                {
-                    var tokens = JsonSerializer.Deserialize<Dictionary<string, OAuthToken>>(json)
-                        ?? throw new InvalidOperationException("Legacy OAuth token snapshot is invalid.");
-                    await _vault.ImportOAuthTokensAsync(tokens, ct).ConfigureAwait(false);
-                }).ConfigureAwait(false);
-            }
-            else
-            {
-                // The contents have no proven owner, but leaving their legacy permissions intact
-                // can expose bearer and refresh tokens to other local users. Check interrupted
-                // migration artifacts too, and refuse startup if restriction cannot be verified.
-                LegacyCredentialFileMigration.RestrictAccess(_tokenPersistencePath);
-            }
+            // Plaintext token files from earlier releases are never read, imported or erased, but
+            // leaving their permissions intact can expose bearer and refresh tokens to other local
+            // users. Check interrupted-import artifacts too, and refuse startup if restriction
+            // cannot be verified.
+            RetainedCredentialFileAccess.RestrictAccess(_tokenPersistencePath);
             var retained = await ReadOwnedTokensAsync(CancellationToken.None).ConfigureAwait(false);
             _tokens.Clear();
             foreach (var pair in retained)

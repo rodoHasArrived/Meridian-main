@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using FluentAssertions;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Tenancy;
@@ -467,167 +466,6 @@ public sealed partial class PostgresFundAccountStoreTests : IClassFixture<FundAc
     }
 
     [FundAccountDatabaseFact]
-    public async Task ImportLegacySnapshotIfEmptyAsync_LateConstraintFailure_RollsBackDataAndReceipt()
-    {
-        var options = CreateIsolatedOptions("fa_legacy_rollback");
-        try
-        {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await new FundAccountMigrationRunner(options).EnsureMigratedAsync(cts.Token);
-            var store = new PostgresFundAccountStore(options);
-            var first = MakeAccount();
-            var conflicting = MakeAccount() with { AccountCode = first.AccountCode };
-            var sourceHash = CreateSourceHash();
-            var asOfDate = new DateOnly(2026, 7, 24);
-            var custodianBatch = new CustodianStatementBatchDto(
-                Guid.NewGuid(),
-                first.AccountId,
-                asOfDate,
-                "JPM",
-                "csv",
-                1,
-                DateTimeOffset.UtcNow,
-                "legacy-import");
-            var custodianLine = MakePositionLine(
-                custodianBatch.BatchId,
-                first.AccountId,
-                asOfDate,
-                "US0378331005",
-                isShort: false);
-            var bankBatch = new BankStatementBatchDto(
-                Guid.NewGuid(),
-                first.AccountId,
-                asOfDate,
-                "JPM",
-                1,
-                DateTimeOffset.UtcNow,
-                "legacy-import");
-            var bankLine = new BankStatementLineDto(
-                Guid.NewGuid(),
-                bankBatch.BatchId,
-                first.AccountId,
-                asOfDate,
-                asOfDate,
-                100m,
-                "USD",
-                "deposit",
-                "Legacy cash",
-                "legacy-ref",
-                100m);
-            var firstImport = new FundAccountLegacyImportAccount(
-                first,
-                [],
-                [new FundAccountLegacyCustodianStatement(custodianBatch, [custodianLine])],
-                [new FundAccountLegacyBankStatement(bankBatch, [bankLine])],
-                [],
-                [],
-                []);
-            var conflictingImport = new FundAccountLegacyImportAccount(
-                conflicting,
-                [],
-                [],
-                [],
-                [],
-                [],
-                []);
-            var failedRequest = new FundAccountLegacyImportRequest(
-                sourceHash,
-                [firstImport, conflictingImport]);
-
-            var act = () => store.ImportLegacySnapshotIfEmptyAsync(failedRequest, cts.Token);
-
-            await act.Should().ThrowAsync<PostgresException>(
-                "the second active account violates the unique account-code constraint");
-            (await store.IsEmptyAsync(cts.Token)).Should().BeTrue(
-                "the valid first write and failed second write share one explicit transaction");
-            (await store.GetCustodianPositionsAsync(first.AccountId, asOfDate, cts.Token))
-                .Should().BeEmpty("statement rows participate in the same rollback");
-            (await store.GetBankStatementLinesAsync(first.AccountId, null, null, cts.Token))
-                .Should().BeEmpty("bank rows participate in the same rollback");
-
-            var retry = await store.ImportLegacySnapshotIfEmptyAsync(
-                new FundAccountLegacyImportRequest(sourceHash, [firstImport]),
-                cts.Token);
-            retry.Should().Be(
-                FundAccountLegacyImportResult.Imported,
-                "a rolled-back import must not leave a durable receipt");
-            (await store.GetAccountAsync(first.AccountId, cts.Token)).Should().NotBeNull();
-            (await store.GetCustodianPositionsAsync(first.AccountId, asOfDate, cts.Token))
-                .Should().ContainSingle().Which.Should().Be(custodianLine);
-            (await store.GetBankStatementLinesAsync(first.AccountId, null, null, cts.Token))
-                .Should().ContainSingle().Which.Should().Be(bankLine with
-                {
-                    StatementRevision = 1,
-                    StatementAsOfDate = bankBatch.StatementDate
-                });
-        }
-        finally
-        {
-            await FundAccountDatabaseFixture.DropSchemaAsync(options.ConnectionString, options.Schema);
-        }
-    }
-
-    [FundAccountDatabaseFact]
-    public async Task ImportLegacySnapshotIfEmptyAsync_PreCanceled_LeavesDataAndReceiptUncommitted()
-    {
-        var options = CreateIsolatedOptions("fa_legacy_cancel");
-        try
-        {
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await new FundAccountMigrationRunner(options).EnsureMigratedAsync(timeout.Token);
-            var store = new PostgresFundAccountStore(options);
-            var account = MakeAccount();
-            var sourceHash = CreateSourceHash();
-            using var canceled = new CancellationTokenSource();
-            canceled.Cancel();
-
-            var act = () => store.ImportLegacySnapshotIfEmptyAsync(
-                CreateLegacyRequest(sourceHash, account),
-                canceled.Token);
-
-            await act.Should().ThrowAsync<OperationCanceledException>();
-            (await store.IsEmptyAsync(timeout.Token)).Should().BeTrue();
-            (await store.ImportLegacySnapshotIfEmptyAsync(
-                CreateLegacyRequest(sourceHash, account),
-                timeout.Token)).Should().Be(FundAccountLegacyImportResult.Imported);
-        }
-        finally
-        {
-            await FundAccountDatabaseFixture.DropSchemaAsync(options.ConnectionString, options.Schema);
-        }
-    }
-
-    [FundAccountDatabaseFact]
-    public async Task ImportLegacySnapshotIfEmptyAsync_CommittedReceipt_MakesReplayNonMutating()
-    {
-        var options = CreateIsolatedOptions("fa_legacy_replay");
-        try
-        {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await new FundAccountMigrationRunner(options).EnsureMigratedAsync(cts.Token);
-            var store = new PostgresFundAccountStore(options);
-            var imported = MakeAccount();
-            var ignoredReplayAccount = MakeAccount();
-            var sourceHash = CreateSourceHash();
-
-            (await store.ImportLegacySnapshotIfEmptyAsync(
-                CreateLegacyRequest(sourceHash, imported),
-                cts.Token)).Should().Be(FundAccountLegacyImportResult.Imported);
-
-            (await store.ImportLegacySnapshotIfEmptyAsync(
-                CreateLegacyRequest(sourceHash, ignoredReplayAccount),
-                cts.Token)).Should().Be(FundAccountLegacyImportResult.AlreadyImported);
-            (await store.GetAccountAsync(imported.AccountId, cts.Token)).Should().NotBeNull();
-            (await store.GetAccountAsync(ignoredReplayAccount.AccountId, cts.Token)).Should().BeNull(
-                "receipt recovery must not replay a different payload under the same source hash");
-        }
-        finally
-        {
-            await FundAccountDatabaseFixture.DropSchemaAsync(options.ConnectionString, options.Schema);
-        }
-    }
-
-    [FundAccountDatabaseFact]
     public async Task UpsertAccountAsync_CrossTenantOverwrite_ThrowsAndReadIsScoped()
     {
         var alphaStore = CreateStore(new FixedTenantAccessor("alpha"));
@@ -822,56 +660,11 @@ public sealed partial class PostgresFundAccountStoreTests : IClassFixture<FundAc
         await FluentActions.Awaiting(() => strictWorker.UpsertAccountAsync(MakeAccount(), cts.Token)).Should().ThrowAsync<UnauthorizedAccessException>();
     }
 
-    [FundAccountDatabaseFact]
-    public async Task StrictStore_RawLegacyImport_PreservesUnattributedRecordsForReviewedBackfill()
-    {
-        var options = CreateIsolatedOptions("strict_import");
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        try
-        {
-            await new FundAccountMigrationRunner(options).EnsureMigratedAsync(cts.Token);
-            var strict = new PostgresFundAccountStore(options, tenantScope: TenantScopeEnforcementOptions.FailClosed);
-            var account = MakeAccount();
-            (await strict.ImportLegacySnapshotIfEmptyAsync(CreateLegacyRequest(CreateSourceHash(), account), cts.Token))
-                .Should().Be(FundAccountLegacyImportResult.Imported);
-            (await new PostgresFundAccountStore(options).GetAccountAsync(account.AccountId, cts.Token)).Should().NotBeNull();
-            using var connection = new NpgsqlConnection(options.ConnectionString);
-            await connection.OpenAsync(cts.Token);
-            using var command = connection.CreateCommand();
-            command.CommandText = $"SELECT tenant_id FROM {options.Schema}.account_definition WHERE account_id = @account_id";
-            command.Parameters.AddWithValue("account_id", account.AccountId);
-            (await command.ExecuteScalarAsync(cts.Token)).Should().Be(DBNull.Value);
-        }
-        finally
-        {
-            await FundAccountDatabaseFixture.DropSchemaAsync(options.ConnectionString, options.Schema);
-        }
-    }
-
     private FundAccountStoreOptions CreateIsolatedOptions(string prefix) => new()
     {
         ConnectionString = _fixture.Options.ConnectionString,
         Schema = $"{prefix}_{Guid.NewGuid():N}"
     };
-
-    private static FundAccountLegacyImportRequest CreateLegacyRequest(
-        string sourceHash,
-        params AccountSummaryDto[] accounts)
-        => new(
-            sourceHash,
-            accounts.Select(
-                    account => new FundAccountLegacyImportAccount(
-                        account,
-                        [],
-                        [],
-                        [],
-                        [],
-                        [],
-                        []))
-                .ToArray());
-
-    private static string CreateSourceHash()
-        => Convert.ToHexString(SHA256.HashData(Guid.NewGuid().ToByteArray())).ToLowerInvariant();
 
     private static AccountSummaryDto MakeAccount() => new(
         AccountId: Guid.NewGuid(),

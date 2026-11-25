@@ -186,11 +186,11 @@ persists the canonical key while retaining all other owners.
 
 Legacy provider sidecars are imported as one validated, insert-only vault snapshot. Compatible module aliases are combined; conflicting fields or environments reject the whole snapshot before publication. Existing encrypted records, including rotated credentials and verification metadata, remain authoritative on retries. Import markers survive deletion so retained sidecars cannot resurrect removed secrets after an audit failure. Deletion also replaces the recovery generation with the sanitized vault. Mutations share a bounded, cancellable file lock across store instances. Readers open one immutable published generation without a writable lock, including on read-only secret volumes; primary and backup generations are both replaced atomically. Audit failure retains the sidecar for retry.
 
-`LegacyCredentialFileMigration` serializes source discovery, import and cleanup across processes for
-both provider setup and OAuth callers. Successful imports retain both encrypted generations before
-the helper moves the plaintext source to `.migrated`, synchronizes the directory, then erases it.
-A restart completes cleanup without deserializing partly erased bytes. Empty migration lock files
-remain in place so every process continues to acquire the same lock identity.
+Plaintext credential files from earlier releases (`provider-credentials.json`, `.mdc/oauth_tokens.json`
+and interrupted `.migrated` snapshots) are no longer imported or erased by provider setup or OAuth
+callers. `RetainedCredentialFileAccess` only restricts their Unix permissions to the owner and refuses
+a failed or unverified permission change. Operators re-enter those credentials through the vault and
+remove the retained files manually.
 
 ## Purpose
 
