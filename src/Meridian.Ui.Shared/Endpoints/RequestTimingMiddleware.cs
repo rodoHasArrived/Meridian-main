@@ -68,24 +68,43 @@ public sealed class RequestTimingMiddleware
         {
             var elapsed = Stopwatch.GetElapsedTime(started);
             var route = RouteTemplate(context);
+            var method = NormalizeMethod(context.Request.Method);
             var status = failed ? StatusCodes.Status500InternalServerError : context.Response.StatusCode;
             RequestDuration
-                .WithLabels(route, context.Request.Method, status.ToString(CultureInfo.InvariantCulture))
+                .WithLabels(route, method, status.ToString(CultureInfo.InvariantCulture))
                 .Observe(elapsed.TotalSeconds);
 
             if (_slowRequestThreshold > TimeSpan.Zero && elapsed >= _slowRequestThreshold)
             {
                 _logger.LogWarning(
                     "Slow request: {Method} {Route} returned {StatusCode} in {ElapsedMs} ms (threshold {ThresholdMs} ms, trace {TraceIdentifier})",
-                    context.Request.Method,
-                    route,
+                    method,
+                    SanitizeLogText(route),
                     status,
                     (long)elapsed.TotalMilliseconds,
                     (long)_slowRequestThreshold.TotalMilliseconds,
-                    context.TraceIdentifier);
+                    SanitizeLogText(context.TraceIdentifier));
             }
         }
     }
+
+    /// <summary>The <c>method</c> label for methods outside the standard set.</summary>
+    public const string OtherMethod = "OTHER";
+
+    // Kestrel accepts any token as a method; mapping unknown ones to OTHER keeps the method label
+    // bounded and keeps client-chosen text out of metrics and logs.
+    private static string NormalizeMethod(string method)
+        => HttpMethods.IsGet(method) ? HttpMethods.Get
+            : HttpMethods.IsPost(method) ? HttpMethods.Post
+            : HttpMethods.IsPut(method) ? HttpMethods.Put
+            : HttpMethods.IsDelete(method) ? HttpMethods.Delete
+            : HttpMethods.IsPatch(method) ? HttpMethods.Patch
+            : HttpMethods.IsHead(method) ? HttpMethods.Head
+            : HttpMethods.IsOptions(method) ? HttpMethods.Options
+            : OtherMethod;
+
+    private static string SanitizeLogText(string? value) =>
+        (value ?? string.Empty).Replace('\r', '_').Replace('\n', '_');
 
     private static string RouteTemplate(HttpContext context)
         => context.GetEndpoint() is RouteEndpoint { RoutePattern.RawText: { Length: > 0 } template }
