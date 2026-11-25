@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PluginManagementPage
+
+Qualified name: <code>Meridian.Wpf.Views.PluginManagementPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:111](../../../../src/Meridian.Wpf/Views/Pages.cs#L111).
+
+```csharp
+public partial class PluginManagementPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs#L10).
+
+Code-behind for PluginManagementPage. Thin shell — all business logic is in PluginManagementViewModel.
+
+```csharp
+public partial class PluginManagementPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PluginManagementPage(PluginManagementViewModel viewModel);</code> | [src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs#L12) |  |
+
 ## PortfolioImportPage
 
 Qualified name: <code>Meridian.Wpf.Views.PortfolioImportPage</code>. Kind: `class`.
@@ -1058,27 +1082,3 @@ Binds derived pages to the trading workspace shell definition.
 ```csharp
 public class TradingWorkspaceShellPageBase : WorkspaceShellPageBase<TradingWorkspaceShellStateProvider, TradingWorkspaceShellViewModel>
 ```
-
-## WatchlistPage
-
-Qualified name: <code>Meridian.Wpf.Views.WatchlistPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:7](../../../../src/Meridian.Wpf/Views/Pages.cs#L7).
-
-```csharp
-public partial class WatchlistPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/WatchlistPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/WatchlistPage.xaml.cs#L11).
-
-Watchlist management page — thin code-behind. All state, business logic, and commands live in WatchlistViewModel.
-
-```csharp
-public partial class WatchlistPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WatchlistPage(WatchlistViewModel viewModel);</code> | [src/Meridian.Wpf/Views/WatchlistPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/WatchlistPage.xaml.cs#L15) |  |

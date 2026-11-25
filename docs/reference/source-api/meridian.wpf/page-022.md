@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationStateKind
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationStateKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:8](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L8).
+
+```csharp
+public enum WorkstationStateKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Ready</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:10](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L10) |  |
+| <code>Loading</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:11](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L11) |  |
+| <code>Empty</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:12](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L12) |  |
+| <code>Error</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:13](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L13) |  |
+| <code>Stale</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:14](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L14) |  |
+| <code>Blocked</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:15](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L15) |  |
+
 ## WorkstationStateModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationStateModel</code>. Kind: `record`.

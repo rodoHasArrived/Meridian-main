@@ -1024,27 +1024,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public PageActionBarControl();</code> | [src/Meridian.Wpf/Views/PageActionBarControl.xaml.cs:9](../../../../src/Meridian.Wpf/Views/PageActionBarControl.xaml.cs#L9) |  |
-
-## PluginManagementPage
-
-Qualified name: <code>Meridian.Wpf.Views.PluginManagementPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:111](../../../../src/Meridian.Wpf/Views/Pages.cs#L111).
-
-```csharp
-public partial class PluginManagementPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs#L10).
-
-Code-behind for PluginManagementPage. Thin shell — all business logic is in PluginManagementViewModel.
-
-```csharp
-public partial class PluginManagementPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PluginManagementPage(PluginManagementViewModel viewModel);</code> | [src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs#L12) |  |

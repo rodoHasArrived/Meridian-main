@@ -6,6 +6,128 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondWorkflowCashFlow
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowCashFlow</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:35](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L35).
+
+All cash is absolute transaction currency on the requested original face.
+
+```csharp
+public sealed record BondWorkflowCashFlow(DateOnly PaymentDate, DateOnly AccrualStart, DateOnly AccrualEnd, decimal Interest, decimal Principal, decimal OutstandingPrincipal, decimal IndexRatio, bool IsForecast, IReadOnlyList<BondWorkflowObservation> Observations)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal Total =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:39](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L39) |  |
+| <code>public decimal? AccrualFraction { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:40](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L40) |  |
+| <code>public decimal? PeriodUnits { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:41](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L41) |  |
+
+## BondWorkflowDiscountedFlow
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowDiscountedFlow</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowPricing.cs:4](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowPricing.cs#L4).
+
+A signed future payment and its positive, settlement-rebased discount factor.
+
+```csharp
+public sealed record BondWorkflowDiscountedFlow(decimal Amount, decimal TimeInYears, decimal DiscountFactor);
+```
+
+## BondWorkflowExerciseResult
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowExerciseResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:24](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L24).
+
+```csharp
+public sealed record BondWorkflowExerciseResult(string Kind, DateOnly ExerciseDate, decimal RedemptionPrice, decimal? Yield, string? Issue, DateOnly? LatestNoticeDate);
+```
+
+## BondWorkflowFixing
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowFixing</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs:11](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs#L11).
+
+```csharp
+public sealed record BondWorkflowFixing(decimal Value, bool IsObserved, string Source);
+```
+
+## BondWorkflowInflationConvention
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowInflationConvention</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs:9](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs#L9).
+
+```csharp
+public sealed record BondWorkflowInflationConvention(string IndexName, decimal BaseIndex, int LagMonths, bool InterpolateMonthly, decimal? CouponFloorRatio = null, decimal? RedemptionFloorRatio = null);
+```
+
+## BondWorkflowIssue
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowIssue</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:27](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L27).
+
+```csharp
+public sealed record BondWorkflowIssue(string Operation, string Code, string Reason, bool BlocksCalculation = false);
+```
+
+## BondWorkflowMetric
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowMetric</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:28](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L28).
+
+```csharp
+public sealed record BondWorkflowMetric(string Name, bool Available, string? Reason = null);
+```
+
+## BondWorkflowModelVersions
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowModelVersions</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:100](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L100).
+
+```csharp
+public static class BondWorkflowModelVersions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Legacy = &quot;bond-workflow-v1&quot;;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:102](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L102) |  |
+| <code>public const string Previous = &quot;bond-workflow-v2&quot;;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:103](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L103) |  |
+| <code>public const string Current = &quot;bond-workflow-v3&quot;;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:104](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L104) |  |
+
+## BondWorkflowObservation
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowObservation</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:31](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L31).
+
+Frozen daily/simple fixing evidence; annual rates are fractions and cash is signed.
+
+```csharp
+public sealed record BondWorkflowObservation(DateOnly AccrualDate, DateOnly ObservationDate, int Days, decimal Rate, bool IsObserved, string Source);
+```
+
+## BondWorkflowOvernightConvention
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowOvernightConvention</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs:7](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs#L7).
+
+```csharp
+public sealed record BondWorkflowOvernightConvention(IBusinessDayCalendar Calendar, int LookbackBusinessDays, bool ObservationShift, bool InterestPeriodWeighting, int LockoutBusinessDays);
+```
+
 ## BondWorkflowPriceBasis
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowPriceBasis</code>. Kind: `enum`.
@@ -691,148 +813,3 @@ Declared public members:
 | <code>public string Schema { get; set; } = &quot;fund_accounts&quot;;</code> | [src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs:9](../../../../src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs#L9) |  |
 | <code>public decimal ReconciliationAmountTolerance { get; set; } = 0.01m;</code> | [src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs:12](../../../../src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs#L12) |  |
 | <code>public int ReconciliationMaxAsOfDriftMinutes { get; set; } = 1440;</code> | [src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs:16](../../../../src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs#L16) |  |
-
-## AccountOperationalStatusDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountOperationalStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:108](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L108).
-
-```csharp
-public enum AccountOperationalStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Active</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:110](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L110) |  |
-| <code>Suspended</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:111](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L111) |  |
-| <code>Closed</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:112](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L112) |  |
-
-## AccountProviderLinkStatusDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountProviderLinkStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:167](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L167).
-
-Provider account-link posture for account-scoped sync and readiness.
-
-```csharp
-public enum AccountProviderLinkStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotLinked = 0</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:169](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L169) |  |
-| <code>Linked = 1</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:170](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L170) |  |
-| <code>Verified = 2</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:171](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L171) |  |
-| <code>Degraded = 3</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:172](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L172) |  |
-| <code>Revoked = 4</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:173](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L173) |  |
-| <code>Expired = 5</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:174](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L174) |  |
-| <code>Unauthorized = 6</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:175](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L175) |  |
-| <code>Unsupported = 7</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:176](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L176) |  |
-| <code>SyncPending = 8</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:177](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L177) |  |
-| <code>SyncFailed = 9</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:178](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L178) |  |
-
-## AccountReadinessIssueDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountReadinessIssueDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:260](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L260).
-
-One account readiness issue derived from account metadata, sync history, and reconciliation state.
-
-```csharp
-public sealed record AccountReadinessIssueDto(string Code, AccountReadinessSeverityDto Severity, string Title, string Message, Guid AccountId, string? ProviderId = null, string? ExternalAccountId = null, string? Capability = null, string? SuggestedAction = null, string? EvidenceLink = null);
-```
-
-## AccountReadinessSeverityDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountReadinessSeverityDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:211](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L211).
-
-Operator severity for account readiness issues.
-
-```csharp
-public enum AccountReadinessSeverityDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Info = 0</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:213](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L213) |  |
-| <code>Warning = 1</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:214](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L214) |  |
-| <code>Critical = 2</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:215](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L215) |  |
-
-## AccountReadinessSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountReadinessSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:273](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L273).
-
-Account-scoped production readiness snapshot for provider, ledger, sync, and reconciliation checks.
-
-```csharp
-public sealed record AccountReadinessSnapshotDto(Guid AccountId, DateTimeOffset EvaluatedAt, AccountProviderLinkStatusDto ProviderLinkStatus, AccountSyncStatusDto? LatestSyncStatus, DateTimeOffset? LastSuccessfulSyncAt, DateTimeOffset? FreshUntil, bool IsReady, IReadOnlyList<AccountReadinessIssueDto> Issues);
-```
-
-## AccountReconciliationBreakDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountReconciliationBreakDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:665](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L665).
-
-```csharp
-public sealed record AccountReconciliationBreakDto(PositionReconciliationBreakDto? PositionBreak = null, CashReconciliationBreakDto? CashBreak = null);
-```
-
-## AccountReconciliationResultDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountReconciliationResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:145](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L145).
-
-```csharp
-public sealed record AccountReconciliationResultDto(Guid ResultId, Guid ReconciliationRunId, string CheckLabel, bool IsMatch, string Category, string Status, decimal? ExpectedAmount, decimal? ActualAmount, decimal? Variance, string Reason, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Guid? SupersededByResultId = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateTimeOffset? ResolvedAt = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore] public bool IsOpenBreak =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:161](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L161) | Shared active-blocker contract; original check outcomes remain historical evidence. |
-
-## AccountReconciliationRunDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountReconciliationRunDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:131](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L131).
-
-```csharp
-public sealed record AccountReconciliationRunDto(Guid ReconciliationRunId, Guid AccountId, DateOnly AsOfDate, string Status, int TotalChecks, int TotalMatched, int TotalBreaks, decimal BreakAmountTotal, DateTimeOffset RequestedAt, DateTimeOffset? CompletedAt, string RequestedBy);
-```
-
-## AccountStructureQuery
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountStructureQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureQueries.cs:43](../../../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs#L43).
-
-```csharp
-public sealed record AccountStructureQuery(Guid? AccountId = null, Guid? EntityId = null, Guid? FundId = null, Guid? SleeveId = null, Guid? VehicleId = null, string? PortfolioId = null, string? LedgerReference = null, string? StrategyId = null, string? RunId = null, bool ActiveOnly = true, DateTimeOffset? AsOf = null);
-```
-
-## AccountSummaryDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:272](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L272).
-
-```csharp
-public sealed record AccountSummaryDto(Guid AccountId, AccountTypeDto AccountType, Guid? EntityId, Guid? FundId, Guid? SleeveId, Guid? VehicleId, string AccountCode, string DisplayName, string BaseCurrency, string? Institution, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, string? PortfolioId, string? LedgerReference, string? StrategyId, string? RunId, AccountOperationalStatusDto OperationalStatus = AccountOperationalStatusDto.Active, CustodianAccountDetailsDto? CustodianDetails = null, BankAccountDetailsDto? BankDetails = null, FundStructureSharedDataAccessDto? SharedDataAccess = null);
-```
