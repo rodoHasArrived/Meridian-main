@@ -116,7 +116,9 @@ is also marked superseded: multi-currency journals post through workbench drafts
 functional amount with transaction currency, amount and FX rate, which `LedgerEntry` checks per leg; the
 projector has no rounding line and drops dimensions. `JournalTemplateBook.Instantiate` is superseded for
 posting too: recurring journals instantiate the retained template version each occurrence was claimed against,
-whereas the registry resolves whichever template currently holds an id.
+whereas the registry resolves whichever template currently holds an id. `AutomatedJournalApproval.Approve`
+and `Reject` are superseded as well: production queues each submitted approval's draft in the manual journal
+workbench, which owns approval and posting, so approving and posting the aggregate too could post twice.
 
 `PeriodCloseProjector.Project` takes a dimension-scoped `PeriodCloseInput`; production closes build it
 from the retained period trial balance and post through `PeriodCloseDraftBuilder` and the workbench. There

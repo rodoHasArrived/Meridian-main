@@ -3,6 +3,12 @@ namespace Meridian.Ledger;
 /// <summary>
 /// Governed approval aggregate for a projected automated journal draft.
 /// </summary>
+/// <remarks>
+/// In production this aggregate only carries a submitted draft: the intake runner queues
+/// <see cref="Draft"/> as a manual journal workbench draft, and the workbench lifecycle owns approval,
+/// rejection and posting. <see cref="Approve"/>, <see cref="Reject"/> and the posting methods remain for
+/// in-memory and test hosts; do not drive production posting through them alongside the workbench.
+/// </remarks>
 public sealed record AutomatedJournalApproval
 {
     private AutomatedJournalApproval(
@@ -64,7 +70,7 @@ public sealed record AutomatedJournalApproval
             requireEvidence: false);
     }
 
-    [PostingCalculationNotYetConnected("Automated drafts are approved and rejected through the manual journal workbench lifecycle; production submits this aggregate but never calls its own approve or reject transitions.")]
+    [PostingCalculationNotYetConnected("Superseded, do not connect: production hands each submitted approval's Draft to the manual journal workbench (AutomatedJournalIntakeRunner via AutomatedJournalDraftIntakeService), whose lifecycle approves, rejects and posts it; approving here and posting through IAutomatedJournalPostingTarget would add a second approval authority and could post the same journal twice.")]
     public AutomatedJournalApproval Approve(
         string actor,
         DateTimeOffset occurredAtUtc,
@@ -78,7 +84,7 @@ public sealed record AutomatedJournalApproval
             evidenceLinks,
             requireEvidence: true);
 
-    [PostingCalculationNotYetConnected("Automated drafts are approved and rejected through the manual journal workbench lifecycle; production submits this aggregate but never calls its own approve or reject transitions.")]
+    [PostingCalculationNotYetConnected("Superseded, do not connect: production hands each submitted approval's Draft to the manual journal workbench (AutomatedJournalIntakeRunner via AutomatedJournalDraftIntakeService), whose lifecycle approves, rejects and posts it; approving here and posting through IAutomatedJournalPostingTarget would add a second approval authority and could post the same journal twice.")]
     public AutomatedJournalApproval Reject(
         string actor,
         DateTimeOffset occurredAtUtc,
