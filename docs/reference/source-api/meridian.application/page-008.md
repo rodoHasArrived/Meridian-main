@@ -443,9 +443,9 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.IGovernedPublicationAmender</code>. Kind: `interface`.
 
-Source: [src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs:26](../../../../src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs#L26).
+Source: [src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs:27](../../../../src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs#L27).
 
-The publication write path of the governed workbench lifecycle. Only the published-revision merge (ApprovedFieldEditCanonicalMergeHandler) uses it.
+The publication write path of the governed workbench lifecycle. Only the published-revision handlers use it: the field-edit merge (ApprovedFieldEditCanonicalMergeHandler) and the historical identifier window (ApprovedHistoricalIdentifierWindowHandler).
 
 ```csharp
 public interface IGovernedPublicationAmender
@@ -455,7 +455,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;SecurityDetailDto&gt; AmendApprovedRevisionAsync(AmendSecurityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs:29](../../../../src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs#L29) | Applies the merged amendment of an approved revision named by request.SourceRecordId. |
+| <code>Task&lt;SecurityDetailDto&gt; AmendApprovedRevisionAsync(AmendSecurityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs:30](../../../../src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs#L30) | Applies the merged amendment of an approved revision named by request.SourceRecordId. |
 
 ## IGovernedTermAmendmentPolicy
 
