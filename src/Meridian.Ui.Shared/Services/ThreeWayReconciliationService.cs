@@ -12,7 +12,8 @@ public sealed class ThreeWayReconciliationService(
     FileThreeWayReconciliationEvidenceStore store,
     IReconciliationBreakQueueRepository queue,
     ThreeWayReconciliationOptions options,
-    TimeProvider? timeProvider = null)
+    TimeProvider? timeProvider = null,
+    ThreeWayReconciliationMetrics? metrics = null)
 {
     private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
 
@@ -39,13 +40,13 @@ public sealed class ThreeWayReconciliationService(
                 throw new ArgumentException("Comparison cutoff cannot be in the future.");
             var snapshots = await sources.ReadAsync(scope, cutoff, ct).ConfigureAwait(false);
             var checks = ThreeWayReconciliationComparer.Compare(snapshots, cutoff,
-                options.MaximumSourceAge, options.MaximumSourceDrift);
+                options.MaximumSourceAge, options.MaximumSourceDrift, options.FillPriceTolerance, options.FillFeeTolerance);
             var result = new ThreeWayReconciliationResultDto(
                 "three-way:" + Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(scope,
                     ThreeWayReconciliationJsonContext.Default.ThreeWayReconciliationScopeDto) + "|" + request.OperationId), request.OperationId, scope,
                 cutoff, now, checks.Any(check => check.Status == "Blocked") ? "Blocked"
                     : checks.Any(check => check.Status == "Break") ? "Breaks" : "Matched",
-                snapshots, checks, checks.Where(check => check.Status != "Matched")
+                snapshots, checks, checks.Where(IsCase)
                     .Select(check => BreakIdentity(scope, check.CheckId)).ToArray(),
                 DataProvenanceExtensions.Strongest(snapshots.Select(source =>
                     DataProvenanceExtensions.ParseTokenOrSimulated(source.DataProvenanceToken))).Token())
@@ -56,6 +57,8 @@ public sealed class ThreeWayReconciliationService(
             retained = new ThreeWayStoredRun(requestHash, result);
             // A prepared receipt freezes operands before casework. Interrupted publication resumes it.
             await store.SaveRunAsync(retained, ct).ConfigureAwait(false);
+            // Counted once per new comparison; replays of a retained operation are not new runs.
+            metrics?.RecordRun(result);
         }
         if (!retained.Completed)
         {
@@ -75,23 +78,21 @@ public sealed class ThreeWayReconciliationService(
 
     private async Task PublishCasesAsync(ThreeWayReconciliationResultDto result, ReconciliationBreakQueueScope access, CancellationToken ct)
     {
-        foreach (var check in result.Checks.Where(check => check.Status != "Matched"))
+        foreach (var check in result.Checks.Where(IsCase))
         {
             var id = BreakIdentity(result.Scope, check.CheckId);
-            var evidence = result.Sources.Select(source => source.EvidenceReference).ToArray();
+            // Fill checks name the exact broker activity and journal entries they compared.
+            var evidence = result.Sources.Select(source => source.EvidenceReference).Concat(check.EvidenceIds)
+                .Distinct(StringComparer.Ordinal).ToArray();
             var item = new ReconciliationBreakQueueItem(id, result.RunId, "Three-way accounting reconciliation",
-                check.Measure == "cash" && check.Status == "Break" ? ReconciliationBreakCategory.CashMismatch
-                    : check.Status == "Blocked" ? check.LeftSource == "oms" || check.RightSource == "oms"
-                        ? ReconciliationBreakCategory.MissingPortfolioCoverage
-                        : check.LeftSource == "broker" || check.RightSource == "broker"
-                            ? ReconciliationBreakCategory.MissingExternalStatementCoverage : ReconciliationBreakCategory.MissingLedgerCoverage
-                    : ReconciliationBreakCategory.AmountMismatch,
+                Category(check),
                 ReconciliationBreakQueueStatus.Open, (check.LeftAmount ?? 0m) - (check.RightAmount ?? 0m),
-                check.Explanation, null, result.RecordedAtUtc, result.RecordedAtUtc,
+                check.Classification is { } classification ? $"{classification}: {check.Explanation}" : check.Explanation,
+                null, result.RecordedAtUtc, result.RecordedAtUtc,
                 Severity: check.Status == "Blocked" ? ReconciliationBreakSeverity.Critical : ReconciliationBreakSeverity.High,
                 ToleranceProfileId: "three-way-usd-v1", ToleranceBand: check.Tolerance,
                 FundAccountId: result.Scope.FinancialAccountId.ToString("D"),
-                RecommendedAction: "Inspect retained source operands. Replay evidenced missing fills; submit evidenced corrections through governed journal approval, then rerun comparison.",
+                RecommendedAction: RecommendedAction(check),
                 EvidenceLinks: evidence, EvidenceCount: evidence.Length,
                 SourceType: "three-way", SourceSystem: "three-way", SourceReference: check.CheckId, SourceImportId: result.RunId,
                 SourceFingerprint: Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(check,
@@ -130,6 +131,38 @@ public sealed class ThreeWayReconciliationService(
                     .Select(check => new ReconciliationBreakObservation(BreakIdentity(result.Scope, check.CheckId), check.CheckId)).ToArray()), ct)
                 .ConfigureAwait(false);
     }
+
+    // Timing-only and not-compared fill checks are recorded on the receipt, never queued as breaks.
+    private static bool IsCase(ThreeWayReconciliationCheckDto check)
+        => check.Status != "Matched" && !ThreeWayFillMatcher.IsInformational(check.Status);
+
+    // Fill classifications map onto existing persisted categories; the classification travels in the reason.
+    private static ReconciliationBreakCategory Category(ThreeWayReconciliationCheckDto check)
+        => check.Classification switch
+        {
+            ThreeWayFillClassification.MissingFillInLedger => ReconciliationBreakCategory.MissingLedgerCoverage,
+            ThreeWayFillClassification.MissingFillAtBroker => ReconciliationBreakCategory.MissingExternalStatementCoverage,
+            _ when check.Measure == "cash" && check.Status == "Break" => ReconciliationBreakCategory.CashMismatch,
+            _ when check.Status == "Blocked" => check.LeftSource == "oms" || check.RightSource == "oms"
+                ? ReconciliationBreakCategory.MissingPortfolioCoverage
+                : check.LeftSource == "broker" || check.RightSource == "broker"
+                    ? ReconciliationBreakCategory.MissingExternalStatementCoverage : ReconciliationBreakCategory.MissingLedgerCoverage,
+            _ => ReconciliationBreakCategory.AmountMismatch
+        };
+
+    private static string RecommendedAction(ThreeWayReconciliationCheckDto check)
+        => check.Classification switch
+        {
+            ThreeWayFillClassification.MissingFillInLedger =>
+                "Replay the retained fill handoff for this broker activity; do not hand-post the trade. Rerun the comparison after it posts.",
+            ThreeWayFillClassification.MissingFillAtBroker =>
+                "Confirm the order with the broker before any correction; a posted fill without broker evidence needs governed reversal, not deletion.",
+            ThreeWayFillClassification.QuantityMismatch or ThreeWayFillClassification.PriceMismatch =>
+                "Compare the broker activity with the posted journal entries; correct through a governed adjusting entry, then rerun the comparison.",
+            ThreeWayFillClassification.FeeMismatch =>
+                "Check the broker fee evidence; submit an evidenced fee correction through governed journal approval, then rerun the comparison.",
+            _ => "Inspect retained source operands. Replay evidenced missing fills; submit evidenced corrections through governed journal approval, then rerun comparison."
+        };
 
     private static string BreakIdentity(ThreeWayReconciliationScopeDto scope, string checkId)
         => "three-way:" + Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(scope,

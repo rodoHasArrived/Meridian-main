@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationProviderHealthCount
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationProviderHealthCount</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs#L19).
+
+Healthy providers out of every provider the Data workspace lists.
+
+```csharp
+public sealed record WorkstationProviderHealthCount(int Healthy, int Total, string Definition);
+```
+
 ## WorkstationRecordSearchHit
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRecordSearchHit</code>. Kind: `record`.
@@ -583,16 +595,4 @@ Risk state block embedded inside the trading payload. Guardrails carries the liv
 
 ```csharp
 public sealed record WorkstationTradingRiskState(string State, string Summary, string NetExposure, string GrossExposure, string Var95, string MaxDrawdown, string BuyingPowerUsed, IReadOnlyList<string> ActiveGuardrails, IReadOnlyList<WorkstationRiskGuardrail>? Guardrails = null);
-```
-
-## WorkstationWatchlist
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationWatchlist</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L29).
-
-Shared workstation watchlist summary.
-
-```csharp
-public sealed record WorkstationWatchlist(string WatchlistId, string Name, IReadOnlyList<string> Symbols, int SymbolCount, bool IsPinned, int SortOrder, string? AccentColor = null, string? Summary = null);
 ```

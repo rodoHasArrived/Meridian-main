@@ -23,6 +23,19 @@ public sealed class ThreeWayReconciliationOptions
     public string CashAccountPath { get; set; } = string.Empty;
     public string FeeExpenseAccountPath { get; set; } = string.Empty;
     public TimeOnly DailyRunAfterUtc { get; set; } = new(0, 15);
+
+    /// <summary>
+    /// When set, each scheduled account's broker projection is re-synced at most this often before
+    /// sources are captured, so the daily comparison reads fresh broker evidence. Null keeps the
+    /// broker projection operator-refreshed only.
+    /// </summary>
+    public TimeSpan? BrokerRefreshInterval { get; set; }
+
+    /// <summary>Per-share price difference tolerated between matched broker and ledger fills.</summary>
+    public decimal FillPriceTolerance { get; set; } = 0.0001m;
+
+    /// <summary>Commission difference tolerated between matched broker and ledger fills.</summary>
+    public decimal FillFeeTolerance { get; set; } = 0.01m;
     public IReadOnlyList<ThreeWayReconciliationSchedule> Schedules { get; set; } = [];
 }
 

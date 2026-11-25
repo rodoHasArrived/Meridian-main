@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationWatchlist
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationWatchlist</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L29).
+
+Shared workstation watchlist summary.
+
+```csharp
+public sealed record WorkstationWatchlist(string WatchlistId, string Name, IReadOnlyList<string> Symbols, int SymbolCount, bool IsPinned, int SortOrder, string? AccentColor = null, string? Summary = null);
+```
+
 ## WorkstationWorkspaceCatalog
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationWorkspaceCatalog</code>. Kind: `class`.

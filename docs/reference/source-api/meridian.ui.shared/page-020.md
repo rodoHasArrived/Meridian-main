@@ -6,6 +6,67 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## QuoteStreamBroadcaster
+
+Qualified name: <code>Meridian.Ui.Shared.Streaming.QuoteStreamBroadcaster</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:18](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L18).
+
+Event-driven quote fan-out. A thin quote-typed configuration of StreamBroadcaster{T}: woken by the collector via NotifyQuoteChanged, it rebuilds each active topic&#x27;s snapshot on the shared coalescing loop (latest-wins) and pushes it to every subscriber of that topic. One snapshot build is shared across all subscribers of a topic, and the market-data storage hot path is untouched: NotifyQuoteChanged only sets a wake signal.
+
+```csharp
+public sealed class QuoteStreamBroadcaster : IQuoteStreamBroadcaster, IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public QuoteStreamBroadcaster(IServiceProvider services, StreamConnectionRegistry registry, QuoteStreamOptions options) : this(services, registry, options, LiveDataEndpoints.TryBuildQuotesSnapshotResponse);</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:22](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L22) |  |
+| <code>public void NotifyQuoteChanged(string symbol) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:52](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L52) |  |
+| <code>public QuoteStreamSubscription? TrySubscribe(StreamTopic topic, string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:55](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L55) |  |
+| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:66](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L66) |  |
+
+## QuoteStreamOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Streaming.QuoteStreamOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:7](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L7).
+
+Tuning knobs for the workstation quote-stream fan-out. Bindable from configuration under SectionName.
+
+```csharp
+public sealed class QuoteStreamOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SectionName = &quot;Workstation:QuoteStream&quot;;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:10](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L10) | Configuration section name. |
+| <code>public int CoalesceIntervalMs { get; set; } = 250;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:16](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L16) | Maximum push cadence: dirty topics are rebuilt and fanned out at most this often. Also the floor for how quickly a change reaches subscribers. |
+| <code>public int MaxConcurrentStreamsPerSession { get; set; } = 4;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:19](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L19) | Maximum concurrent stream connections per session. |
+| <code>public int SubscriberChannelCapacity { get; set; } = 1;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L25) | Per-subscriber channel capacity. 1 means latest-snapshot-wins (drop-oldest), so a slow client can never block the broadcaster — it only drops intermediate snapshots. |
+
+## QuoteStreamSubscription
+
+Qualified name: <code>Meridian.Ui.Shared.Streaming.QuoteStreamSubscription</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs:12](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs#L12).
+
+A live subscription to a quote topic. Read coalesced snapshots from Reader; dispose to unsubscribe and release the session&#x27;s stream slot. Disposal is idempotent.
+
+```csharp
+public sealed class QuoteStreamSubscription : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ChannelReader&lt;QuotesSnapshotResponse&gt; Reader { get; }</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs:23](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs#L23) | Coalesced snapshot feed for this subscription&#x27;s topic. |
+| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs#L25) |  |
+
 ## ReportRunStreamBroadcaster
 
 Qualified name: <code>Meridian.Ui.Shared.Streaming.ReportRunStreamBroadcaster</code>. Kind: `class`.

@@ -40,6 +40,13 @@ public sealed record ThreeWaySourceSnapshotDto(
     public IReadOnlyList<string> PostedExternalTransactionIds { get; init; } = [];
     public bool TransactionIdentityCoverageComplete { get; init; }
     public long? AccountingPeriodVersion { get; init; }
+
+    /// <summary>
+    /// Fill-level operands within the comparison period. Empty with
+    /// <see cref="FillCoverageComplete"/> false means fill evidence is unavailable, never "no fills".
+    /// </summary>
+    public IReadOnlyList<ThreeWayFillDto> Fills { get; init; } = [];
+    public bool FillCoverageComplete { get; init; }
 }
 
 public sealed record ThreeWayReconciliationCheckDto(
@@ -53,7 +60,34 @@ public sealed record ThreeWayReconciliationCheckDto(
     [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? RightAmount,
     [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Tolerance,
     string Status,
-    string Explanation);
+    string Explanation)
+{
+    /// <summary>Operator-facing difference type, for example MissingFillInLedger or FeeMismatch.</summary>
+    public string? Classification { get; init; }
+
+    /// <summary>Broker activity ids and journal entry ids that this check compared.</summary>
+    public IReadOnlyList<string> EvidenceIds { get; init; } = [];
+}
+
+/// <summary>
+/// One execution as one source recorded it. Broker fills carry the provider activity id; ledger
+/// fills carry Meridian's fill id, the client order id and the posted journal entry ids.
+/// </summary>
+public sealed record ThreeWayFillDto(
+    string FillKey,
+    string Symbol,
+    string Side,
+    [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Quantity,
+    [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Price,
+    [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? Commission,
+    DateTimeOffset ExecutedAtUtc,
+    string EvidenceReference)
+{
+    public string? BrokerActivityId { get; init; }
+    public string? BrokerOrderId { get; init; }
+    public string? ClientOrderId { get; init; }
+    public IReadOnlyList<string> JournalEntryIds { get; init; } = [];
+}
 
 public sealed record ThreeWayReconciliationResultDto(
     string RunId,
