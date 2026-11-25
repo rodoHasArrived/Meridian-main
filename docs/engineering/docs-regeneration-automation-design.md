@@ -63,9 +63,11 @@ lost prose cannot be hidden in the baseline used to validate a later generated d
 
 ## Reviewed hashes are not disposable output
 
-[`source-hash-manifest.json`](../source/generated/source-hash-manifest.json) records a reviewed
-source/documentation baseline. Recomputing every hash would assert review that never happened.
-Use a three-way merge keyed by module ID:
+[`source-hashes/`](../source/generated/source-hashes/_manifest.json) records a reviewed
+source/documentation baseline, one file per module plus a shared schema header. Storing each module
+separately means Git only reports a conflict when two branches review the same module.
+Recomputing every hash would assert review that never happened. Use a three-way merge keyed by
+module ID:
 
 - Combine entries updated independently for different modules.
 - Accept identical parent updates.
