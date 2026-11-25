@@ -6,72 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## LedgerAmountProofDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountProofDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L31).
-
-One server-evaluated amount proof shared by the browser and desktop.
-
-```csharp
-public sealed record LedgerAmountProofDto(string SubjectId, LedgerAmountScopeDto Scope, decimal Amount, string Currency, EvidenceStatusDto Status, IReadOnlyList<LedgerAmountProofEvidenceDto> Evidence, IReadOnlyList<string> Warnings)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string AmountExact =&gt; …;</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L40) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountingPreparerAttestationDisclosureDto&gt;? AccountingPreparerAttestations { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L46) | Accounting decisions retained with contributing journals, independent of source readiness. An absent legacy value establishes no approval or coverage classification. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public bool? OrdinaryRecordedApprovalSatisfied { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:50](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L50) | False for any preparer-attested or unclassified upstream dependency; null makes no claim. |
-| <code>[System.Text.Json.Serialization.JsonIgnore] public AmountPassportDto? AmountPassport { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:55](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L55) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore] public bool RetainedSupportStale { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L58) |  |
-
-## LedgerAmountProofEvidenceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountProofEvidenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L11).
-
-```csharp
-public sealed record LedgerAmountProofEvidenceDto(string EvidenceId, string Kind, string Label, string? Route, string SourceSystem, DateTimeOffset? RetainedAt, EvidenceStatusDto Status, string? ContentHash = null, string? Reason = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public LedgerAmountScopeDto? SourceScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L24) | The exact posted source boundary when this source supports a generated report amount. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? SourceSubjectId { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:27](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L27) |  |
-
-## LedgerAmountProvenanceDetailDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountProvenanceDetailDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:707](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L707).
-
-```csharp
-public sealed record LedgerAmountProvenanceDetailDto(Guid ReportId, string ScopeKey, string AccountName, string? Symbol, decimal Amount, string Currency, IReadOnlyList<LedgerAmountProvenanceEvidenceDto> Evidence, LedgerAmountSecurityMasterLinkDto? SecurityMaster, LedgerAmountReconciliationStateDto Reconciliation, LedgerAmountApprovalStateDto Approval, LedgerAmountReportUsageDto ReportUsage, IReadOnlyList<string> Warnings, IReadOnlyList<LedgerAmountStrategyRunLinkDto>? StrategyRuns = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerAmountScopeDto? Scope { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:722](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L722) |  |
-| <code>public EvidenceStatusDto ProofStatus { get; init; } = EvidenceStatusDto.ReviewRequired;</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:723](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L723) |  |
-
-## LedgerAmountProvenanceEvidenceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountProvenanceEvidenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:610](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L610).
-
-```csharp
-public sealed record LedgerAmountProvenanceEvidenceDto(string EvidenceType, string EvidenceId, string? DisplayLabel = null, string? Route = null, string? SourceSystem = null, IReadOnlyList<string>? RelatedEvidenceIds = null, int? EvidenceCount = null, decimal? Amount = null, DateTimeOffset? CapturedAt = null, string? ProviderEventId = null, string? ProviderEventType = null, string? ProviderEvidenceSource = null, string? RequiredFeed = null, string? SecurityId = null, string? LedgerEffectKind = null, decimal? PrincipalAmount = null, decimal? IncomeAmount = null, int? JournalPreviewLineCount = null, DateOnly? EffectiveDate = null, decimal? Factor = null, decimal? CashAmount = null, string? Currency = null);
-```
-
 ## LedgerAmountReconciliationCaseDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountReconciliationCaseDto</code>. Kind: `record`.
@@ -637,3 +571,47 @@ Declared public members:
 | <code>public const string AdministratorPack = &quot;AdministratorPack&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L35) | Administrator opening pack CSV of cash, position and NAV rows. |
 | <code>public const string GlTrialBalance = &quot;GlTrialBalance&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:37](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L37) | Retained external GL trial balance imported through an accounting-system provider. |
 | <code>public static readonly IReadOnlyList&lt;string&gt; All = [StatementOpening, AdministratorPack, GlTrialBalance];</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:39](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L39) |  |
+
+## OnboardingOpeningSourceSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingOpeningSourceSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:72](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L72).
+
+One incumbent opening source contributing to the combined opening reconciliation.
+
+```csharp
+public sealed record OnboardingOpeningSourceSummaryDto(string SourceKind, string ComparisonId, string SourceContentHash, IReadOnlyList<string> Kinds, DateTimeOffset CapturedAtUtc);
+```
+
+## OnboardingPacketContentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingPacketContentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:108](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L108).
+
+```csharp
+public sealed record OnboardingPacketContentDto(string WorkspaceId, string Name, string OwnerId, OnboardingScopeDto Scope, int WorkspaceVersion, int DataRevision, OnboardingCriteriaDto Criteria, IReadOnlyList<OnboardingCriteriaRevisionDto> CriteriaHistory, IReadOnlyList<OnboardingComparisonDto> Comparisons, IReadOnlyList<OnboardingDifferenceDto> CurrentDifferences, IReadOnlyList<OnboardingDifferenceAssignmentDto> Assignments, IReadOnlyList<OnboardingReviewDto> Reviews, OnboardingReadinessDto Readiness, string AuthorityPosture, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<OnboardingDifferenceExplanationDto>? Explanations = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] OnboardingShadowDesignationDto? ShadowDesignation = null);
+```
+
+## OnboardingParallelRunCertificateContentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingParallelRunCertificateContentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:111](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L111).
+
+```csharp
+public sealed record OnboardingParallelRunCertificateContentDto(string WorkspaceId, string Name, OnboardingScopeDto Scope, int DataRevision, OnboardingOpeningBalanceReportDto Opening, IReadOnlyList<OnboardingPeriodSummaryDto> Periods, IReadOnlyList<DateOnly> CleanPeriods, IReadOnlyList<OnboardingDifferenceExplanationDto> Explanations, IReadOnlyList<OnboardingReviewDto> ApprovingReviews, string PacketId, string PacketContentHash, string Statement);
+```
+
+## OnboardingParallelRunCertificateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingParallelRunCertificateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:123](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L123).
+
+The parallel-run certificate: every period&#x27;s agreement with the incumbent, every difference explained, hashed and frozen. It is the evidence a promotion decision must attach; it is not itself a promotion.
+
+```csharp
+public sealed record OnboardingParallelRunCertificateDto(string CertificateId, DateTimeOffset IssuedAtUtc, string IssuedBy, OnboardingParallelRunCertificateContentDto Content, string ContentHash, string HashAlgorithm);
+```

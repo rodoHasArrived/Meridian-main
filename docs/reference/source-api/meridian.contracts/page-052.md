@@ -6,67 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## OtcValuationInputDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcValuationInputDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L48).
-
-An observation a valuation used, with where it came from and when it was observed.
-
-```csharp
-public sealed record OtcValuationInputDto(string Kind, string Source, DateTimeOffset AsOf, string? Reference, DataProvenance Provenance);
-```
-
-## OtcValuationStatus
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcValuationStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L28).
-
-Whether a contract could be valued.
-
-```csharp
-public enum OtcValuationStatus
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Valued</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L30) |  |
-| <code>Unvalued</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L31) |  |
-
-## PayloadCorporateActionTerms
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.PayloadCorporateActionTerms</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:224](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L224).
-
-Event types whose economics are carried only by the versioned JSON payload.
-
-```csharp
-public sealed record PayloadCorporateActionTerms(string EventType, JsonElement? Payload) : CorporateActionTerms(EventType);
-```
-
-## PositionCorporateActionAdjustment
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.PositionCorporateActionAdjustment</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs#L4).
-
-Result of applying corporate actions to a live open position.
-
-```csharp
-public record PositionCorporateActionAdjustment(string Ticker, decimal OriginalQuantity, decimal AdjustedQuantity, decimal OriginalCostBasis, decimal AdjustedCostBasis, int ActionCount)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? AdjustedTotalCostBasis { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs#L17) | Exact remaining carrying basis, when supported. Null identifies a legacy result supplying only an average unit quote. |
-
 ## PostAttestedCorporateActionCashDividendRequestDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.PostAttestedCorporateActionCashDividendRequestDto</code>. Kind: `record`.
@@ -852,3 +791,102 @@ Declared public members:
 | <code>public static ScheduleSpec IssueAnchoredForward(DateOnly issueDate, DateOnly maturity, ScheduleTenor tenor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:110](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L110) | The Security Master coupon-period roll: forward from the issue date in anchored mode, anchor-day roll, a short final stub, no adjustments and no period limit. |
 | <code>public static ScheduleSpec CompoundedForward(DateOnly start, DateOnly termination, ScheduleTenor tenor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:125](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L125) | The legacy compounded roll: forward from start, each date one tenor after the previous one, anchor-day roll, a short final stub, no adjustments and no period limit. |
 | <code>public static ScheduleSpec BackwardFromTermination(DateOnly effective, DateOnly termination, ScheduleTenor tenor, ScheduleRoll roll, ScheduleStubPolicy stubPolicy = ScheduleStubPolicy.Short) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:141](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L141) | The market bond convention: generated backward from termination in anchored mode with roll, any stub at the start, no adjustments and the default period limit. |
+
+## ScheduleStubPolicy
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleStubPolicy</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L33).
+
+What happens when the regular grid does not fit the schedule&#x27;s span exactly.
+
+```csharp
+public enum ScheduleStubPolicy
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Short</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L36) | The remainder becomes a short stub. |
+| <code>Long</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L39) | The remainder is merged into the adjacent regular period, giving a long stub. |
+| <code>RequireRegular</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L42) | A remainder is refused with ScheduleFailureCode.DoesNotFitRegularGrid. |
+
+## ScheduleTenor
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenor</code>. Kind: `struct`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L35).
+
+The length of one regular schedule period, such as 3M, 1Y, 2W, 1D, or T for a single term period.
+
+```csharp
+public readonly struct ScheduleTenor : IEquatable<ScheduleTenor>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ScheduleTenor(int count, ScheduleTenorUnit unit);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L41) | Creates a tenor of count units. A ScheduleTenorUnit.Term tenor&#x27;s count is fixed at 1. |
+| <code>public int Count { get; }</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L64) | The number of units per period; 1 for a term tenor and 0 only for default. |
+| <code>public ScheduleTenorUnit Unit { get; }</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L67) | The unit the tenor counts in. |
+| <code>public static ScheduleTenor Days(int count) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L70) | A tenor of count days. |
+| <code>public static ScheduleTenor Weeks(int count) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L73) | A tenor of count weeks. |
+| <code>public static ScheduleTenor Months(int count) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L76) | A tenor of count months. |
+| <code>public static ScheduleTenor Years(int count) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L79) | A tenor of count years. |
+| <code>public static ScheduleTenor Term { get; } = new (1, ScheduleTenorUnit.Term);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:82](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L82) | The single-period tenor: one period from effective date to termination. |
+| <code>public bool IsMonthBased =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:85](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L85) | Whether the tenor steps in calendar months (a month or year tenor). |
+| <code>public int? MonthsPerPeriod =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:88](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L88) | Months per period: Count for months, twelve times it for years, otherwise null. |
+| <code>public int? PeriodsPerYear =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:100](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L100) | Regular periods per year when the tenor divides a year evenly by market convention: 12/n for an n-month tenor that divides twelve, 1 for one year, 52 and 26 for one and two weeks, 365 for one day; otherwise null. |
+| <code>public DateOnly Advance(DateOnly date, int periods);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:116](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L116) | date moved by periods tenors (negative moves back). Month steps clamp the day to the target month&#x27;s length, as DateOnly.AddMonths does. |
+| <code>public bool TryAdvance(DateOnly date, int periods, out DateOnly result);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:132](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L132) | Non-throwing Advance: false when the result falls outside the DateOnly range, or when the tenor is a term tenor (or default). |
+| <code>public static bool TryFromPaymentFrequency(SecurityPaymentFrequency frequency, out ScheduleTenor tenor);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:181](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L181) | Maps a Security Master payment frequency to its tenor: Daily 1D, Weekly 1W, BiWeekly 2W, Monthly 1M, BiMonthly 2M, Quarterly 3M, SemiAnnual 6M, Annual 12M and AtMaturity the term tenor. Irregular has no tenor and returns false. |
+| <code>public bool Equals(ScheduleTenor other) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:202](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L202) |  |
+| <code>public override bool Equals(object? obj) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:205](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L205) |  |
+| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:208](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L208) |  |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:211](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L211) | The tenor in market shorthand: 3M, 1Y, 2W, 1D, or T for a term tenor. |
+| <code>public static bool operator == (ScheduleTenor left, ScheduleTenor right) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:221](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L221) | Whether two tenors have the same count and unit. |
+| <code>public static bool operator != (ScheduleTenor left, ScheduleTenor right) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:224](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L224) | Whether two tenors differ in count or unit. |
+
+## ScheduleTenorUnit
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L8).
+
+The unit a ScheduleTenor counts in.
+
+```csharp
+public enum ScheduleTenorUnit
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Day</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L11) | Calendar days. |
+| <code>Week</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L14) | Weeks of seven calendar days. |
+| <code>Month</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L17) | Calendar months, clamped to the target month&#x27;s length. |
+| <code>Year</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L20) | Years, counted as twelve calendar months each. |
+| <code>Term</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L23) | A single period from the effective date to the termination date. |
+
+## ScheduleSpecFactory
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ScheduleSpecFactory</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:109](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L109).
+
+Maps a security&#x27;s declared scheduleConventions block (ADR-025) to a ScheduleSpec for the contractual schedule kernel, or says why it cannot. The block is read only where the mapping decodes it (SecurityVersionedTerms: the same predicate, the same read guard and the same leg selection), and the schedule anchors are read at the payload root by exact key, as the mapping reads them, so the factory cannot follow conventions the record does not declare.
+
+```csharp
+public static class ScheduleSpecFactory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string DeclaredMappingVersion = SecurityVersionedTerms.DeclaredScheduleMappingVersion;</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:116](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L116) | The version of this mapping from a declared block to a schedule spec. It is SecurityVersionedTerms.DeclaredScheduleMappingVersion itself, so the startup capability line and the schedule evidence cannot name different mappings. |
+| <code>public static DeclaredScheduleResolution Resolve(SecurityDetailDto security, StructuredCashFlowTerms terms, IBusinessDayCalendarSource? calendars);</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:157](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L157) | Resolves the schedule security declares, with its payment calendars from calendars. DeclaredScheduleStatus.Undeclared means the record declares nothing this node decodes and its projection stays on the legacy path; DeclaredScheduleStatus.Refused carries the reason the projection is blocked. |
+| <code>public static DeclaredScheduleResolution ResolveShape(SecurityDetailDto security, StructuredCashFlowTerms terms);</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:220](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L220) | The calendar-free check of what security declares: every rule of Resolve except calendar resolution, then the schedule kernel over the spec with no business-day adjustments and no payment lag. A kernel failure is DeclaredScheduleRefusalCode.KernelRefused, so a write rule that calls this refuses every block a factory rule or a calendar-free kernel failure would block. That is all it guarantees: every check that runs after the factory can still block a Declared result, among them calendar availability, the calendar-dependent kernel failures and the declared walk&#x27;s refusals (a contractual principal schedule, a missing or unrecognized dayCount, Level on a Term period, Act/Act ICMA on adjusted accrual dates, Business/252 without a calendar). A Declared result carries that calendar-free spec. |

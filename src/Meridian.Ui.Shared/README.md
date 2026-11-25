@@ -203,9 +203,11 @@ Configuration saves validate under the shared write lease before atomic persiste
 saves refuse tenant-posture changes, plaintext credential edits and live brokerage activation;
 changes to price adjustment or Canonical resolution require an explicit archive/series confirmation.
 `GET /api/config/changes` and configuration-save responses expose field names and `Live`,
-`ReconnectProvider` or `RestartHost` impact. Pending state lasts for the host lifetime; a saved
-change is never presented as an applied provider rebuild. Browser Settings and Data use the same
-status.
+`ReconnectProvider` or `RestartHost` impact. Managed provider, Alpaca feed and failover saves
+also return their own revision and any collector status for affected streaming settings. The shared
+read route includes application evidence only for the matching revision and active collector.
+Browser Settings and Data poll the same status and can inspect revision ID, hash, collector ID,
+application time, and affected paths. The remaining local pending status lasts for the host lifetime.
 
 Provider edits that require credential ownership validate a frozen snapshot before ordinary
 settings validation. Both data-source aliases return safe HTTP 400 errors for invalid settings.

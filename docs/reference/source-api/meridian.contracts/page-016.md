@@ -6,86 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ConfigurationChangeStatus
-
-Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationChangeStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:49](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L49).
-
-Shared by browser and desktop clients. Pending means saved, but not confirmed applied.
-
-```csharp
-public sealed record ConfigurationChangeStatus(ConfigurationChangeImpact Impact, IReadOnlyList<ConfigurationFieldChange> Changes, IReadOnlyList<ConfigurationFieldChange> PendingChanges, DateTimeOffset? SavedAtUtc, bool CanReconnectInProcess = false, ConfigurationApplySummary? LastApply = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool RequiresRestart =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:57](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L57) |  |
-| <code>public bool RequiresReconnect =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:59](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L59) |  |
-
-## ConfigurationFieldChange
-
-Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationFieldChange</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:15](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L15).
-
-Contains setting names only; configuration and credential values are never exported.
-
-```csharp
-public sealed record ConfigurationFieldChange(string Path, ConfigurationChangeImpact Impact);
-```
-
-## ConnectivityProbeOptions
-
-Qualified name: <code>Meridian.Contracts.Configuration.ConnectivityProbeOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/ConnectivityProbeOptions.cs:7](../../../../src/Meridian.Contracts/Configuration/ConnectivityProbeOptions.cs#L7).
-
-Operator-tunable timing for connectivity probes shared by setup and diagnostics flows. Bind from configuration using the SectionKey section.
-
-```csharp
-public sealed class ConnectivityProbeOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string SectionKey = &quot;Connectivity:Probes&quot;;</code> | [src/Meridian.Contracts/Configuration/ConnectivityProbeOptions.cs:10](../../../../src/Meridian.Contracts/Configuration/ConnectivityProbeOptions.cs#L10) | Configuration section key for options binding. |
-| <code>public int TcpConnectTimeoutMs { get; set; } = 5000;</code> | [src/Meridian.Contracts/Configuration/ConnectivityProbeOptions.cs:16](../../../../src/Meridian.Contracts/Configuration/ConnectivityProbeOptions.cs#L16) | Timeout applied to TCP connect probes when testing provider or gateway reachability (for example TWS/IB Gateway socket checks). |
-
-## DataSourceConfigDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.DataSourceConfigDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:533](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L533).
-
-Individual data source configuration.
-
-```csharp
-public sealed class DataSourceConfigDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonExtensionData] public Dictionary&lt;string, JsonElement&gt;? AdditionalProperties { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:537](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L537) | Retains host-owned fields this settings view does not model during load/save. |
-| <code>[JsonPropertyName(&quot;id&quot;)] public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:540](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L540) |  |
-| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:543](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L543) |  |
-| <code>[JsonPropertyName(&quot;provider&quot;)] public string Provider { get; set; } = &quot;IB&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:546](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L546) |  |
-| <code>[JsonPropertyName(&quot;enabled&quot;)] public bool Enabled { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:549](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L549) |  |
-| <code>[JsonPropertyName(&quot;type&quot;)] public string Type { get; set; } = &quot;RealTime&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:552](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L552) |  |
-| <code>[JsonPropertyName(&quot;priority&quot;)] public int Priority { get; set; } = 100;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:555](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L555) |  |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:558](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L558) |  |
-| <code>[JsonPropertyName(&quot;tags&quot;)] public string[]? Tags { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:561](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L561) |  |
-| <code>[JsonPropertyName(&quot;alpaca&quot;)] public AlpacaOptionsDto? Alpaca { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:564](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L564) |  |
-| <code>[JsonPropertyName(&quot;polygon&quot;)] public PolygonOptionsDto? Polygon { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:567](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L567) |  |
-| <code>[JsonPropertyName(&quot;ib&quot;)] public IBOptionsDto? IB { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:570](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L570) |  |
-| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[]? Symbols { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:573](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L573) |  |
-
 ## DataSourcesConfigDto
 
 Qualified name: <code>Meridian.Contracts.Configuration.DataSourcesConfigDto</code>. Kind: `class`.
@@ -1017,3 +937,78 @@ Declared public members:
 | <code>public IReadOnlyList&lt;string&gt; OrphanedResources { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:20](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L20) |  |
 | <code>public IReadOnlyList&lt;string&gt; CorruptedLeaseFiles { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:21](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L21) |  |
 | <code>public DateTimeOffset CapturedAtUtc { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:22](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L22) |  |
+
+## ExecutionLeaseAcquireResult
+
+Qualified name: <code>Meridian.Contracts.Coordination.ExecutionLeaseAcquireResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Coordination/IExecutionLease.cs:22](../../../../src/Meridian.Contracts/Coordination/IExecutionLease.cs#L22).
+
+```csharp
+public sealed record ExecutionLeaseAcquireResult(IExecutionLease? Lease, string? CurrentOwner)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Acquired =&gt; …;</code> | [src/Meridian.Contracts/Coordination/IExecutionLease.cs:24](../../../../src/Meridian.Contracts/Coordination/IExecutionLease.cs#L24) |  |
+
+## ExecutionLeaseLostException
+
+Qualified name: <code>Meridian.Contracts.Coordination.ExecutionLeaseLostException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Coordination/IExecutionLease.cs:30](../../../../src/Meridian.Contracts/Coordination/IExecutionLease.cs#L30).
+
+Signals loss of execution ownership, after which the caller must stop producing side effects.
+
+```csharp
+public sealed class ExecutionLeaseLostException(string resourceId) : InvalidOperationException($"Execution ownership of '{resourceId}' was lost; no further side effects are permitted.");
+```
+
+## IClusterCoordinator
+
+Qualified name: <code>Meridian.Contracts.Coordination.IClusterCoordinator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:19](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L19).
+
+Abstraction for the cluster-wide leader election service. Only the elected coordinator instance manages partition assignments and orchestrates cross-instance workflows such as rolling upgrades and distributed backfill scheduling.
+
+```csharp
+public interface IClusterCoordinator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>bool IsLeader { get; }</code> | [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:22](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L22) | Gets whether this instance currently holds the coordinator lease. |
+| <code>string InstanceId { get; }</code> | [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:25](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L25) | Gets the stable instance identifier for this node. |
+| <code>Task&lt;bool&gt; TryBecomeLeaderAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:31](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L31) | Attempts to acquire (or confirm) the coordinator lease. Safe to call repeatedly; returns false if another healthy instance is already the leader. |
+| <code>Task StepDownAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:37](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L37) | Voluntarily yields coordinator leadership so that another instance may take over. Used by split-brain detection and rolling-upgrade orchestration. |
+| <code>event EventHandler&lt;LeadershipChangedEventArgs&gt;? LeadershipChanged;</code> | [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:40](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L40) | Fires when this instance gains or loses the coordinator role. |
+
+## ICoordinationStore
+
+Qualified name: <code>Meridian.Contracts.Coordination.ICoordinationStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:6](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L6).
+
+Persists resource leases and coordinates acquisition, renewal, release, and fenced execution.
+
+```csharp
+public interface ICoordinationStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;LeaseAcquireResult&gt; TryAcquireLeaseAsync(string resourceId, string instanceId, TimeSpan leaseTtl, TimeSpan takeoverDelay, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:8](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L8) |  |
+| <code>Task&lt;bool&gt; RenewLeaseAsync(string resourceId, string instanceId, TimeSpan leaseTtl, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:15](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L15) |  |
+| <code>Task&lt;bool&gt; ReleaseLeaseAsync(string resourceId, string instanceId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:21](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L21) |  |
+| <code>Task&lt;LeaseRecord?&gt; GetLeaseAsync(string resourceId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:26](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L26) |  |
+| <code>Task&lt;IReadOnlyList&lt;LeaseRecord&gt;&gt; GetAllLeasesAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:28](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L28) |  |
+| <code>Task&lt;IReadOnlyList&lt;string&gt;&gt; GetCorruptedLeaseFilesAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:30](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L30) |  |
+| <code>string RootPath { get; }</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:32](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L32) |  |
+| <code>Task&lt;bool&gt; ExecuteUnderLeaseAsync(LeaseRecord lease, Func&lt;CancellationToken, Task&gt; action, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:35](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L35) | Validates the exact live owner and excludes lease transfer for the entire action. |

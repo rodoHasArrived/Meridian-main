@@ -6,63 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## WorkstationSecurityCoverageStatus
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:520](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L520).
-
-Security Master coverage state associated with a workstation security reference.
-
-```csharp
-public enum WorkstationSecurityCoverageStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Resolved</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:522](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L522) |  |
-| <code>Partial</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:523](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L523) |  |
-| <code>Missing</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:524](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L524) |  |
-| <code>Unavailable</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:525](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L525) |  |
-
-## WorkstationSecurityReference
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityReference</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:537](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L537).
-
-Lightweight Security Master reference used by workstation portfolio and ledger surfaces. SubType is the most specific classification available at query time (e.g. &quot;CommonShare&quot;, &quot;Bond&quot;, &quot;OptionContract&quot;). It is derived from the security&#x27;s asset class and is null when the asset class does not map to a unique sub-type. RiskCountry is extracted from the CommonTerms JSON blob when available. IssuerType is only populated by full workbench queries; the lightweight symbol-lookup path leaves it null to avoid an extra round-trip.
-
-```csharp
-public sealed record WorkstationSecurityReference(Guid SecurityId, string DisplayName, string AssetClass, string Currency, SecurityStatusDto Status, string? PrimaryIdentifier, string? SubType = null, WorkstationSecurityCoverageStatus CoverageStatus = WorkstationSecurityCoverageStatus.Resolved, string? MatchedIdentifierKind = null, string? MatchedIdentifierValue = null, string? MatchedProvider = null, string? ResolutionReason = null, string? LookupPath = null, string? LookupSource = null, bool IsInferredMatch = false, string? RiskCountry = null, string? IssuerType = null);
-```
-
-## WorkstationSessionPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSessionPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:178](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L178).
-
-Typed payload returned by GET /api/workstation/session. ActiveWorkspace uses the canonical browser shell roots: trading, portfolio, accounting, reporting, strategy, data, or settings.
-
-```csharp
-public sealed record WorkstationSessionPayload(string DisplayName, string Role, string Environment, string ActiveWorkspace, int CommandCount, WorkstationRunDigest? LatestRun, WorkstationSessionWorkspaceSummary WorkspaceSummary);
-```
-
-## WorkstationSessionWorkspaceSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSessionWorkspaceSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:166](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L166).
-
-Workspace-level summary embedded inside WorkstationSessionPayload.
-
-```csharp
-public sealed record WorkstationSessionWorkspaceSummary(int TotalRuns, int ActiveRuns, int ReviewRuns, int LedgerCoverage, int PortfolioCoverage);
-```
-
 ## WorkstationStrategyPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationStrategyPayload</code>. Kind: `record`.

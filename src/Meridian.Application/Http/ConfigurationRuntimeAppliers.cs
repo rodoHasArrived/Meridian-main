@@ -8,9 +8,9 @@ namespace Meridian.Application.UI;
 /// A running host component that can apply part of a saved configuration without a restart.
 /// </summary>
 /// <remarks>
-/// Appliers are attached per configuration file through <see cref="ConfigurationRuntimeAppliers"/>,
-/// because desktop mode runs the UI server and the collector in separate DI containers that share
-/// one process and one configuration file.
+/// Appliers are attached per configuration file through <see cref="ConfigurationRuntimeAppliers"/>
+/// for in-process saves. A collector in another process observes the same saved file and publishes
+/// a revision acknowledgement through its watcher.
 /// </remarks>
 public interface IConfigurationRuntimeApplier
 {

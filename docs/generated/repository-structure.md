@@ -5375,8 +5375,10 @@ Meridian-main
 │   │   ├── Http
 │   │   │   ├── Endpoints
 │   │   │   │   └── StatusEndpointHandlers.cs
+│   │   │   ├── CollectorConfigurationRuntime.cs
 │   │   │   ├── ConfigStore.cs
 │   │   │   ├── ConfigurationChangeTracker.cs
+│   │   │   ├── ConfigurationRevisionJournal.cs
 │   │   │   ├── ConfigurationRuntimeAppliers.cs
 │   │   │   └── EffectiveConfigurationProjection.cs
 │   │   ├── Integrations
@@ -5851,7 +5853,6 @@ Meridian-main
 │   │   │   ├── SecurityMasterIngestStatusModels.cs
 │   │   │   ├── StatusEndpointModels.cs
 │   │   │   ├── StatusModels.cs
-│   │   │   ├── TimeSeriesAlignmentContracts.cs
 │   │   │   ├── UiApiClient.cs
 │   │   │   ├── UiApiRoutes.cs
 │   │   │   └── UiDashboardModels.cs
@@ -8857,7 +8858,6 @@ Meridian-main
 │   │   │   ├── CompositeMarketDataStore.cs
 │   │   │   ├── JsonFileIBDataResultStore.cs
 │   │   │   ├── JsonFileSnapshotStore.cs
-│   │   │   ├── JsonlMarketDataStore.Alignment.cs
 │   │   │   └── JsonlMarketDataStore.cs
 │   │   ├── Tenancy
 │   │   │   └── PostgresTenantCutoverInspector.cs
@@ -11148,7 +11148,6 @@ Meridian-main
 │   │   │   ├── SymbolMappingService.cs
 │   │   │   ├── SystemHealthService.cs
 │   │   │   ├── ThemeServiceBase.cs
-│   │   │   ├── TimeSeriesAlignmentExporter.cs
 │   │   │   ├── TimeSeriesAlignmentService.cs
 │   │   │   ├── TooltipContent.cs
 │   │   │   ├── WatchlistService.cs
@@ -11849,8 +11848,6 @@ Meridian-main
 │   │   │   ├── ThreeWayReconciliationService.cs
 │   │   │   ├── ThreeWayReconciliationServiceRegistration.cs
 │   │   │   ├── ThreeWayReconciliationSourceReader.cs
-│   │   │   ├── TimeSeriesAlignmentEngine.cs
-│   │   │   ├── TimeSeriesAlignmentEngine.Series.cs
 │   │   │   ├── TimingDriftHistory.cs
 │   │   │   ├── TradingOperatorLiveOrderReadinessGate.cs
 │   │   │   ├── TradingOperatorReadinessService.BrokerageRecovery.cs
@@ -13163,6 +13160,7 @@ Meridian-main
 │   ├── Meridian.ProcessTestHelper
 │   │   ├── Meridian.ProcessTestHelper.csproj
 │   │   ├── Meridian.ProcessTestHelper.runtimeconfig.json
+│   │   ├── Program.CollectorConfig.cs
 │   │   ├── Program.cs
 │   │   ├── Program.Etl.cs
 │   │   ├── Program.EvidenceQuota.cs
@@ -13501,6 +13499,7 @@ Meridian-main
 │   │   │   │   ├── SchedulingServiceReliabilityTests.cs
 │   │   │   │   └── SubscriptionStoreQuarantineTests.cs
 │   │   │   ├── Ui
+│   │   │   │   ├── CollectorConfigurationRevisionTests.cs
 │   │   │   │   ├── ConfigStoreCredentialPersistenceTests.cs
 │   │   │   │   ├── ConfigStoreTests.cs
 │   │   │   │   ├── ConfigurationChangeTrackingTests.cs
@@ -15652,7 +15651,6 @@ Meridian-main
 │   │   │   ├── ThreeWayAdjustmentDraftTests.cs
 │   │   │   ├── ThreeWayReconciliationSourceTests.cs
 │   │   │   ├── ThreeWayReconciliationTests.cs
-│   │   │   ├── TimeSeriesAlignmentEndpointsTests.cs
 │   │   │   ├── TimingDriftHistoryTests.cs
 │   │   │   ├── TradeFillLedgerPostingHostCompositionTests.cs
 │   │   │   ├── TradingBrokerageRecoveryEndpointTests.cs
@@ -15868,7 +15866,6 @@ Meridian-main
 │   │   │   ├── SymbolManagementServiceTests.cs
 │   │   │   ├── SymbolMappingServiceTests.cs
 │   │   │   ├── SystemHealthServiceTests.cs
-│   │   │   ├── TimeSeriesAlignmentExporterTests.cs
 │   │   │   ├── TimeSeriesAlignmentServiceTests.cs
 │   │   │   ├── WatchlistServiceCollection.cs
 │   │   │   ├── WatchlistServiceTests.cs

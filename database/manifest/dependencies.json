@@ -2500,48 +2500,6 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentDifference"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentExecution"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentPreview"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentRequest"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentRow"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentSeries"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentSummary"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.ToggleRequest"
     },
     {
@@ -4493,6 +4451,24 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Configuration.ConfigurationFieldChange"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRevision"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeState"
     },
     {
       "kind": "contract-set-member",
@@ -37269,42 +37245,6 @@
     {
       "kind": "contract-reference",
       "label": "",
-      "source": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentExecution",
-      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentRow"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentExecution",
-      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentSummary"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentPreview",
-      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentRow"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentPreview",
-      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentSummary"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentSummary",
-      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentDifference"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentSummary",
-      "target": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentSeries"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
       "source": "contract:Meridian.Contracts.Api.TradesResponse",
       "target": "contract:Meridian.Contracts.Api.TradeDataResponse"
     },
@@ -39537,8 +39477,38 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Configuration.ConfigurationChangeStatus",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRevision"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Configuration.ConfigurationChangeStatus",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Configuration.ConfigurationChangeStatus",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeState"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Configuration.ConfigurationFieldChange",
       "target": "contract:Meridian.Contracts.Configuration.ConfigurationChangeImpact"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationApplyEntry"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRevision"
     },
     {
       "kind": "contract-reference",
@@ -72196,7 +72166,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "392c46f48662fc8cbc2c7cde0b81db61b55030117f225411933a1e3713e1018a",
+  "fingerprint": "f4a3d75ac5daa638228ffbd0d2ce512604b911791be268a6a1ec1e1cd11942c0",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -74746,48 +74716,6 @@
       "label": "Meridian.Contracts.Api.SymbolUniverseResponse"
     },
     {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentDifference",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Api.TimeSeriesAlignmentDifference"
-    },
-    {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentExecution",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Api.TimeSeriesAlignmentExecution"
-    },
-    {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentPreview",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Api.TimeSeriesAlignmentPreview"
-    },
-    {
-      "classification": "request",
-      "id": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentRequest",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Api.TimeSeriesAlignmentRequest"
-    },
-    {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentRow",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Api.TimeSeriesAlignmentRow"
-    },
-    {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentSeries",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Api.TimeSeriesAlignmentSeries"
-    },
-    {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.Api.TimeSeriesAlignmentSummary",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Api.TimeSeriesAlignmentSummary"
-    },
-    {
       "classification": "request",
       "id": "contract:Meridian.Contracts.Api.ToggleRequest",
       "kind": "contract-type",
@@ -76742,6 +76670,24 @@
       "id": "contract:Meridian.Contracts.Configuration.ConfigurationFieldChange",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Configuration.ConfigurationFieldChange"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Configuration.ConfigurationRevision",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Configuration.ConfigurationRevision"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeState",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Configuration.ConfigurationRuntimeState"
     },
     {
       "classification": "configuration",
@@ -106085,11 +106031,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4422,
-    "contract_set_memberships": 5828,
-    "edges": 11993,
+    "contract_references": 4421,
+    "contract_set_memberships": 5824,
+    "edges": 11988,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5893
+    "nodes": 5889
   }
 }

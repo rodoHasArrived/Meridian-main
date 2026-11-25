@@ -46,7 +46,7 @@ public static class ConfigEndpoints
 
         group.MapGet("/api/config/changes", (ConfigStore store) => Results.Json(store.GetChangeStatus(), jsonOptions))
             .WithName("GetConfigurationChangeStatus")
-            .WithDescription("Saved setting impacts and changes awaiting provider reconnect or host restart; no setting values are returned.")
+            .WithDescription("Saved setting impacts, the current revision and collector application evidence; no setting values are returned.")
             .Produces<ConfigurationChangeStatus>(200);
 
         // Get full configuration
@@ -164,9 +164,9 @@ public static class ConfigEndpoints
             if (!Enum.TryParse<DataSourceKind>(req.DataSource, ignoreCase: true, out var ds) || !Enum.IsDefined(ds))
                 return Results.BadRequest("Invalid DataSource. Use 'IB' or 'Alpaca'.");
 
-            await store.UpdateAsync(cfg => cfg with { DataSource = ds }, ct);
+            var changeStatus = await store.UpdateWithChangeStatusAsync(cfg => cfg with { DataSource = ds }, ct);
 
-            return Results.Ok(store.GetChangeStatus());
+            return Results.Ok(changeStatus);
         }).WithName("UpdateDataSource")
         .WithDescription("Updates the active streaming data source (e.g., IB, Alpaca, Polygon).")
         .Produces(200).Produces(400).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
@@ -176,8 +176,8 @@ public static class ConfigEndpoints
         // Update Alpaca settings
         group.MapPost(UiApiRoutes.ConfigAlpaca, async (ConfigStore store, AlpacaOptionsDto alpaca, CancellationToken ct) =>
         {
-            await store.UpdateAsync(cfg => cfg with { Alpaca = alpaca.ToDomain(cfg.Alpaca) }, ct);
-            return Results.Ok(store.GetChangeStatus());
+            var changeStatus = await store.UpdateWithChangeStatusAsync(cfg => cfg with { Alpaca = alpaca.ToDomain(cfg.Alpaca) }, ct);
+            return Results.Ok(changeStatus);
         }).WithName("UpdateAlpaca")
         .WithDescription("Updates Alpaca provider connection settings.")
         .Produces(200).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
@@ -236,13 +236,13 @@ public static class ConfigEndpoints
             if (sanitizedRoot is null)
                 return Results.BadRequest("Invalid DataRoot: must be a relative path without traversal sequences.");
 
-            await store.UpdateAsync(cfg => cfg with
+            var changeStatus = await store.UpdateWithChangeStatusAsync(cfg => cfg with
             {
                 DataRoot = sanitizedRoot,
                 Compress = req.Compress,
                 Storage = storage
             }, ct);
-            return Results.Ok(store.GetChangeStatus());
+            return Results.Ok(changeStatus);
         }).WithName("UpdateStorage")
         .WithDescription("Updates storage settings including root path, naming convention, and compression.")
         .Produces(200).Produces(400).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
@@ -255,7 +255,7 @@ public static class ConfigEndpoints
             if (string.IsNullOrWhiteSpace(symbol.Symbol))
                 return Results.BadRequest("Symbol is required.");
 
-            await store.UpdateAsync(cfg =>
+            var changeStatus = await store.UpdateWithChangeStatusAsync(cfg =>
             {
                 var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
                 var idx = list.FindIndex(s => string.Equals(s.Symbol, symbol.Symbol, StringComparison.OrdinalIgnoreCase));
@@ -267,7 +267,7 @@ public static class ConfigEndpoints
                 return cfg with { Symbols = list.ToArray() };
             }, ct);
 
-            return Results.Ok(store.GetChangeStatus());
+            return Results.Ok(changeStatus);
         }).WithName("UpsertSymbol")
         .WithDescription("Adds or updates a symbol in the monitoring configuration.")
         .Produces(200).Produces(400).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
@@ -277,13 +277,13 @@ public static class ConfigEndpoints
         // Delete symbol
         group.MapDelete(UiApiRoutes.ConfigSymbols + "/{symbol}", async (ConfigStore store, string symbol, CancellationToken ct) =>
         {
-            await store.UpdateAsync(cfg =>
+            var changeStatus = await store.UpdateWithChangeStatusAsync(cfg =>
             {
                 var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
                 list.RemoveAll(s => string.Equals(s.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
                 return cfg with { Symbols = list.ToArray() };
             }, ct);
-            return Results.Ok(store.GetChangeStatus());
+            return Results.Ok(changeStatus);
         }).WithName("DeleteConfigSymbol")
         .WithDescription("Removes a symbol from the monitoring configuration.")
         .Produces(200).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
@@ -303,8 +303,8 @@ public static class ConfigEndpoints
         group.MapPost(UiApiRoutes.ConfigDerivatives, async (ConfigStore store, DerivativesConfigDto derivatives, CancellationToken ct) =>
         {
             var derivativesDomain = derivatives.ToDomain();
-            await store.UpdateAsync(cfg => cfg with { Derivatives = derivativesDomain }, ct);
-            return Results.Ok(store.GetChangeStatus());
+            var changeStatus = await store.UpdateWithChangeStatusAsync(cfg => cfg with { Derivatives = derivativesDomain }, ct);
+            return Results.Ok(changeStatus);
         }).WithName("UpdateDerivatives")
         .WithDescription("Updates the derivatives trading configuration.")
         .Produces(200).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)

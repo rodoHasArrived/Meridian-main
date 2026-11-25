@@ -6,58 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## IntercompanyAccrualJsonContext
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:229](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L229).
-
-```csharp
-public partial class IntercompanyAccrualJsonContext : JsonSerializerContext;
-```
-
-## IntercompanyAccrualPrincipalEvidenceDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualPrincipalEvidenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:20](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L20).
-
-Principal is read from posted journals of the reviewed loan profile; it is never typed in.
-
-```csharp
-public sealed record IntercompanyAccrualPrincipalEvidenceDto(Guid PrincipalArrangementId, IntercompanyAccountRoleDto Role, IReadOnlyList<string> ReceivableAccountNodeIds, IReadOnlyList<string> PayableAccountNodeIds, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal OpeningPrincipal, int OpeningJournalCount, string OpeningJournalDigest, IReadOnlyList<IntercompanyAccrualPrincipalMovementDto> Movements);
-```
-
-## IntercompanyAccrualPrincipalMovementDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualPrincipalMovementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:16](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L16).
-
-A posted principal journal dated inside the accrual window, signed toward the outstanding balance.
-
-```csharp
-public sealed record IntercompanyAccrualPrincipalMovementDto(Guid JournalEntryId, DateOnly EffectiveDate, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal SignedAmount);
-```
-
-## IntercompanyAccrualProposalDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualProposalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:53](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L53).
-
-Preview and draft share one shape so the operator reviews exactly what would be retained.
-
-```csharp
-public sealed record IntercompanyAccrualProposalDto(IntercompanyAccrualPreviewDto Computation, IReadOnlyList<string> Diagnostics, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IntercompanyAccrualEvidenceDto? Evidence = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? EvidenceDigest = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ManualJournalEntryDraftDto? Draft = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore] public bool IsReady =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:59](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L59) |  |
-
 ## IntercompanyAccrualRequestDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualRequestDto</code>. Kind: `record`.
@@ -707,3 +655,60 @@ Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:8](../../../.
 ```csharp
 public sealed record IntercompanyProposalSourceLineDto(Guid LineId, string AccountName, string AccountType, string? ChartAccountNodeId, decimal Debit, decimal Credit, string Currency, decimal TransactionDebit, decimal TransactionCredit);
 ```
+
+## IntercompanyProposalStatusDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyProposalStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L6).
+
+```csharp
+public enum IntercompanyProposalStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Pending</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L6) |  |
+| <code>NeedsFix</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L6) |  |
+| <code>Drafted</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L6) |  |
+| <code>Linked</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L6) |  |
+
+## IntercompanyRefreshPreviewDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyRefreshPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:63](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L63).
+
+```csharp
+public sealed record IntercompanyRefreshPreviewDto(ManualJournalEntryDraftDto Draft, string Fingerprint, ManualJournalEntryDraftDto? CurrentDraft = null);
+```
+
+## InvestorCapitalStatementDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.InvestorCapitalStatementDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:809](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L809).
+
+```csharp
+public sealed record InvestorCapitalStatementDto(string StatementId, string FundProfileId, Guid? LedgerBookId, string CapitalAccountId, string? InvestorId, string PeriodId, LedgerDimensionSetDto Dimensions, decimal BeginningCapital, decimal Contributions, decimal Distributions, decimal RealizedGainLoss, decimal EndingCapital, string Currency, AccountingCertificationStateDto CertificationState, IReadOnlyList<string> EvidenceLinks);
+```
+
+## IPrivateCapitalFundEventCommandCenterService
+
+Qualified name: <code>Meridian.Contracts.Ledger.IPrivateCapitalFundEventCommandCenterService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1134](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1134).
+
+Builds the command center view for a specific private capital fund event.
+
+```csharp
+public interface IPrivateCapitalFundEventCommandCenterService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;PrivateCapitalFundEventCommandCenterDto?&gt; GetCommandCenterAsync(string? fundProfileId, Guid? ledgerBookId, string fundEventId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1136](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1136) |  |

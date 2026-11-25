@@ -6,64 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## SinglePrincipalAttestationPolicy
-
-Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationPolicy</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L4).
-
-Versioned, non-authoritative preparer assertions. These are never approval receipts.
-
-```csharp
-public static class SinglePrincipalAttestationPolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Version = &quot;single-principal-evidence-v1&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L6) |  |
-| <code>public const string DraftVersion = &quot;single-principal-evidence-v2&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:7](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L7) |  |
-| <code>public const string EvidenceAcknowledgment = &quot;ATTEST-EVIDENCE-ACK&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L8) |  |
-| <code>public const string DraftCheck = &quot;ATTEST-DRAFT-CHECK&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L9) |  |
-| <code>public const string Disclosure = &quot;Attested by preparer — not independently reviewed&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L10) |  |
-| <code>public const string Confirmation = &quot;I inspected the exact retained evidence and accept responsibility for this preparer assertion. This is not independent review or approval.&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L11) |  |
-| <code>public const string DraftConfirmation = &quot;I inspected the exact retained non-postable calculation and listed checks. This preparer check grants no approval or posting authority.&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L12) |  |
-| <code>public const string DecisionKind = &quot;PreparerAttestation&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L13) |  |
-| <code>public const int SchemaVersion = 1;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L14) |  |
-
-## SinglePrincipalAttestationScopeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationScopeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L17).
-
-```csharp
-public sealed record SinglePrincipalAttestationScopeDto(string TenantId, string CompanyId, Guid? LedgerBookId = null);
-```
-
-## SinglePrincipalAttestationStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationStateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:112](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L112).
-
-```csharp
-public sealed record SinglePrincipalAttestationStateDto(SinglePrincipalAttestationScopeDto Scope, bool PolicyEnabled, string PolicyVersion, string PolicyHash, string Disclosure, string Confirmation, IReadOnlyList<string> AllowedActions, SinglePrincipalDeclarationDto? Declaration, IReadOnlyList<SinglePrincipalDeclarationDto> DeclarationHistory, IReadOnlyList<PreparerAttestationReceiptDto> Receipts, IReadOnlyList<PreparerAttestationRevocationDto> Revocations, IReadOnlyList<SinglePrincipalAttestationAuditEventDto> AuditTrail);
-```
-
-## SinglePrincipalAttestationSubjectSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationSubjectSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:136](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L136).
-
-Server-resolved target revision and source identity; it is not an authority grant.
-
-```csharp
-public sealed record SinglePrincipalAttestationSubjectSnapshotDto(string SubjectKind, string SubjectId, string Revision, string Hash, string SourceArtifactId, string SourceHash, string? SourceActor, string SourceProvenance, bool Eligible, IReadOnlyList<string> Checks, string? SourceSubjectKind = null, string? SourceSubjectId = null, string? SubjectSnapshotJson = null, [property : System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] string? PreparedBy = null, [property : System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] string? Confirmation = null);
-```
-
 ## SinglePrincipalAttestationWorkspaceDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationWorkspaceDto</code>. Kind: `record`.
@@ -672,3 +614,51 @@ Declared public members:
 | <code>public string? QuantityExact { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:93](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L93) |  |
 | <code>public string? PriceExact { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:94](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L94) |  |
 | <code>public string? CashAmountExact { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:95](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L95) |  |
+
+## StatementRunBreakDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementRunBreakDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:347](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L347).
+
+Open or retained break row scoped to a statement reconciliation run.
+
+```csharp
+public sealed record StatementRunBreakDto(string BreakId, string RunId, string ImportId, string SourceReference, StatementBreakType BreakType, string Category, decimal Delta, decimal Tolerance, bool ToleranceBreached, DateTimeOffset CreatedAtUtc, string Status);
+```
+
+## StatementRunCreateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementRunCreateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:299](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L299).
+
+Request to create a statement reconciliation run from an already accessible source file. Endpoint implementations keep import and reconciliation behavior in shared services.
+
+```csharp
+public sealed record StatementRunCreateDto(string Broker, string SourceInstitution, string FundAccountId, string ExternalAccountId, DateOnly StatementPeriodStart, DateOnly StatementPeriodEnd, string SourcePath, string OriginalFileName, string MappingProfileId, string ToleranceProfileId, string ImportedBy, string? SourceFileHash = null, string? Notes = null);
+```
+
+## StatementRunDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementRunDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:270](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L270).
+
+Shared workstation payload for a statement reconciliation run and its normalized evidence.
+
+```csharp
+public sealed record StatementRunDto(string? RunId, StatementRunStatus? Status, StatementSourceDto? Source, DateTimeOffset? StartedAtUtc, DateTimeOffset? CompletedAtUtc, string? SourceFileName, string? SourceFileHash, string? MappingProfileId, int? MappingProfileVersion, string? ToleranceProfileId, int? ToleranceProfileVersion, string? ImportedBy, DateTimeOffset? ImportedAtUtc, IReadOnlyList<StatementValidationIssueDto>? ValidationIssues, IReadOnlyList<StatementNormalizedPositionDto>? Positions, IReadOnlyList<StatementNormalizedCashDto>? CashBalances, IReadOnlyList<StatementNormalizedTransactionDto>? Transactions, StatementMatchSummaryDto? MatchSummary, IReadOnlyList<StatementBreakDto>? Breaks, IReadOnlyList<StatementReconciliationCaseDto>? Cases, string? ImportId = null, string? FundProfileId = null, Guid? FundAccountId = null, string? Notes = null);
+```
+
+## StatementRunExceptionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementRunExceptionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:362](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L362).
+
+Backward-compatible open exception projection for statement reconciliation queues.
+
+```csharp
+public sealed record StatementRunExceptionDto(string BreakId, string RunId, string ImportId, string SourceReference, string BreakCode, string Category, decimal Delta, decimal Tolerance, bool ToleranceBreached, string CreatedAtUtc, string Status);
+```

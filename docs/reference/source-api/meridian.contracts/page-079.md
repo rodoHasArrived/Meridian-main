@@ -6,46 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## StructuredReportingExportRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:422](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L422).
-
-```csharp
-public sealed record StructuredReportingExportRequestDto(string FundProfileId, string ExportId, DateTimeOffset? AsOf = null, string? Currency = null);
-```
-
-## StructuredReportingExportRowLineageDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportRowLineageDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:404](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L404).
-
-```csharp
-public sealed record StructuredReportingExportRowLineageDto(int RowNumber, string RowKey, string RowHashSha256);
-```
-
-## StructuredReportingExportValidationCheckDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportValidationCheckDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:399](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L399).
-
-```csharp
-public sealed record StructuredReportingExportValidationCheckDto(string CheckId, string Status, string Detail);
-```
-
-## SubmitForApproval
-
-Qualified name: <code>Meridian.Contracts.Workstation.SubmitForApproval</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:28](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L28).
-
-```csharp
-public sealed record SubmitForApproval(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
-```
-
 ## SubmitSecurityMasterRevisionRequest
 
 Qualified name: <code>Meridian.Contracts.Workstation.SubmitSecurityMasterRevisionRequest</code>. Kind: `record`.
@@ -614,4 +574,52 @@ Lightweight evidence chip supporting a workflow recommendation.
 
 ```csharp
 public sealed record WorkflowEvidenceBadge(string Label, string Value, string Tone);
+```
+
+## WorkflowLibraryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowLibraryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L6).
+
+Shared catalog projection for reusable workstation workflows.
+
+```csharp
+public sealed record WorkflowLibraryDto(DateTimeOffset GeneratedAt, IReadOnlyList<WorkflowDefinitionDto> Workflows, IReadOnlyList<WorkflowActionDto> Actions);
+```
+
+## WorkflowNextAction
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowNextAction</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L33).
+
+Primary operator action recommended for a workspace.
+
+```csharp
+public sealed record WorkflowNextAction(string Label, string Detail, string TargetPageTag, string Tone);
+```
+
+## WorkflowPresetDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowPresetDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L43).
+
+Durable operator-saved workflow preset that can be launched from web or desktop shells.
+
+```csharp
+public sealed record WorkflowPresetDto(string PresetId, string Name, string? Description, string WorkflowId, string WorkflowTitle, string? ActionId, string ActionLabel, string WorkspaceId, string WorkspaceTitle, string TargetPageTag, IReadOnlyList<string> Tags, bool IsPinned, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, DateTimeOffset? LastUsedAt, string? ViewStateEnvelope = null);
+```
+
+## WorkflowPresetLibraryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowPresetLibraryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:64](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L64).
+
+Shared preset catalog projection for the workstation workflow library.
+
+```csharp
+public sealed record WorkflowPresetLibraryDto(DateTimeOffset GeneratedAt, IReadOnlyList<WorkflowPresetDto> Presets);
 ```

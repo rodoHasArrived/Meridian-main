@@ -424,12 +424,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ProviderConfigReconciler(StreamingFailoverService failover, IEnumerable&lt;string&gt; liveProviderIds, AppConfig startupConfig, ILogger log, TimeSpan? handOffTimeout = null);</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:39](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L39) |  |
-| <code>public string Name =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:56](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L56) |  |
-| <code>public bool Handles(string path) =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:59](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L59) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ConfigurationApplyEntry&gt;&gt; ApplyAsync(AppConfig next, CancellationToken ct);</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:63](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L63) | Applies a configuration document observed by the file watcher. |
-| <code>public async Task&lt;IReadOnlyList&lt;ConfigurationApplyEntry&gt;&gt; ApplyAsync(AppConfig previous, AppConfig next, IReadOnlyList&lt;string&gt; changedPaths, CancellationToken ct);</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:79](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L79) |  |
-| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:319](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L319) |  |
+| <code>public ProviderConfigReconciler(StreamingFailoverService failover, IEnumerable&lt;string&gt; liveProviderIds, AppConfig startupConfig, ILogger log, TimeSpan? handOffTimeout = null);</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:41](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L41) |  |
+| <code>public string Name =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:59](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L59) |  |
+| <code>public bool Handles(string path) =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:62](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L62) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ConfigurationApplyEntry&gt;&gt; ApplyAsync(AppConfig next, CancellationToken ct);</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:66](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L66) | Applies a configuration document observed by the file watcher. |
+| <code>public async Task&lt;IReadOnlyList&lt;ConfigurationApplyEntry&gt;&gt; ApplyAsync(AppConfig previous, AppConfig next, IReadOnlyList&lt;string&gt; changedPaths, CancellationToken ct);</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:82](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L82) |  |
+| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:329](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L329) |  |
 
 ## RuntimeReadinessCheckResult
 

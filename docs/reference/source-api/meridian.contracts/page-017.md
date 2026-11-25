@@ -6,81 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ExecutionLeaseAcquireResult
-
-Qualified name: <code>Meridian.Contracts.Coordination.ExecutionLeaseAcquireResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Coordination/IExecutionLease.cs:22](../../../../src/Meridian.Contracts/Coordination/IExecutionLease.cs#L22).
-
-```csharp
-public sealed record ExecutionLeaseAcquireResult(IExecutionLease? Lease, string? CurrentOwner)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Acquired =&gt; …;</code> | [src/Meridian.Contracts/Coordination/IExecutionLease.cs:24](../../../../src/Meridian.Contracts/Coordination/IExecutionLease.cs#L24) |  |
-
-## ExecutionLeaseLostException
-
-Qualified name: <code>Meridian.Contracts.Coordination.ExecutionLeaseLostException</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Coordination/IExecutionLease.cs:30](../../../../src/Meridian.Contracts/Coordination/IExecutionLease.cs#L30).
-
-Signals loss of execution ownership, after which the caller must stop producing side effects.
-
-```csharp
-public sealed class ExecutionLeaseLostException(string resourceId) : InvalidOperationException($"Execution ownership of '{resourceId}' was lost; no further side effects are permitted.");
-```
-
-## IClusterCoordinator
-
-Qualified name: <code>Meridian.Contracts.Coordination.IClusterCoordinator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:19](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L19).
-
-Abstraction for the cluster-wide leader election service. Only the elected coordinator instance manages partition assignments and orchestrates cross-instance workflows such as rolling upgrades and distributed backfill scheduling.
-
-```csharp
-public interface IClusterCoordinator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>bool IsLeader { get; }</code> | [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:22](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L22) | Gets whether this instance currently holds the coordinator lease. |
-| <code>string InstanceId { get; }</code> | [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:25](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L25) | Gets the stable instance identifier for this node. |
-| <code>Task&lt;bool&gt; TryBecomeLeaderAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:31](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L31) | Attempts to acquire (or confirm) the coordinator lease. Safe to call repeatedly; returns false if another healthy instance is already the leader. |
-| <code>Task StepDownAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:37](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L37) | Voluntarily yields coordinator leadership so that another instance may take over. Used by split-brain detection and rolling-upgrade orchestration. |
-| <code>event EventHandler&lt;LeadershipChangedEventArgs&gt;? LeadershipChanged;</code> | [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:40](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L40) | Fires when this instance gains or loses the coordinator role. |
-
-## ICoordinationStore
-
-Qualified name: <code>Meridian.Contracts.Coordination.ICoordinationStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:6](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L6).
-
-Persists resource leases and coordinates acquisition, renewal, release, and fenced execution.
-
-```csharp
-public interface ICoordinationStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;LeaseAcquireResult&gt; TryAcquireLeaseAsync(string resourceId, string instanceId, TimeSpan leaseTtl, TimeSpan takeoverDelay, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:8](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L8) |  |
-| <code>Task&lt;bool&gt; RenewLeaseAsync(string resourceId, string instanceId, TimeSpan leaseTtl, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:15](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L15) |  |
-| <code>Task&lt;bool&gt; ReleaseLeaseAsync(string resourceId, string instanceId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:21](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L21) |  |
-| <code>Task&lt;LeaseRecord?&gt; GetLeaseAsync(string resourceId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:26](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L26) |  |
-| <code>Task&lt;IReadOnlyList&lt;LeaseRecord&gt;&gt; GetAllLeasesAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:28](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L28) |  |
-| <code>Task&lt;IReadOnlyList&lt;string&gt;&gt; GetCorruptedLeaseFilesAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:30](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L30) |  |
-| <code>string RootPath { get; }</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:32](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L32) |  |
-| <code>Task&lt;bool&gt; ExecuteUnderLeaseAsync(LeaseRecord lease, Func&lt;CancellationToken, Task&gt; action, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:35](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L35) | Validates the exact live owner and excludes lease transfer for the entire action. |
-
 ## IExecutionLease
 
 Qualified name: <code>Meridian.Contracts.Coordination.IExecutionLease</code>. Kind: `interface`.
@@ -718,7 +643,7 @@ public sealed record CreateLoanRequest(Guid? LoanId, string FacilityName, Borrow
 
 Qualified name: <code>Meridian.Contracts.DirectLending.CreateServicerReportBatchRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:269](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L269).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:254](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L254).
 
 ```csharp
 public sealed record CreateServicerReportBatchRequest(string ServicerName, string ReportType, string SourceFormat, DateOnly ReportAsOfDate, string? FileName, string? FileHash, string? Notes, IReadOnlyList<ServicerPositionReportLineImportDto>? PositionLines, IReadOnlyList<ServicerTransactionReportLineImportDto>? TransactionLines);
@@ -792,3 +717,52 @@ Declared public members:
 | <code>public static DeclaredRate Fraction(decimal value) =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:45](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L45) |  |
 | <code>public static DeclaredRate Percent(decimal value) =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:47](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L47) |  |
 | <code>public static DeclaredRate BasisPoints(decimal value) =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:49](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L49) |  |
+
+## DirectLendingCommandEnvelope (generic arity 1)
+
+Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:114](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L114).
+
+```csharp
+public sealed record DirectLendingCommandEnvelope<TCommand>(TCommand Command, DirectLendingCommandMetadataDto? Metadata);
+```
+
+## DirectLendingCommandError
+
+Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingCommandError</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:14](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L14).
+
+```csharp
+public sealed record DirectLendingCommandError(DirectLendingErrorCode Code, string Message);
+```
+
+## DirectLendingCommandException
+
+Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingCommandException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:33](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L33).
+
+Exposes a structured direct lending command error as an exception.
+
+```csharp
+public sealed class DirectLendingCommandException : Exception
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DirectLendingCommandException(DirectLendingCommandError error) : base(error.Message);</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:35](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L35) |  |
+| <code>public DirectLendingCommandError Error { get; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:41](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L41) |  |
+
+## DirectLendingCommandMetadataDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:107](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L107).
+
+```csharp
+public sealed record DirectLendingCommandMetadataDto(Guid? CommandId, Guid? CorrelationId, Guid? CausationId, string? SourceSystem, bool ReplayFlag);
+```

@@ -6,54 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## WorkflowLibraryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowLibraryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L6).
-
-Shared catalog projection for reusable workstation workflows.
-
-```csharp
-public sealed record WorkflowLibraryDto(DateTimeOffset GeneratedAt, IReadOnlyList<WorkflowDefinitionDto> Workflows, IReadOnlyList<WorkflowActionDto> Actions);
-```
-
-## WorkflowNextAction
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowNextAction</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L33).
-
-Primary operator action recommended for a workspace.
-
-```csharp
-public sealed record WorkflowNextAction(string Label, string Detail, string TargetPageTag, string Tone);
-```
-
-## WorkflowPresetDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowPresetDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L43).
-
-Durable operator-saved workflow preset that can be launched from web or desktop shells.
-
-```csharp
-public sealed record WorkflowPresetDto(string PresetId, string Name, string? Description, string WorkflowId, string WorkflowTitle, string? ActionId, string ActionLabel, string WorkspaceId, string WorkspaceTitle, string TargetPageTag, IReadOnlyList<string> Tags, bool IsPinned, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, DateTimeOffset? LastUsedAt, string? ViewStateEnvelope = null);
-```
-
-## WorkflowPresetLibraryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowPresetLibraryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:64](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L64).
-
-Shared preset catalog projection for the workstation workflow library.
-
-```csharp
-public sealed record WorkflowPresetLibraryDto(DateTimeOffset GeneratedAt, IReadOnlyList<WorkflowPresetDto> Presets);
-```
-
 ## WorkflowPresetPinRequest
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkflowPresetPinRequest</code>. Kind: `record`.
@@ -580,4 +532,44 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:238](../
 
 ```csharp
 public sealed record WorkstationPlotToolFocusPointPayload(string Label, string XValueText, string YValueText, string Detail);
+```
+
+## WorkstationPlotToolLegendItemPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolLegendItemPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:232](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L232).
+
+```csharp
+public sealed record WorkstationPlotToolLegendItemPayload(string Id, string Label, string Detail, string Tone);
+```
+
+## WorkstationPlotToolMomentPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolMomentPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:281](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L281).
+
+```csharp
+public sealed record WorkstationPlotToolMomentPayload(string Id, string Label, string Value, string Benchmark);
+```
+
+## WorkstationPlotToolPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:323](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L323).
+
+```csharp
+public sealed record WorkstationPlotToolPayload(WorkstationPlotToolWorkspacePayload Workspace, WorkstationPlotToolStatisticsPayload Statistics, IReadOnlyList<WorkstationPlotToolStudyPayload> Studies, IReadOnlyList<WorkstationPlotToolTabState> Tabs, string ActiveView = "workspace", string AnalyticsEvidenceStatus = "Unavailable");
+```
+
+## WorkstationPlotToolPointPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolPointPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:222](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L222).
+
+```csharp
+public sealed record WorkstationPlotToolPointPayload(int X, int Y, bool Emphasis);
 ```

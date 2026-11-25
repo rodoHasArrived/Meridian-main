@@ -6,48 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## CorporateActionSourceProposalAcceptanceResultDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionSourceProposalAcceptanceResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:708](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L708).
-
-```csharp
-public sealed record CorporateActionSourceProposalAcceptanceResultDto(CorporateActionSourceProposalDto Proposal, CorporateActionDto CorporateAction, CorporateActionProcessingCaseDto Case, CorporateActionCaseTransitionDto InitialTransition, SecurityMasterCorporateActionAuditDto Audit, SecurityMasterCorporateActionRestatementDto? Restatement, bool Replayed, CorporateActionConflictDto? SourceConflict = null);
-```
-
-## CorporateActionSourceProposalActionAvailabilityDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionSourceProposalActionAvailabilityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:442](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L442).
-
-Server-owned accept/reject posture for the durable source-proposal inbox.
-
-```csharp
-public sealed record CorporateActionSourceProposalActionAvailabilityDto(bool CanAccept, bool CanReject, bool CanCompareEvidence, IReadOnlyList<string> Blockers);
-```
-
-## CorporateActionSourceProposalDecisionResultDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionSourceProposalDecisionResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:704](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L704).
-
-```csharp
-public sealed record CorporateActionSourceProposalDecisionResultDto(CorporateActionSourceProposalDto Proposal, bool Replayed);
-```
-
-## CorporateActionSourceProposalDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionSourceProposalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:419](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L419).
-
-```csharp
-public sealed record CorporateActionSourceProposalDto(Guid ProposalId, Guid SecurityId, CorporateActionProviderEventIdentityDto ProviderIdentity, CorporateActionDto ProposedAction, int PayloadSchemaVersion, string EconomicFingerprint, string State, long Version, Guid? SupersedesProposalId, Guid? AcceptedCorporateActionId, Guid? InitialCaseId, string RecordedBy, DateTimeOffset RecordedAtUtc, DateTimeOffset UpdatedAtUtc, string? DecisionBy = null, DateTimeOffset? DecisionAtUtc = null, string? DecisionReason = null, string? CorrelationId = null, CorporateActionSourceProposalActionAvailabilityDto? ActionAvailability = null, CorporateActionSourceDisplayMetadataDto? DisplayMetadata = null);
-```
-
 ## CorporateActionSourceProposalReplayComparer
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionSourceProposalReplayComparer</code>. Kind: `class`.
@@ -814,3 +772,83 @@ The outcome of applying a factor decline to a FaceValueLot.
 ```csharp
 public sealed record FaceValueLotFactorPaydown(FaceValueLot Lot, decimal PrincipalPaydown);
 ```
+
+## FundUnitLot
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.FundUnitLot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L9).
+
+Canonical open lot for unit-denominated fund holdings (investment funds, money market funds, unitized private vehicles), whose SecurityAssetClassDescriptor.LotUnit is SecurityLotUnitKind.Units. The lot is a count of units and the NAV per unit they were acquired at; cost basis is owned here so every consumer derives it identically.
+
+```csharp
+public sealed record FundUnitLot : IUnitizedLot
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FundUnitLot(string lotId, Guid securityId, DateOnly acquiredDate, decimal units, decimal navPerUnit);</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L11) |  |
+| <code>public string LotId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L34) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L44) | Security Master identity the lot&#x27;s reference data (fund family, pricing cadence) resolves from. |
+| <code>public DateOnly AcquiredDate { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L46) |  |
+| <code>public decimal Units { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L49) | Units held; fractional units are ordinary for funds. |
+| <code>public decimal NavPerUnit { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L52) | NAV per unit the lot was acquired at, in the fund&#x27;s currency. |
+| <code>public decimal CostBasis =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L54) |  |
+| <code>public decimal ValueAt(decimal navPerUnit);</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L57) | Value of the lot at navPerUnit. |
+| <code>public FundUnitLot WithReducedUnits(decimal redeemedUnits);</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L66) | The lot remaining after redeeming redeemedUnits; cost basis scales with the units. |
+
+## ICorporateActionCaseAccountingService
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ICorporateActionCaseAccountingService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:198](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L198).
+
+Governed corporate-action accounting lane: attach an exact-version projection binding, record maker-checker approval, and execute durable posting through the Asset Accounting Event Spine. This is the dedicated downstream command path; the generic case transition command can prepare a case through ReadyForApproval but can never grant Approved or Posted.
+
+```csharp
+public interface ICorporateActionCaseAccountingService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;CorporateActionAccountingProjectionMutationResultDto&gt; AttachProjectionAsync(AttachCorporateActionAccountingProjectionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:200](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L200) |  |
+| <code>Task&lt;CorporateActionAccountingApprovalResultDto&gt; ApproveAsync(ApproveCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:204](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L204) |  |
+| <code>Task&lt;CorporateActionAccountingPostingResultDto&gt; PostAsync(PostCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:208](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L208) |  |
+
+## ICorporateActionCashDividendAccountingService
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendAccountingService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:176](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L176).
+
+```csharp
+public interface ICorporateActionCashDividendAccountingService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;CorporateActionCashDividendPreviewDto&gt; PreviewCashDividendAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:178](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L178) |  |
+| <code>Task&lt;CorporateActionCashDividendAttestationResultDto&gt; AttestCashDividendAsync(AttestCorporateActionCashDividendRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:181](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L181) |  |
+| <code>Task&lt;CorporateActionCashDividendPostingResultDto&gt; PostAttestedCashDividendAsync(PostAttestedCorporateActionCashDividendRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:184](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L184) |  |
+
+## ICorporateActionCashDividendEligibilityResolver
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendEligibilityResolver</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:167](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L167).
+
+```csharp
+public interface ICorporateActionCashDividendEligibilityResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;CorporateActionCashDividendEligibilityDto&gt; ResolveAsync(CorporateActionProcessingCaseDto processingCase, CorporateActionCaseAccountingProjectionDto projection, AssetAccountingEventSpineDto spine, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:169](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L169) |  |

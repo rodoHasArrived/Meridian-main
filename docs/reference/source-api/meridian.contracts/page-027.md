@@ -6,52 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## AccountReconciliationResultDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountReconciliationResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:145](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L145).
-
-```csharp
-public sealed record AccountReconciliationResultDto(Guid ResultId, Guid ReconciliationRunId, string CheckLabel, bool IsMatch, string Category, string Status, decimal? ExpectedAmount, decimal? ActualAmount, decimal? Variance, string Reason, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Guid? SupersededByResultId = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateTimeOffset? ResolvedAt = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore] public bool IsOpenBreak =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:161](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L161) | Shared active-blocker contract; original check outcomes remain historical evidence. |
-
-## AccountReconciliationRunDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountReconciliationRunDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:131](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L131).
-
-```csharp
-public sealed record AccountReconciliationRunDto(Guid ReconciliationRunId, Guid AccountId, DateOnly AsOfDate, string Status, int TotalChecks, int TotalMatched, int TotalBreaks, decimal BreakAmountTotal, DateTimeOffset RequestedAt, DateTimeOffset? CompletedAt, string RequestedBy);
-```
-
-## AccountStructureQuery
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountStructureQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureQueries.cs:43](../../../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs#L43).
-
-```csharp
-public sealed record AccountStructureQuery(Guid? AccountId = null, Guid? EntityId = null, Guid? FundId = null, Guid? SleeveId = null, Guid? VehicleId = null, string? PortfolioId = null, string? LedgerReference = null, string? StrategyId = null, string? RunId = null, bool ActiveOnly = true, DateTimeOffset? AsOf = null);
-```
-
-## AccountSummaryDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:272](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L272).
-
-```csharp
-public sealed record AccountSummaryDto(Guid AccountId, AccountTypeDto AccountType, Guid? EntityId, Guid? FundId, Guid? SleeveId, Guid? VehicleId, string AccountCode, string DisplayName, string BaseCurrency, string? Institution, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, string? PortfolioId, string? LedgerReference, string? StrategyId, string? RunId, AccountOperationalStatusDto OperationalStatus = AccountOperationalStatusDto.Active, CustodianAccountDetailsDto? CustodianDetails = null, BankAccountDetailsDto? BankDetails = null, FundStructureSharedDataAccessDto? SharedDataAccess = null);
-```
-
 ## AccountSyncFailureKindDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.AccountSyncFailureKindDto</code>. Kind: `enum`.
@@ -669,3 +623,53 @@ An explicitly reviewed full statement; source evidence is not accounting authori
 ```csharp
 public sealed record CustodianStatementAuthorityDto(int Revision, string SourceEvidenceId, string SourceContentSha256, bool IsAccepted = true, bool IsFullSnapshot = true, Guid? SupersedesBatchId = null);
 ```
+
+## CustodianStatementBatchDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.CustodianStatementBatchDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:106](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L106).
+
+```csharp
+public sealed record CustodianStatementBatchDto(Guid BatchId, Guid AccountId, DateOnly AsOfDate, string CustodianName, string SourceFormat, int LineCount, DateTimeOffset IngestedAt, string LoadedBy, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] CustodianStatementAuthorityDto? Authority = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ContentSha256 = null);
+```
+
+## DecideIntercompanyRateFixingRequest
+
+Qualified name: <code>Meridian.Contracts.FundStructure.DecideIntercompanyRateFixingRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs:31](../../../../src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs#L31).
+
+Approves or rejects exactly the pending value the reviewer saw.
+
+```csharp
+public sealed record DecideIntercompanyRateFixingRequest(Guid RequestId, IntercompanyRateFixingActionDto Action, long ExpectedVersion, string ExpectedValueDigest, string? Reason = null);
+```
+
+## EntityLifecycleEligibilityDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.EntityLifecycleEligibilityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:48](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L48).
+
+```csharp
+public sealed record EntityLifecycleEligibilityDto(bool Allowed, string ReasonCode, string Message, LegalEntityLifecycleStatusDto? Status, long? Revision, bool Warning = false);
+```
+
+## EntityLifecycleExternalReviewIntegrity
+
+Qualified name: <code>Meridian.Contracts.FundStructure.EntityLifecycleExternalReviewIntegrity</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs:50](../../../../src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs#L50).
+
+Computes the legal lifecycle subject separately from its external-review receipt.
+
+```csharp
+public static class EntityLifecycleExternalReviewIntegrity
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string SubmittedHash(AppendEntityLifecycleRevisionRequestDto request);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs:52](../../../../src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs#L52) |  |

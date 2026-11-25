@@ -322,8 +322,8 @@ Declared public members:
 | <code>public IReadOnlyList&lt;ProviderModuleCatalogueEntry&gt; GetDiscoveredModuleCatalogue();</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:98](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L98) |  |
 | <code>public async Task&lt;ProviderModuleSetupResult&gt; UpsertModuleAsync(UpsertProviderModuleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:122](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L122) |  |
 | <code>public async Task&lt;ProviderModuleSetupResult&gt; SetEnabledAsync(string moduleId, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:190](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L190) |  |
-| <code>public async Task&lt;ProviderModuleSetupResult&gt; RemoveModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:215](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L215) |  |
-| <code>public async Task&lt;ProviderModuleTestResult&gt; TestModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:255](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L255) |  |
+| <code>public async Task&lt;ProviderModuleSetupResult&gt; RemoveModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:212](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L212) |  |
+| <code>public async Task&lt;ProviderModuleTestResult&gt; TestModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:252](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L252) |  |
 
 ## ProviderModuleStatusDto
 

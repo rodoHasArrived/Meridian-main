@@ -89,16 +89,25 @@ The current runtime cannot rebuild providers in process, so pending provider rec
 `RequiresRestart=true`; clients must not imply that a connection retry applies new provider options.
 Later live saves retain outstanding restart/reconnect changes; reverting a field to its host baseline
 clears that field's pending state. The journal stores value hashes rather than configuration values.
-After a durable save, `ConfigStore` offers the changed paths to `IConfigurationRuntimeApplier`s attached
-to that file (`ConfigurationRuntimeAppliers`, process-wide because desktop mode hosts the UI server and
-collector in separate containers). Applied paths stop being pending; deferred paths stay
-`RestartHost` with a reason in `ConfigurationChangeStatus.LastApply`; applier failures never fail
-the save. `ProviderConfigReconciler` (attached by `CollectorModeRunner` when streaming failover runs)
-applies failover rule thresholds, backup order among providers with a live client, the health-check
-interval and source enable/disable live, and reports settings the runtime does not read as
-`NoRuntimeEffect`. `CrossProviderPolicyApplier` applies `DataQuality.CrossProvider` tolerances to the
-running `CrossProviderComparisonService`. The collector also publishes its coordinator to
-`StreamingFailoverRegistry.Process` and honours `Sources[*].Enabled = false` at startup.
+After a durable save, `ConfigStore` offers changed settings to local runtime appliers attached to
+the file. Each managed save, including template publication and verified Alpaca feed changes,
+records a distinct revision ID and SHA-256 digest beside the configuration. Only a committed
+receipt matching the current file can carry collector evidence for the `DataSources` section.
+The collector's file watcher reconciles the latest saved document under the same lease as
+configuration writers.
+It records the revision, collector instance, application time, and typed setting paths and
+outcomes. The journal retains the current revision only and stores no configuration values.
+A stopped collector, an externally edited file, or an interrupted receipt yields unknown
+application status. Unacknowledged provider paths carry forward until the collector confirms
+them. A deferred or failed application leaves the saved file intact.
+
+`ProviderConfigReconciler` can apply failover rule thresholds, backup order among providers with
+a live client, the health-check interval and source enable/disable live. Settings the streaming
+runtime ignores are reported as `NoRuntimeEffect`. `CrossProviderPolicyApplier` applies
+`DataQuality.CrossProvider` tolerances to the local `CrossProviderComparisonService`. The collector
+also publishes its coordinator to `StreamingFailoverRegistry.Process` and honours
+`Sources[*].Enabled = false` at startup. A single-source collector acknowledges source toggles
+as changes to failover eligibility and reports a restart requirement when failover is configured.
 `SaveAsync` now also refuses to overwrite a malformed existing authoritative document.
 Feature-capability override saves record their setting changes after the document is durably saved.
 The effective configuration projection reads declared fields and reports activation impact and

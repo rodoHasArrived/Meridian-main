@@ -6,65 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## OrderBookLevel
-
-Qualified name: <code>Meridian.Contracts.Domain.Models.OrderBookLevel</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs:28](../../../../src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs#L28).
-
-One price level in an order book side. Level is 0-based (0 = best).
-
-```csharp
-public sealed record OrderBookLevel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OrderBookSide Side { get; init; }</code> | [src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs:33](../../../../src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs#L33) | Gets the side of the order book (bid or ask). |
-| <code>public ushort Level { get; init; }</code> | [src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs:39](../../../../src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs#L39) | Gets the depth level in the order book (0 = best price). Max 65,535 levels — far exceeds any real order book depth. |
-| <code>public decimal Price { get; init; }</code> | [src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs:44](../../../../src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs#L44) | Gets the price at this level. |
-| <code>public decimal Size { get; init; }</code> | [src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs:49](../../../../src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs#L49) | Gets the total size available at this price level. |
-| <code>public string? MarketMaker { get; init; }</code> | [src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs:54](../../../../src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs#L54) | Gets the market maker identifier (if available). |
-| <code>public OrderBookLevel(OrderBookSide Side, ushort Level, decimal Price, decimal Size, string? MarketMaker = null);</code> | [src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs:59](../../../../src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs#L59) | Validates order book level data at construction time to prevent corrupt datasets. |
-
-## OrderCancel
-
-Qualified name: <code>Meridian.Contracts.Domain.Models.OrderCancel</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Models/OrderCancel.cs:9](../../../../src/Meridian.Contracts/Domain/Models/OrderCancel.cs#L9).
-
-Represents the full or partial cancellation of a resting order. A CanceledSize equal to the original order size indicates a full cancel.
-
-```csharp
-public sealed record OrderCancel(string OrderId, long CanceledSize, long SequenceNumber, string? StreamId = null, string? Venue = null) : MarketEventPayload;
-```
-
-## OrderExecute
-
-Qualified name: <code>Meridian.Contracts.Domain.Models.OrderExecute</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Models/OrderExecute.cs:11](../../../../src/Meridian.Contracts/Domain/Models/OrderExecute.cs#L11).
-
-Represents the execution of a resting order (full or partial fill). The resting order is always identified; the aggressor order ID is provided when the venue includes it in the execution message.
-
-```csharp
-public sealed record OrderExecute(string RestingOrderId, decimal ExecPrice, long ExecSize, AggressorSide AggressorSide, long SequenceNumber, string? TakerOrderId = null, string? TradeId = null, string? StreamId = null, string? Venue = null) : MarketEventPayload;
-```
-
-## OrderFlowStatistics
-
-Qualified name: <code>Meridian.Contracts.Domain.Models.OrderFlowStatistics</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs:8](../../../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs#L8).
-
-Rolling order-flow statistics derived from recent trades.
-
-```csharp
-public sealed record OrderFlowStatistics(DateTimeOffset Timestamp, string Symbol, long BuyVolume, long SellVolume, long UnknownVolume, decimal VWAP, decimal Imbalance, ushort TradeCount, long SequenceNumber, string? StreamId = null, string? Venue = null) : MarketEventPayload;
-```
-
 ## OrderModify
 
 Qualified name: <code>Meridian.Contracts.Domain.Models.OrderModify</code>. Kind: `record`.
@@ -850,3 +791,96 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;stage&quot;)] public required string Stage { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:347](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L347) |  |
 | <code>[JsonPropertyName(&quot;message&quot;)] public required string Message { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:350](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L350) |  |
 | <code>[JsonPropertyName(&quot;capturedAtUtc&quot;)] public DateTime CapturedAtUtc { get; init; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:353](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L353) |  |
+
+## EtlCheckpointToken
+
+Qualified name: <code>Meridian.Contracts.Etl.EtlCheckpointToken</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Etl/EtlModels.cs:213](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L213).
+
+Records the file and record position needed to resume an ETL job.
+
+```csharp
+public sealed class EtlCheckpointToken
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;currentFileName&quot;)] public string? CurrentFileName { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:216](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L216) |  |
+| <code>[JsonPropertyName(&quot;currentFileChecksum&quot;)] public string? CurrentFileChecksum { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:219](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L219) |  |
+| <code>[JsonPropertyName(&quot;currentRecordIndex&quot;)] public long? CurrentRecordIndex { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:222](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L222) |  |
+| <code>[JsonPropertyName(&quot;lastSymbol&quot;)] public string? LastSymbol { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:225](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L225) |  |
+| <code>[JsonPropertyName(&quot;lastTimestampUtc&quot;)] public DateTime? LastTimestampUtc { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:228](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L228) |  |
+| <code>[JsonPropertyName(&quot;lastRecordHash&quot;)] public string? LastRecordHash { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:231](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L231) |  |
+| <code>[JsonPropertyName(&quot;capturedAtUtc&quot;)] public DateTime CapturedAtUtc { get; init; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:234](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L234) |  |
+
+## EtlDestinationDefinition
+
+Qualified name: <code>Meridian.Contracts.Etl.EtlDestinationDefinition</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Etl/EtlModels.cs:171](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L171).
+
+Configures an ETL output location, transfer mode, package format, and credentials.
+
+```csharp
+public sealed class EtlDestinationDefinition
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;kind&quot;)] public required EtlDestinationKind Kind { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:174](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L174) |  |
+| <code>[JsonPropertyName(&quot;location&quot;)] public string? Location { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:177](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L177) |  |
+| <code>[JsonPropertyName(&quot;username&quot;)] public string? Username { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:180](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L180) |  |
+| <code>[JsonPropertyName(&quot;secretRef&quot;)] public string? SecretRef { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:183](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L183) |  |
+| <code>[JsonPropertyName(&quot;transferMode&quot;)] public EtlTransferMode TransferMode { get; init; } = EtlTransferMode.BatchExchange;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:186](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L186) |  |
+| <code>[JsonPropertyName(&quot;packageFormat&quot;)] public EtlPackageFormat? PackageFormat { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:189](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L189) |  |
+| <code>[JsonPropertyName(&quot;overwriteIfExists&quot;)] public bool OverwriteIfExists { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:192](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L192) |  |
+| <code>[JsonPropertyName(&quot;deliveryWindowStartUtc&quot;)] public DateTime? DeliveryWindowStartUtc { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:195](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L195) |  |
+| <code>[JsonPropertyName(&quot;deliveryWindowEndUtc&quot;)] public DateTime? DeliveryWindowEndUtc { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:198](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L198) |  |
+| <code>[JsonPropertyName(&quot;deliverySlaMinutes&quot;)] public int? DeliverySlaMinutes { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:201](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L201) |  |
+| <code>[JsonPropertyName(&quot;requiresRemoteAck&quot;)] public bool RequiresRemoteAck { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:204](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L204) |  |
+| <code>[JsonPropertyName(&quot;hostKeySha256Fingerprint&quot;)] public string? HostKeySha256Fingerprint { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:207](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L207) |  |
+
+## EtlDestinationKind
+
+Qualified name: <code>Meridian.Contracts.Etl.EtlDestinationKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Etl/EtlModels.cs:21](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L21).
+
+```csharp
+public enum EtlDestinationKind : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>StorageCatalog = 0</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:23](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L23) |  |
+| <code>Local = 1</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:24](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L24) |  |
+| <code>Sftp = 2</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:25](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L25) |  |
+
+## EtlFileManifest
+
+Qualified name: <code>Meridian.Contracts.Etl.EtlFileManifest</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Etl/EtlModels.cs:240](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L240).
+
+Identifies a staged ETL file by relative path, SHA-256 checksum, and size.
+
+```csharp
+public sealed class EtlFileManifest
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;fileName&quot;)] public required string FileName { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:243](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L243) |  |
+| <code>[JsonPropertyName(&quot;relativePath&quot;)] public required string RelativePath { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:246](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L246) |  |
+| <code>[JsonPropertyName(&quot;checksumSha256&quot;)] public required string ChecksumSha256 { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:249](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L249) |  |
+| <code>[JsonPropertyName(&quot;sizeBytes&quot;)] public long SizeBytes { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:252](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L252) |  |
+| <code>[JsonPropertyName(&quot;stagedAtUtc&quot;)] public DateTime StagedAtUtc { get; init; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:255](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L255) |  |

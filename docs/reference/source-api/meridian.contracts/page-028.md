@@ -6,56 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## CustodianStatementBatchDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CustodianStatementBatchDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:106](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L106).
-
-```csharp
-public sealed record CustodianStatementBatchDto(Guid BatchId, Guid AccountId, DateOnly AsOfDate, string CustodianName, string SourceFormat, int LineCount, DateTimeOffset IngestedAt, string LoadedBy, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] CustodianStatementAuthorityDto? Authority = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ContentSha256 = null);
-```
-
-## DecideIntercompanyRateFixingRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.DecideIntercompanyRateFixingRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs:31](../../../../src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs#L31).
-
-Approves or rejects exactly the pending value the reviewer saw.
-
-```csharp
-public sealed record DecideIntercompanyRateFixingRequest(Guid RequestId, IntercompanyRateFixingActionDto Action, long ExpectedVersion, string ExpectedValueDigest, string? Reason = null);
-```
-
-## EntityLifecycleEligibilityDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.EntityLifecycleEligibilityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:48](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L48).
-
-```csharp
-public sealed record EntityLifecycleEligibilityDto(bool Allowed, string ReasonCode, string Message, LegalEntityLifecycleStatusDto? Status, long? Revision, bool Warning = false);
-```
-
-## EntityLifecycleExternalReviewIntegrity
-
-Qualified name: <code>Meridian.Contracts.FundStructure.EntityLifecycleExternalReviewIntegrity</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs:50](../../../../src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs#L50).
-
-Computes the legal lifecycle subject separately from its external-review receipt.
-
-```csharp
-public static class EntityLifecycleExternalReviewIntegrity
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string SubmittedHash(AppendEntityLifecycleRevisionRequestDto request);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs:52](../../../../src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs#L52) |  |
-
 ## EntityLifecycleOperationDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.EntityLifecycleOperationDto</code>. Kind: `enum`.
@@ -605,3 +555,62 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:613](../../..
 ```csharp
 public sealed record GovernanceCashFlowVarianceSummaryDto(decimal RealizedInflows, decimal RealizedOutflows, decimal RealizedNetFlow, decimal ProjectedInflows, decimal ProjectedOutflows, decimal ProjectedNetFlow, decimal VarianceAmount, string ComparisonBasis);
 ```
+
+## GovernanceCashFlowViewDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.GovernanceCashFlowViewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:623](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L623).
+
+```csharp
+public sealed record GovernanceCashFlowViewDto(GovernanceCashFlowScopeDto Scope, DateTimeOffset AsOf, DateTimeOffset HistoricalWindowStart, DateTimeOffset ProjectionWindowEnd, string Currency, int HistoricalDays, int ForecastDays, int BucketDays, int AccountCount, decimal? CurrentCashBalance, decimal? ProjectedClosingCashBalance, IReadOnlyList<GovernanceCashFlowAccountViewDto> Accounts, IReadOnlyList<GovernanceCashFlowEntryDto> RealizedEntries, IReadOnlyList<GovernanceCashFlowEntryDto> ProjectedEntries, GovernanceCashFlowLadderDto RealizedLadder, GovernanceCashFlowLadderDto ProjectedLadder, GovernanceCashFlowVarianceSummaryDto VarianceSummary, IReadOnlyList<GovernanceCashFlowVarianceBucketDto> VarianceBuckets, FundStructureSharedDataAccessDto? SharedDataAccess = null, int SecurityProjectedEntryCount = 0);
+```
+
+## HistoricalPriceAccessSummaryDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.HistoricalPriceAccessSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:307](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L307).
+
+```csharp
+public sealed record HistoricalPriceAccessSummaryDto(bool IsAvailable, bool HasStoredData, int AvailableSymbolCount, IReadOnlyList<string> SampleSymbols, string AvailabilityDescription);
+```
+
+## IEntityLifecycleExternalReviewEvidenceAuthority
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IEntityLifecycleExternalReviewEvidenceAuthority</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs:67](../../../../src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs#L67).
+
+Resolves immutable, scoped external-review document evidence for legal lifecycle facts.
+
+```csharp
+public interface IEntityLifecycleExternalReviewEvidenceAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IntercompanyAgreementEvidenceDto&gt; ResolveAsync(string tenantId, string actor, Guid entityId, IntercompanyAgreementEvidenceDto evidence, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs:69](../../../../src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs#L69) |  |
+
+## IIntercompanyAccountingArrangementLegalAuthority
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IIntercompanyAccountingArrangementLegalAuthority</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:87](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L87).
+
+Native legal read/lease adapter. Mapping approval cannot manufacture legal approval.
+
+```csharp
+public interface IIntercompanyAccountingArrangementLegalAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IntercompanyAgreementRevisionDto&gt; GetRevisionAsync(string tenantId, IntercompanyCanonicalAgreementReferenceDto reference, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:89](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L89) |  |
+| <code>Task&lt;IntercompanyAgreementRevisionDto&gt; GetEffectiveRevisionAsync(string tenantId, IntercompanyCanonicalAgreementReferenceDto reference, DateOnly economicDate, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:91](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L91) |  |
+| <code>Task&lt;IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt;&gt; ListEffectiveRevisionsAsync(string tenantId, Guid entityId, DateOnly economicDate, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:93](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L93) |  |
+| <code>Task&lt;IIntercompanyAccountingArrangementLegalLease&gt; AcquireLeaseAsync(string tenantId, IReadOnlyList&lt;IntercompanyCanonicalAgreementReferenceDto&gt; references, LegalEntityReadAuthorityProof? structureAuthority = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:95](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L95) |  |

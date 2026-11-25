@@ -6,66 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## StrategyEngineDataAvailability
-
-Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDataAvailability</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:171](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L171).
-
-```csharp
-public sealed record StrategyEngineDataAvailability(string DependencyId, bool IsAvailable, DateTimeOffset? AvailableFrom = null, DateTimeOffset? AvailableTo = null, DateTimeOffset? LastUpdatedAt = null, string? SourceReference = null, IReadOnlyList<string>? MissingFields = null, string? DegradationReason = null);
-```
-
-## StrategyEngineDataDependency
-
-Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDataDependency</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:129](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L129).
-
-```csharp
-public sealed record StrategyEngineDataDependency(string DependencyId, StrategyEngineDataDependencyKind Kind, string Description, string? AssetClass = null, string? Granularity = null, DateTimeOffset? RequiredFrom = null, DateTimeOffset? RequiredTo = null, TimeSpan? FreshnessWindow = null, StrategyEngineMissingDataPolicy MissingDataPolicy = StrategyEngineMissingDataPolicy.Block, IReadOnlyList<string>? RequiredFields = null);
-```
-
-## StrategyEngineDataDependencyKind
-
-Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDataDependencyKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:60](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L60).
-
-Declared data input class for a strategy.
-
-```csharp
-public enum StrategyEngineDataDependencyKind : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>PriceBars</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:62](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L62) |  |
-| <code>LiveQuotes</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:63](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L63) |  |
-| <code>Fundamentals</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:64](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L64) |  |
-| <code>ReferenceData</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:65](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L65) |  |
-| <code>SecurityMaster</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:66](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L66) |  |
-| <code>OptionsChain</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:67](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L67) |  |
-| <code>Positions</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:68](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L68) |  |
-| <code>OpenLots</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:69](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L69) |  |
-| <code>Portfolio</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:70](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L70) |  |
-| <code>Ledger</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:71](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L71) |  |
-| <code>CorporateActions</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:72](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L72) |  |
-| <code>ProviderBackfill</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:73](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L73) |  |
-| <code>Custom</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:74](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L74) |  |
-
-## StrategyEngineDefinition
-
-Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDefinition</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:141](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L141).
-
-```csharp
-public sealed record StrategyEngineDefinition(string StrategyId, string Version, string Name, StrategyEngineStrategyType Type, string Description, IReadOnlyList<string> AssetUniverse, IReadOnlyList<StrategyEngineDataDependency> RequiredDataInputs, IReadOnlyList<StrategyEngineParameterDefinition> ParameterSchema, IReadOnlyList<StrategyEngineRunMode> SupportedModes, string Owner, string Source, IReadOnlyDictionary<string, string>? UiMetadata = null, IReadOnlyDictionary<string, string>? Extensions = null);
-```
-
 ## StrategyEngineMissingDataPolicy
 
 Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineMissingDataPolicy</code>. Kind: `enum`.
@@ -815,4 +755,54 @@ Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:42](../../../.
 
 ```csharp
 public sealed record AmountPassportComponentDto(string Component, string Status, string Detail);
+```
+
+## AmountPassportDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L53).
+
+Server-resolved facts. ExactValue is a decimal string and may be absent for unavailable evidence.
+
+```csharp
+public sealed record AmountPassportDto(AmountPassportReferenceDto Reference, string Label, string? ExactValue, string Status, string? EffectiveDate, string? Calculation, string? ExchangeRateRule, AmountPassportFreshnessDto Freshness, AmountPassportPermissionsDto Permissions, IReadOnlyList<AmountPassportComponentDto> Components, IReadOnlyList<AmountPassportRecordDto> Sources, IReadOnlyList<AmountPassportRecordDto> Evidence, IReadOnlyList<AmountPassportRecordDto> History, IReadOnlyList<string> Gaps)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountingPreparerAttestationDisclosureDto&gt;? AccountingPreparerAttestations { get; init; }</code> | [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L70) |  |
+
+## AmountPassportFreshnessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportFreshnessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L32).
+
+```csharp
+public sealed record AmountPassportFreshnessDto(string Status, DateTimeOffset EvaluatedAt, string Policy, string Detail, DateTimeOffset? ObservedAt = null, long? AgeMinutes = null);
+```
+
+## AmountPassportIdentityDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportIdentityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L4).
+
+An immutable amount address. Tenant and company are checked against the authenticated request.
+
+```csharp
+public sealed record AmountPassportIdentityDto(string SubjectKind, string SubjectId, AmountPassportScopeDto Scope, string AsOf, string Revision);
+```
+
+## AmountPassportPermissionsDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportPermissionsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L40).
+
+```csharp
+public sealed record AmountPassportPermissionsDto(string View, string Amend, string Detail, string? PeriodStatus = null);
 ```
