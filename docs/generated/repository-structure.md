@@ -13049,6 +13049,7 @@ Meridian-main
 │   │   ├── DirectLendingDatabaseFactAttribute.cs
 │   │   ├── DirectLendingPostgresIntegrationTests.cs
 │   │   ├── DirectLendingPostgresTestDatabase.cs
+│   │   ├── DirectLendingRestructuringTests.cs
 │   │   ├── DirectLendingServiceTests.cs
 │   │   ├── DirectLendingServicingSchedulePostgresTests.cs
 │   │   ├── DirectLendingServicingScheduleScenarioTests.cs
@@ -13340,6 +13341,8 @@ Meridian-main
 │   │   │   │   ├── ManualPaymentResolutionTests.cs
 │   │   │   │   ├── PostgresDirectLendingCommandServiceTests.CapabilityFloor.cs
 │   │   │   │   ├── PostgresDirectLendingCommandServiceTests.cs
+│   │   │   │   ├── PostgresDirectLendingCommandServiceTests.Restructuring.cs
+│   │   │   │   ├── PostgresDirectLendingCommandServiceTests.RestructuringPostgres.cs
 │   │   │   │   ├── PostgresDirectLendingProjectionCharacterizationTests.cs
 │   │   │   │   └── RateUnitNormalizerTests.cs
 │   │   │   ├── FundStructure
