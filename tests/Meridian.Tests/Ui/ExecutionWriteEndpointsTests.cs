@@ -1378,7 +1378,7 @@ public sealed partial class ExecutionWriteEndpointsTests
     {
         using var artifacts = TestArtifactDirectory.Create(nameof(PaperSessionEndpoints_AfterRestart_RestoreSessionAndReplayEvidence));
 
-        await using var firstApp = await CreateAppAsync(services => RegisterSessionServices(services, artifacts.RootPath));
+        var firstApp = await CreateAppAsync(services => RegisterSessionServices(services, artifacts.RootPath));
         var firstClient = firstApp.GetTestClient();
 
         var createResponse = await firstClient.PostAsync(
@@ -1395,6 +1395,10 @@ public sealed partial class ExecutionWriteEndpointsTests
         var firstPersistence = firstApp.Services.GetRequiredService<ExecutionServices.PaperSessionPersistenceService>();
         await firstPersistence.RecordFillAsync(summary.SessionId, CreateFill("AAPL", 10m, 150m));
         await firstPersistence.RecordOrderUpdateAsync(summary.SessionId, CreateOrderState("order-restart-1", "AAPL", 10m));
+
+        // A restart: the first host is gone before the second opens the same data root. The
+        // execution audit WAL admits a single writer, so the two must not overlap.
+        await firstApp.DisposeAsync();
 
         await using var secondApp = await CreateAppAsync(services => RegisterSessionServices(services, artifacts.RootPath));
         var secondClient = secondApp.GetTestClient();

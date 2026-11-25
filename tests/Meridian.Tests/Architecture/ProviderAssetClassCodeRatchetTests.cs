@@ -23,6 +23,14 @@ namespace Meridian.Tests.Architecture;
 [Trait("Category", "Architecture")]
 public sealed class ProviderAssetClassCodeRatchetTests
 {
+    // Directory links are never followed: the dashboard's node_modules links the repository
+    // root back into src/ ("meridian-tools": "file:../../.."), which otherwise recurses forever.
+    private static readonly EnumerationOptions SourceTreeEnumeration = new()
+    {
+        RecurseSubdirectories = true,
+        AttributesToSkip = FileAttributes.ReparsePoint
+    };
+
     private static readonly string[] SourcesOfTruth =
     [
         "src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs",
@@ -104,7 +112,7 @@ public sealed class ProviderAssetClassCodeRatchetTests
             RegexOptions.CultureInvariant);
 
         var counts = new Dictionary<string, int>(StringComparer.Ordinal);
-        foreach (var file in Directory.EnumerateFiles(Path.Combine(root, "src"), "*.*", SearchOption.AllDirectories))
+        foreach (var file in Directory.EnumerateFiles(Path.Combine(root, "src"), "*.*", SourceTreeEnumeration))
         {
             if (Path.GetExtension(file) is not (".cs" or ".fs"))
             {
