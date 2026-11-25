@@ -113,8 +113,9 @@ public sealed class ThreeWayReconciliationScheduleRunner(
         }
         catch (Exception exception)
         {
-            logger.LogWarning("Scheduled broker refresh for account {AccountId} failed ({FailureType}); the retained broker observation was not updated.",
-                accountId, exception.GetType().Name);
+            // No account identity in the log: the affected account surfaces through its blocked daily run.
+            logger.LogWarning("Scheduled broker refresh failed ({FailureType}); the retained broker observation was not updated.",
+                exception.GetType().Name);
         }
     }
 }
