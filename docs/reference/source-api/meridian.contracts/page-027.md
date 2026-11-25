@@ -6,6 +6,68 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountSyncFailureKindDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.AccountSyncFailureKindDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:194](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L194).
+
+Structured failure class for account sync retries and readiness.
+
+```csharp
+public enum AccountSyncFailureKindDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None = 0</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:196](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L196) |  |
+| <code>CredentialMissing = 1</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:197](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L197) |  |
+| <code>Unauthorized = 2</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:198](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L198) |  |
+| <code>ProviderUnavailable = 3</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:199](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L199) |  |
+| <code>RateLimited = 4</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:200](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L200) |  |
+| <code>Timeout = 5</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:201](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L201) |  |
+| <code>Cancelled = 6</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:202](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L202) |  |
+| <code>ValidationFailed = 7</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:203](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L203) |  |
+| <code>Unsupported = 8</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:204](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L204) |  |
+| <code>Duplicate = 9</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:205](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L205) |  |
+| <code>Unknown = 99</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:206](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L206) |  |
+
+## AccountSyncHistoryEntryDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.AccountSyncHistoryEntryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:219](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L219).
+
+Durable history entry for one provider/account sync attempt.
+
+```csharp
+public sealed record AccountSyncHistoryEntryDto(Guid SyncHistoryId, Guid AccountId, string Capability, AccountSyncStatusDto Status, AccountProviderLinkStatusDto ProviderLinkStatus, string? ProviderId, string? ExternalAccountId, DateTimeOffset AttemptedAt, DateTimeOffset? CompletedAt, DateTimeOffset? FreshUntil, AccountSyncFailureKindDto FailureKind, string? FailureMessage, string? CorrelationId, string? RequestedBy, string? RawEvidencePath, string? ProjectionEvidencePath, int SecurityMissingCount, IReadOnlyList<string> Warnings);
+```
+
+## AccountSyncStatusDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.AccountSyncStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:183](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L183).
+
+Outcome for one account-scoped sync attempt.
+
+```csharp
+public enum AccountSyncStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Pending = 0</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:185](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L185) |  |
+| <code>Succeeded = 1</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:186](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L186) |  |
+| <code>Degraded = 2</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:187](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L187) |  |
+| <code>Failed = 3</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:188](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L188) |  |
+| <code>Cancelled = 4</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:189](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L189) |  |
+
 ## AccountTypeDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.AccountTypeDto</code>. Kind: `enum`.
@@ -611,58 +673,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static string SubmittedHash(AppendEntityLifecycleRevisionRequestDto request);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs:52](../../../../src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs#L52) |  |
-
-## EntityLifecycleOperationDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.EntityLifecycleOperationDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:7](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L7).
-
-Governed operation being assessed; source evidence must establish the operation.
-
-```csharp
-public enum EntityLifecycleOperationDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>GeneralPosting</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:9](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L9) |  |
-| <code>Settlement</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:10](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L10) |  |
-| <code>ClosingExpense</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:11](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L11) |  |
-| <code>Tax</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:12](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L12) |  |
-| <code>Revaluation</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:13](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L13) |  |
-| <code>Correction</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:14](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L14) |  |
-| <code>NewAgreement</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:15](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L15) |  |
-| <code>AgreementSettlementAmendment</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:16](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L16) |  |
-| <code>Read</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:17](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L17) |  |
-| <code>Consolidation</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:18](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L18) |  |
-
-## EntityLifecycleReviewPayloadDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.EntityLifecycleReviewPayloadDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs:46](../../../../src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs#L46).
-
-```csharp
-public sealed record EntityLifecycleReviewPayloadDto(Guid EntityId, long ExpectedRevision, IReadOnlyList<EntityLifecycleStateDto> Timeline, string Reason, string EvidenceReference);
-```
-
-## EntityLifecycleRevisionDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.EntityLifecycleRevisionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:31](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L31).
-
-An immutable complete timeline; retained decisions pin its revision and hash.
-
-```csharp
-public sealed record EntityLifecycleRevisionDto(string TenantId, Guid EntityId, long Revision, DateTimeOffset RecordedAtUtc, string RecordedBy, string Reason, string EvidenceReference, string PreviousHash, string ContentHash, IReadOnlyList<EntityLifecycleStateDto> Timeline, bool LegacySnapshot = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyExternalReviewAttestationDto? ExternalReview { get; init; }</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:45](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L45) |  |

@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PostDailyAccrualRequest
+
+Qualified name: <code>Meridian.Contracts.DirectLending.PostDailyAccrualRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:347](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L347).
+
+```csharp
+public sealed record PostDailyAccrualRequest(DateOnly AccrualDate);
+```
+
+## ProjectedCashFlowDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ProjectedCashFlowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:153](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L153).
+
+```csharp
+public sealed record ProjectedCashFlowDto(Guid ProjectedCashFlowId, Guid ProjectionRunId, Guid LoanId, int FlowSequenceNumber, string FlowType, DateOnly DueDate, DateOnly? AccrualStartDate, DateOnly? AccrualEndDate, decimal Amount, CurrencyCode Currency, decimal? PrincipalBasis, decimal? AnnualRate, string? FormulaTraceJson, DateTimeOffset CreatedAt);
+```
+
+## ProjectionRunDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ProjectionRunDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:138](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L138).
+
+```csharp
+public sealed record ProjectionRunDto(Guid ProjectionRunId, Guid LoanId, int LoanTermsVersion, long ServicingRevision, DateOnly ProjectionAsOf, DateOnly? MarketDataAsOf, Guid? TriggerEventId, string TriggerType, string TermsHash, string EngineVersion, ProjectionRunStatus Status, Guid? SupersedesProjectionRunId, DateTimeOffset GeneratedAt);
+```
+
 ## ProjectionRunStatus
 
 Qualified name: <code>Meridian.Contracts.DirectLending.ProjectionRunStatus</code>. Kind: `enum`.
@@ -676,68 +706,3 @@ Enum declarations:
 | <code>TradingResumed = 25</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:139](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L139) | Trading resumed after halt. |
 | <code>IpoHalt = 26</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:144](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L144) | IPO halt (pre-opening, price discovery). |
 | <code>Unknown = 255</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:149](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L149) | Unknown / unmapped condition code. |
-
-## ConnectionStatus
-
-Qualified name: <code>Meridian.Contracts.Domain.Enums.ConnectionStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs:6](../../../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs#L6).
-
-Connection status for data providers.
-
-```csharp
-public enum ConnectionStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Disconnected = 0</code> | [src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs:11](../../../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs#L11) | Not connected. |
-| <code>Connecting = 1</code> | [src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs:16](../../../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs#L16) | Connection in progress. |
-| <code>Connected = 2</code> | [src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs:21](../../../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs#L21) | Successfully connected. |
-| <code>Reconnecting = 3</code> | [src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs:26](../../../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs#L26) | Reconnection in progress. |
-| <code>Faulted = 4</code> | [src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs:31](../../../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs#L31) | Connection failed or in error state. |
-
-## DepthIntegrityKind
-
-Qualified name: <code>Meridian.Contracts.Domain.Enums.DepthIntegrityKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:6](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L6).
-
-Kind of depth integrity issue detected.
-
-```csharp
-public enum DepthIntegrityKind : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Ok = 0</code> | [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:11](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L11) | No integrity issue detected. |
-| <code>Unknown = 1</code> | [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:16](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L16) | Unknown integrity issue. |
-| <code>Gap = 2</code> | [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:21](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L21) | Sequence gap detected. |
-| <code>OutOfOrder = 3</code> | [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:26](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L26) | Out-of-order message received. |
-| <code>InvalidPosition = 4</code> | [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:31](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L31) | Invalid position in order book. |
-| <code>Stale = 5</code> | [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:36](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L36) | Stale data detected. |
-
-## DepthOperation
-
-Qualified name: <code>Meridian.Contracts.Domain.Enums.DepthOperation</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Domain/Enums/DepthOperation.cs:6](../../../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs#L6).
-
-Type of operation for a depth update.
-
-```csharp
-public enum DepthOperation : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Insert = 0</code> | [src/Meridian.Contracts/Domain/Enums/DepthOperation.cs:11](../../../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs#L11) | Insert a new level. |
-| <code>Update = 1</code> | [src/Meridian.Contracts/Domain/Enums/DepthOperation.cs:16](../../../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs#L16) | Update an existing level. |
-| <code>Delete = 2</code> | [src/Meridian.Contracts/Domain/Enums/DepthOperation.cs:21](../../../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs#L21) | Delete an existing level. |

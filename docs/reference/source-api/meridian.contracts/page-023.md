@@ -6,6 +6,76 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ResearchPackageOptions
+
+Qualified name: <code>Meridian.Contracts.Export.ResearchPackageOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:82](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L82).
+
+Configures the data, metadata, and quality report included in a named research package.
+
+```csharp
+public sealed class ResearchPackageOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:84](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L84) |  |
+| <code>public string? Description { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:85](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L85) |  |
+| <code>public List&lt;string&gt;? Symbols { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:86](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L86) |  |
+| <code>public DateOnly? FromDate { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:87](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L87) |  |
+| <code>public DateOnly? ToDate { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:88](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L88) |  |
+| <code>public DataTypeInclusion IncludeData { get; set; } = new ();</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:89](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L89) |  |
+| <code>public bool IncludeMetadata { get; set; } = true;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:90](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L90) |  |
+| <code>public bool IncludeQualityReport { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:91](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L91) |  |
+| <code>public string Format { get; set; } = &quot;Parquet&quot;;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:92](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L92) |  |
+| <code>public string? OutputPath { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:93](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L93) |  |
+
+## ResearchPackageResponse
+
+Qualified name: <code>Meridian.Contracts.Export.ResearchPackageResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:306](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L306).
+
+Carries research package and manifest paths with the generated package size.
+
+```csharp
+public sealed class ResearchPackageResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? PackagePath { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:308](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L308) |  |
+| <code>public string? ManifestPath { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:309](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L309) |  |
+| <code>public long SizeBytes { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:310](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L310) |  |
+
+## ResearchPackageResult
+
+Qualified name: <code>Meridian.Contracts.Export.ResearchPackageResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:184](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L184).
+
+Reports research package creation status, artifact paths, and package size.
+
+```csharp
+public sealed class ResearchPackageResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:186](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L186) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:187](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L187) |  |
+| <code>public string? Format { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:188](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L188) |  |
+| <code>public string? PackagePath { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:189](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L189) |  |
+| <code>public string? ManifestPath { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:190](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L190) |  |
+| <code>public long SizeBytes { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:191](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L191) |  |
+
 ## SpecializedExportApiResponse
 
 Qualified name: <code>Meridian.Contracts.Export.SpecializedExportApiResponse</code>. Kind: `record`.
@@ -731,48 +801,4 @@ One contractual exercise date and its notice window. Not an exercise forecast or
 
 ```csharp
 public sealed record BondExerciseNoticeWindow(string Kind, DateOnly ExerciseDate, decimal RedemptionPrice, DateOnly? EarliestNoticeDate, DateOnly? LatestNoticeDate, BondExerciseNoticeStatus Status, int? DaysToDeadline);
-```
-
-## BondExerciseYield
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondExerciseYield</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:78](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L78).
-
-Contractual exercise scenario, not an exercise forecast or trading instruction.
-
-```csharp
-public sealed record BondExerciseYield(string Kind, DateOnly ExerciseDate, decimal RedemptionPrice, decimal Yield, DateOnly? LatestNoticeDate, DateOnly? EarliestNoticeDate = null);
-```
-
-## BondFloatingRateEvidence
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondFloatingRateEvidence</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondFloatingRateEvidence.cs:6](../../../../src/Meridian.Contracts/FixedIncome/BondFloatingRateEvidence.cs#L6).
-
-Frozen inputs for one declared coupon. Rates are annual fractions; cash is unrounded.
-
-```csharp
-public sealed record BondFloatingRateEvidence(DateOnly ResetDate, bool IsObserved, string IndexName, decimal IndexRate, decimal Spread, decimal? Cap, decimal? Floor, decimal Principal, decimal AccrualFraction, SecurityCouponRateUnit OriginalRateUnit, string Source)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ModelVersion = &quot;bond-floating-coupon-v1&quot;;</code> | [src/Meridian.Contracts/FixedIncome/BondFloatingRateEvidence.cs:19](../../../../src/Meridian.Contracts/FixedIncome/BondFloatingRateEvidence.cs#L19) |  |
-| <code>public bool TryCoupon(decimal forecastIndexShift, out decimal cash, out string? refusal) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondFloatingRateEvidence.cs:21](../../../../src/Meridian.Contracts/FixedIncome/BondFloatingRateEvidence.cs#L21) |  |
-| <code>public bool TryCoupon(decimal forecastIndexShift, out decimal cash, out string? refusal, out SecurityCashFlowBlockerDto? blocker);</code> | [src/Meridian.Contracts/FixedIncome/BondFloatingRateEvidence.cs:24](../../../../src/Meridian.Contracts/FixedIncome/BondFloatingRateEvidence.cs#L24) |  |
-
-## BondFredIntakeRequest
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondFredIntakeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs:13](../../../../src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs#L13).
-
-Request contains source identifiers and dates, never an unreviewed series/unit mapping.
-
-```csharp
-public sealed record BondFredIntakeRequest(string EvidenceUri, string DocumentId, DateOnly From, DateOnly Through, DateOnly VintageDate);
 ```

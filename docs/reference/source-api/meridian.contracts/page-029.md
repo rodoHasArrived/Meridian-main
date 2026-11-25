@@ -6,6 +6,60 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IIntercompanyAccountingArrangementLegalLease
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IIntercompanyAccountingArrangementLegalLease</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:99](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L99).
+
+```csharp
+public interface IIntercompanyAccountingArrangementLegalLease : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IntercompanyAgreementRevisionDto ResolveExact(IntercompanyCanonicalAgreementReferenceDto reference);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:101](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L101) |  |
+| <code>IntercompanyAgreementRevisionDto ResolveEffective(IntercompanyCanonicalAgreementReferenceDto reference, DateOnly economicDate);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:102](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L102) |  |
+| <code>void ValidateWindow(IntercompanyCanonicalAgreementReferenceDto reference, DateTimeOffset from, DateTimeOffset? to);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:103](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L103) |  |
+
+## IIntercompanyAccrualPreviewService
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IIntercompanyAccrualPreviewService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:98](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L98).
+
+Pure amount calculation over server-resolved legal, profile and principal facts.
+
+```csharp
+public interface IIntercompanyAccrualPreviewService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IntercompanyAccrualPreviewDto Preview(IntercompanyAccrualComputationInput input);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:100](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L100) |  |
+
+## IIntercompanyFeeAccrualPreviewService
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IIntercompanyFeeAccrualPreviewService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyFeeAccrualDtos.cs:43](../../../../src/Meridian.Contracts/FundStructure/IntercompanyFeeAccrualDtos.cs#L43).
+
+Pure fee calculation over server-resolved legal and profile facts.
+
+```csharp
+public interface IIntercompanyFeeAccrualPreviewService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IntercompanyFeeAccrualPreviewDto Preview(IntercompanyFeeAccrualComputationInput input);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyFeeAccrualDtos.cs:45](../../../../src/Meridian.Contracts/FundStructure/IntercompanyFeeAccrualDtos.cs#L45) |  |
+
 ## IIntercompanyRateFixingStore
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IIntercompanyRateFixingStore</code>. Kind: `interface`.
@@ -717,44 +771,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyStructuredTermsDto? StructuredTerms { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:21](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L21) | Absent on retained prose-only revisions; omission preserves their exact historical review hashes. |
-
-## IntercompanyAgreementTypeDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementTypeDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L6).
-
-```csharp
-public enum IntercompanyAgreementTypeDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Loan</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L6) |  |
-| <code>ManagementFee</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L6) |  |
-| <code>CostShare</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L6) |  |
-| <code>CashSweep</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L6) |  |
-| <code>Guarantee</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L6) |  |
-| <code>Other</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L6) |  |
-
-## IntercompanyAgreementValidationException
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementValidationException</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:123](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L123).
-
-```csharp
-public class IntercompanyAgreementValidationException(string message) : InvalidOperationException(message);
-```
-
-## IntercompanyAllocationDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAllocationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs:25](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs#L25).
-
-```csharp
-public sealed record IntercompanyAllocationDto(Guid EntityId, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Percent);
-```

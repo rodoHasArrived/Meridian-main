@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkflowPresetPinRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowPresetPinRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:84](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L84).
+
+Request to update a workflow preset&#x27;s pinned state.
+
+```csharp
+public sealed record WorkflowPresetPinRequest(bool IsPinned);
+```
+
+## WorkflowPresetSaveRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowPresetSaveRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:71](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L71).
+
+Request to create or update an operator-saved workflow preset.
+
+```csharp
+public sealed record WorkflowPresetSaveRequest(string? PresetId, string Name, string? Description, string WorkflowId, string? ActionId, IReadOnlyList<string>? Tags, bool IsPinned, string? ViewStateEnvelope = null);
+```
+
+## WorkspaceModeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkspaceModeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L62).
+
+```csharp
+public sealed record WorkspaceModeDto(string Id, string Name, bool IsSample, string Badge, string SafetyMessage, string SamplePackVersion);
+```
+
 ## WorkspaceWorkflowSummary
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkspaceWorkflowSummary</code>. Kind: `record`.
@@ -538,34 +572,4 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:222](../
 
 ```csharp
 public sealed record WorkstationPlotToolPointPayload(int X, int Y, bool Emphasis);
-```
-
-## WorkstationPlotToolRegressionPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolRegressionPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:287](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L287).
-
-```csharp
-public sealed record WorkstationPlotToolRegressionPayload(string Equation, IReadOnlyList<string> DetailItems);
-```
-
-## WorkstationPlotToolSampleRowPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolSampleRowPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:291](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L291).
-
-```csharp
-public sealed record WorkstationPlotToolSampleRowPayload(string Id, string Timestamp, string SpreadText, string ImpliedVolText, string ZScoreText, string SignalText, string Tone);
-```
-
-## WorkstationPlotToolSignalCardPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolSignalCardPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:244](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L244).
-
-```csharp
-public sealed record WorkstationPlotToolSignalCardPayload(string Id, string Label, string Value, string Detail, string Tone);
 ```

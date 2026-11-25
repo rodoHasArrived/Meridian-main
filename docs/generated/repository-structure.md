@@ -5373,8 +5373,10 @@ Meridian-main
 │   │   ├── Http
 │   │   │   ├── Endpoints
 │   │   │   │   └── StatusEndpointHandlers.cs
+│   │   │   ├── CollectorConfigurationRuntime.cs
 │   │   │   ├── ConfigStore.cs
 │   │   │   ├── ConfigurationChangeTracker.cs
+│   │   │   ├── ConfigurationRevisionJournal.cs
 │   │   │   ├── ConfigurationRuntimeAppliers.cs
 │   │   │   └── EffectiveConfigurationProjection.cs
 │   │   ├── Integrations
@@ -13153,6 +13155,7 @@ Meridian-main
 │   ├── Meridian.ProcessTestHelper
 │   │   ├── Meridian.ProcessTestHelper.csproj
 │   │   ├── Meridian.ProcessTestHelper.runtimeconfig.json
+│   │   ├── Program.CollectorConfig.cs
 │   │   ├── Program.cs
 │   │   ├── Program.Etl.cs
 │   │   ├── Program.EvidenceQuota.cs
@@ -13491,6 +13494,7 @@ Meridian-main
 │   │   │   │   ├── SchedulingServiceReliabilityTests.cs
 │   │   │   │   └── SubscriptionStoreQuarantineTests.cs
 │   │   │   ├── Ui
+│   │   │   │   ├── CollectorConfigurationRevisionTests.cs
 │   │   │   │   ├── ConfigStoreCredentialPersistenceTests.cs
 │   │   │   │   ├── ConfigStoreTests.cs
 │   │   │   │   ├── ConfigurationChangeTrackingTests.cs
