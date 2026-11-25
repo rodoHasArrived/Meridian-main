@@ -3,6 +3,7 @@ using FluentAssertions;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
+using Meridian.Tests.TestHelpers;
 
 namespace Meridian.Tests.Ui;
 
@@ -26,7 +27,7 @@ public sealed class WorkstationTableViewRegistrationTests
         var unregistered = new SortedSet<string>(StringComparer.Ordinal);
         var found = 0;
 
-        foreach (var file in Directory.EnumerateFiles(dashboardSource, "*.tsx", SearchOption.AllDirectories))
+        foreach (var file in RepositoryFileWalker.EnumerateFiles(dashboardSource, "*.tsx"))
         {
             var relative = Path.GetRelativePath(dashboardSource, file).Replace('\\', '/');
             if (relative.Contains(".test.", StringComparison.Ordinal) || relative.StartsWith("test/", StringComparison.Ordinal) ||
