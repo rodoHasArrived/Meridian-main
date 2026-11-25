@@ -11,6 +11,13 @@ last_reviewed: 2026-11-17
 
 # src/Meridian.Application
 
+Corporate-action ingest forwards specialized source terms and the provider's original JSON
+record into durable source proposals. Exact raw-text digests are checked before recording; source
+versions remain idempotent across JSON formatting changes without replacing the first retained
+payload. Amendments retain earlier versions. Providers can preserve unknown upstream currency,
+and fetch outcomes retain explicit endpoint/type coverage. These observations remain review-only;
+source agreement does not accept a canonical event or authorize accounting.
+
 `SecurityMaster/Valuation/AssetPositionMarketValuationService` adapts an owned book's exact dated
 instrument-position projection to registered valuation models. It resolves retained-only dated
 Security Master terms, validates their economic window, checks position/state identity and all
@@ -67,6 +74,10 @@ interval and source enable/disable live, and reports settings the runtime does n
 running `CrossProviderComparisonService`. The collector also publishes its coordinator to
 `StreamingFailoverRegistry.Process` and honours `Sources[*].Enabled = false` at startup.
 `SaveAsync` now also refuses to overwrite a malformed existing authoritative document.
+Feature-capability override saves record their setting changes after the document is durably saved.
+The effective configuration projection reads declared fields and reports activation impact and
+source. It summarizes dictionaries, leaves additional sections out of the response, and masks
+credentials and free-form text.
 
 Provider routing rejects disabled connections and policy-gated fallbacks consistently across direct
 and scored selection. Catalog metadata placeholders yield to the first concrete capability factory.
@@ -799,6 +810,10 @@ The host builds backfill adapters at startup using the active credentials, pacin
 Provider enablement and priority apply to jobs that start after the operator saves the edit. Each running
 job keeps its chosen route through retries. Scheduled jobs read their ordered provider preferences when
 they begin. Set `Backfill.Jobs.Scheduling.Enabled` to enable the schedule worker on a collector or workstation host.
+
+Workstation backfills and gap repair load the saved daily staleness tolerance when the job starts.
+`HistoricalBackfillService` uses the shared provider profile resolver for both validation and
+per-candidate daily fallback. Deployment-scheduled backfills use the profiles loaded at host startup.
 
 ## Purpose
 

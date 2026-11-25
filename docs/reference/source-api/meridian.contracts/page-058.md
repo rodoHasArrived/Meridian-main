@@ -6,11 +6,23 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StructuredStepCouponEntry
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredStepCouponEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:126](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L126).
+
+One dated coupon-rate step resolved from a bond&#x27;s stepSchedule: the annual rate payable from EffectiveDate until the next entry&#x27;s effective date (or maturity).
+
+```csharp
+public sealed record StructuredStepCouponEntry(DateOnly EffectiveDate, decimal Rate);
+```
+
 ## SubscriptionCorporateActionTerms
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SubscriptionCorporateActionTerms</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:177](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L177).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:185](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L185).
 
 Holder pays to receive units (rights issue, rights exercise).
 
@@ -888,13 +900,3 @@ Enum declarations:
 | <code>Enum</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:51](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L51) |  |
 | <code>Symbol</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:52](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L52) |  |
 | <code>SymbolList</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:53](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L53) |  |
-
-## StrategyEnginePromotionRequest
-
-Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEnginePromotionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:207](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L207).
-
-```csharp
-public sealed record StrategyEnginePromotionRequest(string SourceRunId, StrategyEnginePromotionTarget Target, string? OperatorAcknowledgement, IReadOnlyList<string> ReadinessChecks, IReadOnlyList<string> RiskChecks, string EvidencePacket, string? Rationale = null);
-```

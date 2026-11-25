@@ -2,11 +2,19 @@
 
 # `security-master-contracts` data objects - page 6 of 8
 
-Objects 401-480 of 606. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 607. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityClassCodecBinding["SecurityClassCodecBinding"] {
+        +string AssetClass
+        +SecurityCodecInputs Inputs
+        +IReadOnlyList~SecurityTermBinding~ Members
+        +bool ReadsResolvedTerms
+        +bool VersionedSchedules
+        +bool WritesConventionsFlag
+    }
     class Meridian_Contracts_SecurityMaster_SecurityClassificationDriftEntryDto["SecurityClassificationDriftEntryDto"] {
         +string CurrentAssetClass
         +string? CurrentAssetFamily
@@ -433,20 +441,7 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityMasterEnumReads["SecurityMasterEnumReads"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterEventEnvelope["SecurityMasterEventEnvelope"] {
-        +string Actor
-        +Guid? CausationId
-        +Guid? CorrelationId
-        +DateTimeOffset EventTimestamp
-        +string EventType
-        +long? GlobalSequence
-        +JsonElement Metadata
-        +JsonElement Payload
-        +string? PayloadType
-        +int? PayloadVersion
-        +Guid SecurityId
-        +long StreamVersion
-    }
+    Meridian_Contracts_SecurityMaster_SecurityClassCodecBinding --> Meridian_Contracts_SecurityMaster_SecurityCodecInputs
     Meridian_Contracts_SecurityMaster_SecurityClassificationDriftReportDto --> Meridian_Contracts_SecurityMaster_SecurityClassificationDriftEntryDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceInputDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceLineDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto

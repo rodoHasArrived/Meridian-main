@@ -736,12 +736,20 @@ export interface AccountingSystemReconciliationRow {
   accountCode: string;
   accountName: string;
   currency: string;
+  /** Absent on legacy hosts; explicit null must not fall back to the shared row currency. */
+  externalCurrency?: string | null;
+  meridianCurrency?: string | null;
   status: AccountingSystemReconciliationStatus;
   externalDebit: number;
   externalCredit: number;
   meridianDebit: number;
   meridianCredit: number;
   variance: number;
+  externalDebitExact?: string | null;
+  externalCreditExact?: string | null;
+  meridianDebitExact?: string | null;
+  meridianCreditExact?: string | null;
+  varianceExact?: string | null;
   detail: string;
   evidenceRef: string | null;
   externalEvidenceReferences?: string[];
@@ -772,6 +780,10 @@ export interface AccountingSystemReconciliationSummary {
   totalExternalCredits: number;
   totalMeridianDebits: number;
   totalMeridianCredits: number;
+  totalExternalDebitsExact?: string | null;
+  totalExternalCreditsExact?: string | null;
+  totalMeridianDebitsExact?: string | null;
+  totalMeridianCreditsExact?: string | null;
   postingEnabled: boolean;
   postingDisabledReason: string;
   rows: AccountingSystemReconciliationRow[];

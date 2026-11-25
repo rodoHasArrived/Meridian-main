@@ -45,6 +45,15 @@ public sealed record KillSwitchSweepResult(
     int Cancelled,
     IReadOnlyList<KillSwitchSweepFailure> StillWorking)
 {
+    /// <summary>Stable identity of the retained incident, including an interrupted or unretained sweep.</summary>
+    public string? IncidentId { get; init; }
+
+    /// <summary>True only after the complete structured incident was acknowledged by durable storage.</summary>
+    public bool EvidenceRetained { get; init; }
+
+    /// <summary>Retention failure is distinct from cancellation failure; cancellations still run.</summary>
+    public string? EvidenceError { get; init; }
+
     /// <summary>
     /// True when the broker's own open-order book could not be enumerated, so the sweep covered
     /// only the in-memory book. Distinct from <see cref="Outcome"/> because the two failures call
@@ -125,10 +134,12 @@ public sealed record KillSwitchSweepResult(
               + (string.IsNullOrWhiteSpace(BrokerViewError) ? string.Empty : $" ({BrokerViewError})")
               + "; broker-side orders may still be working — verify the broker book by hand."
             : string.Empty;
+        var evidenceWarning = IncidentId is not null && !EvidenceRetained
+            ? $" Incident {IncidentId} evidence was not retained. {EvidenceError}" : string.Empty;
 
         if (StillWorking.Count == 0)
         {
-            return $"Kill-switch cancel-all cancelled {Cancelled} of {Requested} open order(s).{brokerViewWarning}";
+            return $"Kill-switch cancel-all cancelled {Cancelled} of {Requested} open order(s).{brokerViewWarning}{evidenceWarning}";
         }
 
         // Bounded, and bounded only here: this is the audit/log rendering, while the structured
@@ -149,6 +160,6 @@ public sealed record KillSwitchSweepResult(
 
         return $"Kill-switch cancel-all cancelled {Cancelled} of {Requested} open order(s); "
             + $"{StillWorking.Count} still working and requiring manual cancellation: {names}{overflow}."
-            + brokerViewWarning;
+            + brokerViewWarning + evidenceWarning;
     }
 }

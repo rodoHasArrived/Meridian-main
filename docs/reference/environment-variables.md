@@ -2,7 +2,7 @@
 title: Environment Variable Reference
 status: active
 owner: core-team
-reviewed: 2026-10-05
+reviewed: 2026-11-21
 audience: developers-and-operators
 ---
 
@@ -236,10 +236,23 @@ Configuration values are resolved in this order (last wins):
 
 ## Viewing Effective Configuration
 
-The `/api/config/effective` endpoint returns settings in `entries` with a `source` annotation
-(`default`, `config`, or `env:VAR_NAME`). It requires `ViewConfig` or `ModifyConfig`; use the
+The `/api/config/effective` endpoint returns settings in `entries`. Each entry has a `key`,
+displayed `value`, `source` annotation (`default`, `config`, or `env:VAR_NAME`), and activation
+`impact` (`Live`, `ReconnectProvider`, or `RestartHost`). The response also lists active
+`environmentOverrides` by variable name, config path, and sensitivity; it never echoes their values.
+It requires `ViewConfig` or `ModifyConfig`; use the
 [authenticated preflight procedure](../operators/preflight-checklist.md#authenticated-evidence-collection)
 for session or API-key examples.
+
+The response is a projection of declared configuration fields, not the saved document:
+
+- Credentials and other sensitive fields show `[set]` or `[empty]` instead of their values.
+- Free-form text fields also show `[set]` or `[empty]`, because notes, URLs, or descriptions can
+  contain secrets. A small set of core fields (data source, data root, Alpaca feed, storage naming
+  and partitioning, backfill provider) shows known values and masks anything unrecognized.
+- Dictionaries and the symbol list report only a `.count`; arrays longer than 25 items do the same.
+- Undeclared (extension) sections in `appsettings.json` are left out of the response.
+- A malformed saved configuration returns HTTP `503` instead of partial data.
 
 For a source checkout, display the CLI configuration summary from the repository root:
 

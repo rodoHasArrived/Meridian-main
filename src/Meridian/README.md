@@ -64,6 +64,9 @@ and process-host concerns isolated from domain and application logic.
 
 ## Important workflows
 
+`DemoWorkspaceCli` preserves saved validation profiles and their audit entries in the isolated
+`appsettings.demo.json` when reopening a seeded workspace.
+
 The browser host passes the shared equity session policy, operational journal, quote source and instrument coverage source into its OMS. This is the same admission/retention path used by the execution service registrations. `UiServer` composes the OMS through `OrderManagementSystemFactory` (`HostedWorkstation`), which requires the risk validator, portfolio state and OMS options and wires paper-session persistence and the strategy-run authority source. Read-only shared-host compositions leave execution workers dormant when no gateway is registered. See [execution workflows](../../docs/engineering/execution-workflows.md).
 
 `UiServer` invokes Application's shared `DatabaseStartupPlan` before its existing optional reporting

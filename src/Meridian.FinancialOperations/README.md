@@ -6,10 +6,15 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-20
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.FinancialOperations
+
+External-GL reconciliation projects each row's external trial-balance currency and resolved ledger
+book currency separately. Unknown or absent source currencies remain null rather than inheriting
+the legacy display fallback. This additive metadata lets the workstation preserve conflicting units;
+the reconciliation calculations, statuses and retained snapshot hash inputs are unchanged.
 
 Mapped CSV intake preserves the `coupon`, `interest` and `principal` classifications and explicit
 receipt metadata through `StatementCanonicalRecord` into the canonical artifact. Reversal references

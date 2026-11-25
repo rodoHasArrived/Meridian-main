@@ -14320,6 +14320,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionRetainedSourceEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionScopeMismatchException"
     },
     {
@@ -32074,6 +32080,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionRetainedSourceEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionScopeMismatchException"
     },
     {
@@ -49583,6 +49595,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDownstreamAuthorityRequiredException",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionOperationException"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionRetainedSourceEvidenceDto"
     },
     {
       "kind": "contract-reference",
@@ -72100,7 +72118,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "48158b2b13a9ef87845d0896aa3c413011060f349a280d6da301dfea067d43a1",
+  "fingerprint": "782e2112c771980a650d0aed4b32a487d14025de678d921d02ef0e7dc2b579ea",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -86468,6 +86486,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionRestatementEvaluationStates",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.CorporateActionRestatementEvaluationStates"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionRetainedSourceEvidenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionRetainedSourceEvidenceDto"
     },
     {
       "classification": "class",
@@ -105941,11 +105965,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4415,
-    "contract_set_memberships": 5819,
-    "edges": 11977,
+    "contract_references": 4416,
+    "contract_set_memberships": 5821,
+    "edges": 11980,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5885
+    "nodes": 5886
   }
 }

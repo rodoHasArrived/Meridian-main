@@ -8,6 +8,7 @@ namespace Meridian.Contracts.SecurityMaster;
 public static class CorporateActionEventTypes
 {
     public const string Dividend = "Dividend";
+    public const string StockDividend = "StockDividend";
     public const string StockSplit = "StockSplit";
     public const string ReverseStockSplit = "ReverseStockSplit";
     public const string SpinOff = "SpinOff";
@@ -36,6 +37,12 @@ public static class CorporateActionEventTypes
     public const string PutRedemption = "PutRedemption";
     public const string RightsDistribution = "RightsDistribution";
     public const string RightsExercise = "RightsExercise";
+    public const string UnitSplit = "UnitSplit";
+    public const string SecurityRedemption = "SecurityRedemption";
+    public const string WorthlessRemoval = "WorthlessRemoval";
+    public const string PartialCall = "PartialCall";
+    public const string Reorganization = "Reorganization";
+    public const string CapitalGainsDistribution = "CapitalGainsDistribution";
 
     /// <summary>
     /// Resolves canonical names, provider aliases, and CAEV codes to the canonical name.

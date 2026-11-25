@@ -6,10 +6,63 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Execution
+
+## Retained cancel-all incidents
+
+Every OMS cancel-all sweep assigns an incident ID and retains structured evidence in the existing
+execution audit WAL: an initial header, bounded per-order updates, and one complete final snapshot.
+The header carries authority, actor/correlation, execution mode, gateway and verified broker scope;
+each known local order retains its fund-account attribution. The complete snapshot keeps all orders,
+including those beyond the ten names in `KillSwitchSweepResult.Describe()`. Recording follows the
+existing cancellation and fill paths; it does not apply executions or create accounting postings.
+
+`ExecutionAuditTrailService.GetCancelAllIncidentAsync(incidentId, fundAccountId)` and
+`GetCancelAllIncidentsAsync(fundAccountId, take)` reopen the WAL rather than the bounded audit display
+cache. Account projections omit other accounts and unattributed broker-only rows, and explicitly mark
+the projection. Full broker-only observations remain in the internal audit history. Public generic
+audit feeds must omit `ExecutionAuditEntry.CancelAllEvidence`; only an authorized account-scoped
+incident endpoint may expose its projection. Reopening never contacts or acts on the broker.
+Sweep lifecycle audit records carry a non-authorizing `cancelAllIncidentId` metadata marker, including
+parameterless sweeps, so generic HTTP projections can suppress raw cross-account details while
+the internal audit retains them.
+
+Outcomes distinguish confirmed cancellation, a fill during cancellation, another terminal outcome,
+still-working orders, unknown state, and escalation withdrawal before dispatch. Filled and remaining
+quantities are historical observations at `ObservedAt`, not current position exposure. A fresh
+executable-side quote can value measured USD equity share quantities; unsupported instruments,
+stale quotes, unknown state and unconfirmed replacements retain unavailable valuation. Terminal
+predecessors with retained pending amendments remain sweep targets and never count as cancelled
+while their successor is unresolved. Broker coverage remains explicit even if every local order
+was cancelled.
+The final local observations include cumulative fills applied while broker convergence was in
+flight, without overwriting a contradictory broker survivor or resolving earlier uncertainty.
+Missing broker share quantity, including native notional orders reported with quantity zero, stays
+unknown rather than becoming zero residual exposure. Valuation never runs before cancellation;
+post-cancel instrument and quote reads have a separate 250ms budget.
+
+Incident durability requires the audit WAL's default `EveryWrite` mode. Missing storage, weaker
+sync settings, or failed writes never veto cancellation: the result carries `IncidentId`,
+`EvidenceRetained=false` and `EvidenceError`, and its display text names missing retention.
+Each sweep audit write has a one-second budget. After a failed incident checkpoint, further
+checkpoints stay in memory until one final full-snapshot retry, preventing repeated storage delays
+from accumulating across the book.
+A successful final snapshot can recover earlier missing checkpoints while retaining the write
+failure explanation. Without a retained completion, readback reports incomplete observations.
+Identical replayed updates are idempotent; contradictory updates or audit corruption refuse
+complete readback. A retained order cannot change identity or move to another account, and a final
+snapshot cannot drop an already observed order; previously unknown attribution may become known.
+Synthetic regression coverage is in `CancelAllIncidentTests`,
+`CancelAllIncidentReplayTests`, and the amendment recovery incident scenario; this is not evidence
+of a live broker run.
+
+Designer typed strategy intents carry an optional `StrategyArtifactId` into the strategy-run
+submission authority and durable intent claim metadata. Legacy null identities are omitted from
+JSON and preserve existing fingerprints; reusing an intent key with a different artifact is refused
+by the existing authority fingerprint check.
 
 `PaperSessionPersistenceService.GetSessionFillHistory` exposes cloned retained execution reports for order investigation without rebuilding portfolio/ledger views. Consumers initialize retained sessions before reading and keep canonical report identity, source event time, cumulative-versus-last quantity and price basis explicit; completed-order workspace summaries are not individual fills.
 
