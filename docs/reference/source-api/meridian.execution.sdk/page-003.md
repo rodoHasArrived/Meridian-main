@@ -6,6 +6,59 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OrderIntent
+
+Qualified name: <code>Meridian.Execution.Sdk.OrderIntent</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution.Sdk/OrderIntent.cs:4](../../../../src/Meridian.Execution.Sdk/OrderIntent.cs#L4).
+
+Server-resolved scope and terms for submitting one order to the OMS.
+
+```csharp
+public sealed record OrderIntent(Guid IntentId, string TenantId, string CompanyId, Guid FundAccountId, string Actor, OrderRequest Terms, StrategyOrderAuthority? StrategyAuthority = null);
+```
+
+## OrderIntentStatus
+
+Qualified name: <code>Meridian.Execution.Sdk.OrderIntentStatus</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution.Sdk/OrderIntent.cs:26](../../../../src/Meridian.Execution.Sdk/OrderIntent.cs#L26).
+
+```csharp
+public static class OrderIntentStatus
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Retained = &quot;Retained&quot;;</code> | [src/Meridian.Execution.Sdk/OrderIntent.cs:28](../../../../src/Meridian.Execution.Sdk/OrderIntent.cs#L28) |  |
+| <code>public const string Conflict = &quot;Conflict&quot;;</code> | [src/Meridian.Execution.Sdk/OrderIntent.cs:29](../../../../src/Meridian.Execution.Sdk/OrderIntent.cs#L29) |  |
+| <code>public const string ReconciliationRequired = &quot;ReconciliationRequired&quot;;</code> | [src/Meridian.Execution.Sdk/OrderIntent.cs:30](../../../../src/Meridian.Execution.Sdk/OrderIntent.cs#L30) |  |
+| <code>public const string Blocked = &quot;Blocked&quot;;</code> | [src/Meridian.Execution.Sdk/OrderIntent.cs:31](../../../../src/Meridian.Execution.Sdk/OrderIntent.cs#L31) |  |
+
+## OrderLeg
+
+Qualified name: <code>Meridian.Execution.Sdk.OrderLeg</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution.Sdk/Models.cs:112](../../../../src/Meridian.Execution.Sdk/Models.cs#L112).
+
+One leg in a multi-leg options order.
+
+```csharp
+public sealed record OrderLeg
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string Symbol { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:114](../../../../src/Meridian.Execution.Sdk/Models.cs#L114) |  |
+| <code>public required OrderSide Side { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:115](../../../../src/Meridian.Execution.Sdk/Models.cs#L115) |  |
+| <code>public required decimal RatioQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:116](../../../../src/Meridian.Execution.Sdk/Models.cs#L116) |  |
+| <code>public PositionIntent? PositionIntent { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:117](../../../../src/Meridian.Execution.Sdk/Models.cs#L117) |  |
+| <code>public OptionContractIdentity? OptionContract { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:118](../../../../src/Meridian.Execution.Sdk/Models.cs#L118) |  |
+
 ## OrderMarketReference
 
 Qualified name: <code>Meridian.Execution.Sdk.OrderMarketReference</code>. Kind: `record`.
@@ -703,8 +756,14 @@ Source: [src/Meridian.Execution.Sdk/OrderIntent.cs:14](../../../../src/Meridian.
 Authority carried by an active, reviewed strategy paper session.
 
 ```csharp
-public sealed record StrategyOrderAuthority(string StrategyId, string RunId, string StrategyVersionSha256, string ApprovalReference, string PaperSessionId);
+public sealed record StrategyOrderAuthority(string StrategyId, string RunId, string StrategyVersionSha256, string ApprovalReference, string PaperSessionId)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? StrategyArtifactId { get; init; }</code> | [src/Meridian.Execution.Sdk/OrderIntent.cs:23](../../../../src/Meridian.Execution.Sdk/OrderIntent.cs#L23) | The exact executable artifact, when the reviewed run carries one. |
 
 ## TaxLot
 

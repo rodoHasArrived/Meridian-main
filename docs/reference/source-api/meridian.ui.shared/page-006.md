@@ -6,6 +6,64 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReplayEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ReplayEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs#L23).
+
+Extension methods for registering event replay API endpoints. Integrates with JsonlReplayer for JSONL event inspection and event-count scans. Timed playback and playback controls are not implemented by this host.
+
+```csharp
+public static class ReplayEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapReplayEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:26](../../../../src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs#L26) |  |
+
+## ReportExportRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ReportExportRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:762](../../../../src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs#L762).
+
+Request DTO for report export.
+
+```csharp
+public record ReportExportRequest(string? Date, string? Format);
+```
+
+## ResilienceEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ResilienceEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs#L19).
+
+Extension methods for registering resilience, cost estimation, and compliance endpoints.
+
+```csharp
+public static class ResilienceEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapResilienceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/ResilienceEndpoints.cs#L21) |  |
+
+## RestoreRecurringJournalDefinitionsRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.RestoreRecurringJournalDefinitionsRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs#L17).
+
+```csharp
+public sealed record RestoreRecurringJournalDefinitionsRequest(string ScheduleId, int ScheduleVersion, int TemplateVersion, string Reason);
+```
+
 ## RevokeStrategyLiveAuthorizationRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.RevokeStrategyLiveAuthorizationRequest</code>. Kind: `record`.
@@ -528,7 +586,7 @@ Qualified name: <code>Meridian.Ui.Shared.Endpoints.TradingActionResult</code>. K
 Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:82](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L82).
 
 ```csharp
-public sealed record TradingActionResult(string ActionId, string Status, string Message, DateTimeOffset OccurredAt, string? AuditId = null, IReadOnlyList<KillSwitchSweepFailure>? StillWorking = null, bool? BrokerViewUnavailable = null);
+public sealed record TradingActionResult(string ActionId, string Status, string Message, DateTimeOffset OccurredAt, string? AuditId = null, IReadOnlyList<KillSwitchSweepFailure>? StillWorking = null, bool? BrokerViewUnavailable = null, string? IncidentId = null, bool? EvidenceRetained = null, string? EvidenceError = null);
 ```
 
 ## UiEndpoints
@@ -562,7 +620,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:102](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L102).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:105](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L105).
 
 Request to update the global execution circuit breaker.
 
@@ -574,7 +632,7 @@ public sealed record UpdateExecutionCircuitBreakerRequest(bool IsOpen, string? R
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionDefaultPositionLimitRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:108](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L108).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:111](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L111).
 
 Request to update the default execution position limit.
 
@@ -586,7 +644,7 @@ public sealed record UpdateExecutionDefaultPositionLimitRequest(decimal? MaxPosi
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionSymbolPositionLimitRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:113](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L113).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:116](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L116).
 
 Request to update or clear a symbol-specific execution position limit.
 
@@ -1183,46 +1241,4 @@ Indicates that cash-forecast source evidence could not satisfy its authority req
 
 ```csharp
 public sealed class AccountCashForecastSourceAuthorityException(string message) : MeridianException(message);
-```
-
-## AccountCashForecastSourceDocument
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashForecastSourceDocument</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:12](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L12).
-
-Supported independently reviewed JSON source; provenance is resolved from the vault.
-
-```csharp
-public sealed record AccountCashForecastSourceDocument(int SchemaVersion, string Kind, string SourceDomain, string SourceEntityId, long EvidenceVersion, string AccountId, string BookId, DateOnly EffectiveDate, AccountCashEvidenceRole Role, AccountCashSourceBalance? Balance = null, AccountCashSourceFlow? Flow = null, AccountCashSourceFx? Fx = null, AccountCashSourceAllocation? Allocation = null, AccountCashSourceReceiptRevision? ReceiptRevision = null, AccountCashSourceWatchObservation? WatchObservation = null);
-```
-
-## AccountCashSourceAllocation
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceAllocation</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:25](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L25).
-
-```csharp
-public sealed record AccountCashSourceAllocation(string AllocationId, string ExpectedFlowId, string ActualVersionId, decimal NetAmount, decimal GrossAmount, decimal WithholdingTax, decimal Fees);
-```
-
-## AccountCashSourceBalance
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceBalance</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:18](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L18).
-
-```csharp
-public sealed record AccountCashSourceBalance(DateOnly AsOfDate, decimal Amount, string Currency, bool IsSettled);
-```
-
-## AccountCashSourceFlow
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceFlow</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:19](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L19).
-
-```csharp
-public sealed record AccountCashSourceFlow(string FlowId, string VersionId, AccountCashFlowStatus Status, string FlowType, decimal Amount, string Currency, DateOnly? EconomicDate, DateOnly? SettlementDate, DateOnly? CashReceiptDate, Guid? SecurityId = null, Guid? ProjectionRunId = null, string? ProjectionEngineVersion = null, Guid? TermsVersionId = null, string? TermsHash = null, string? SupersedesVersionId = null);
 ```
