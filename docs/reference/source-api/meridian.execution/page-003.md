@@ -199,7 +199,7 @@ public sealed record PaperFinancingRequest(DateOnly AccrualDate, decimal Amount,
 
 Qualified name: <code>Meridian.Execution.Services.AccountDefinition</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1431](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1431).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1447](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1447).
 
 Defines one account within a multi-account paper trading session.
 

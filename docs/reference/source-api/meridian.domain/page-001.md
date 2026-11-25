@@ -149,7 +149,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Domain.Collectors.OptionDataSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Collectors/OptionDataCollector.cs:301](../../../../src/Meridian.Domain/Collectors/OptionDataCollector.cs#L301).
+Source: [src/Meridian.Domain/Collectors/OptionDataCollector.cs:303](../../../../src/Meridian.Domain/Collectors/OptionDataCollector.cs#L303).
 
 Summary of option data currently held by the collector.
 
