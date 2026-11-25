@@ -2,11 +2,12 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-15
+**Reviewed:** 2026-11-23
 
 The [checker](../../build/scripts/ci/check-contract-type-parity.py) compares the explicit
 [registry](../../build/config/contracts/type-parity-registry.json) on member names, outer
-nullability, and collection shape. It enforces 103 pairs and retains 37 review candidates.
+nullability, and collection shape. As of 2026-11-23 it enforces 109 pairs and retains 33 review candidates; run the
+checker for the current counts.
 This is a structural source check; remaining exemptions are not a count of proven wire-contract
 defects.
 
@@ -21,7 +22,10 @@ The report's `divergence_details` maps every exempt interface to its individual 
 exemption with no findings fails the gate until promoted into `pairs`. Keep `problem_count` as
 review evidence; it does not suppress additional findings or certify their cause.
 
-## Array parser repair and exemption reassessment
+## Array parser repair and exemption reassessment (2026-10-15 snapshot)
+
+The counts and table in this section record the October 2026 reassessment. Later promotions
+reduced the open list; the registry and checker output are authoritative for current state.
 
 The previous attribute-removal expression also deleted array brackets from C# types. The parser
 now removes only leading attribute sections, retaining `string[]`, `string[]?`, nullable element

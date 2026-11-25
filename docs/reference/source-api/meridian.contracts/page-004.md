@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingSystemReconciliationRowDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1472](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1472).
+Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1479](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1479).
 
 ```csharp
 public sealed record AccountingSystemReconciliationRowDto(string RowId, string AccountCode, string AccountName, string Currency, AccountingSystemReconciliationStatusDto Status, decimal ExternalDebit, decimal ExternalCredit, decimal MeridianDebit, decimal MeridianCredit, decimal Variance, string Detail, string? EvidenceRef = null)
@@ -20,17 +20,24 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? PeriodDebit { get; init; }</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1488](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1488) | Gross activity in the requested export period, separate from report balances. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? PeriodCredit { get; init; }</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1491](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1491) |  |
-| <code>public IReadOnlyList&lt;string&gt; ExternalEvidenceReferences { get; init; } = [];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1493](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1493) |  |
-| <code>public IReadOnlyList&lt;string&gt; MeridianEvidenceReferences { get; init; } = [];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1495](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1495) |  |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = [];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1497](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1497) |  |
+| <code>public string ExternalDebitExact =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1494](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1494) | Invariant decimal text accompanies numeric compatibility fields for precise workstation reads. |
+| <code>public string ExternalCreditExact =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1495](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1495) |  |
+| <code>public string MeridianDebitExact =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1496](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1496) |  |
+| <code>public string MeridianCreditExact =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1497](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1497) |  |
+| <code>public string VarianceExact =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1498](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1498) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)] public string? ExternalCurrency { get; init; }</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1502](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1502) | Currency declared by the external trial-balance source; null means unavailable or no source row. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)] public string? MeridianCurrency { get; init; }</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1506](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1506) | Currency declared by the resolved Meridian ledger book; null means unavailable or no ledger row. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? PeriodDebit { get; init; }</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1510](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1510) | Gross activity in the requested export period, separate from report balances. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? PeriodCredit { get; init; }</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1513](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1513) |  |
+| <code>public IReadOnlyList&lt;string&gt; ExternalEvidenceReferences { get; init; } = [];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1515](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1515) |  |
+| <code>public IReadOnlyList&lt;string&gt; MeridianEvidenceReferences { get; init; } = [];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1517](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1517) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = [];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1519](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1519) |  |
 
 ## AccountingSystemReconciliationStatusDto
 
 Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingSystemReconciliationStatusDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:26](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L26).
+Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:27](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L27).
 
 ```csharp
 public enum AccountingSystemReconciliationStatusDto
@@ -40,17 +47,17 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Matched</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:28](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L28) |  |
-| <code>Variance</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:29](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L29) |  |
-| <code>MissingExternal</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:30](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L30) |  |
-| <code>MissingMeridian</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:31](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L31) |  |
-| <code>ReviewRequired</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:32](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L32) |  |
+| <code>Matched</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:29](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L29) |  |
+| <code>Variance</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:30](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L30) |  |
+| <code>MissingExternal</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:31](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L31) |  |
+| <code>MissingMeridian</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:32](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L32) |  |
+| <code>ReviewRequired</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:33](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L33) |  |
 
 ## AccountingSystemReconciliationSummaryDto
 
 Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingSystemReconciliationSummaryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1448](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1448).
+Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1449](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1449).
 
 ```csharp
 public sealed record AccountingSystemReconciliationSummaryDto(string ReconciliationId, string ImportId, string ProviderId, string FundProfileId, DateOnly PeriodStart, DateOnly PeriodEnd, DateTimeOffset GeneratedAtUtc, int MatchedCount, int BreakCount, decimal TotalExternalDebits, decimal TotalExternalCredits, decimal TotalMeridianDebits, decimal TotalMeridianCredits, bool PostingEnabled, string PostingDisabledReason, IReadOnlyList<AccountingSystemReconciliationRowDto> Rows, IReadOnlyList<string> EvidenceReferences, Guid? LedgerBookId = null, string? ImportContentHash = null)
@@ -60,13 +67,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;AccountingSystemReconciliationEvidencePackageDto&gt; EvidencePackages { get; init; } = [];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1469](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1469) |  |
+| <code>public string TotalExternalDebitsExact =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1471](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1471) | Invariant decimal text accompanies numeric compatibility fields for precise workstation reads. |
+| <code>public string TotalExternalCreditsExact =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1472](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1472) |  |
+| <code>public string TotalMeridianDebitsExact =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1473](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1473) |  |
+| <code>public string TotalMeridianCreditsExact =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1474](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1474) |  |
+| <code>public IReadOnlyList&lt;AccountingSystemReconciliationEvidencePackageDto&gt; EvidencePackages { get; init; } = [];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1476](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1476) |  |
 
 ## AccountingSystemTrialBalanceBasisDto
 
 Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingSystemTrialBalanceBasisDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1388](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1388).
+Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1389](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1389).
 
 Balance-sheet accounts are cumulative; earlier income/expense balances roll into retained earnings.
 
@@ -78,7 +89,7 @@ public sealed record AccountingSystemTrialBalanceBasisDto(DateOnly IncomeStateme
 
 Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingSystemTrialBalanceLineDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1423](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1423).
+Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1424](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1424).
 
 ```csharp
 public sealed record AccountingSystemTrialBalanceLineDto(string ExternalAccountId, string AccountCode, string AccountName, string AccountType, decimal Debit, decimal Credit, string Currency, DateOnly AsOfDate, string? EvidenceRef = null);
@@ -88,7 +99,7 @@ public sealed record AccountingSystemTrialBalanceLineDto(string ExternalAccountI
 
 Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingTenantAdminCertificationArtifactDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:492](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L492).
+Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:493](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L493).
 
 ```csharp
 public sealed record AccountingTenantAdminCertificationArtifactDto(string CertificationId, AccountingCertificationArtifactStatusDto Status, string TenantId, string CompanyId, string FundProfileId, Guid? LedgerBookId, string CertifiedBy, DateTimeOffset CertifiedAtUtc, string SourceService, IReadOnlyList<AccountingTenantAdminCertificationLaneDto>? Lanes = null, IReadOnlyList<string>? EvidenceReferences = null, IReadOnlyList<AccountingCertificationArtifactIssueDto>? Issues = null, string? CorrelationId = null)
@@ -98,15 +109,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;AccountingTenantAdminCertificationLaneDto&gt; Lanes { get; init; } = Lanes??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:507](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L507) |  |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = EvidenceReferences??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:510](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L510) |  |
-| <code>public IReadOnlyList&lt;AccountingCertificationArtifactIssueDto&gt; Issues { get; init; } = Issues??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:513](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L513) |  |
+| <code>public IReadOnlyList&lt;AccountingTenantAdminCertificationLaneDto&gt; Lanes { get; init; } = Lanes??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:508](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L508) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = EvidenceReferences??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:511](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L511) |  |
+| <code>public IReadOnlyList&lt;AccountingCertificationArtifactIssueDto&gt; Issues { get; init; } = Issues??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:514](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L514) |  |
 
 ## AccountingTenantAdminCertificationLaneDto
 
 Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingTenantAdminCertificationLaneDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:428](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L428).
+Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:429](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L429).
 
 ```csharp
 public sealed record AccountingTenantAdminCertificationLaneDto(AccountingTenantAdminCertificationLaneKindDto Kind, AccountingCertificationArtifactLaneStatusDto Status, IReadOnlyList<string>? EvidenceReferences = null, IReadOnlyList<AccountingCertificationArtifactIssueDto>? Issues = null)
@@ -116,14 +127,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = EvidenceReferences??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:434](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L434) |  |
-| <code>public IReadOnlyList&lt;AccountingCertificationArtifactIssueDto&gt; Issues { get; init; } = Issues??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:437](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L437) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = EvidenceReferences??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:435](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L435) |  |
+| <code>public IReadOnlyList&lt;AccountingCertificationArtifactIssueDto&gt; Issues { get; init; } = Issues??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:438](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L438) |  |
 
 ## AccountingTenantAdminCertificationLaneKindDto
 
 Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingTenantAdminCertificationLaneKindDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:366](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L366).
+Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:367](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L367).
 
 ```csharp
 public enum AccountingTenantAdminCertificationLaneKindDto
@@ -133,33 +144,33 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>TenantScope</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:368](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L368) |  |
-| <code>AdminRoleProfile</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:369](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L369) |  |
-| <code>ScopedAccessPolicies</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:370](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L370) |  |
-| <code>ReportingGroups</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:371](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L371) |  |
-| <code>AccountingAdminSurface</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:372](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L372) |  |
-| <code>BrowserAccountingAdminSurface</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:373](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L373) |  |
-| <code>WpfAccountingAdminSurface</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:374](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L374) |  |
-| <code>ChartAdministrationStudio</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:375](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L375) |  |
-| <code>RuleTestPromotionStudio</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:376](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L376) |  |
-| <code>CloseSetupStudio</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:377](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L377) |  |
-| <code>ProviderMappingStudio</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:378](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L378) |  |
-| <code>TenantCompanyReportGroupSetupStudio</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:379](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L379) |  |
-| <code>AuditReviewTooling</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:380](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L380) |  |
-| <code>BulkImportExportSafeguards</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:381](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L381) |  |
-| <code>PerformanceValidation</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:382](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L382) |  |
-| <code>DisasterRecoveryRunbook</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:383](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L383) |  |
-| <code>LedgerBookAdministrationStudio</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:384](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L384) |  |
-| <code>PostingRuleAuthoringStudio</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:385](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L385) |  |
-| <code>ApprovalQueueStudio</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:386](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L386) |  |
-| <code>DimensionMappingStudio</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:387](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L387) |  |
-| <code>ImplementationSandbox</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:388](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L388) |  |
+| <code>TenantScope</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:369](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L369) |  |
+| <code>AdminRoleProfile</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:370](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L370) |  |
+| <code>ScopedAccessPolicies</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:371](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L371) |  |
+| <code>ReportingGroups</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:372](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L372) |  |
+| <code>AccountingAdminSurface</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:373](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L373) |  |
+| <code>BrowserAccountingAdminSurface</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:374](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L374) |  |
+| <code>WpfAccountingAdminSurface</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:375](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L375) |  |
+| <code>ChartAdministrationStudio</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:376](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L376) |  |
+| <code>RuleTestPromotionStudio</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:377](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L377) |  |
+| <code>CloseSetupStudio</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:378](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L378) |  |
+| <code>ProviderMappingStudio</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:379](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L379) |  |
+| <code>TenantCompanyReportGroupSetupStudio</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:380](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L380) |  |
+| <code>AuditReviewTooling</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:381](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L381) |  |
+| <code>BulkImportExportSafeguards</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:382](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L382) |  |
+| <code>PerformanceValidation</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:383](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L383) |  |
+| <code>DisasterRecoveryRunbook</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:384](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L384) |  |
+| <code>LedgerBookAdministrationStudio</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:385](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L385) |  |
+| <code>PostingRuleAuthoringStudio</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:386](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L386) |  |
+| <code>ApprovalQueueStudio</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:387](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L387) |  |
+| <code>DimensionMappingStudio</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:388](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L388) |  |
+| <code>ImplementationSandbox</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:389](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L389) |  |
 
 ## AccountingTenantAdministrationProfileDto
 
 Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingTenantAdministrationProfileDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:261](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L261).
+Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:262](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L262).
 
 ```csharp
 public sealed record AccountingTenantAdministrationProfileDto(string TenantId, string CompanyId, bool TenantScopeConfigured, bool AdminRoleProfileConfigured, bool ScopedAccessPoliciesConfigured, bool ReportingGroupsConfigured, bool AccountingAdminSurfaceConfigured, DateTimeOffset UpdatedAtUtc, string UpdatedBy, IReadOnlyList<string>? EvidenceReferences = null, string? CorrelationId = null, bool BrowserAccountingAdminSurfaceConfigured = false, bool WpfAccountingAdminSurfaceConfigured = false, bool ChartAdministrationStudioConfigured = false, bool RuleTestPromotionStudioConfigured = false, bool CloseSetupStudioConfigured = false, bool ProviderMappingStudioConfigured = false, bool TenantCompanyReportGroupSetupStudioConfigured = false, bool AuditReviewToolingConfigured = false, bool BulkImportExportSafeguardsConfigured = false, bool PerformanceValidationConfigured = false, bool DisasterRecoveryRunbookConfigured = false, bool LedgerBookAdministrationStudioConfigured = false, bool PostingRuleAuthoringStudioConfigured = false, bool ApprovalQueueStudioConfigured = false, bool DimensionMappingStudioConfigured = false, bool ImplementationSandboxConfigured = false, IReadOnlyList<AccountingApprovalQueueConfigurationDto>? ApprovalQueueConfigurations = null, IReadOnlyList<AccountingDimensionMappingConfigurationDto>? DimensionMappingConfigurations = null, string? FundProfileId = null, Guid? LedgerBookId = null, IReadOnlyList<AccountingTenantAdminCertificationArtifactDto>? CertificationArtifacts = null, IReadOnlyList<RetainedEvidenceIdentityDto>? RetainedEvidence = null)
@@ -169,17 +180,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = EvidenceReferences??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:296](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L296) |  |
-| <code>public IReadOnlyList&lt;AccountingApprovalQueueConfigurationDto&gt; ApprovalQueueConfigurations { get; init; } = ApprovalQueueConfigurations??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:299](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L299) |  |
-| <code>public IReadOnlyList&lt;AccountingDimensionMappingConfigurationDto&gt; DimensionMappingConfigurations { get; init; } = DimensionMappingConfigurations??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:302](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L302) |  |
-| <code>public IReadOnlyList&lt;AccountingTenantAdminCertificationArtifactDto&gt; CertificationArtifacts { get; init; } = CertificationArtifacts??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:305](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L305) |  |
-| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = RetainedEvidence??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:308](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L308) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = EvidenceReferences??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:297](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L297) |  |
+| <code>public IReadOnlyList&lt;AccountingApprovalQueueConfigurationDto&gt; ApprovalQueueConfigurations { get; init; } = ApprovalQueueConfigurations??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:300](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L300) |  |
+| <code>public IReadOnlyList&lt;AccountingDimensionMappingConfigurationDto&gt; DimensionMappingConfigurations { get; init; } = DimensionMappingConfigurations??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:303](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L303) |  |
+| <code>public IReadOnlyList&lt;AccountingTenantAdminCertificationArtifactDto&gt; CertificationArtifacts { get; init; } = CertificationArtifacts??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:306](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L306) |  |
+| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = RetainedEvidence??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:309](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L309) |  |
 
 ## AccountingTenantAdministrationProfileUpsertRequestDto
 
 Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingTenantAdministrationProfileUpsertRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:312](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L312).
+Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:313](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L313).
 
 ```csharp
 public sealed record AccountingTenantAdministrationProfileUpsertRequestDto(AccountingTenantAdministrationProfileDto Profile, string Actor, string? CorrelationId = null, IReadOnlyList<string>? EvidenceLinks = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, IReadOnlyList<RetainedEvidenceIdentityDto>? RetainedEvidence = null)
@@ -189,14 +200,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:320](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L320) |  |
-| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = RetainedEvidence??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:323](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L323) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:321](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L321) |  |
+| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = RetainedEvidence??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:324](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L324) |  |
 
 ## AccountingTenantAdministrationReadinessDto
 
 Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingTenantAdministrationReadinessDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:956](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L956).
+Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:957](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L957).
 
 ```csharp
 public sealed record AccountingTenantAdministrationReadinessDto(string? TenantId, string? CompanyId, bool TenantScopeConfigured, bool AdminRoleProfileConfigured, bool ScopedAccessPoliciesConfigured, bool ReportingGroupsConfigured, bool AccountingAdminSurfaceConfigured, bool BrowserAccountingAdminSurfaceConfigured, bool WpfAccountingAdminSurfaceConfigured, bool ChartAdministrationStudioConfigured, bool RuleTestPromotionStudioConfigured, bool CloseSetupStudioConfigured, bool ProviderMappingStudioConfigured, bool TenantCompanyReportGroupSetupStudioConfigured, IReadOnlyList<string>? EvidenceReferences = null, bool AuditReviewToolingConfigured = false, bool BulkImportExportSafeguardsConfigured = false, bool PerformanceValidationConfigured = false, bool DisasterRecoveryRunbookConfigured = false, bool LedgerBookAdministrationStudioConfigured = false, bool PostingRuleAuthoringStudioConfigured = false, bool ApprovalQueueStudioConfigured = false, bool DimensionMappingStudioConfigured = false, bool ImplementationSandboxConfigured = false, IReadOnlyList<RetainedEvidenceIdentityDto>? RetainedEvidence = null, string? FundProfileId = null, Guid? LedgerBookId = null, IReadOnlyList<AccountingTenantAdminCertificationArtifactDto>? CertificationArtifacts = null)
@@ -206,42 +217,42 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = EvidenceReferences??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:986](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L986) |  |
-| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = RetainedEvidence??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:989](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L989) |  |
-| <code>public IReadOnlyList&lt;AccountingTenantAdminCertificationArtifactDto&gt; CertificationArtifacts { get; init; } = CertificationArtifacts??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:992](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L992) |  |
-| <code>public int CompletedControlCount =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:995](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L995) |  |
-| <code>public int RequiredControlCount =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1023](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1023) |  |
-| <code>public bool HasTenantScope =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1025](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1025) |  |
-| <code>public bool HasCompanyScope =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1027](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1027) |  |
-| <code>public bool HasRetainedEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1029](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1029) |  |
-| <code>public bool HasTenantCompanyScopedEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1032](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1032) |  |
-| <code>public bool HasTenantScopeEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1042](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1042) |  |
-| <code>public bool HasAdminRoleProfileEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1045](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1045) |  |
-| <code>public bool HasScopedAccessPolicyEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1048](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1048) |  |
-| <code>public bool HasReportingGroupEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1051](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1051) |  |
-| <code>public bool HasAccountingAdminSurfaceEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1054](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1054) |  |
-| <code>public bool HasBrowserAccountingAdminSurfaceEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1057](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1057) |  |
-| <code>public bool HasWpfAccountingAdminSurfaceEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1060](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1060) |  |
-| <code>public bool HasChartAdministrationStudioEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1063](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1063) |  |
-| <code>public bool HasRuleTestPromotionStudioEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1066](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1066) |  |
-| <code>public bool HasCloseSetupStudioEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1069](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1069) |  |
-| <code>public bool HasProviderMappingStudioEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1072](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1072) |  |
-| <code>public bool HasTenantCompanyReportGroupSetupStudioEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1075](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1075) |  |
-| <code>public bool HasAuditReviewToolingEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1078](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1078) |  |
-| <code>public bool HasBulkImportExportSafeguardsEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1081](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1081) |  |
-| <code>public bool HasPerformanceValidationEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1084](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1084) |  |
-| <code>public bool HasDisasterRecoveryRunbookEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1087](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1087) |  |
-| <code>public bool HasLedgerBookAdministrationStudioEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1090](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1090) |  |
-| <code>public bool HasPostingRuleAuthoringStudioEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1093](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1093) |  |
-| <code>public bool HasApprovalQueueStudioEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1096](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1096) |  |
-| <code>public bool HasDimensionMappingStudioEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1099](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1099) |  |
-| <code>public bool HasImplementationSandboxEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1102](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1102) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = EvidenceReferences??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:987](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L987) |  |
+| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = RetainedEvidence??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:990](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L990) |  |
+| <code>public IReadOnlyList&lt;AccountingTenantAdminCertificationArtifactDto&gt; CertificationArtifacts { get; init; } = CertificationArtifacts??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:993](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L993) |  |
+| <code>public int CompletedControlCount =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:996](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L996) |  |
+| <code>public int RequiredControlCount =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1024](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1024) |  |
+| <code>public bool HasTenantScope =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1026](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1026) |  |
+| <code>public bool HasCompanyScope =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1028](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1028) |  |
+| <code>public bool HasRetainedEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1030](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1030) |  |
+| <code>public bool HasTenantCompanyScopedEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1033](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1033) |  |
+| <code>public bool HasTenantScopeEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1043](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1043) |  |
+| <code>public bool HasAdminRoleProfileEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1046](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1046) |  |
+| <code>public bool HasScopedAccessPolicyEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1049](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1049) |  |
+| <code>public bool HasReportingGroupEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1052](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1052) |  |
+| <code>public bool HasAccountingAdminSurfaceEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1055](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1055) |  |
+| <code>public bool HasBrowserAccountingAdminSurfaceEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1058](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1058) |  |
+| <code>public bool HasWpfAccountingAdminSurfaceEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1061](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1061) |  |
+| <code>public bool HasChartAdministrationStudioEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1064](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1064) |  |
+| <code>public bool HasRuleTestPromotionStudioEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1067](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1067) |  |
+| <code>public bool HasCloseSetupStudioEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1070](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1070) |  |
+| <code>public bool HasProviderMappingStudioEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1073](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1073) |  |
+| <code>public bool HasTenantCompanyReportGroupSetupStudioEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1076](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1076) |  |
+| <code>public bool HasAuditReviewToolingEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1079](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1079) |  |
+| <code>public bool HasBulkImportExportSafeguardsEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1082](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1082) |  |
+| <code>public bool HasPerformanceValidationEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1085](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1085) |  |
+| <code>public bool HasDisasterRecoveryRunbookEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1088](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1088) |  |
+| <code>public bool HasLedgerBookAdministrationStudioEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1091](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1091) |  |
+| <code>public bool HasPostingRuleAuthoringStudioEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1094](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1094) |  |
+| <code>public bool HasApprovalQueueStudioEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1097](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1097) |  |
+| <code>public bool HasDimensionMappingStudioEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1100](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1100) |  |
+| <code>public bool HasImplementationSandboxEvidence =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1103](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1103) |  |
 
 ## AccountingWorkflowCertificationArtifactDto
 
 Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingWorkflowCertificationArtifactDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:441](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L441).
+Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:442](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L442).
 
 ```csharp
 public sealed record AccountingWorkflowCertificationArtifactDto(string CertificationId, AccountingCertificationArtifactStatusDto Status, string? TenantId, string? CompanyId, string FundProfileId, Guid LedgerBookId, string CertifiedBy, DateTimeOffset CertifiedAtUtc, string SourceService, IReadOnlyList<AccountingWorkflowCertificationLaneDto>? Lanes = null, IReadOnlyList<string>? EvidenceReferences = null, IReadOnlyList<AccountingCertificationArtifactIssueDto>? Issues = null, string? CorrelationId = null)
@@ -251,15 +262,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;AccountingWorkflowCertificationLaneDto&gt; Lanes { get; init; } = Lanes??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:456](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L456) |  |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = EvidenceReferences??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:459](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L459) |  |
-| <code>public IReadOnlyList&lt;AccountingCertificationArtifactIssueDto&gt; Issues { get; init; } = Issues??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:462](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L462) |  |
+| <code>public IReadOnlyList&lt;AccountingWorkflowCertificationLaneDto&gt; Lanes { get; init; } = Lanes??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:457](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L457) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = EvidenceReferences??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:460](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L460) |  |
+| <code>public IReadOnlyList&lt;AccountingCertificationArtifactIssueDto&gt; Issues { get; init; } = Issues??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:463](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L463) |  |
 
 ## AccountingWorkflowCertificationLaneDto
 
 Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingWorkflowCertificationLaneDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:402](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L402).
+Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:403](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L403).
 
 ```csharp
 public sealed record AccountingWorkflowCertificationLaneDto(AccountingWorkflowCertificationLaneKindDto Kind, AccountingCertificationArtifactLaneStatusDto Status, IReadOnlyList<string>? EvidenceReferences = null, IReadOnlyList<AccountingCertificationArtifactIssueDto>? Issues = null)
@@ -269,14 +280,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = EvidenceReferences??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:408](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L408) |  |
-| <code>public IReadOnlyList&lt;AccountingCertificationArtifactIssueDto&gt; Issues { get; init; } = Issues??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:411](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L411) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = EvidenceReferences??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:409](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L409) |  |
+| <code>public IReadOnlyList&lt;AccountingCertificationArtifactIssueDto&gt; Issues { get; init; } = Issues??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:412](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L412) |  |
 
 ## AccountingWorkflowCertificationLaneKindDto
 
 Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingWorkflowCertificationLaneKindDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:343](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L343).
+Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:344](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L344).
 
 ```csharp
 public enum AccountingWorkflowCertificationLaneKindDto
@@ -286,20 +297,20 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>PostingRules</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:345](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L345) |  |
-| <code>JournalLifecycle</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:346](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L346) |  |
-| <code>CloseReporting</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:347](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L347) |  |
-| <code>ClosePlanConfiguration</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:348](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L348) |  |
-| <code>ExternalGl</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:349](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L349) |  |
-| <code>Reconciliation</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:350](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L350) |  |
-| <code>DirectLendingProjection</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:351](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L351) |  |
-| <code>StrategyLedgerReads</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:352](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L352) |  |
+| <code>PostingRules</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:346](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L346) |  |
+| <code>JournalLifecycle</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:347](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L347) |  |
+| <code>CloseReporting</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:348](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L348) |  |
+| <code>ClosePlanConfiguration</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:349](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L349) |  |
+| <code>ExternalGl</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:350](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L350) |  |
+| <code>Reconciliation</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:351](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L351) |  |
+| <code>DirectLendingProjection</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:352](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L352) |  |
+| <code>StrategyLedgerReads</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:353](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L353) |  |
 
 ## CertifyAccountingSystemExportPackageRequestDto
 
 Qualified name: <code>Meridian.Contracts.AccountingSystem.CertifyAccountingSystemExportPackageRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1540](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1540).
+Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1562](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1562).
 
 ```csharp
 public sealed record CertifyAccountingSystemExportPackageRequestDto(string ExportPackageId, string Actor, string Notes, IReadOnlyList<string>? EvidenceLinks = null, string? CorrelationId = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, string? TenantId = null, string? CompanyId = null)
@@ -309,7 +320,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1550](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1550) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1572](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1572) |  |
 
 ## ExternalGlBookPolicy
 

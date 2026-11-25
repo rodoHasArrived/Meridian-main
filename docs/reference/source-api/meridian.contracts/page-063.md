@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FeatureCapabilitySettingsResponse
+
+Qualified name: <code>Meridian.Contracts.Workstation.FeatureCapabilitySettingsResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FeatureCapabilityDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/FeatureCapabilityDtos.cs#L3).
+
+```csharp
+public sealed record FeatureCapabilitySettingsResponse(IReadOnlyList<FeatureCapabilityToggleDto> Capabilities);
+```
+
 ## FeatureCapabilityToggleDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.FeatureCapabilityToggleDto</code>. Kind: `record`.
@@ -583,16 +593,4 @@ Slice-level ledger projection that supports Accounting drill-in by logical ledge
 
 ```csharp
 public sealed record FundLedgerSliceDto(string SliceKey, string LedgerKey, string LedgerGroupId, FundLedgerScope ScopeKind, string? ScopeId, string DisplayName, FundLedgerTotalsDto Totals, IReadOnlyList<FundTrialBalanceLine> TrialBalance, IReadOnlyList<FundJournalLine> Journal, IReadOnlyDictionary<string, string>? Metadata = null);
-```
-
-## FundLedgerSnapshotBalanceLine
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundLedgerSnapshotBalanceLine</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:114](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L114).
-
-Balance row captured in a reconciliation snapshot.
-
-```csharp
-public sealed record FundLedgerSnapshotBalanceLine(string AccountName, string AccountType, string? Symbol, string? FinancialAccountId, decimal Balance, WorkstationSecurityReference? Security = null, LedgerDimensionSetDto? Dimensions = null);
 ```
