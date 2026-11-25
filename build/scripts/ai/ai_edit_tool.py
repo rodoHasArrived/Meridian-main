@@ -217,6 +217,16 @@ def validate_scope(root: Path, scope: dict[str, Any], recipe: dict[str, Any]) ->
     return allowed
 
 
+def _scope_files(scope_path: Path) -> list[Path]:
+    # node_modules paths are always rejected by is_default_unsafe_path, so prune them
+    # before descending instead of walking every installed package.
+    files: list[Path] = []
+    for current, directories, names in scope_path.walk():
+        directories[:] = [name for name in directories if name != "node_modules"]
+        files.extend(path for path in (current / name for name in names) if path.is_file())
+    return files
+
+
 def iter_candidate_files(root: Path, scope_paths: list[Path], recipe: dict[str, Any]) -> list[Path]:
     include = [str(item) for item in recipe["include"]]
     exclude = [str(item) for item in recipe["exclude"]]
@@ -224,7 +234,7 @@ def iter_candidate_files(root: Path, scope_paths: list[Path], recipe: dict[str, 
     allow_archive = bool(recipe.get("allowArchive"))
     candidates: list[Path] = []
     for scope_path in scope_paths:
-        paths = [scope_path] if scope_path.is_file() else [p for p in scope_path.rglob("*") if p.is_file()]
+        paths = [scope_path] if scope_path.is_file() else _scope_files(scope_path)
         for path in paths:
             relative = rel_path(root, path)
             if path.suffix.lower() not in TEXT_SUFFIXES:

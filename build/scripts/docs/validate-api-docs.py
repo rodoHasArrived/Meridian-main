@@ -187,11 +187,14 @@ def scan_endpoints(root: Path) -> list[Endpoint]:
         return []
 
     all_endpoints = []
-    for cs_file in src_dir.rglob("*.cs"):
-        if _should_skip(cs_file):
-            continue
-        endpoints = _extract_endpoints_from_file(cs_file, root)
-        all_endpoints.extend(endpoints)
+    for current, directories, files in src_dir.walk():
+        # Prune before descending so excluded trees (e.g. node_modules) are never walked.
+        directories[:] = [name for name in directories if name not in EXCLUDE_DIRS]
+        for cs_file in (current / name for name in files if name.endswith(".cs")):
+            if _should_skip(cs_file):
+                continue
+            endpoints = _extract_endpoints_from_file(cs_file, root)
+            all_endpoints.extend(endpoints)
 
     # Deduplicate by path + method
     seen = set()

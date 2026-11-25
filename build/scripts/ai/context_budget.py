@@ -342,10 +342,13 @@ def _expand_candidate_path(root: Path, relative_path: str, *, limit: int = 2) ->
             collected.append(candidate)
 
     suffixes = {".cs", ".fs", ".py", ".md", ".json", ".xaml", ".ts", ".tsx"}
-    for file_path in sorted(absolute.rglob("*")):
+    discovered: list[Path] = []
+    for current, directories, names in absolute.walk():
+        # Prune before descending so installed dependency trees are never walked.
+        directories[:] = [name for name in directories if name not in _EXPANSION_EXCLUDED_DIRS]
+        discovered.extend(current / name for name in names)
+    for file_path in sorted(discovered):
         if not file_path.is_file() or file_path.suffix.lower() not in suffixes:
-            continue
-        if _EXPANSION_EXCLUDED_DIRS.intersection(file_path.relative_to(absolute).parts):
             continue
         collected.append(file_path)
         if len(collected) >= max(1, limit) + len(preferred):

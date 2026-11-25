@@ -75,12 +75,19 @@ def find_surface_lines(text: str) -> list[int]:
     return hits
 
 
+PRUNED_DIRECTORIES = frozenset({"bin", "obj", "node_modules"})
+
+
+def _iter_cs_files(source_dir: Path):
+    # Prune before descending: src/ also holds the dashboard's node_modules tree.
+    for current, directories, files in source_dir.walk():
+        directories[:] = [name for name in directories if name not in PRUNED_DIRECTORIES]
+        yield from (current / name for name in files if name.endswith(".cs"))
+
+
 def discover_surfaces(source_dir: Path, repo_root: Path) -> dict[str, list[int]]:
     surfaces: dict[str, list[int]] = {}
-    for path in sorted(source_dir.rglob("*.cs")):
-        parts = set(path.parts)
-        if "obj" in parts or "bin" in parts:
-            continue
+    for path in sorted(_iter_cs_files(source_dir)):
         relative = path.relative_to(repo_root).as_posix()
         if relative in DEFINING_FILES:
             continue

@@ -92,7 +92,16 @@ class ParityChecker:
         return scripts
 
     def _collect_csproj_paths(self) -> set[str]:
-        return {str(path.relative_to(self.root)).replace("\\", "/") for path in self.root.rglob("*.csproj")}
+        paths: set[str] = set()
+        for current, directories, files in self.root.walk():
+            # Prune before descending; installed npm packages hold no projects.
+            directories[:] = [name for name in directories if name != "node_modules"]
+            paths.update(
+                str((current / name).relative_to(self.root)).replace("\\", "/")
+                for name in files
+                if name.endswith(".csproj")
+            )
+        return paths
 
     def _collect_cli_flags_from_source(self) -> set[str]:
         flags: set[str] = set()

@@ -23,6 +23,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import re
 import sys
 from dataclasses import dataclass
@@ -135,12 +136,12 @@ def validate_username(username: str) -> Optional[str]:
 
 def find_files_in_repo(root: Path, pattern: str = '*.cs') -> list[Path]:
     """Find files matching pattern in repository."""
+    skipped = {'.git', 'bin', 'obj', 'node_modules', '__pycache__', '.pytest_cache'}
     files = []
-    for file in root.rglob(pattern):
-        # Skip build artifacts
-        if any(part in {'.git', 'bin', 'obj', 'node_modules', '__pycache__', '.pytest_cache'} for part in file.parts):
-            continue
-        files.append(file)
+    for current, directories, names in root.walk():
+        # Prune build artifacts and installed packages before descending into them.
+        directories[:] = [name for name in directories if name not in skipped]
+        files.extend(current / name for name in fnmatch.filter(names, pattern))
     return sorted(files)
 
 
