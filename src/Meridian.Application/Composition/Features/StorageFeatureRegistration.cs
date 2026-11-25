@@ -418,6 +418,12 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterChangeOutbox, PostgresSecurityMasterChangeOutbox>();
             // Review C1: survivorship redirects followed by identifier resolution.
             services.AddSingleton<ISecurityMasterRedirectStore, PostgresSecurityMasterRedirectStore>();
+            // ADR-033 entity master: its own schema and migration set on the Security Master database.
+            services.AddSingleton(new Meridian.Storage.EntityMaster.EntityMasterOptions
+            {
+                ConnectionString = securityMasterOptions.ConnectionString
+            });
+            services.AddSingleton<Meridian.Contracts.EntityMaster.IEntityMasterStore, Meridian.Storage.EntityMaster.PostgresEntityMasterStore>();
             services.AddSingleton<SecurityMasterMergeService>();
             services.AddSingleton<ISecurityMasterService, SecurityMasterService>();
             // Three typed write paths over one service: ISecurityMasterService is the operator-direct path
@@ -631,6 +637,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityMasterSourceAdmissionPolicy, SourcePrecedenceAdmissionPolicy>();
         services.TryAddSingleton<ISecurityMasterHeldAmendmentStore, InMemorySecurityMasterHeldAmendmentStore>();
         services.TryAddSingleton<ISecurityMasterRedirectStore, InMemorySecurityMasterRedirectStore>();
+        services.TryAddSingleton<Meridian.Contracts.EntityMaster.IEntityMasterStore, Meridian.Storage.EntityMaster.InMemoryEntityMasterStore>();
         if (!configuration.IsConfigured(AssetOperationsStartup.ConnectionStringVariable))
         {
             services.TryAddSingleton<InMemoryAssetOperationsProjectionStore>();

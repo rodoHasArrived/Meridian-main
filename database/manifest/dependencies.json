@@ -6088,6 +6088,42 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.CreateLegalEntityRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.EntityMasterRules"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.EntityParentLinkDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.IEntityMasterStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.LegalEntityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.SecurityIssuerLinkDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest"
     },
     {
@@ -61781,6 +61817,111 @@
       "target": "database:banking.pending_payments_pkey"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.ck_entity_parent_links_distinct on entity_master.entity_parent_links",
+      "target": "database:entity_master.entity_parent_links.entity_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.ck_entity_parent_links_distinct on entity_master.entity_parent_links",
+      "target": "database:entity_master.entity_parent_links.parent_entity_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.ck_entity_parent_links_window on entity_master.entity_parent_links",
+      "target": "database:entity_master.entity_parent_links.valid_from"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.ck_entity_parent_links_window on entity_master.entity_parent_links",
+      "target": "database:entity_master.entity_parent_links.valid_to"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.ck_legal_entities_cik on entity_master.legal_entities",
+      "target": "database:entity_master.legal_entities.cik"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.ck_legal_entities_lei on entity_master.legal_entities",
+      "target": "database:entity_master.legal_entities.lei"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.ck_security_issuer_links_window on entity_master.security_issuer_links",
+      "target": "database:entity_master.security_issuer_links.valid_from"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.ck_security_issuer_links_window on entity_master.security_issuer_links",
+      "target": "database:entity_master.security_issuer_links.valid_to"
+    },
+    {
+      "constraint": "entity_parent_links_entity_id_fkey",
+      "kind": "foreign-key",
+      "label": "entity_id",
+      "source": "database:entity_master.entity_parent_links",
+      "target": "database:entity_master.legal_entities"
+    },
+    {
+      "constraint": "entity_parent_links_parent_entity_id_fkey",
+      "kind": "foreign-key",
+      "label": "parent_entity_id",
+      "source": "database:entity_master.entity_parent_links",
+      "target": "database:entity_master.legal_entities"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.entity_parent_links_entity_id_fkey on entity_master.entity_parent_links",
+      "target": "database:entity_master.legal_entities.entity_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.entity_parent_links_entity_id_fkey on entity_master.entity_parent_links",
+      "target": "database:entity_master.legal_entities_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.entity_parent_links_parent_entity_id_fkey on entity_master.entity_parent_links",
+      "target": "database:entity_master.legal_entities.entity_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.entity_parent_links_parent_entity_id_fkey on entity_master.entity_parent_links",
+      "target": "database:entity_master.legal_entities_pkey"
+    },
+    {
+      "constraint": "security_issuer_links_issuer_entity_id_fkey",
+      "kind": "foreign-key",
+      "label": "issuer_entity_id",
+      "source": "database:entity_master.security_issuer_links",
+      "target": "database:entity_master.legal_entities"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.security_issuer_links_issuer_entity_id_fkey on entity_master.security_issuer_links",
+      "target": "database:entity_master.legal_entities.entity_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.security_issuer_links_issuer_entity_id_fkey on entity_master.security_issuer_links",
+      "target": "database:entity_master.legal_entities_pkey"
+    },
+    {
       "constraint": "account_balance_snapshot_account_id_fkey",
       "kind": "foreign-key",
       "label": "account_id",
@@ -70458,6 +70599,36 @@
       "target": "migration-module:banking"
     },
     {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:entity_master",
+      "target": "database:entity_master.entity_master_schema_migrations"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:entity_master",
+      "target": "database:entity_master.entity_parent_links"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:entity_master",
+      "target": "database:entity_master.legal_entities"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:entity_master",
+      "target": "database:entity_master.security_issuer_links"
+    },
+    {
+      "kind": "hosts-migration-module",
+      "label": "",
+      "source": "schema:entity_master",
+      "target": "migration-module:entity-master"
+    },
+    {
       "kind": "module-contract-map",
       "label": "explicit module mapping",
       "source": "schema:fund_accounts",
@@ -72262,7 +72433,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "e84692e3c2c8c8f9e013e222428f3e5382f3712f3e2d94e5b5f0c6c3a0ef6c6c",
+  "fingerprint": "228bd8e80e17077a0bb3c8454c9d3cc3b917c02d7e01bd2b0af5ce38828514bb",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -78398,6 +78569,42 @@
       "id": "contract:Meridian.Contracts.Domain.VenueCode",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Domain.VenueCode"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.EntityMaster.CreateLegalEntityRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.CreateLegalEntityRequest"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.EntityMaster.EntityMasterRules",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.EntityMasterRules"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.EntityMaster.EntityParentLinkDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.EntityParentLinkDto"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.EntityMaster.IEntityMasterStore",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.IEntityMasterStore"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.EntityMaster.LegalEntityDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.LegalEntityDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.EntityMaster.SecurityIssuerLinkDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.SecurityIssuerLinkDto"
     },
     {
       "classification": "request",
@@ -97443,6 +97650,120 @@
       "schema": "banking"
     },
     {
+      "id": "database:entity_master.ck_entity_parent_links_distinct on entity_master.entity_parent_links",
+      "kind": "database-object",
+      "label": "entity_master.ck_entity_parent_links_distinct on entity_master.entity_parent_links"
+    },
+    {
+      "id": "database:entity_master.ck_entity_parent_links_window on entity_master.entity_parent_links",
+      "kind": "database-object",
+      "label": "entity_master.ck_entity_parent_links_window on entity_master.entity_parent_links"
+    },
+    {
+      "id": "database:entity_master.ck_legal_entities_cik on entity_master.legal_entities",
+      "kind": "database-object",
+      "label": "entity_master.ck_legal_entities_cik on entity_master.legal_entities"
+    },
+    {
+      "id": "database:entity_master.ck_legal_entities_lei on entity_master.legal_entities",
+      "kind": "database-object",
+      "label": "entity_master.ck_legal_entities_lei on entity_master.legal_entities"
+    },
+    {
+      "id": "database:entity_master.ck_security_issuer_links_window on entity_master.security_issuer_links",
+      "kind": "database-object",
+      "label": "entity_master.ck_security_issuer_links_window on entity_master.security_issuer_links"
+    },
+    {
+      "id": "database:entity_master.entity_master_schema_migrations",
+      "kind": "database-table",
+      "label": "entity_master.entity_master_schema_migrations",
+      "schema": "entity_master"
+    },
+    {
+      "id": "database:entity_master.entity_parent_links",
+      "kind": "database-table",
+      "label": "entity_master.entity_parent_links",
+      "schema": "entity_master"
+    },
+    {
+      "id": "database:entity_master.entity_parent_links.entity_id",
+      "kind": "database-object",
+      "label": "entity_master.entity_parent_links.entity_id"
+    },
+    {
+      "id": "database:entity_master.entity_parent_links.parent_entity_id",
+      "kind": "database-object",
+      "label": "entity_master.entity_parent_links.parent_entity_id"
+    },
+    {
+      "id": "database:entity_master.entity_parent_links.valid_from",
+      "kind": "database-object",
+      "label": "entity_master.entity_parent_links.valid_from"
+    },
+    {
+      "id": "database:entity_master.entity_parent_links.valid_to",
+      "kind": "database-object",
+      "label": "entity_master.entity_parent_links.valid_to"
+    },
+    {
+      "id": "database:entity_master.entity_parent_links_entity_id_fkey on entity_master.entity_parent_links",
+      "kind": "database-object",
+      "label": "entity_master.entity_parent_links_entity_id_fkey on entity_master.entity_parent_links"
+    },
+    {
+      "id": "database:entity_master.entity_parent_links_parent_entity_id_fkey on entity_master.entity_parent_links",
+      "kind": "database-object",
+      "label": "entity_master.entity_parent_links_parent_entity_id_fkey on entity_master.entity_parent_links"
+    },
+    {
+      "id": "database:entity_master.legal_entities",
+      "kind": "database-table",
+      "label": "entity_master.legal_entities",
+      "schema": "entity_master"
+    },
+    {
+      "id": "database:entity_master.legal_entities.cik",
+      "kind": "database-object",
+      "label": "entity_master.legal_entities.cik"
+    },
+    {
+      "id": "database:entity_master.legal_entities.entity_id",
+      "kind": "database-object",
+      "label": "entity_master.legal_entities.entity_id"
+    },
+    {
+      "id": "database:entity_master.legal_entities.lei",
+      "kind": "database-object",
+      "label": "entity_master.legal_entities.lei"
+    },
+    {
+      "id": "database:entity_master.legal_entities_pkey",
+      "kind": "database-object",
+      "label": "entity_master.legal_entities_pkey"
+    },
+    {
+      "id": "database:entity_master.security_issuer_links",
+      "kind": "database-table",
+      "label": "entity_master.security_issuer_links",
+      "schema": "entity_master"
+    },
+    {
+      "id": "database:entity_master.security_issuer_links.valid_from",
+      "kind": "database-object",
+      "label": "entity_master.security_issuer_links.valid_from"
+    },
+    {
+      "id": "database:entity_master.security_issuer_links.valid_to",
+      "kind": "database-object",
+      "label": "entity_master.security_issuer_links.valid_to"
+    },
+    {
+      "id": "database:entity_master.security_issuer_links_issuer_entity_id_fkey on entity_master.security_issuer_links",
+      "kind": "database-object",
+      "label": "entity_master.security_issuer_links_issuer_entity_id_fkey on entity_master.security_issuer_links"
+    },
+    {
       "id": "database:fund_accounts.account_balance_snapshot",
       "kind": "database-table",
       "label": "fund_accounts.account_balance_snapshot",
@@ -106108,6 +106429,11 @@
       "label": "direct-lending"
     },
     {
+      "id": "migration-module:entity-master",
+      "kind": "migration-module",
+      "label": "entity-master"
+    },
+    {
       "id": "migration-module:fund-accounts",
       "kind": "migration-module",
       "label": "fund-accounts"
@@ -106158,6 +106484,11 @@
       "label": "banking"
     },
     {
+      "id": "schema:entity_master",
+      "kind": "database-schema",
+      "label": "entity_master"
+    },
+    {
       "id": "schema:fund_accounts",
       "kind": "database-schema",
       "label": "fund_accounts"
@@ -106205,10 +106536,10 @@
   ],
   "summary": {
     "contract_references": 4419,
-    "contract_set_memberships": 5834,
-    "edges": 12004,
-    "foreign_keys": 221,
+    "contract_set_memberships": 5840,
+    "edges": 12032,
+    "foreign_keys": 224,
     "logical_references": 6,
-    "nodes": 5903
+    "nodes": 5933
   }
 }

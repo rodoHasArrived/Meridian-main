@@ -43,6 +43,7 @@
     <Content Include="../Meridian.Storage/Reporting/Migrations/*.sql" Link="Reporting/Migrations/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../Meridian.Storage/SecurityMaster/**/*.cs" Link="SecurityMaster/%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Include="../Meridian.Storage/SecurityMaster/Migrations/*.sql" Link="SecurityMaster/Migrations/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../Meridian.Storage/EntityMaster/Migrations/*.sql" Link="EntityMaster/Migrations/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../Meridian.Storage/Tenancy/**/*.cs" Link="Tenancy/%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Include="../Meridian.Storage/Tenancy/Migrations/*.sql" Link="Tenancy/Migrations/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../Meridian.Storage/Operations/**/*.cs" Link="Operations/%(RecursiveDir)%(Filename)%(Extension)" />

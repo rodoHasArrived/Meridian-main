@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "8bd954e69e35c5d9e69ccb9fc2022573c9e9a4eb0a35477cdfa084953273b779",
+  "database_fingerprint": "60e23526e855ce1ed8903898387e97db9c7014a935bc85af2d6dbbba35899e9a",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -468,6 +468,174 @@
       "target_kind": "index",
       "target_name": "pending_payments_pkey",
       "target_schema": "banking"
+    },
+    {
+      "fingerprint": "82c4ba65eea1f762a1a64b3e58cf0dc8ff326b512483b4631e81ed76cc4d1586",
+      "kind": "normal",
+      "source": "entity_master.ck_entity_parent_links_distinct on entity_master.entity_parent_links",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "entity_master",
+      "target": "entity_master.entity_parent_links.entity_id",
+      "target_kind": "table column",
+      "target_name": "entity_parent_links",
+      "target_schema": "entity_master"
+    },
+    {
+      "fingerprint": "d8d73c41e491e24dbf26850024e106cffa9d4ce97741589aafd693de9eed8686",
+      "kind": "normal",
+      "source": "entity_master.ck_entity_parent_links_distinct on entity_master.entity_parent_links",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "entity_master",
+      "target": "entity_master.entity_parent_links.parent_entity_id",
+      "target_kind": "table column",
+      "target_name": "entity_parent_links",
+      "target_schema": "entity_master"
+    },
+    {
+      "fingerprint": "a995d5b16381b40939e54fef0af039514b005eaa564a76c17129267c8c23d906",
+      "kind": "normal",
+      "source": "entity_master.ck_entity_parent_links_window on entity_master.entity_parent_links",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "entity_master",
+      "target": "entity_master.entity_parent_links.valid_from",
+      "target_kind": "table column",
+      "target_name": "entity_parent_links",
+      "target_schema": "entity_master"
+    },
+    {
+      "fingerprint": "25eb39c0b2682324bcce61ce3e1d9bebebc3308b3a48a27619ed665f3674e1ce",
+      "kind": "normal",
+      "source": "entity_master.ck_entity_parent_links_window on entity_master.entity_parent_links",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "entity_master",
+      "target": "entity_master.entity_parent_links.valid_to",
+      "target_kind": "table column",
+      "target_name": "entity_parent_links",
+      "target_schema": "entity_master"
+    },
+    {
+      "fingerprint": "bacb74c6d95967918f58b16eec34df669e2bce9c325adbb606a54976ea4e29be",
+      "kind": "normal",
+      "source": "entity_master.ck_legal_entities_cik on entity_master.legal_entities",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "entity_master",
+      "target": "entity_master.legal_entities.cik",
+      "target_kind": "table column",
+      "target_name": "legal_entities",
+      "target_schema": "entity_master"
+    },
+    {
+      "fingerprint": "d61f7bf093fc643e3dd52426a6b3fedc99495972d4ec34837aa3a72dde65767a",
+      "kind": "normal",
+      "source": "entity_master.ck_legal_entities_lei on entity_master.legal_entities",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "entity_master",
+      "target": "entity_master.legal_entities.lei",
+      "target_kind": "table column",
+      "target_name": "legal_entities",
+      "target_schema": "entity_master"
+    },
+    {
+      "fingerprint": "389e022f864ab337056276784245bbf343323abfa9eb5caf8bbafb874e8212bd",
+      "kind": "normal",
+      "source": "entity_master.ck_security_issuer_links_window on entity_master.security_issuer_links",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "entity_master",
+      "target": "entity_master.security_issuer_links.valid_from",
+      "target_kind": "table column",
+      "target_name": "security_issuer_links",
+      "target_schema": "entity_master"
+    },
+    {
+      "fingerprint": "abdb968d6b2e5a92296e94eb2134c134aaa26b976b97a44c62a65d6cd0e106d7",
+      "kind": "normal",
+      "source": "entity_master.ck_security_issuer_links_window on entity_master.security_issuer_links",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "entity_master",
+      "target": "entity_master.security_issuer_links.valid_to",
+      "target_kind": "table column",
+      "target_name": "security_issuer_links",
+      "target_schema": "entity_master"
+    },
+    {
+      "fingerprint": "7a7ecab5f623136e4521caff0832c37098dc79fbe9b82bc881e7661eaec306f1",
+      "kind": "normal",
+      "source": "entity_master.entity_parent_links_entity_id_fkey on entity_master.entity_parent_links",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "entity_master",
+      "target": "entity_master.legal_entities.entity_id",
+      "target_kind": "table column",
+      "target_name": "legal_entities",
+      "target_schema": "entity_master"
+    },
+    {
+      "fingerprint": "e545a48d8f90b8ee386039f24bfc5b2d012821229d398937f68dfb09d6ec17bf",
+      "kind": "normal",
+      "source": "entity_master.entity_parent_links_entity_id_fkey on entity_master.entity_parent_links",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "entity_master",
+      "target": "entity_master.legal_entities_pkey",
+      "target_kind": "index",
+      "target_name": "legal_entities_pkey",
+      "target_schema": "entity_master"
+    },
+    {
+      "fingerprint": "49b139ff11fc0114065d215a7b12d0831d003948e08235cd3c0325aae9dfeb0e",
+      "kind": "normal",
+      "source": "entity_master.entity_parent_links_parent_entity_id_fkey on entity_master.entity_parent_links",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "entity_master",
+      "target": "entity_master.legal_entities.entity_id",
+      "target_kind": "table column",
+      "target_name": "legal_entities",
+      "target_schema": "entity_master"
+    },
+    {
+      "fingerprint": "c34877b59093a50c58a3647b42b34edfe2c42711c4ca62ee10039ee5b42ff44e",
+      "kind": "normal",
+      "source": "entity_master.entity_parent_links_parent_entity_id_fkey on entity_master.entity_parent_links",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "entity_master",
+      "target": "entity_master.legal_entities_pkey",
+      "target_kind": "index",
+      "target_name": "legal_entities_pkey",
+      "target_schema": "entity_master"
+    },
+    {
+      "fingerprint": "a0c204c7c65c902160c252aeefab94c631225f54a2ec77a8eddec4c3d89c8e69",
+      "kind": "normal",
+      "source": "entity_master.security_issuer_links_issuer_entity_id_fkey on entity_master.security_issuer_links",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "entity_master",
+      "target": "entity_master.legal_entities.entity_id",
+      "target_kind": "table column",
+      "target_name": "legal_entities",
+      "target_schema": "entity_master"
+    },
+    {
+      "fingerprint": "2376744854343c15d5c16b16049ae1800858143086a4a384c4650e39067c659d",
+      "kind": "normal",
+      "source": "entity_master.security_issuer_links_issuer_entity_id_fkey on entity_master.security_issuer_links",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "entity_master",
+      "target": "entity_master.legal_entities_pkey",
+      "target_kind": "index",
+      "target_name": "legal_entities_pkey",
+      "target_schema": "entity_master"
     },
     {
       "fingerprint": "f720a04031bbc20f69afb33bf7298ff7c700c867f418515a0fd17eaf2178a993",
@@ -14430,6 +14598,7 @@
   "inspected_schemas": [
     "asset_operations",
     "banking",
+    "entity_master",
     "fund_accounts",
     "fund_structure",
     "identity_access",
@@ -14455,6 +14624,11 @@
       "display_name": "Direct Lending",
       "id": "direct-lending",
       "physical_schema": "security_master"
+    },
+    {
+      "display_name": "Entity Master",
+      "id": "entity-master",
+      "physical_schema": "entity_master"
     },
     {
       "display_name": "Fund Accounts",
@@ -15297,6 +15471,94 @@
     {
       "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
       "object": "column:banking.schema_migrations.filename"
+    },
+    {
+      "fingerprint": "29facb20b76133be943985242d7b19bcaa7d0cb23f86d5af8406b658c7d7426c",
+      "object": "column:entity_master.entity_master_schema_migrations.applied_at"
+    },
+    {
+      "fingerprint": "f6ea2a5d58978e4a6687c049cc534b4e5ca17bcb78e9fea009f02fcc7ac18f4e",
+      "object": "column:entity_master.entity_master_schema_migrations.checksum"
+    },
+    {
+      "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
+      "object": "column:entity_master.entity_master_schema_migrations.filename"
+    },
+    {
+      "fingerprint": "7db572e054fbd89f0b1b2bf8fa2bf02a37a1608f774752d4871c79489e9c1de7",
+      "object": "column:entity_master.entity_parent_links.entity_id"
+    },
+    {
+      "fingerprint": "d2bb88f1030eea4dff1a3b45a9cf57879cd8c0f51352053115c388b05ed7a620",
+      "object": "column:entity_master.entity_parent_links.parent_entity_id"
+    },
+    {
+      "fingerprint": "05a81ed98d64882a179537b862b73a379ea267ff9f78443f40ec17c0e1281073",
+      "object": "column:entity_master.entity_parent_links.recorded_at"
+    },
+    {
+      "fingerprint": "15afcb9ae15c0de35f143ac536903bb71b784a9f6cecc94887c4d2c4eca816e6",
+      "object": "column:entity_master.entity_parent_links.recorded_by"
+    },
+    {
+      "fingerprint": "21123a17dbef4d822a7d7be3283276c7455aa87bbac0f166430e782fb0087992",
+      "object": "column:entity_master.entity_parent_links.valid_from"
+    },
+    {
+      "fingerprint": "a3c727042dd6ac878ad96b98ca96065db34f4aef64e49b9a18288501ad92f8f6",
+      "object": "column:entity_master.entity_parent_links.valid_to"
+    },
+    {
+      "fingerprint": "94f1525edfdba2912b6fe3aff31145b8689c9f56cfe3f02b949a76c5d00a0e67",
+      "object": "column:entity_master.legal_entities.cik"
+    },
+    {
+      "fingerprint": "7db572e054fbd89f0b1b2bf8fa2bf02a37a1608f774752d4871c79489e9c1de7",
+      "object": "column:entity_master.legal_entities.entity_id"
+    },
+    {
+      "fingerprint": "d3d226147b9dbe37d3c7b8fe05bd9aad1e8400448147cffff4eecd7cf3cf9263",
+      "object": "column:entity_master.legal_entities.jurisdiction"
+    },
+    {
+      "fingerprint": "6f927976666e035945ebf32e32fd7a0d750f95e1ffc4fbafb3f64fcf5fcd4c3b",
+      "object": "column:entity_master.legal_entities.legal_name"
+    },
+    {
+      "fingerprint": "a20f8c403e7ac7b169a3d5c5b020a2b138980f0053c34fee2baafdf36e530822",
+      "object": "column:entity_master.legal_entities.lei"
+    },
+    {
+      "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
+      "object": "column:entity_master.legal_entities.recorded_at"
+    },
+    {
+      "fingerprint": "16029a20c46dc8bd44244275c93ade7d8b5a948186929a2086b5998a93f9acf1",
+      "object": "column:entity_master.legal_entities.recorded_by"
+    },
+    {
+      "fingerprint": "aa25862c1270060746d2b044b6c3b0f67e6c6596b26ab8bd4d09479068933eac",
+      "object": "column:entity_master.security_issuer_links.issuer_entity_id"
+    },
+    {
+      "fingerprint": "05a81ed98d64882a179537b862b73a379ea267ff9f78443f40ec17c0e1281073",
+      "object": "column:entity_master.security_issuer_links.recorded_at"
+    },
+    {
+      "fingerprint": "15afcb9ae15c0de35f143ac536903bb71b784a9f6cecc94887c4d2c4eca816e6",
+      "object": "column:entity_master.security_issuer_links.recorded_by"
+    },
+    {
+      "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+      "object": "column:entity_master.security_issuer_links.security_id"
+    },
+    {
+      "fingerprint": "21123a17dbef4d822a7d7be3283276c7455aa87bbac0f166430e782fb0087992",
+      "object": "column:entity_master.security_issuer_links.valid_from"
+    },
+    {
+      "fingerprint": "a3c727042dd6ac878ad96b98ca96065db34f4aef64e49b9a18288501ad92f8f6",
+      "object": "column:entity_master.security_issuer_links.valid_to"
     },
     {
       "fingerprint": "3a3b30edaba6861a4dfd671904739ef241fcbcd883a5b0f69f7ec79df5703c98",
@@ -27219,6 +27481,18 @@
       "object": "comment:table:asset_operations.asset_operations_write_events"
     },
     {
+      "fingerprint": "e9f0fb9dca0405aa3ed61e36d30f513c74b5137fea8e6e514168fc1028c0ce6d",
+      "object": "comment:table:entity_master.entity_parent_links"
+    },
+    {
+      "fingerprint": "62661f5b1fa033685c49e9b5dae73fe44f3502949fd19c436099d238a8a2d2cf",
+      "object": "comment:table:entity_master.legal_entities"
+    },
+    {
+      "fingerprint": "6956f2f0c32942d97e56b5d39fcd055616c5911e9538a1746dfa61d5c368b5bd",
+      "object": "comment:table:entity_master.security_issuer_links"
+    },
+    {
       "fingerprint": "30a6b197e443af2ad56de1e99c7f853d010fc616754e8bf78a42c5c90e5ccd8a",
       "object": "comment:table:fund_accounts.private_capital_record"
     },
@@ -27617,6 +27891,54 @@
     {
       "fingerprint": "f15d373bffeb0d61ac995ee43ad7b7d17132475f719b05197db7d392c4104560",
       "object": "constraint:banking.schema_migrations.schema_migrations_pkey"
+    },
+    {
+      "fingerprint": "103cc7ea4afcd6a809ffc4e22898c8d9583d77be9879b528cf22a7e97b5370d4",
+      "object": "constraint:entity_master.entity_master_schema_migrations.entity_master_schema_migrations_pkey"
+    },
+    {
+      "fingerprint": "caa6fdbb1405b89c28adddd2427b5c1afba1b7b40d9bbeadc4aeec416a93eb45",
+      "object": "constraint:entity_master.entity_parent_links.ck_entity_parent_links_distinct"
+    },
+    {
+      "fingerprint": "b996431b94e6ecd08cba9ca47d094682f10fde970006af729b8f5825d881ec28",
+      "object": "constraint:entity_master.entity_parent_links.ck_entity_parent_links_window"
+    },
+    {
+      "fingerprint": "36b9326f272f1dd9d1ad5b505efd3e23546589c87a4ec4b52757f96073635185",
+      "object": "constraint:entity_master.entity_parent_links.entity_parent_links_entity_id_fkey"
+    },
+    {
+      "fingerprint": "670b8acb61126fd1dbbb7896e0056823874a0a32d7d1fc83ec0c33f50a82cf71",
+      "object": "constraint:entity_master.entity_parent_links.entity_parent_links_parent_entity_id_fkey"
+    },
+    {
+      "fingerprint": "02f5234956070d789e63915136aa42fb69424fd2bdf4b9cf874b5c12e8aaa936",
+      "object": "constraint:entity_master.entity_parent_links.entity_parent_links_pkey"
+    },
+    {
+      "fingerprint": "857850e5d4407ad5f4522501babe01d802770edef1955bb7924670063da200fd",
+      "object": "constraint:entity_master.legal_entities.ck_legal_entities_cik"
+    },
+    {
+      "fingerprint": "b1953beec1515994587290f39e6212c214351748f65f5fe02d3daaf23c15a021",
+      "object": "constraint:entity_master.legal_entities.ck_legal_entities_lei"
+    },
+    {
+      "fingerprint": "63991e3a7c7df932010f8c155cc653caf5c793806a50529debe8a393d2f4c8e1",
+      "object": "constraint:entity_master.legal_entities.legal_entities_pkey"
+    },
+    {
+      "fingerprint": "95d748b601f2ddf512f2ad78a3602d66c8cd312532b30da0a7fab9c3e567b82f",
+      "object": "constraint:entity_master.security_issuer_links.ck_security_issuer_links_window"
+    },
+    {
+      "fingerprint": "114909bfba184213c13e02cd6fc19466c7d8a30e231011cc7609388e969bc1dd",
+      "object": "constraint:entity_master.security_issuer_links.security_issuer_links_issuer_entity_id_fkey"
+    },
+    {
+      "fingerprint": "d592b9708c644bb3133e54bfce55339ad6ec0c7875bbf8dcaf37e72228cc0787",
+      "object": "constraint:entity_master.security_issuer_links.security_issuer_links_pkey"
     },
     {
       "fingerprint": "ae0d2d874811e8a68c4ef7b5b175180dd61f74ee64a18b2f7487fa3987c8c11f",
@@ -31773,6 +32095,62 @@
     {
       "fingerprint": "ef95b9d32b16b9329641bcb854dfdaf9cbdda827d67e17917fc1ee571e0e6854",
       "object": "dependency:banking.fk_bank_transactions_pending_payment on banking.bank_transactions->banking.pending_payments_pkey:normal"
+    },
+    {
+      "fingerprint": "82c4ba65eea1f762a1a64b3e58cf0dc8ff326b512483b4631e81ed76cc4d1586",
+      "object": "dependency:entity_master.ck_entity_parent_links_distinct on entity_master.entity_parent_links->entity_master.entity_parent_links.entity_id:normal"
+    },
+    {
+      "fingerprint": "d8d73c41e491e24dbf26850024e106cffa9d4ce97741589aafd693de9eed8686",
+      "object": "dependency:entity_master.ck_entity_parent_links_distinct on entity_master.entity_parent_links->entity_master.entity_parent_links.parent_entity_id:normal"
+    },
+    {
+      "fingerprint": "a995d5b16381b40939e54fef0af039514b005eaa564a76c17129267c8c23d906",
+      "object": "dependency:entity_master.ck_entity_parent_links_window on entity_master.entity_parent_links->entity_master.entity_parent_links.valid_from:normal"
+    },
+    {
+      "fingerprint": "25eb39c0b2682324bcce61ce3e1d9bebebc3308b3a48a27619ed665f3674e1ce",
+      "object": "dependency:entity_master.ck_entity_parent_links_window on entity_master.entity_parent_links->entity_master.entity_parent_links.valid_to:normal"
+    },
+    {
+      "fingerprint": "bacb74c6d95967918f58b16eec34df669e2bce9c325adbb606a54976ea4e29be",
+      "object": "dependency:entity_master.ck_legal_entities_cik on entity_master.legal_entities->entity_master.legal_entities.cik:normal"
+    },
+    {
+      "fingerprint": "d61f7bf093fc643e3dd52426a6b3fedc99495972d4ec34837aa3a72dde65767a",
+      "object": "dependency:entity_master.ck_legal_entities_lei on entity_master.legal_entities->entity_master.legal_entities.lei:normal"
+    },
+    {
+      "fingerprint": "389e022f864ab337056276784245bbf343323abfa9eb5caf8bbafb874e8212bd",
+      "object": "dependency:entity_master.ck_security_issuer_links_window on entity_master.security_issuer_links->entity_master.security_issuer_links.valid_from:normal"
+    },
+    {
+      "fingerprint": "abdb968d6b2e5a92296e94eb2134c134aaa26b976b97a44c62a65d6cd0e106d7",
+      "object": "dependency:entity_master.ck_security_issuer_links_window on entity_master.security_issuer_links->entity_master.security_issuer_links.valid_to:normal"
+    },
+    {
+      "fingerprint": "7a7ecab5f623136e4521caff0832c37098dc79fbe9b82bc881e7661eaec306f1",
+      "object": "dependency:entity_master.entity_parent_links_entity_id_fkey on entity_master.entity_parent_links->entity_master.legal_entities.entity_id:normal"
+    },
+    {
+      "fingerprint": "e545a48d8f90b8ee386039f24bfc5b2d012821229d398937f68dfb09d6ec17bf",
+      "object": "dependency:entity_master.entity_parent_links_entity_id_fkey on entity_master.entity_parent_links->entity_master.legal_entities_pkey:normal"
+    },
+    {
+      "fingerprint": "49b139ff11fc0114065d215a7b12d0831d003948e08235cd3c0325aae9dfeb0e",
+      "object": "dependency:entity_master.entity_parent_links_parent_entity_id_fkey on entity_master.entity_parent_links->entity_master.legal_entities.entity_id:normal"
+    },
+    {
+      "fingerprint": "c34877b59093a50c58a3647b42b34edfe2c42711c4ca62ee10039ee5b42ff44e",
+      "object": "dependency:entity_master.entity_parent_links_parent_entity_id_fkey on entity_master.entity_parent_links->entity_master.legal_entities_pkey:normal"
+    },
+    {
+      "fingerprint": "a0c204c7c65c902160c252aeefab94c631225f54a2ec77a8eddec4c3d89c8e69",
+      "object": "dependency:entity_master.security_issuer_links_issuer_entity_id_fkey on entity_master.security_issuer_links->entity_master.legal_entities.entity_id:normal"
+    },
+    {
+      "fingerprint": "2376744854343c15d5c16b16049ae1800858143086a4a384c4650e39067c659d",
+      "object": "dependency:entity_master.security_issuer_links_issuer_entity_id_fkey on entity_master.security_issuer_links->entity_master.legal_entities_pkey:normal"
     },
     {
       "fingerprint": "f720a04031bbc20f69afb33bf7298ff7c700c867f418515a0fd17eaf2178a993",
@@ -36959,6 +37337,38 @@
       "object": "index:banking.ux_bank_transactions_payment_evidence"
     },
     {
+      "fingerprint": "9840588548ca02d2c9f7d55c21fe73c87e75c5b4a9bef5f013e26778d6e9f594",
+      "object": "index:entity_master.entity_master_schema_migrations_pkey"
+    },
+    {
+      "fingerprint": "2196706b7f9e6ca5783307e4617a49a2c4293bc1068aa3394d3ff4a6e85159aa",
+      "object": "index:entity_master.entity_parent_links_pkey"
+    },
+    {
+      "fingerprint": "fd7011e944fc37a6c8bb9797824694c550877cd9c172b3763ad99991eb94b98a",
+      "object": "index:entity_master.ix_entity_parent_links_parent"
+    },
+    {
+      "fingerprint": "15855de338a7dd68b552900dabd226f8c9997a0d5caa580c8464fd37a900ca7a",
+      "object": "index:entity_master.ix_security_issuer_links_issuer"
+    },
+    {
+      "fingerprint": "339a7f9111cc1dbd8e62d8b3c878b67d1e4fe278c5af99c3f341a4524474b70b",
+      "object": "index:entity_master.legal_entities_pkey"
+    },
+    {
+      "fingerprint": "e4e5602b40bbd2f6628fd1108308d1ce4027dc1f67454d88f2ea750fb810efdf",
+      "object": "index:entity_master.security_issuer_links_pkey"
+    },
+    {
+      "fingerprint": "3e131e49cec796b8a839ddce7e8d43394a58e91cd4ef2f8f0dcf5b46f12535c1",
+      "object": "index:entity_master.ux_legal_entities_cik"
+    },
+    {
+      "fingerprint": "47fa4d2baaab7a0d5dd21428c5b2ef873c41798067a6b84a05d38a3c6aa372a7",
+      "object": "index:entity_master.ux_legal_entities_lei"
+    },
+    {
       "fingerprint": "6b73ac1cb5ea6bcec44a3e9ae169868e279f3613c4d2a623078a3bfc360fabaa",
       "object": "index:fund_accounts.account_balance_snapshot_pkey"
     },
@@ -39791,6 +40201,22 @@
       "object": "rls:banking.schema_migrations"
     },
     {
+      "fingerprint": "899c15a628f35c96079ea3a1c06272b4e355f5a2ea56ce49f4e2244487a7b34d",
+      "object": "rls:entity_master.entity_master_schema_migrations"
+    },
+    {
+      "fingerprint": "f5cac08bb30827e1889179114316403ffbdd248df745b4c164d92840c07e02ce",
+      "object": "rls:entity_master.entity_parent_links"
+    },
+    {
+      "fingerprint": "b3ba480c2a09e8113796a220c6f700c48b004fe343c7948f223adeffb1ea268f",
+      "object": "rls:entity_master.legal_entities"
+    },
+    {
+      "fingerprint": "cd7f2a451a80b54ac7af9d45cac3cfffdc867f76337f046ae52ee36e6170f487",
+      "object": "rls:entity_master.security_issuer_links"
+    },
+    {
       "fingerprint": "202a0ae34d5fa63c592492ea4673ac5b517053defc248e1d8094eac75a488f65",
       "object": "rls:fund_accounts.account_balance_snapshot"
     },
@@ -40879,6 +41305,10 @@
       "object": "schema:banking"
     },
     {
+      "fingerprint": "3716fe5bb86dbae9ced2b9c192a8f70b48d582f4ed0b8b2aa610e1299c52c698",
+      "object": "schema:entity_master"
+    },
+    {
       "fingerprint": "aba5d08fb6eddf3918fe09173e330f6adbbda454e5972af83d26c14d8217e077",
       "object": "schema:fund_accounts"
     },
@@ -41033,6 +41463,22 @@
     {
       "fingerprint": "d74f73263bc9e930d261cc3d77c0ee25a8082a0e888fd58b7733f81a0c4b0de3",
       "object": "table:banking.schema_migrations"
+    },
+    {
+      "fingerprint": "e340814ac0605c655f17d48fa804ac4979022cc6d27e0ada9fbaf7133db14ac4",
+      "object": "table:entity_master.entity_master_schema_migrations"
+    },
+    {
+      "fingerprint": "e81c7a97c5aba07ae5dec2d461050fcfe9d210f05e22fb53fc6cca4158d32db6",
+      "object": "table:entity_master.entity_parent_links"
+    },
+    {
+      "fingerprint": "9390ad77b1c2c203e37faf27038c3cf8914c5f43ce54b0d3ee4609ce78fa5f11",
+      "object": "table:entity_master.legal_entities"
+    },
+    {
+      "fingerprint": "f1c36f2ff8413f8caa0a619a5f0cc838ff52360cc20bc586abb7008576d6ea70",
+      "object": "table:entity_master.security_issuer_links"
     },
     {
       "fingerprint": "438224fca9ad4beb2abf0f56471c94c2cf41eac18f3b4512c822c79e88cc93dc",
@@ -42774,6 +43220,7 @@
   "physical_schemas": [
     "asset_operations",
     "banking",
+    "entity_master",
     "fund_accounts",
     "fund_structure",
     "identity_access",
@@ -57211,6 +57658,2410 @@
           "rls_enabled": false,
           "rls_forced": false,
           "schema": "banking",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        }
+      ],
+      "triggers": [],
+      "views": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "create"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "usage"
+        }
+      ],
+      "comment": null,
+      "comments": [
+        {
+          "comment": "ADR-033 direct-parent relationships with valid-time windows [valid_from, valid_to).",
+          "fingerprint": "e9f0fb9dca0405aa3ed61e36d30f513c74b5137fea8e6e514168fc1028c0ce6d",
+          "object": "entity_master.entity_parent_links",
+          "object_type": "table"
+        },
+        {
+          "comment": "ADR-033 entity master: legal entities keyed by entity_id; LEI and CIK are optional unique external identifiers.",
+          "fingerprint": "62661f5b1fa033685c49e9b5dae73fe44f3502949fd19c436099d238a8a2d2cf",
+          "object": "entity_master.legal_entities",
+          "object_type": "table"
+        },
+        {
+          "comment": "ADR-033 Security Master issuer links (security_id from the Security Master) with valid-time windows.",
+          "fingerprint": "6956f2f0c32942d97e56b5d39fcd055616c5911e9538a1746dfa61d5c368b5bd",
+          "object": "entity_master.security_issuer_links",
+          "object_type": "table"
+        }
+      ],
+      "composite_types": [],
+      "dependencies": [
+        {
+          "fingerprint": "82c4ba65eea1f762a1a64b3e58cf0dc8ff326b512483b4631e81ed76cc4d1586",
+          "kind": "normal",
+          "source": "entity_master.ck_entity_parent_links_distinct on entity_master.entity_parent_links",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "entity_master",
+          "target": "entity_master.entity_parent_links.entity_id",
+          "target_kind": "table column",
+          "target_name": "entity_parent_links",
+          "target_schema": "entity_master"
+        },
+        {
+          "fingerprint": "d8d73c41e491e24dbf26850024e106cffa9d4ce97741589aafd693de9eed8686",
+          "kind": "normal",
+          "source": "entity_master.ck_entity_parent_links_distinct on entity_master.entity_parent_links",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "entity_master",
+          "target": "entity_master.entity_parent_links.parent_entity_id",
+          "target_kind": "table column",
+          "target_name": "entity_parent_links",
+          "target_schema": "entity_master"
+        },
+        {
+          "fingerprint": "a995d5b16381b40939e54fef0af039514b005eaa564a76c17129267c8c23d906",
+          "kind": "normal",
+          "source": "entity_master.ck_entity_parent_links_window on entity_master.entity_parent_links",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "entity_master",
+          "target": "entity_master.entity_parent_links.valid_from",
+          "target_kind": "table column",
+          "target_name": "entity_parent_links",
+          "target_schema": "entity_master"
+        },
+        {
+          "fingerprint": "25eb39c0b2682324bcce61ce3e1d9bebebc3308b3a48a27619ed665f3674e1ce",
+          "kind": "normal",
+          "source": "entity_master.ck_entity_parent_links_window on entity_master.entity_parent_links",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "entity_master",
+          "target": "entity_master.entity_parent_links.valid_to",
+          "target_kind": "table column",
+          "target_name": "entity_parent_links",
+          "target_schema": "entity_master"
+        },
+        {
+          "fingerprint": "bacb74c6d95967918f58b16eec34df669e2bce9c325adbb606a54976ea4e29be",
+          "kind": "normal",
+          "source": "entity_master.ck_legal_entities_cik on entity_master.legal_entities",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "entity_master",
+          "target": "entity_master.legal_entities.cik",
+          "target_kind": "table column",
+          "target_name": "legal_entities",
+          "target_schema": "entity_master"
+        },
+        {
+          "fingerprint": "d61f7bf093fc643e3dd52426a6b3fedc99495972d4ec34837aa3a72dde65767a",
+          "kind": "normal",
+          "source": "entity_master.ck_legal_entities_lei on entity_master.legal_entities",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "entity_master",
+          "target": "entity_master.legal_entities.lei",
+          "target_kind": "table column",
+          "target_name": "legal_entities",
+          "target_schema": "entity_master"
+        },
+        {
+          "fingerprint": "389e022f864ab337056276784245bbf343323abfa9eb5caf8bbafb874e8212bd",
+          "kind": "normal",
+          "source": "entity_master.ck_security_issuer_links_window on entity_master.security_issuer_links",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "entity_master",
+          "target": "entity_master.security_issuer_links.valid_from",
+          "target_kind": "table column",
+          "target_name": "security_issuer_links",
+          "target_schema": "entity_master"
+        },
+        {
+          "fingerprint": "abdb968d6b2e5a92296e94eb2134c134aaa26b976b97a44c62a65d6cd0e106d7",
+          "kind": "normal",
+          "source": "entity_master.ck_security_issuer_links_window on entity_master.security_issuer_links",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "entity_master",
+          "target": "entity_master.security_issuer_links.valid_to",
+          "target_kind": "table column",
+          "target_name": "security_issuer_links",
+          "target_schema": "entity_master"
+        },
+        {
+          "fingerprint": "7a7ecab5f623136e4521caff0832c37098dc79fbe9b82bc881e7661eaec306f1",
+          "kind": "normal",
+          "source": "entity_master.entity_parent_links_entity_id_fkey on entity_master.entity_parent_links",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "entity_master",
+          "target": "entity_master.legal_entities.entity_id",
+          "target_kind": "table column",
+          "target_name": "legal_entities",
+          "target_schema": "entity_master"
+        },
+        {
+          "fingerprint": "e545a48d8f90b8ee386039f24bfc5b2d012821229d398937f68dfb09d6ec17bf",
+          "kind": "normal",
+          "source": "entity_master.entity_parent_links_entity_id_fkey on entity_master.entity_parent_links",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "entity_master",
+          "target": "entity_master.legal_entities_pkey",
+          "target_kind": "index",
+          "target_name": "legal_entities_pkey",
+          "target_schema": "entity_master"
+        },
+        {
+          "fingerprint": "49b139ff11fc0114065d215a7b12d0831d003948e08235cd3c0325aae9dfeb0e",
+          "kind": "normal",
+          "source": "entity_master.entity_parent_links_parent_entity_id_fkey on entity_master.entity_parent_links",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "entity_master",
+          "target": "entity_master.legal_entities.entity_id",
+          "target_kind": "table column",
+          "target_name": "legal_entities",
+          "target_schema": "entity_master"
+        },
+        {
+          "fingerprint": "c34877b59093a50c58a3647b42b34edfe2c42711c4ca62ee10039ee5b42ff44e",
+          "kind": "normal",
+          "source": "entity_master.entity_parent_links_parent_entity_id_fkey on entity_master.entity_parent_links",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "entity_master",
+          "target": "entity_master.legal_entities_pkey",
+          "target_kind": "index",
+          "target_name": "legal_entities_pkey",
+          "target_schema": "entity_master"
+        },
+        {
+          "fingerprint": "a0c204c7c65c902160c252aeefab94c631225f54a2ec77a8eddec4c3d89c8e69",
+          "kind": "normal",
+          "source": "entity_master.security_issuer_links_issuer_entity_id_fkey on entity_master.security_issuer_links",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "entity_master",
+          "target": "entity_master.legal_entities.entity_id",
+          "target_kind": "table column",
+          "target_name": "legal_entities",
+          "target_schema": "entity_master"
+        },
+        {
+          "fingerprint": "2376744854343c15d5c16b16049ae1800858143086a4a384c4650e39067c659d",
+          "kind": "normal",
+          "source": "entity_master.security_issuer_links_issuer_entity_id_fkey on entity_master.security_issuer_links",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "entity_master",
+          "target": "entity_master.legal_entities_pkey",
+          "target_kind": "index",
+          "target_name": "legal_entities_pkey",
+          "target_schema": "entity_master"
+        }
+      ],
+      "domains": [],
+      "enums": [],
+      "exists": true,
+      "extensions": [],
+      "fingerprint": "3716fe5bb86dbae9ced2b9c192a8f70b48d582f4ed0b8b2aa610e1299c52c698",
+      "foreign_tables": [],
+      "functions": [],
+      "logical_modules": [
+        "entity-master"
+      ],
+      "materialized_views": [],
+      "name": "entity_master",
+      "owner": "meridian",
+      "partitions": [],
+      "policies": [],
+      "procedures": [],
+      "relations": [
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "filename",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f6ea2a5d58978e4a6687c049cc534b4e5ca17bcb78e9fea009f02fcc7ac18f4e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "checksum",
+              "nullable": true,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "29facb20b76133be943985242d7b19bcaa7d0cb23f86d5af8406b658c7d7426c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "applied_at",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "filename"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (filename)",
+              "delete_action": null,
+              "fingerprint": "103cc7ea4afcd6a809ffc4e22898c8d9583d77be9879b528cf22a7e97b5370d4",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "entity_master_schema_migrations_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "e340814ac0605c655f17d48fa804ac4979022cc6d27e0ada9fbaf7133db14ac4",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX entity_master_schema_migrations_pkey ON entity_master.entity_master_schema_migrations USING btree (filename)",
+              "expression": null,
+              "fingerprint": "9840588548ca02d2c9f7d55c21fe73c87e75c5b4a9bef5f013e26778d6e9f594",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "filename"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "entity_master_schema_migrations_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "entity_master_schema_migrations",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "entity_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "7db572e054fbd89f0b1b2bf8fa2bf02a37a1608f774752d4871c79489e9c1de7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "entity_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "d2bb88f1030eea4dff1a3b45a9cf57879cd8c0f51352053115c388b05ed7a620",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "parent_entity_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "21123a17dbef4d822a7d7be3283276c7455aa87bbac0f166430e782fb0087992",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "valid_from",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "a3c727042dd6ac878ad96b98ca96065db34f4aef64e49b9a18288501ad92f8f6",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "valid_to",
+              "nullable": true,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "05a81ed98d64882a179537b862b73a379ea267ff9f78443f40ec17c0e1281073",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "15afcb9ae15c0de35f143ac536903bb71b784a9f6cecc94887c4d2c4eca816e6",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_by",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "ADR-033 direct-parent relationships with valid-time windows [valid_from, valid_to).",
+          "constraints": [
+            {
+              "columns": [
+                "entity_id",
+                "parent_entity_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (entity_id <> parent_entity_id)",
+              "delete_action": null,
+              "fingerprint": "caa6fdbb1405b89c28adddd2427b5c1afba1b7b40d9bbeadc4aeec416a93eb45",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_entity_parent_links_distinct",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "valid_to",
+                "valid_from"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (valid_to IS NULL OR valid_to > valid_from)",
+              "delete_action": null,
+              "fingerprint": "b996431b94e6ecd08cba9ca47d094682f10fde970006af729b8f5825d881ec28",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_entity_parent_links_window",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "entity_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (entity_id) REFERENCES entity_master.legal_entities(entity_id)",
+              "delete_action": "no_action",
+              "fingerprint": "36b9326f272f1dd9d1ad5b505efd3e23546589c87a4ec4b52757f96073635185",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "entity_parent_links_entity_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "entity_id"
+              ],
+              "referenced_schema": "entity_master",
+              "referenced_table": "legal_entities",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "parent_entity_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (parent_entity_id) REFERENCES entity_master.legal_entities(entity_id)",
+              "delete_action": "no_action",
+              "fingerprint": "670b8acb61126fd1dbbb7896e0056823874a0a32d7d1fc83ec0c33f50a82cf71",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "entity_parent_links_parent_entity_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "entity_id"
+              ],
+              "referenced_schema": "entity_master",
+              "referenced_table": "legal_entities",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "entity_id",
+                "valid_from"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (entity_id, valid_from)",
+              "delete_action": null,
+              "fingerprint": "02f5234956070d789e63915136aa42fb69424fd2bdf4b9cf874b5c12e8aaa936",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "entity_parent_links_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "e81c7a97c5aba07ae5dec2d461050fcfe9d210f05e22fb53fc6cca4158d32db6",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX entity_parent_links_pkey ON entity_master.entity_parent_links USING btree (entity_id, valid_from)",
+              "expression": null,
+              "fingerprint": "2196706b7f9e6ca5783307e4617a49a2c4293bc1068aa3394d3ff4a6e85159aa",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "entity_id",
+                "valid_from"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "entity_parent_links_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_entity_parent_links_parent ON entity_master.entity_parent_links USING btree (parent_entity_id)",
+              "expression": null,
+              "fingerprint": "fd7011e944fc37a6c8bb9797824694c550877cd9c172b3763ad99991eb94b98a",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "parent_entity_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_entity_parent_links_parent",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "entity_parent_links",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "entity_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "7db572e054fbd89f0b1b2bf8fa2bf02a37a1608f774752d4871c79489e9c1de7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "entity_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6f927976666e035945ebf32e32fd7a0d750f95e1ffc4fbafb3f64fcf5fcd4c3b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "legal_name",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "a20f8c403e7ac7b169a3d5c5b020a2b138980f0053c34fee2baafdf36e530822",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "lei",
+              "nullable": true,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "94f1525edfdba2912b6fe3aff31145b8689c9f56cfe3f02b949a76c5d00a0e67",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "cik",
+              "nullable": true,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "d3d226147b9dbe37d3c7b8fe05bd9aad1e8400448147cffff4eecd7cf3cf9263",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "jurisdiction",
+              "nullable": true,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "16029a20c46dc8bd44244275c93ade7d8b5a948186929a2086b5998a93f9acf1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_by",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "ADR-033 entity master: legal entities keyed by entity_id; LEI and CIK are optional unique external identifiers.",
+          "constraints": [
+            {
+              "columns": [
+                "cik"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (cik IS NULL OR cik ~ '^[0-9]{10}$'::text)",
+              "delete_action": null,
+              "fingerprint": "857850e5d4407ad5f4522501babe01d802770edef1955bb7924670063da200fd",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_legal_entities_cik",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "lei"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (lei IS NULL OR lei ~ '^[A-Z0-9]{20}$'::text)",
+              "delete_action": null,
+              "fingerprint": "b1953beec1515994587290f39e6212c214351748f65f5fe02d3daaf23c15a021",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_legal_entities_lei",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "entity_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (entity_id)",
+              "delete_action": null,
+              "fingerprint": "63991e3a7c7df932010f8c155cc653caf5c793806a50529debe8a393d2f4c8e1",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "legal_entities_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "9390ad77b1c2c203e37faf27038c3cf8914c5f43ce54b0d3ee4609ce78fa5f11",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX legal_entities_pkey ON entity_master.legal_entities USING btree (entity_id)",
+              "expression": null,
+              "fingerprint": "339a7f9111cc1dbd8e62d8b3c878b67d1e4fe278c5af99c3f341a4524474b70b",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "entity_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "legal_entities_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_legal_entities_cik ON entity_master.legal_entities USING btree (cik) WHERE (cik IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "3e131e49cec796b8a839ddce7e8d43394a58e91cd4ef2f8f0dcf5b46f12535c1",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "cik"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_legal_entities_cik",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "cik IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_legal_entities_lei ON entity_master.legal_entities USING btree (lei) WHERE (lei IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "47fa4d2baaab7a0d5dd21428c5b2ef873c41798067a6b84a05d38a3c6aa372a7",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lei"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_legal_entities_lei",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "lei IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "legal_entities",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "entity_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "aa25862c1270060746d2b044b6c3b0f67e6c6596b26ab8bd4d09479068933eac",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "issuer_entity_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "21123a17dbef4d822a7d7be3283276c7455aa87bbac0f166430e782fb0087992",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "valid_from",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "a3c727042dd6ac878ad96b98ca96065db34f4aef64e49b9a18288501ad92f8f6",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "valid_to",
+              "nullable": true,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "05a81ed98d64882a179537b862b73a379ea267ff9f78443f40ec17c0e1281073",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "15afcb9ae15c0de35f143ac536903bb71b784a9f6cecc94887c4d2c4eca816e6",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_by",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "ADR-033 Security Master issuer links (security_id from the Security Master) with valid-time windows.",
+          "constraints": [
+            {
+              "columns": [
+                "valid_to",
+                "valid_from"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (valid_to IS NULL OR valid_to > valid_from)",
+              "delete_action": null,
+              "fingerprint": "95d748b601f2ddf512f2ad78a3602d66c8cd312532b30da0a7fab9c3e567b82f",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_security_issuer_links_window",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "issuer_entity_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (issuer_entity_id) REFERENCES entity_master.legal_entities(entity_id)",
+              "delete_action": "no_action",
+              "fingerprint": "114909bfba184213c13e02cd6fc19466c7d8a30e231011cc7609388e969bc1dd",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "security_issuer_links_issuer_entity_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "entity_id"
+              ],
+              "referenced_schema": "entity_master",
+              "referenced_table": "legal_entities",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "security_id",
+                "valid_from"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (security_id, valid_from)",
+              "delete_action": null,
+              "fingerprint": "d592b9708c644bb3133e54bfce55339ad6ec0c7875bbf8dcaf37e72228cc0787",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_issuer_links_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "f1c36f2ff8413f8caa0a619a5f0cc838ff52360cc20bc586abb7008576d6ea70",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_security_issuer_links_issuer ON entity_master.security_issuer_links USING btree (issuer_entity_id)",
+              "expression": null,
+              "fingerprint": "15855de338a7dd68b552900dabd226f8c9997a0d5caa580c8464fd37a900ca7a",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "issuer_entity_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_security_issuer_links_issuer",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX security_issuer_links_pkey ON entity_master.security_issuer_links USING btree (security_id, valid_from)",
+              "expression": null,
+              "fingerprint": "e4e5602b40bbd2f6628fd1108308d1ce4027dc1f67454d88f2ea750fb810efdf",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id",
+                "valid_from"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "security_issuer_links_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "security_issuer_links",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "entity_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        }
+      ],
+      "row_level_security": [
+        {
+          "enabled": false,
+          "fingerprint": "899c15a628f35c96079ea3a1c06272b4e355f5a2ea56ce49f4e2244487a7b34d",
+          "forced": false,
+          "policies": [],
+          "relation": "entity_master_schema_migrations",
+          "schema": "entity_master"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "f5cac08bb30827e1889179114316403ffbdd248df745b4c164d92840c07e02ce",
+          "forced": false,
+          "policies": [],
+          "relation": "entity_parent_links",
+          "schema": "entity_master"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "b3ba480c2a09e8113796a220c6f700c48b004fe343c7948f223adeffb1ea268f",
+          "forced": false,
+          "policies": [],
+          "relation": "legal_entities",
+          "schema": "entity_master"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "cd7f2a451a80b54ac7af9d45cac3cfffdc867f76337f046ae52ee36e6170f487",
+          "forced": false,
+          "policies": [],
+          "relation": "security_issuer_links",
+          "schema": "entity_master"
+        }
+      ],
+      "security_labels": [],
+      "sequences": [],
+      "tables": [
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "filename",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f6ea2a5d58978e4a6687c049cc534b4e5ca17bcb78e9fea009f02fcc7ac18f4e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "checksum",
+              "nullable": true,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "29facb20b76133be943985242d7b19bcaa7d0cb23f86d5af8406b658c7d7426c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "applied_at",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "filename"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (filename)",
+              "delete_action": null,
+              "fingerprint": "103cc7ea4afcd6a809ffc4e22898c8d9583d77be9879b528cf22a7e97b5370d4",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "entity_master_schema_migrations_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "e340814ac0605c655f17d48fa804ac4979022cc6d27e0ada9fbaf7133db14ac4",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX entity_master_schema_migrations_pkey ON entity_master.entity_master_schema_migrations USING btree (filename)",
+              "expression": null,
+              "fingerprint": "9840588548ca02d2c9f7d55c21fe73c87e75c5b4a9bef5f013e26778d6e9f594",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "filename"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "entity_master_schema_migrations_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "entity_master_schema_migrations",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "entity_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "7db572e054fbd89f0b1b2bf8fa2bf02a37a1608f774752d4871c79489e9c1de7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "entity_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "d2bb88f1030eea4dff1a3b45a9cf57879cd8c0f51352053115c388b05ed7a620",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "parent_entity_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "21123a17dbef4d822a7d7be3283276c7455aa87bbac0f166430e782fb0087992",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "valid_from",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "a3c727042dd6ac878ad96b98ca96065db34f4aef64e49b9a18288501ad92f8f6",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "valid_to",
+              "nullable": true,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "05a81ed98d64882a179537b862b73a379ea267ff9f78443f40ec17c0e1281073",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "15afcb9ae15c0de35f143ac536903bb71b784a9f6cecc94887c4d2c4eca816e6",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_by",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "ADR-033 direct-parent relationships with valid-time windows [valid_from, valid_to).",
+          "constraints": [
+            {
+              "columns": [
+                "entity_id",
+                "parent_entity_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (entity_id <> parent_entity_id)",
+              "delete_action": null,
+              "fingerprint": "caa6fdbb1405b89c28adddd2427b5c1afba1b7b40d9bbeadc4aeec416a93eb45",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_entity_parent_links_distinct",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "valid_to",
+                "valid_from"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (valid_to IS NULL OR valid_to > valid_from)",
+              "delete_action": null,
+              "fingerprint": "b996431b94e6ecd08cba9ca47d094682f10fde970006af729b8f5825d881ec28",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_entity_parent_links_window",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "entity_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (entity_id) REFERENCES entity_master.legal_entities(entity_id)",
+              "delete_action": "no_action",
+              "fingerprint": "36b9326f272f1dd9d1ad5b505efd3e23546589c87a4ec4b52757f96073635185",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "entity_parent_links_entity_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "entity_id"
+              ],
+              "referenced_schema": "entity_master",
+              "referenced_table": "legal_entities",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "parent_entity_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (parent_entity_id) REFERENCES entity_master.legal_entities(entity_id)",
+              "delete_action": "no_action",
+              "fingerprint": "670b8acb61126fd1dbbb7896e0056823874a0a32d7d1fc83ec0c33f50a82cf71",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "entity_parent_links_parent_entity_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "entity_id"
+              ],
+              "referenced_schema": "entity_master",
+              "referenced_table": "legal_entities",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "entity_id",
+                "valid_from"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (entity_id, valid_from)",
+              "delete_action": null,
+              "fingerprint": "02f5234956070d789e63915136aa42fb69424fd2bdf4b9cf874b5c12e8aaa936",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "entity_parent_links_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "e81c7a97c5aba07ae5dec2d461050fcfe9d210f05e22fb53fc6cca4158d32db6",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX entity_parent_links_pkey ON entity_master.entity_parent_links USING btree (entity_id, valid_from)",
+              "expression": null,
+              "fingerprint": "2196706b7f9e6ca5783307e4617a49a2c4293bc1068aa3394d3ff4a6e85159aa",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "entity_id",
+                "valid_from"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "entity_parent_links_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_entity_parent_links_parent ON entity_master.entity_parent_links USING btree (parent_entity_id)",
+              "expression": null,
+              "fingerprint": "fd7011e944fc37a6c8bb9797824694c550877cd9c172b3763ad99991eb94b98a",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "parent_entity_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_entity_parent_links_parent",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "entity_parent_links",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "entity_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "7db572e054fbd89f0b1b2bf8fa2bf02a37a1608f774752d4871c79489e9c1de7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "entity_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6f927976666e035945ebf32e32fd7a0d750f95e1ffc4fbafb3f64fcf5fcd4c3b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "legal_name",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "a20f8c403e7ac7b169a3d5c5b020a2b138980f0053c34fee2baafdf36e530822",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "lei",
+              "nullable": true,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "94f1525edfdba2912b6fe3aff31145b8689c9f56cfe3f02b949a76c5d00a0e67",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "cik",
+              "nullable": true,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "d3d226147b9dbe37d3c7b8fe05bd9aad1e8400448147cffff4eecd7cf3cf9263",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "jurisdiction",
+              "nullable": true,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "16029a20c46dc8bd44244275c93ade7d8b5a948186929a2086b5998a93f9acf1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_by",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "ADR-033 entity master: legal entities keyed by entity_id; LEI and CIK are optional unique external identifiers.",
+          "constraints": [
+            {
+              "columns": [
+                "cik"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (cik IS NULL OR cik ~ '^[0-9]{10}$'::text)",
+              "delete_action": null,
+              "fingerprint": "857850e5d4407ad5f4522501babe01d802770edef1955bb7924670063da200fd",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_legal_entities_cik",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "lei"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (lei IS NULL OR lei ~ '^[A-Z0-9]{20}$'::text)",
+              "delete_action": null,
+              "fingerprint": "b1953beec1515994587290f39e6212c214351748f65f5fe02d3daaf23c15a021",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_legal_entities_lei",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "entity_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (entity_id)",
+              "delete_action": null,
+              "fingerprint": "63991e3a7c7df932010f8c155cc653caf5c793806a50529debe8a393d2f4c8e1",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "legal_entities_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "9390ad77b1c2c203e37faf27038c3cf8914c5f43ce54b0d3ee4609ce78fa5f11",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX legal_entities_pkey ON entity_master.legal_entities USING btree (entity_id)",
+              "expression": null,
+              "fingerprint": "339a7f9111cc1dbd8e62d8b3c878b67d1e4fe278c5af99c3f341a4524474b70b",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "entity_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "legal_entities_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_legal_entities_cik ON entity_master.legal_entities USING btree (cik) WHERE (cik IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "3e131e49cec796b8a839ddce7e8d43394a58e91cd4ef2f8f0dcf5b46f12535c1",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "cik"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_legal_entities_cik",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "cik IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_legal_entities_lei ON entity_master.legal_entities USING btree (lei) WHERE (lei IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "47fa4d2baaab7a0d5dd21428c5b2ef873c41798067a6b84a05d38a3c6aa372a7",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lei"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_legal_entities_lei",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "lei IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "legal_entities",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "entity_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "aa25862c1270060746d2b044b6c3b0f67e6c6596b26ab8bd4d09479068933eac",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "issuer_entity_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "21123a17dbef4d822a7d7be3283276c7455aa87bbac0f166430e782fb0087992",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "valid_from",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "a3c727042dd6ac878ad96b98ca96065db34f4aef64e49b9a18288501ad92f8f6",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "valid_to",
+              "nullable": true,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "05a81ed98d64882a179537b862b73a379ea267ff9f78443f40ec17c0e1281073",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "15afcb9ae15c0de35f143ac536903bb71b784a9f6cecc94887c4d2c4eca816e6",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_by",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "ADR-033 Security Master issuer links (security_id from the Security Master) with valid-time windows.",
+          "constraints": [
+            {
+              "columns": [
+                "valid_to",
+                "valid_from"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (valid_to IS NULL OR valid_to > valid_from)",
+              "delete_action": null,
+              "fingerprint": "95d748b601f2ddf512f2ad78a3602d66c8cd312532b30da0a7fab9c3e567b82f",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_security_issuer_links_window",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "issuer_entity_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (issuer_entity_id) REFERENCES entity_master.legal_entities(entity_id)",
+              "delete_action": "no_action",
+              "fingerprint": "114909bfba184213c13e02cd6fc19466c7d8a30e231011cc7609388e969bc1dd",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "security_issuer_links_issuer_entity_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "entity_id"
+              ],
+              "referenced_schema": "entity_master",
+              "referenced_table": "legal_entities",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "security_id",
+                "valid_from"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (security_id, valid_from)",
+              "delete_action": null,
+              "fingerprint": "d592b9708c644bb3133e54bfce55339ad6ec0c7875bbf8dcaf37e72228cc0787",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_issuer_links_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "f1c36f2ff8413f8caa0a619a5f0cc838ff52360cc20bc586abb7008576d6ea70",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_security_issuer_links_issuer ON entity_master.security_issuer_links USING btree (issuer_entity_id)",
+              "expression": null,
+              "fingerprint": "15855de338a7dd68b552900dabd226f8c9997a0d5caa580c8464fd37a900ca7a",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "issuer_entity_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_security_issuer_links_issuer",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX security_issuer_links_pkey ON entity_master.security_issuer_links USING btree (security_id, valid_from)",
+              "expression": null,
+              "fingerprint": "e4e5602b40bbd2f6628fd1108308d1ce4027dc1f67454d88f2ea750fb810efdf",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id",
+                "valid_from"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "security_issuer_links_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "security_issuer_links",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "entity_master",
           "security_labels": [],
           "sequence": null,
           "triggers": []

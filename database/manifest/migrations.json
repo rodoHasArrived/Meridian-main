@@ -1817,10 +1817,19 @@
       "path": "src/Meridian.Storage/Workstation/Migrations/001_operator_triage.sql",
       "schema": "operator_triage",
       "sha256": "45827327de6385564826a009bdfe7037fbd62b9d4f0ad9dd56b76dce11cad600"
+    },
+    {
+      "filename": "001_entity_master.sql",
+      "immutable": true,
+      "migration_set_id": "entity-master",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/EntityMaster/Migrations/001_entity_master.sql",
+      "schema": "entity_master",
+      "sha256": "629cf24e0dcf5607df9043491a9cada4fa6fcb1bd09666afaa6ba9c5e270c7c7"
     }
   ],
   "findings": [],
-  "fingerprint": "6c7ab08d51ffda48f94b10efa76608aa08b04f8ef39a5b4d15d20d0d5386fb94",
+  "fingerprint": "a6ca3594c930b38ddd398efdd51aad8c8319f668b4c0f8e3736303e6b3d2a296",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -2078,12 +2087,34 @@
       "quote_schema": false,
       "schema": "operator_triage",
       "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING"
+      ],
+      "directory": "src/Meridian.Storage/EntityMaster/Migrations",
+      "display_name": "Entity Master",
+      "drift_policy": "reapply",
+      "glob": "*.sql",
+      "id": "entity-master",
+      "immutable": true,
+      "ledger": {
+        "checksum_column": "checksum",
+        "checksum_required": false,
+        "key_column": "filename",
+        "ordinal_column": "ordinal",
+        "table": "entity_master_schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/EntityMaster",
+      "quote_schema": false,
+      "schema": "entity_master",
+      "track_ordinals": false
     }
   ],
   "summary": {
     "errors": 0,
-    "files": 202,
-    "migration_sets": 11,
+    "files": 203,
+    "migration_sets": 12,
     "waivers": 57,
     "warnings": 0
   },

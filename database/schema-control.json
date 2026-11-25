@@ -403,6 +403,25 @@
       "quote_schema": false,
       "schema": "operator_triage",
       "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING"
+      ],
+      "directory": "src/Meridian.Storage/EntityMaster/Migrations",
+      "display_name": "Entity Master",
+      "drift_policy": "reapply",
+      "glob": "*.sql",
+      "id": "entity-master",
+      "ledger": {
+        "checksum_column": "checksum",
+        "key_column": "filename",
+        "table": "entity_master_schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/EntityMaster",
+      "quote_schema": false,
+      "schema": "entity_master",
+      "track_ordinals": false
     }
   ],
   "outputs": {
