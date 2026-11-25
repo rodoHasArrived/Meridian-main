@@ -1,11 +1,11 @@
 {
-  "total_files": 1303,
+  "total_files": 1304,
   "orphaned_count": 394,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:82250b79f0fb117914d928dfefcf0e8a4cb783bfe1537d8d16a2b11eddab3461",
+  "signal_digest": "sha256:b55526f3fdba00ea4c68a40c6cdea983917f3221a87f42dc749b669af34a52c4",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2662,6 +2662,13 @@
     },
     {
       "path": "docs/engineering/plans/review-remediation-2026-11-12.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/security-master-class-plumbing-codegen.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
