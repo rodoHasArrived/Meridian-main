@@ -45,7 +45,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--dotnet-filter", default="")
     parser.add_argument("--enable-windows-targeting", default="true", choices=("true", "false"))
     parser.add_argument("--enable-full-wpf-build", default="false", choices=("true", "false"))
-    parser.add_argument("--wpf-route", default="position-blotter", choices=("position-blotter", "operator-inbox"))
+    parser.add_argument("--wpf-route", default="both", choices=("both", "position-blotter", "operator-inbox"))
+    parser.add_argument("--build-only", action="store_true", help="In wpf-dev-loop mode, build without running tests.")
     parser.add_argument("--wait", action="store_true", help="Wait for the dispatched run and return its conclusion.")
     parser.add_argument("--dry-run", action="store_true", help="Print the gh command without dispatching.")
     return parser.parse_args(argv)
@@ -107,8 +108,11 @@ def build_workflow_command(args: argparse.Namespace) -> list[str]:
     if args.mode == "dotnet-filtered":
         fields["dotnet_project"] = args.dotnet_project.replace("\\", "/").strip()
         fields["dotnet_filter"] = args.dotnet_filter.strip()
-    elif args.mode == "wpf-dev-loop" and args.dotnet_filter.strip():
-        fields["dotnet_filter"] = args.dotnet_filter.strip()
+    elif args.mode == "wpf-dev-loop":
+        if args.dotnet_filter.strip():
+            fields["dotnet_filter"] = args.dotnet_filter.strip()
+        if args.build_only:
+            fields["build_only"] = "true"
 
     command = ["gh", "workflow", "run", WORKFLOW_FILE, "--ref", args.ref]
     for key, value in fields.items():
