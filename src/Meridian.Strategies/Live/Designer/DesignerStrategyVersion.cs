@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
+using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 
 namespace Meridian.Strategies.Live.Designer;
@@ -26,6 +27,16 @@ public static class DesignerStrategyVersion
 
     public static string ComputeRealismHash(ExecutionRealismDescriptor realism) =>
         Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(realism));
+
+    public static string ComputeStrategyId(StrategyRunRepositoryScope scope, string documentId)
+    {
+        if (!StrategyRunRepositoryVisibility.TryCreateScopeKey(scope, out _))
+            throw new ArgumentException("An authenticated tenant and company are required.", nameof(scope));
+        ArgumentException.ThrowIfNullOrWhiteSpace(documentId);
+        // Preserve the identity already used by retained scoped Designer runs.
+        return "strategy-design-" + Sha256Digest.ComputeUtf8(
+            JsonSerializer.Serialize(new[] { scope.TenantId, scope.CompanyId, documentId }));
+    }
 
     public static string Compute(StrategyDesignDocument document, string realismHash)
     {

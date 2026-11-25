@@ -22,7 +22,8 @@ public sealed partial class OrderManagementSystem
         string orderId,
         CancellationToken ct,
         string? gatewayOrderId = null,
-        OrderSubmissionAuthority? authority = null)
+        OrderSubmissionAuthority? authority = null,
+        string? cancelAllIncidentId = null)
     {
         if (!_orders.TryGetValue(orderId, out var state))
         {
@@ -34,14 +35,15 @@ public sealed partial class OrderManagementSystem
                 report: null,
                 message: "Order not found",
                 ct: ct,
-                authority: authority).ConfigureAwait(false);
+                authority: authority,
+                cancelAllIncidentId: cancelAllIncidentId).ConfigureAwait(false);
 
             return new OrderResult { Success = false, OrderId = orderId, ErrorMessage = "Order not found" };
         }
 
         // A parked order has no broker order to cancel: withdraw the escalation and
         // complete the cancellation locally instead of failing at the gateway.
-        if (await TryCancelParkedOrderAsync(orderId, ct, authority).ConfigureAwait(false) is { } parkedCancellation)
+        if (await TryCancelParkedOrderAsync(orderId, ct, authority, cancelAllIncidentId).ConfigureAwait(false) is { } parkedCancellation)
         {
             return parkedCancellation;
         }
@@ -126,7 +128,8 @@ public sealed partial class OrderManagementSystem
                 report: report,
                 message: report.RejectReason ?? "Cancel request failed",
                 ct: ct,
-                authority: authority).ConfigureAwait(false);
+                authority: authority,
+                cancelAllIncidentId: cancelAllIncidentId).ConfigureAwait(false);
 
             return new OrderResult
             {
@@ -151,7 +154,8 @@ public sealed partial class OrderManagementSystem
             report: report,
             message: report.RejectReason,
             ct: ct,
-            authority: authority).ConfigureAwait(false);
+            authority: authority,
+            cancelAllIncidentId: cancelAllIncidentId).ConfigureAwait(false);
 
         return new OrderResult
         {

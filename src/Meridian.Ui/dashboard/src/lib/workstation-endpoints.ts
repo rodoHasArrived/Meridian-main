@@ -215,6 +215,7 @@ export const EXECUTION_API_ENDPOINTS = {
   sessions: UI_API_ROUTES.ExecutionSessions,
   sessionsCreate: UI_API_ROUTES.ExecutionSessionCreate,
   audit: UI_API_ROUTES.ExecutionAudit,
+  cancelIncidents: "/api/execution/cancel-incidents",
   controls: UI_API_ROUTES.ExecutionControls,
   circuitBreaker: UI_API_ROUTES.ExecutionControlsCircuitBreaker,
   defaultPositionLimit: UI_API_ROUTES.ExecutionControlsDefaultPositionLimit,
@@ -1299,6 +1300,14 @@ export function executionAuditSearchEndpoint(
   query: Record<string, string | number | undefined> = {}
 ): string {
   return `${EXECUTION_API_ENDPOINTS.audit}/search${queryString(query)}`;
+}
+
+export function executionCancelIncidentsEndpoint(fundAccountId: string): string {
+  return `${EXECUTION_API_ENDPOINTS.cancelIncidents}${queryString({ fundAccountId })}`;
+}
+
+export function executionCancelIncidentEndpoint(incidentId: string, fundAccountId: string): string {
+  return `${EXECUTION_API_ENDPOINTS.cancelIncidents}/${encodeURIComponent(incidentId)}${queryString({ fundAccountId })}`;
 }
 
 export function executionManualOverrideClearEndpoint(overrideId: string): string {
