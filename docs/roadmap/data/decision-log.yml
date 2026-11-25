@@ -527,22 +527,23 @@ decisions:
       - W12-ICCONFIRM-001
       - W10-SEAM-001
   - id: DEC-W13-STATUS-001
-    title: "Proposed: record W10-CONSOL-001 as in progress and review the W13 design-document adaptation"
-    status: proposed
+    title: Record W13-STRAT-001, W13-OMS-001 and W10-CONSOL-001 as in progress
+    status: accepted
     decided_on: 2026-11-25
     owner_lane: Core Team
     summary: >-
-      Proposed by the 2026-11-25 registry verification and awaiting the repository owner's acceptance.
-      W10-CONSOL-001 links about fifteen source and test entries while marked planned, so the registry
-      now shows it as in_progress. If the owner rejects this entry, return it to planned.
-      DEC-TRADING-STRATEGY-DIRECTION-001 kept W13-STRAT-001 and W13-OMS-001 planned, and
-      build/scripts/docs/validate-design-document-adaptation.py holds them at planned and
-      planned_evidence until the design-document adaptation is reviewed. Bounded implementation has
-      since merged (PRs 3644, 3686, 3708 and 3731), and both rows now record it in their notes, PR
-      references and evidence while staying planned. This entry asks the owner to review that
-      adaptation so the W13 rows can move to in_progress. It adopts no delivery rank, implementation
-      completion, operator acceptance, live activation authority or release certification; every
-      reservation in DEC-TRADING-STRATEGY-DIRECTION-001 stays in force.
+      Proposed by the 2026-11-25 registry verification and accepted by the repository owner on
+      2026-11-25 after reviewing the design-document adaptation. DEC-TRADING-STRATEGY-DIRECTION-001
+      kept W13-STRAT-001 and W13-OMS-001 planned; bounded implementation has since merged (PRs 3644,
+      3686, 3708 and 3731: order command boundary, scoped Designer paper execution, governed strategy
+      versions and live order authority, Designer artifact binding and retained cancel-all evidence).
+      W10-CONSOL-001 likewise links about fifteen source and test entries. All three rows are recorded
+      as in_progress with in_progress evidence posture. build/scripts/docs/validate-design-document-adaptation.py
+      permits that posture for the W13 rows only while this decision is accepted and names them, and it
+      still rejects ready_for_acceptance, accepted or done. The decision adopts no delivery rank,
+      implementation completion, operator acceptance, live activation authority or release
+      certification; every reservation in DEC-TRADING-STRATEGY-DIRECTION-001 stays in force, and the
+      adapted bounded contexts keep stage planned until their outcomes are accepted.
     related_roadmap_items:
       - W13-STRAT-001
       - W13-OMS-001

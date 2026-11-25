@@ -3336,16 +3336,16 @@ W12-YEND-001: in_progress; health green; evidence in_progress. A read-only fisca
 | Field | Value |
 | --- | --- |
 | Wave | W13 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | medium |
 | Owner lane | Execution and Fund Accounts |
-| Evidence posture | planned_evidence |
+| Evidence posture | in_progress |
 | Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
-W13-OMS-001: planned; health green; evidence planned_evidence. Bounded slices landed (order command boundary Phases 0-5, governed live order authority, retained cancel-all evidence). Stays planned until the design-document adaptation is reviewed; manual-intent contract, recovery, broker reconciliation and acceptance remain open.
+W13-OMS-001: in_progress; health green; evidence in_progress. Bounded slices landed (order command boundary Phases 0-5, governed live order authority, retained cancel-all evidence) under accepted DEC-W13-STATUS-001. Manual-intent contract, recovery, broker reconciliation, live-support evidence and acceptance remain open.
 
 ### Status References
 
@@ -3391,16 +3391,16 @@ W13-OMS-001: planned; health green; evidence planned_evidence. Bounded slices la
 | Field | Value |
 | --- | --- |
 | Wave | W13 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | medium |
 | Owner lane | Strategy Analytics |
-| Evidence posture | planned_evidence |
+| Evidence posture | in_progress |
 | Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
-W13-STRAT-001: planned; health green; evidence planned_evidence. Bounded slices landed (strategy-artifact identity, governed versions, scoped Designer paper execution, Designer artifact binding). Stays planned until the design-document adaptation is reviewed; envelope, recovery, rehearsal and acceptance remain open. No live authority.
+W13-STRAT-001: in_progress; health green; evidence in_progress. Bounded slices landed (strategy-artifact identity, governed versions, scoped Designer paper execution, Designer artifact binding) under accepted DEC-W13-STATUS-001. Supported envelope, recovery, end-to-end rehearsal and acceptance remain open. No live authority.
 
 ### Status References
 
