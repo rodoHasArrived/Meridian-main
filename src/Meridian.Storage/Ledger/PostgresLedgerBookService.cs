@@ -839,6 +839,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
                     accumulator.EntryCount,
                     Dimensions: accumulator.Dimensions)
                 {
+                    SecurityId = accumulator.Account.SecurityId,
                     JournalEntryIds = accumulator.JournalEntryIds.Order().ToArray(),
                     LedgerEntryIds = accumulator.LedgerEntryIds.Order().ToArray()
                 };
@@ -846,6 +847,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             .OrderBy(static row => row.AccountType, StringComparer.Ordinal)
             .ThenBy(static row => row.AccountName, StringComparer.Ordinal)
             .ThenBy(static row => row.Symbol, StringComparer.Ordinal)
+            .ThenBy(static row => row.SecurityId)
             .ThenBy(static row => row.FinancialAccountId, StringComparer.Ordinal)
             .ThenBy(static row => BuildDimensionsKey(row.Dimensions), StringComparer.Ordinal)
             .ToArray();
@@ -1007,7 +1009,9 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             "\u001f",
             account.Name,
             account.AccountType,
-            account.Symbol ?? string.Empty,
+            // A SecurityId-keyed account is one row across ticker renames and never merges with a
+            // legacy ticker-keyed row (Security Master review F2).
+            account.SecurityId is { } securityId ? $"security:{securityId:D}" : account.Symbol ?? string.Empty,
             account.FinancialAccountId ?? string.Empty,
             BuildDimensionsKey(dimensions));
 

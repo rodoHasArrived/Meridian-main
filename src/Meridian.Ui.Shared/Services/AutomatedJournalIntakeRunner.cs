@@ -429,10 +429,10 @@ public sealed partial class AutomatedJournalIntakeRunner
                     $"Trial balance account '{line.AccountName}' has unrecognized account type '{line.AccountType}'; closing entries cannot be projected safely.");
             }
 
-            var account = new LedgerAccount(line.AccountName, accountType, line.Symbol, line.FinancialAccountId);
+            var account = new LedgerAccount(line.AccountName, accountType, line.Symbol, line.FinancialAccountId, line.SecurityId);
             var dimensions = LedgerDimensionMapper.ToDomain(line.Dimensions);
             var key = FormattableString.Invariant(
-                $"{account.Name}|{account.AccountType}|{account.Symbol}|{account.FinancialAccountId}|{DimensionKey(dimensions)}");
+                $"{account.Name}|{account.AccountType}|{(account.SecurityId is { } securityId ? $"security:{securityId:D}" : account.Symbol)}|{account.FinancialAccountId}|{DimensionKey(dimensions)}");
 
             if (balances.TryGetValue(key, out var existing))
             {

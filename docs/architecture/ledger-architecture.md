@@ -142,6 +142,8 @@ therefore keeps one account history.
   line's `LedgerAccountSecurityId`; the browser and WPF clients send it back unchanged. A line whose
   account SecurityId disagrees with its instrument is refused. Corrections are never re-keyed, so a
   pre-F2 ticker-keyed entry reverses on its own account.
+- **Period trial balance.** `LedgerPeriodTrialBalanceLineDto.SecurityId` carries the key. A renamed
+  holding is one row, and SecurityId rows never merge with legacy ticker rows.
 - **Readers.** Mark-to-market carrying value reads the SecurityId account plus any legacy ticker
   account for the same ticker until a reclass has moved it. Posted-ledger reconciliation groups
   rows by SecurityId and labels them with the broker symbol for the same security.

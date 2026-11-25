@@ -1064,6 +1064,8 @@ export interface LedgerPeriodTrialBalanceLine {
   accountType: string;
   symbol: string | null;
   financialAccountId: string | null;
+  /** Security Master key of a per-security account row (F2); `symbol` is then the display ticker. */
+  securityId?: string | null;
   debitTotal: number;
   creditTotal: number;
   balance: number;

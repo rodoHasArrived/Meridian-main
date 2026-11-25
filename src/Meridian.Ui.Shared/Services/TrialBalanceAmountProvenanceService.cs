@@ -146,5 +146,8 @@ public sealed class TrialBalanceAmountProvenanceService(
         => Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new { Scope = scope, Currency = currency, Journals = records.OrderBy(record => record.GlobalSequence).ToArray() }));
 
     private static string RowIdentity(LedgerPeriodTrialBalanceLineDto row)
-        => Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new { row.AccountName, row.AccountType, row.Symbol, row.FinancialAccountId, row.Dimensions }));
+        => Sha256Digest.ComputeUtf8(row.SecurityId is { } securityId
+            // SecurityId-keyed rows (F2) are identified by SecurityId; legacy rows keep their identity hash.
+            ? JsonSerializer.Serialize(new { row.AccountName, row.AccountType, SecurityId = securityId, row.FinancialAccountId, row.Dimensions })
+            : JsonSerializer.Serialize(new { row.AccountName, row.AccountType, row.Symbol, row.FinancialAccountId, row.Dimensions }));
 }

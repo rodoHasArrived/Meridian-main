@@ -721,6 +721,10 @@ Implemented together, so no holding is split between a ticker key and a Security
   refuses a line whose account SecurityId names a different instrument than the line, or no
   instrument. Correction lines are never re-keyed automatically, so reversing an entry retained
   before F2 still hits its ticker-keyed account.
+- `LedgerPeriodTrialBalanceLineDto.SecurityId` carries the account key on the period trial balance
+  (browser `securityId`; omitted when null). A SecurityId-keyed holding is one row across ticker
+  renames and never merges with a legacy ticker row; period-close projection and row-identity
+  hashes key SecurityId rows by SecurityId while legacy rows keep their identity.
 - Postgres migration `V_ledger_083` and SecurityId-aware account predicates.
 - Retained journals keep their keys. `LedgerSecurityKeyMigration` reports old ticker keys mapped
   to SecurityId and proposes a governed reclass.
@@ -751,5 +755,3 @@ Known follow-ups:
 
 - A legacy account with an open lot that has no book position, or whose instrument is not the
   resolved SecurityId, is listed as blocked by `LedgerSecurityKeyRekeyService`.
-- `LedgerPeriodTrialBalanceLineDto` does not yet carry the account SecurityId. Period-close
-  closing entries only touch revenue and expense accounts, which are not per-security.
