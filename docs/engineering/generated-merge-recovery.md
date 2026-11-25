@@ -20,8 +20,9 @@ under `artifacts/docs/generated/`. Its `outputs.json` records that revision and 
 
 Reviewed generated references, diagrams, roadmap/source documentation and generated README blocks
 remain committed behind freshness checks. The coverage report's protected handwritten suffix also
-remains review-owned. The accepted `docs/source/generated/source-hash-manifest.json` baseline stays
-committed: it records a source/README alignment review. Actual current hashes are separate CI
+remains review-owned. The accepted baseline under `docs/source/generated/source-hashes/` (one file per
+registered module plus a `_manifest.json` header) stays committed: it records a source/README
+alignment review. Actual current hashes are separate CI
 evidence at `artifacts/docs/source-hashes.json`; producing them never accepts a new review baseline.
 
 Install the documented generation dependencies, then refresh with the same command after edits or
@@ -165,8 +166,10 @@ In particular:
   the prose, then let the source renderer replace its generated blocks.
 - `docs/HELP.md`, documentation automation guidance, diagram sources, roadmap registries, and
   unknown files under generated/status directories require review.
-- `docs/source/generated/source-hash-manifest.json` is a reviewed source/documentation baseline.
-  When no source/prose conflict remains, the resolver can combine independent module entries and
+- `docs/source/generated/source-hashes/` is a reviewed source/documentation baseline stored one
+  file per module, so branches that review different modules merge without conflict. Each file is
+  `merge=binary`, so concurrent reviews of the same module still conflict. When no source/prose
+  conflict remains, the resolver can combine independent module entries and
   reuse parent entries that match the merged module. A module that matches neither reviewed parent
   requires the [source documentation workflow](../source/README.md); never create new review hashes
   merely to clear a merge.
