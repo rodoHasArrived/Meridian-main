@@ -46,6 +46,13 @@ Meridian-main
 │       │   ├── agents
 │       │   │   └── openai.yaml
 │       │   └── SKILL.md
+│       ├── meridian-ci-cd
+│       │   ├── assets
+│       │   │   ├── pr-workflow.yml
+│       │   │   └── scheduled-workflow.yml
+│       │   ├── references
+│       │   │   └── workflow-inventory.md
+│       │   └── SKILL.md
 │       ├── meridian-cleanup
 │       │   └── SKILL.md
 │       ├── meridian-code-review
@@ -226,6 +233,13 @@ Meridian-main
 │   │   ├── meridian-browser-workstation
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   └── SKILL.md
+│   │   ├── meridian-ci-cd
+│   │   │   ├── assets
+│   │   │   │   ├── pr-workflow.yml
+│   │   │   │   └── scheduled-workflow.yml
+│   │   │   ├── references
+│   │   │   │   └── workflow-inventory.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-cleanup
 │   │   │   └── SKILL.md
