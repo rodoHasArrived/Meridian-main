@@ -91,19 +91,7 @@
   },
   "rawSelects": {},
   "prefixedCurrency": {},
-  "assumedMoneyDefaults": {
-    "src/screens/accounting-period-comparison.tsx": 1,
-    "src/screens/accounting-screen.capital-accounts.view-model.ts": 1,
-    "src/screens/accounting-screen.close-cockpit-drafts.ts": 1,
-    "src/screens/accounting-screen.close-cockpit.view-model.ts": 2,
-    "src/screens/accounting-screen.governance.view-model.ts": 1,
-    "src/screens/accounting-screen.onboarding-panel.tsx": 2,
-    "src/screens/accounting-screen.security-master.ts": 1,
-    "src/screens/operations-continuity-screen.view-model.ts": 1,
-    "src/screens/report-run-parameters-screen.view-model.ts": 1,
-    "src/screens/settings-screen.asset-profile-section.tsx": 2,
-    "src/screens/settings-screen.scoped-access-section.tsx": 1
-  },
+  "assumedMoneyDefaults": {},
   "placeholderVocabulary": {
     "src/screens/accounting-calibration-summary.view-model.ts": 2,
     "src/screens/accounting-period-comparison.tsx": 1,

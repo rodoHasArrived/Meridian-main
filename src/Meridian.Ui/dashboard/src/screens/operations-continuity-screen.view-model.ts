@@ -3589,9 +3589,10 @@ function mapNavSupportPackageRow(packageDto: PrivateCapitalNavSupportPackage): O
   const actions = (packageDto.requiredActions ?? [])
     .map((action) => action.trim())
     .filter(Boolean);
-  // ISO codes render symbol-style ("$1,250,000.00"); any other code keeps the amount with the code as a suffix.
-  const shadowNavCurrency = packageDto.currency ?? "USD";
-  const shadowNavAmount = /^[A-Z]{3}$/.test(shadowNavCurrency)
+  // ISO codes render symbol-style ("$1,250,000.00"); any other code keeps the amount with the code as
+  // a suffix, and a package with no currency renders the bare amount rather than assuming USD.
+  const shadowNavCurrency = packageDto.currency?.trim() || null;
+  const shadowNavAmount = shadowNavCurrency && /^[A-Z]{3}$/.test(shadowNavCurrency)
     ? formatCurrencyAmount(packageDto.shadowNav, { currency: shadowNavCurrency, fallback: "Not recorded" })
     : formatAmountWithCode(packageDto.shadowNav, shadowNavCurrency, { minimumFractionDigits: 0, maximumFractionDigits: 4, fallback: "Not recorded" });
 

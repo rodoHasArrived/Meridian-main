@@ -1009,6 +1009,11 @@ export function useAccountingConfigurationViewModel(
     if (!workspace || !rule || dryRunBusy) {
       return;
     }
+    const dryRunCurrency = resolveDryRunCurrency(workspace, rule);
+    if (!dryRunCurrency) {
+      setDryRunError(describeApiError(new Error(MISSING_DRY_RUN_CURRENCY), MISSING_DRY_RUN_CURRENCY));
+      return;
+    }
 
     setDryRunBusy(true);
     setDryRunError(null);
@@ -1018,7 +1023,7 @@ export function useAccountingConfigurationViewModel(
         ledgerBookId: workspace.ledgerBookId ?? null,
         sourceEventType: rule.sourceEventType,
         eventAmount: resolveDryRunEventAmount(rule),
-        currency: resolveDryRunCurrency(rule),
+        currency: dryRunCurrency,
         effectiveDate: resolveDryRunEffectiveDate(rule),
         actor: "browser-accounting-operator",
         dimensions: rule.scope ?? null,
@@ -1142,6 +1147,15 @@ export function useAccountingConfigurationViewModel(
     const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
     const savedTestCases = workspace?.ruleTestCases ?? [];
     if (!workspace || (activeRules.length === 0 && savedTestCases.length === 0) || ruleTestBusy) {
+      return;
+    }
+
+    const ruleWithoutCurrency = savedTestCases.length > 0
+      ? null
+      : activeRules.find((rule) => !resolveDryRunCurrency(workspace, rule)) ?? null;
+    if (ruleWithoutCurrency) {
+      const message = `${ruleWithoutCurrency.displayName}: ${MISSING_DRY_RUN_CURRENCY}`;
+      setRuleTestError(describeApiError(new Error(message), message));
       return;
     }
 
@@ -4582,7 +4596,8 @@ function buildAccountingRuleTestCase(
       ledgerBookId: workspace.ledgerBookId ?? null,
       sourceEventType: rule.sourceEventType,
       eventAmount: resolveDryRunEventAmount(rule),
-      currency: resolveDryRunCurrency(rule),
+      // Callers check first: a rule with no resolvable currency never reaches a test case.
+      currency: resolveDryRunCurrency(workspace, rule) ?? "",
       effectiveDate: resolveDryRunEffectiveDate(rule),
       actor: "browser-accounting-operator",
       dimensions: rule.scope ?? null,
@@ -4721,10 +4736,18 @@ function resolveDryRunEventAmount(rule: PostingRule): number {
   return generatedAmount && generatedAmount > 0 ? generatedAmount : 1000;
 }
 
-function resolveDryRunCurrency(rule: PostingRule): string {
+const MISSING_DRY_RUN_CURRENCY =
+  "No currency is available for this dry run: the rule's postings and formulas name none and the selected ledger book has no base currency. Add a currency before previewing; Meridian does not assume USD.";
+
+/** The rule's own currency, else the selected ledger book's base currency; never an assumed USD. */
+function resolveDryRunCurrency(workspace: AccountingConfigurationWorkspace, rule: PostingRule): string | null {
+  const bookCurrency = workspace.ledgerBookId
+    ? workspace.ledgerBooks.find((book) => book.ledgerBookId === workspace.ledgerBookId)?.baseCurrency
+    : null;
   return rule.generatedPostings?.find((line) => line.currency)?.currency
-    ?? rule.formulas?.find((formula) => formula.currency)?.currency
-    ?? "USD";
+    || rule.formulas?.find((formula) => formula.currency)?.currency
+    || bookCurrency?.trim()
+    || null;
 }
 
 function resolveDryRunEffectiveDate(rule: PostingRule): string {

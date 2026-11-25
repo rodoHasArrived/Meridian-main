@@ -212,7 +212,7 @@ export function useSettingsScopedAccessSectionState({ onRefresh, rolePermissionC
             principalId: "",
             scopeId: current.scopeKind === "Global" ? "" : current.scopeId,
             approvalLimitAmount: "",
-            approvalLimitCurrency: current.approvalLimitCurrency || "USD",
+            approvalLimitCurrency: current.approvalLimitCurrency,
             segregationOfDutiesRule: "",
             busy: false,
             message: `Scoped access granted for ${result.assignment.principalId}.`,

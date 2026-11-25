@@ -2200,4 +2200,82 @@ describe("accounting governance view model", () => {  it("loads Accounting Rules
     expect(services.activate).not.toHaveBeenCalled();
   });
 
+  it("refuses a dry run with no rule or book currency instead of assuming USD, and uses the book currency when present", async () => {
+    const baseWorkspace: AccountingConfigurationWorkspace = {
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-eur",
+      status: "Draft",
+      configurationVersion: "v1",
+      updatedAtUtc: "2026-06-30T12:00:00Z",
+      ledgerBooks: [],
+      chartOfAccounts: [],
+      journalTemplates: [],
+      postingRules: [{
+        ruleId: "rule-no-currency",
+        displayName: "Rule without currency",
+        sourceEventType: "InterestAccrual",
+        templateId: "template-interest",
+        ruleVersion: "v1",
+        isArchived: false,
+        priority: 10
+      }],
+      validationIssues: [],
+      auditTrail: [],
+      ruleTestCases: []
+    };
+    const eurBook = {
+      ledgerBookId: "book-eur",
+      fundProfileId: "fund-alpha",
+      fundStructureNodeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      fundStructureNodeKind: "Fund",
+      displayName: "Alpha EUR book",
+      baseCurrency: "EUR",
+      createdAt: "2026-06-30T12:00:00Z",
+      updatedAt: "2026-06-30T12:00:00Z",
+      accountingBasis: "Primary" as const,
+      accountingPolicyId: "legacy-v1",
+      accountingPolicyVersion: "legacy-v1"
+    };
+    const makeServices = (workspace: AccountingConfigurationWorkspace): AccountingConfigurationServices => ({
+      getConfiguration: vi.fn().mockResolvedValue(workspace),
+      assessProductionReadiness: vi.fn().mockResolvedValue(null),
+      listMigrationRunArtifacts: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-eur", artifacts: [] }),
+      listMigrationWorkerPlans: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-eur", kind: null, plans: [] }),
+      listExternalGlMappingProfiles: vi.fn().mockResolvedValue([]),
+      upsertExternalGlMappingProfile: vi.fn(),
+      getProductionCertificationProfile: vi.fn(),
+      upsertProductionCertificationProfile: vi.fn(),
+      getTenantAdministrationProfile: vi.fn(),
+      upsertTenantAdministrationProfile: vi.fn(),
+      createLedgerBook: vi.fn(),
+      previewTemplate: vi.fn(),
+      upsertChartNode: vi.fn(),
+      upsertRule: vi.fn(),
+      dryRunRule: vi.fn().mockRejectedValue(new Error("dry run reached the server")),
+      buildJournalCandidate: vi.fn(),
+      runRuleTests: vi.fn(),
+      saveRuleTestCase: vi.fn(),
+      approveRulePromotion: vi.fn(),
+      activate: vi.fn()
+    });
+
+    const missing = makeServices(baseWorkspace);
+    const unresolved = renderHook(() => useAccountingConfigurationViewModel(missing));
+    await waitFor(() => expect(missing.getConfiguration).toHaveBeenCalled());
+    await waitFor(() => expect(unresolved.result.current.rules.length).toBe(1));
+    await act(async () => {
+      await unresolved.result.current.dryRunSelectedRule();
+    });
+    expect(missing.dryRunRule).not.toHaveBeenCalled();
+    expect(unresolved.result.current.dryRunStatusText).toContain("No currency is available for this dry run");
+
+    const withBook = makeServices({ ...baseWorkspace, ledgerBooks: [eurBook] });
+    const resolved = renderHook(() => useAccountingConfigurationViewModel(withBook));
+    await waitFor(() => expect(resolved.result.current.rules.length).toBe(1));
+    await act(async () => {
+      await resolved.result.current.dryRunSelectedRule();
+    });
+    expect(withBook.dryRunRule).toHaveBeenCalledWith(expect.objectContaining({ currency: "EUR" }));
+  });
+
 });

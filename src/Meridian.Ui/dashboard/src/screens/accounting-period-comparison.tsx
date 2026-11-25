@@ -11,7 +11,7 @@ import { getPostedPeriodComparison, type PostedComparisonLine, type PostedCompar
 import { varianceColumns } from "@/components/meridian/variance-columns";
 import { roundDecimal } from "@/lib/variance";
 import { defaultMaterialityPolicyForClass } from "@/lib/reporting-materiality";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrencyAmount } from "@/lib/format";
 
 const COMPARISON_MATERIALITY = defaultMaterialityPolicyForClass("Accounting");
 import type { ApiRequestOptions } from "@/lib/api";
@@ -128,7 +128,9 @@ export function AccountingPeriodComparison({ bookId, periodId, expectedBasis, en
                   unit: result.currency, priorLabel: `Prior ${copy.column}`, policy: COMPARISON_MATERIALITY
                 })
               ]} />
-            <p className="text-xs text-muted-foreground">Variances over {formatCurrency(COMPARISON_MATERIALITY.absoluteVariance ?? 0, { maximumFractionDigits: 0 })} are marked Material (Accounting materiality policy).</p>
+            {COMPARISON_MATERIALITY.absoluteVariance != null
+              ? <p className="text-xs text-muted-foreground">Variances over {formatCurrencyAmount(COMPARISON_MATERIALITY.absoluteVariance, result.currency, { context: "summary" })} are marked Material (Accounting materiality policy).</p>
+              : null}
             <TechnicalDetails label="Comparison source cut">
               <dl className="space-y-2 text-xs">
                 <div><dt>Population fingerprint</dt><dd className="break-all font-mono">{result.populationHash}</dd></div>

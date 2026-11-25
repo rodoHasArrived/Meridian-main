@@ -59,7 +59,7 @@ describe("bounded accounting onboarding", () => {
     await screen.findByText("No onboarding workspaces retained. Define a bounded scope to begin.");
     await userEvent.click(screen.getByText("Define onboarding scope"));
     const form = within(screen.getByRole("form", { name: "Create onboarding workspace" }));
-    for (const [label, value] of [["Workspace name", "Quarter one onboarding"], ["Entity ID", "entity-1"], ["Book profile ID", "profile-1"], ["Ledger book ID", "book-1"], ["Financial account IDs", "account-1, account-2"], ["Start date", "2026-01-01"], ["End date", "2026-03-31"], ["Required dates", "2026-01-31, 2026-02-28"], ["Review criteria", "Reconcile both month ends."]]) {
+    for (const [label, value] of [["Workspace name", "Quarter one onboarding"], ["Entity ID", "entity-1"], ["Book profile ID", "profile-1"], ["Ledger book ID", "book-1"], ["Financial account IDs", "account-1, account-2"], ["Start date", "2026-01-01"], ["End date", "2026-03-31"], ["Required dates", "2026-01-31, 2026-02-28"], ["Balance tolerance", "0"], ["Position tolerance", "0"], ["NAV tolerance", "0"], ["Review criteria", "Reconcile both month ends."]]) {
       await userEvent.type(form.getByLabelText(label), value);
     }
     expect((await axe(container)).violations).toEqual([]);

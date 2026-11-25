@@ -630,8 +630,9 @@ export function useAccountingCloseReportPackageViewModel(
     const journalEntryId = lateAdjustmentDraft.journalEntryId.trim();
     const reason = lateAdjustmentDraft.reason.trim();
     const amount = Number(lateAdjustmentDraft.amount);
-    const currency = (lateAdjustmentDraft.currency.trim() || closePlan.materialityPolicy.currency || "USD").toUpperCase();
-    if (!journalEntryId || !reason || !Number.isFinite(amount) || amount === 0) {
+    // The draft or the plan's materiality policy names the currency; neither present is refused below.
+    const currency = (lateAdjustmentDraft.currency.trim() || closePlan.materialityPolicy.currency || "").toUpperCase();
+    if (!journalEntryId || !reason || !Number.isFinite(amount) || amount === 0 || !currency) {
       setCreateLateAdjustmentStatusText("Journal entry, non-zero amount, currency, and reason are required before requesting a late adjustment.");
       setCreateLateAdjustmentStatusTone("danger");
       return;
@@ -2535,7 +2536,7 @@ function buildClosePlanConfigurationRequest(
       percentThreshold: Number.isFinite(percentThreshold) && percentThreshold >= 0
         ? percentThreshold
         : closePlan.materialityPolicy.percentThreshold,
-      currency: (setupDraft.currency.trim() || closePlan.materialityPolicy.currency || "USD").toUpperCase(),
+      currency: (setupDraft.currency.trim() || closePlan.materialityPolicy.currency || "").toUpperCase(),
       reviewRole: setupDraft.reviewRole.trim() || closePlan.materialityPolicy.reviewRole,
       requiresLateAdjustmentApproval: setupDraft.requiresLateAdjustmentApproval
     },

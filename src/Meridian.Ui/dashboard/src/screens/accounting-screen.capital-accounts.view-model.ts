@@ -486,7 +486,7 @@ function formatAllocationInputSummary(
   const preview = inputs.slice(0, 3).map((input) => {
     const amount = input.amount == null
       ? "no amount"
-      : formatCurrencyWithCode(input.amount, input.currency ?? "USD", { signed: true });
+      : formatCurrencyWithCode(input.amount, input.currency, { signed: true });
     return `${input.kind} ${input.sourceId} ${amount}`;
   });
   const remaining = inputs.length > preview.length

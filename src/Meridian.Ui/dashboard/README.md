@@ -1450,10 +1450,11 @@ not been recorded.
     `$`, are deprecated and have no screen callers; use `formatCurrencyAmount` with `signed` or
     `compact`. The `prefixedCurrency` ratchet counts all three and its baseline is empty, so a new
     caller fails the ratchet test.
-    `sharedCurrency(codes)` labels a total only when every line agrees on one currency. Two
-    baselined ratchets count the remaining legacy uses and may only shrink:
-    `assumedMoneyDefaults` (`balance ?? 0`, `?? "USD"`) and `placeholderVocabulary` (ad hoc
-    `"—"`, `"Unavailable"`, `"Not supplied"`, `"Not recorded"`, `"Not retained"`). The
+    `sharedCurrency(codes)` labels a total only when every line agrees on one currency. The
+    `assumedMoneyDefaults` ratchet (`balance ?? 0`, `?? "USD"`) also has an empty baseline: a
+    missing currency is required from the operator or refused, never defaulted. The
+    `placeholderVocabulary` ratchet still counts ad hoc `"—"`, `"Unavailable"`, `"Not supplied"`,
+    `"Not recorded"` and `"Not retained"` literals and may only shrink. The
     `accounting.non-usd` scenario rebooks the accounting payload in EUR for screenshots.
     `FinancialValue` renders each state with its own look and accessible text and exposes it as
     `data-value-state`: a value, a confirmed zero, a dashed "Not available" chip (missing or

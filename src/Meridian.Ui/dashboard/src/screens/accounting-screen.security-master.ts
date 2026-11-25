@@ -1524,7 +1524,8 @@ export function buildReferenceDataWorkbenchSeed(
   const symbol = normalizeReferenceWorkbenchSymbol(
     entry?.classification.primaryIdentifierValue ?? entry?.displayName ?? securityId
   );
-  const currency = entry?.economicDefinition.currency || "USD";
+  // The probe uses the security's own currency; with none, currency and FX pair probes are omitted.
+  const currency = entry?.economicDefinition.currency || null;
   const primaryKind = entry?.classification.primaryIdentifierKind ?? null;
   const primaryValue = entry?.classification.primaryIdentifierValue ?? null;
   const issuerName = entry?.displayName ?? symbol;
@@ -1542,7 +1543,7 @@ export function buildReferenceDataWorkbenchSeed(
     underlyingSymbol: symbol,
     exchangeCode: "XNYS",
     rootSymbol: symbol.slice(0, 3) || "ES",
-    fxPairCode: currency === "USD" ? "EURUSD" : `${currency}USD`,
+    fxPairCode: !currency ? null : currency === "USD" ? "EURUSD" : `${currency}USD`,
     swapType: entry?.economicDefinition.subType ?? "InterestRate",
     commodityType: entry?.economicDefinition.assetFamily ?? "Energy",
     network: "Ethereum",

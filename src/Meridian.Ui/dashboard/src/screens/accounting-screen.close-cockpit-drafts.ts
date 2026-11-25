@@ -185,7 +185,7 @@ export function createAccountingCloseSetupDraft(
   return {
     amountThreshold: materiality ? String(materiality.amountThreshold) : "",
     percentThreshold: materiality ? String(materiality.percentThreshold) : "",
-    currency: materiality?.currency ?? "USD",
+    currency: materiality?.currency ?? "",
     reviewRole: materiality?.reviewRole ?? "Controller",
     requiresLateAdjustmentApproval: materiality?.requiresLateAdjustmentApproval ?? true,
     taskId: task?.taskId ?? "",
