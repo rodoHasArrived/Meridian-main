@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import posixpath
+import re
 import unittest
 from pathlib import Path
 
@@ -73,6 +75,35 @@ class WindowsDesktopBuildWorkflowTests(unittest.TestCase):
         for event in ("pull_request", "push"):
             with self.subTest(event=event):
                 self.assertIn("src/Meridian.Launcher/**", workflow["on"][event]["paths"])
+
+
+    def test_every_wpf_project_dependency_triggers_windows_validation(self) -> None:
+        # This build owns the WPF suite (including Category=W4Acceptance, which Golden Path
+        # now runs only on manual dispatch), so a change to any project WPF compiles against
+        # must start it. Walk the ProjectReference graph rather than trusting a hand list.
+        def references(project: str) -> list[str]:
+            text = (REPO_ROOT / project).read_text(encoding="utf-8")
+            return [
+                posixpath.normpath(posixpath.join(posixpath.dirname(project), ref.replace("\\", "/")))
+                for ref in re.findall(r'ProjectReference\s+Include="([^"]+)"', text)
+            ]
+
+        seen: set[str] = set()
+        pending = ["src/Meridian.Wpf/Meridian.Wpf.csproj", "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj"]
+        while pending:
+            project = pending.pop()
+            if project in seen or not (REPO_ROOT / project).is_file():
+                continue
+            seen.add(project)
+            pending.extend(references(project))
+        self.assertGreater(len(seen), 2)
+
+        workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
+        for event in ("pull_request", "push"):
+            paths = set(workflow["on"][event]["paths"])
+            for directory in sorted({posixpath.dirname(project) for project in seen}):
+                with self.subTest(event=event, directory=directory):
+                    self.assertIn(f"{directory}/**", paths)
 
 
 if __name__ == "__main__":

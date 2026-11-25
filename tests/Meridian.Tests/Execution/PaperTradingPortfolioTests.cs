@@ -405,20 +405,20 @@ public sealed class PaperTradingPortfolioCorporateActionTests
             Timestamp = DateTimeOffset.UtcNow,
         };
 
-    private sealed class StubCorporateActionAdjuster : Meridian.Application.SecurityMaster.CorporateActions.ILivePositionCorporateActionAdjuster
+    private sealed class StubCorporateActionAdjuster : Meridian.Contracts.SecurityMaster.ILivePositionCorporateActionAdjuster
     {
         private readonly decimal _splitRatio;
         public int CallCount { get; private set; }
 
         public StubCorporateActionAdjuster(decimal splitRatio) => _splitRatio = splitRatio;
 
-        public Task<Meridian.Application.SecurityMaster.CorporateActions.PositionCorporateActionAdjustment> AdjustPositionAsync(
+        public Task<Meridian.Contracts.SecurityMaster.PositionCorporateActionAdjustment> AdjustPositionAsync(
             string ticker, decimal quantity, decimal costBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default)
         {
             CallCount++;
             var adjustedQty = quantity * _splitRatio;
             var adjustedCb = _splitRatio != 0 ? costBasis / _splitRatio : costBasis;
-            return Task.FromResult(new Meridian.Application.SecurityMaster.CorporateActions.PositionCorporateActionAdjustment(
+            return Task.FromResult(new Meridian.Contracts.SecurityMaster.PositionCorporateActionAdjustment(
                 ticker, quantity, adjustedQty, costBasis, adjustedCb, ActionCount: 1));
         }
     }

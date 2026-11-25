@@ -145,14 +145,11 @@ public sealed class LedgerAmountProvenanceServiceTests
     }
 
     [Fact]
-    public async Task GetAsync_LegacyTextKeysAndUnscopedRequests_FailClosed()
+    public async Task GetAsync_TextKeysAndUnretainedAmounts_FailClosed()
     {
         var snapshot = Snapshot();
         var service = Service(snapshot, Case("case-retained"));
         (await service.GetAsync(snapshot.ReportId, "Securities:AAPL", Access)).Should().BeNull();
-#pragma warning disable CS0618
-        (await service.GetAsync(snapshot.ReportId, AmountId.ToString("D"))).Should().BeNull();
-#pragma warning restore CS0618
         snapshot = snapshot with { Provenance = snapshot.Provenance with { LedgerAmounts = [] } };
         (await Read(Service(snapshot), snapshot)).Should().BeNull();
     }

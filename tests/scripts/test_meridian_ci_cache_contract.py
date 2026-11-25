@@ -34,7 +34,7 @@ class MeridianCiCacheContractTests(unittest.TestCase):
         return match.group()
 
     def test_nuget_cache_hash_covers_case_sensitive_config_and_shared_build_inputs(self) -> None:
-        cache = self._step_block(self._job_block("dotnet-shards"), "Cache NuGet packages")
+        cache = self._step_block(self._job_block("verify-dotnet"), "Cache NuGet packages")
         hash_call = re.search(r"hashFiles\(([^)]+)\)", cache)
         self.assertIsNotNone(hash_call, "NuGet cache must track dependency inputs")
         patterns = set(re.findall(r"['\"]([^'\"]+)['\"]", hash_call.group(1)))
@@ -65,17 +65,15 @@ class MeridianCiCacheContractTests(unittest.TestCase):
             ("verify-workflows", "Run workflow hygiene lane"),
         ):
             with self.subTest(lane=lane):
-                # The .NET and browser lanes execute in runner shards; the jobs that keep
-                # the lane names are their verdicts.
-                job = self._job_block({"verify-dotnet": "dotnet-shards", "verify-browser": "browser-shards"}.get(lane, lane))
+                job = self._job_block(lane)
                 step = self._step_block(job, step_name)
+                self.assertNotRegex(job, r"(?m)^    (?:if|needs):")
+                self.assertNotRegex(job, r"(?m)^\s+if:.*cache")
                 if lane == "verify-dotnet":
-                    self.assertIn("    needs: [changes, build-workstation]", job)
-                    self.assertIn("    if: needs.changes.outputs.dotnet == 'true'", job)
+                    # Only the docs-only change decision may skip the .NET lane.
+                    self.assertIn("        if: steps.changes.outputs.dotnet == 'true'\n", step)
                 else:
-                    self.assertNotRegex(job, r"(?m)^    (?:if|needs):")
-                self.assertNotRegex(job, r"(?m)^    if:.*cache")
-                self.assertNotRegex(step, r"(?m)^        if:")
+                    self.assertNotRegex(step, r"(?m)^        if:")
                 self.assertRegex(
                     step,
                     rf"(?m)^        run: bash scripts/ci\.sh --lane {re.escape(lane)}\s*$",
@@ -106,7 +104,7 @@ class MeridianCiCacheContractTests(unittest.TestCase):
         build_path = (dashboard / out_dir.group(1)).resolve().relative_to(REPO_ROOT).as_posix()
 
         upload = self._step_block(
-            self._job_block("browser-shards"), "Upload browser shard artifacts"
+            self._job_block("verify-browser"), "Upload browser lane artifacts"
         )
         self.assertIn(f"            {build_path}/\n", upload)
         self.assertIn("            artifacts/build-logs/\n", upload)
@@ -118,15 +116,16 @@ class MeridianCiCacheContractTests(unittest.TestCase):
         gate = self._job_block("quality-gate")
         dependencies = re.search(r"(?m)^    needs:\n((?:      - [\w-]+\n)+)", gate)
         self.assertIsNotNone(dependencies)
-        self.assertEqual(set(re.findall(r"- ([\w-]+)", dependencies.group(1))), set(LANES) | {"changes"})
+        self.assertEqual(set(re.findall(r"- ([\w-]+)", dependencies.group(1))), set(LANES))
         self.assertRegex(gate, r"(?m)^    name: quality-gate$")
         self.assertRegex(gate, r"(?m)^    if: always\(\)$")
         for lane in LANES:
             with self.subTest(lane=lane):
                 self.assertIn("${{ needs." + lane + ".result }}", gate)
-        self.assertIn(f"for lane in changes {' '.join(LANES)}; do", gate)
-        self.assertIn('"$CHANGES_RESULT" == "success" && "$DOTNET_REQUIRED" == "false"', gate)
-        self.assertIn('elif [[ "$result" != "success" ]]; then\n                failed=1', gate)
+        self.assertIn(f"for lane in {' '.join(LANES)}; do", gate)
+        self.assertIn('"$result" == "success" && "$DOTNET_LANE_DECISION" == "false"', gate)
+        self.assertIn('if [[ "$result" != "success" ]]; then\n                failed=1', gate)
+        self.assertIn('if [[ "$DOTNET_LANE_DECISION" != "true" && "$DOTNET_LANE_DECISION" != "false" ]]; then', gate)
         self.assertIn('if [[ "$failed" -ne 0 ]]; then', gate)
         self.assertIn("            exit 1", gate)
         self.assertNotRegex(self.workflow, r"(?m)^\s*(?:paths|paths-ignore|continue-on-error):")

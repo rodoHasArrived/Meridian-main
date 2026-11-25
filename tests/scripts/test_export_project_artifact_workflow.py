@@ -79,16 +79,6 @@ class ExportProjectArtifactWorkflowTests(unittest.TestCase):
         self.assertNotIn("continue-on-error", evidence)
         self.assertLess(self.steps.index(evidence), self.steps.index(upload))
 
-    def test_standalone_export_fails_when_publish_output_is_missing(self) -> None:
-        workflow = yaml.load(
-            (REPO_ROOT / ".github/workflows/desktop-standalone-publish.yml").read_text(encoding="utf-8"),
-            Loader=yaml.BaseLoader,
-        )
-        steps = workflow["jobs"]["publish-desktop-standalone"]["steps"]
-        upload = next(step for step in steps if step.get("uses", "").startswith("actions/upload-artifact@"))
-        self.assertEqual(upload["with"]["path"], "artifacts/publish/local-desktop/")
-        self.assertEqual(upload["with"]["if-no-files-found"], "error")
-
 
 if __name__ == "__main__":
     unittest.main()

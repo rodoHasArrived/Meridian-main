@@ -18,7 +18,7 @@ status is never recorded here. It stays in the roadmap registry (`docs/roadmap/R
 | Engineering working plans | [`docs/engineering/plans/`](../plans/README.md) | Burn-downs, parity plans, tooling backlogs, phased implementation plans |
 | Product delivery plans and prioritization inputs | [`docs/product/plans/`](../../product/plans/README.md) | Wave close-out plans, priority slates, remediation plans, next-work determinations |
 | Domain-owned backlogs | The owning domain folder, e.g. `docs/security/` | Security remediation backlog, SOC 2 roadmap |
-| Finished or superseded plans | [`archive/docs/plans/`](../../../archive/docs/plans/README.md) | Implemented blueprints, superseded determinations |
+| Finished or superseded plans | [`archive/docs/plans/`](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/README.md) | Implemented blueprints, superseded determinations |
 
 `docs/plans/` is not a home for new plans. It keeps only redirect stubs whose paths are read by
 tooling; see [its index](../../plans/README.md). Brainstorms and adversarial reviews are ideation and
@@ -84,10 +84,10 @@ remains in the [roadmap registry](../../roadmap/README.md) and
 
 | Plan | Reason |
 |---|---|
-| [Quote-stream fan-out](../../../archive/docs/plans/web-ui-stream-fan-out-blueprint-2026-07.md) | Implemented — PRs A–C shipped; PR D was rescoped into the report-run stream blueprint |
-| [Tooling Workflow Backlog](../../../archive/docs/plans/tooling-workflow-backlog.md) | Completed — all nine items (MW-001–MW-009) verified delivered in source on 2026-09-28; see its closure record |
-| [What To Work On Next (2026-09-20)](../../../archive/docs/plans/next-work-determination-2026-09-20.md) | Superseded by the 2026-09-23 determination |
-| [What To Work On Next (2026-09-23)](../../../archive/docs/plans/next-work-determination-2026-09-23.md) | Superseded by the 2026-09-27 determination |
+| [Quote-stream fan-out](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/web-ui-stream-fan-out-blueprint-2026-07.md) | Implemented — PRs A–C shipped; PR D was rescoped into the report-run stream blueprint |
+| [Tooling Workflow Backlog](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/tooling-workflow-backlog.md) | Completed — all nine items (MW-001–MW-009) verified delivered in source on 2026-09-28; see its closure record |
+| [What To Work On Next (2026-09-20)](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/next-work-determination-2026-09-20.md) | Superseded by the 2026-09-23 determination |
+| [What To Work On Next (2026-09-23)](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/next-work-determination-2026-09-23.md) | Superseded by the 2026-09-27 determination |
 
 The design-system Workstation Template Blueprint
 (`Meridian Design System/guidelines/WORKSTATION_BLUEPRINT.md`) is deliberately **not** in this

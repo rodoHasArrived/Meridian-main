@@ -10,7 +10,7 @@ on:
   pull_request:
     # Phase is supplied in the PR body or labels. Metadata corrections need a new
     # event payload; rerunning an old workflow keeps its original phase metadata.
-    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
+    types: [opened, synchronize, reopened, ready_for_review, edited, labeled, unlabeled]
     paths:
       - "docs/roadmap/**"
       - "docs/source/**"
@@ -48,12 +48,17 @@ env:
 
 jobs:
   scope-gate:
+    # Draft pull requests skip this job; marking the PR ready for review runs it.
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft != true
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
+          # Phase scope compares changed path names only; skip historical blobs.
+          filter: blob:none
 
       - name: Set up Python
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0

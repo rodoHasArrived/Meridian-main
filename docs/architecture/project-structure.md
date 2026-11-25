@@ -109,9 +109,7 @@ entry, and `tests/Meridian.DesignModules.Tests` in the same change.
 | --- | --- | --- |
 | `docs/` | Active documentation | Maintained architecture, development, operations, status, plans, and references |
 | `docs/prompts/` | Active documentation | Maintained prompt, agent, and automation guidance indexes |
-| `archive/docs/` | Historical reference only | Superseded docs-tree material retained for traceability |
 | `Meridian Design System/` | Active design-system assets | Local source of truth for visual foundations, previews, governance tests, and icons |
-| `archive/` | Historical reference only | Legacy superseded docs kept for traceability. Current documentation archive buckets are indexed in `archive/docs/README.md` (`adr/`, `plans/`, `summaries/`); `archive/code/` was removed, so `tests/scripts/test_archive_code_tombstones.py` skips until archived source tombstones are added again |
 | `docs/generated/` | Generated documentation | Regenerate by script; do not hand edit generated sections |
 | `docs/docfx/api/` | Generated documentation | DocFX API metadata output; regenerate before publishing docs |
 | `src/Meridian.Ui/wwwroot/workstation/` | Generated/build output | Vite build output for the browser workstation |

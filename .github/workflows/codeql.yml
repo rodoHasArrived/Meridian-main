@@ -3,6 +3,7 @@ name: CodeQL
 on:
   workflow_call:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   merge_group:
   push:
     branches:
@@ -29,6 +30,9 @@ env:
 jobs:
   analyze:
     name: Analyze ${{ matrix.language }}
+    # Draft pull requests skip this required check (a draft cannot merge); marking the
+    # PR ready for review analyzes it.
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
@@ -41,7 +45,55 @@ jobs:
             build-mode: none
 
     steps:
+      # A pull request whose changes cannot affect this language's analysis (documentation,
+      # dashboard-only changes for C#, .NET-only changes for JavaScript/TypeScript) keeps the
+      # required "Analyze <language>" check green but skips the ~20 minute build and analysis.
+      # Unknown paths and empty diffs analyze. Main pushes, merge groups, schedules, manual
+      # runs and reusable release callers always analyze. The skip is step-level because a
+      # skipped matrix job reports an unexpanded name and leaves required checks pending.
+      - name: Check out PR history for change detection
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          filter: blob:none
+          path: .codeql-change-detection
+
+      - name: Detect analyzable changes
+        id: changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          LANGUAGE: ${{ matrix.language }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            decision="$RUNNER_TEMP/codeql-change-decision"
+            (cd .codeql-change-detection &&
+              python3 build/scripts/ci/detect-codeql-languages.py \
+                --base "$BASE_SHA" --head "$HEAD_SHA" --language "$LANGUAGE" \
+                --github-output "$decision")
+            # Keep the detection clone out of the analyzed source tree.
+            rm -rf .codeql-change-detection
+            grep -qx 'analyze=true\|analyze=false' "$decision"
+            cat "$decision" >> "$GITHUB_OUTPUT"
+          else
+            echo "analyze=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Report skipped analysis
+        if: steps.changes.outputs.analyze != 'true'
+        env:
+          LANGUAGE: ${{ matrix.language }}
+        run: |
+          echo "No ${LANGUAGE}-relevant changes in this pull request: CodeQL ${LANGUAGE} analysis intentionally skipped." | tee -a "$GITHUB_STEP_SUMMARY"
+
       - name: Check out repository
+        if: steps.changes.outputs.analyze == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -49,7 +101,7 @@ jobs:
           fetch-depth: 1
 
       - name: Set up .NET SDK
-        if: matrix.language == 'csharp'
+        if: steps.changes.outputs.analyze == 'true' && matrix.language == 'csharp'
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           global-json-file: global.json
@@ -59,10 +111,11 @@ jobs:
       # Deliberately uncached: measured cold at 9s (run #7092), while caching
       # ~/.nuget/packages cost 21s to restore plus 24s to save (run #7091).
       - name: Restore C# solution
-        if: matrix.language == 'csharp'
+        if: steps.changes.outputs.analyze == 'true' && matrix.language == 'csharp'
         run: dotnet restore Meridian.WebWorkstation.slnf /p:EnableWindowsTargeting=true
 
       - name: Initialize CodeQL
+        if: steps.changes.outputs.analyze == 'true'
         uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
         with:
           languages: ${{ matrix.language }}
@@ -73,17 +126,18 @@ jobs:
       # consumes; source generators still run, so CodeQL extracts the same
       # compilations. The build-warning gate stays in Meridian CI (ci.yml).
       - name: Build C# solution
-        if: matrix.language == 'csharp'
+        if: steps.changes.outputs.analyze == 'true' && matrix.language == 'csharp'
         run: dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false /p:RunAnalyzers=false
 
       - name: Perform CodeQL analysis
+        if: steps.changes.outputs.analyze == 'true'
         uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
         with:
           category: "/language:${{ matrix.language }}"
           output: artifacts/codeql/${{ matrix.language }}
 
       - name: Retain CodeQL reports for release audit evidence
-        if: always()
+        if: always() && steps.changes.outputs.analyze == 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: codeql-${{ matrix.language }}-${{ github.run_id }}-${{ github.run_attempt }}
