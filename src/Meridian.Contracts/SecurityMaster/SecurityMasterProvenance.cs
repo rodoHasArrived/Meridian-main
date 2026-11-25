@@ -28,15 +28,7 @@ public sealed record SecurityRecordProvenance(
     string? SourceRecordId,
     DateTimeOffset? AsOf,
     string? UpdatedBy,
-    string? Reason)
-{
-    /// <summary>
-    /// Projects this record-level provenance onto one field — the per-field (vendor, asOf,
-    /// confidence) attribution consumed by field-conflict assessment and display.
-    /// </summary>
-    public SecurityFieldProvenance ForField(string fieldPath, decimal? confidence = null)
-        => new(fieldPath, SourceSystem, AsOf, UpdatedBy, confidence);
-}
+    string? Reason);
 
 /// <summary>
 /// Field-level provenance: which source system asserted the value at <paramref name="FieldPath"/>,
