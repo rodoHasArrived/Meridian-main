@@ -42,10 +42,10 @@ public sealed class ScopedCredentialRecoveryTests : IDisposable
     }
 
     [Fact]
-    public async Task LegacyImportAndOwnedRotation_KeepVerificationSeparateAndNeverRecoverRevokedSecret()
+    public async Task LegacyRecordAndOwnedRotation_KeepVerificationSeparateAndNeverRecoverRevokedSecret()
     {
         var vault = new FileProviderCredentialStore(_root);
-        await vault.ImportLegacyAsync([Request("legacy")]);
+        await vault.SaveAsync(Request("legacy"));
         var legacy = (await vault.ReadForProviderAsync("alpaca"))!;
         await vault.RecordVerificationAsync(new("alpaca", true, ExternalAccountId: Owner.ExternalAccountId)
         { ExpectedCredentialGeneration = legacy.CredentialGeneration });
@@ -270,8 +270,6 @@ public sealed class ScopedCredentialRecoveryTests : IDisposable
             => throw new NotSupportedException("Scoped initialization cannot read unassigned tokens.");
         public Task SaveOAuthTokenAsync(string providerName, OAuthToken? token, CancellationToken ct = default)
             => throw new NotSupportedException();
-        public Task ImportOAuthTokensAsync(IReadOnlyDictionary<string, OAuthToken> tokens, CancellationToken ct = default)
-            => throw new NotSupportedException("Scoped initialization cannot claim unassigned tokens.");
     }
 
     public void Dispose()

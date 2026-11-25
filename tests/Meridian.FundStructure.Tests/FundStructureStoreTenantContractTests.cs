@@ -97,6 +97,5 @@ public sealed class FundStructureStoreTenantContractTests
         public Task<IReadOnlyList<FundStructureAssignmentDto>> GetAllAssignmentsAsync(CancellationToken ct = default) => throw new NotSupportedException();
         public Task UpsertLinkedAccountIdAsync(Guid accountId, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<IReadOnlyList<Guid>> GetAllLinkedAccountIdsAsync(CancellationToken ct = default) => throw new NotSupportedException();
-        public Task<bool> IsEmptyAsync(CancellationToken ct = default) => throw new NotSupportedException();
     }
 }

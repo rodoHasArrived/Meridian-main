@@ -6,25 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## SecurityMasterGovernanceHostPosture
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterGovernanceHostPosture</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:101](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L101).
-
-Whether the host is a production composition as Meridian.Application.Composition.ProductionServiceRegistrationPolicy.IsProductionComposition defines it. Registered by Meridian.Application.Composition.SecurityMasterGovernanceServiceCollectionExtensions.AddSecurityMasterGovernanceRequirements.
-
-```csharp
-public sealed record SecurityMasterGovernanceHostPosture(bool IsProductionComposition)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SecurityMasterGovernanceHostPosture NonProduction { get; } = new (false);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:104](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L104) | A host that is not a production composition. |
-| <code>public static SecurityMasterGovernanceHostPosture Production { get; } = new (true);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:107](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L107) | A production composition. |
-
 ## SecurityMasterGovernanceProfile
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterGovernanceProfile</code>. Kind: `enum`.
@@ -871,23 +852,6 @@ Declared public members:
 | <code>public SecurityResolver(ISecurityMasterStore store);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L15) |  |
 | <code>public async Task&lt;Guid?&gt; ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:20](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L20) |  |
 
-## SecurityResolverCompatibilityAdapter
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityResolverCompatibilityAdapter</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs:5](../../../../src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs#L5).
-
-```csharp
-public sealed class SecurityResolverCompatibilityAdapter : ISecurityResolver # pragma warning restore CS0618
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityResolverCompatibilityAdapter(Meridian.Contracts.SecurityMaster.ISecurityResolver resolver);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs:10](../../../../src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs#L10) |  |
-| <code>public Task&lt;Guid?&gt; ResolveAsync(Meridian.Contracts.SecurityMaster.ResolveSecurityRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs#L15) |  |
-
 ## StaleFieldProposalException
 
 Qualified name: <code>Meridian.Application.SecurityMaster.StaleFieldProposalException</code>. Kind: `class`.
@@ -1066,3 +1030,39 @@ Declared public members:
 | --- | --- | --- |
 | <code>public Task&lt;SecurityValidationReportDto&gt; ValidateSecurityAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:951](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L951) |  |
 | <code>public Task&lt;SecurityValidationReportDto&gt; ValidateUniverseAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:954](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L954) |  |
+
+## NullSecurityValidationSnapshotStore
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.NullSecurityValidationSnapshotStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:85](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L85).
+
+Returns validation snapshot results without retaining them in durable storage.
+
+```csharp
+public sealed class NullSecurityValidationSnapshotStore : ISecurityValidationSnapshotStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;SecurityValidationSnapshotDto&gt; RecordAsync(SecurityValidationReportDto report, SecurityValidationSnapshotRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:87](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L87) |  |
+
+## SecurityMasterOptionsValidator
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.SecurityMasterOptionsValidator</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/SecurityMasterOptionsValidator.cs:10](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityMasterOptionsValidator.cs#L10).
+
+Validates SecurityMasterOptions at startup so misconfigured connection strings or out-of-range tuning parameters are caught early.
+
+```csharp
+public sealed class SecurityMasterOptionsValidator : IValidateOptions<SecurityMasterOptions>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ValidateOptionsResult Validate(string? name, SecurityMasterOptions options);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityMasterOptionsValidator.cs:12](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityMasterOptionsValidator.cs#L12) |  |

@@ -10,7 +10,6 @@
         ai-docs-freshness ai-docs-drift ai-docs-sync-report \
         ai-docs-map ai-docs-map-check ai-plan-checklists-check \
         ai-codex-memory-check \
-        ai-docs-archive ai-docs-archive-execute \
         skill-list skill-resources skill-scripts skill-chains skill-resource \
         skill-run skill-chain skill-run-chain skill-validate skill-run-eval \
         skill-benchmark skill-discover
@@ -118,14 +117,6 @@ ai-docs-map-check: ## Validate roadmap/source registries, README coverage, TODOs
 ai-plan-checklists-check: ## Advisory check for plan documents with implementation checklists
 	@python3 build/scripts/docs/check-plan-checklists.py --summary
 
-ai-docs-archive: ## Preview stale docs that could be archived
-	@echo "$(BLUE)Scanning for archive candidates...$(NC)"
-	@$(AI_DOCS) archive-stale --summary
-
-ai-docs-archive-execute: ## Actually archive stale docs (moves files)
-	@echo "$(YELLOW)Archiving stale documents...$(NC)"
-	@$(AI_DOCS) archive-stale --execute --summary
-	@echo "$(GREEN)Archive complete$(NC)"
 
 # --- Skills Provider CLI ---
 

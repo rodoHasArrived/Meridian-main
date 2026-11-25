@@ -62,7 +62,7 @@ separate evidence requirements; this front door does not duplicate their changin
 | Canonical knowledge systems | `architecture/`, `domain/`, `ai/`, `roadmap/`, `source/`, `generated/` | Follow their registry, generation, and ownership rules. |
 | Supporting lanes | `adr/`, `development/`, `diagrams/`, `docfx/`, `examples/`, `integrations/`, `prompts/`, `screenshots/`, `security/`, `status/`, `testing/` | Keep discoverable from a canonical index; do not duplicate higher-level truth. |
 | Transitional compatibility lanes | `operations/`, `plans/` | Retain only while active tools, tests, or links require the paths; do not add new durable guidance here. |
-| Historical material | `archive/docs/` | Preserve superseded plans, audits, status snapshots, migrations, and one-off reports. |
+| Historical material | Git history ([pinned `archive/` snapshot](https://github.com/rodoHasArrived/Meridian-main/tree/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive)) | The repository no longer carries an `archive/` folder; recover superseded material with `git show 9c0c9de4:archive/<path>`. Historical ADRs still cited by source live in `adr/historical/`. |
 
 See the [Documentation Inventory](documentation-inventory.md) for the folder-by-folder map. Removed
 lanes such as `developer/`, `providers/`, `api/`, `design/`, `ui/`, `evaluations/`, and `audits/`
@@ -79,9 +79,9 @@ python build/scripts/docs/validate-source-readmes.py --summary
 python build/scripts/docs/validate-doc-hashes.py --summary
 ```
 
-## Archive Policy
+## Retired Material Policy
 
-Archive rather than delete when a document has historical value, stale evidence, superseded roadmap interpretation, or useful implementation context. Each archived batch should include a replacement link or an explicit reason when no active replacement exists.
+The repository no longer keeps an `archive/` folder. Delete superseded material only with explicit approval (git history retains it; recover with `git show <commit>:<path>`), or keep it in place with a status note and a replacement link. Do not create a new `archive/` folder. Historical ADRs still cited by source live in `adr/historical/`.
 
 ## Migration Status
 
@@ -90,15 +90,17 @@ Archive rather than delete when a document has historical value, stale evidence,
   point at GitHub permalinks pinned to the last commit that still carried them (`8a420730`). Use
   that material for context and extraction work only, not as canonical guidance; recover a file
   locally with `git show 8a420730:<path>`.
+- The 2026-11-25 cleanup removed the remaining `archive/` folder. The eleven historical ADRs still
+  named by `ImplementsAdr` attributes moved to `docs/adr/historical/`; every other former archive
+  link now points at a GitHub permalink pinned to `9c0c9de4`, the last commit that carried it.
 - `docs/operations/` and `docs/plans/` remain compatibility lanes because active tools, tests, or
   links still consume specific paths. Their indexes identify why each retained file remains.
 - `docs/status/` is a supporting automation-owned lane, not a hand-authored roadmap source. Use
   `docs/product/` for stakeholder interpretation and `docs/roadmap/data/*.yml` for durable status.
-- The [archive index](../archive/docs/README.md) lists the current buckets:
-  [adr](../archive/docs/adr/README.md), [plans](../archive/docs/plans/README.md), and
-  [summaries](../archive/docs/summaries/README.md). New archive batches may recreate other buckets;
-  each bucket needs its own index.
-- High-traffic archived material should keep a short redirect stub at the old path until all active links move to the replacement.
+- The [last archive index](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/README.md) is a pinned
+  snapshot of the former `archive/docs/` buckets. Only the still-cited ADRs remain in the tree, under
+  [adr/historical](adr/historical/README.md).
+- High-traffic retired material should keep a short redirect stub at the old path until all active links move to the replacement.
 
 ## Documentation Acceptance Criteria
 

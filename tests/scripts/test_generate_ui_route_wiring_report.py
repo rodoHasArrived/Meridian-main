@@ -246,26 +246,14 @@ class ObsoleteSuppressionTests(unittest.TestCase):
     def test_a_file_without_the_pragma_reports_no_span(self) -> None:
         self.assertEqual([], wiring.obsolete_spans("#pragma warning disable CS8618\nunrelated\n"))
 
-    def test_the_retained_statement_to_report_aliases_carry_a_reason(self) -> None:
-        # Both names are mapped over one service; the browser calls the canonical
-        # one, so the alias is not an unwired surface.
+    def test_the_canonical_statement_report_route_is_not_marked_obsolete(self) -> None:
         inventory, _ = wiring.collect_backend_routes(wiring.load_route_constants())
         by_path = {(route["path"], route["method"]): route for route in inventory}
 
-        alias = by_path[("/api/workstation/reconciliation/statement-to-report", "POST")]
         canonical = by_path[("/api/workstation/reconciliation/statement-reconciliation-report", "POST")]
 
-        self.assertIsNotNone(alias["obsolete_reason"])
         self.assertIsNone(canonical["obsolete_reason"])
-
-    def test_the_suppression_does_not_leak_past_its_region(self) -> None:
-        inventory, _ = wiring.collect_backend_routes(wiring.load_route_constants())
-        suppressed = [route["path"] for route in inventory if route["obsolete_reason"]]
-
-        self.assertTrue(suppressed)
-        self.assertTrue(
-            all("/statement-to-report" in path for path in suppressed),
-            suppressed)
+        self.assertNotIn(("/api/workstation/reconciliation/statement-to-report", "POST"), by_path)
 
 
 if __name__ == "__main__":
