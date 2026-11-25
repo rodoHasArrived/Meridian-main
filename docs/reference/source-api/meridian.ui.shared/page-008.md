@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementReconciliationReportFetchIngestionAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportFetchIngestionAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs:15](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs#L15).
+
+Adapts scheduled connector fetches into the existing statement reconciliation report workflow. The scheduler uses this authority to re-resolve persisted account ownership before provider access, and ingestion resolves it again before treating the fetched document as authoritative. Success is reported only after Operations Continuity and canonical casework publication have been retained.
+
+```csharp
+public sealed class StatementReconciliationReportFetchIngestionAuthority(StatementReconciliationReportWorkflowService workflow, IStatementReconciliationIntakeAuthority intakeAuthority) : IStatementFetchIngestionAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;StatementAccountingScope&gt; AuthorizeAsync(StatementFetchAuthorizationCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs:19](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs#L19) |  |
+| <code>public async Task&lt;StatementImportCommitResultDto&gt; IngestAsync(StatementFetchIngestionCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs#L37) |  |
+
+## StatementReconciliationReportStartCommand
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportStartCommand</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:21](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L21).
+
+```csharp
+public sealed record StatementReconciliationReportStartCommand(StatementImportCommitRequest Import, string TenantId, string? CompanyId);
+```
+
 ## StatementReconciliationReportWorkflowExecution
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportWorkflowExecution</code>. Kind: `record`.
@@ -966,31 +995,3 @@ Declared public members:
 | <code>public Task&lt;AuditTrailExplorerResultDto&gt; SearchAsync(AuditTrailExplorerQueryDto? query = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:33](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L33) |  |
 | <code>public Task&lt;AuditTrailExplorerResultDto&gt; SearchAuthorizedAsync(AuditTrailExplorerQueryDto? query, Func&lt;OperationsContinuityWorkflowSummaryDto, CancellationToken, Task&lt;bool&gt;&gt; canReadWorkflow, CancellationToken ct = default, Func&lt;Guid, Task&lt;bool&gt;&gt;? canReadPaperAccount = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:39](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L39) | HTTP reads authorize each operations source before loading its timeline. |
 | <code>public Task&lt;AuditTrailExplorerResultDto&gt; ExportAuthorizedAsync(AuditTrailExplorerQueryDto? query, Func&lt;OperationsContinuityWorkflowSummaryDto, CancellationToken, Task&lt;bool&gt;&gt; canReadWorkflow, CancellationToken ct = default, Func&lt;Guid, Task&lt;bool&gt;&gt;? canReadPaperAccount = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:45](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L45) | Every authorized retained match; the browser/1,000-row browse cap is never an export limit. |
-
-## AuditTrailExportLimitException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AuditTrailExportLimitException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:10](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L10).
-
-```csharp
-public sealed class AuditTrailExportLimitException(string message) : InvalidOperationException(message);
-```
-
-## AutomatedJournalDividendPositionResolution
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDividendPositionResolution</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:12](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L12).
-
-Authoritative position history resolved for one dividend cycle.
-
-```csharp
-public sealed record AutomatedJournalDividendPositionResolution(IReadOnlyList<DividendAccrualPosition> Positions, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string> Blockers)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:17](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L17) |  |

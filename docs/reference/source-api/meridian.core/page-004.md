@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AlertSeverity
+
+Qualified name: <code>Meridian.Core.Monitoring.Core.AlertSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:8](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L8).
+
+Severity levels for monitoring alerts.
+
+```csharp
+public enum AlertSeverity : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Info</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:11](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L11) | Informational message, no action required. |
+| <code>Warning</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:14](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L14) | Warning that may require attention. |
+| <code>Error</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:17](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L17) | Error that requires investigation. |
+| <code>Critical</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:20](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L20) | Critical issue requiring immediate attention. |
+
 ## AlertStatistics
 
 Qualified name: <code>Meridian.Core.Monitoring.Core.AlertStatistics</code>. Kind: `record`.
@@ -1009,16 +1030,4 @@ Default settings for batch add operation.
 
 ```csharp
 public sealed record BatchAddDefaults(bool SubscribeTrades = true, bool SubscribeDepth = true, int DepthLevels = 10, string SecurityType = "STK", string Exchange = "SMART", string Currency = "USD");
-```
-
-## BatchAddRequest
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.BatchAddRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/BatchOperations.cs:49](../../../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs#L49).
-
-Request to add multiple symbols at once.
-
-```csharp
-public sealed record BatchAddRequest(string[] Symbols, BatchAddDefaults? Defaults = null, bool SkipExisting = true);
 ```

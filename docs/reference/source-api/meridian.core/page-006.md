@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolSearchRequest
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.SymbolSearchRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:134](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L134).
+
+Request for symbol search/autocomplete.
+
+```csharp
+public sealed record SymbolSearchRequest(string Query, int Limit = 10, string? AssetType = null, string? Exchange = null, string? Country = null, string? Provider = null, bool IncludeFigi = true);
+```
+
 ## SymbolSearchResponse
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.SymbolSearchResponse</code>. Kind: `record`.

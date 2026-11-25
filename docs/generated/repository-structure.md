@@ -5413,6 +5413,7 @@ Meridian-main
 │   │   │   └── ProviderIntegrationTemplateCatalog.cs
 │   │   ├── Monitoring
 │   │   │   ├── DetailedHealthCheck.cs
+│   │   │   ├── ErrorLogRecorder.cs
 │   │   │   ├── PrometheusMetrics.cs
 │   │   │   ├── StatusSnapshot.cs
 │   │   │   └── StatusWriter.cs
@@ -6511,6 +6512,7 @@ Meridian-main
 │   │   │   ├── IAtomicFileWriter.cs
 │   │   │   └── RootedPathGuard.cs
 │   │   ├── Logging
+│   │   │   ├── ErrorLogTap.cs
 │   │   │   ├── LoggingSetup.cs
 │   │   │   └── ThreadIdEnricher.cs
 │   │   ├── Monitoring
@@ -7952,6 +7954,7 @@ Meridian-main
 │   │   │   ├── EventTraceContext.cs
 │   │   │   ├── Metrics.cs
 │   │   │   ├── OpenTelemetrySetup.cs
+│   │   │   ├── RunScopedEventMetrics.cs
 │   │   │   └── TracedEventMetrics.cs
 │   │   ├── DesignModule.cs
 │   │   ├── GlobalUsings.cs
@@ -11336,6 +11339,7 @@ Meridian-main
 │   │   │   ├── RegistryFundProfileTenantGuard.cs
 │   │   │   ├── ReplayEndpoints.cs
 │   │   │   ├── ReplayScanLifetime.cs
+│   │   │   ├── RequestTimingMiddleware.cs
 │   │   │   ├── ResilienceEndpoints.cs
 │   │   │   ├── RiskEndpoints.cs
 │   │   │   ├── SamplingEndpoints.cs
@@ -13220,6 +13224,7 @@ Meridian-main
 │   │   │   │   ├── BackfillCostEstimatorTests.cs
 │   │   │   │   ├── BackfillExecutionHistoryTests.cs
 │   │   │   │   ├── BackfillJobProgressAndGranularityTests.cs
+│   │   │   │   ├── BackfillMetricsIsolationTests.cs
 │   │   │   │   ├── BackfillProviderProvenanceTests.cs
 │   │   │   │   ├── BackfillRequestTraceContextTests.cs
 │   │   │   │   ├── BackfillRoutingRuntimeTests.cs
@@ -13396,6 +13401,7 @@ Meridian-main
 │   │   │   │   └── LoggingSetupTests.cs
 │   │   │   ├── Monitoring
 │   │   │   │   ├── DetailedHealthCheckTests.cs
+│   │   │   │   ├── ErrorLogRecorderTests.cs
 │   │   │   │   ├── FreshnessMonitoringWorkflowTests.cs
 │   │   │   │   ├── PrometheusExporterTests.cs
 │   │   │   │   ├── PrometheusMetricsTests.cs
@@ -15588,6 +15594,7 @@ Meridian-main
 │   │   │   ├── ReportPackProvenanceResolverTests.cs
 │   │   │   ├── ReportPackValidationServiceTests.cs
 │   │   │   ├── ReportPackWorkflowServiceTests.cs
+│   │   │   ├── RequestTimingMiddlewareTests.cs
 │   │   │   ├── RiskEndpointsTests.cs
 │   │   │   ├── RiskRuleRuntimeFatFingerStatusTests.cs
 │   │   │   ├── RiskRuleRuntimeFirstRunDefaultsTests.cs
@@ -15658,6 +15665,7 @@ Meridian-main
 │   │   │   ├── TradingOperatorReadinessServiceTests.cs
 │   │   │   ├── TrialBalanceAmountProvenanceTests.cs
 │   │   │   ├── UiConfigurationSaveGuardTests.cs
+│   │   │   ├── UiServerDiagnosticsWiringTests.cs
 │   │   │   ├── UiServerLoggingTests.cs
 │   │   │   ├── Wave2OperatorInboxAcceptanceTests.cs
 │   │   │   ├── Wave2PaperTradingCockpitAcceptanceTests.cs
