@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-25T19:53:55Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-25T20:44:30Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -216,7 +216,7 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Mcp/README.md` | MCP Integration | `9bf7b131` (2026-11-25T19:50:44+00:00) | 2 |
+| `src/Meridian.Mcp/README.md` | MCP Integration | `0c47736d` (2026-11-25T19:59:36+00:00) | 3 |
 | `src/Meridian.Mcp/Resources/AdrResources.cs` | MCP Integration | `1ca2a0eb` (2026-11-25T19:34:30+00:00) | 2 |
 | `src/Meridian.Mcp/Services/RepoPathService.cs` | MCP Integration | `1ca2a0eb` (2026-11-25T19:34:30+00:00) | 2 |
 | `src/Meridian.Mcp/Tools/AdrTools.cs` | MCP Integration | `1ca2a0eb` (2026-11-25T19:34:30+00:00) | 2 |

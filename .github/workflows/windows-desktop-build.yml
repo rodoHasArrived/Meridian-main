@@ -2,6 +2,7 @@ name: Windows Desktop Build
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - "**/Directory.Build.props"
       - ".github/actions/setup-dotnet-nuget/**"
@@ -9,8 +10,6 @@ on:
       - "**/Directory.Packages.props"
       - "**/packages.lock.json"
       - ".github/workflows/windows-desktop-build.yml"
-      - ".github/workflows/wpf-dev-validation.yml"
-      - ".github/workflows/wpf-route-validation.yml"
       - "Directory.Build.props"
       - "Directory.Build.targets"
       - "Directory.Packages.props"
@@ -81,8 +80,6 @@ on:
       - "**/Directory.Packages.props"
       - "**/packages.lock.json"
       - ".github/workflows/windows-desktop-build.yml"
-      - ".github/workflows/wpf-dev-validation.yml"
-      - ".github/workflows/wpf-route-validation.yml"
       - "Directory.Build.props"
       - "Directory.Build.targets"
       - "Directory.Packages.props"
@@ -169,6 +166,8 @@ env:
 
 jobs:
   desktop:
+    # Draft pull requests skip this job; marking the PR ready for review runs it.
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft != true
     name: verify-desktop (build/test WPF)
     runs-on: windows-latest
     timeout-minutes: 55

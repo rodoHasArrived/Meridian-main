@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import unittest.mock
 import zipfile
 
 
@@ -327,6 +328,71 @@ class CollectionHealthTests(unittest.TestCase):
                     [sys.executable, str(ROOT / "build/scripts/ci/summarize-repair-outcomes.py"),
                      "--check-collection", "--input", str(path)], capture_output=True, text=True)
                 self.assertEqual(result.returncode, 0 if complete else 1, result.stderr)
+
+
+class PublisherEntrypointTests(unittest.TestCase):
+    """Receipts from every trigger the publisher workflow declares are collected."""
+
+    def run_entry(self, event, *, head_branch="main", refresh="success", publish="skipped"):
+        return {
+            "id": 70, "run_attempt": 1, "head_sha": "c" * 40, "event": event, "head_branch": head_branch,
+            "path": OUTCOMES.WORKFLOW, "created_at": "2026-11-24T11:43:53Z", "conclusion": "success",
+            "jobs": [{"name": "Validate and publish generated repair", "conclusion": publish},
+                     {"name": "Refresh stale open PR branches after main advances", "conclusion": refresh}],
+        }
+
+    def api(self, kind):
+        receipt = {"schema_version": 1, "workflow_run_id": 70, "run_attempt": 1, "outcome": "refreshed",
+                   "observed_at": "2026-11-24T11:45:00Z", "backlog": 0, "waiting_requests": []}
+        data = io.BytesIO()
+        with zipfile.ZipFile(data, "w") as archive:
+            archive.writestr(OUTCOMES.FILES[kind], json.dumps(receipt))
+        artifact = {"id": 5, "name": f"generated-repair-outcome-{kind}-70-1", "expired": False,
+                    "created_at": "2026-11-24T11:45:01Z", "workflow_run": {"id": 70, "head_sha": "c" * 40}}
+
+        class API:
+            def artifacts(self, run_id):
+                return [artifact]
+
+            def download(self, entry):
+                return data.getvalue()
+
+        return API()
+
+    def summarize(self, run, kind="refresh"):
+        return OUTCOMES.summarize({"workflow_runs": [run], "collection": {}}, self.api(kind))
+
+    def test_merged_pull_request_refresh_receipt_is_collected(self):
+        result = self.summarize(self.run_entry("pull_request_target", head_branch="feature/topic"))
+        self.assertEqual(result["missingReceipts"], [])
+        self.assertEqual(result["outcomeCounts"], {"refreshed": 1})
+
+    def test_pull_request_target_cannot_supply_a_publish_receipt(self):
+        run = self.run_entry("pull_request_target", head_branch="feature/topic", refresh="skipped", publish="success")
+        result = self.summarize(run, kind="publish")
+        self.assertEqual(result["receipts"], [])
+        self.assertIn("not an authorized publisher entrypoint", result["missingReceipts"][0]["reason"])
+
+    def test_branch_events_still_require_the_default_branch(self):
+        result = self.summarize(self.run_entry("push", head_branch="feature/topic"))
+        self.assertIn("not on the default branch", result["missingReceipts"][0]["reason"])
+
+    def test_cli_reports_unavailable_receipts_as_warnings_not_failures(self):
+        missing = self.run_entry("pull_request", head_branch="feature/topic")
+        api = self.api("refresh")
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
+            source = Path(temporary) / "runs.json"
+            output = Path(temporary) / "repair.json"
+            source.write_text(json.dumps({"workflow_runs": [missing], "collection": {}}))
+            argv = ["summarize-repair-outcomes.py", "--repo", "o/r", "--input", str(source), "--output", str(output)]
+            stdout = io.StringIO()
+            with unittest.mock.patch.object(OUTCOMES, "GitHub", lambda repo: api), \
+                    unittest.mock.patch.object(sys, "argv", argv), \
+                    unittest.mock.patch("sys.stdout", stdout):
+                code = OUTCOMES.main()
+            self.assertEqual(code, 0)
+            self.assertIn("::warning::Repair receipt unavailable for run 70 attempt 1 (refresh)", stdout.getvalue())
+            self.assertEqual(len(json.loads(output.read_text())["missingReceipts"]), 1)
 
 
 if __name__ == "__main__":

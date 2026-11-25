@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-25T19:53:55Z",
+  "generatedAt": "2026-11-25T20:44:30Z",
   "generatorVersion": "1.1",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -3479,10 +3479,10 @@
     {
       "path": "src/Meridian.Mcp/README.md",
       "subsystem": "MCP Integration",
-      "lastModified": "2026-11-25T19:50:44+00:00",
-      "lastCommit": "9bf7b131",
-      "lastSummary": "docs(mcp,ai-nav): route the eleven read-only ledger MCP tools",
-      "touches": 2
+      "lastModified": "2026-11-25T19:59:36+00:00",
+      "lastCommit": "0c47736d",
+      "lastSummary": "feat(ai): add Claude meridian-accounting skill and agent",
+      "touches": 3
     },
     {
       "path": "src/Meridian.Mcp/Resources/AdrResources.cs",

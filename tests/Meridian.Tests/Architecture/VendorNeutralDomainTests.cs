@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Tests.TestHelpers;
 
 namespace Meridian.Tests.Architecture;
 
@@ -68,7 +69,7 @@ public sealed class VendorNeutralDomainTests
         foreach (var module in GuardedModules)
         {
             var moduleRoot = Path.Combine(root, module.Replace('/', Path.DirectorySeparatorChar));
-            foreach (var file in Directory.EnumerateFiles(moduleRoot, "*.*", SearchOption.AllDirectories))
+            foreach (var file in RepositoryFileWalker.EnumerateFiles(moduleRoot, "*.*"))
             {
                 if (Path.GetExtension(file) is not (".cs" or ".fs"))
                 {
