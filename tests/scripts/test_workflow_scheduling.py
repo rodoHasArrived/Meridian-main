@@ -67,9 +67,11 @@ class WorkflowSchedulingTests(unittest.TestCase):
             concurrency["group"],
             "${{ github.workflow }}-meridian-ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'latest' }}",
         )
+        # Pushes to main never cancel a running verification: each merge's quality-gate
+        # completes and GitHub keeps only the newest pending run in the group.
         self.assertEqual(
             concurrency["cancel-in-progress"],
-            "${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}",
+            "${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' && github.event_name != 'push' }}",
         )
 
     def test_manual_jobs_wait_for_identity_and_preserve_running_validation(self) -> None:

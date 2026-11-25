@@ -1144,7 +1144,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyAgreementWorkItemRow</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:304](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L304).
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:317](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L317).
 
 ```csharp
 public sealed class IntercompanyAgreementWorkItemRow(IntercompanyAgreementWorkItemDto item)
@@ -1154,13 +1154,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IntercompanyAgreementWorkItemDto Item { get; } = item;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:306](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L306) |  |
-| <code>public string Message =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:307](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L307) |  |
-| <code>public string State =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:308](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L308) |  |
-| <code>public string Observation =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:309](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L309) |  |
-| <code>public string Owner =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:310](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L310) |  |
-| <code>public string FirstSeen =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:311](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L311) |  |
-| <code>public string LastObserved =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:312](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L312) |  |
-| <code>public string Age =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:313](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L313) |  |
-| <code>public string Due =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:314](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L314) |  |
-| <code>public string History =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:315](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L315) |  |
+| <code>public IntercompanyAgreementWorkItemDto Item { get; } = item;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:319](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L319) |  |
+| <code>public string Message =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:320](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L320) |  |
+| <code>public string State =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:321](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L321) |  |
+| <code>public string Observation =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:322](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L322) |  |
+| <code>public string Owner =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:323](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L323) |  |
+| <code>public string FirstSeen =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:324](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L324) |  |
+| <code>public string LastObserved =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:325](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L325) |  |
+| <code>public string Age =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:326](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L326) |  |
+| <code>public string Due =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:327](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L327) |  |
+| <code>public string History =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:328](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L328) |  |

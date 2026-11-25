@@ -162,7 +162,6 @@ Documentation for market data providers.
 - `docs/operators/provider-backfill-operations.md` - historical data backfill operations
 - `docs/reference/provider-capability-matrix.md` - provider feature comparison
 - `docs/reference/provider-integration-status.md` - current provider status
-- `archive/docs/providers/` - historical setup and comparison source material
 
 **When to Update:**
 
@@ -199,7 +198,6 @@ Implementation roadmaps, blueprints, and sprint backlogs.
 **Files (selection):**
 
 - `meridian-6-week-roadmap.md` - Active sprint roadmap
-- `archive/docs/plans/readability-refactor-roadmap.md` - Archived readability refactor plan
 - `trading-workstation-migration-blueprint.md` - WPF workstation blueprint
 - `ufl-*.md` - Unified financial ledger target-state documents
 

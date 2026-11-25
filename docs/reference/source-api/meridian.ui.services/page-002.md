@@ -884,7 +884,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.BoundedWindowMode</code>. Kind: `enum`.
 
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:150](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L150).
+Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:143](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L143).
 
 Bounded workstation shell mode for one-shell dock and float behavior.
 
@@ -896,9 +896,9 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Focused</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:152](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L152) |  |
-| <code>DockFloat</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:153](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L153) |  |
-| <code>WorkbenchPreset</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:154](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L154) |  |
+| <code>Focused</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:145](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L145) |  |
+| <code>DockFloat</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:146](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L146) |  |
+| <code>WorkbenchPreset</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:147](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L147) |  |
 
 ## BrowserArchiveFileInfo
 

@@ -6,49 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## AccountCashForecastSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashForecastSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:101](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L101).
-
-Immutable forecast evidence. Certification is cash reconciliation, never payment authority.
-
-```csharp
-public sealed record AccountCashForecastSnapshotDto(string SnapshotId, string EvidenceHash, string EngineVersion, AccountCashForecastRequestDto Inputs, decimal? OpeningBaseCash, decimal? ActualNetBaseFlow, decimal? ReconciledClosingBaseCash, decimal? ObservedClosingBaseCash, decimal? ClosingVariance, bool IsCertified, PortfolioCashLadderDto ForecastLadder, IReadOnlyList<AccountCashForecastIssueDto> Blockers)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;PortfolioCashLadderDto&gt;? CurrencyLadders { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:116](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L116) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountCashResidualDto&gt;? Residuals { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:118](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L118) |  |
-
-## AccountCashFxConversionDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashFxConversionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:53](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L53).
-
-Declared dated conversion: multiply native Currency units by BaseUnitsPerCurrencyUnit to obtain BaseCurrency units. An inverse pair or another date never substitutes for this declaration.
-
-```csharp
-public sealed record AccountCashFxConversionDto(string Currency, string BaseCurrency, DateOnly ConversionDate, decimal BaseUnitsPerCurrencyUnit, AccountCashProvenanceDto Provenance);
-```
-
-## AccountCashPaymentAllocationDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashPaymentAllocationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:86](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L86).
-
-Signed cash in the obligation currency. Gross = net + nonnegative evidenced tax and fee cash costs.
-
-```csharp
-public sealed record AccountCashPaymentAllocationDto(string AllocationId, string ExpectedFlowId, string ActualVersionId, decimal NetAmount, decimal GrossAmount, decimal WithholdingTax = 0m, decimal Fees = 0m, AccountCashProvenanceDto? DeductionEvidence = null);
-```
-
 ## AccountCashProvenanceDto
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashProvenanceDto</code>. Kind: `record`.
@@ -818,3 +775,44 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:89](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L89) |  |
 | <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:91](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L91) |  |
+
+## BookPositionSides
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.BookPositionSides</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:42](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L42).
+
+Defines the position side labels accepted by book position contracts.
+
+```csharp
+public static class BookPositionSides
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Long = &quot;Long&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:44](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L44) |  |
+| <code>public const string Short = &quot;Short&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:45](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L45) |  |
+| <code>public const string Asset = &quot;Asset&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:46](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L46) |  |
+| <code>public const string Liability = &quot;Liability&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:47](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L47) |  |
+
+## BookReceiptAllocationDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.BookReceiptAllocationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:30](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L30).
+
+```csharp
+public sealed record BookReceiptAllocationDto(string ObligationKey, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Amount);
+```
+
+## BookReceiptCoverageDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.BookReceiptCoverageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:69](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L69).
+
+```csharp
+public sealed record BookReceiptCoverageDto(string Area, bool IsComplete, string? Reason = null);
+```

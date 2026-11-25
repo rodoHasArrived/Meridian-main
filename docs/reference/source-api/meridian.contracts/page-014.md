@@ -6,45 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## CashFlowExerciseCalculation
-
-Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowExerciseCalculation</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:133](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L133).
-
-```csharp
-public sealed record CashFlowExerciseCalculation(SelectedCashFlowExercise Selection, CashFlowNoticeWindow NoticeWindow, decimal DirtyPresentValue, decimal AccruedInterest, decimal CleanFloor, decimal DirtyConsideration, decimal Premium);
-```
-
-## CashFlowExerciseEligibility
-
-Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowExerciseEligibility</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:129](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L129).
-
-American windows are represented as a predicate over the named calendar, not daily rows.
-
-```csharp
-public sealed record CashFlowExerciseEligibility(CashFlowExerciseSide Side, DateOnly EntryStartDate, string StreamId, DateOnly WindowEnd, CashFlowExerciseStyle Style, IReadOnlyList<DateOnly> Dates, string? BusinessDayCalendarId);
-```
-
-## CashFlowExerciseSide
-
-Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowExerciseSide</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:10](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L10).
-
-```csharp
-public enum CashFlowExerciseSide
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Call</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:10](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L10) |  |
-| <code>Put</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:10](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L10) |  |
-
 ## CashFlowExerciseStyle
 
 Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowExerciseStyle</code>. Kind: `enum`.
@@ -780,7 +741,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Catalog.CorporateActionRef</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:381](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L381).
+Source: [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:374](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L374).
 
 Reference to a corporate action affecting the symbol.
 
@@ -792,11 +753,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;type&quot;)] public string Type { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:387](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L387) | Type of corporate action (split, merger, spinoff, rename). |
-| <code>[JsonPropertyName(&quot;effectiveDate&quot;)] public DateTime EffectiveDate { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:393](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L393) | Effective date of the action. |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:399](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L399) | Description of the action. |
-| <code>[JsonPropertyName(&quot;previousSymbol&quot;)] public string? PreviousSymbol { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:405](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L405) | Previous symbol (for renames). |
-| <code>[JsonPropertyName(&quot;splitRatio&quot;)] public string? SplitRatio { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:411](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L411) | Split ratio (e.g., &quot;4:1&quot; for 4-for-1 split). |
+| <code>[JsonPropertyName(&quot;type&quot;)] public string Type { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:380](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L380) | Type of corporate action (split, merger, spinoff, rename). |
+| <code>[JsonPropertyName(&quot;effectiveDate&quot;)] public DateTime EffectiveDate { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:386](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L386) | Effective date of the action. |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:392](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L392) | Description of the action. |
+| <code>[JsonPropertyName(&quot;previousSymbol&quot;)] public string? PreviousSymbol { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:398](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L398) | Previous symbol (for renames). |
+| <code>[JsonPropertyName(&quot;splitRatio&quot;)] public string? SplitRatio { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:404](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L404) | Split ratio (e.g., &quot;4:1&quot; for 4-for-1 split). |
 
 ## DirectoryDateRange
 
@@ -847,3 +808,71 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;sources&quot;)] public string[] Sources { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:69](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L69) | Data sources present in this directory. |
 | <code>[JsonPropertyName(&quot;dateRange&quot;)] public DirectoryDateRange? DateRange { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:75](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L75) | Date range for data in this directory. |
 | <code>[JsonPropertyName(&quot;indexChecksum&quot;)] public string? IndexChecksum { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:81](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L81) | Integrity checksum for this index file. |
+
+## DirectoryScanResult
+
+Qualified name: <code>Meridian.Contracts.Catalog.DirectoryScanResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:309](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L309).
+
+Result of a directory scan operation.
+
+```csharp
+public sealed class DirectoryScanResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;success&quot;)] public bool Success { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:315](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L315) | Whether the scan was successful. |
+| <code>[JsonPropertyName(&quot;path&quot;)] public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:321](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L321) | Directory path that was scanned. |
+| <code>[JsonPropertyName(&quot;index&quot;)] public DirectoryIndex? Index { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:327](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L327) | The generated directory index. |
+| <code>[JsonPropertyName(&quot;filesScanned&quot;)] public int FilesScanned { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:333](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L333) | Number of files scanned. |
+| <code>[JsonPropertyName(&quot;filesWithErrors&quot;)] public int FilesWithErrors { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:339](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L339) | Number of files with errors. |
+| <code>[JsonPropertyName(&quot;durationMs&quot;)] public long DurationMs { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:345](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L345) | Scan duration. |
+| <code>[JsonPropertyName(&quot;error&quot;)] public string? Error { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:351](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L351) | Error message if scan failed. |
+| <code>[JsonPropertyName(&quot;warnings&quot;)] public List&lt;string&gt; Warnings { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:357](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L357) | Warnings encountered during scan. |
+
+## DirectoryStatistics
+
+Qualified name: <code>Meridian.Contracts.Catalog.DirectoryStatistics</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:87](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L87).
+
+Statistics for a directory.
+
+```csharp
+public sealed class DirectoryStatistics
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;fileCount&quot;)] public int FileCount { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:93](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L93) | Number of data files. |
+| <code>[JsonPropertyName(&quot;totalEvents&quot;)] public long TotalEvents { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:99](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L99) | Total events across all files. |
+| <code>[JsonPropertyName(&quot;totalBytesCompressed&quot;)] public long TotalBytesCompressed { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:105](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L105) | Total compressed size in bytes. |
+| <code>[JsonPropertyName(&quot;totalBytesRaw&quot;)] public long TotalBytesRaw { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:111](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L111) | Total uncompressed size in bytes. |
+| <code>[JsonPropertyName(&quot;subdirectoryCount&quot;)] public int SubdirectoryCount { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:117](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L117) | Number of subdirectories. |
+| <code>[JsonPropertyName(&quot;eventCountsByType&quot;)] public Dictionary&lt;string, long&gt; EventCountsByType { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:123](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L123) | Event counts by type. |
+| <code>[JsonPropertyName(&quot;fileCountsBySymbol&quot;)] public Dictionary&lt;string, int&gt; FileCountsBySymbol { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:129](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L129) | File counts by symbol. |
+
+## ICanonicalSymbolOperatorMappingWriter
+
+Qualified name: <code>Meridian.Contracts.Catalog.ICanonicalSymbolOperatorMappingWriter</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:140](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L140).
+
+Optional host-side writer for durable, atomic operator edits.
+
+```csharp
+public interface ICanonicalSymbolOperatorMappingWriter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;int&gt; SaveOperatorMappingsAsync(IReadOnlyList&lt;CanonicalSymbolDefinition&gt; definitions, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:142](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L142) |  |
+| <code>Task&lt;int&gt; RemoveOperatorMappingsAsync(string canonical, string? provider, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:146](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L146) |  |

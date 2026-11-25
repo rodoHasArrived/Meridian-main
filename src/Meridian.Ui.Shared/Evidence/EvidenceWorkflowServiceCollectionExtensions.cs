@@ -141,10 +141,6 @@ public static class EvidenceWorkflowServiceCollectionExtensions
                 new StatementReconciliationReportFetchIngestionAuthority(
                     sp.GetRequiredService<StatementReconciliationReportWorkflowService>(),
                     sp.GetRequiredService<IStatementReconciliationIntakeAuthority>()));
-#pragma warning disable CS0618 // Preserve injection compatibility while the operation is renamed.
-            services.TryAddSingleton(sp => new StatementToReportWorkflowService(
-                sp.GetRequiredService<StatementReconciliationReportWorkflowService>()));
-#pragma warning restore CS0618
         }
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, StrategyRunEvidenceContributor>());

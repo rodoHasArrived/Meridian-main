@@ -6,122 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## DailyAccrualEntryDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DailyAccrualEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:282](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L282).
-
-```csharp
-public sealed record DailyAccrualEntryDto(Guid AccrualEntryId, DateOnly AccrualDate, decimal InterestAmount, decimal CommitmentFeeAmount, decimal PenaltyAmount, decimal AnnualRateApplied, DateTimeOffset RecordedAt, decimal PikInterestAmount = 0m, bool PikCapitalizationDeferred = false);
-```
-
-## DayCountBasis
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DayCountBasis</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:27](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L27).
-
-```csharp
-public enum DayCountBasis : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Act360 = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:29](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L29) |  |
-| <code>Act365F = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:30](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L30) |  |
-| <code>Thirty360 = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:31](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L31) |  |
-| <code>ActualActualISDA = 3</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:32](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L32) |  |
-
-## DeclaredRate
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DeclaredRate</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:43](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L43).
-
-A rate value together with the unit it was declared in.
-
-```csharp
-public sealed record DeclaredRate(decimal Value, DirectLendingRateUnit Unit)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static DeclaredRate Fraction(decimal value) =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:45](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L45) |  |
-| <code>public static DeclaredRate Percent(decimal value) =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:47](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L47) |  |
-| <code>public static DeclaredRate BasisPoints(decimal value) =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:49](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L49) |  |
-
-## DirectLendingCommandEnvelope (generic arity 1)
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:114](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L114).
-
-```csharp
-public sealed record DirectLendingCommandEnvelope<TCommand>(TCommand Command, DirectLendingCommandMetadataDto? Metadata);
-```
-
-## DirectLendingCommandError
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingCommandError</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:14](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L14).
-
-```csharp
-public sealed record DirectLendingCommandError(DirectLendingErrorCode Code, string Message);
-```
-
-## DirectLendingCommandException
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingCommandException</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:33](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L33).
-
-Exposes a structured direct lending command error as an exception.
-
-```csharp
-public sealed class DirectLendingCommandException : Exception
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DirectLendingCommandException(DirectLendingCommandError error) : base(error.Message);</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:35](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L35) |  |
-| <code>public DirectLendingCommandError Error { get; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:41](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L41) |  |
-
-## DirectLendingCommandMetadataDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:107](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L107).
-
-```csharp
-public sealed record DirectLendingCommandMetadataDto(Guid? CommandId, Guid? CorrelationId, Guid? CausationId, string? SourceSystem, bool ReplayFlag);
-```
-
-## DirectLendingCommandResult (generic arity 1)
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingCommandResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:18](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L18).
-
-```csharp
-public sealed record DirectLendingCommandResult<T>(T? Value, DirectLendingCommandError? Error)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsSuccess =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:22](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L22) |  |
-| <code>public static DirectLendingCommandResult&lt;T&gt; Success(T value) =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:24](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L24) |  |
-| <code>public static DirectLendingCommandResult&lt;T&gt; Failure(DirectLendingErrorCode code, string message) =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:26](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L26) |  |
-
 ## DirectLendingErrorCode
 
 Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingErrorCode</code>. Kind: `enum`.
@@ -691,4 +575,125 @@ Servicing balances for a loan. The first five members are receivables owed by th
 
 ```csharp
 public sealed record OutstandingBalancesDto(decimal PrincipalOutstanding, decimal InterestAccruedUnpaid, decimal CommitmentFeeAccruedUnpaid, decimal FeesAccruedUnpaid, decimal PenaltyAccruedUnpaid, decimal PrepaidInterest = 0m, decimal UnappliedCash = 0m);
+```
+
+## PaymentAllocationDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.PaymentAllocationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:101](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L101).
+
+```csharp
+public sealed record PaymentAllocationDto(Guid AllocationId, Guid LoanId, Guid CashTransactionId, int AllocationSequenceNumber, string TargetType, string TargetReference, decimal AllocatedAmount, string AllocationRule, Guid SourceEventId, DateTimeOffset CreatedAt);
+```
+
+## PaymentBreakdownDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.PaymentBreakdownDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:3](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L3).
+
+```csharp
+public sealed record PaymentBreakdownDto(decimal ToInterest, decimal ToCommitmentFee, decimal ToFees, decimal ToPenalty, decimal ToPrincipal)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal TotalAllocated =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:10](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L10) |  |
+
+## PaymentFrequency
+
+Qualified name: <code>Meridian.Contracts.DirectLending.PaymentFrequency</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:61](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L61).
+
+```csharp
+public enum PaymentFrequency : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Monthly = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:63](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L63) |  |
+| <code>Quarterly = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:64](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L64) |  |
+| <code>SemiAnnual = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:65](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L65) |  |
+| <code>Annual = 3</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:66](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L66) |  |
+| <code>Bullet = 4</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:67](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L67) |  |
+
+## PikCapitalizationDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.PikCapitalizationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:113](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L113).
+
+One capitalization of accrued PIK interest into principal.
+
+```csharp
+public sealed record PikCapitalizationDto(DateOnly CapitalizationDate, DateOnly PeriodStart, DateOnly PeriodEnd, decimal Amount, DateTimeOffset RecordedAt);
+```
+
+## PikCapitalizationFrequency
+
+Qualified name: <code>Meridian.Contracts.DirectLending.PikCapitalizationFrequency</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:21](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L21).
+
+How often accrued PIK interest is capitalized into principal.
+
+```csharp
+public enum PikCapitalizationFrequency : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Monthly = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:23](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L23) |  |
+| <code>Quarterly = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:24](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L24) |  |
+| <code>SemiAnnual = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:25](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L25) |  |
+| <code>Annual = 3</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:26](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L26) |  |
+| <code>OnInterestPaymentDate = 4</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:29](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L29) | Capitalize on the loan&#x27;s interest payment dates (DirectLendingTermsDto.PaymentFrequency). |
+
+## PikCapitalizationPolicy
+
+Qualified name: <code>Meridian.Contracts.DirectLending.PikCapitalizationPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:80](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L80).
+
+Contractual PIK capitalization rule. Accrued PIK interest is carried as a PIK receivable and moved into principal on each capitalization date, so it compounds from the following day.
+
+```csharp
+public sealed record PikCapitalizationPolicy(PikElection Mode, DeclaredRate PikShare, PikCapitalizationFrequency Frequency, DateOnly AnchorDate);
+```
+
+## PikElection
+
+Qualified name: <code>Meridian.Contracts.DirectLending.PikElection</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:10](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L10).
+
+Whether PIK applies on every accrual day or only while the borrower&#x27;s PIK toggle is elected. See docs/engineering/blueprints/direct-lending-pik-capitalization-and-rate-resets.md.
+
+```csharp
+public enum PikElection : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Always = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:13](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L13) | Contractual PIK: the PIK share applies every accrual day. |
+| <code>WhenToggled = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:16](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L16) | PIK toggle: the PIK share applies only while LoanServicingStateDto.IsPikToggled is set. |
+
+## PostDailyAccrualRequest
+
+Qualified name: <code>Meridian.Contracts.DirectLending.PostDailyAccrualRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:347](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L347).
+
+```csharp
+public sealed record PostDailyAccrualRequest(DateOnly AccrualDate);
 ```

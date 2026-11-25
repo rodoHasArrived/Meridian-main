@@ -6,42 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## DirectLoanCovenantDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.DirectLoanCovenantDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs:26](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs#L26).
-
-One covenant on a direct loan. Threshold carries the value exactly as contracted (&quot;4.5x&quot;, &quot;2.00x fixed charge&quot;) — the canonical covenant term is a string, not a number.
-
-```csharp
-public sealed record DirectLoanCovenantDto(Guid SecurityId, int Ordinal, string CovenantType, string Threshold, string? Notes);
-```
-
-## DirectLoanPrincipalPaymentDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.DirectLoanPrincipalPaymentDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs:34](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs#L34).
-
-One contractual principal instalment on a direct loan.
-
-```csharp
-public sealed record DirectLoanPrincipalPaymentDto(Guid SecurityId, int Ordinal, DateOnly PaymentDate, decimal Amount);
-```
-
-## DirectLoanReferenceDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.DirectLoanReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs:8](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs#L8).
-
-The reference view of a DirectLoan security, read from its relational terms projection. The covenant and principal-instalment collections are exposed separately rather than nested here, so a caller that only needs the loan&#x27;s economics does not pay for its schedules.
-
-```csharp
-public sealed record DirectLoanReferenceDto(Guid SecurityId, string DisplayName, string Currency, string Borrower, DateOnly? Maturity, string? ReferenceIndex, decimal? SpreadBps, decimal? CurrentCouponRate, string? ResetFrequency, string? PricingSource, string PrimaryIdentifier, long Version);
-```
-
 ## EconomicEventReferenceDto
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.EconomicEventReferenceDto</code>. Kind: `record`.
@@ -848,3 +812,39 @@ Declared public members:
 | <code>[JsonIgnore] public TimeSpan Elapsed =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:237](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L237) | Gets the elapsed time since the job started. |
 | <code>[JsonIgnore] public bool IsComplete =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:243](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L243) | Gets whether the job is in a terminal state. |
 | <code>[JsonIgnore] public int RemainingSymbols =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:249](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L249) | Gets the number of remaining symbols to process. |
+
+## BackfillProviderAttemptProgressDto
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillProviderAttemptProgressDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillProgress.cs:366](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L366).
+
+One provider attempt in the live fallback chain for a requested symbol/range.
+
+```csharp
+public sealed record BackfillProviderAttemptProgressDto(string Symbol, string Provider, DateOnly? RangeStart, DateOnly? RangeEnd, int ProviderAttempt, int RetryRound, string? Operation, string? Status, int BarsDownloaded, DateTimeOffset StartedAt, DateTimeOffset ObservedAt, string? Error);
+```
+
+## BackfillProviderContribution
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillProviderContribution</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillRoutingEvidence.cs:7](../../../../src/Meridian.Contracts/Backfill/BackfillRoutingEvidence.cs#L7).
+
+Bars retained by a backfill request from one serving provider.
+
+```csharp
+public sealed record BackfillProviderContribution(string ProviderId, long Bars);
+```
+
+## BackfillProviderProgressSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillProviderProgressSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillProgress.cs:405](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L405).
+
+Bounded live provider-attempt snapshot shared by browser and desktop clients.
+
+```csharp
+public sealed record BackfillProviderProgressSnapshotDto(IReadOnlyDictionary<string, BackfillProviderSymbolProgressDto> Symbols, IReadOnlyList<BackfillProviderAttemptProgressDto> RecentProviderAttempts, double OverallPercentComplete, int TotalSymbols, int CompletedSymbols, int FailedSymbols, long DroppedProviderNotifications, DateTimeOffset Timestamp);
+```

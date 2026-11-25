@@ -51,8 +51,8 @@ Declared public members:
 | <code>public string SelectedGuidance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:80](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L80) |  |
 | <code>public string ObserveLabel =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:83](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L83) |  |
 | <code>public IntercompanyAgreementWorkItemRow? SelectedCase { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:84](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L84) |  |
-| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:237](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L237) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:246](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L246) |  |
+| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:239](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L239) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:248](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L248) |  |
 
 ## IntercompanyAgreementWorkspace
 
@@ -570,7 +570,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyGuaranteeDisclosureRow</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:323](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L323).
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:336](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L336).
 
 ```csharp
 public sealed class IntercompanyGuaranteeDisclosureRow(IntercompanyGuaranteeDisclosureDto item)
@@ -580,14 +580,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IntercompanyGuaranteeDisclosureDto Item { get; } = item;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:325](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L325) |  |
-| <code>public string Agreement =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:326](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L326) |  |
-| <code>public string Parties =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:327](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L327) |  |
-| <code>public string Cap =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:328](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L328) |  |
-| <code>public string Exposure =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:329](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L329) |  |
-| <code>public string ExposureReason =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:330](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L330) |  |
-| <code>public string Coverage =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:331](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L331) |  |
-| <code>public string Evidence =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:332](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L332) |  |
+| <code>public IntercompanyGuaranteeDisclosureDto Item { get; } = item;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:338](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L338) |  |
+| <code>public string Agreement =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:339](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L339) |  |
+| <code>public string Parties =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:340](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L340) |  |
+| <code>public string Cap =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:341](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L341) |  |
+| <code>public string Exposure =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:342](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L342) |  |
+| <code>public string ExposureReason =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:343](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L343) |  |
+| <code>public string Coverage =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:344](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L344) |  |
+| <code>public string Evidence =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:345](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L345) |  |
 
 ## IntercompanyInterestAccrualLineRow
 
@@ -808,7 +808,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyWorkQueueActionChoice</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:303](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L303).
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs:316](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkQueueWorkspace.cs#L316).
 
 ```csharp
 public sealed record IntercompanyWorkQueueActionChoice(IntercompanyAgreementWorkItemActionDto Value, string Label);

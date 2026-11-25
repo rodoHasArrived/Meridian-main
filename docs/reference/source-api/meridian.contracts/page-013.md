@@ -6,42 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## BackfillProviderAttemptProgressDto
-
-Qualified name: <code>Meridian.Contracts.Backfill.BackfillProviderAttemptProgressDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Backfill/BackfillProgress.cs:366](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L366).
-
-One provider attempt in the live fallback chain for a requested symbol/range.
-
-```csharp
-public sealed record BackfillProviderAttemptProgressDto(string Symbol, string Provider, DateOnly? RangeStart, DateOnly? RangeEnd, int ProviderAttempt, int RetryRound, string? Operation, string? Status, int BarsDownloaded, DateTimeOffset StartedAt, DateTimeOffset ObservedAt, string? Error);
-```
-
-## BackfillProviderContribution
-
-Qualified name: <code>Meridian.Contracts.Backfill.BackfillProviderContribution</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Backfill/BackfillRoutingEvidence.cs:7](../../../../src/Meridian.Contracts/Backfill/BackfillRoutingEvidence.cs#L7).
-
-Bars retained by a backfill request from one serving provider.
-
-```csharp
-public sealed record BackfillProviderContribution(string ProviderId, long Bars);
-```
-
-## BackfillProviderProgressSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Backfill.BackfillProviderProgressSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Backfill/BackfillProgress.cs:405](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L405).
-
-Bounded live provider-attempt snapshot shared by browser and desktop clients.
-
-```csharp
-public sealed record BackfillProviderProgressSnapshotDto(IReadOnlyDictionary<string, BackfillProviderSymbolProgressDto> Symbols, IReadOnlyList<BackfillProviderAttemptProgressDto> RecentProviderAttempts, double OverallPercentComplete, int TotalSymbols, int CompletedSymbols, int FailedSymbols, long DroppedProviderNotifications, DateTimeOffset Timestamp);
-```
-
 ## BackfillProviderSymbolProgressDto
 
 Qualified name: <code>Meridian.Contracts.Backfill.BackfillProviderSymbolProgressDto</code>. Kind: `record`.
@@ -787,3 +751,42 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public decimal Delta =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs:5](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs#L5) |  |
+
+## CashFlowExerciseCalculation
+
+Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowExerciseCalculation</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:133](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L133).
+
+```csharp
+public sealed record CashFlowExerciseCalculation(SelectedCashFlowExercise Selection, CashFlowNoticeWindow NoticeWindow, decimal DirtyPresentValue, decimal AccruedInterest, decimal CleanFloor, decimal DirtyConsideration, decimal Premium);
+```
+
+## CashFlowExerciseEligibility
+
+Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowExerciseEligibility</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:129](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L129).
+
+American windows are represented as a predicate over the named calendar, not daily rows.
+
+```csharp
+public sealed record CashFlowExerciseEligibility(CashFlowExerciseSide Side, DateOnly EntryStartDate, string StreamId, DateOnly WindowEnd, CashFlowExerciseStyle Style, IReadOnlyList<DateOnly> Dates, string? BusinessDayCalendarId);
+```
+
+## CashFlowExerciseSide
+
+Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowExerciseSide</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:10](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L10).
+
+```csharp
+public enum CashFlowExerciseSide
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Call</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:10](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L10) |  |
+| <code>Put</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:10](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L10) |  |

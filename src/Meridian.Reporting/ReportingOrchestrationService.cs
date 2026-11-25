@@ -17,11 +17,6 @@ public sealed class ReportWriterMetricValidationException(string message) : Inva
 public interface IReportingOrchestrationService
 {
     Task<ReportingOutputManifest> ExecuteAsync(ReportingJobContract contract, CancellationToken cancellationToken);
-
-    [Obsolete(
-        "Due-schedule discovery and execution is owned by the host reporting-schedule adapter. Call ExecuteAsync only with its certified ReportingJobContract.",
-        error: false)]
-    Task<IReadOnlyList<ReportingOutputManifest>> ExecuteDueSchedulesAsync(IEnumerable<ReportingScheduleContract> schedules, DateTimeOffset nowUtc, CancellationToken cancellationToken);
     ReportingOutputManifest? GetManifest(string runId);
     ReportingOutputManifest? GetManifest(string tenantId, string runId) =>
         GetManifest(runId) is { OperationalScope: { } scope } manifest
@@ -476,17 +471,6 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
 
         throw new InvalidOperationException($"Reporting run failed after {contract.MaxRetries + 1} attempts.", lastError);
     }
-
-    [Obsolete(
-        "Due-schedule discovery and execution is owned by the host reporting-schedule adapter. Call ExecuteAsync only with its certified ReportingJobContract.",
-        error: false)]
-    public Task<IReadOnlyList<ReportingOutputManifest>> ExecuteDueSchedulesAsync(
-        IEnumerable<ReportingScheduleContract> schedules,
-        DateTimeOffset nowUtc,
-        CancellationToken cancellationToken) =>
-        Task.FromException<IReadOnlyList<ReportingOutputManifest>>(
-            new NotSupportedException(
-                "Direct due-schedule batch execution is disabled. The host reporting-schedule adapter must acquire the durable schedule lease, certify the run request, and call ExecuteAsync."));
 
     public ReportingOutputManifest? GetManifest(string runId)
     {

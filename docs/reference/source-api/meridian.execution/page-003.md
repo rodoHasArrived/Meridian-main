@@ -191,9 +191,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SecurityMasterGate(Meridian.Application.SecurityMaster.ISecurityResolver resolver, ILogger&lt;SecurityMasterGate&gt; logger) : this((ISecurityResolver) resolver, logger);</code> | [src/Meridian.Execution/SecurityMasterGate.cs:18](../../../../src/Meridian.Execution/SecurityMasterGate.cs#L18) |  |
-| <code>public SecurityMasterGate(ISecurityResolver resolver, ILogger&lt;SecurityMasterGate&gt; logger);</code> | [src/Meridian.Execution/SecurityMasterGate.cs:24](../../../../src/Meridian.Execution/SecurityMasterGate.cs#L24) |  |
-| <code>public async Task&lt;SecurityMasterGateResult&gt; CheckAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Execution/SecurityMasterGate.cs:31](../../../../src/Meridian.Execution/SecurityMasterGate.cs#L31) |  |
+| <code>public SecurityMasterGate(ISecurityResolver resolver, ILogger&lt;SecurityMasterGate&gt; logger);</code> | [src/Meridian.Execution/SecurityMasterGate.cs:16](../../../../src/Meridian.Execution/SecurityMasterGate.cs#L16) |  |
+| <code>public async Task&lt;SecurityMasterGateResult&gt; CheckAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Execution/SecurityMasterGate.cs:23](../../../../src/Meridian.Execution/SecurityMasterGate.cs#L23) |  |
 
 ## SecurityMasterGateResult
 
@@ -237,7 +236,7 @@ public sealed record PaperFinancingRequest(DateOnly AccrualDate, decimal Amount,
 
 Qualified name: <code>Meridian.Execution.Services.AccountDefinition</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1467](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1467).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1443](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1443).
 
 Defines one account within a multi-account paper trading session.
 

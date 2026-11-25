@@ -6,24 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## HistoricalBarPoint
-
-Qualified name: <code>Meridian.DataIntegration.Historical.HistoricalBarPoint</code>. Kind: `record`.
-
-Source: [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1084](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1084).
-
-A single OHLCV bar. Source is the provenance label of the stored events aggregated into the bucket: the vendor label when every contributing event carries the same one, the documented MixedSources sentinel when the bucket folds together more than one provenance state (two different vendors, or labeled plus unlabeled events), and null when no contributing event was labeled — provenance unknown. IsAdjusted is the price-adjustment regime (HistoricalBar.IsAdjusted semantics): true/false only when every contributing event declares that same regime; any mixing or undeclared regime collapses to the honest null (unknown). There is deliberately no &quot;mixed&quot; sentinel for the regime — a bool? cannot express one honestly, so unknown and mixed share null.
-
-```csharp
-public sealed record HistoricalBarPoint(DateTimeOffset Start, decimal Open, decimal High, decimal Low, decimal Close, long Volume, decimal Vwap, int TradeCount, string? Source = null, bool? IsAdjusted = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string MixedSources = &quot;mixed&quot;;</code> | [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1102](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1102) | Sentinel Source value for a bucket whose contributing events do not share a single provenance state (multiple vendors, or labeled mixed with unlabeled events). Distinct from null, which means no contributing event was labeled. |
-
 ## HistoricalBarsQuery
 
 Qualified name: <code>Meridian.DataIntegration.Historical.HistoricalBarsQuery</code>. Kind: `record`.
@@ -1069,3 +1051,15 @@ Enum declarations:
 | <code>Medium</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:205](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L205) |  |
 | <code>High</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:206](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L206) |  |
 | <code>Critical</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:207](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L207) |  |
+
+## GapAnalysisResult
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.GapAnalysisResult</code>. Kind: `record`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:94](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L94).
+
+Gap analysis result with visual timeline data.
+
+```csharp
+public sealed record GapAnalysisResult(string Symbol, DateOnly Date, int TotalGaps, TimeSpan TotalGapDuration, double DataAvailabilityPercent, IReadOnlyList<DataGap> Gaps, IReadOnlyList<TimelineEntry> Timeline, DateTimeOffset AnalyzedAt);
+```

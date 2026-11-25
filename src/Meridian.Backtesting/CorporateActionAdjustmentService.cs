@@ -2,8 +2,6 @@ using Meridian.Contracts.Integrity;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Instruments.AssetOperations;
 using ILivePositionCorporateActionAdjuster = Meridian.Contracts.SecurityMaster.ILivePositionCorporateActionAdjuster;
-using PositionCorporateActionAdjustment = Meridian.Application.SecurityMaster.CorporateActions.PositionCorporateActionAdjustment;
-using LegacyAdjuster = Meridian.Application.SecurityMaster.CorporateActions.ILivePositionCorporateActionAdjuster;
 
 namespace Meridian.Backtesting;
 
@@ -11,23 +9,12 @@ namespace Meridian.Backtesting;
 /// Adjusts historical bar prices and volumes for corporate actions (stock splits and dividends)
 /// using Security Master data.
 /// </summary>
-#pragma warning disable CS0618 // Public signatures remain compatible through forwarded Contracts-owned types.
-public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmentService, LegacyAdjuster
+public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmentService, ILivePositionCorporateActionAdjuster
 {
     private readonly ISecurityCorporateActionsQueryService _queryService;
     private readonly ISecurityResolver _resolver;
     private readonly ILogger<CorporateActionAdjustmentService> _logger;
     private readonly IFactorPaydownProjectionService _factorPaydownProjector;
-
-    /// <summary>Retains the aggregate-query and resolver constructor used by compiled consumers.</summary>
-    public CorporateActionAdjustmentService(
-        ISecurityMasterQueryService queryService,
-        Meridian.Application.SecurityMaster.ISecurityResolver resolver,
-        ILogger<CorporateActionAdjustmentService> logger,
-        IFactorPaydownProjectionService? factorPaydownProjector = null)
-        : this((ISecurityCorporateActionsQueryService)queryService, (ISecurityResolver)resolver, logger, factorPaydownProjector)
-    {
-    }
 
     public CorporateActionAdjustmentService(
         ISecurityCorporateActionsQueryService queryService,
@@ -457,4 +444,3 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
     }
 }
 
-#pragma warning restore CS0618

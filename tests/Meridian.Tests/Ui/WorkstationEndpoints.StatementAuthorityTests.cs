@@ -31,11 +31,8 @@ public sealed partial class WorkstationEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task StatementReconciliationReport_SameCompanyUnauthorizedAccount_IsForbiddenAcrossProtectedRoutes(
-        bool useLegacyRoutes)
+    [Fact]
+    public async Task StatementReconciliationReport_SameCompanyUnauthorizedAccount_IsForbiddenAcrossProtectedRoutes()
     {
         var root = Path.Combine(
             Path.GetTempPath(),
@@ -63,7 +60,7 @@ public sealed partial class WorkstationEndpointsTests
                 ServerJsonOptions);
             started.Should().NotBeNull();
             started!.RetainedArtifacts.Should().NotBeEmpty();
-            var routes = BuildStatementReconciliationReportProtectedRoutes(started, useLegacyRoutes);
+            var routes = BuildStatementReconciliationReportProtectedRoutes(started);
 
             using var authorizedGet = await authorizedClient.GetAsync(routes.Status);
             using var authorizedResume = await authorizedClient.PostAsync(routes.Resume, content: null);
@@ -95,11 +92,8 @@ public sealed partial class WorkstationEndpointsTests
         }
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task StatementReconciliationReport_MissingCompany_IsForbiddenAcrossProtectedRoutes(
-        bool useLegacyRoutes)
+    [Fact]
+    public async Task StatementReconciliationReport_MissingCompany_IsForbiddenAcrossProtectedRoutes()
     {
         var root = Path.Combine(
             Path.GetTempPath(),
@@ -125,7 +119,7 @@ public sealed partial class WorkstationEndpointsTests
                 ServerJsonOptions);
             startResponse.StatusCode.Should().Be(HttpStatusCode.Created);
             started.Should().NotBeNull();
-            var routes = BuildStatementReconciliationReportProtectedRoutes(started!, useLegacyRoutes);
+            var routes = BuildStatementReconciliationReportProtectedRoutes(started!);
 
             await using var missingCompanyApp = await CreateAppAsync(
                 services => RegisterStatementReconciliationReportEndpointAuthority(
@@ -192,18 +186,11 @@ public sealed partial class WorkstationEndpointsTests
         string Status,
         string Resume,
         string Artifact) BuildStatementReconciliationReportProtectedRoutes(
-        StatementReconciliationReportWorkflowDto workflow,
-        bool useLegacyRoutes)
+        StatementReconciliationReportWorkflowDto workflow)
     {
-        var statusTemplate = useLegacyRoutes
-            ? UiApiRoutes.ReconciliationStatementToReportById
-            : UiApiRoutes.ReconciliationStatementReconciliationReportById;
-        var resumeTemplate = useLegacyRoutes
-            ? UiApiRoutes.ReconciliationStatementToReportResume
-            : UiApiRoutes.ReconciliationStatementReconciliationReportResume;
-        var artifactTemplate = useLegacyRoutes
-            ? UiApiRoutes.ReconciliationStatementToReportArtifact
-            : UiApiRoutes.ReconciliationStatementReconciliationReportArtifact;
+        const string statusTemplate = UiApiRoutes.ReconciliationStatementReconciliationReportById;
+        const string resumeTemplate = UiApiRoutes.ReconciliationStatementReconciliationReportResume;
+        const string artifactTemplate = UiApiRoutes.ReconciliationStatementReconciliationReportArtifact;
         var artifactId = workflow.RetainedArtifacts[0].ArtifactId;
         return (
             UiApiRoutes.WithParam(statusTemplate, "workflowId", workflow.WorkflowId),
