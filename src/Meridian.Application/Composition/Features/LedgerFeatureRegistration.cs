@@ -115,6 +115,15 @@ internal sealed class LedgerFeatureRegistration : IServiceFeatureRegistration
                 instrumentPositions: sp.GetService<IInstrumentPositionProjectionStore>()));
         services.TryAddSingleton<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>();
 
+        // Security Master review F2: plans and executes the governed re-key of legacy ticker-keyed
+        // per-security accounts and their open tax lots. It needs the durable journal, the atomic
+        // tax-lot store and the canonical resolver, so resolving it in a host without durable ledger
+        // storage fails closed instead of planning against nothing.
+        services.TryAddSingleton(sp => new LedgerSecurityKeyRekeyService(
+            sp.GetRequiredService<ILedgerJournalStore>(),
+            sp.GetRequiredService<IAtomicTaxLotJournalStore>(),
+            sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityResolver>()));
+
         return services;
     }
 }

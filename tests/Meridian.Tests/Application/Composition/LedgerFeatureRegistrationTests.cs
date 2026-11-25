@@ -54,6 +54,36 @@ public sealed class LedgerFeatureRegistrationTests
             .Should().BeSameAs(customMapper);
     }
 
+    [Fact]
+    public void Register_AddsTheSecurityKeyRekeyServiceAsASingletonOverDurableLedgerStores()
+    {
+        var services = new ServiceCollection()
+            .AddSingleton(NSubstitute.Substitute.For<Meridian.Storage.Ledger.ILedgerJournalStore>())
+            .AddSingleton(NSubstitute.Substitute.For<Meridian.Storage.Ledger.IAtomicTaxLotJournalStore>())
+            .AddSingleton(NSubstitute.Substitute.For<Meridian.Contracts.SecurityMaster.ISecurityResolver>());
+
+        new LedgerFeatureRegistration().Register(services, CompositionOptions.Default);
+
+        services.Should().ContainSingle(descriptor =>
+            descriptor.ServiceType == typeof(Meridian.FinancialOperations.Ledger.LedgerSecurityKeyRekeyService) &&
+            descriptor.Lifetime == ServiceLifetime.Singleton);
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<Meridian.FinancialOperations.Ledger.LedgerSecurityKeyRekeyService>()
+            .Should().BeSameAs(provider.GetRequiredService<Meridian.FinancialOperations.Ledger.LedgerSecurityKeyRekeyService>());
+    }
+
+    [Fact]
+    public void Register_SecurityKeyRekeyServiceFailsClosedWithoutDurableLedgerStores()
+    {
+        var services = new ServiceCollection();
+
+        new LedgerFeatureRegistration().Register(services, CompositionOptions.Default);
+
+        using var provider = services.BuildServiceProvider();
+        var resolve = () => provider.GetRequiredService<Meridian.FinancialOperations.Ledger.LedgerSecurityKeyRekeyService>();
+        resolve.Should().Throw<InvalidOperationException>();
+    }
+
     private sealed class StubCorporateActionAccountingProjectionService : ICorporateActionAccountingProjectionService
     {
         public CorporateActionAccountingProjectionDto Project(CorporateActionAccountingProjectionRequest request) =>

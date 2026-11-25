@@ -745,7 +745,6 @@ Known follow-ups:
 
 - A legacy account with an open lot that has no book position, or whose instrument is not the
   resolved SecurityId, is listed as blocked by `LedgerSecurityKeyRekeyService`.
-- `LedgerSecurityKeyRekeyService` is not registered in DI; callers construct it.
 - The UI correction flows and `LedgerPeriodTrialBalanceLineDto` do not yet carry the account
   SecurityId.
 - The generated `database/manifest/catalog.json` and `schemas/` need regeneration against live

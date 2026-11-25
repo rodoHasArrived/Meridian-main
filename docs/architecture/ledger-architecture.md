@@ -104,7 +104,9 @@ therefore keeps one account history.
   tickers. `ProposeReclass` builds a balanced reclass proposal. It is submitted through the
   governed adjustment path for approval and never posts by itself.
 - **Tax-lot re-key.** A legacy account that carries open tax lots moves through
-  `LedgerSecurityKeyRekeyService` instead. `PlanAsync` builds the mapping report and returns one
+  `LedgerSecurityKeyRekeyService` instead. `LedgerFeatureRegistration` registers it as a singleton.
+  It resolves only where the durable journal, the atomic tax-lot store and the canonical resolver
+  are registered. `PlanAsync` builds the mapping report and returns one
   proposal per lot-carrying legacy account. Accounts without lots (for example a dividend
   receivable) are listed as balance-only, and accounts it cannot move are listed with a reason.
   `ExecuteAsync` takes an approved adjustment and posts one atomic `AccountRekey` batch
