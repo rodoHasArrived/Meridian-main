@@ -1016,7 +1016,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.Validation.NullSecurityValidationService</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:872](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L872).
+Source: [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:949](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L949).
 
 Returns blocking validation reports when the Security Master validation service is unavailable.
 
@@ -1028,8 +1028,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Task&lt;SecurityValidationReportDto&gt; ValidateSecurityAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:874](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L874) |  |
-| <code>public Task&lt;SecurityValidationReportDto&gt; ValidateUniverseAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:877](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L877) |  |
+| <code>public Task&lt;SecurityValidationReportDto&gt; ValidateSecurityAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:951](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L951) |  |
+| <code>public Task&lt;SecurityValidationReportDto&gt; ValidateUniverseAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:954](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L954) |  |
 
 ## NullSecurityValidationSnapshotStore
 

@@ -120,7 +120,21 @@ public static class ContractualCashFlowVersions
 {
     public const string Engine = "contractual-cashflow-v1";
     public const string Mapping = "contractual-cashflow-mapping-v1";
-    public const string Prepayment = "survival-cpr-smm-psa-v1";
+    /// <summary>
+    /// The prepayment arithmetic new runs use: decimal survival, so a whole-month SMM or a full-year
+    /// CPR is exact.
+    /// </summary>
+    public const string Prepayment = "survival-cpr-smm-psa-v2";
+
+    /// <summary>
+    /// The original double-precision prepayment arithmetic. Retained only so runs recorded under it
+    /// replay and verify byte-identically; new runs never use it.
+    /// </summary>
+    public const string PrepaymentV1 = "survival-cpr-smm-psa-v1";
+
+    /// <summary>Whether this build can calculate (and therefore replay) the prepayment version.</summary>
+    public static bool IsSupportedPrepayment(string? version)
+        => version is Prepayment or PrepaymentV1;
 }
 
 public sealed record CashFlowCalculationBlocker(string Code, string Message, string? StreamId = null);

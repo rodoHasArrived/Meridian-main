@@ -121,6 +121,7 @@ public sealed class SecurityValidationService : ISecurityValidationService
         issues.AddRange(ValidateIdentifiers(record, universe, evaluatedAt));
         issues.AddRange(ValidateProvenance(record, evaluatedAt));
         issues.AddRange(ValidateValuationAndAccountingMetadata(record));
+        issues.AddRange(ValidateCurrencyCodes(record));
 
         if (_assetClassValidators.TryGetValidator(record.AssetClass, out var assetClassValidator))
         {
@@ -661,6 +662,82 @@ public sealed class SecurityValidationService : ISecurityValidationService
         }
 
         return issues;
+    }
+
+    /// <summary>
+    /// Top-level term keys that hold a currency code wherever a class's schema declares them (FX and
+    /// NDF pairs, NDF settlement, a fund's NAV currency).
+    /// </summary>
+    private static readonly string[] CurrencyTermKeys = ["baseCurrency", "quoteCurrency", "settlementCurrency", "navCurrency"];
+
+    /// <summary>Pair keys a class may declare as asset tickers instead of currencies.</summary>
+    private static readonly string[] PairTermKeys = ["baseCurrency", "quoteCurrency"];
+
+    /// <summary>
+    /// Reports currency codes that are not ISO 4217 (or an accepted market extension) as a Warning,
+    /// so existing records can be counted before the check blocks anything. A blank record currency
+    /// is <c>SM_CURRENCY_REQUIRED</c>'s job and is not reported here.
+    /// </summary>
+    private static IReadOnlyList<SecurityValidationIssueDto> ValidateCurrencyCodes(SecurityProjectionRecord record)
+    {
+        var affected = new List<string>();
+        if (!string.IsNullOrWhiteSpace(record.Currency) && !Iso4217Currencies.IsRecognized(record.Currency))
+        {
+            affected.Add("currency");
+        }
+
+        var terms = record.AssetSpecificTerms;
+        var pairsAreTickers = SecurityAssetClassCatalog.TryGet(record.AssetClass, out var descriptor) && descriptor.PairCurrenciesAreAssetTickers;
+        foreach (var field in CurrencyTermKeys)
+        {
+            if (SecurityAssetTermsSchema.Field(record.AssetClass, field) is null
+                || (pairsAreTickers && PairTermKeys.Contains(field, StringComparer.Ordinal)))
+            {
+                continue;
+            }
+
+            if (JsonValidationReader.TryGetAssetTermString(terms, field, record.AssetClass, out var code)
+                && !Iso4217Currencies.IsRecognized(code))
+            {
+                affected.Add($"assetSpecificTerms.{field}");
+            }
+        }
+
+        // Array elements that declare a currency (swap legs) are checked through the schema too.
+        foreach (var arrayField in SecurityAssetTermsSchema.Fields(record.AssetClass)
+                     .Where(static field => field.Type == SecurityAssetTermFieldType.Array))
+        {
+            if (!SecurityAssetTermsSchema.ElementFields(record.AssetClass, arrayField.Key)
+                    .Any(static element => element.Key.Equals("currency", StringComparison.OrdinalIgnoreCase))
+                || !JsonValidationReader.TryGetAssetTermProperty(terms, arrayField.Key, record.AssetClass, out var items)
+                || items.ValueKind != JsonValueKind.Array)
+            {
+                continue;
+            }
+
+            var index = 0;
+            foreach (var item in items.EnumerateArray())
+            {
+                if (JsonValidationReader.TryGetElementTermProperty(item, record.AssetClass, arrayField.Key, "currency", out var currency)
+                    && JsonValidationReader.HasNonBlankString(currency)
+                    && !Iso4217Currencies.IsRecognized(currency.GetString()))
+                {
+                    affected.Add($"assetSpecificTerms.{arrayField.Key}.{index}.currency");
+                }
+
+                index++;
+            }
+        }
+
+        return affected.Count == 0
+            ? []
+            : [SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Warning,
+                "SM_CURRENCY_NOT_ISO4217",
+                "Currency code is not ISO 4217",
+                "One or more currency codes are not current ISO 4217 codes (or an accepted market code such as CNH or GBX); codes are compared exactly, so lowercase or padded codes are reported too.",
+                affected,
+                "Correct the currency to its ISO 4217 code through a governed amendment.")];
     }
 
     private static IReadOnlyList<SecurityValidationIssueDto> ValidateValuationAndAccountingMetadata(SecurityProjectionRecord record)

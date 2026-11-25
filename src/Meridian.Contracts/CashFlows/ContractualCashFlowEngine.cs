@@ -26,9 +26,32 @@ public static partial class ContractualCashFlowEngine
         IBusinessDayCalendarSource? calendars = null,
         IReadOnlyList<CashFlowCurveSnapshot>? curves = null,
         string sourceVersion = "explicit-contract-v1", string? sourceTermsHash = null)
+        => Calculate(contract, request, calendars, curves, sourceVersion, sourceTermsHash, PrepaymentVersionFor(request));
+
+    /// <summary>
+    /// The prepayment arithmetic a new run records. Only survival-rate assumptions (CPR, SMM, PSA)
+    /// exercise it, so a run without one keeps recording v1: its arithmetic is identical under both
+    /// versions and its retained evidence hash does not change.
+    /// </summary>
+    private static string PrepaymentVersionFor(ContractualCashFlowRequest? request)
+        => request?.Prepayments?.Any(static assumption => assumption.Method != CashFlowPrepaymentMethod.Amount) == true
+            ? ContractualCashFlowVersions.Prepayment
+            : ContractualCashFlowVersions.PrepaymentV1;
+
+    /// <summary>
+    /// Calculates under an explicit prepayment arithmetic version. Only replay passes a version other
+    /// than the current one, so a retained run reproduces the arithmetic it was recorded with.
+    /// </summary>
+    internal static ContractualCashFlowResult Calculate(
+        ContractualCashFlowContract contract, ContractualCashFlowRequest request,
+        IBusinessDayCalendarSource? calendars,
+        IReadOnlyList<CashFlowCurveSnapshot>? curves,
+        string sourceVersion, string? sourceTermsHash, string prepaymentVersion)
     {
         ArgumentNullException.ThrowIfNull(contract);
         ArgumentNullException.ThrowIfNull(request);
+        if (!ContractualCashFlowVersions.IsSupportedPrepayment(prepaymentVersion))
+            throw new ArgumentException($"Unsupported prepayment version '{prepaymentVersion}'.", nameof(prepaymentVersion));
         Validate(contract, request);
         var snapshots = new Dictionary<string, CashFlowCalendarSnapshot>(StringComparer.Ordinal);
         var warnings = new HashSet<string>(StringComparer.Ordinal);
@@ -50,7 +73,7 @@ public static partial class ContractualCashFlowEngine
                 var schedule = BuildSchedule(contract, stream, tracked);
                 var entries = ResolveExercises(contract, stream, schedule, tracked);
                 eligibility.AddRange(entries.Select(e => e.Eligibility));
-                Walk(contract, stream, request, schedule, tracked, market, entries, events, calculations);
+                Walk(contract, stream, request, schedule, tracked, market, entries, events, calculations, prepaymentVersion: prepaymentVersion);
                 if (tracked is not null && tracked.Dates.Count > 0)
                 {
                     var first = tracked.Dates.Min();
@@ -89,7 +112,7 @@ public static partial class ContractualCashFlowEngine
         var inputHash = Hash(new ContractualCashFlowInputDigest(contract, request, calendarEvidence, curveEvidence, sourceVersion, sourceTermsHash));
         var outputHash = Hash(new ContractualCashFlowOutputDigest(ordered, eligibility, calculations, blockers));
         return new(ordered, eligibility, calculations, blockers,
-            new(ContractualCashFlowVersions.Engine, ContractualCashFlowVersions.Mapping, ContractualCashFlowVersions.Prepayment,
+            new(ContractualCashFlowVersions.Engine, ContractualCashFlowVersions.Mapping, prepaymentVersion,
                 ScheduleGenerator.KernelVersion, inputHash, outputHash, sourceTermsHash ?? Hash(contract), sourceVersion,
                 request.ContractOverride is not null, calendarEvidence, curveEvidence, warnings.Order(StringComparer.Ordinal).ToArray()))
         { ResolvedContract = contract };
@@ -99,11 +122,14 @@ public static partial class ContractualCashFlowEngine
     {
         var source = new ReplayCalendarSource(run.Result.Evidence.Calendars);
         return Calculate(run.Contract, run.Request, source, run.Result.Evidence.Curves,
-            run.Result.Evidence.SourceVersion, run.Result.Evidence.SourceTermsHash);
+            run.Result.Evidence.SourceVersion, run.Result.Evidence.SourceTermsHash, run.Result.Evidence.PrepaymentVersion);
     }
 
     public static bool Verify(ContractualCashFlowRun run)
     {
+        // A packet recorded with prepayment arithmetic this build cannot reproduce fails closed.
+        if (!ContractualCashFlowVersions.IsSupportedPrepayment(run.Result.Evidence.PrepaymentVersion))
+            return false;
         var actualOutput = Hash(new ContractualCashFlowOutputDigest(run.Result.Events, run.Result.ExerciseEligibility,
             run.Result.ExerciseCalculations, run.Result.Blockers));
         var replay = Replay(run);

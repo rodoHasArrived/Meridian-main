@@ -16,6 +16,8 @@
   <ItemGroup>
     <!-- ScheduleTermsWriteRules.IsCheckedMemberType (the walk's fail-closed member-type gate) is pinned by the test project. -->
     <InternalsVisibleTo Include="Meridian.Tests" />
+    <!-- Prepayment arithmetic v1 replay (ContractualCashFlowEngine.Calculate with an explicit version) is pinned by the contracts unit tests. -->
+    <InternalsVisibleTo Include="Meridian.Contracts.UnitTests" />
     <!-- Only the accounting storage assembly owns the live legal-entity fence that can mint its internal proof. -->
     <InternalsVisibleTo Include="Meridian.Storage.Accounting" />
   </ItemGroup>

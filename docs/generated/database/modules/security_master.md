@@ -967,11 +967,11 @@ erDiagram
         uuid collateral_agreement_id PK
         uuid master_agreement_id FK
         text currency
-        numeric_28_10_ threshold_ours
-        numeric_28_10_ threshold_theirs
-        numeric_28_10_ minimum_transfer_amount
-        numeric_28_10_ independent_amount
-        numeric_28_10_ rounding_amount
+        numeric threshold_ours
+        numeric threshold_theirs
+        numeric minimum_transfer_amount
+        numeric independent_amount
+        numeric rounding_amount
         text valuation_frequency
         jsonb eligible_collateral
         date effective_date
@@ -989,10 +989,10 @@ erDiagram
         text eligible_collateral_description
         uuid security_id FK
         text currency
-        numeric_28_10_ quantity
-        numeric_28_10_ unit_value
-        numeric_28_10_ valued_amount
-        numeric_28_10_ haircut_percent
+        numeric quantity
+        numeric unit_value
+        numeric valued_amount
+        numeric haircut_percent
         date valued_as_of
         text reference
         text notes
@@ -1017,7 +1017,7 @@ erDiagram
         uuid netting_set_id FK
         text external_trade_id
         text direction
-        numeric_28_10_ notional
+        numeric notional
         text notional_currency
         date trade_date
         date effective_date
@@ -1040,9 +1040,9 @@ erDiagram
         text netting_basis
         text status
         text provenance
-        numeric_28_10_ net_exposure
-        numeric_28_10_ gross_positive
-        numeric_28_10_ gross_negative
+        numeric net_exposure
+        numeric gross_positive
+        numeric gross_negative
         jsonb payload
         integer payload_version
         text payload_sha256
@@ -1057,14 +1057,14 @@ erDiagram
         text movement_kind
         text mover
         text currency
-        numeric_28_10_ amount_called
-        numeric_28_10_ amount_agreed
+        numeric amount_called
+        numeric amount_agreed
         text status
         date issued_on
         date due_on
         text dispute_reason
         date settled_on
-        numeric_28_10_ settled_amount
+        numeric settled_amount
         text notes
         bigint version
         text updated_by

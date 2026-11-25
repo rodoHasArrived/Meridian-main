@@ -14878,6 +14878,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Iso4217Currencies"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.IssueOtcMarginCallRequest"
     },
     {
@@ -32609,6 +32615,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Iso4217Currencies"
     },
     {
       "kind": "contract-set-member",
@@ -72010,7 +72022,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "4278fa622003c2dc8c59bc6f9c73511ab7a7d509d817dddccfa2485d98a793f1",
+  "fingerprint": "7c827563ca12be005382149eba1736280e811647e84cd6bb58bb36eca12c972a",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -86936,6 +86948,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Iso4217Currencies",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Iso4217Currencies"
     },
     {
       "classification": "request",
@@ -105804,10 +105822,10 @@
   ],
   "summary": {
     "contract_references": 4407,
-    "contract_set_memberships": 5812,
-    "edges": 11962,
+    "contract_set_memberships": 5814,
+    "edges": 11964,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5877
+    "nodes": 5878
   }
 }

@@ -316,6 +316,18 @@ schedule when effective interest is negative, after contractual caps and floors.
 an entire signed-interest schedule before any period posts. Calculation-only signed-interest
 previews keep their existing signed model; explicit v1/v2 receipt replay retains its original arithmetic.
 
+Hand-written asset-class validators (`AssetClassValidatorRegistry`) must agree with the declared
+sign and fraction range of each rate field in `SecurityRateFieldUnits`;
+`SecurityRateFieldUnitsValidatorParityTests` enforces this and lists the disagreements still waiting
+on an owner ruling. A negative Bond `spreadBps` therefore validates, as the unit table declares.
+DirectLoan and Swap also carry Warning-level economic consistency rules (spread without an index,
+principal and notional schedule order, swap-leg index, fixed rate, day count and payment frequency);
+they surface issues for review without blocking a write. `SM_CURRENCY_NOT_ISO4217` is a Warning
+for currency codes that are not ISO 4217 (record currency, schema-declared pair, settlement and NAV
+currencies, swap-leg currencies; crypto pair tickers are skipped). The asset-position market-value
+service blocks Balance-quoted classes (Deposit, Repo) with `BalanceValuationUnavailable` instead of
+pricing them as a percent of par.
+
 ## Configured direct-lending accounting
 
 Loan journal lines retain their transaction and functional currency through symbol and dimension
