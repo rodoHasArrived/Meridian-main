@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
-import { readdir, mkdir, readFile, writeFile, appendFile, mkdtemp } from "node:fs/promises";
+import { mkdir, readFile, writeFile, appendFile, mkdtemp } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { readEvidence, identityDigest } from "./vitest-evidence.mjs";
+import { findTestFiles, applyShard, toPosixPath } from "./vitest-files.mjs";
 
 const root = process.cwd();
 const sourceRoot = path.join(root, "src");
@@ -49,6 +50,7 @@ for (const result of results) {
 const identities = results.flatMap(result => result.evidence?.identities ?? []);
 const summary = { counts, testIdentityDigest: identities.length ? identityDigest(identities) : null,
   testSeconds: (performance.now() - started) / 1000, exitCode, batchSize, workers: 2,
+  shard: shard ?? null,
   commitSha: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID, runAttempt: process.env.GITHUB_RUN_ATTEMPT,
   cacheHit: process.env.MERIDIAN_DEPENDENCY_CACHE_HIT ?? "not reported", queueSeconds: null, results };
 await writeFile(path.join(outputRoot, "summary.json"), JSON.stringify(summary, null, 2) + "\n");
@@ -139,29 +141,6 @@ function hasExplicitFileFilter(rawArgs) {
   return false;
 }
 
-async function findTestFiles(directory) {
-  const entries = await readdir(directory, { withFileTypes: true });
-  const files = [];
-
-  for (const entry of entries) {
-    const fullPath = path.join(directory, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...await findTestFiles(fullPath));
-      continue;
-    }
-
-    if (/\.(test|spec)\.(ts|tsx)$/.test(entry.name)) {
-      files.push(fullPath);
-    }
-  }
-
-  return files.sort((left, right) => toPosixPath(left).localeCompare(toPosixPath(right)));
-}
-
-function applyShard(files, index, total) {
-  return files.filter((_, fileIndex) => fileIndex % total === index - 1);
-}
-
 function chunk(files, size) {
   const batches = [];
   for (let index = 0; index < files.length; index += size) {
@@ -169,10 +148,6 @@ function chunk(files, size) {
   }
 
   return batches;
-}
-
-function toPosixPath(value) {
-  return value.replaceAll(path.sep, "/");
 }
 
 function runVitest(vitestArgs) {

@@ -11,6 +11,9 @@ last_reviewed: 2026-11-17
 
 # src/Meridian.Ui.Services
 
+Provider health keeps unavailable numeric metrics null in snapshots and history. Ranking uses
+measured values, and composite scores require every weighted component.
+
 The existing accounting agreement workspace/client carries optional structured legal declarations,
 dates-only schedule previews and explicit external-review attestations through the native host API.
 It keeps exact decimal strings, submitted hashes and reviewer/operator roles distinct. Obligation

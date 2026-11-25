@@ -446,7 +446,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.FailoverThresholds</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:502](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L502).
+Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:484](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L484).
 
 Configures health, latency, reconnection, and completeness limits used for automatic failover.
 
@@ -458,17 +458,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public double MinHealthScore { get; set; } = 70;</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:504](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L504) |  |
-| <code>public double MaxLatencyMs { get; set; } = 500;</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:505](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L505) |  |
-| <code>public int MaxReconnectsPerHour { get; set; } = 5;</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:506](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L506) |  |
-| <code>public double MinDataCompletenessPercent { get; set; } = 95;</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:507](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L507) |  |
-| <code>public bool AutoFailoverEnabled { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:508](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L508) |  |
+| <code>public double MinHealthScore { get; set; } = 70;</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:486](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L486) |  |
+| <code>public double MaxLatencyMs { get; set; } = 500;</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:487](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L487) |  |
+| <code>public int MaxReconnectsPerHour { get; set; } = 5;</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:488](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L488) |  |
+| <code>public double MinDataCompletenessPercent { get; set; } = 95;</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:489](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L489) |  |
+| <code>public bool AutoFailoverEnabled { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:490](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L490) |  |
 
 ## FailoverThresholdsResponse
 
 Qualified name: <code>Meridian.Ui.Services.FailoverThresholdsResponse</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:566](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L566).
+Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:549](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L549).
 
 Carries API health thresholds and the automatic-failover enabled state.
 
@@ -480,11 +480,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public double MinHealthScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:568](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L568) |  |
-| <code>public double MaxLatencyMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:569](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L569) |  |
-| <code>public int MaxReconnectsPerHour { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:570](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L570) |  |
-| <code>public double MinDataCompletenessPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:571](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L571) |  |
-| <code>public bool AutoFailoverEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:572](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L572) |  |
+| <code>public double MinHealthScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:551](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L551) |  |
+| <code>public double MaxLatencyMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:552](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L552) |  |
+| <code>public int MaxReconnectsPerHour { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:553](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L553) |  |
+| <code>public double MinDataCompletenessPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:554](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L554) |  |
+| <code>public bool AutoFailoverEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:555](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L555) |  |
 
 ## FileComparisonResult
 
@@ -1047,7 +1047,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.HealthAlertEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:407](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L407).
+Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:388](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L388).
 
 Describes a provider-health threshold breach with its current value and alert message.
 
@@ -1059,18 +1059,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string ProviderId { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:409](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L409) |  |
-| <code>public string ProviderName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:410](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L410) |  |
-| <code>public HealthAlertType AlertType { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:411](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L411) |  |
-| <code>public double CurrentValue { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:412](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L412) |  |
-| <code>public double Threshold { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:413](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L413) |  |
-| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:414](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L414) |  |
+| <code>public string ProviderId { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:390](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L390) |  |
+| <code>public string ProviderName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:391](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L391) |  |
+| <code>public HealthAlertType AlertType { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:392](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L392) |  |
+| <code>public double CurrentValue { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:393](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L393) |  |
+| <code>public double Threshold { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:394](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L394) |  |
+| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:395](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L395) |  |
 
 ## HealthAlertType
 
 Qualified name: <code>Meridian.Ui.Services.HealthAlertType</code>. Kind: `enum`.
 
-Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:417](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L417).
+Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:398](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L398).
 
 ```csharp
 public enum HealthAlertType : byte
@@ -1080,17 +1080,17 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>LowOverallScore</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:419](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L419) |  |
-| <code>HighLatency</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:420](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L420) |  |
-| <code>LowCompleteness</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:421](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L421) |  |
-| <code>FrequentReconnects</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:422](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L422) |  |
-| <code>ConnectionLost</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:423](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L423) |  |
+| <code>LowOverallScore</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:400](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L400) |  |
+| <code>HighLatency</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:401](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L401) |  |
+| <code>LowCompleteness</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:402](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L402) |  |
+| <code>FrequentReconnects</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:403](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L403) |  |
+| <code>ConnectionLost</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:404](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L404) |  |
 
 ## HealthHistoryPoint
 
 Qualified name: <code>Meridian.Ui.Services.HealthHistoryPoint</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:491](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L491).
+Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:473](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L473).
 
 Records a timestamped provider health score, latency, and completeness percentage.
 
@@ -1102,10 +1102,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:493](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L493) |  |
-| <code>public double OverallScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:494](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L494) |  |
-| <code>public double LatencyMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:495](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L495) |  |
-| <code>public double CompletenessPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:496](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L496) |  |
+| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:475](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L475) |  |
+| <code>public double? OverallScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:476](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L476) |  |
+| <code>public double? LatencyMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:477](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L477) |  |
+| <code>public double? CompletenessPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:478](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L478) |  |
 
 ## HealthIssue
 
@@ -1134,7 +1134,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.HealthMetrics</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:453](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L453).
+Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:434](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L434).
 
 Collects provider stability, latency, completeness, uptime, throughput, and recent-error measurements.
 
@@ -1146,13 +1146,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public double ConnectionStabilityScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:455](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L455) |  |
-| <code>public double AverageLatencyMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:456](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L456) |  |
-| <code>public double LatencyP99Ms { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:457](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L457) |  |
-| <code>public double LatencyConsistencyScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:458](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L458) |  |
-| <code>public double DataCompletenessPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:459](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L459) |  |
-| <code>public int ReconnectsLastHour { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:460](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L460) |  |
-| <code>public double ReconnectionScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:461](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L461) |  |
-| <code>public double UptimePercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:462](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L462) |  |
-| <code>public double MessagesPerSecond { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:463](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L463) |  |
-| <code>public int ErrorsLastHour { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:464](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L464) |  |
+| <code>public double? ConnectionStabilityScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:436](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L436) |  |
+| <code>public double? AverageLatencyMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:437](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L437) |  |
+| <code>public DateTimeOffset? LatencyObservedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:438](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L438) |  |
+| <code>public double? LatencyP99Ms { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:439](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L439) |  |
+| <code>public double? LatencyConsistencyScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:440](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L440) |  |
+| <code>public double? DataCompletenessPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:441](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L441) |  |
+| <code>public int? ReconnectsLastHour { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:442](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L442) |  |
+| <code>public double? ReconnectionScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:443](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L443) |  |
+| <code>public double? UptimePercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:444](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L444) |  |
+| <code>public double? MessagesPerSecond { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:445](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L445) |  |
+| <code>public int? ErrorsLastHour { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:446](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L446) |  |

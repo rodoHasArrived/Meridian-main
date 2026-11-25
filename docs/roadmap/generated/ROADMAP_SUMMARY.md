@@ -19,13 +19,14 @@ do_not_edit: true
 
 # Roadmap Summary
 
-Snapshot date: 2026-11-12
+Snapshot date: 2026-11-25
 
 | ID | Title | Status | Health | Priority | Owner lane |
 | --- | --- | --- | --- | --- | --- |
 | W1-DATA-001 | Provider trust gate and data confidence baseline | done | green | critical | Data Confidence and Validation |
-| W1-DATA-ALIGN-001 | Time-series alignment execution service | in_progress | on_track | low | Data Confidence and Validation |
+| W1-DATA-ALIGN-001 | Time-series alignment execution service | planned | yellow | low | Data Confidence and Validation |
 | W1-DATA-DEDUP-001 | Archive deduplication maintenance task | planned | yellow | low | Data Confidence and Validation |
+| W1-DATA-PROVCFG-001 | Provider configuration, connection templates and quota-aware backfill | in_progress | green | medium | Data Confidence and Validation |
 | W2-PROMO-001 | Paper promotion evidence and operator acceptance | done | green | high | Execution and Fund Accounts |
 | W2-TRD-001 | Paper trading cockpit reliability | done | green | critical | Execution and Fund Accounts |
 | W3-CONT-001 | Research to paper continuity | done | green | high | Strategy Analytics |
@@ -42,6 +43,7 @@ Snapshot date: 2026-11-12
 | W6-BTSTUDIO-001 | Backtesting studio evidence loop | done | green | medium | Strategy Analytics |
 | W7-LIVE-001 | Live-readiness governance | done | green | medium | Accounting and Ledger |
 | W8-UX-CONSOL-001 | Browser workstation screen consolidation | in_progress | on_track | medium | Workstation Shell and UX |
+| W8-UX-TRUST-001 | Workstation trust-and-figures UX program | in_progress | green | medium | Workstation Shell and UX |
 | W8-WPF-PARITY-001 | WPF desktop workstation reactivation and web-UI parity | in_progress | on_track | high | Desktop Workstation |
 | W9-TRUTH-001 | Loud fail-closed handling of simulated data and in-memory persistence | accepted | green | critical | Data Confidence and Validation |
 | W9-DEMO-002 | One-command seeded demo with durable storage | done | green | critical | Workstation Shell and UX |
@@ -66,7 +68,7 @@ Snapshot date: 2026-11-12
 | W10-RECON-003 | Unified tolerance model and what-if replay workbench | planned | green | medium | Accounting and Ledger |
 | W10-RECON-004 | Operator-taught match rules with promotion gate | planned | green | medium | Accounting and Ledger |
 | W10-PERF-001 | Portfolio and investor return measurement | in_progress | green | high | Accounting and Ledger |
-| W10-CONSOL-001 | Intercompany elimination on consolidated ledger views | planned | green | medium | Accounting and Ledger |
+| W10-CONSOL-001 | Intercompany elimination on consolidated ledger views | in_progress | green | medium | Accounting and Ledger |
 | W10-LOT-002 | Security-identified open-lot convergence | in_progress | green | critical | Accounting and Ledger |
 | W11-PASSPORT-001 | Number Passport contract across amount surfaces | planned | green | high | Workstation Shell and UX |
 | W11-COVER-001 | Verified Coverage measurement and operator surface | planned | green | high | Accounting and Ledger |
@@ -78,6 +80,7 @@ Snapshot date: 2026-11-12
 | W12-CAPITAL-001 | Governed investor capital and allocation lifecycle | in_progress | green | medium | Accounting and Ledger |
 | W12-CREDIT-001 | DirectLoan operations and evidence reconciliation | planned | green | medium | Accounting and Ledger |
 | W12-ENTITY-001 | Effective entity lifecycle and audited book-control migration | accepted | green | high | Accounting and Ledger |
+| W12-EXTGL-001 | Governed external GL posting (QuickBooks Online) | in_progress | yellow | medium | Accounting and Ledger |
 | W12-FINRPT-001 | Ledger-backed financial statement control pack | planned | green | medium | Accounting and Ledger |
 | W12-ICACCRUAL-001 | Governed intercompany loan-interest accrual from structured terms | ready_for_acceptance | green | high | Accounting and Ledger |
 | W12-ICAGREE-001 | Intercompany accounting profiles and legacy attribution | accepted | green | high | Accounting and Ledger |
@@ -89,6 +92,6 @@ Snapshot date: 2026-11-12
 | W12-ICPAIR-001 | Durable reviewed counterpart proposals and aged intercompany breaks | accepted | green | high | Accounting and Ledger |
 | W12-ICSCHEDULE-001 | Opt-in, reviewed intercompany accrual schedules | ready_for_acceptance | green | medium | Accounting and Ledger |
 | W12-YEND-001 | Fiscal year-end close and opening-balance roll-forward | in_progress | green | medium | Accounting and Ledger |
-| W13-OMS-001 | Governed order management and broker execution workbench | planned | green | medium | Execution and Fund Accounts |
-| W13-STRAT-001 | Governed strategy formulation and execution lifecycle | planned | green | medium | Strategy Analytics |
+| W13-OMS-001 | Governed order management and broker execution workbench | in_progress | green | medium | Execution and Fund Accounts |
+| W13-STRAT-001 | Governed strategy formulation and execution lifecycle | in_progress | green | medium | Strategy Analytics |
 | W14-ATTEST-001 | Single-principal attestation for governed approvals in the single-operator envelope | in_progress | yellow | medium | Platform Security and Governance |
