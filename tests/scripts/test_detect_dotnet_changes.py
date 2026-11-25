@@ -98,32 +98,49 @@ class QualityGateChangeDetectionTests(unittest.TestCase):
             env = dict(os.environ, GITHUB_STEP_SUMMARY=str(Path(directory) / 'summary'),
                        CHANGES_RESULT='success', DOTNET_REQUIRED='true', DOTNET_RESULT='success',
                        BROWSER_RESULT='success', DOCS_RESULT='success', WORKFLOWS_RESULT='success')
+            # verify-dotnet repeats the classification in-job; by default it agrees.
+            overrides.setdefault('DOTNET_LANE_DECISION', overrides.get('DOTNET_REQUIRED', 'true'))
             env.update(overrides)
             return subprocess.run(['bash', '-c', step['run']], env=env,
                                   capture_output=True, text=True).returncode
 
-    def test_gate_accepts_only_success_or_detected_docs_skip(self):
+    def test_gate_accepts_only_success_with_agreeing_change_decisions(self):
         self.assertEqual(self.run_gate(), 0)
-        self.assertEqual(self.run_gate(DOTNET_REQUIRED='false', DOTNET_RESULT='skipped'), 0)
+        # A docs-only PR: verify-dotnet runs, skips its .NET steps and reports success.
+        self.assertEqual(self.run_gate(DOTNET_REQUIRED='false'), 0)
         for result in ['failure', 'cancelled', 'skipped']:
             with self.subTest(result=result):
-                self.assertNotEqual(self.run_gate(CHANGES_RESULT=result,
-                                                 DOTNET_REQUIRED='false', DOTNET_RESULT='skipped'), 0)
-        for required in ['true', '', 'invalid']:
+                self.assertNotEqual(self.run_gate(CHANGES_RESULT=result, DOTNET_REQUIRED='false'), 0)
+        # The lane can no longer be skipped as a job, so a skipped verdict always fails.
+        self.assertNotEqual(self.run_gate(DOTNET_REQUIRED='false', DOTNET_RESULT='skipped'), 0)
+        for required in ['', 'invalid']:
             with self.subTest(required=required):
-                self.assertNotEqual(self.run_gate(DOTNET_REQUIRED=required, DOTNET_RESULT='skipped'), 0)
+                self.assertNotEqual(self.run_gate(DOTNET_REQUIRED=required), 0)
+        # The two classifications must agree, or a docs-only skip could hide a .NET change.
+        for required, decision in [('true', 'false'), ('false', 'true'), ('true', ''), ('false', '')]:
+            with self.subTest(required=required, decision=decision):
+                self.assertNotEqual(self.run_gate(DOTNET_REQUIRED=required,
+                                                  DOTNET_LANE_DECISION=decision), 0)
         for key in ['DOTNET_RESULT', 'BROWSER_RESULT', 'DOCS_RESULT', 'WORKFLOWS_RESULT']:
             for result in ['failure', 'cancelled', 'skipped']:
                 with self.subTest(lane=key, result=result):
                     self.assertNotEqual(self.run_gate(**{key: result}), 0)
         self.assertNotEqual(self.run_gate(DOTNET_REQUIRED='false', DOTNET_RESULT='failure'), 0)
-        self.assertNotEqual(self.run_gate(DOTNET_REQUIRED=''), 0)
 
     def test_workflow_limits_skipping_to_prs_and_keeps_gate_always_reporting(self):
         self.assertEqual(self.jobs['quality-gate']['if'], 'always()')
         self.assertIn('changes', self.jobs['quality-gate']['needs'])
-        self.assertEqual(self.jobs['verify-dotnet']['needs'], ['changes', 'verify-browser'])
-        self.assertEqual(self.jobs['verify-dotnet']['if'], "needs.changes.outputs.dotnet == 'true'")
+        # verify-dotnet never queues behind changes and is never skipped as a job; it
+        # classifies in-job with the same script and skips only its .NET steps.
+        self.assertNotIn('needs', self.jobs['verify-dotnet'])
+        self.assertNotIn('if', self.jobs['verify-dotnet'])
+        lane_checkout, lane_detect = self.jobs['verify-dotnet']['steps'][:2]
+        self.assertEqual(lane_checkout['if'], "github.event_name == 'pull_request'")
+        self.assertEqual(lane_checkout['with']['fetch-depth'], '0')
+        self.assertEqual(lane_checkout['with']['persist-credentials'], 'false')
+        self.assertIn('echo "dotnet=true"', lane_detect['run'])
+        self.assertIn('if [[ "$EVENT_NAME" == "pull_request" ]]', lane_detect['run'])
+        self.assertNotIn('${{', lane_detect['run'])
         checkout, detect = self.jobs['changes']['steps']
         self.assertEqual(checkout['if'], "github.event_name == 'pull_request'")
         self.assertEqual(checkout['with']['fetch-depth'], '0')

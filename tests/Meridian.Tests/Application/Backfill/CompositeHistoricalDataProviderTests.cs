@@ -1,9 +1,12 @@
 using System.Net;
+using System.Net.Http.Headers;
 using FluentAssertions;
 using Meridian.Core.Exceptions;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Storage.Archival;
+using Meridian.Tests.TestHelpers;
 using Moq;
 using Xunit;
 using DomainAggregateTimeframe = Meridian.Domain.Models.AggregateTimeframe;
@@ -550,7 +553,8 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
         p2.Setup(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(bars);
 
-        using var composite = CreateComposite(p1, p2);
+        var history = new ProviderRateLimitHistory();
+        using var composite = new CompositeHistoricalDataProvider([p1.Object, p2.Object], rateLimitHistory: history);
 
         var result = await composite.GetDailyBarsAsync("SPY", null, null);
 
@@ -558,6 +562,114 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
         composite.RateLimitStatus["p1"].IsRateLimited.Should().BeTrue();
         var events = composite.ProgressTracker.GetSnapshot().RecentProviderAttempts!;
         events.Should().Contain(e => e.Provider == "p1" && e.CurrentStatus == "rate-limited");
+        history.Read("p1", 1).Should().ContainSingle(entry => entry.EventType == "rate-limited" && entry.HttpStatus == 429);
+    }
+
+    [Fact]
+    public async Task HistoricalHttp429_RecordsDirectAndRoutedResponsesOnceEach_WithSeparateRotation()
+    {
+        using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.TooManyRequests)
+        {
+            Headers = { RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromSeconds(30)) }
+        });
+        using var direct = new ThrottledHttpProvider(new HttpClient(handler, disposeHandler: false));
+        var error = await Assert.ThrowsAsync<RateLimitException>(() => direct.GetDailyBarsAsync("SPY", null, null));
+        error.RetryAfter.Should().Be(TimeSpan.FromSeconds(30));
+        var directEvent = ProviderRateLimitHistory.Shared.Read(direct.Name, 1).Should().ContainSingle().Subject;
+        directEvent.EventType.Should().Be("rate-limited");
+        directEvent.HttpStatus.Should().Be(429);
+        directEvent.RequestsUsed.Should().Be(1);
+        directEvent.ResetAt.Should().BeAfter(directEvent.Timestamp);
+
+        // Use a fresh provider instance so the direct response's cooldown does not suppress the second send.
+        using var routed = new ThrottledHttpProvider(new HttpClient(handler, disposeHandler: false));
+        var fallback = CreateMockProvider("fallback", priority: 2);
+        var bars = CreateBars("SPY", 2);
+        fallback.Setup(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(bars);
+        var meteredAdmissions = new List<string>();
+        var unmeteredAdmissions = new List<string>();
+        var sends = new List<string>();
+        var throttles = new List<(string Provider, string Reason, TimeSpan? Wait)>();
+        using var scope = new HistoricalBackfillRequestScope(
+            provider =>
+            {
+                meteredAdmissions.Add(provider.Name);
+                return 25;
+            },
+            (provider, _) =>
+            {
+                unmeteredAdmissions.Add(provider.Name);
+                return Task.CompletedTask;
+            },
+            sends.Add,
+            _ => { },
+            (provider, reason, wait) => throttles.Add((provider, reason, wait)),
+            retryRateLimited: false);
+        using var composite = new CompositeHistoricalDataProvider([routed, fallback.Object]);
+        (await composite.GetDailyBarsAsync("SPY", null, null)).Should().BeEquivalentTo(bars);
+
+        meteredAdmissions.Should().Equal(routed.Name);
+        unmeteredAdmissions.Should().Equal("fallback");
+        sends.Should().Equal(routed.Name);
+        throttles.Should().Equal((routed.Name, "provider-rate-limit", (TimeSpan?)null));
+        handler.CallCount.Should().Be(2);
+        var history = ProviderRateLimitHistory.Shared.Read(direct.Name, 1);
+        history.Where(entry => entry.EventType == "rate-limited").Should().HaveCount(2)
+            .And.OnlyContain(entry => entry.HttpStatus == 429);
+        var rotation = history.Should().ContainSingle(entry => entry.EventType == "rotated").Subject;
+        rotation.NextProvider.Should().Be("fallback");
+        rotation.HttpStatus.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RoutedHttp429_PersistsOneThrottleInTheSelectedDataRoot(bool compositeRoute)
+    {
+        var directory = Directory.CreateTempSubdirectory("meridian-routed-http-quota-");
+        try
+        {
+            var writer = new AtomicFileWriterAdapter();
+            var history = ProviderRateLimitHistory.ForDataRoot(directory.FullName, writer);
+            using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.TooManyRequests)
+            {
+                Headers = { RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromSeconds(30)) }
+            });
+            using var provider = new ThrottledHttpProvider(new HttpClient(handler, disposeHandler: false));
+            var unscopedEvents = ProviderRateLimitHistory.Shared.Read(provider.Name, 1).Count;
+            if (compositeRoute)
+            {
+                var fallback = CreateMockProvider("fallback", priority: 2);
+                fallback.Setup(p => p.GetDailyBarsAsync("SPY", null, null, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(CreateBars("SPY", 2));
+                using var composite = new CompositeHistoricalDataProvider([provider, fallback.Object]);
+                using var historyScope = history.BeginScope();
+                (await composite.GetDailyBarsAsync("SPY", null, null)).Should().HaveCount(2);
+            }
+            else
+            {
+                using var admission = new BackfillRoutingAdmission([provider], 1, history);
+                var error = await Assert.ThrowsAsync<RateLimitException>(() => admission.FetchPinnedAsync(
+                    provider, "SPY", ct => provider.GetDailyBarsAsync("SPY", null, null, ct), null, CancellationToken.None));
+                error.RetryAfter.Should().Be(TimeSpan.FromSeconds(30));
+            }
+
+            handler.CallCount.Should().Be(1);
+            ProviderRateLimitHistory.Shared.Read(provider.Name, 1).Should().HaveCount(unscopedEvents);
+            var rateLimit = history.Read(provider.Name, 1).Should().ContainSingle(entry => entry.EventType == "rate-limited").Which;
+            rateLimit.HttpStatus.Should().Be(429);
+            rateLimit.RequestsUsed.Should().Be(1);
+            var reopenedHistory = new ProviderRateLimitHistory(directory.FullName, writer);
+            reopenedHistory.TryReadDailyRollups(provider.Name, out var rollups).Should().BeTrue();
+            var day = rollups.Should().ContainSingle().Which;
+            day.ThrottleCount.Should().Be(1);
+            day.RotationCount.Should().Be(compositeRoute ? 1 : 0);
+        }
+        finally
+        {
+            directory.Delete(recursive: true);
+        }
     }
 
     [Fact]
@@ -840,6 +952,23 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
     }
 
     #region Helpers
+
+    private sealed class ThrottledHttpProvider(HttpClient client) : BaseHistoricalDataProvider(client, enableResilience: false)
+    {
+        public override string Name => "throttle-history-http-fixture";
+        public override string DisplayName => Name;
+        public override string Description => "Historical HTTP throttle fixture.";
+        public override int Priority => 1;
+        public override int MaxRequestsPerWindow => 4;
+        protected override string HttpClientName => Name;
+
+        public override async Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(
+            string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
+        {
+            await ExecuteGetAndReadAsync("https://example.test/history", symbol, "daily bars", ct);
+            return [];
+        }
+    }
 
     private Mock<IHistoricalDataProvider> CreateMockProvider(string name, int priority)
     {

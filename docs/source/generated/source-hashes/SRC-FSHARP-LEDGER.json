@@ -1,0 +1,7 @@
+{
+  "id": "SRC-FSHARP-LEDGER",
+  "path": "src/Meridian.FSharp.Ledger",
+  "readme": "src/Meridian.FSharp.Ledger/README.md",
+  "readme_hash": "13dc864c28bb90e8491ab9413eefeeaebe508ab9e447390cc846b4cb07dc343b",
+  "source_hash": "80ae362ba6569e8193e64382d9b63b0a9e952c283dd51f8b46ef8ea4147ab5e8"
+}

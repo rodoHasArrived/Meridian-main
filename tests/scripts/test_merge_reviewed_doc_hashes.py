@@ -5,6 +5,7 @@ import copy
 import importlib.util
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -23,6 +24,11 @@ def entry(identity, digit="a"):
 def manifest(*entries):
     return {"schema": dict(hashes.SCHEMA), "generator": dict(hashes.GENERATOR),
             "contract": "Reviewed source and documentation", "modules": list(entries)}
+
+
+def files(value):
+    """The committed per-module file layout of a logical manifest."""
+    return hashes.load_validator().serialize_manifest(value)
 
 
 class ReviewedHashMergeTests(unittest.TestCase):
@@ -81,7 +87,7 @@ class ReviewedHashMergeTests(unittest.TestCase):
         head = reviewed(entry("A", "b"), entry("B"))
         incoming = reviewed(entry("A"), entry("B", "c"))
         actual = reviewed(entry("A", "b"), entry("B", "c"))
-        self.assertEqual(hashes.parse_manifest(json.dumps(actual).encode(), "v2"), actual)
+        self.assertEqual(hashes.parse_manifest(files(actual), "v2"), actual)
         merged, report = hashes.merge_manifests(base, head, incoming, actual)
         self.assertTrue(report["successful"])
         self.assertEqual(merged, actual)
@@ -95,14 +101,23 @@ class ReviewedHashMergeTests(unittest.TestCase):
         self.assertIn("not reinterpreted", report["review_required"]["$manifest"])
 
     def test_malformed_unknown_schema_duplicate_ids_and_keys_fail_closed(self):
-        bad = [b"not json", b'{"modules":[],"modules":[]}']
-        duplicate = manifest(entry("A"), entry("A"))
+        valid = files(manifest(entry("A")))
+        header = valid["_manifest.json"]
+        bad = [
+            {**valid, "_manifest.json": b"not json"},
+            {**valid, "A.json": b'{"id":"A","id":"A"}'},
+            {**valid, "B.json": valid["A.json"]},  # duplicate ID under another module's name
+            {"A.json": valid["A.json"]},  # missing header
+            {**valid, "notes.txt": b"{}"},
+            {"_manifest.json": json.dumps({**json.loads(header), "modules": {}}).encode()},
+            {**valid, "A.json": json.dumps({**entry("A"), "extra": 1}).encode()},
+        ]
         unknown = copy.deepcopy(manifest(entry("A")))
         unknown["schema"]["version"] = "999"
         traversal = manifest(entry("A"))
         traversal["modules"][0]["path"] = "../outside"
-        for value in (duplicate, unknown, traversal, {**manifest(), "modules": {}}, {**manifest(), "extra": 1}):
-            bad.append(json.dumps(value).encode())
+        for value in (unknown, traversal, {**manifest(), "extra": 1}):
+            bad.append(files(value))
         for content in bad:
             with self.subTest(content=content), self.assertRaises(ValueError):
                 hashes.parse_manifest(content, "fixture")
@@ -136,7 +151,14 @@ class ReviewedHashCheckoutTests(unittest.TestCase):
         path.write_text(content, encoding="utf-8")
 
     def refresh(self):
-        self.write(hashes.MANIFEST, json.dumps(hashes.actual_manifest(self.repo), indent=2, sort_keys=True) + "\n")
+        hashes.load_validator().write_manifest_directory(self.repo / hashes.MANIFEST, hashes.actual_manifest(self.repo))
+
+    def reviewed(self):
+        return hashes.load_validator().read_manifest_directory(self.repo / hashes.MANIFEST)
+
+    def snapshot(self):
+        directory = self.repo / hashes.MANIFEST
+        return {child.name: child.read_bytes() for child in sorted(directory.iterdir())} if directory.exists() else None
 
     def commit(self, message):
         self.git("add", "-A")
@@ -174,16 +196,16 @@ class ReviewedHashCheckoutTests(unittest.TestCase):
         self.branches()
         report = hashes.merge_checkout(self.repo, self.base, self.head, self.incoming, apply=True)
         self.assertTrue(report["successful"])
-        self.assertEqual(json.loads((self.repo / hashes.MANIFEST).read_bytes()), hashes.actual_manifest(self.repo))
+        self.assertEqual(self.reviewed(), hashes.actual_manifest(self.repo))
         self.assertFalse(self.git("ls-files", "--unmerged"))
 
     def test_checkout_same_module_combination_keeps_manifest_unresolved(self):
         self.branches(same_module=True)
-        before = (self.repo / hashes.MANIFEST).read_bytes()
+        before = self.snapshot()
         report = hashes.merge_checkout(self.repo, self.base, self.head, self.incoming, apply=True)
         self.assertFalse(report["successful"])
         self.assertIn("A", report["review_required"])
-        self.assertEqual(before, (self.repo / hashes.MANIFEST).read_bytes())
+        self.assertEqual(before, self.snapshot())
 
     def test_v2_checkout_generated_block_changes_do_not_invent_reviews(self):
         self.enable_review_fingerprints()
@@ -192,32 +214,32 @@ class ReviewedHashCheckoutTests(unittest.TestCase):
         readme.write_text(readme.read_text().replace("Generated trace", "Regenerated merged trace"))
         report = hashes.merge_checkout(self.repo, self.base, self.head, self.incoming, apply=True)
         self.assertTrue(report["successful"])
-        merged = json.loads((self.repo / hashes.MANIFEST).read_bytes())
+        merged = self.reviewed()
         self.assertEqual(merged, hashes.actual_manifest(self.repo))
         self.assertEqual(merged["schema"]["version"], "2.0.0")
 
     def test_v2_checkout_combined_source_changes_still_require_review(self):
         self.enable_review_fingerprints()
         self.branches(same_module=True)
-        before = (self.repo / hashes.MANIFEST).read_bytes()
+        before = self.snapshot()
         report = hashes.merge_checkout(self.repo, self.base, self.head, self.incoming, apply=True)
         self.assertFalse(report["successful"])
         self.assertIn("A", report["review_required"])
-        self.assertEqual(before, (self.repo / hashes.MANIFEST).read_bytes())
+        self.assertEqual(before, self.snapshot())
 
     def test_checkout_schema_transition_cannot_silently_reinterpret_parent(self):
         legacy_base = self.base
         self.enable_review_fingerprints()
-        before = (self.repo / hashes.MANIFEST).read_bytes()
+        before = self.snapshot()
         report = hashes.merge_checkout(self.repo, legacy_base, self.base, legacy_base, apply=True)
         self.assertFalse(report["successful"])
         self.assertIn("$manifest", report["review_required"])
-        self.assertEqual(before, (self.repo / hashes.MANIFEST).read_bytes())
+        self.assertEqual(before, self.snapshot())
 
     def test_removed_manifest_and_empty_registry_are_not_recreated(self):
         self.git("switch", "-c", "feature")
         self.write(hashes.REGISTRY, '{"modules": []}')
-        (self.repo / hashes.MANIFEST).unlink()
+        shutil.rmtree(self.repo / hashes.MANIFEST)
         self.commit("remove reviewed module registry")
         head = self.git("rev-parse", "HEAD").decode().strip()
         report = hashes.merge_checkout(self.repo, self.base, head, self.base, apply=True)
@@ -236,7 +258,7 @@ class ReviewedHashCheckoutTests(unittest.TestCase):
         self.refresh()
         self.commit("reviewed dashboard dependencies")
         self.base = self.git("rev-parse", "HEAD").decode().strip()
-        reviewed = (self.repo / hashes.MANIFEST).read_bytes()
+        reviewed = self.snapshot()
         self.git("switch", "-c", "feature")
         self.write("src/A/package.json", package.replace('"left": "1.0.0"', '"left": "^2.0.0"'))
         self.write("src/A/package-lock.json", lockfile.replace('"left": "1.0.0"', '"left": "2.0.1"'))
@@ -259,8 +281,8 @@ class ReviewedHashCheckoutTests(unittest.TestCase):
         report = hashes.merge_checkout(self.repo, self.base, self.head, self.incoming, apply=True)
         self.assertTrue(report["successful"], report)
         self.assertEqual(report["decisions"], {"A": "both", "B": "both"})
-        self.assertEqual(reviewed, (self.repo / hashes.MANIFEST).read_bytes())
-        self.assertEqual(json.loads(reviewed), hashes.actual_manifest(self.repo))
+        self.assertEqual(reviewed, self.snapshot())
+        self.assertEqual(hashes.load_validator().assemble_manifest(reviewed), hashes.actual_manifest(self.repo))
 
     def test_dependency_bump_with_source_change_still_requires_review(self):
         self.dependency_bump_branches(feature_source_edit=True)
