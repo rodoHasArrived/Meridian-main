@@ -417,6 +417,26 @@ Declared public members:
 | <code>public void Dispose();</code> | [src/Meridian.DataIntegration/Monitoring/ConnectionHealthMonitor.cs:919](../../../../src/Meridian.DataIntegration/Monitoring/ConnectionHealthMonitor.cs#L919) |  |
 | <code>public ValueTask DisposeAsync();</code> | [src/Meridian.DataIntegration/Monitoring/ConnectionHealthMonitor.cs:926](../../../../src/Meridian.DataIntegration/Monitoring/ConnectionHealthMonitor.cs#L926) |  |
 
+## ConnectionHealthRegistry
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.ConnectionHealthRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/ConnectionHealthRegistry.cs:13](../../../../src/Meridian.DataIntegration/Monitoring/ConnectionHealthRegistry.cs#L13).
+
+Process-wide hand-off of the running collector&#x27;s ConnectionHealthMonitor to the API host.
+
+```csharp
+public sealed class ConnectionHealthRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ConnectionHealthRegistry Process { get; } = new ();</code> | [src/Meridian.DataIntegration/Monitoring/ConnectionHealthRegistry.cs:18](../../../../src/Meridian.DataIntegration/Monitoring/ConnectionHealthRegistry.cs#L18) | The registry shared by everything in this process. |
+| <code>public ConnectionHealthMonitor? Monitor =&gt; …;</code> | [src/Meridian.DataIntegration/Monitoring/ConnectionHealthRegistry.cs:21](../../../../src/Meridian.DataIntegration/Monitoring/ConnectionHealthRegistry.cs#L21) | The monitor of the collector streaming in this process, if any. |
+| <code>public IDisposable Publish(ConnectionHealthMonitor monitor);</code> | [src/Meridian.DataIntegration/Monitoring/ConnectionHealthRegistry.cs:27](../../../../src/Meridian.DataIntegration/Monitoring/ConnectionHealthRegistry.cs#L27) | Publishes monitor until the returned handle is disposed. Disposing clears the registry only if it still holds this monitor. |
+
 ## ConnectionHealthSnapshot
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.ConnectionHealthSnapshot</code>. Kind: `record struct`.
@@ -1049,36 +1069,3 @@ Gap analysis result with visual timeline data.
 ```csharp
 public sealed record GapAnalysisResult(string Symbol, DateOnly Date, int TotalGaps, TimeSpan TotalGapDuration, double DataAvailabilityPercent, IReadOnlyList<DataGap> Gaps, IReadOnlyList<TimelineEntry> Timeline, DateTimeOffset AnalyzedAt);
 ```
-
-## GapAnalyzer
-
-Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.GapAnalyzer</code>. Kind: `class`.
-
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:13](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L13).
-
-Analyzes data gaps and generates visual timelines for data availability. Tracks gaps in real-time and provides historical gap analysis.
-
-```csharp
-public sealed class GapAnalyzer : IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public event Action&lt;DataGap&gt;? OnGapDetected;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:31](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L31) | Event raised when a significant gap is detected. |
-| <code>public GapAnalyzer(GapAnalyzerConfig? config = null);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:33](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L33) |  |
-| <code>public void RegisterSymbolLiquidity(string symbol, LiquidityProfile profile);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:46](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L46) | Registers a liquidity profile for a symbol, adjusting gap detection thresholds. |
-| <code>public LiquidityProfile GetSymbolLiquidity(string symbol);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:58](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L58) | Gets the liquidity profile for a symbol, defaulting to LiquidityProfile.High. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public void RecordEvent(string symbol, string eventType, DateTimeOffset timestamp, long? sequenceNumber = null, string? provider = null);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:70](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L70) | Records an event timestamp for gap detection. Uses per-symbol liquidity thresholds when registered, falling back to global config. |
-| <code>public GapAnalysisResult AnalyzeGaps(string symbol, DateOnly date, string? eventType = null);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:120](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L120) | Analyzes gaps for a specific symbol and date, generating a timeline. |
-| <code>public IReadOnlyList&lt;DataGap&gt; GetGapsForSymbolDate(string symbol, DateOnly date, string? eventType = null);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:146](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L146) | Gets all gaps for a specific symbol and date. |
-| <code>public IReadOnlyList&lt;DataGap&gt; GetGapsForDate(DateOnly date);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:162](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L162) | Gets all gaps for a specific date across all symbols. |
-| <code>public IReadOnlyList&lt;DataGap&gt; GetRecentGaps(int count = 100);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:174](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L174) | Gets recent gaps across all symbols. |
-| <code>public GapStatistics GetStatistics(DateOnly? date = null);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:186](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L186) | Gets gap statistics for a date. |
-| <code>public IReadOnlyList&lt;string&gt; GetSymbolsWithSignificantGaps(DateOnly date, TimeSpan threshold);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:235](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L235) | Gets symbols with gaps exceeding a threshold. |
-| <code>public IReadOnlyList&lt;TimelineEntry&gt; GenerateTimeline(string symbol, DateOnly date, IReadOnlyList&lt;DataGap&gt;? gaps = null);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:247](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L247) | Generates a visual timeline for a symbol/date. |
-| <code>public void ResetSymbol(string symbol, string? eventType = null);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:309](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L309) | Resets gap tracking for a symbol. |
-| <code>public long TotalGapsDetected =&gt; …;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:331](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L331) | Gets total gaps detected count. |
-| <code>public long TotalEventsProcessed =&gt; …;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:336](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L336) | Gets total events processed count. |
-| <code>public void Dispose();</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:451](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L451) |  |

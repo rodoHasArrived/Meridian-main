@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolTickSizeStats
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.SymbolTickSizeStats</code>. Kind: `record struct`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:384](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L384).
+
+Per-symbol tick size statistics.
+
+```csharp
+public readonly record struct SymbolTickSizeStats(string Symbol, long TotalViolations, DateTimeOffset LastViolationTime);
+```
+
 ## TickSizePriceType
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.TickSizePriceType</code>. Kind: `enum`.

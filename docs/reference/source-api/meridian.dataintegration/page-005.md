@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WeeklyQualityReport
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.WeeklyQualityReport</code>. Kind: `record`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:334](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L334).
+
+Weekly data quality report.
+
+```csharp
+public sealed record WeeklyQualityReport(DateOnly WeekStart, DateOnly WeekEnd, DateTimeOffset GeneratedAt, IReadOnlyList<DailyQualityReport> DailyReports, double AverageScore, double ScoreTrend, IReadOnlyList<string> TopIssues, IReadOnlyList<string> Improvements, IReadOnlyList<string> Recommendations, WeeklyStatistics Statistics);
+```
+
 ## WeeklyStatistics
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.WeeklyStatistics</code>. Kind: `record`.
@@ -781,16 +793,4 @@ Per-symbol spread statistics.
 
 ```csharp
 public readonly record struct SymbolSpreadStats(string Symbol, long TotalWideSpreadEvents, double AverageSpreadBps, double MaxSpreadBps, DateTimeOffset LastWideSpreadTime);
-```
-
-## SymbolTickSizeStats
-
-Qualified name: <code>Meridian.DataIntegration.Monitoring.SymbolTickSizeStats</code>. Kind: `record struct`.
-
-Source: [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:384](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L384).
-
-Per-symbol tick size statistics.
-
-```csharp
-public readonly record struct SymbolTickSizeStats(string Symbol, long TotalViolations, DateTimeOffset LastViolationTime);
 ```

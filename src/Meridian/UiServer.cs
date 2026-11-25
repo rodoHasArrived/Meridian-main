@@ -326,6 +326,9 @@ public sealed class UiServer : IAsyncDisposable
                     detailedHealth: () => detailed.GetDetailedHealthAsync(),
                     backpressure: backpressure.GetStatus,
                     providerLatency: latency.GetSummary,
+                    // Served while a collector streams in this process (--mode desktop); otherwise
+                    // the registry is empty and the endpoint reports "not configured".
+                    connectionHealth: () => Meridian.DataIntegration.Monitoring.ConnectionHealthRegistry.Process.Monitor?.GetSnapshot(),
                     diskSpace: () => systemHealth.GetSnapshot().DiskInfo);
                 return handlers;
             });

@@ -126,7 +126,9 @@ single-start instance then rejects unsafe retries and must be disposed. Shared o
 the registered RFC 7807 exception handler before authentication and other middleware (request
 timing, `mdc_http_request_duration_seconds` and the `ApiHost:SlowRequestThresholdMs` warning, runs
 directly after it; `/api/backpressure` and `/api/providers/latency` are served by
-`BackpressureAlertService` and the sampled `ProviderLatencyService`), and an
+`BackpressureAlertService` and the sampled `ProviderLatencyService`; `/api/connections`
+reads the in-process collector's monitor from `ConnectionHealthRegistry` and reports "not
+configured" while no collector streams in the process), and an
 API-only status-code fallback converts otherwise empty 4xx/5xx results to the same Problem Details
 contract. Browser routes and static assets remain outside that fallback, while missing runtime
 services and safe server failures return typed errors instead of successful placeholder payloads
