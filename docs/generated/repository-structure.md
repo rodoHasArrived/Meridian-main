@@ -7574,7 +7574,6 @@ Meridian-main
 │   │   │   ├── FactorPaydownProjectionService.cs
 │   │   │   ├── IDirectLoanReferenceService.cs
 │   │   │   ├── IStructuredCreditReferenceService.cs
-│   │   │   ├── LegacyPortfolioCashLadderEngine.cs
 │   │   │   ├── PortfolioCashLadderEngine.cs
 │   │   │   ├── PortfolioCashLadderEngine.DeclaredBonds.cs
 │   │   │   └── StructuredCreditProjectionService.cs
