@@ -818,7 +818,8 @@ function AppShell({
       workflowSummary
     },
     operatingContextScope: operatingScopeInput,
-    inboxItems
+    inboxItems,
+    signedInUsername
   }), [
     pathname,
     search,
@@ -842,7 +843,8 @@ function AppShell({
     reporting,
     workflowSummary,
     operatingScopeInput,
-    inboxItems
+    inboxItems,
+    signedInUsername
   ]);
   // Page status rows fold in the shell's source signals, so a page cannot read "All sources
   // current" while the masthead pill warns about the same sources.

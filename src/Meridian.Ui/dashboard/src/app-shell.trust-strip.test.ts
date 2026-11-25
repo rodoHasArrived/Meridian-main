@@ -133,4 +133,14 @@ describe("resolveShellFreshness", () => {
     expect(resolveShellFreshness({ items: [item("source", "pending"), item("providers", "pending")] }).tone).toBe("unknown");
     expect(resolveShellFreshness({ items: [] }).tone).toBe("unknown");
   });
+
+  it("names the signed-in operator, not the session desk label, in the environment line", () => {
+    const desk = { ...session("paper"), displayName: "Ops Desk" };
+    const named = build({ session: desk, usingDevelopmentFixtures: false, dataProvenance: "real", signedInUsername: " ops.lead " });
+    expect(named.items.find((item) => item.id === "mode")?.detail).toBe("ops.lead on the Ops Desk session is operating in paper mode.");
+
+    const unnamed = build({ session: desk, usingDevelopmentFixtures: false, dataProvenance: "real" });
+    expect(unnamed.items.find((item) => item.id === "mode")?.detail).toBe("The Ops Desk session is operating in paper mode.");
+  });
 });
+
