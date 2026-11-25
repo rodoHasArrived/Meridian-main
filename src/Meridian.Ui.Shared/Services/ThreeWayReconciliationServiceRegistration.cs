@@ -20,8 +20,13 @@ public static class ThreeWayReconciliationServiceRegistration
             options.RootDirectory = rootDirectory(sp);
             if (options.MaximumSourceAge <= TimeSpan.Zero || options.MaximumSourceDrift < TimeSpan.Zero)
                 throw new InvalidOperationException("Three-way source age/drift configuration is invalid.");
+            if (options.BrokerRefreshInterval is { } refresh && refresh <= TimeSpan.Zero)
+                throw new InvalidOperationException("Three-way broker refresh interval must be positive when set.");
+            if (options.FillPriceTolerance < 0m || options.FillFeeTolerance < 0m)
+                throw new InvalidOperationException("Three-way fill tolerances cannot be negative.");
             return options;
         });
+        services.TryAddSingleton<ThreeWayReconciliationMetrics>();
         services.TryAddSingleton<FileThreeWayReconciliationEvidenceStore>();
         services.TryAddSingleton<IThreeWayReconciliationSourceReader, ThreeWayReconciliationSourceReader>();
         services.TryAddSingleton<ThreeWayReconciliationService>();
@@ -36,20 +41,28 @@ public sealed class ThreeWayReconciliationScheduleRunner(
     IThreeWayReconciliationSourceReader sources,
     ThreeWayReconciliationService reconciliation,
     ThreeWayReconciliationOptions options,
-    ILogger<ThreeWayReconciliationScheduleRunner> logger)
+    ILogger<ThreeWayReconciliationScheduleRunner> logger,
+    BrokeragePortfolioSyncService? brokerage = null,
+    ThreeWayReconciliationMetrics? metrics = null)
 {
+    // In-memory throttle only: after a restart the first tick refreshes again, which is harmless.
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, DateTimeOffset> _lastBrokerRefresh = new();
+
     public async Task<int> RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default)
     {
         var completed = 0;
         foreach (var schedule in options.Schedules.Where(schedule => schedule.Enabled))
         {
             ct.ThrowIfCancellationRequested();
+            // Runs before the attempt, so a schedule that keeps failing still reports as overdue.
+            metrics?.ObserveSchedule(schedule.FinancialAccountId);
             try
             {
                 using var authority = FundScopeTenantAuthority.Enter(schedule.TenantId, "three-way-reconciliation-schedule");
                 var access = new ReconciliationBreakQueueScope(schedule.TenantId, schedule.CompanyId);
                 var scope = await sources.AuthorizeAsync(schedule.FinancialAccountId, access, schedule.LedgerBookId,
                     schedule.AccountingPeriodId, ct).ConfigureAwait(false);
+                await RefreshBrokerIfDueAsync(schedule.FinancialAccountId, nowUtc, ct).ConfigureAwait(false);
                 // Retain independent current observations on every shared minute tick so yesterday's
                 // cutoff can select its own operands instead of using tomorrow's newest projection.
                 await sources.CaptureAsync(scope, ct).ConfigureAwait(false);
@@ -75,5 +88,33 @@ public sealed class ThreeWayReconciliationScheduleRunner(
             }
         }
         return completed;
+    }
+
+    /// <summary>
+    /// Re-syncs the linked broker account through the same path as the operator endpoint. A failed
+    /// refresh is not compared around: the retained broker observation simply stays old, and the
+    /// comparison's source-age check then blocks the daily run instead of reading stale evidence.
+    /// </summary>
+    private async Task RefreshBrokerIfDueAsync(Guid accountId, DateTimeOffset nowUtc, CancellationToken ct)
+    {
+        if (brokerage is null || options.BrokerRefreshInterval is not { } interval)
+            return;
+        if (_lastBrokerRefresh.TryGetValue(accountId, out var last) && nowUtc - last < interval)
+            return;
+        _lastBrokerRefresh[accountId] = nowUtc;
+        try
+        {
+            await brokerage.RunSyncAsync(accountId, new WorkstationBrokerageSyncRunRequestDto(
+                RequestedBy: "three-way-reconciliation-schedule"), ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning("Scheduled broker refresh for account {AccountId} failed ({FailureType}); the retained broker observation was not updated.",
+                accountId, exception.GetType().Name);
+        }
     }
 }

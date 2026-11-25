@@ -20,7 +20,7 @@ public sealed record SyncValidationResult(bool Passed, IReadOnlyList<SyncComplet
 
 Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayAdjustmentProposalDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:78](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L78).
+Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:112](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L112).
 
 ```csharp
 public sealed record ThreeWayAdjustmentProposalDto(string CheckId, string Status, string Description, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? Amount, string Currency, IReadOnlyList<string> EvidenceIds, string EvidenceHash);
@@ -30,7 +30,7 @@ public sealed record ThreeWayAdjustmentProposalDto(string CheckId, string Status
 
 Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayCashActivityDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L74).
+Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:108](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L108).
 
 ```csharp
 public sealed record ThreeWayCashActivityDto(string TransactionId, string TransactionType, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Amount, string Currency, DateTimeOffset PostedAtUtc, string EvidenceReference);
@@ -40,7 +40,7 @@ public sealed record ThreeWayCashActivityDto(string TransactionId, string Transa
 
 Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayFeeCorrectionEvidenceDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:88](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L88).
+Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:122](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L122).
 
 Retained economic identity; copies cannot create a second effect for one broker fee.
 
@@ -68,6 +68,27 @@ Declared public members:
 | <code>public static string Compute(ThreeWayFeeCorrectionEvidenceDto evidence) =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ThreeWayFeeCorrectionIdentity.cs:34](../../../../src/Meridian.Contracts/Workstation/ThreeWayFeeCorrectionIdentity.cs#L34) |  |
 | <code>public static Guid SourceEventId(ThreeWayFeeCorrectionEvidenceDto evidence) =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ThreeWayFeeCorrectionIdentity.cs:38](../../../../src/Meridian.Contracts/Workstation/ThreeWayFeeCorrectionIdentity.cs#L38) |  |
 
+## ThreeWayFillDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayFillDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L76).
+
+One execution as one source recorded it. Broker fills carry the provider activity id; ledger fills carry Meridian&#x27;s fill id, the client order id and the posted journal entry ids.
+
+```csharp
+public sealed record ThreeWayFillDto(string FillKey, string Symbol, string Side, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Quantity, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Price, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? Commission, DateTimeOffset ExecutedAtUtc, string EvidenceReference)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? BrokerActivityId { get; init; }</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:86](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L86) |  |
+| <code>public string? BrokerOrderId { get; init; }</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:87](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L87) |  |
+| <code>public string? ClientOrderId { get; init; }</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:88](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L88) |  |
+| <code>public IReadOnlyList&lt;string&gt; JournalEntryIds { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:89](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L89) |  |
+
 ## ThreeWayPositionDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayPositionDto</code>. Kind: `record`.
@@ -82,11 +103,18 @@ public sealed record ThreeWayPositionDto(Guid SecurityId, string Symbol, [proper
 
 Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayReconciliationCheckDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:45](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L45).
+Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:52](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L52).
 
 ```csharp
-public sealed record ThreeWayReconciliationCheckDto(string CheckId, string Measure, Guid? SecurityId, string? Symbol, string LeftSource, string RightSource, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? LeftAmount, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? RightAmount, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Tolerance, string Status, string Explanation);
+public sealed record ThreeWayReconciliationCheckDto(string CheckId, string Measure, Guid? SecurityId, string? Symbol, string LeftSource, string RightSource, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? LeftAmount, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? RightAmount, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Tolerance, string Status, string Explanation)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? Classification { get; init; }</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:66](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L66) | Operator-facing difference type, for example MissingFillInLedger or FeeMismatch. |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceIds { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L69) | Broker activity ids and journal entry ids that this check compared. |
 
 ## ThreeWayReconciliationRequestDto
 
@@ -104,7 +132,7 @@ public sealed record ThreeWayReconciliationRequestDto(Guid LedgerBookId, Guid Ac
 
 Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayReconciliationResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L58).
+Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:92](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L92).
 
 ```csharp
 public sealed record ThreeWayReconciliationResultDto(string RunId, string OperationId, ThreeWayReconciliationScopeDto Scope, DateTimeOffset CutoffUtc, DateTimeOffset RecordedAtUtc, string Status, IReadOnlyList<ThreeWaySourceSnapshotDto> Sources, IReadOnlyList<ThreeWayReconciliationCheckDto> Checks, IReadOnlyList<string> BreakIds, string DataProvenanceToken = "real")
@@ -114,8 +142,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;ThreeWayAdjustmentProposalDto&gt; AdjustmentProposals { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L70) |  |
-| <code>public long? AccountingPeriodVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:71](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L71) |  |
+| <code>public IReadOnlyList&lt;ThreeWayAdjustmentProposalDto&gt; AdjustmentProposals { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:104](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L104) |  |
+| <code>public long? AccountingPeriodVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:105](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L105) |  |
 
 ## ThreeWayReconciliationScopeDto
 
@@ -147,6 +175,8 @@ Declared public members:
 | <code>public IReadOnlyList&lt;string&gt; PostedExternalTransactionIds { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L40) |  |
 | <code>public bool TransactionIdentityCoverageComplete { get; init; }</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L41) |  |
 | <code>public long? AccountingPeriodVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L42) |  |
+| <code>public IReadOnlyList&lt;ThreeWayFillDto&gt; Fills { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:48](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L48) | Fill-level operands within the comparison period. Empty with FillCoverageComplete false means fill evidence is unavailable, never &quot;no fills&quot;. |
+| <code>public bool FillCoverageComplete { get; init; }</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L49) |  |
 
 ## ThresholdBreachDto
 
@@ -612,14 +642,4 @@ Request to create or update an operator-saved workflow preset.
 
 ```csharp
 public sealed record WorkflowPresetSaveRequest(string? PresetId, string Name, string? Description, string WorkflowId, string? ActionId, IReadOnlyList<string>? Tags, bool IsPinned, string? ViewStateEnvelope = null);
-```
-
-## WorkspaceModeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkspaceModeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L62).
-
-```csharp
-public sealed record WorkspaceModeDto(string Id, string Name, bool IsSample, string Badge, string SafetyMessage, string SamplePackVersion);
 ```

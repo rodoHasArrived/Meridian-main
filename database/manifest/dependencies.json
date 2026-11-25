@@ -23416,6 +23416,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWayFillDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ThreeWayPositionDto"
     },
     {
@@ -60112,6 +60118,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ThreeWaySourceSnapshotDto",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWayFillDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ThreeWaySourceSnapshotDto",
       "target": "contract:Meridian.Contracts.Workstation.ThreeWayPositionDto"
     },
     {
@@ -72118,7 +72130,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "782e2112c771980a650d0aed4b32a487d14025de678d921d02ef0e7dc2b579ea",
+  "fingerprint": "4313d10ea086092b19da82d426c941848c8cdf41a9655d64678f59928903f5cc",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -95585,6 +95597,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ThreeWayFillDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ThreeWayFillDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.ThreeWayPositionDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ThreeWayPositionDto"
@@ -105965,11 +105983,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4416,
-    "contract_set_memberships": 5821,
-    "edges": 11980,
+    "contract_references": 4417,
+    "contract_set_memberships": 5822,
+    "edges": 11982,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5886
+    "nodes": 5887
   }
 }

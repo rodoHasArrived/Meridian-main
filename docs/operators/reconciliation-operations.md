@@ -267,6 +267,39 @@ be recovered through their retained posting workflow. Independently evidenced ad
 through existing journal review and approval. Posting an adjustment alone does not prove agreement;
 rerun the comparison. These development scenarios are synthetic verification, not live activation.
 
+### Fill matching, broker refresh and monitoring
+
+When both the ledger and broker captures carry complete fill evidence for the period, the comparison
+also pairs each broker fill with a posted trade-fill journal. Pairing never crosses symbol or side:
+an exact broker activity id wins, then the client order id (partial fills pair by quantity, then
+time), then an economic match (same quantity, price within tolerance, execution within the drift
+window). Each fill check carries a classification and the exact `broker-activity:` and
+`journal-entry:` evidence ids it compared:
+
+| Classification | Meaning | Status |
+|---|---|---|
+| `MissingFillInLedger` | Broker fill with no posted Meridian fill | Break (`MissingLedgerCoverage`) |
+| `MissingFillAtBroker` | Posted fill with no broker fill | Break (`MissingExternalStatementCoverage`) |
+| `QuantityMismatch`, `PriceMismatch`, `FeeMismatch` | Paired fill with different economics | Break (`AmountMismatch`) |
+| `TimingOnly` | Economics agree; only observation or execution time differs | `Timing`, recorded, never queued |
+| `FillCoverageUnavailable` | One source lacks trustworthy fill evidence | `NotCompared`, recorded, never queued |
+
+Fee breaks are raised only when the broker reports a commission. Tolerances are
+`Reconciliation:ThreeWay:FillPriceTolerance` (default `0.0001`) and `FillFeeTolerance` (default
+`0.01`). When neither source captured fill evidence, the run is the balance-only comparison above.
+For `MissingFillInLedger`, replay the retained fill handoff; do not hand-post the trade.
+
+Set `Reconciliation:ThreeWay:BrokerRefreshInterval` (for example `00:15:00`) to have the schedule
+worker run the same broker sync as the operator endpoint before each capture. Unset, nothing is
+refreshed automatically. A failed refresh logs its failure type only; the retained broker observation
+stays old and the source-age check then blocks the daily run instead of comparing stale evidence.
+
+Prometheus at `/metrics` exposes `mdc_reconciliation_runs_total{status}`,
+`mdc_reconciliation_checks_total{classification,status}`, `mdc_reconciliation_last_run_breaks{account}`,
+`mdc_reconciliation_last_completed_cutoff_timestamp_seconds{account}` and
+`mdc_reconciliation_health{account}` (0 healthy, 1 degraded: blocked or no run within 36 hours,
+2 unhealthy: open `MissingFillInLedger` breaks in the latest run). Alert on health above 0.
+
 ### Evidence-backed missing-fee draft
 
 The initial correction treatment supports one negative USD `FEE` activity with a stable broker
