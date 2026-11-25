@@ -43,7 +43,7 @@ public static partial class SecurityMasterEndpoints
             {
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
             }
-        }).WithName("CreateLegalEntity");
+        }).WithName("EntityMasterCreateLegalEntity").RequirePermission(UserPermission.ModifySecurityMaster);
 
         group.MapGet(UiApiRoutes.EntityMasterEntity, async (Guid entityId, DateOnly? asOf, [FromServices] IEntityMasterStore store, CancellationToken ct) =>
         {
@@ -54,7 +54,7 @@ public static partial class SecurityMasterEndpoints
             var parent = await store.GetParentAsync(entityId, date, ct).ConfigureAwait(false);
             var ultimate = await store.GetUltimateParentAsync(entityId, date, ct).ConfigureAwait(false);
             return Results.Json(new { entity, parent, ultimateParent = ultimate }, jsonOptions);
-        }).WithName("GetLegalEntity").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster);
+        }).WithName("EntityMasterGetLegalEntity").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster);
 
         group.MapPut(UiApiRoutes.EntityMasterEntityParent, async (
             Guid entityId, SetEntityParentRequest request, HttpContext context, [FromServices] IEntityMasterStore store, CancellationToken ct) =>
@@ -74,13 +74,13 @@ public static partial class SecurityMasterEndpoints
             {
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
             }
-        }).WithName("SetLegalEntityParent");
+        }).WithName("EntityMasterSetLegalEntityParent").RequirePermission(UserPermission.ModifySecurityMaster);
 
         group.MapGet(UiApiRoutes.EntityMasterSecurityIssuer, async (Guid securityId, DateOnly? asOf, [FromServices] IEntityMasterStore store, CancellationToken ct) =>
         {
             var link = await store.GetIssuerAsync(securityId, asOf ?? DateOnly.FromDateTime(DateTime.UtcNow), ct).ConfigureAwait(false);
             return link is null ? Results.NotFound() : Results.Json(link, jsonOptions);
-        }).WithName("GetSecurityIssuer").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster);
+        }).WithName("EntityMasterGetSecurityIssuer").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster);
 
         group.MapPut(UiApiRoutes.EntityMasterSecurityIssuer, async (
             Guid securityId, LinkSecurityIssuerRequest request, HttpContext context, [FromServices] IEntityMasterStore store, CancellationToken ct) =>
@@ -96,6 +96,6 @@ public static partial class SecurityMasterEndpoints
             {
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
             }
-        }).WithName("LinkSecurityIssuer");
+        }).WithName("EntityMasterLinkSecurityIssuer").RequirePermission(UserPermission.ModifySecurityMaster);
     }
 }

@@ -45,7 +45,7 @@ public static partial class SecurityMasterEndpoints
                 return authorization;
             return Results.Json(await sync.SyncAsync(ct).ConfigureAwait(false), jsonOptions);
         })
-        .WithName("SyncSecurityMasterExceptionCases");
+        .WithName("SyncSecurityMasterExceptionCases").RequirePermission(UserPermission.ModifySecurityMaster);
 
         group.MapPost(UiApiRoutes.SecurityMasterExceptionCaseAssign, async (
             Guid caseId, AssignSecurityMasterExceptionCaseRequest request, HttpContext context,
@@ -60,7 +60,7 @@ public static partial class SecurityMasterEndpoints
                 ? Results.NoContent()
                 : Results.Conflict(new { error = $"Case '{caseId:D}' is not open." });
         })
-        .WithName("AssignSecurityMasterExceptionCase");
+        .WithName("AssignSecurityMasterExceptionCase").RequirePermission(UserPermission.ModifySecurityMaster);
 
         // Review B1: read-only diff of the legacy and contractual cash-flow engines; no behaviour switch.
         group.MapPost(UiApiRoutes.SecurityMasterCashFlowShadowCompare, async (
@@ -100,6 +100,6 @@ public static partial class SecurityMasterEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
         })
-        .WithName("RecordSecurityFactorObservation");
+        .WithName("RecordSecurityFactorObservation").RequirePermission(UserPermission.ModifySecurityMaster);
     }
 }
