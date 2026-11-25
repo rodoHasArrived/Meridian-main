@@ -25,6 +25,19 @@ regexes     = [
 ]
 
 [[allowlists]]
+id          = "design-system-api-content-hashes"
+description = "Design-system API manifests map file paths and evidence keys to SHA-256 content digests, never credentials"
+condition   = "AND"
+paths       = [
+    '''^Meridian Design System/api/(project-compatibility|dashboard-validation|source-contract-results)\.json$''',
+]
+# Match the whole JSON entry, not only the value, so a non-hash string in these files still reports.
+regexTarget = "line"
+regexes     = [
+    '''^\s*"[^"]+":\s*"(sha256:)?[0-9a-f]{64}",?\s*$''',
+]
+
+[[allowlists]]
 id          = "generated-database-catalog-fingerprints"
 description = "Deterministic generated database catalog contains schema fingerprints and key metadata, never credentials"
 paths       = [

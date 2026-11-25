@@ -3,6 +3,7 @@ name: CodeQL
 on:
   workflow_call:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   merge_group:
   push:
     branches:
@@ -29,6 +30,9 @@ env:
 jobs:
   analyze:
     name: Analyze ${{ matrix.language }}
+    # Draft pull requests skip this required check (a draft cannot merge); marking the
+    # PR ready for review analyzes it.
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:

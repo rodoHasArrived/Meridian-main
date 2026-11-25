@@ -150,7 +150,7 @@ output/
 logs/
 _logs/
 diagnostic-logs/
-/Meridian Design System (3)/uploads/
+.playwright-cli/
 .build-system/
 .artifacts/
 external/IBApi/

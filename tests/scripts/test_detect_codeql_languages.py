@@ -104,7 +104,9 @@ class CodeqlWorkflowSkipTests(unittest.TestCase):
 
     def test_job_always_runs_so_required_check_names_report(self):
         self.assertEqual(self.job["name"], "Analyze ${{ matrix.language }}")
-        self.assertNotIn("if", self.job)
+        # Every non-draft pull request runs the job so the required names report. A draft
+        # cannot merge, and its ready_for_review event analyzes.
+        self.assertEqual(self.job["if"], "github.event_name != 'pull_request' || github.event.pull_request.draft != true")
         self.assertNotIn("needs", self.job)
 
     def test_only_pull_requests_are_classified(self):

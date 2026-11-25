@@ -18,11 +18,13 @@ describe("AmountCell", () => {
   });
 
   it("colors P&L mode: negative red, positive green", () => {
+    // Assert the declared design token, not the computed color: jsdom 31+ resolves var()
+    // fallbacks in getComputedStyle, which would make this depend on the test theme.
     const { rerender } = render(<AmountCell value={-5} mode="pnl" />);
-    expect(screen.getByText("−5.00")).toHaveStyle({ color: "var(--red-dim, #883832)" });
+    expect(screen.getByText("−5.00").style.color).toBe("var(--red-dim, #883832)");
 
     rerender(<AmountCell value={5} mode="pnl" signed />);
-    expect(screen.getByText("+5.00")).toHaveStyle({ color: "var(--green-dim, #225840)" });
+    expect(screen.getByText("+5.00").style.color).toBe("var(--green-dim, #225840)");
   });
 
   it("renders through an alternate element tag", () => {

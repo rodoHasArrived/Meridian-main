@@ -2,10 +2,12 @@ import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { MemoryRouter, Router, useLocation, useNavigate } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ReportingHub } from "@/components/meridian/reporting-hub";
 import { buildReportingHubModel } from "@/lib/reporting-hub";
 import type { ReportingHubDailyWorkInput, ReportingHubModel } from "@/lib/reporting-hub";
+import { backToWorkList, expectNarrowWorkbenchViewport, expectWorkbenchQueueShown, inspectSelection as inspectWorkbenchSelection, installViewportMatchMedia } from "@/test/narrow-workbench";
+type User = ReturnType<typeof userEvent.setup>;
 
 const dailyItems: ReportingHubDailyWorkInput[] = [
   {
@@ -69,8 +71,31 @@ function HubHarness({ model, initialUrl = "/reporting" }: { model: ReportingHubM
   return <MemoryRouter initialEntries={[initialUrl]}><ReportingHub model={model} /><LocationProbe /></MemoryRouter>;
 }
 
+const PANEL_NAME = "Selected reporting work detail";
+
+// The test viewport is the constrained layout (see @/test/narrow-workbench): the switchable
+// inspector stays hidden until the operator inspects a selection, and the queue hides while
+// it is open.
+/** The visible inspector; fails while the narrow layout shows the queue instead. */
 function selectedPanel() {
-  return screen.getByRole("region", { name: "Selected reporting work detail" });
+  return screen.getByRole("region", { name: PANEL_NAME });
+}
+
+/** The detail pane whether or not it is shown, for identity checks such as aria-controls. */
+function detailPane() {
+  return screen.getByLabelText(PANEL_NAME);
+}
+
+function expectQueueShown() {
+  expect(screen.queryByRole("region", { name: PANEL_NAME })).not.toBeInTheDocument();
+  expectWorkbenchQueueShown();
+}
+
+async function inspectSelection(user: User) {
+  expectQueueShown();
+  await inspectWorkbenchSelection(user);
+  expect(screen.queryByRole("treegrid", { name: "Daily reporting work" })).not.toBeInTheDocument();
+  return selectedPanel();
 }
 
 function rowFor(title: string) {
@@ -78,6 +103,22 @@ function rowFor(title: string) {
 }
 
 describe("ReportingHub", () => {
+  beforeEach(() => {
+    installViewportMatchMedia();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("renders the constrained layout at the test viewport", () => {
+    expectNarrowWorkbenchViewport();
+    expect(window.matchMedia("(max-width: 1279px)").matches).toBe(true);
+    render(<ReportingHub model={dailyModel()} />);
+    expectQueueShown();
+    expect(screen.getByRole("treegrid", { name: "Daily reporting work" })).toBeInTheDocument();
+  });
+
   it("renders daily reporting work as control-tower decision facts", () => {
     const model = buildReportingHubModel(
       [],
@@ -172,9 +213,9 @@ describe("ReportingHub", () => {
 
     await user.click(rowFor("Capital statement needs support"));
 
-    const panel = selectedPanel();
     expect(rowFor("Capital statement needs support")).toHaveAttribute("aria-selected", "true");
     expect(rowFor("Board portal package failed")).not.toHaveAttribute("aria-selected");
+    const panel = await inspectSelection(user);
     expect(panel).toHaveTextContent("capital-reviewer");
     expect(panel).toHaveTextContent("Fourth support gap.");
     expect(panel).toHaveTextContent("Fifth retained context");
@@ -188,7 +229,8 @@ describe("ReportingHub", () => {
     render(<HubHarness model={dailyModel()} initialUrl="/reporting?companyId=company-a&filter=due&reportingWork=evidence-gap%3Acapital#queue" />);
 
     expect(rowFor("Capital statement needs support")).toHaveAttribute("aria-selected", "true");
-    expect(selectedPanel()).toHaveTextContent("capital-reviewer");
+    expect(await inspectSelection(user)).toHaveTextContent("capital-reviewer");
+    await backToWorkList(user);
     await user.click(rowFor("Board portal package failed"));
 
     const currentUrl = new URL(screen.getByLabelText("Current review URL").textContent!, "https://meridian.test");
@@ -203,7 +245,8 @@ describe("ReportingHub", () => {
     render(<HubHarness model={dailyModel()} />);
     const first = rowFor("Board portal package failed");
     const second = rowFor("Capital statement needs support");
-    const panel = selectedPanel();
+    const panel = detailPane();
+    expectQueueShown();
     first.focus();
 
     await user.keyboard("{ArrowDown}");
@@ -213,11 +256,15 @@ describe("ReportingHub", () => {
     expect(second).toHaveAttribute("aria-expanded", "true");
     expect(first).toHaveAttribute("aria-expanded", "false");
     expect(within(screen.getByRole("treegrid", { name: "Daily reporting work" }).parentElement!).getByRole("status")).toHaveTextContent("Capital statement needs support selected. Detail panel updated.");
+    // Enter on a row switches the constrained layout to the inspector and hands it focus.
     await user.keyboard("{Enter}");
     await waitFor(() => expect(panel).toHaveFocus());
+    expect(selectedPanel()).toBe(panel);
+    expect(screen.getByRole("button", { name: "Back to work list" })).toHaveAttribute("aria-expanded", "true");
     await user.keyboard("{Escape}");
     await act(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
     expect(second).toHaveFocus();
+    expectQueueShown();
     await user.keyboard("{Home}");
     expect(first).toHaveFocus();
     expect(first).toHaveAttribute("aria-selected", "true");
@@ -225,9 +272,11 @@ describe("ReportingHub", () => {
     expect(second).toHaveFocus();
     await user.keyboard(" ");
     await waitFor(() => expect(panel).toHaveFocus());
+    expect(selectedPanel()).toBe(panel);
     await user.keyboard("{Escape}");
     await act(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
     expect(second).toHaveFocus();
+    expectQueueShown();
   });
 
   it("returns Escape to the newly activated row before deferred URL navigation commits", async () => {
@@ -254,55 +303,69 @@ describe("ReportingHub", () => {
     await user.keyboard("{Escape}");
     await act(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
     expect(second).toHaveFocus();
+    expectQueueShown();
 
     rerender(controlledHub("/reporting?companyId=company-a&reportingWork=unknown"));
-    expect(selectedPanel()).toHaveTextContent("This reporting work item is no longer in the current queue.");
-    expect(within(selectedPanel()).queryByRole("link")).not.toBeInTheDocument();
     expect(screen.queryByRole("row", { selected: true })).not.toBeInTheDocument();
+    let panel = await inspectSelection(user);
+    expect(panel).toHaveTextContent("This reporting work item is no longer in the current queue.");
+    expect(within(panel).queryByRole("link")).not.toBeInTheDocument();
+    await backToWorkList(user);
 
     rerender(controlledHub("/reporting?companyId=company-b&reportingWork=evidence-gap%3Acapital"));
-    expect(selectedPanel()).toHaveTextContent("Reporting scope changed.");
-    expect(within(selectedPanel()).queryByRole("link")).not.toBeInTheDocument();
     expect(screen.queryByRole("row", { selected: true })).not.toBeInTheDocument();
+    panel = await inspectSelection(user);
+    expect(panel).toHaveTextContent("Reporting scope changed.");
+    expect(within(panel).queryByRole("link")).not.toBeInTheDocument();
   });
 
-  it("retains selection by identity through refresh and removes unavailable evidence and actions", () => {
+  it("retains selection by identity through refresh and removes unavailable evidence and actions", async () => {
+    const user = userEvent.setup();
     const { rerender } = render(<HubHarness model={dailyModel()} initialUrl="/reporting?reportingWork=evidence-gap%3Acapital" />);
     const refreshedCapital = { ...dailyItems[1], owner: "new-reviewer", evidenceGaps: ["Updated source gap."], primaryActionHref: "/reporting/evidence?subjectId=capital-v2" };
     rerender(<HubHarness model={dailyModel([refreshedCapital, dailyItems[0]])} />);
-    expect(selectedPanel()).toHaveTextContent("new-reviewer");
-    expect(selectedPanel()).toHaveTextContent("Updated source gap.");
-    expect(selectedPanel()).not.toHaveTextContent("Fourth support gap.");
-    expect(within(selectedPanel()).getByRole("link", { name: /Review capital support/ })).toHaveAttribute("href", "/reporting/evidence?subjectId=capital-v2");
+    let panel = await inspectSelection(user);
+    expect(panel).toHaveTextContent("new-reviewer");
+    expect(panel).toHaveTextContent("Updated source gap.");
+    expect(panel).not.toHaveTextContent("Fourth support gap.");
+    expect(within(panel).getByRole("link", { name: /Review capital support/ })).toHaveAttribute("href", "/reporting/evidence?subjectId=capital-v2");
 
+    // A refresh while the inspector is open keeps the operator on the inspector.
     rerender(<HubHarness model={dailyModel([dailyItems[0]])} />);
-    expect(selectedPanel()).toHaveTextContent("This reporting work item is no longer in the current queue.");
-    expect(within(selectedPanel()).queryByRole("link")).not.toBeInTheDocument();
+    panel = selectedPanel();
+    expect(panel).toHaveTextContent("This reporting work item is no longer in the current queue.");
+    expect(within(panel).queryByRole("link")).not.toBeInTheDocument();
+    await backToWorkList(user);
     expect(rowFor("Board portal package failed")).not.toHaveAttribute("aria-selected");
 
     rerender(<HubHarness model={dailyModel([])} />);
-    expect(selectedPanel()).toHaveTextContent("This reporting work item is no longer in the current queue.");
-    expect(selectedPanel()).not.toHaveTextContent("new-reviewer");
+    panel = await inspectSelection(user);
+    expect(panel).toHaveTextContent("This reporting work item is no longer in the current queue.");
+    expect(panel).not.toHaveTextContent("new-reviewer");
   });
 
   it("handles an unavailable deep-linked item without selecting an unrelated row", async () => {
     const user = userEvent.setup();
     render(<HubHarness model={dailyModel()} initialUrl="/reporting?reportingWork=unknown" />);
-    expect(selectedPanel()).toHaveTextContent("This reporting work item is no longer in the current queue.");
     expect(screen.queryByRole("row", { selected: true })).not.toBeInTheDocument();
+    expect(await inspectSelection(user)).toHaveTextContent("This reporting work item is no longer in the current queue.");
+    await backToWorkList(user);
     await user.click(rowFor("Capital statement needs support"));
-    expect(selectedPanel()).toHaveTextContent("capital-reviewer");
+    expect(await inspectSelection(user)).toHaveTextContent("capital-reviewer");
   });
 
   it("clears selected proof on a scope change even when the new scope reuses its work ID", async () => {
     const user = userEvent.setup();
     render(<HubHarness model={dailyModel()} initialUrl="/reporting?companyId=company-a&reportingWork=delivery-failure%3Aboard&filter=due#queue" />);
-    expect(selectedPanel()).toHaveTextContent("fund-controller");
+    expect(await inspectSelection(user)).toHaveTextContent("fund-controller");
+    await backToWorkList(user);
 
     await user.click(screen.getByRole("button", { name: "Change company" }));
-    expect(selectedPanel()).toHaveTextContent("Reporting scope changed.");
-    expect(within(selectedPanel()).queryByRole("link")).not.toBeInTheDocument();
     expect(screen.queryByRole("row", { selected: true })).not.toBeInTheDocument();
+    const changed = await inspectSelection(user);
+    expect(changed).toHaveTextContent("Reporting scope changed.");
+    expect(within(changed).queryByRole("link")).not.toBeInTheDocument();
+    await backToWorkList(user);
     const url = new URL(screen.getByLabelText("Current review URL").textContent!, "https://meridian.test");
     expect(url.searchParams.has("reportingWork")).toBe(false);
     expect(url.searchParams.get("companyId")).toBe("company-b");
@@ -310,26 +373,28 @@ describe("ReportingHub", () => {
     expect(url.hash).toBe("#queue");
 
     await user.click(rowFor("Board portal package failed"));
-    expect(selectedPanel()).toHaveTextContent("fund-controller");
+    expect(await inspectSelection(user)).toHaveTextContent("fund-controller");
   });
 
   it("keeps selection when an unrelated query filter changes", async () => {
     const user = userEvent.setup();
     render(<HubHarness model={dailyModel()} initialUrl="/reporting?companyId=company-a&reportingWork=delivery-failure%3Aboard&filter=due#queue" />);
     await user.click(screen.getByRole("button", { name: "Change filter" }));
-    expect(selectedPanel()).toHaveTextContent("fund-controller");
     expect(rowFor("Board portal package failed")).toHaveAttribute("aria-selected", "true");
+    expect(await inspectSelection(user)).toHaveTextContent("fund-controller");
   });
 
   it.each(["asOf", "date", "from", "to"])("clears selected proof when the canonical %s date scope changes", async (key) => {
     const user = userEvent.setup();
     render(<HubHarness model={dailyModel()} initialUrl={`/reporting?${key}=2026-06-30&reportingWork=delivery-failure%3Aboard&filter=due#queue`} />);
-    expect(selectedPanel()).toHaveTextContent("fund-controller");
+    expect(await inspectSelection(user)).toHaveTextContent("fund-controller");
+    await backToWorkList(user);
 
     await user.click(screen.getByRole("button", { name: `Change ${key}` }));
-    expect(selectedPanel()).toHaveTextContent("Reporting scope changed.");
-    expect(within(selectedPanel()).queryByRole("link")).not.toBeInTheDocument();
     expect(screen.queryByRole("row", { selected: true })).not.toBeInTheDocument();
+    const changed = await inspectSelection(user);
+    expect(changed).toHaveTextContent("Reporting scope changed.");
+    expect(within(changed).queryByRole("link")).not.toBeInTheDocument();
     const url = new URL(screen.getByLabelText("Current review URL").textContent!, "https://meridian.test");
     expect(url.searchParams.get(key)).toBe("2026-07-31");
     expect(url.searchParams.has("reportingWork")).toBe(false);
@@ -341,6 +406,8 @@ describe("ReportingHub", () => {
     const user = userEvent.setup();
     const { container } = render(<HubHarness model={dailyModel()} />);
     await user.click(rowFor("Capital statement needs support"));
+    expect((await axe(container)).violations).toEqual([]);
+    await inspectSelection(user);
     expect((await axe(container)).violations).toEqual([]);
   });
 });
