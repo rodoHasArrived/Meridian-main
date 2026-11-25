@@ -12,6 +12,49 @@ public sealed class AccountingReportPackageServiceTests
     private static readonly Guid AlternateLedgerBookId = Guid.Parse("22222222-2222-2222-2222-222222222222");
 
     [Fact]
+    public async Task BuildPackageAsync_RejectsMissingFinancialInputsInsteadOfDefaultingToZeroAndUsd()
+    {
+        var service = new AccountingReportPackageService();
+
+        var build = () => service.BuildPackageAsync(new AccountingReportPackageRequestDto(
+            FundProfileId: "fund-missing-inputs",
+            PeriodId: "2027-02",
+            Actor: "controller",
+            BeginningCapital: 100_000m,
+            Contributions: 0m,
+            Distributions: 0m,
+            RealizedGainLoss: null,
+            Nav: null,
+            Currency: null));
+
+        var rejection = await build.Should().ThrowAsync<ArgumentException>();
+        rejection.Which.Message.Should().Contain("RealizedGainLoss, Nav, Currency")
+            .And.NotContain("BeginningCapital")
+            .And.NotContain("Contributions");
+    }
+
+    [Fact]
+    public async Task BuildPackageAsync_KeepsSuppliedNonUsdCurrencyAndExplicitZeroAmounts()
+    {
+        var service = new AccountingReportPackageService();
+
+        var package = await service.BuildPackageAsync(new AccountingReportPackageRequestDto(
+            FundProfileId: "fund-eur",
+            PeriodId: "2027-02",
+            Actor: "controller",
+            BeginningCapital: 0m,
+            Contributions: 0m,
+            Distributions: 0m,
+            RealizedGainLoss: 0m,
+            Nav: 0m,
+            Currency: " eur "));
+
+        package.NavPackage.Currency.Should().Be("EUR");
+        package.NavPackage.Nav.Should().Be(0m);
+        package.InvestorCapitalStatements.Should().ContainSingle(statement => statement.Currency == "EUR" && statement.EndingCapital == 0m);
+    }
+
+    [Fact]
     public async Task BuildPackageAsync_BlocksStandaloneCertificationWithoutLedgerBook()
     {
         var service = new AccountingReportPackageService();
@@ -20,6 +63,12 @@ public sealed class AccountingReportPackageServiceTests
             FundProfileId: "fund-unbooked",
             PeriodId: "2027-01",
             Actor: "controller",
+            BeginningCapital: 0m,
+            Contributions: 0m,
+            Distributions: 0m,
+            RealizedGainLoss: 0m,
+            Nav: 0m,
+            Currency: "USD",
             EvidenceLinks:
             [
                 "evidence:ledger:trial-balance:2027-01",
@@ -293,6 +342,7 @@ public sealed class AccountingReportPackageServiceTests
             FundProfileId: "fund-alpha",
             PeriodId: "2027-03",
             Actor: "controller",
+            Currency: "USD",
             LedgerBookId: DefaultLedgerBookId,
             CloseWorkflowId: workflowId,
             BeginningCapital: 200_000m,
@@ -1075,6 +1125,7 @@ public sealed class AccountingReportPackageServiceTests
             FundProfileId: fundProfileId,
             PeriodId: periodId,
             Actor: "controller",
+            Currency: "USD",
             LedgerBookId: effectiveLedgerBookId,
             CloseWorkflowId: CloseWorkflowId,
             CapitalAccountId: CapitalAccountId,
