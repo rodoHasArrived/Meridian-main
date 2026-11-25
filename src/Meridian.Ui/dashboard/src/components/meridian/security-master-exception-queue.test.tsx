@@ -31,11 +31,12 @@ function item(caseId: string, title: string, slaBreached: boolean, securityId: s
 
 const breached = item("c1111111-1111-1111-1111-111111111111", "Conflicting coupon", true, "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 const onTime = item("c2222222-2222-2222-2222-222222222222", "Ambiguous ticker", false, null);
+const noSignedInUser = () => Promise.resolve(null);
 
 describe("SecurityMasterExceptionQueuePanel", () => {
   it("shows the server's SLA verdict, the breach count and an open-security action", async () => {
     const onOpenSecurity = vi.fn();
-    render(<SecurityMasterExceptionQueuePanel load={() => Promise.resolve([breached, onTime])} onOpenSecurity={onOpenSecurity} />);
+    render(<SecurityMasterExceptionQueuePanel load={() => Promise.resolve([breached, onTime])} onOpenSecurity={onOpenSecurity} loadSignedInUser={noSignedInUser} />);
 
     expect(await screen.findByText("2 open case(s); 1 past SLA.")).toBeInTheDocument();
     expect(screen.getByText("Breached (due 2026-11-24 12:00 UTC)")).toBeInTheDocument();
@@ -52,7 +53,7 @@ describe("SecurityMasterExceptionQueuePanel", () => {
   it("syncs, reports the counts and reloads", async () => {
     const load = vi.fn().mockResolvedValue([]);
     const sync = vi.fn().mockResolvedValue({ opened: 3, refreshed: 4, closed: 1 });
-    render(<SecurityMasterExceptionQueuePanel load={load} sync={sync} />);
+    render(<SecurityMasterExceptionQueuePanel load={load} sync={sync} loadSignedInUser={noSignedInUser} />);
     expect(await screen.findByText("No open cases.")).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("button", { name: "Sync cases" }));
@@ -87,8 +88,44 @@ describe("SecurityMasterExceptionQueuePanel", () => {
   });
 
   it("explains a forbidden queue", async () => {
-    render(<SecurityMasterExceptionQueuePanel load={() => Promise.reject(new ApiError({ path: "/x", status: 403 }))} />);
+    render(<SecurityMasterExceptionQueuePanel load={() => Promise.reject(new ApiError({ path: "/x", status: 403 }))} loadSignedInUser={noSignedInUser} />);
 
     expect(await screen.findByRole("alert")).toHaveTextContent("You don't have permission to view the Security Master exception queue.");
   });
+
+  it("pre-fills the assignee with the signed-in operator", async () => {
+    const loadSignedInUser = vi.fn().mockResolvedValue("dana.ops");
+    render(<SecurityMasterExceptionQueuePanel load={() => Promise.resolve([breached])} loadSignedInUser={loadSignedInUser} />);
+
+    await waitFor(() => expect(screen.getByLabelText("Assign selected case to")).toHaveValue("dana.ops"));
+    expect(loadSignedInUser).toHaveBeenCalledTimes(1);
+  });
+
+  it("never overwrites a name the operator already typed", async () => {
+    let resolveUser: (name: string | null) => void = () => {};
+    const loadSignedInUser = vi.fn().mockReturnValue(new Promise<string | null>((resolve) => { resolveUser = resolve; }));
+    render(<SecurityMasterExceptionQueuePanel load={() => Promise.resolve([breached])} loadSignedInUser={loadSignedInUser} />);
+
+    await userEvent.type(screen.getByLabelText("Assign selected case to"), "erin.ops");
+    resolveUser("dana.ops");
+
+    await waitFor(() => expect(loadSignedInUser).toHaveBeenCalled());
+    expect(screen.getByLabelText("Assign selected case to")).toHaveValue("erin.ops");
+  });
+
+  it("uses an explicit default without asking who is signed in, and leaves the field empty without a session", async () => {
+    const loadSignedInUser = vi.fn().mockResolvedValue("dana.ops");
+    const { unmount } = render(
+      <SecurityMasterExceptionQueuePanel load={() => Promise.resolve([])} defaultAssignee="carol.ops" loadSignedInUser={loadSignedInUser} />
+    );
+    expect(await screen.findByText("No open cases.")).toBeInTheDocument();
+    expect(screen.getByLabelText("Assign selected case to")).toHaveValue("carol.ops");
+    expect(loadSignedInUser).not.toHaveBeenCalled();
+    unmount();
+
+    render(<SecurityMasterExceptionQueuePanel load={() => Promise.resolve([])} loadSignedInUser={noSignedInUser} />);
+    expect(await screen.findByText("No open cases.")).toBeInTheDocument();
+    expect(screen.getByLabelText("Assign selected case to")).toHaveValue("");
+  });
 });
+

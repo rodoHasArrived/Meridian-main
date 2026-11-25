@@ -106,8 +106,9 @@ pins it.
 
 Both lanes now show the same rows, SLA text and refusal sentences. The browser panels read through
 `src/Meridian.Ui/dashboard/src/lib/api/security-master-review-queues.api.ts`, whose types mirror the shared DTOs.
-The browser panel takes the assignee as typed input, because the dashboard has no signed-in-operator hook; the desktop
-pre-fills it with the session actor. Before this change the browser marked a "Use B" conflict resolved even though it stays open until the staged draft
+Both lanes pre-fill the assignee with the signed-in operator's username: the desktop from the session actor, the browser
+from `/api/auth/me` (`getSignedInUsername`). Neither overwrites a typed name. The browser does not use the workstation
+session's `displayName`, which the server fills with a desk label rather than the person. Before this change the browser marked a "Use B" conflict resolved even though it stays open until the staged draft
 publishes; it now shows it as awaiting that draft.
 
 The browser passport editor's conflict list now comes from the trust snapshot's open `conflictAssessments`;

@@ -5,6 +5,7 @@ import {
   describeExceptionSla,
   describeReviewQueueFailure,
   discardSecurityMasterHeldAmendment,
+  getSignedInUsername,
   listSecurityMasterExceptionCases,
   listSecurityMasterHeldAmendments,
   syncSecurityMasterExceptionCases,
@@ -77,4 +78,21 @@ describe("Security Master review queues API", () => {
     expect(describeExceptionSla(caseItem)).toBe("Breached (due 2026-11-24 17:00 UTC)");
     expect(describeExceptionSla({ ...caseItem, slaBreached: false })).toBe("Due 2026-11-24 17:00 UTC");
   });
+
+  it("reads the signed-in username from the auth profile and treats no session as no name", async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ username: " dana.ops ", role: "Operator" }), { status: 200 }))
+      .mockResolvedValueOnce(new Response('{"error":"Not authenticated."}', { status: 401 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ role: "Operator" }), { status: 200 }))
+      .mockResolvedValueOnce(new Response('{"detail":"down"}', { status: 500 }));
+    vi.stubGlobal("fetch", fetch);
+
+    expect(await getSignedInUsername()).toBe("dana.ops");
+    expect(fetch.mock.calls[0][0]).toBe("/api/auth/me");
+    expect(await getSignedInUsername()).toBeNull();
+    expect(await getSignedInUsername()).toBeNull();
+    await expect(getSignedInUsername()).rejects.toMatchObject({ status: 500 });
+  });
 });
+

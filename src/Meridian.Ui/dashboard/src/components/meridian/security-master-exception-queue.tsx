@@ -10,6 +10,7 @@ import {
   assignSecurityMasterExceptionCase,
   describeExceptionSla,
   describeReviewQueueFailure,
+  getSignedInUsername,
   listSecurityMasterExceptionCases,
   syncSecurityMasterExceptionCases,
   type SecurityMasterExceptionCaseQueueItem,
@@ -27,8 +28,10 @@ export interface SecurityMasterExceptionQueuePanelProps {
   sync?: () => Promise<SecurityMasterExceptionSyncResult>;
   assign?: (caseId: string, assignee: string) => Promise<unknown>;
   onOpenSecurity?: (securityId: string) => void;
-  /** Pre-fills the assignee, e.g. with the signed-in operator. */
+  /** Pre-fills the assignee. When omitted, the signed-in operator's username is loaded instead. */
   defaultAssignee?: string;
+  /** Injectable loader for the signed-in operator; defaults to `/api/auth/me`. */
+  loadSignedInUser?: (signal: AbortSignal) => Promise<string | null>;
 }
 
 type PanelState =
@@ -45,7 +48,8 @@ export function SecurityMasterExceptionQueuePanel({
   sync,
   assign,
   onOpenSecurity,
-  defaultAssignee
+  defaultAssignee,
+  loadSignedInUser
 }: SecurityMasterExceptionQueuePanelProps) {
   const [filter, setFilter] = useState<SecurityMasterExceptionCaseStatus>("Open");
   const [state, setState] = useState<PanelState>({ status: "loading" });
@@ -55,6 +59,21 @@ export function SecurityMasterExceptionQueuePanel({
   const [busy, setBusy] = useState(false);
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
   const [assignee, setAssignee] = useState(defaultAssignee?.trim() ?? "");
+
+  // Like the desktop, which pre-fills the session actor: fill the signed-in operator once, and never
+  // overwrite a name the operator has already typed. Without a named session the field stays empty.
+  useEffect(() => {
+    if (defaultAssignee?.trim()) return;
+    const controller = new AbortController();
+    (loadSignedInUser ?? getSignedInUsername)(controller.signal)
+      .then((username) => {
+        if (!controller.signal.aborted && username) setAssignee((current) => (current.trim() ? current : username));
+      })
+      .catch(() => {
+        // The assignee stays editable; a failed identity read is not a queue failure.
+      });
+    return () => controller.abort();
+  }, [defaultAssignee, loadSignedInUser]);
 
   useEffect(() => {
     let cancelled = false;
