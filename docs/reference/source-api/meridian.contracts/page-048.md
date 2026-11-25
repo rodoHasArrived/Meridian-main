@@ -29,7 +29,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:167](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L167).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:189](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L189).
 
 A single corporate action event envelope returned by the corporate actions query. LifecycleState holds a writeable CorporateActionLifecycleStates value; null reads as Confirmed for events written before lifecycle support. SupersedesCorpActId marks this event as an amendment (or, with a Cancelled state, a cancellation) of a prior event — the store stays append-only and readers fold chains via the effective-state projector. RedemptionPricePercentOfPar carries BondCall/BondMaturityRedemption pricing as a percent of par.
 
@@ -41,7 +41,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public CorporateActionRetainedSourceEvidenceDto? SourceEvidence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:194](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L194) | Non-economic provider evidence persisted in the source proposal&#x27;s existing JSON document. Omitted on historical records to preserve their serialized representation. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public CorporateActionRetainedSourceEvidenceDto? SourceEvidence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:216](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L216) | Non-economic provider evidence persisted in the source proposal&#x27;s existing JSON document. Omitted on historical records to preserve their serialized representation. |
 
 ## CorporateActionDurableInboxDto
 

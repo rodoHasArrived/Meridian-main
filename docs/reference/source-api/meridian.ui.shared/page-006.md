@@ -329,6 +329,12 @@ Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:13](
 public static partial class SecurityMasterEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.HeldAmendments.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.HeldAmendments.cs#L12).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ObservedFixings.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ObservedFixings.cs#L17).
 
 ```csharp

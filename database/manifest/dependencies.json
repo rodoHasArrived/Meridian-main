@@ -22354,6 +22354,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterPendingRevisionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterProviderSymbolMappingDto"
     },
     {
@@ -58779,6 +58785,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SecurityMasterPendingRevisionDto",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterRevisionStateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.SecurityMasterPublishResultDto",
       "target": "contract:Meridian.Contracts.Workstation.RestatementCandidateDto"
     },
@@ -72232,7 +72244,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "ccf36966635b0717eed2a21e2594dea64a16fd5fd8d49592c954a5fd12531290",
+  "fingerprint": "8cc110aa4d7bee4d2d6268d6c785fd851349d8ff1157d58037f55d239886d2bb",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -94637,6 +94649,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterPendingRevisionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterPendingRevisionDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.SecurityMasterProviderSymbolMappingDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.SecurityMasterProviderSymbolMappingDto"
@@ -106147,11 +106165,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4418,
-    "contract_set_memberships": 5833,
-    "edges": 11999,
+    "contract_references": 4419,
+    "contract_set_memberships": 5834,
+    "edges": 12001,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5898
+    "nodes": 5899
   }
 }

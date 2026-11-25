@@ -665,7 +665,7 @@ public sealed record DirectLendingCommandEnvelope<TCommand>(TCommand Command, Di
 
 Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingCommandError</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:14](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L14).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:21](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L21).
 
 ```csharp
 public sealed record DirectLendingCommandError(DirectLendingErrorCode Code, string Message);
@@ -675,7 +675,7 @@ public sealed record DirectLendingCommandError(DirectLendingErrorCode Code, stri
 
 Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingCommandException</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:33](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L33).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:40](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L40).
 
 Exposes a structured direct lending command error as an exception.
 
@@ -687,8 +687,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public DirectLendingCommandException(DirectLendingCommandError error) : base(error.Message);</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:35](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L35) |  |
-| <code>public DirectLendingCommandError Error { get; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:41](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L41) |  |
+| <code>public DirectLendingCommandException(DirectLendingCommandError error) : base(error.Message);</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:42](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L42) |  |
+| <code>public DirectLendingCommandError Error { get; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:48](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L48) |  |
 
 ## DirectLendingCommandMetadataDto
 
@@ -704,7 +704,7 @@ public sealed record DirectLendingCommandMetadataDto(Guid? CommandId, Guid? Corr
 
 Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingCommandResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:18](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L18).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:25](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L25).
 
 ```csharp
 public sealed record DirectLendingCommandResult<T>(T? Value, DirectLendingCommandError? Error)
@@ -714,9 +714,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool IsSuccess =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:22](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L22) |  |
-| <code>public static DirectLendingCommandResult&lt;T&gt; Success(T value) =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:24](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L24) |  |
-| <code>public static DirectLendingCommandResult&lt;T&gt; Failure(DirectLendingErrorCode code, string message) =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:26](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L26) |  |
+| <code>public bool IsSuccess =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:29](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L29) |  |
+| <code>public static DirectLendingCommandResult&lt;T&gt; Success(T value) =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:31](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L31) |  |
+| <code>public static DirectLendingCommandResult&lt;T&gt; Failure(DirectLendingErrorCode code, string message) =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:33](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L33) |  |
 
 ## DirectLendingErrorCode
 
@@ -737,6 +737,7 @@ Enum declarations:
 | <code>ConcurrencyConflict = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:7](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L7) |  |
 | <code>Conflict = 3</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:8](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L8) |  |
 | <code>FixingMissing = 4</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:11](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L11) | A scheduled rate reset has no index fixing for its observation date (fail closed). |
+| <code>NegativeInterestUnsupported = 5</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:18](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L18) | The bounded all-in rate is negative. Servicing never floors interest to zero silently (owner decision 2026-11-11, &quot;never floor&quot;); a contractual floor must be declared as EffectiveRateFloor for it to apply. |
 
 ## DirectLendingIndexFixingDto
 

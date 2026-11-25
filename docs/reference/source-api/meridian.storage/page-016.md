@@ -6,6 +6,58 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageProfile
+
+Qualified name: <code>Meridian.Storage.StorageProfile</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/StorageProfiles.cs:8](../../../../src/Meridian.Storage/StorageProfiles.cs#L8).
+
+Storage profile presets for simplifying configuration.
+
+```csharp
+public enum StorageProfile : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Research</code> | [src/Meridian.Storage/StorageProfiles.cs:10](../../../../src/Meridian.Storage/StorageProfiles.cs#L10) |  |
+| <code>LowLatency</code> | [src/Meridian.Storage/StorageProfiles.cs:11](../../../../src/Meridian.Storage/StorageProfiles.cs#L11) |  |
+| <code>Archival</code> | [src/Meridian.Storage/StorageProfiles.cs:12](../../../../src/Meridian.Storage/StorageProfiles.cs#L12) |  |
+
+## StorageProfilePreset
+
+Qualified name: <code>Meridian.Storage.StorageProfilePreset</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/StorageProfiles.cs:15](../../../../src/Meridian.Storage/StorageProfiles.cs#L15).
+
+```csharp
+public sealed record StorageProfilePreset(string Id, string Label, string Description, Func<StorageOptions, StorageOptions> Apply);
+```
+
+## StorageProfilePresets
+
+Qualified name: <code>Meridian.Storage.StorageProfilePresets</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/StorageProfiles.cs:24](../../../../src/Meridian.Storage/StorageProfiles.cs#L24).
+
+Defines the default storage profile and the available preset storage configurations.
+
+```csharp
+public static class StorageProfilePresets
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string DefaultProfile = &quot;Research&quot;;</code> | [src/Meridian.Storage/StorageProfiles.cs:30](../../../../src/Meridian.Storage/StorageProfiles.cs#L30) | Default storage profile when none is specified. The retained Research profile ID provides balanced defaults for strategy use cases. |
+| <code>public static StorageOptions ApplyProfile(string? profile, StorageOptions options, bool useDefaultIfEmpty = true);</code> | [src/Meridian.Storage/StorageProfiles.cs:120](../../../../src/Meridian.Storage/StorageProfiles.cs#L120) | Applies a storage profile to the given options. If no profile is specified, applies the default strategy profile. |
+| <code>public static StorageProfilePreset? GetProfile(string id);</code> | [src/Meridian.Storage/StorageProfiles.cs:138](../../../../src/Meridian.Storage/StorageProfiles.cs#L138) | Gets a profile preset by ID. |
+| <code>public static StorageOptions CreateFromProfile(string? profile, string rootPath, bool? compress = null);</code> | [src/Meridian.Storage/StorageProfiles.cs:147](../../../../src/Meridian.Storage/StorageProfiles.cs#L147) | Creates storage options from a profile without requiring a base options object. Uses default profile if none specified. |
+| <code>public static IReadOnlyList&lt;StorageProfilePreset&gt; GetPresets() =&gt; …;</code> | [src/Meridian.Storage/StorageProfiles.cs:158](../../../../src/Meridian.Storage/StorageProfiles.cs#L158) |  |
+
 ## StorageQuota
 
 Qualified name: <code>Meridian.Storage.StorageQuota</code>. Kind: `class`.

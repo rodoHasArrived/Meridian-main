@@ -361,13 +361,19 @@ public sealed record RejectCorporateActionSourceProposalRequestDto(Guid Proposal
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ResolveConflictRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:75](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L75).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:90](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L90).
 
-Request to resolve or dismiss a golden record conflict. ChosenWinnerSource records the operator-selected winning source so the resolution and its winner are captured atomically with the conflict&#x27;s open→resolved transition.
+Request to resolve or dismiss a golden record conflict. ChosenWinnerSource records the operator-selected winning source so the resolution and its winner are captured atomically with the conflict&#x27;s open→resolved transition. A dismissal records no winner: it asserts the candidates are equivalent, so ChosenWinnerSource only names the acknowledged candidate the persisted value is checked against. The policy fields are recorded with the close so an auditor can query deviations from the database alone.
 
 ```csharp
-public sealed record ResolveConflictRequest(Guid ConflictId, string Resolution, string ResolvedBy, string? Reason = null, string? ChosenWinnerSource = null);
+public sealed record ResolveConflictRequest(Guid ConflictId, string Resolution, string ResolvedBy, string? Reason = null, string? ChosenWinnerSource = null, string? PolicyWinnerSource = null, string? PolicyRule = null, bool? IsPolicyDeviation = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsDismissal =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:101](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L101) | Whether this request dismisses rather than resolves. |
 
 ## ResolveCorporateActionConflictRequestDto
 

@@ -615,7 +615,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;Guid?&gt; ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs#L8) |  |
+| <code>Task&lt;Guid?&gt; ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs#L14) | Resolves an identifier to one security id, or null. When ResolveSecurityRequest.Provider is null, implementations resolve canonically: provider is identity only for provider-scoped kinds (SecurityIdentifierNormalizer.IsProviderScoped), and an identifier claimed by more than one security resolves to null rather than to an arbitrary one of them. |
+| <code>async Task&lt;SecurityCanonicalResolution&gt; ResolveCanonicalAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs#L23) | Resolves an identifier and reports why it did or did not resolve. Callers that must refuse with a reason (order admission, backtest corporate-action adjustment) use this instead of ResolveAsync. The default implementation wraps ResolveAsync and can therefore only report SecurityResolutionStatus.Resolved or SecurityResolutionStatus.NotFound. |
 
 ## ISecurityTradingParametersQueryService
 

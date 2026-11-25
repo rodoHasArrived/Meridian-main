@@ -6,6 +6,70 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AmountPassportFreshnessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportFreshnessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L32).
+
+```csharp
+public sealed record AmountPassportFreshnessDto(string Status, DateTimeOffset EvaluatedAt, string Policy, string Detail, DateTimeOffset? ObservedAt = null, long? AgeMinutes = null);
+```
+
+## AmountPassportIdentityDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportIdentityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L4).
+
+An immutable amount address. Tenant and company are checked against the authenticated request.
+
+```csharp
+public sealed record AmountPassportIdentityDto(string SubjectKind, string SubjectId, AmountPassportScopeDto Scope, string AsOf, string Revision);
+```
+
+## AmountPassportPermissionsDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportPermissionsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L40).
+
+```csharp
+public sealed record AmountPassportPermissionsDto(string View, string Amend, string Detail, string? PeriodStatus = null);
+```
+
+## AmountPassportRecordDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportRecordDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L44).
+
+```csharp
+public sealed record AmountPassportRecordDto(string Kind, string Id, string Label, string? Href = null, AmountPassportIdentityDto? Passport = null, string? ContentHash = null);
+```
+
+## AmountPassportReferenceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportReferenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L23).
+
+Small server-issued handle projected beside an amount in its source view.
+
+```csharp
+public sealed record AmountPassportReferenceDto(AmountPassportIdentityDto Identity, string? Currency, string Unit, string Origin, bool IsZero, string? Freshness = null, string? ExactValue = null);
+```
+
+## AmountPassportScopeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportScopeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L11).
+
+```csharp
+public sealed record AmountPassportScopeDto(string TenantId, string CompanyId, string Basis, string? FundProfileId = null, Guid? LedgerBookId = null, Guid? PeriodId = null, string? EntityId = null, string? AccountId = null, string? OrganizationId = null);
+```
+
 ## ApprovalDecision
 
 Qualified name: <code>Meridian.Contracts.Workstation.ApprovalDecision</code>. Kind: `record`.
@@ -549,77 +613,4 @@ Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:36](../../../.
 
 ```csharp
 public sealed record CashForecastResult(DateOnly AsOfDate, IReadOnlyList<CashFlowProjectionPoint> Timeline, IReadOnlyList<string> Warnings);
-```
-
-## CashLadderBucketDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CashLadderBucketDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1004](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1004).
-
-A single time-bucket within a projected cash ladder.
-
-```csharp
-public sealed record CashLadderBucketDto(DateTimeOffset BucketStart, DateTimeOffset BucketEnd, decimal ProjectedInflows, decimal ProjectedOutflows, decimal NetFlow, string Currency, int EventCount);
-```
-
-## CashSyncSourceAvailability
-
-Qualified name: <code>Meridian.Contracts.Workstation.CashSyncSourceAvailability</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L3).
-
-```csharp
-public enum CashSyncSourceAvailability : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L3) |  |
-| <code>Available = 1</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L3) |  |
-| <code>Delayed = 2</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L3) |  |
-| <code>Offline = 3</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L3) |  |
-
-## CashSyncWindow
-
-Qualified name: <code>Meridian.Contracts.Workstation.CashSyncWindow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L6).
-
-```csharp
-public sealed record CashSyncWindow(string Region, string TimeZoneId, TimeOnly WindowStart, TimeOnly WindowEnd, IReadOnlyDictionary<string, CashSyncSourceAvailability> SourceAvailability, IReadOnlyList<Guid> AccountIds);
-```
-
-## ChangeSinglePrincipalDeclarationRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ChangeSinglePrincipalDeclarationRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L22).
-
-```csharp
-public sealed record ChangeSinglePrincipalDeclarationRequestDto(Guid CommandId, long ExpectedRevision, bool Enabled, string PrincipalId, string PolicyVersion, string Reason, OperationsActionOriginDto Origin = OperationsActionOriginDto.HumanOperator);
-```
-
-## ClosedLotSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.ClosedLotSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1186](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1186).
-
-Workstation-facing summary of a closed lot for a strategy run.
-
-```csharp
-public sealed record ClosedLotSummary(Guid LotId, string Symbol, long Quantity, decimal EntryPrice, decimal ClosePrice, DateTimeOffset OpenedAt, DateTimeOffset ClosedAt, decimal RealizedPnl, bool IsLongTerm, string? AccountId = null);
-```
-
-## CloseReadinessBlockerDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CloseReadinessBlockerDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs#L35).
-
-```csharp
-public sealed record CloseReadinessBlockerDto(string Code, string ContributorId, string Type, int Count, string Severity, string Owner, string Message, IReadOnlyList<string> RecordIds);
 ```

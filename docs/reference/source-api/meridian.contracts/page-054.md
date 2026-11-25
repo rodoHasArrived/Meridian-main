@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityCashFlowBehavior
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowBehavior</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L35).
+
+How an asset class produces cash flows.
+
+```csharp
+public enum SecurityCashFlowBehavior
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L38) | The class produces no scheduled cash flows. |
+| <code>ContractualSchedule</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L41) | Coupon, interest and principal flows calculated from contractual terms. |
+| <code>FactorAmortizing</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L44) | Contractual flows whose principal amortizes by a dated pool factor. |
+| <code>SwapLegs</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L47) | Exchanges calculated per swap leg. |
+| <code>FinancingInterest</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L50) | Financing interest calculated from rate and term (repo). |
+| <code>Dividends</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L53) | Declared dividends, recorded as corporate actions rather than calculated. |
+| <code>FundDistributions</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L56) | Fund distributions, recorded from the administrator rather than calculated. |
+| <code>ProviderSupplied</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L59) | Flows supplied by a provider or administrator (capital calls, rents, draws). |
+
 ## SecurityCashFlowBehaviorExtensions
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowBehaviorExtensions</code>. Kind: `class`.
@@ -538,11 +563,75 @@ public sealed record SecurityDistributionCorporateActionTerms(string EventType, 
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:99](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L99).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:121](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L121).
 
 ```csharp
 public sealed record SecurityEconomicDefinitionRecord(Guid SecurityId, string AssetClass, string? AssetFamily, string SubType, string TypeName, string? IssuerType, string? RiskCountry, SecurityStatusDto Status, string DisplayName, string Currency, JsonElement Classification, JsonElement CommonTerms, JsonElement EconomicTerms, JsonElement Provenance, long Version, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, IReadOnlyList<SecurityIdentifierDto> Identifiers, string? LegacyAssetClass, JsonElement? LegacyAssetSpecificTerms);
 ```
+
+## SecurityEconomicDisposition
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityEconomicDisposition</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs#L17).
+
+A consumer&#x27;s declared treatment of one structure.
+
+```csharp
+public sealed record SecurityEconomicDisposition(SecurityEconomicDispositionKind Kind, string? Code = null, string? Reason = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SecurityEconomicDisposition Supported { get; } = new (SecurityEconomicDispositionKind.Supported);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs#L22) |  |
+| <code>public static SecurityEconomicDisposition NotApplicable(string reason) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs#L24) |  |
+| <code>public static SecurityEconomicDisposition Blocked(string code, string reason) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs#L26) |  |
+
+## SecurityEconomicDispositionKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityEconomicDispositionKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs#L4).
+
+How one consumer treats one declared economic structure.
+
+```csharp
+public enum SecurityEconomicDispositionKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Supported</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs#L7) | The consumer computes economics for the structure. |
+| <code>Blocked</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs#L10) | The consumer refuses the structure with SecurityEconomicDisposition.Code. |
+| <code>NotApplicable</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs#L13) | The structure carries no economics for this consumer (for example a zero coupon&#x27;s accrual). |
+
+## SecurityEconomicDispositions
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityEconomicDispositions</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs#L35).
+
+Review A3: one declared answer per (consumer, coupon structure) instead of scattered CouponType == &quot;Fixed&quot; checks. A consumer dispatches through ForCouponStructure; a structure the table does not list is BLOCKED, never silently passed. A coverage test enumerates every case of the F# BondCouponStructure union, so adding a case without declaring it here fails.
+
+```csharp
+public static class SecurityEconomicDispositions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string AccountingAccrual = &quot;SecurityMasterAccountingEventService&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs#L38) | Consumer id for expected coupon accrual and receipt generation. |
+| <code>public const string CouponStructureUnsupported = &quot;SM_COUPON_STRUCTURE_UNSUPPORTED&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs#L41) | Issue code for a declared coupon structure a consumer does not support. |
+| <code>public const string RateResetTermsMissing = &quot;SM_RATE_RESET_TERMS_MISSING&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs#L44) | Issue code for a floating coupon that needs reset terms before accrual. |
+| <code>public static IReadOnlyList&lt;string&gt; CouponStructures { get; } = [&quot;Fixed&quot;, &quot;Floating&quot;, &quot;ZeroCoupon&quot;, &quot;Step&quot;, &quot;InflationLinked&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs#L47) | The coupon structure names the Bond codec writes (couponType). |
+| <code>public static IReadOnlyList&lt;string&gt; Consumers { get; } = [AccountingAccrual];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs:63](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs#L63) | The consumers this table declares. |
+| <code>public static bool IsDeclared(string consumer, string couponStructure) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs#L66) | Whether the table declares the pair explicitly (coverage tests use this). |
+| <code>public static SecurityEconomicDisposition ForCouponStructure(string consumer, string couponStructure);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicDisposition.cs#L73) | The declared disposition, matching the structure case-insensitively. An undeclared structure is SecurityEconomicDispositionKind.Blocked with CouponStructureUnsupported. |
 
 ## SecurityEconomicScheduleKind
 
@@ -761,76 +850,4 @@ Field-level provenance: which source system asserted the value at FieldPath, as 
 
 ```csharp
 public sealed record SecurityFieldProvenance(string FieldPath, string SourceSystem, DateTimeOffset? AsOf, string? UpdatedBy, decimal? Confidence);
-```
-
-## SecurityFieldProvenanceOrigins
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceOrigins</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L58).
-
-Canonical origins for persisted field-level provenance rows. The origin distinguishes canonical golden-record attribution from overlay annotations, so an operator edit can never masquerade as (or clobber) a conflict-resolution winner.
-
-```csharp
-public static class SecurityFieldProvenanceOrigins
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ConflictResolution = &quot;ConflictResolution&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L61) | The attribution written when a golden-record conflict resolves to a winning source. |
-| <code>public const string OperatorFieldEdit = &quot;OperatorFieldEdit&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L64) | The attribution written when an operator stages an overlay field edit. |
-| <code>public const string CanonicalWrite = &quot;CanonicalWrite&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:72](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L72) | The attribution written when an ordinary canonical create/amend changes a governed field — the per-field record of WHICH source supplied the current value, kept so conflict detection can name the true incumbent even when the field was never conflicted (record-level provenance flips on every amendment and cannot answer that question). |
-
-## SecurityFieldProvenanceRecord
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:81](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L81).
-
-A persisted field-level provenance row: the durable form of SecurityFieldProvenance, keyed by (security, field path, origin). OriginReference points back at the artifact that asserted the attribution — the conflict id for conflict resolutions, the revision id for operator field edits — so lineage is traceable to its governing record.
-
-```csharp
-public sealed record SecurityFieldProvenanceRecord(Guid SecurityId, string FieldPath, string SourceSystem, DateTimeOffset? AsOf, string? UpdatedBy, decimal? Confidence, string Origin, string? OriginReference, DateTimeOffset RecordedAt, long? SourceVersion = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityFieldProvenance ToFieldProvenance() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:99](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L99) | Projects the durable row onto the display-level field-provenance shape. |
-
-## SecurityForwardCurve
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityForwardCurve</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L15).
-
-Projected fixings for one floating-rate index, as observed on AsOfDate. A floating leg resets each period at the curve&#x27;s rate for the period&#x27;s accrual start date, linearly interpolated between points and held flat beyond the first and last point.
-
-```csharp
-public sealed record SecurityForwardCurve(string IndexName, DateOnly AsOfDate, IReadOnlyList<SecurityForwardCurvePoint> Points, string? Source = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondCalculationInput? RetainedInput { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L23) | The immutable stored curve version behind these projected fixings, when retained. |
-| <code>public decimal? RateAt(DateOnly resetDate);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L25) | The projected fixing for a reset on resetDate; null when the curve has no points. |
-| <code>public const string RateSourcePrefix = &quot;forwardCurve:&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L61) | The prefix of every Describe label, and so of a curve-projected leg&#x27;s RateSource. |
-| <code>public string Describe() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L70) | A short provenance label for projections: forwardCurve:{index}@{yyyy-MM-dd}, then ({source}) when a source is known. The date is written in the invariant culture, so TryReadAsOf reads it back on any host. |
-| <code>public static bool TryReadAsOf(string? rateSource, out DateOnly asOf);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:80](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L80) | Reads the curve&#x27;s as-of date back from a Describe label, such as a leg&#x27;s RateSource. The date is the first @yyyy-MM-dd that ends the label or is followed by the (source) suffix, so an index name or source that itself contains @ still reads. False for any other label. |
-
-## SecurityForwardCurveJsonContext
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:118](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L118).
-
-Supplies forward curves for floating-rate cash-flow projection. Hosts without one keep the flat-forward projection (last fixing plus spread). The stored implementation is StoredSecurityForwardCurveProvider in Application, reading ISecurityCurveStore.
-
-```csharp
-public sealed partial class SecurityForwardCurveJsonContext : JsonSerializerContext;
 ```

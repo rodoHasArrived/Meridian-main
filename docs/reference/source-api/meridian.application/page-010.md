@@ -6,6 +6,111 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterContractRegistrationExtensions
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterContractRegistrationExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs:11](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs#L11).
+
+Bridges existing host registrations to the canonical Security Master contracts.
+
+```csharp
+public static class SecurityMasterContractRegistrationExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddSecurityMasterContractAdapters(this IServiceCollection services);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs#L18) |  |
+
+## SecurityMasterCostBasisAdjustmentService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterCostBasisAdjustmentService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs:48](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs#L48).
+
+```csharp
+public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCostBasisAdjustmentService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterCostBasisAdjustmentService(ISecurityMasterQueryService queryService, ILogger&lt;SecurityMasterCostBasisAdjustmentService&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs:53](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs#L53) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerTaxLotBasisAdjustment&gt;&gt; BuildAdjustmentsAsync(Guid securityId, IReadOnlyList&lt;LedgerTaxLot&gt; openLots, DateOnly asOf, decimal priorFactor = 1m, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs:62](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs#L62) |  |
+| <code>public async Task&lt;LedgerTaxLotReliefProjection&gt; ProjectReliefAsync(LedgerTaxLotReliefInput baseInput, Guid securityId, decimal priorFactor = 1m, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs:88](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs#L88) |  |
+
+## SecurityMasterCsvParser
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterCsvParser</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs:20](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs#L20).
+
+Parses CSV files for Security Master bulk import. Expected header columns (case-insensitive): Ticker, Name, AssetClass, Currency, Exchange, ISIN, CUSIP, FIGI The accepted asset classes are DERIVED from SecurityAssetClassCatalog.IdentifierOnlyImportableAssetClasses rather than kept in a private table here: a CSV row carries identity only, so it can create exactly the classes whose asset-specific terms are all optional. A class with a required term (an option&#x27;s strike, a bond&#x27;s maturity) is refused with a message that says so, because the alternative — defaulting the term — would mint a governed record on an economic fact nobody supplied.
+
+```csharp
+public sealed class SecurityMasterCsvParser
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;CreateSecurityRequest&gt; Parse(string csvContent, out IReadOnlyList&lt;string&gt; errors, string actor, DateTimeOffset? ingestedAtUtc = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs:41](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs#L41) | Parses CSV content and returns a list of CreateSecurityRequest objects. Errors during parsing are collected in the out parameter. |
+
+## SecurityMasterDataQualityService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterDataQualityService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs:17](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs#L17).
+
+Implements the eight-layer data quality control model for the Security Master. Covers: MinimumAttribute, TaxonomyCheck, ValueConsistency, StalenessMonitor, and ExternalComparison categories. FileMappingSufficiency, DataTypeRestriction, and RefreshControl violations are surfaced at the ingest/import boundary.
+
+```csharp
+public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualityService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterDataQualityService(ISecurityMasterStore securityStore, ISecurityMasterQualityReportStore reportStore, ILogger&lt;SecurityMasterDataQualityService&gt; logger, IEnumerable&lt;ISecurityCoverageSymbolSource&gt;? coverageSources = null, Meridian.Contracts.SecurityMaster.ISecurityResolver? securityResolver = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs:46](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs#L46) |  |
+| <code>public async Task&lt;SecurityMasterQualityReportDto&gt; RunQualityChecksAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs:60](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs#L60) |  |
+| <code>public Task&lt;SecurityMasterQualityReportDto?&gt; GetLatestReportAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs:100](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs#L100) |  |
+
+## SecurityMasterDraftProposalDto
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterDraftProposalDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:11](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L11).
+
+A machine-proposed security-master draft for an unmastered symbol. The operator reviews and submits it through the normal create workflow — this service never writes.
+
+```csharp
+public sealed record SecurityMasterDraftProposalDto(string Symbol, bool Resolved, Guid ProposedSecurityId, string AssetClass, string? DisplayName, string? Exchange, string? Currency, IReadOnlyList<SecurityIdentifierDto> Identifiers, string SourceSystem, string Provenance, string? Notes);
+```
+
+## SecurityMasterDraftProposalService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterDraftProposalService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:30](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L30).
+
+Pre-builds security-master drafts for coverage gaps flagged by the RC001 sweep, using the shared symbol-resolution spine (canonical registry first, then OpenFIGI) for identifiers and display metadata. Drafts are explicitly marked machine-proposed so downstream provenance never mistakes them for operator-entered data.
+
+```csharp
+public sealed class SecurityMasterDraftProposalService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterDraftProposalService(ILogger&lt;SecurityMasterDraftProposalService&gt; logger, ISymbolResolver? symbolResolver = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:38](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L38) |  |
+| <code>public async Task&lt;SecurityMasterDraftProposalDto&gt; BuildDraftAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:46](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L46) |  |
+
 ## SecurityMasterGovernanceHostPosture
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterGovernanceHostPosture</code>. Kind: `record`.
@@ -128,6 +233,38 @@ Declared public members:
 | <code>public bool RequireGovernedTermAmendments =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:73](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L73) | Effective SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments. |
 | <code>public bool RequireIndependentReviewer =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:76](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L76) | Effective SecurityMasterWorkbenchOptions.RequireIndependentReviewer. |
 | <code>public bool RequireIndependentProfileApprover =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:79](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L79) | Effective SecurityMasterWorkbenchOptions.RequireIndependentProfileApprover. |
+
+## SecurityMasterHeldAmendment
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterHeldAmendment</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:99](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L99).
+
+An ingest amendment that was not applied because a lower-ranked source tried to overwrite a value a higher-ranked source supplied. The full request is retained so an operator can replay it through a governed draft; DominatedFieldPaths names the fields that triggered the hold.
+
+```csharp
+public sealed record SecurityMasterHeldAmendment(Guid HeldAmendmentId, Guid SecurityId, string SourceSystem, string RequestJson, IReadOnlyList<string> DominatedFieldPaths, IReadOnlyList<Guid> ConflictIds, long HeldAtVersion, DateTimeOffset HeldAt, string Status, string? ClosedBy = null, DateTimeOffset? ClosedAt = null);
+```
+
+## SecurityMasterHeldAmendmentStatus
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterHeldAmendmentStatus</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:87](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L87).
+
+Lifecycle of a held amendment.
+
+```csharp
+public static class SecurityMasterHeldAmendmentStatus
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Held = &quot;Held&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:89](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L89) |  |
+| <code>public const string Replayed = &quot;Replayed&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:90](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L90) |  |
+| <code>public const string Discarded = &quot;Discarded&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:91](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L91) |  |
 
 ## SecurityMasterHistoricalSymbolTimelineResolver
 
@@ -475,7 +612,7 @@ public sealed record SecurityMasterRestatementDecision(bool RestatementRequired,
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionFieldBase</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:90](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L90).
+Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:100](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L100).
 
 The canonical state a field-edit proposal was drafted against: the security version the edit was staged at and a canonical snapshot of every stored key the approved merge would overwrite for that field (SecurityAssetTermsFieldSnapshot).
 
@@ -487,7 +624,7 @@ public sealed record SecurityMasterRevisionFieldBase(long BaseVersion, string Fi
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionFieldValue</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:83](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L83).
+Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:93](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L93).
 
 The exact overlay VALUE a field-edit revision governs — null models a staged CLEAR. Wrapping the nullable value distinguishes &quot;the edit recorded a clear&quot; from &quot;no value was recorded at all&quot; (legacy revisions predating value persistence), which discard-time restoration must tell apart: a recorded clear restores by removing the key, while an unrecorded value is unrecoverable and falls back to the fail-closed sibling handling.
 
@@ -499,7 +636,7 @@ public sealed record SecurityMasterRevisionFieldValue(string? Value);
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:93](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L93).
+Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:103](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L103).
 
 Durable record of a passport revision&#x27;s governed lifecycle state.
 
@@ -511,13 +648,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool FieldBaseRecorded =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:113](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L113) | True when the revision recorded the canonical base its proposal was drafted against. |
+| <code>public bool FieldBaseRecorded =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:123](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L123) | True when the revision recorded the canonical base its proposal was drafted against. |
 
 ## SecurityMasterRevisionStateException
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionStateException</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:120](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L120).
+Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:130](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L130).
 
 Raised when a revision lifecycle transition is attempted out of order — e.g. publishing a revision that was never approved, or approving one that was never submitted. Endpoints map this to HTTP 409.
 
@@ -529,8 +666,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SecurityMasterRevisionStateException(Guid revisionId, string detail) : base($&quot;Security Master revision &#x27;{revisionId:D}&#x27; cannot transition: {detail}&quot;);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:122](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L122) |  |
-| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:128](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L128) |  |
+| <code>public SecurityMasterRevisionStateException(Guid revisionId, string detail) : base($&quot;Security Master revision &#x27;{revisionId:D}&#x27; cannot transition: {detail}&quot;);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:132](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L132) |  |
+| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:138](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L138) |  |
 
 ## SecurityMasterService
 
@@ -568,15 +705,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SecurityMasterService(ISecurityMasterEventStore eventStore, ISecurityMasterSnapshotStore snapshotStore, ISecurityMasterStore store, SecurityMasterAggregateRebuilder rebuilder, SecurityMasterOptions options, ILogger&lt;SecurityMasterService&gt; logger, ISecurityMasterConflictService? conflictService = null, IPolygonCorporateActionFetcher? corporateActionFetcher = null, SecurityMasterProjectionCache? projectionCache = null, SecurityMasterCanonicalSymbolSeedService? seedService = null, Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null, ISecurityFieldProvenanceStore? fieldProvenance = null, ISecurityMasterCanonicalWriteScope? canonicalWriteScope = null, ISecurityMasterTermsCapabilityVerifier? termsCapabilityVerifier = null, IGovernedTermAmendmentPolicy? governedTermAmendmentPolicy = null, ISecurityMasterRevisionStore? revisionStore = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:46](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L46) |  |
-| <code>public Task&lt;SecurityDetailDto&gt; CreateAsync(CreateSecurityRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:82](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L82) |  |
-| <code>public Task&lt;SecurityDetailDto&gt; AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:90](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L90) | The operator-direct amendment. Refused with GovernedTermAmendmentRequiredException while SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments is on; see IGovernedPublicationAmender for the other two typed write paths. |
-| <code>public async Task&lt;SecurityDetailDto&gt; AmendApprovedRevisionAsync(AmendSecurityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:115](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L115) |  |
-| <code>public async Task&lt;SecurityDetailDto&gt; AmendPreferredEquityTermsAsync(Guid securityId, AmendPreferredEquityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:342](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L342) |  |
-| <code>public async Task&lt;SecurityDetailDto&gt; AmendConvertibleEquityTermsAsync(Guid securityId, AmendConvertibleEquityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:365](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L365) |  |
-| <code>public async Task&lt;SecurityDetailDto&gt; AmendTermBlockAsync(Guid securityId, string blockKey, AmendSecurityTermBlockRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:388](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L388) |  |
-| <code>public Task&lt;SecurityAliasDto&gt; UpsertAliasAsync(UpsertSecurityAliasRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:437](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L437) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:925](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L925) |  |
+| <code>public SecurityMasterService(ISecurityMasterEventStore eventStore, ISecurityMasterSnapshotStore snapshotStore, ISecurityMasterStore store, SecurityMasterAggregateRebuilder rebuilder, SecurityMasterOptions options, ILogger&lt;SecurityMasterService&gt; logger, ISecurityMasterConflictService? conflictService = null, IPolygonCorporateActionFetcher? corporateActionFetcher = null, SecurityMasterProjectionCache? projectionCache = null, SecurityMasterCanonicalSymbolSeedService? seedService = null, Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null, ISecurityFieldProvenanceStore? fieldProvenance = null, ISecurityMasterCanonicalWriteScope? canonicalWriteScope = null, ISecurityMasterTermsCapabilityVerifier? termsCapabilityVerifier = null, IGovernedTermAmendmentPolicy? governedTermAmendmentPolicy = null, ISecurityMasterRevisionStore? revisionStore = null, ISecurityMasterSourceAdmissionPolicy? sourceAdmissionPolicy = null, ISecurityMasterHeldAmendmentStore? heldAmendments = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:48](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L48) |  |
+| <code>public Task&lt;SecurityDetailDto&gt; CreateAsync(CreateSecurityRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:88](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L88) |  |
+| <code>public Task&lt;SecurityDetailDto&gt; AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:96](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L96) | The operator-direct amendment. Refused with GovernedTermAmendmentRequiredException while SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments is on; see IGovernedPublicationAmender for the other two typed write paths. |
+| <code>public async Task&lt;SecurityDetailDto&gt; AmendApprovedRevisionAsync(AmendSecurityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:121](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L121) |  |
+| <code>public async Task&lt;SecurityDetailDto&gt; AmendPreferredEquityTermsAsync(Guid securityId, AmendPreferredEquityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:356](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L356) |  |
+| <code>public async Task&lt;SecurityDetailDto&gt; AmendConvertibleEquityTermsAsync(Guid securityId, AmendConvertibleEquityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:379](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L379) |  |
+| <code>public async Task&lt;SecurityDetailDto&gt; AmendTermBlockAsync(Guid securityId, string blockKey, AmendSecurityTermBlockRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:402](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L402) |  |
+| <code>public Task&lt;SecurityAliasDto&gt; UpsertAliasAsync(UpsertSecurityAliasRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:451](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L451) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:980](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L980) |  |
 
 Source: [src/Meridian.Application/SecurityMaster/SecurityMasterService.Deactivation.cs:7](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.Deactivation.cs#L7).
 
@@ -675,13 +812,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SecurityMasterWorkbenchCommandService(ISecurityMasterEventStore eventStore, IOperatorOverridesStore overrides, ISecurityMasterConflictAuthorityPolicy conflictPolicy, ISecurityMasterConflictService conflictService, ISecurityMasterWorkbenchQueryService queryService, IOperationsContinuityWorkflowService approvalWorkflow, ISecurityMasterRevisionStore revisions, IPeriodAwareRestatementResolver restatementResolver, IAffectedLedgerBookResolver affectedLedgerBookResolver, IEnumerable&lt;ISecurityMasterRevisionPublishedHandler&gt; handlers, ILogger&lt;SecurityMasterWorkbenchCommandService&gt; logger, ISecurityFieldProvenanceStore? fieldProvenance = null, ISecurityMasterStore? projectionStore = null, Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null, ISecurityMasterGovernanceRequirements? governanceRequirements = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:66](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L66) |  |
-| <code>public async Task&lt;SecurityMasterEditResultDto&gt; UpdateSecurityFieldAsync(UpdateSecurityFieldRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:108](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L108) |  |
-| <code>public async Task&lt;SecurityMasterConflictResolutionDto&gt; ResolveSourceConflictAtCurrentVersionAsync(ResolveSourceConflictRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:397](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L397) |  |
-| <code>public async Task&lt;SecurityMasterConflictResolutionDto&gt; ResolveSourceConflictAsync(ResolveSourceConflictRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:405](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L405) |  |
-| <code>public async Task&lt;SecurityMasterEditResultDto&gt; SubmitForApprovalAsync(SubmitSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:494](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L494) |  |
-| <code>public async Task&lt;SecurityMasterEditResultDto&gt; ApproveRevisionAsync(ApproveSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:637](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L637) |  |
-| <code>public async Task&lt;SecurityMasterPublishResultDto&gt; PublishRevisionAsync(PublishSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:750](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L750) |  |
+| <code>public SecurityMasterWorkbenchCommandService(ISecurityMasterEventStore eventStore, IOperatorOverridesStore overrides, ISecurityMasterConflictAuthorityPolicy conflictPolicy, ISecurityMasterConflictService conflictService, ISecurityMasterWorkbenchQueryService queryService, IOperationsContinuityWorkflowService approvalWorkflow, ISecurityMasterRevisionStore revisions, IPeriodAwareRestatementResolver restatementResolver, IAffectedLedgerBookResolver affectedLedgerBookResolver, IEnumerable&lt;ISecurityMasterRevisionPublishedHandler&gt; handlers, ILogger&lt;SecurityMasterWorkbenchCommandService&gt; logger, ISecurityFieldProvenanceStore? fieldProvenance = null, ISecurityMasterStore? projectionStore = null, Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null, ISecurityMasterGovernanceRequirements? governanceRequirements = null, ISecurityMasterChangeOutbox? changeOutbox = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:67](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L67) |  |
+| <code>public async Task&lt;SecurityMasterEditResultDto&gt; UpdateSecurityFieldAsync(UpdateSecurityFieldRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:111](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L111) |  |
+| <code>public async Task&lt;SecurityMasterConflictResolutionDto&gt; ResolveSourceConflictAtCurrentVersionAsync(ResolveSourceConflictRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:414](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L414) |  |
+| <code>public async Task&lt;SecurityMasterConflictResolutionDto&gt; ResolveSourceConflictAsync(ResolveSourceConflictRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:422](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L422) |  |
+| <code>public async Task&lt;SecurityMasterEditResultDto&gt; SubmitForApprovalAsync(SubmitSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:638](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L638) |  |
+| <code>public async Task&lt;SecurityMasterEditResultDto&gt; ApproveRevisionAsync(ApproveSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:781](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L781) |  |
+| <code>public async Task&lt;SecurityMasterPublishResultDto&gt; PublishRevisionAsync(PublishSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:894](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L894) |  |
 
 Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Discard.cs:14](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Discard.cs#L14).
 
@@ -856,7 +993,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityResolver</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:10](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L10).
+Source: [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:17](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L17).
 
 Resolves security identifiers against canonical Security Master records.
 
@@ -868,8 +1005,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SecurityResolver(ISecurityMasterStore store);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L15) |  |
-| <code>public async Task&lt;Guid?&gt; ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:20](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L20) |  |
+| <code>public SecurityResolver(ISecurityMasterStore store);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:22](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L22) |  |
+| <code>public async Task&lt;Guid?&gt; ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:27](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L27) |  |
+| <code>public async Task&lt;SecurityCanonicalResolution&gt; ResolveCanonicalAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:47](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L47) |  |
 
 ## SecurityResolverCompatibilityAdapter
 
@@ -887,182 +1025,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>public SecurityResolverCompatibilityAdapter(Meridian.Contracts.SecurityMaster.ISecurityResolver resolver);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs:10](../../../../src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs#L10) |  |
 | <code>public Task&lt;Guid?&gt; ResolveAsync(Meridian.Contracts.SecurityMaster.ResolveSecurityRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs#L15) |  |
+| <code>public Task&lt;Meridian.Contracts.SecurityMaster.SecurityCanonicalResolution&gt; ResolveCanonicalAsync(Meridian.Contracts.SecurityMaster.ResolveSecurityRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs:19](../../../../src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs#L19) |  |
 
-## StaleFieldProposalException
+## SourcePrecedenceAdmissionPolicy
 
-Qualified name: <code>Meridian.Application.SecurityMaster.StaleFieldProposalException</code>. Kind: `class`.
+Qualified name: <code>Meridian.Application.SecurityMaster.SourcePrecedenceAdmissionPolicy</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:9](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L9).
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:26](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L26).
 
-An approved field-edit revision whose canonical field changed after the proposal was drafted. Publishing it would overwrite a newer value the reviewer never saw, so publication refuses it. The revision stays Approved, and retrying will not help. Discard it and stage the edit again against the current value. The workbench publish route answers 409.
+Per-source precedence admission over the workbench source ladder.
 
 ```csharp
-public sealed class StaleFieldProposalException : InvalidOperationException
+public sealed class SourcePrecedenceAdmissionPolicy : ISecurityMasterSourceAdmissionPolicy
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public StaleFieldProposalException(Guid securityId, Guid revisionId, string fieldPath, long baseVersion, long currentVersion) : base($&quot;Revision &#x27;{revisionId:D}&#x27; proposes &#x27;{fieldPath}&#x27; against security &#x27;{securityId:D}&#x27; version {baseVersion}, &quot; + $&quot;but that field changed by version {currentVersion}. Publishing it would overwrite the newer value; &quot; + &quot;discard the revision and stage the edit again against the current value.&quot;);</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:11](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L11) |  |
-| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:23](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L23) |  |
-| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:25](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L25) |  |
-| <code>public string FieldPath { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:27](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L27) |  |
-| <code>public long BaseVersion { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:29](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L29) |  |
-| <code>public long CurrentVersion { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:31](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L31) |  |
-
-## SymbolResolutionMismatchTracker
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SymbolResolutionMismatchTracker</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:10](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L10).
-
-Process-local, bounded comparison evidence for the Legacy-to-Canonical migration. The durable registry remains the symbol source of truth; this tracker exposes only recent operational disagreements for rollout inspection.
-
-```csharp
-public sealed class SymbolResolutionMismatchTracker : ISymbolResolutionMismatchReader
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SymbolResolutionMismatchTracker(int capacity = DefaultCapacity);</code> | [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:18](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L18) |  |
-| <code>public long TotalCount =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:24](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L24) |  |
-| <code>public void Report(SymbolResolutionMismatch mismatch);</code> | [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:26](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L26) |  |
-| <code>public IReadOnlyList&lt;SymbolResolutionMismatch&gt; GetRecent();</code> | [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:39](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L39) |  |
-
-## AssetClassValidatorRegistry
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Validation.AssetClassValidatorRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:24](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L24).
-
-Indexes asset-class validators and resolves the validator for a requested asset class.
-
-```csharp
-public sealed class AssetClassValidatorRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AssetClassValidatorRegistry(IEnumerable&lt;ISecurityAssetClassValidator&gt; validators);</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:28](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L28) |  |
-| <code>public IReadOnlyCollection&lt;string&gt; SupportedAssetClasses =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:38](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L38) |  |
-| <code>public bool TryGetValidator(string assetClass, out ISecurityAssetClassValidator validator) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:40](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L40) |  |
-| <code>public static AssetClassValidatorRegistry CreateDefault() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:43](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L43) |  |
-| <code>public static AssetClassValidatorRegistry CreateDefault(ISecurityAssetProfileCatalog assetProfileCatalog) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:50](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L50) | The default registry: every class&#x27;s hand-written semantic rules composed with the rules generated from its term schema (SchemaTermsAssetClassValidator). |
-
-## FileSecurityValidationSnapshotStore
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Validation.FileSecurityValidationSnapshotStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:31](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L31).
-
-File-backed retention of security-master validation snapshots.
-
-```csharp
-public sealed class FileSecurityValidationSnapshotStore : ISecurityValidationSnapshotStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileSecurityValidationSnapshotStore(StorageOptions storageOptions);</code> | [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:35](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L35) |  |
-| <code>public async Task&lt;SecurityValidationSnapshotDto&gt; RecordAsync(SecurityValidationReportDto report, SecurityValidationSnapshotRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:45](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L45) |  |
-
-## ISecurityAssetClassValidator
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Validation.ISecurityAssetClassValidator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:15](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L15).
-
-Defines validation rules for one supported Security Master asset class.
-
-```csharp
-public interface ISecurityAssetClassValidator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string AssetClass { get; }</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:17](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L17) |  |
-| <code>IReadOnlyList&lt;SecurityValidationIssueDto&gt; Validate(SecurityValidationContext context);</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:18](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L18) |  |
-
-## ISecurityValidationService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Validation.ISecurityValidationService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:11](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L11).
-
-Validates individual security records and the Security Master universe.
-
-```csharp
-public interface ISecurityValidationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityValidationReportDto&gt; ValidateSecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:13](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L13) |  |
-| <code>Task&lt;SecurityValidationReportDto&gt; ValidateUniverseAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:14](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L14) |  |
-
-## ISecurityValidationSnapshotStore
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Validation.ISecurityValidationSnapshotStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:14](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L14).
-
-Records retained snapshots of Security Master validation evidence.
-
-```csharp
-public interface ISecurityValidationSnapshotStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityValidationSnapshotDto&gt; RecordAsync(SecurityValidationReportDto report, SecurityValidationSnapshotRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:16](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L16) |  |
-
-## NullSecurityValidationGateService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Validation.NullSecurityValidationGateService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs:194](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs#L194).
-
-Returns blocking gate results when Security Master validation is unavailable.
-
-```csharp
-public sealed class NullSecurityValidationGateService : ISecurityValidationGateService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;SecurityValidationGateResultDto&gt; ValidateSymbolAsync(string symbol, SecurityValidationWorkflowDto workflow, string? workflowReference = null, string? actor = null, bool persistSnapshot = false, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs:196](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs#L196) |  |
-| <code>public Task&lt;SecurityValidationGateResultDto&gt; ValidateSecurityAsync(Guid securityId, SecurityValidationWorkflowDto workflow, string? workflowReference = null, string? actor = null, bool persistSnapshot = false, string? symbol = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs:205](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs#L205) |  |
-
-## NullSecurityValidationService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Validation.NullSecurityValidationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:872](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L872).
-
-Returns blocking validation reports when the Security Master validation service is unavailable.
-
-```csharp
-public sealed class NullSecurityValidationService : ISecurityValidationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;SecurityValidationReportDto&gt; ValidateSecurityAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:874](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L874) |  |
-| <code>public Task&lt;SecurityValidationReportDto&gt; ValidateUniverseAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:877](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L877) |  |
+| <code>public SourcePrecedenceAdmissionPolicy(IOptionsMonitor&lt;SecurityMasterWorkbenchOptions&gt; monitor);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:31](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L31) |  |
+| <code>public SourcePrecedenceAdmissionPolicy(SecurityMasterWorkbenchOptions options);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:38](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L38) | Creates the policy over a fixed options snapshot (tests and minimal hosts). |
+| <code>public bool IncumbentOutranks(string? incumbentSource, string? challengerSource);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:45](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L45) |  |

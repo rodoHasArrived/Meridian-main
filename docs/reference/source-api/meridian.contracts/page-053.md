@@ -964,27 +964,22 @@ Declared public members:
 | <code>public static bool IsSecuritizedLabel(string? label) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs#L23) |  |
 | <code>public static bool IsBankLoanLabel(string? label) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs#L26) |  |
 
-## SecurityCashFlowBehavior
+## SecurityCanonicalResolution
 
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowBehavior</code>. Kind: `enum`.
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCanonicalResolution</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L35).
+Source: [src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs#L53).
 
-How an asset class produces cash flows.
+The typed outcome of a canonical identifier lookup. SecurityId is set only when Status is SecurityResolutionStatus.Resolved, or when a single inactive security is the only claimant. CandidateSecurityIds lists every claimant considered.
 
 ```csharp
-public enum SecurityCashFlowBehavior
+public sealed record SecurityCanonicalResolution(SecurityResolutionStatus Status, Guid? SecurityId, IReadOnlyList<Guid> CandidateSecurityIds)
 ```
 
-Enum declarations:
+Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>None</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L38) | The class produces no scheduled cash flows. |
-| <code>ContractualSchedule</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L41) | Coupon, interest and principal flows calculated from contractual terms. |
-| <code>FactorAmortizing</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L44) | Contractual flows whose principal amortizes by a dated pool factor. |
-| <code>SwapLegs</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L47) | Exchanges calculated per swap leg. |
-| <code>FinancingInterest</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L50) | Financing interest calculated from rate and term (repo). |
-| <code>Dividends</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L53) | Declared dividends, recorded as corporate actions rather than calculated. |
-| <code>FundDistributions</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L56) | Fund distributions, recorded from the administrator rather than calculated. |
-| <code>ProviderSupplied</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L59) | Flows supplied by a provider or administrator (capital calls, rents, draws). |
+| <code>public static SecurityCanonicalResolution NotFound { get; } = new (SecurityResolutionStatus.NotFound, null, []);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs#L58) |  |
+| <code>public static SecurityCanonicalResolution Resolve(Guid securityId) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs#L60) |  |
+| <code>public static SecurityCanonicalResolution FromClaims(IReadOnlyList&lt;SecurityIdentityClaim&gt; claims, bool activeOnly);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs#L66) | Classifies claimants. With activeOnly, a single active claimant resolves even when inactive claimants also exist (a recycled ticker whose former holder is retired). |

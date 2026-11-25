@@ -718,7 +718,7 @@ public sealed record ComputeOtcExposureSnapshotRequest(DateOnly AsOfDate, DateTi
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:218](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L218).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:240](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L240).
 
 Convertible-equity-specific terms returned by the convertible-equity-terms query.
 

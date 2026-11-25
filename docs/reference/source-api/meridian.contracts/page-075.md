@@ -6,6 +6,83 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterAccountingIssueDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterAccountingIssueDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:332](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L332).
+
+Structured posture or reconciliation issue from Security Master-driven accounting.
+
+```csharp
+public sealed record SecurityMasterAccountingIssueDto(string Code, string Source, string Symbol, string? AccountId, string Reason, ReconciliationBreakSeverity Severity, string? EvidenceLink = null, decimal? ExpectedAmount = null, decimal? ActualAmount = null);
+```
+
+## SecurityMasterCanonicalMergeOutcomeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:183](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L183).
+
+The canonical-merge outcome of a publish, with an operator-facing explanation and, when the canonical record was read or amended, its version.
+
+```csharp
+public sealed record SecurityMasterCanonicalMergeOutcomeDto(SecurityMasterCanonicalMergeOutcomeKind Outcome, string Detail, long? CanonicalVersion);
+```
+
+## SecurityMasterCanonicalMergeOutcomeKind
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:164](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L164).
+
+What publishing an approved revision did to the canonical (golden) record.
+
+```csharp
+public enum SecurityMasterCanonicalMergeOutcomeKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>NotApplicable</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:167](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L167) | The revision changes no asset-specific term (an annotation path, or a clear). |
+| <code>OverlayOnly</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:170](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L170) | The approved value stays an overlay annotation; the canonical terms are unchanged. |
+| <code>AlreadyCanonical</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:173](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L173) | The canonical terms already held the approved value; no amendment was appended. |
+| <code>Merged</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:176](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L176) | The approved value was merged into the canonical terms. |
+
+## SecurityMasterChangeHistoryItemDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterChangeHistoryItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:209](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L209).
+
+```csharp
+public sealed record SecurityMasterChangeHistoryItemDto(string ChangeId, long StreamVersion, string EventType, DateTimeOffset ChangedAtUtc, DateTimeOffset? EffectiveAtUtc, string Actor, string Origin, string SourceSystem, string? SourceRecordId, string? Reason, string Summary, IReadOnlyList<string> ChangedFields, string ChangedFieldsSummary);
+```
+
+## SecurityMasterConflictAssessmentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterConflictAssessmentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:160](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L160).
+
+```csharp
+public sealed record SecurityMasterConflictAssessmentDto(SecurityMasterConflict Conflict, string? CurrentWinningValue, string? ChallengerValue, string CurrentWinningSource, string ChallengerSource, SecurityMasterConflictRecommendationKind Recommendation, string RecommendedResolution, string RecommendedWinner, SecurityMasterImpactSeverity ImpactSeverity, string ImpactSummary, string ImpactDetail, bool IsBulkEligible, string? BulkIneligibilityReason = null);
+```
+
+## SecurityMasterConflictAuthorityDecision
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterConflictAuthorityDecision</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:203](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L203).
+
+Deterministic conflict-authority decision: the default winner the policy computes, the rule that selected it, and whether the conflict remains eligible for bulk resolution.
+
+```csharp
+public sealed record SecurityMasterConflictAuthorityDecision(string PolicyWinnerSource, string Rule, string Rationale, bool IsBulkEligible);
+```
+
 ## SecurityMasterConflictRecommendationKind
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterConflictRecommendationKind</code>. Kind: `enum`.
@@ -34,8 +111,14 @@ Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.c
 Result of a governed source-conflict resolution, including any policy deviation.
 
 ```csharp
-public sealed record SecurityMasterConflictResolutionDto(Guid ConflictId, string PolicyWinnerSource, string ChosenWinnerSource, bool IsPolicyDeviation, string Reason, long NewVersion);
+public sealed record SecurityMasterConflictResolutionDto(Guid ConflictId, string PolicyWinnerSource, string ChosenWinnerSource, bool IsPolicyDeviation, string Reason, long NewVersion)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Guid? PendingRevisionId { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:145](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L145) | Set when the chosen source&#x27;s value is not the current canonical value: instead of refusing, the workbench staged this pending draft carrying that value (review D3). The conflict stays open and resolves to ChosenWinnerSource when the draft is approved and published. |
 
 ## SecurityMasterDeclaredExerciseOutcomeDto
 
@@ -277,6 +360,18 @@ Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:
 public sealed record SecurityMasterOperatorMetadataDto(string MetadataId, string VendorName, DataVendorDataType DataType, string SourceCategory, string ExpectedRefreshCadence, int? DefaultMaxDaysStale, bool RequiresDirectClientContract, string? OperatorMetadata, string Summary);
 ```
 
+## SecurityMasterPendingRevisionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterPendingRevisionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:228](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L228).
+
+One governed revision awaiting action, across securities (review P5/D1 review inbox). The drafter is Actor; under the Institutional profile a different principal must approve.
+
+```csharp
+public sealed record SecurityMasterPendingRevisionDto(Guid RevisionId, Guid SecurityId, SecurityMasterRevisionStateDto State, string Actor, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string? FieldPath, string? FieldValue, string? Justification, string? FundProfileId, long? BaseVersion, double AgeHours);
+```
+
 ## SecurityMasterProviderSymbolMappingDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterProviderSymbolMappingDto</code>. Kind: `record`.
@@ -291,7 +386,7 @@ public sealed record SecurityMasterProviderSymbolMappingDto(string MappingSource
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterPublishResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:145](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L145).
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:153](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L153).
 
 Result of publishing a revision. When the edit affects a hard-closed period with report-pack exposure, RestatementRequired is set and RestatementCandidates carries the report packs an operator may restate via the governed report-pack lifecycle.
 
@@ -338,7 +433,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterRevisionPublishedEvent</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:205](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L205).
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:213](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L213).
 
 Domain event raised after a revision is durably published. Carries the affected ledger books so period-aware propagation can resolve each book&#x27;s lock status from the authoritative ledger period.
 
@@ -549,92 +644,4 @@ Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:10
 
 ```csharp
 public sealed record SinglePrincipalAttestationAuditEventDto(Guid CommandId, long Sequence, string Action, string Actor, DateTimeOffset RecordedAt, string Reason, Guid? ReceiptId = null);
-```
-
-## SinglePrincipalAttestationPolicy
-
-Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationPolicy</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L4).
-
-Versioned, non-authoritative preparer assertions. These are never approval receipts.
-
-```csharp
-public static class SinglePrincipalAttestationPolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Version = &quot;single-principal-evidence-v1&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L6) |  |
-| <code>public const string DraftVersion = &quot;single-principal-evidence-v2&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:7](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L7) |  |
-| <code>public const string EvidenceAcknowledgment = &quot;ATTEST-EVIDENCE-ACK&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L8) |  |
-| <code>public const string DraftCheck = &quot;ATTEST-DRAFT-CHECK&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L9) |  |
-| <code>public const string Disclosure = &quot;Attested by preparer — not independently reviewed&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L10) |  |
-| <code>public const string Confirmation = &quot;I inspected the exact retained evidence and accept responsibility for this preparer assertion. This is not independent review or approval.&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L11) |  |
-| <code>public const string DraftConfirmation = &quot;I inspected the exact retained non-postable calculation and listed checks. This preparer check grants no approval or posting authority.&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L12) |  |
-| <code>public const string DecisionKind = &quot;PreparerAttestation&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L13) |  |
-| <code>public const int SchemaVersion = 1;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L14) |  |
-
-## SinglePrincipalAttestationScopeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationScopeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L17).
-
-```csharp
-public sealed record SinglePrincipalAttestationScopeDto(string TenantId, string CompanyId, Guid? LedgerBookId = null);
-```
-
-## SinglePrincipalAttestationStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationStateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:112](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L112).
-
-```csharp
-public sealed record SinglePrincipalAttestationStateDto(SinglePrincipalAttestationScopeDto Scope, bool PolicyEnabled, string PolicyVersion, string PolicyHash, string Disclosure, string Confirmation, IReadOnlyList<string> AllowedActions, SinglePrincipalDeclarationDto? Declaration, IReadOnlyList<SinglePrincipalDeclarationDto> DeclarationHistory, IReadOnlyList<PreparerAttestationReceiptDto> Receipts, IReadOnlyList<PreparerAttestationRevocationDto> Revocations, IReadOnlyList<SinglePrincipalAttestationAuditEventDto> AuditTrail);
-```
-
-## SinglePrincipalAttestationSubjectSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationSubjectSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:136](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L136).
-
-Server-resolved target revision and source identity; it is not an authority grant.
-
-```csharp
-public sealed record SinglePrincipalAttestationSubjectSnapshotDto(string SubjectKind, string SubjectId, string Revision, string Hash, string SourceArtifactId, string SourceHash, string? SourceActor, string SourceProvenance, bool Eligible, IReadOnlyList<string> Checks, string? SourceSubjectKind = null, string? SourceSubjectId = null, string? SubjectSnapshotJson = null, [property : System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] string? PreparedBy = null, [property : System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] string? Confirmation = null);
-```
-
-## SinglePrincipalAttestationWorkspaceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationWorkspaceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:126](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L126).
-
-```csharp
-public sealed record SinglePrincipalAttestationWorkspaceDto(SinglePrincipalAttestationStateDto State, string Actor, bool CanAdministerDeclaration, bool CanAttest, bool CanRevoke, bool CanAttestDrafts = false, bool CanRevokeDrafts = false);
-```
-
-## SinglePrincipalDeclarationDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalDeclarationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:50](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L50).
-
-```csharp
-public sealed record SinglePrincipalDeclarationDto(Guid DeclarationId, long Revision, SinglePrincipalAttestationScopeDto Scope, bool Enabled, string PrincipalId, string PolicyVersion, string PolicyHash, string ChangedBy, DateTimeOffset RecordedAt, string Reason);
-```
-
-## StarterWorkspaceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StarterWorkspaceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L70).
-
-```csharp
-public sealed record StarterWorkspaceDto(string Id, string Name, string Goal, string Description, string DefaultRoute);
 ```

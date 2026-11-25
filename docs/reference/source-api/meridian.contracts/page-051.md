@@ -793,7 +793,7 @@ public sealed record PostCorporateActionCaseAccountingRequestDto(Guid CaseId, lo
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:200](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L200).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:222](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L222).
 
 Preferred-equity-specific terms returned by the preferred-terms query.
 

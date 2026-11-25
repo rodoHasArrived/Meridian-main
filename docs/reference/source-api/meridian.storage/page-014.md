@@ -6,6 +6,68 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IStorageSearchService
+
+Qualified name: <code>Meridian.Storage.Services.IStorageSearchService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:725](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L725).
+
+Interface for storage search service.
+
+```csharp
+public interface IStorageSearchService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SearchResult&lt;FileSearchResult&gt;&gt; SearchFilesAsync(FileSearchQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:727](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L727) |  |
+| <code>Task&lt;SearchResult&lt;EventSearchResult&gt;&gt; SearchEventsAsync(EventSearchQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:728](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L728) |  |
+| <code>Task&lt;DataCatalog&gt; DiscoverAsync(DiscoveryQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:729](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L729) |  |
+| <code>Task&lt;FacetedSearchResult&gt; SearchWithFacetsAsync(FacetedSearchQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:730](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L730) |  |
+| <code>StorageQuery? ParseNaturalLanguageQuery(string naturalQuery);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:731](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L731) |  |
+| <code>Task UpdateIndexAsync(string filePath, IndexUpdateType updateType, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:732](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L732) |  |
+| <code>Task&lt;IndexRebuildVerification&gt; RebuildIndexAsync(string[] paths, RebuildOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:733](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L733) |  |
+
+## ITierMigrationService
+
+Qualified name: <code>Meridian.Storage.Services.ITierMigrationService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:582](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L582).
+
+Interface for tier migration service.
+
+```csharp
+public interface ITierMigrationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;MigrationResult&gt; MigrateAsync(string sourcePath, StorageTier targetTier, MigrationOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:584](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L584) |  |
+| <code>Task&lt;MigrationPlan&gt; PlanMigrationAsync(TimeSpan horizon, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:585](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L585) |  |
+| <code>StorageTier DetermineTargetTier(string filePath);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:586](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L586) |  |
+| <code>Task&lt;TierStatistics&gt; GetTierStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:587](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L587) |  |
+
+## JobExecutionStatus
+
+Qualified name: <code>Meridian.Storage.Services.JobExecutionStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1676](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1676).
+
+```csharp
+public sealed record JobExecutionStatus(string JobId, MaintenanceType Type, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt, JobStatus Status, int Progress, string Message, IReadOnlyList<string> Errors)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public VerifiedOperationOutcome? Outcome { get; init; }</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1687](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1687) |  |
+| <code>public bool AdmissionRetained { get; init; }</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1688](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1688) |  |
+
 ## JobPriority
 
 Qualified name: <code>Meridian.Storage.Services.JobPriority</code>. Kind: `enum`.
@@ -719,40 +781,3 @@ Declared public members:
 | <code>public long TotalBytes { get; set; }</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:361](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L361) |  |
 | <code>public long FileCount { get; set; }</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:362](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L362) |  |
 | <code>public long EventsToday { get; set; }</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:363](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L363) |  |
-
-## QuotaViolation
-
-Qualified name: <code>Meridian.Storage.Services.QuotaViolation</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/QuotaEnforcementService.cs:382](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L382).
-
-```csharp
-public sealed record QuotaViolation(string QuotaId, string Description, long CurrentBytes, long MaxBytes, QuotaEnforcementPolicy Policy)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public double UsagePercentage =&gt; …;</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:389](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L389) |  |
-| <code>public long OverageBytes =&gt; …;</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:390](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L390) |  |
-
-## RebuildOptions
-
-Qualified name: <code>Meridian.Storage.Services.RebuildOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:865](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L865).
-
-```csharp
-public sealed record RebuildOptions(int ParallelIndexers = 4);
-```
-
-## RepairOptions
-
-Qualified name: <code>Meridian.Storage.Services.RepairOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:908](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L908).
-
-```csharp
-public sealed record RepairOptions(RepairStrategy Strategy, bool DryRun = false, bool BackupBeforeRepair = true, string? BackupPath = null, RepairScope Scope = RepairScope.All, string? ScopeTarget = null);
-```
