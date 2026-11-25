@@ -364,6 +364,10 @@ public sealed class DesignerPaperRehearsalTests
                 break;
             await Task.Delay(20, timeout.Token);
         }
+        // A financing charge on the run's own session is the run's, so its metrics measure it.
+        (await sessions.RecordFinancingAsync(new PaperFinancingCharge(sessionId, PaperTradingPortfolio.DefaultAccountId,
+            DateOnly.FromDateTime(DateTime.UtcNow), 2.50m, "run-session-financing", "Assessed run charge", "operator"),
+            timeout.Token)).Should().BeTrue();
         var stopped = await engine.StopRunWithOutcomeAsync(paper.RunId, timeout.Token);
         stopped.Should().NotBeNull();
         stopped!.State.Should().Be(OperationTerminalState.Succeeded,
@@ -371,7 +375,13 @@ public sealed class DesignerPaperRehearsalTests
         var session = sessions.GetSession(sessionId)!;
         session.Summary.FundAccountId.Should().Be(AccountId);
         session.Summary.JournalCurrency.Should().Be("USD");
-        session.Portfolio!.Cash.Should().Be(100_000m - 10m * 102m - 1m);
+        session.Portfolio!.Cash.Should().Be(100_000m - 10m * 102m - 1m - 2.50m);
+        var paperMetrics = (await repository.GetRunByIdAsync(paper.RunId))!.Metrics!;
+        paperMetrics.Metrics.InitialCapital.Should().Be(100_000m, "the run is funded by its own session");
+        paperMetrics.Metrics.FinalEquity.Should().Be(100_000m - 1m - 2.50m, "bought and marked at 102, less commission and financing");
+        paperMetrics.Metrics.TotalMarginInterest.Should().Be(2.50m);
+        paperMetrics.EngineMetadata!.FinancingCoverageStatus.Should().Be(BacktestFinancingCoverageStatuses.Available);
+        paperMetrics.EngineMetadata.RunAttributedMarginInterest.Should().Be(2.50m);
         session.Portfolio.Positions.Should().ContainSingle().Which.Quantity.Should().Be(10);
         session.OrderHistory.Should().Contain(order => order.IntentId.HasValue && order.FilledQuantity == 10m);
         sessions.GetLedger(sessionId)!.Journal.Should().Contain(entry =>

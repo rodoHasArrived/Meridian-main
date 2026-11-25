@@ -55,9 +55,7 @@ internal sealed class LiveRunMetricsTracker
         // Amount alone carries the economic cash impact, matching SimulatedPortfolio.
         // Otherwise the quoted price is scaled by the contract multiplier, the same money terms
         // the paper book uses: one option contract at 2.50 with multiplier 100 is a $250 outflow.
-        var effectivePrice = usesFaceValuePercentageOfPar
-            ? fill.FillPrice / 100m
-            : fill.FillPrice * (contractMultiplier > 0m ? contractMultiplier : 1m);
+        var effectivePrice = fill.FillPrice * ValueFactor(usesFaceValuePercentageOfPar, contractMultiplier);
         var tradeCashFlow = new TradeCashFlow(
             Timestamp: timestamp,
             Amount: -(fill.FilledQuantity * effectivePrice),
@@ -80,6 +78,24 @@ internal sealed class LiveRunMetricsTracker
             _cashFlows.Add(commissionCashFlow);
             _currentDayCashFlows.Add(commissionCashFlow);
         }
+    }
+
+    /// <summary>
+    /// Money per unit of quantity per unit of price for a fill: 1/100 for a face-value fill
+    /// quoted as a percentage of par, otherwise the contract multiplier (1 when absent).
+    /// </summary>
+    internal static decimal ValueFactor(bool usesFaceValuePercentageOfPar, decimal contractMultiplier)
+        => usesFaceValuePercentageOfPar ? 0.01m : contractMultiplier > 0m ? contractMultiplier : 1m;
+
+    /// <summary>
+    /// Records a financing charge paid from the run's cash (positive amount = cost), as a margin
+    /// interest cash flow. The assessment carries no rate or loan balance, so both are zero.
+    /// </summary>
+    public void RecordFinancingCharge(DateTimeOffset timestamp, decimal amount, string? accountId)
+    {
+        var cashFlow = new MarginInterestCashFlow(timestamp, -amount, MarginBalance: 0m, AnnualRate: 0d, accountId);
+        _cashFlows.Add(cashFlow);
+        _currentDayCashFlows.Add(cashFlow);
     }
 
     public void RecordDayEnd(

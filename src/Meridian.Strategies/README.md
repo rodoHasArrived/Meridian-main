@@ -36,7 +36,16 @@ before mutation, retain existing maker-checker rules, and fail closed if configu
 cannot be read. No attestation grants waiver, supersession, material-break suppression or sign-off.
 
 `LiveRunMetricsTracker` uses the `BacktestMetricsEngine` formulas (geometric annualisation over the session's start-to-end interval, sample-deviation Sharpe, losing-day Sortino); a run with no losing day reports Sortino 0 so persisted metrics stay finite, and annualised return is capped at 1e12.
-Its daily snapshots take long and short market value (and margin balance) from the session's account snapshots, as the backtest engine does, so a long $100k / short $60k book reports $100k and -$60k rather than the $40k net that equity minus cash gave; the net figure is only a fallback when no account snapshot is supplied. The live account snapshot sorts positions by exact quantity, so a fractional short counts as short.
+Its daily snapshots take long and short market value (and margin balance) from the run's account snapshots, as the backtest engine does, so a long $100k / short $60k book reports $100k and -$60k rather than the $40k net that equity minus cash gave; the net figure is only a fallback when no account snapshot is supplied. The live account snapshot sorts positions by exact quantity, so a fractional short counts as short.
+
+Each live or paper run values itself from its own `LiveRunBook`, not from the portfolio it trades
+against, which the host shares with other runs, manual orders and holdings that predate the run.
+The book starts with the run's capital: the paper session's initial cash for a Designer paper run
+(which owns its session), otherwise the shared portfolio's value at launch. It then moves only with
+the run's fills (contract multiplier and percent-of-par sizing included), commissions and financing
+charges, and marks the run's positions at the feed price (the last fill price when the feed has
+none). Daily snapshots, positions, final equity and P&L come from the book. The strategy-facing
+context still reports the shared portfolio, so strategy decisions are unchanged.
 
 Live/paper finalization records financing as `Unavailable` until an explicit complete allocation
 ties account charges to the run. The context's private ledger and an account's expense balance do
@@ -48,10 +57,13 @@ unavailable, and gross P&L financing decomposition is provisional, but the read 
 pass that placeholder on: the run summaries' `TotalMarginInterest`, `PortfolioSummary.Financing`,
 and the fund and accounting financing totals built from them are `null` when coverage is
 unavailable (a total is `null` if any contributing run is), and the WPF and browser workstations
-show "Unavailable" rather than $0. Paper runs are not measured from their session's financing
-charges: the run's equity comes from the shared paper portfolio, which those charges do not touch,
-so adding them to gross P&L would overstate it. Continuity and comparison reads expose a financing
-review warning/incomplete cash-flow coverage. No shared account charge is assigned to every run.
+show "Unavailable" rather than $0. A Designer paper run is measured: every charge retained on its
+own paper session is the run's, so each is paid from the run book's cash, recorded as a
+`MarginInterestCashFlow`, and the total is reported as `Available` (zero when the session has none).
+The session is read at each day end and again when the run finishes; if it cannot be read then,
+coverage stays `Unavailable`. Runs without their own session (live broker runs, paper runs on the
+shared account) stay `Unavailable`. Continuity and comparison reads expose a financing review
+warning/incomplete cash-flow coverage for them. No shared account charge is assigned to every run.
 Legacy and backtest results with no coverage declaration retain an unassessed null status.
 
 A live session books a strategy fill only at the price the execution report states. A fill report

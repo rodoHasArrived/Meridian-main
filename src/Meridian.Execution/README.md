@@ -64,7 +64,7 @@ submission authority and durable intent claim metadata. Legacy null identities a
 JSON and preserve existing fingerprints; reusing an intent key with a different artifact is refused
 by the existing authority fingerprint check.
 
-`PaperSessionPersistenceService.GetSessionFillHistory` exposes cloned retained execution reports for order investigation without rebuilding portfolio/ledger views. Consumers initialize retained sessions before reading and keep canonical report identity, source event time, cumulative-versus-last quantity and price basis explicit; completed-order workspace summaries are not individual fills.
+`PaperSessionPersistenceService.GetSessionFillHistory` exposes cloned retained execution reports for order investigation without rebuilding portfolio/ledger views. `GetSessionFinancingCharges` returns the session's retained financing charges (`null` for a session that is not loaded, an empty list for none); a strategy run that owns its session reports them as its measured financing. Consumers initialize retained sessions before reading and keep canonical report identity, source event time, cumulative-versus-last quantity and price basis explicit; completed-order workspace summaries are not individual fills.
 
 Failed execution probes use bounded, single-line diagnostic fields, including provider error text.
 The original symbol remains authoritative for probing and order validation, and a failed probe
