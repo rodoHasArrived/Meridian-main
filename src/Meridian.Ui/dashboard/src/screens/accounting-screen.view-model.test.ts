@@ -1557,10 +1557,10 @@ describe("accounting-screen view model", () => {
       policyLabel: "legacy-v1/legacy-v1",
       dimensionLabel: "Fund: fund-alpha / Entity: entity-alpha / Sleeve: sleeve-credit +3",
       dimensionDetailLabel: "Fund: fund-alpha | Entity: entity-alpha | Sleeve: sleeve-credit | Cost center: ops-close | External class: private-fund | External department: finance",
-      balanceLabel: "$120,500",
+      balanceLabel: "120,500 (currency unavailable)",
       balanceTone: "success",
       entryCountLabel: "12",
-      ariaLabel: "Cash Asset. Primary basis. Policy legacy-v1/legacy-v1. Dimensions Fund: fund-alpha / Entity: entity-alpha / Sleeve: sleeve-credit +3. Balance $120,500. 12 entries",
+      ariaLabel: "Cash Asset. Primary basis. Policy legacy-v1/legacy-v1. Dimensions Fund: fund-alpha / Entity: entity-alpha / Sleeve: sleeve-credit +3. Balance 120,500 (currency unavailable). 12 entries",
       selectAriaLabel: "Inspect trial-balance account Cash for Asset",
       detailPanelId: "trial-balance-account-detail",
       isExpanded: true
@@ -1587,10 +1587,10 @@ describe("accounting-screen view model", () => {
     expect(state.selectedDetail?.ledgerLines).toEqual([
       expect.objectContaining({
         journalEntryId: "je-cash-1",
-        debitLabel: "$120,500",
+        debitLabel: "120,500 (currency unavailable)",
         // The credit side is not applicable to a debit-balance line, so it is blank rather than $0.
         creditLabel: "",
-        ariaLabel: "Cash journal je-cash-1. Debit $120,500. Balance $120,500. Source evidence.",
+        ariaLabel: "Cash journal je-cash-1. Debit 120,500 (currency unavailable). Balance 120,500 (currency unavailable). Source evidence.",
         evidenceLabel: "Source evidence",
         evidenceHref: "/accounting/audit?sourceEventId=evt-cash-1",
         approvalHref: "/accounting/approvals?approvalId=approval-cash-1"
@@ -1608,7 +1608,7 @@ describe("accounting-screen view model", () => {
       expect.objectContaining({ label: "Approval evidence", href: "/accounting/approvals?approvalId=approval-cash-1" })
     ]));
     expect(state.rows[1]).toMatchObject({
-      balanceLabel: "-$500",
+      balanceLabel: "-500 (currency unavailable)",
       balanceTone: "danger",
       isExpanded: false
     });
@@ -1702,11 +1702,11 @@ describe("accounting-screen view model", () => {
     expect(state.rows[0]).toMatchObject({
       rowId: "journal-cash-1",
       timestampLabel: "Jun 30, 2026, 14:30 UTC",
-      amountLabel: "$120,500 debit / $120,500 credit",
+      amountLabel: "120,500 (currency unavailable) debit / 120,500 (currency unavailable) credit",
       lineCountLabel: "2 lines",
       dimensionLabel: "Fund: fund-alpha / Entity: entity-alpha / Sleeve: sleeve-credit +2",
       dimensionDetailLabel: "Fund: fund-alpha | Entity: entity-alpha | Sleeve: sleeve-credit | Cost center: ops-close | External class: private-fund",
-      ariaLabel: "Journal journal-cash-1. Cash close journal. $120,500 debit / $120,500 credit. 2 lines. Dimensions Fund: fund-alpha / Entity: entity-alpha / Sleeve: sleeve-credit +2"
+      ariaLabel: "Journal journal-cash-1. Cash close journal. 120,500 (currency unavailable) debit / 120,500 (currency unavailable) credit. 2 lines. Dimensions Fund: fund-alpha / Entity: entity-alpha / Sleeve: sleeve-credit +2"
     });
     expect(state.rows[1]).toMatchObject({
       rowId: "journal-unscoped",
@@ -1851,9 +1851,11 @@ describe("accounting-screen view model", () => {
     expect(state.basisBridge.rows).toEqual(expect.arrayContaining([
       expect.objectContaining({
         accountLabel: "Cash",
-        primaryBalanceLabel: "$120,500",
-        comparisonBalanceLabel: "$119,500",
-        varianceLabel: "-$1,000",
+        comparison: "compared",
+        variance: -1000,
+        primaryBalanceLabel: "120,500.00",
+        comparisonBalanceLabel: "119,500.00",
+        varianceLabel: "-1,000.00",
         varianceTone: "danger",
         sourceLabel: "Source event-42 / Rule direct-lending.daily-accrual"
       })

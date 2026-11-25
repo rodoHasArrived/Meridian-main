@@ -93,7 +93,7 @@
   "prefixedCurrency": {
     "src/screens/accounting-calibration-summary.view-model.ts": 1,
     "src/screens/accounting-screen.governance.view-model.ts": 15,
-    "src/screens/accounting-screen.view-model.ts": 7,
+    "src/screens/accounting-screen.view-model.ts": 3,
     "src/screens/covered-call-screen.tsx": 10,
     "src/screens/covered-call-screen.view-model.ts": 6,
     "src/screens/portfolio-screen.view-model.ts": 34,

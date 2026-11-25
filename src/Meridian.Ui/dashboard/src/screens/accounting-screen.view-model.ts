@@ -1773,6 +1773,8 @@ export interface AccountingTrialBalanceBasisOption {
 }
 
 export interface AccountingTrialBalanceRowViewModel extends LedgerTrialBalanceLine {
+  /** The book currency the balance is in; null when the source supplied none. */
+  balanceCurrency?: string | null;
   currency?: string | null;
   rowId: string;
   accountLabel: string;
@@ -3819,6 +3821,7 @@ function buildTrialBalanceRow(
     dimensionLabel,
     dimensionDetailLabel,
     balanceLabel,
+    balanceCurrency: currency,
     balanceTone: line.balance < 0 ? "danger" : line.balance > 0 ? "success" : "default",
     entryCountLabel,
     ariaLabel: [
@@ -4055,7 +4058,11 @@ function buildLedgerLineRows(
   const debit = line.balance >= 0 ? line.balance : 0;
   const credit = line.balance < 0 ? Math.abs(line.balance) : 0;
   const isCredit = line.balance < 0;
-  const sideLabel = isCredit ? `Credit ${formatPrefixedCurrency(credit)}` : `Debit ${formatPrefixedCurrency(debit)}`;
+  // Same currency treatment as the row's balance: never "$" for a book whose currency is unknown.
+  const money = (value: number) => (line.balanceCurrency
+    ? formatCurrency(value, { currency: line.balanceCurrency, minimumFractionDigits: 0 })
+    : formatUnknownCurrencyAmount(value));
+  const sideLabel = isCredit ? `Credit ${money(credit)}` : `Debit ${money(debit)}`;
   const evidenceLabel = sourceEventIds.length > 0
     ? "Source evidence"
     : "No source event linked";
@@ -4067,8 +4074,8 @@ function buildLedgerLineRows(
     rowId: `${line.rowId}-journal-${index}`,
     journalEntryId,
     description: `${line.accountLabel} ${line.accountTypeLabel.toLocaleLowerCase()} activity`,
-    debitLabel: isCredit ? "" : formatPrefixedCurrency(debit),
-    creditLabel: isCredit ? formatPrefixedCurrency(credit) : "",
+    debitLabel: isCredit ? "" : money(debit),
+    creditLabel: isCredit ? money(credit) : "",
     balanceLabel: line.balanceLabel,
     evidenceLabel,
     evidenceHref,

@@ -234,7 +234,8 @@ describe("formatCurrencyWithCode", () => {
     [100, "??", false, "?? 100"],
     [-0, "USD", true, "$0 USD"],
     [-0, "EUR", false, "€0 EUR"],
-    [100, "", false, "$100"],
+    // No currency is known, so none is assumed: a bare amount, never "$".
+    [100, "", false, "100"],
     [Number.NaN, "EUR", true, "— EUR"]
   ])("formats %s in %s (signed: %s)", (value, currency, signed, expected) => {
     expect(formatCurrencyWithCode(value, currency, { signed })).toBe(expected);

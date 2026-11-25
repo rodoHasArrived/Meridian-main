@@ -702,7 +702,7 @@ describe("accounting-screen reconciliation view model", () => {
       { label: "Updated", value: "Jan 2, 2026" },
       { label: "Exception route", value: "fund-ops-review" },
       { label: "Tolerance profile", value: "fee-variance-ops" },
-      { label: "Tolerance band", value: "$100" },
+      { label: "Tolerance band", value: "100.00" },
       {
         label: "Required sign-off",
         value: "Decision captured; sign-off: Pending Signoff by Fund operations lead. Close approval remains blocked."
