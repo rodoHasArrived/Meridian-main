@@ -1,7 +1,6 @@
 # Blueprint — Report Writer Debounced Live Auto-Preview
 
-**Status:** Design — not implemented (`reporting-screen.report-writer-auto-preview.ts` does not
-exist in source)
+**Status:** Implemented (2026-11) — see the implementation notes below.
 **Owner:** Browser workstation lane
 **Reviewed:** 2026-08-01
 
@@ -16,6 +15,32 @@ exist in source)
 > `document_updated` target. It is an active, unimplemented design — not archived source material.
 > Relocate it to `docs/product/` alongside the other browser-workstation blueprints when the
 > brainstorm ledger entry is repointed.
+
+## Implementation notes (2026-11)
+
+The design shipped with these differences from the text below, which is kept as the original
+design record:
+
+- **Default on.** Auto preview starts enabled for every grid; the per-grid "Auto preview" checkbox
+  turns it off.
+- **Call sites.** There are 11 mutation sites, not 10: `updateWriterExtraFilters` (behind
+  `addWriterFilter`, `removeWriterFilter`, `updateWriterFilter`) was added after this design.
+  `resetWriterGrid` still clears the preview outright.
+- **Latest-render ref.** Timers fire after React re-renders, so the hook keeps the latest render
+  function in a ref (updated in an effect) instead of capturing the edit-time closure. Stale
+  results are discarded by checking the render's `AbortSignal`, which a newer render aborts; no
+  separate sequence counter is needed.
+- **Component props.** `ReportWriterDesignerGrid` takes one optional `autoPreview` prop
+  (`phase`, `enabled`, `pausedForSize`, `quietError`, `onToggle`, `onRetry`,
+  `onEditSessionChange`) rather than five separate props. The hook also exposes
+  `isWriterAutoPreviewPausedForSize` and `retryWriterAutoPreview`.
+- **Tests.** Controller tests are in `reporting-screen.report-writer-auto-preview.test.ts`; hook and
+  component behaviour, including a scoped axe check of the live region, are in
+  `reporting-screen.report-writer.test.tsx`, which mocks `renderReportTemplate` through
+  `vi.mock("@/lib/api")`. The full reporting screen tests in `reporting-screen.test.tsx` stub
+  `fetch` instead.
+
+## Original design
 
 Today every mutation in the report-writer designer — token drop, filter edit, chart toggle,
 formula keystroke — calls `clearWriterPreview`, which blanks the rendered preview until the

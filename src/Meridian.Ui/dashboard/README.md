@@ -2691,7 +2691,12 @@ names for `Group` principals and usernames for `User` principals (when the calle
 accounts) on first focus, while still accepting typed IDs. Source fields come from the shared report-writer field catalog when present, so the browser
 palette can include source-backed portfolio, analytics, consolidation, and generated contribution
 fields even when a saved grid has not already placed those fields. The designer also renders a live layout summary from the current draft zones so operators
-can confirm dimension, metric, formula, filter, and Top-N posture before preview or save. Operators can save the current grid layout as a
+can confirm dimension, metric, formula, filter, and Top-N posture before preview or save. Auto preview is on by default for each grid:
+after an edit the last preview stays visible but dimmed, and the grid re-renders through the same render endpoint 600 ms after the
+last change, cancelling any older in-flight render. A polite live-region badge reports the preview state; failures show a quiet
+error row with Retry (held back while the operator is typing a formula or custom dataset), and datasets over 200 rows pause auto
+preview until the operator previews manually. The per-grid "Auto preview" checkbox turns it off; the Preview button keeps the global
+status panel. Operators can save the current grid layout as a
 governed template draft through
 `/api/fund-structure/reporting/templates/drafts`, including company-wide, restricted group/company,
 or user-locked access policy metadata. Placed row, column, metric, and formula tokens can be

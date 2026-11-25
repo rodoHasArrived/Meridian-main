@@ -1,4 +1,4 @@
-import { type DragEvent, type ReactNode, useState } from "react";
+import { type DragEvent, type ReactNode, useEffect, useRef, useState } from "react";
 import { BarChart2, ChevronLeft, ChevronRight, Eye, Filter, GripVertical, Palette, PencilLine, Plus, RotateCcw, Trash2, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,13 @@ import { createReportTemplateDraft, renderReportTemplate } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import { presentReportingIdentifier } from "@/screens/reporting-screen.view-model";
+import {
+  isAbortError,
+  REPORT_WRITER_AUTO_PREVIEW_MAX_DATASET_ROWS,
+  useReportWriterAutoPreview,
+  type ReportWriterPreviewPhase,
+  type ReportWriterQuietPreviewError
+} from "@/screens/reporting-screen.report-writer-auto-preview";
 import type { ReportingWriterGridRow, ReportingWriterToken } from "@/screens/reporting-screen.view-model";
 import type { ReportingCommandStatus } from "@/screens/reporting-screen.shared-components";
 import type {
@@ -167,12 +174,15 @@ interface UseReportingReportWriterOptions {
     chartDraft?: ReportWriterChartDraft | null,
     formatRules?: ReportWriterFormatRuleDraft[] | null
   ) => RenderReportTemplateRequest;
+  /** Auto-preview debounce override, for tests. */
+  autoPreviewDebounceMs?: number;
 }
 
 export function useReportingReportWriter({
   datasetSources,
   buildDraftRequest,
-  buildRenderRequest
+  buildRenderRequest,
+  autoPreviewDebounceMs
 }: UseReportingReportWriterOptions) {
   const [writerDrafts, setWriterDrafts] = useState<Record<string, ReportWriterDraftState>>({});
   const [writerDraftSettings, setWriterDraftSettings] = useState<Record<string, Partial<ReportWriterDraftSettings>>>({});
@@ -186,6 +196,93 @@ export function useReportingReportWriter({
   const [writerFormatRuleDrafts, setWriterFormatRuleDrafts] = useState<Record<string, ReportWriterFormatRuleDraft[]>>({});
   const savingWriterDraftId = writerDraftStatus?.state === "running" ? writerDraftStatus.id : null;
   const previewingWriterDraftId = writerPreviewStatus?.state === "running" ? writerPreviewStatus.id : null;
+  const [writerPreviewPhaseByGridId, setWriterPreviewPhaseByGridId] = useState<Record<string, ReportWriterPreviewPhase>>({});
+  const [writerAutoPreviewDisabledByGridId, setWriterAutoPreviewDisabledByGridId] = useState<Record<string, boolean>>({});
+  const [writerQuietPreviewErrorByGridId, setWriterQuietPreviewErrorByGridId] = useState<Record<string, ReportWriterQuietPreviewError>>({});
+  const [writerEditingGridId, setWriterEditingGridId] = useState<string | null>(null);
+
+  // Timers fire after React has re-rendered with the edit applied, so they must call the latest
+  // render function (which closes over the latest drafts), not the one captured at edit time.
+  const writerGridsByIdRef = useRef(new Map<string, ReportingWriterGridRow>());
+  const latestWriterAutoPreviewRef = useRef<{
+    render: (grid: ReportingWriterGridRow, signal: AbortSignal) => Promise<void>;
+    canAutoRender: (grid: ReportingWriterGridRow) => boolean;
+  } | null>(null);
+  const writerAutoPreview = useReportWriterAutoPreview({
+    debounceMs: autoPreviewDebounceMs,
+    canAutoRender: (gridId) => {
+      const grid = writerGridsByIdRef.current.get(gridId);
+      return Boolean(grid && latestWriterAutoPreviewRef.current?.canAutoRender(grid));
+    },
+    render: async (gridId, signal) => {
+      const grid = writerGridsByIdRef.current.get(gridId);
+      if (grid && latestWriterAutoPreviewRef.current) {
+        await latestWriterAutoPreviewRef.current.render(grid, signal);
+      }
+    }
+  });
+
+  /**
+   * An edit makes the current preview out of date. The last preview stays on screen (dimmed) and,
+   * when auto-preview is on, a debounced re-render is scheduled.
+   */
+  function markWriterPreviewStale(grid: ReportingWriterGridRow) {
+    writerGridsByIdRef.current.set(grid.id, grid);
+    setWriterPreviewPhaseByGridId((current) => ({ ...current, [grid.id]: "stale" }));
+    if (isWriterAutoPreviewEnabled(grid)) {
+      writerAutoPreview.schedule(grid.id);
+    }
+  }
+
+  function getWriterPreviewPhase(grid: ReportingWriterGridRow): ReportWriterPreviewPhase {
+    return writerPreviewPhaseByGridId[grid.id] ?? (writerPreviewByGridId[grid.id] ? "ready" : "idle");
+  }
+
+  function isWriterAutoPreviewEnabled(grid: ReportingWriterGridRow): boolean {
+    return !writerAutoPreviewDisabledByGridId[grid.id];
+  }
+
+  function setWriterAutoPreviewEnabled(grid: ReportingWriterGridRow, enabled: boolean) {
+    writerGridsByIdRef.current.set(grid.id, grid);
+    setWriterAutoPreviewDisabledByGridId((current) => enabled
+      ? removeRecordEntry(current, grid.id)
+      : { ...current, [grid.id]: true });
+    if (!enabled) {
+      writerAutoPreview.cancel(grid.id);
+      setWriterPreviewPhaseByGridId((current) => current[grid.id] === "rendering"
+        ? { ...current, [grid.id]: "stale" }
+        : current);
+    } else if (getWriterPreviewPhase(grid) === "stale") {
+      writerAutoPreview.schedule(grid.id);
+    }
+  }
+
+  /** Auto-preview errors stay hidden while the operator is still typing in the grid. */
+  function getWriterQuietPreviewError(grid: ReportingWriterGridRow): ReportWriterQuietPreviewError | null {
+    return writerEditingGridId === grid.id ? null : writerQuietPreviewErrorByGridId[grid.id] ?? null;
+  }
+
+  function setWriterEditSession(gridId: string | null) {
+    setWriterEditingGridId(gridId);
+  }
+
+  function retryWriterAutoPreview(grid: ReportingWriterGridRow) {
+    writerGridsByIdRef.current.set(grid.id, grid);
+    writerAutoPreview.runNow(grid.id);
+  }
+
+  function countWriterPreviewDatasetRows(grid: ReportingWriterGridRow): number {
+    const settings = getWriterDraftSettings(grid);
+    if (settings.previewDataset === "customRows") {
+      return parseReportWriterCustomDatasetRows(writerCustomDatasetText[grid.id] ?? "").rows.length;
+    }
+
+    return resolveReportWriterDatasetSource(datasetSources, settings.previewDataset)?.rows.length ?? 0;
+  }
+
+  function isWriterAutoPreviewPausedForSize(grid: ReportingWriterGridRow): boolean {
+    return countWriterPreviewDatasetRows(grid) > REPORT_WRITER_AUTO_PREVIEW_MAX_DATASET_ROWS;
+  }
 
   function getWriterZoneTokens(grid: ReportingWriterGridRow, zone: ReportWriterDropZone): ReportingWriterToken[] {
     return writerDrafts[grid.id]?.[zone] ?? grid[zone];
@@ -238,7 +335,7 @@ export function useReportingReportWriter({
         [grid.id]: nextSettings
       };
     });
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    markWriterPreviewStale(grid);
   }
 
   function updateWriterCustomFormula(
@@ -253,7 +350,7 @@ export function useReportingReportWriter({
         [field]: value
       }
     }));
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    markWriterPreviewStale(grid);
   }
 
   function updateWriterCustomDataset(grid: ReportingWriterGridRow, value: string) {
@@ -261,7 +358,7 @@ export function useReportingReportWriter({
       ...current,
       [grid.id]: value
     }));
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    markWriterPreviewStale(grid);
   }
 
   function updateWriterChartDraft(grid: ReportingWriterGridRow, field: ReportWriterChartDraftField | "enabled", value: string) {
@@ -274,7 +371,7 @@ export function useReportingReportWriter({
           : { ...existing, [field]: value }
       };
     });
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    markWriterPreviewStale(grid);
   }
 
   function updateWriterExtraFilters(
@@ -288,7 +385,7 @@ export function useReportingReportWriter({
         extraFilters: update(current[grid.id]?.extraFilters ?? buildDefaultWriterDraftSettings(grid).extraFilters)
       }
     }));
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    markWriterPreviewStale(grid);
   }
 
   function addWriterFilter(grid: ReportingWriterGridRow) {
@@ -313,7 +410,7 @@ export function useReportingReportWriter({
       ...current,
       [grid.id]: [...(current[grid.id] ?? []), { id, column: "", operator: "GreaterThan" as ReportWriterFilterOperator, value: "", style: "Warning" as ReportWriterCellStyle }]
     }));
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    markWriterPreviewStale(grid);
   }
 
   function removeWriterFormatRule(grid: ReportingWriterGridRow, ruleId: string) {
@@ -321,7 +418,7 @@ export function useReportingReportWriter({
       ...current,
       [grid.id]: (current[grid.id] ?? []).filter((rule) => rule.id !== ruleId)
     }));
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    markWriterPreviewStale(grid);
   }
 
   function updateWriterFormatRule(grid: ReportingWriterGridRow, ruleId: string, field: keyof Omit<ReportWriterFormatRuleDraft, "id">, value: string) {
@@ -331,7 +428,7 @@ export function useReportingReportWriter({
         rule.id === ruleId ? { ...rule, [field]: value } : rule
       )
     }));
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    markWriterPreviewStale(grid);
   }
 
   function handleWriterTokenDragStart(
@@ -383,7 +480,7 @@ export function useReportingReportWriter({
         [grid.id]: nextGridDraft
       };
     });
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    markWriterPreviewStale(grid);
   }
 
   function removeWriterZoneToken(grid: ReportingWriterGridRow, zone: ReportWriterDropZone, tokenId: string) {
@@ -401,7 +498,7 @@ export function useReportingReportWriter({
         }
       };
     });
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    markWriterPreviewStale(grid);
   }
 
   function moveWriterZoneToken(
@@ -430,12 +527,15 @@ export function useReportingReportWriter({
         }
       };
     });
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    markWriterPreviewStale(grid);
   }
 
   function resetWriterGrid(grid: ReportingWriterGridRow) {
+    writerAutoPreview.cancel(grid.id);
     setWriterDrafts((current) => removeRecordEntry(current, grid.id));
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id)); // reset clears outright
+    setWriterPreviewPhaseByGridId((current) => removeRecordEntry(current, grid.id));
+    setWriterQuietPreviewErrorByGridId((current) => removeRecordEntry(current, grid.id));
     setWriterCustomFormulas((current) => removeRecordEntry(current, grid.id));
     setWriterDraftSettings((current) => removeRecordEntry(current, grid.id));
     setWriterCustomDatasetText((current) => removeRecordEntry(current, grid.id));
@@ -493,23 +593,32 @@ export function useReportingReportWriter({
     }
   }
 
-  async function previewWriterGrid(grid: ReportingWriterGridRow) {
-    if (previewingWriterDraftId) {
-      return;
-    }
-
+  async function executeWriterPreviewRender(
+    grid: ReportingWriterGridRow,
+    { signal, source }: { signal?: AbortSignal; source: "manual" | "auto" }
+  ) {
+    const isManual = source === "manual";
     const settings = getWriterDraftSettings(grid);
     const customDataset = settings.previewDataset === "customRows"
       ? parseReportWriterCustomDatasetRows(writerCustomDatasetText[grid.id] ?? "")
       : null;
     if (customDataset?.error) {
-      setWriterPreviewStatus({
-        id: grid.id,
-        label: "Preview report-writer grid",
-        state: "error",
-        message: `${grid.title} custom dataset is invalid.`,
-        details: [customDataset.error]
-      });
+      const datasetError = customDataset.error;
+      setWriterPreviewPhaseByGridId((current) => ({ ...current, [grid.id]: "error" }));
+      if (isManual) {
+        setWriterPreviewStatus({
+          id: grid.id,
+          label: "Preview report-writer grid",
+          state: "error",
+          message: `${grid.title} custom dataset is invalid.`,
+          details: [datasetError]
+        });
+      } else {
+        setWriterQuietPreviewErrorByGridId((current) => ({
+          ...current,
+          [grid.id]: { summary: `${grid.title} custom dataset is invalid.`, details: [datasetError] }
+        }));
+      }
       return;
     }
 
@@ -522,16 +631,23 @@ export function useReportingReportWriter({
       customDataset?.rows ?? retainedDatasetRows,
       getWriterChartDraft(grid),
       getWriterFormatRules(grid));
-    setWriterPreviewStatus({
-      id: grid.id,
-      label: "Preview report-writer grid",
-      state: "running",
-      message: `${grid.title} preview is rendering.`,
-      details: []
-    });
+    setWriterPreviewPhaseByGridId((current) => ({ ...current, [grid.id]: "rendering" }));
+    if (isManual) {
+      setWriterPreviewStatus({
+        id: grid.id,
+        label: "Preview report-writer grid",
+        state: "running",
+        message: `${grid.title} preview is rendering.`,
+        details: []
+      });
+    }
 
     try {
-      const result = await renderReportTemplate(request);
+      const result = await renderReportTemplate(request, { signal });
+      if (signal?.aborted) {
+        return;
+      }
+
       const renderedGrid = result.grids?.find((item) => item.gridId === grid.gridId) ?? result.grids?.[0] ?? null;
       const previousPreview = writerPreviewByGridId[grid.id] ?? null;
       setWriterPreviewByGridId((current) => ({
@@ -542,35 +658,67 @@ export function useReportingReportWriter({
         ...current,
         [grid.id]: previousPreview
       }));
-      setWriterPreviewStatus({
-        id: grid.id,
-        label: "Preview report-writer grid",
-        state: "success",
-        message: `${grid.title} preview rendered.`,
-        details: [
-          `Template: ${result.templateId.name}@v${result.templateId.version}`,
-          `Rows: ${renderedGrid?.rows.length ?? 0}`,
-          customDataset
-            ? `Dataset rows: ${customDataset.rows.length}`
-            : retainedDatasetRows
-              ? `Dataset rows: ${retainedDatasetRows.length}`
-              : `Dataset profile: ${settings.previewDataset}`,
-          result.missingRequiredParameters.length > 0
-            ? `Missing parameters: ${result.missingRequiredParameters.join(", ")}`
-            : "Required parameters: satisfied",
-          ...(result.warnings ?? [])
-        ]
-      });
+      setWriterPreviewPhaseByGridId((current) => ({ ...current, [grid.id]: "ready" }));
+      setWriterQuietPreviewErrorByGridId((current) => removeRecordEntry(current, grid.id));
+      if (isManual) {
+        setWriterPreviewStatus({
+          id: grid.id,
+          label: "Preview report-writer grid",
+          state: "success",
+          message: `${grid.title} preview rendered.`,
+          details: [
+            `Template: ${result.templateId.name}@v${result.templateId.version}`,
+            `Rows: ${renderedGrid?.rows.length ?? 0}`,
+            customDataset
+              ? `Dataset rows: ${customDataset.rows.length}`
+              : retainedDatasetRows
+                ? `Dataset rows: ${retainedDatasetRows.length}`
+                : `Dataset profile: ${settings.previewDataset}`,
+            result.missingRequiredParameters.length > 0
+              ? `Missing parameters: ${result.missingRequiredParameters.join(", ")}`
+              : "Required parameters: satisfied",
+            ...(result.warnings ?? [])
+          ]
+        });
+      }
     } catch (error) {
+      if (signal?.aborted || isAbortError(error)) {
+        return;
+      }
+
       const display = describeApiError(error, `${grid.title} preview failed.`);
-      setWriterPreviewStatus({
-        id: grid.id,
-        label: "Preview report-writer grid",
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
+      setWriterPreviewPhaseByGridId((current) => ({ ...current, [grid.id]: "error" }));
+      if (isManual) {
+        setWriterPreviewStatus({
+          id: grid.id,
+          label: "Preview report-writer grid",
+          state: "error",
+          message: display.summary,
+          details: display.details
+        });
+      } else {
+        setWriterQuietPreviewErrorByGridId((current) => ({
+          ...current,
+          [grid.id]: { summary: display.summary, details: display.details }
+        }));
+      }
     }
+  }
+
+  useEffect(() => {
+    latestWriterAutoPreviewRef.current = {
+      render: (grid, signal) => executeWriterPreviewRender(grid, { signal, source: "auto" }),
+      canAutoRender: (grid) => isWriterAutoPreviewEnabled(grid) && !isWriterAutoPreviewPausedForSize(grid)
+    };
+  });
+
+  async function previewWriterGrid(grid: ReportingWriterGridRow) {
+    if (previewingWriterDraftId) {
+      return;
+    }
+
+    writerAutoPreview.cancel(grid.id);
+    await executeWriterPreviewRender(grid, { source: "manual" });
   }
 
   return {
@@ -602,7 +750,14 @@ export function useReportingReportWriter({
     moveWriterZoneToken,
     resetWriterGrid,
     saveWriterGridDraft,
-    previewWriterGrid
+    previewWriterGrid,
+    getWriterPreviewPhase,
+    isWriterAutoPreviewEnabled,
+    setWriterAutoPreviewEnabled,
+    isWriterAutoPreviewPausedForSize,
+    getWriterQuietPreviewError,
+    setWriterEditSession,
+    retryWriterAutoPreview
   };
 }
 
@@ -934,6 +1089,42 @@ interface ReportWriterDesignerGridProps {
   onFormatRuleChange: (grid: ReportingWriterGridRow, ruleId: string, field: keyof Omit<ReportWriterFormatRuleDraft, "id">, value: string) => void;
   onPreview: (grid: ReportingWriterGridRow) => void | Promise<void>;
   onSave: (grid: ReportingWriterGridRow) => void | Promise<void>;
+  /** Auto-preview state and handlers; omit to render the designer without auto-preview controls. */
+  autoPreview?: ReportWriterAutoPreviewView;
+}
+
+export interface ReportWriterAutoPreviewView {
+  phase: ReportWriterPreviewPhase;
+  enabled: boolean;
+  pausedForSize: boolean;
+  quietError: ReportWriterQuietPreviewError | null;
+  onToggle: (enabled: boolean) => void;
+  onRetry: () => void;
+  /** True while the operator is typing in a formula or dataset field; errors wait for blur. */
+  onEditSessionChange: (editing: boolean) => void;
+}
+
+function describeReportWriterAutoPreviewStatus(
+  autoPreview: ReportWriterAutoPreviewView
+): { label: string; variant: "outline" | "warning" | "danger" } | null {
+  if (autoPreview.enabled && autoPreview.pausedForSize && autoPreview.phase === "stale") {
+    return { label: "Auto preview paused — large dataset", variant: "warning" };
+  }
+
+  switch (autoPreview.phase) {
+    case "rendering":
+      return { label: "Updating preview…", variant: "outline" };
+    case "stale":
+      return autoPreview.enabled
+        ? { label: "Preview out of date — updating shortly", variant: "outline" }
+        : { label: "Preview out of date", variant: "warning" };
+    case "error":
+      return autoPreview.quietError ? { label: "Preview failed", variant: "danger" } : null;
+    case "ready":
+      return { label: "Preview up to date", variant: "outline" };
+    default:
+      return null;
+  }
 }
 
 export function ReportWriterDesignerGrid({
@@ -965,8 +1156,17 @@ export function ReportWriterDesignerGrid({
   onFormatRuleRemove,
   onFormatRuleChange,
   onPreview,
-  onSave
+  onSave,
+  autoPreview
 }: ReportWriterDesignerGridProps) {
+  const autoPreviewStatus = autoPreview ? describeReportWriterAutoPreviewStatus(autoPreview) : null;
+  const previewDimmed = autoPreview?.phase === "stale" || autoPreview?.phase === "rendering";
+  const editSessionHandlers = autoPreview
+    ? {
+        onFocus: () => autoPreview.onEditSessionChange(true),
+        onBlur: () => autoPreview.onEditSessionChange(false)
+      }
+    : {};
   const accessPrincipalKindLocked = settings.accessMode !== "Restricted";
   const accessPrincipalIdDisabled = settings.accessMode === "CompanyWide";
   const accessPrincipalIdLabel = settings.accessMode === "Private" ? "Owner ID" : "Principal ID";
@@ -1131,6 +1331,7 @@ export function ReportWriterDesignerGrid({
           <TextArea
             value={customDatasetText}
             onChange={(event) => onCustomDatasetChange(grid, event.target.value)}
+            {...editSessionHandlers}
             aria-label={`${grid.title} custom dataset rows`}
             className="min-h-28 font-mono text-xs"
             spellCheck={false}
@@ -1312,6 +1513,7 @@ export function ReportWriterDesignerGrid({
             <Input
               value={customFormula.expression}
               onChange={(event) => onCustomFormulaChange(grid, "expression", event.target.value)}
+              {...editSessionHandlers}
               aria-label={`${grid.title} custom formula expression`}
               className="font-mono"
               placeholder="{pnl} / {marketValue} * 100"
@@ -1465,7 +1667,20 @@ export function ReportWriterDesignerGrid({
           </div>
         ) : null}
       </div>
-      <div className="mt-3 flex flex-wrap justify-end gap-2">
+      <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
+        {autoPreview ? (
+          <>
+            <div role="status" aria-live="polite" aria-label={`${grid.title} preview status`} className="mr-auto min-h-6">
+              {autoPreviewStatus ? <Badge variant={autoPreviewStatus.variant}>{autoPreviewStatus.label}</Badge> : null}
+            </div>
+            <Checkbox
+              checked={autoPreview.enabled}
+              onCheckedChange={(checked) => autoPreview.onToggle(checked === true)}
+              label="Auto preview"
+              aria-label={`Auto preview ${grid.title} report-writer grid`}
+            />
+          </>
+        ) : null}
         <Button
           type="button"
           size="sm"
@@ -1492,14 +1707,48 @@ export function ReportWriterDesignerGrid({
           Save draft
         </Button>
       </div>
+      {autoPreview?.quietError ? (
+        <div
+          className="mt-3 flex flex-wrap items-start justify-between gap-2 rounded-md border border-destructive/40 bg-destructive/5 px-2.5 py-2 text-xs"
+          aria-label={`${grid.title} auto preview error`}
+        >
+          <div className="min-w-0">
+            <p className="font-medium text-foreground">{autoPreview.quietError.summary}</p>
+            {autoPreview.quietError.details.map((detail) => (
+              <p key={detail} className="mt-0.5 text-muted-foreground">{detail}</p>
+            ))}
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            aria-label={`Retry ${grid.title} auto preview`}
+            onClick={autoPreview.onRetry}
+          >
+            <RotateCcw className="h-4 w-4" aria-hidden="true" />
+            Retry
+          </Button>
+        </div>
+      ) : null}
       {preview ? (
-        <ReportWriterPreviewTable grid={grid} preview={preview} previousPreview={previousPreview} />
+        <ReportWriterPreviewTable grid={grid} preview={preview} previousPreview={previousPreview} dimmed={previewDimmed} />
       ) : null}
     </div>
   );
 }
 
-function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: ReportingWriterGridRow; preview: ReportWriterGridRender; previousPreview?: ReportWriterGridRender | null }) {
+function ReportWriterPreviewTable({
+  grid,
+  preview,
+  previousPreview,
+  dimmed = false
+}: {
+  grid: ReportingWriterGridRow;
+  preview: ReportWriterGridRender;
+  previousPreview?: ReportWriterGridRender | null;
+  /** The preview no longer matches the designer; it stays visible but de-emphasised. */
+  dimmed?: boolean;
+}) {
   const rows = preview.rows.slice(0, 5);
   const lineage = preview.lineage;
   const dataDictionary = preview.dataDictionary ?? [];
@@ -1509,7 +1758,11 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
     ? comparison.addedRowCount + comparison.removedRowCount + comparison.changedRowCount
     : 0;
   return (
-    <div className="mt-3 rounded-md border border-border/70 bg-background/35 px-2.5 py-2" aria-label={`${grid.title} live preview`}>
+    <div
+      className={cn("mt-3 rounded-md border border-border/70 bg-background/35 px-2.5 py-2 transition-opacity", dimmed && "opacity-60")}
+      aria-label={`${grid.title} live preview`}
+      aria-busy={dimmed || undefined}
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <div className="eyebrow-label">Live preview</div>
