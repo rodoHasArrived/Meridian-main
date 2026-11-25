@@ -75,7 +75,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 | [Score Reason Taxonomy](score-reason-taxonomy.md) | pick a canonical reason code when a scoring kernel emits a "why" artifact |
 | [Synthetic Provider Test Harness](synthetic-provider-test-harness.md) | write deterministic provider-family resilience tests with scripted scenarios |
 | [Refactor Map](refactor-map.md) | understand the current dependency-safe refactor opportunities |
-| [Tooling & Workflow Backlog](../../archive/docs/plans/tooling-workflow-backlog.md) | see how the contributor-workflow and automation cleanup themes were delivered (completed and archived; closure record inside) |
+| [Tooling & Workflow Backlog](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/tooling-workflow-backlog.md) | see how the contributor-workflow and automation cleanup themes were delivered (completed and archived; closure record inside) |
 
 ### Desktop And WPF Development
 

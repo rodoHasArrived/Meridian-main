@@ -2,16 +2,15 @@
 # /// script
 # requires-python = ">=3.10"
 # ///
-"""AI Documentation Maintenance — freshness, drift, and archive automation.
+"""AI Documentation Maintenance — freshness, drift, and cross-reference checks.
 
 Keeps AI instruction files, skills, and project documentation current as the
-codebase evolves. Detects stale content, validates cross-references, archives
-deprecated docs, and generates sync reports.
+codebase evolves. Detects stale content, validates cross-references,
+and generates sync reports.
 
 Commands:
     freshness       Check staleness of all AI-related docs.
     drift           Detect when AI docs diverge from code reality.
-    archive-stale   Move deprecated/stale docs to docs/archived/.
     validate-refs   Validate cross-references between AI docs.
     sync-report     Generate a sync report showing what needs updating.
     full            Run all checks and produce a combined report.
@@ -24,8 +23,6 @@ Exit codes:
 Examples:
     python3 build/scripts/docs/ai-docs-maintenance.py freshness
     python3 build/scripts/docs/ai-docs-maintenance.py drift --summary
-    python3 build/scripts/docs/ai-docs-maintenance.py archive-stale --dry-run
-    python3 build/scripts/docs/ai-docs-maintenance.py archive-stale --execute
     python3 build/scripts/docs/ai-docs-maintenance.py sync-report --output /tmp/sync.md
     python3 build/scripts/docs/ai-docs-maintenance.py full --json-output /tmp/report.json
 """
@@ -36,7 +33,6 @@ import argparse
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 from dataclasses import asdict, dataclass, field
@@ -97,7 +93,6 @@ AI_DOC_PATHS, INSTRUCTION_FILES, SKILL_RESOURCE_PATHS = _build_path_lists(REPO_R
 # Staleness thresholds (days)
 STALE_WARNING_DAYS = 60
 STALE_CRITICAL_DAYS = 120
-ARCHIVE_CANDIDATE_DAYS = 180
 
 # Patterns for detecting timestamps in docs.
 # Matches both italic footer format  →  *Last Updated: YYYY-MM-DD*
@@ -155,7 +150,6 @@ class Report:
     freshness: list[FreshnessEntry] = field(default_factory=list)
     drift: list[DriftEntry] = field(default_factory=list)
     findings: list[Finding] = field(default_factory=list)
-    archived: list[str] = field(default_factory=list)
     summary: dict[str, int] = field(default_factory=dict)
 
 
@@ -281,68 +275,6 @@ def _validate_markdown_links(path: Path) -> list[Finding]:
                     fix_hint=f"Fix or remove the link on line {i}",
                     line=i,
                 ))
-    return findings
-
-
-def _check_archive_candidates(docs_dir: Path) -> list[Finding]:  # noqa: C901
-    """Find docs that should be moved to archived/ based on age and content."""
-    findings: list[Finding] = []
-    now = datetime.now(timezone.utc)
-    archived_dir = docs_dir / "archived"
-
-    # Patterns that suggest deprecated content
-    deprecated_patterns = [
-        re.compile(r'\b(deprecated|obsolete|removed|legacy)\b', re.IGNORECASE),
-        re.compile(r'\b(UWP|uwp)\b'),  # UWP was removed
-    ]
-
-    for md_file in docs_dir.rglob("*.md"):
-        # Skip files already in archived/
-        if "archived" in md_file.parts:
-            continue
-        # Skip index files
-        if md_file.name in ("README.md", "INDEX.md"):
-            continue
-
-        try:
-            content = md_file.read_text(encoding="utf-8")
-        except OSError:
-            continue
-
-        # Check for deprecated content markers
-        deprecation_hits = 0
-        for pattern in deprecated_patterns:
-            if pattern.search(content):
-                deprecation_hits += 1
-
-        # Check git age
-        git_date = _git_last_modified(md_file)
-        if git_date:
-            age_days = (now - git_date).days
-        else:
-            age_days = 0
-
-        # Archive candidates: old + deprecated markers
-        if age_days > ARCHIVE_CANDIDATE_DAYS and deprecation_hits >= 2:
-            findings.append(Finding(
-                file=_relative(md_file),
-                category="archive-candidate",
-                severity="info",
-                message=f"Doc is {age_days} days old with {deprecation_hits} deprecation markers",
-                fix_hint=f"Consider moving to {_relative(archived_dir)}/",
-            ))
-
-        # Check for stub files (< 3 meaningful lines)
-        lines = [ln for ln in content.splitlines() if ln.strip() and not ln.startswith("#")]
-        if len(lines) < 3 and age_days > 90:
-            findings.append(Finding(
-                file=_relative(md_file),
-                category="stub-doc",
-                severity="info",
-                message=f"Stub document with {len(lines)} content lines, {age_days} days old",
-                fix_hint="Either expand with content or archive",
-            ))
-
     return findings
 
 
@@ -539,48 +471,12 @@ def cmd_validate_refs(report: Report) -> None:
             report.findings.extend(_validate_markdown_links(path))
 
 
-def cmd_archive_stale(report: Report, dry_run: bool = True) -> None:
-    """Find and optionally move deprecated docs to archived/."""
-    docs_dir = REPO_ROOT / "docs"
-    archived_dir = docs_dir / "archived"
-
-    archive_findings = _check_archive_candidates(docs_dir)
-    report.findings.extend(archive_findings)
-
-    # Also check for docs already marked as deprecated in evaluations/plans
-    for sub in ["evaluations", "plans"]:
-        sub_dir = docs_dir / sub
-        if not sub_dir.exists():
-            continue
-        for md_file in sub_dir.glob("*.md"):
-            try:
-                content = md_file.read_text(encoding="utf-8")
-            except OSError:
-                continue
-            # Check for explicit "Status: Archived/Completed/Superseded"
-            if re.search(r'Status:\s*(Archived|Completed|Superseded)', content, re.IGNORECASE):
-                rel = _relative(md_file)
-                if not dry_run:
-                    archived_dir.mkdir(parents=True, exist_ok=True)
-                    dest = archived_dir / md_file.name
-                    if not dest.exists():
-                        shutil.move(str(md_file), str(dest))
-                        report.archived.append(f"{rel} -> {_relative(dest)}")
-                else:
-                    report.findings.append(Finding(
-                        file=rel, category="archive-candidate", severity="info",
-                        message="Document marked as Archived/Completed/Superseded",
-                        fix_hint=f"Move to {_relative(archived_dir)}/ (use --execute to auto-move)",
-                    ))
-
-
 def cmd_sync_report(report: Report, output: Path | None = None) -> None:  # noqa: C901
     """Generate a comprehensive sync report as markdown."""
     # Run all sub-checks
     cmd_freshness(report)
     cmd_drift(report)
     cmd_validate_refs(report)
-    cmd_archive_stale(report)
 
     # Build markdown
     lines: list[str] = [
@@ -660,29 +556,18 @@ def cmd_sync_report(report: Report, output: Path | None = None) -> None:  # noqa
 
 def main() -> int:  # noqa: C901
     parser = argparse.ArgumentParser(
-        description="AI Documentation Maintenance — freshness, drift, and archive automation",
+        description="AI Documentation Maintenance — freshness, drift, and cross-reference checks",
         epilog=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "command",
-        choices=["freshness", "drift", "archive-stale", "validate-refs", "sync-report", "full"],
+        choices=["freshness", "drift", "validate-refs", "sync-report", "full"],
         help="Maintenance command to run",
     )
     parser.add_argument("--root", "-r", type=Path, help="Override repository root")
     parser.add_argument("--output", "-o", type=Path, help="Write markdown output to file")
     parser.add_argument("--json-output", "-j", type=Path, help="Write JSON output to file")
-    mode_group = parser.add_mutually_exclusive_group()
-    mode_group.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Preview changes without modifying files (default when neither flag is given)",
-    )
-    mode_group.add_argument(
-        "--execute",
-        action="store_true",
-        help="Actually move/archive files; without this flag the command runs in dry-run mode",
-    )
     parser.add_argument("--summary", "-s", action="store_true", help="Print summary to stdout")
 
     args = parser.parse_args()
@@ -693,7 +578,6 @@ def main() -> int:  # noqa: C901
         AI_DOC_PATHS, INSTRUCTION_FILES, SKILL_RESOURCE_PATHS = _build_path_lists(REPO_ROOT)
 
     report = Report(command=args.command)
-    dry_run = not args.execute
 
     if args.command == "freshness":
         cmd_freshness(report)
@@ -701,15 +585,12 @@ def main() -> int:  # noqa: C901
         cmd_drift(report)
     elif args.command == "validate-refs":
         cmd_validate_refs(report)
-    elif args.command == "archive-stale":
-        cmd_archive_stale(report, dry_run=dry_run)
     elif args.command == "sync-report":
         cmd_sync_report(report, output=args.output)
     elif args.command == "full":
         cmd_freshness(report)
         cmd_drift(report)
         cmd_validate_refs(report)
-        cmd_archive_stale(report, dry_run=dry_run)
 
     # Compute summary
     report.summary = {
@@ -718,7 +599,6 @@ def main() -> int:  # noqa: C901
         "info": sum(1 for f in report.findings if f.severity == "info"),
         "drift_items": len(report.drift),
         "stale_docs": sum(1 for f in report.freshness if f.status.startswith("stale")),
-        "archived": len(report.archived),
     }
 
     # JSON output
@@ -730,7 +610,6 @@ def main() -> int:  # noqa: C901
             "freshness": [asdict(e) for e in report.freshness],
             "drift": [asdict(e) for e in report.drift],
             "findings": [asdict(f) for f in report.findings],
-            "archived": report.archived,
         }
         args.json_output.parent.mkdir(parents=True, exist_ok=True)
         args.json_output.write_text(json.dumps(json_data, indent=2), encoding="utf-8")
@@ -744,7 +623,6 @@ def main() -> int:  # noqa: C901
             "freshness": [asdict(e) for e in report.freshness] if report.freshness else [],
             "drift": [asdict(e) for e in report.drift] if report.drift else [],
             "findings": [asdict(f) for f in report.findings] if report.findings else [],
-            "archived": report.archived,
         }
         print(json.dumps(json_data, indent=2))
 

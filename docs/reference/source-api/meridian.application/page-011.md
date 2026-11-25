@@ -6,42 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## NullSecurityValidationSnapshotStore
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Validation.NullSecurityValidationSnapshotStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:85](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L85).
-
-Returns validation snapshot results without retaining them in durable storage.
-
-```csharp
-public sealed class NullSecurityValidationSnapshotStore : ISecurityValidationSnapshotStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;SecurityValidationSnapshotDto&gt; RecordAsync(SecurityValidationReportDto report, SecurityValidationSnapshotRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:87](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L87) |  |
-
-## SecurityMasterOptionsValidator
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Validation.SecurityMasterOptionsValidator</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/Validation/SecurityMasterOptionsValidator.cs:10](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityMasterOptionsValidator.cs#L10).
-
-Validates SecurityMasterOptions at startup so misconfigured connection strings or out-of-range tuning parameters are caught early.
-
-```csharp
-public sealed class SecurityMasterOptionsValidator : IValidateOptions<SecurityMasterOptions>
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ValidateOptionsResult Validate(string? name, SecurityMasterOptions options);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityMasterOptionsValidator.cs:12](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityMasterOptionsValidator.cs#L12) |  |
-
 ## SecurityValidationContext
 
 Qualified name: <code>Meridian.Application.SecurityMaster.Validation.SecurityValidationContext</code>. Kind: `record`.
@@ -262,7 +226,7 @@ public sealed record ConfigPresetInfo(ConfigPreset Preset, string Name, string D
 
 Qualified name: <code>Meridian.Application.Services.ConfigurationPresets</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:992](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L992).
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:990](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L990).
 
 Role-based configuration presets that configure ~15 settings at once. Reduces time-to-value from 30+ minutes of manual config to a single --preset flag.
 
@@ -274,9 +238,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IReadOnlyList&lt;string&gt; AvailablePresets =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:997](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L997) | Available preset names. |
-| <code>public static IReadOnlyDictionary&lt;string, string&gt; PresetDescriptions =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1005](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1005) | Gets the preset description for display. |
-| <code>public static AppConfig ApplyPreset(string presetName, AppConfig config);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1016](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1016) | Applies a named preset to the given config, returning a new config with preset values. |
+| <code>public static IReadOnlyList&lt;string&gt; AvailablePresets =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:995](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L995) | Available preset names. |
+| <code>public static IReadOnlyDictionary&lt;string, string&gt; PresetDescriptions =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1003](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1003) | Gets the preset description for display. |
+| <code>public static AppConfig ApplyPreset(string presetName, AppConfig config);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1014](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1014) | Applies a named preset to the given config, returning a new config with preset values. |
 
 ## ConfigurationService
 
@@ -985,3 +949,47 @@ Declared public members:
 | <code>public StoredProviderCredentialResolver(IScopedProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, ProviderCredentialScope scope) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:45](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L45) | Binds runtime credential resolution to an already authorized connection scope. The caller must derive this scope from trusted ownership context. Missing scoped records never fall back to provider-wide credentials, configuration or environment. |
 | <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:54](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L54) |  |
 | <code>public async ValueTask&lt;IPreparedProviderCredentials&gt; PrepareAsync(IReadOnlyCollection&lt;Type&gt;? providerTypes = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:113](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L113) |  |
+
+## SymbolPreset
+
+Qualified name: <code>Meridian.Application.Services.SymbolPreset</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:977](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L977).
+
+Preset symbol lists.
+
+```csharp
+public enum SymbolPreset : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Custom</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:979](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L979) |  |
+| <code>USMajorIndices</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:980](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L980) |  |
+| <code>TechGiants</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:981](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L981) |  |
+| <code>SP500Top20</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:982](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L982) |  |
+| <code>Crypto</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:983](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L983) |  |
+
+## UseCase
+
+Qualified name: <code>Meridian.Application.Services.UseCase</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:965](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L965).
+
+Use case for configuration.
+
+```csharp
+public enum UseCase : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Development</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:967](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L967) |  |
+| <code>Strategy</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:968](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L968) |  |
+| <code>RealTimeTrading</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:969](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L969) |  |
+| <code>BackfillOnly</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:970](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L970) |  |
+| <code>Production</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:971](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L971) |  |

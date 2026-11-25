@@ -1047,7 +1047,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.WidgetPosition</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:86](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L86).
+Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:79](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L79).
 
 Widget position in a workspace layout.
 
@@ -1059,18 +1059,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int Row { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:88](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L88) |  |
-| <code>public int Column { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:89](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L89) |  |
-| <code>public int RowSpan { get; set; } = 1;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:90](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L90) |  |
-| <code>public int ColumnSpan { get; set; } = 1;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:91](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L91) |  |
-| <code>public bool IsVisible { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:92](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L92) |  |
-| <code>public bool IsExpanded { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:93](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L93) |  |
+| <code>public int Row { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:81](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L81) |  |
+| <code>public int Column { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:82](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L82) |  |
+| <code>public int RowSpan { get; set; } = 1;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:83](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L83) |  |
+| <code>public int ColumnSpan { get; set; } = 1;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:84](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L84) |  |
+| <code>public bool IsVisible { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:85](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L85) |  |
+| <code>public bool IsExpanded { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:86](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L86) |  |
 
 ## WindowBounds
 
 Qualified name: <code>Meridian.Ui.Services.WindowBounds</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:99](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L99).
+Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:92](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L92).
 
 Window bounds for multi-monitor support.
 
@@ -1082,9 +1082,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public double X { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:101](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L101) |  |
-| <code>public double Y { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:102](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L102) |  |
-| <code>public double Width { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:103](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L103) |  |
-| <code>public double Height { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:104](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L104) |  |
-| <code>public string? MonitorId { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:105](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L105) |  |
-| <code>public bool IsMaximized { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:106](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L106) |  |
+| <code>public double X { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:94](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L94) |  |
+| <code>public double Y { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:95](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L95) |  |
+| <code>public double Width { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:96](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L96) |  |
+| <code>public double Height { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:97](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L97) |  |
+| <code>public string? MonitorId { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:98](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L98) |  |
+| <code>public bool IsMaximized { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:99](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L99) |  |

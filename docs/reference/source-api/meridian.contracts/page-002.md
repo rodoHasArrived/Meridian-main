@@ -6,64 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## IBondCouponRecognitionEvidenceVerifier
-
-Qualified name: <code>Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionEvidenceVerifier</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:57](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L57).
-
-```csharp
-public interface IBondCouponRecognitionEvidenceVerifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task VerifyAsync(AccountCashForecastScopeDto scope, IReadOnlyList&lt;BondCouponRecognizedCashDto&gt; cash, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:59](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L59) |  |
-
-## IBondCouponRecognitionService
-
-Qualified name: <code>Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:122](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L122).
-
-```csharp
-public interface IBondCouponRecognitionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task VerifyTerminalOpeningAsync(AccountCashForecastScopeDto scope, OpenLotAmortizationInstructionDto inputs, BondIncomeTerminalCouponOpeningDto opening, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:124](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L124) |  |
-| <code>Task&lt;BondCouponRecognitionPreviewDto&gt; PreviewAsync(AccountCashForecastScopeDto scope, BondCouponRecognitionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:126](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L126) |  |
-| <code>Task&lt;BondCouponRecognitionPreparationDto&gt; PrepareAsync(AccountCashForecastScopeDto scope, BondCouponRecognitionRequest request, string expectedFingerprint, string actor, DateTimeOffset projectedAtUtc, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:128](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L128) |  |
-| <code>Task VerifyAsync(BondCouponRecognitionInstructionDto instruction, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:131](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L131) |  |
-| <code>Task VerifyPreparedSourceAsync(BondCouponRecognitionInstructionDto instruction, RetainedEvidenceIdentityDto source, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:132](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L132) |  |
-
-## IBondCouponRecognitionStore
-
-Qualified name: <code>Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:104](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L104).
-
-```csharp
-public interface IBondCouponRecognitionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;BondCouponRecognitionReceiptDto?&gt; GetLatestCouponRecognitionAsync(AccountCashForecastScopeDto scope, Guid taxLotRecordId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:106](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L106) |  |
-| <code>Task&lt;BondCouponRecognitionReceiptDto?&gt; GetCouponRecognitionRunAsync(AccountCashForecastScopeDto scope, Guid taxLotRecordId, string runId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:108](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L108) |  |
-| <code>Task&lt;decimal&gt; GetConsumedCouponCashAsync(AccountCashForecastScopeDto scope, string paymentFlowId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:110](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L110) |  |
-| <code>Task&lt;decimal&gt; GetConsumedCouponObligationAsync(AccountCashForecastScopeDto scope, Guid taxLotRecordId, string expectedFlowId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:112](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L112) |  |
-| <code>Task&lt;BondCouponAllocationConsumptionDto&gt; GetConsumedCouponAllocationAsync(AccountCashForecastScopeDto scope, string allocationId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:114](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L114) |  |
-| <code>Task&lt;IReadOnlyList&lt;BondCouponObligationConsumptionDto&gt;&gt; GetConsumedCouponObligationsAsync(AccountCashForecastScopeDto scope, Guid taxLotRecordId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:116](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L116) |  |
-| <code>Task&lt;BondCouponRecognitionReceiptDto?&gt; GetCouponRecognitionReceiptAsync(AccountCashForecastScopeDto scope, Guid taxLotRecordId, string receiptId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:118](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L118) |  |
-
 ## IBondIncomePreparationEvidenceStore
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.IBondIncomePreparationEvidenceStore</code>. Kind: `interface`.
@@ -836,3 +778,57 @@ Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:245](..
 ```csharp
 public sealed record AccountingApprovalQueueConfigurationDto(string QueueId, string DisplayName, string WorkflowKind, string RequiredApprovalRole, int RequiredApprovalCount, string SegregationPolicy, string EvidenceRequirement);
 ```
+
+## AccountingCertificationArtifactIssueDto
+
+Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingCertificationArtifactIssueDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:392](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L392).
+
+```csharp
+public sealed record AccountingCertificationArtifactIssueDto(string Code, AccountingConfigurationValidationSeverityDto Severity, string Message, string SuggestedAction, IReadOnlyList<string>? EvidenceReferences = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = EvidenceReferences??[];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:399](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L399) |  |
+
+## AccountingCertificationArtifactLaneStatusDto
+
+Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingCertificationArtifactLaneStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:336](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L336).
+
+```csharp
+public enum AccountingCertificationArtifactLaneStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>NotTested</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:338](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L338) |  |
+| <code>Passed</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:339](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L339) |  |
+| <code>Warning</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:340](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L340) |  |
+| <code>Failed</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:341](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L341) |  |
+
+## AccountingCertificationArtifactStatusDto
+
+Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingCertificationArtifactStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:328](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L328).
+
+```csharp
+public enum AccountingCertificationArtifactStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Draft</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:330](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L330) |  |
+| <code>Certified</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:331](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L331) |  |
+| <code>Rejected</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:332](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L332) |  |
+| <code>Superseded</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:333](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L333) |  |
