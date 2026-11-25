@@ -200,6 +200,14 @@ copies were removed by the 2026-09-11 archive cleanup (`982eea2d`) and are recov
 
 - Main host: `src/Meridian/Meridian.csproj`
 - Minimal MCP host: `src/Meridian.Mcp/Meridian.Mcp.csproj`
+- Ledger reads over MCP: for a question about a strategy run's ledger (keyed by `runId`), use
+  `get_run_trial_balance`, `get_ledger_trial_balance`, `get_ledger_accounts`,
+  `get_ledger_running_balance`, `get_ledger_journal`, `get_symbol_ledger` or
+  `get_run_ledger_integrity`. For the posted accounting books (keyed by `periodId`), use
+  `get_posted_ledger_journal`, `get_posted_trial_balance`, `get_posted_running_balance` or
+  `get_ledger_completeness`. All are read-only and go through the workstation API. Never read journal
+  files directly. The question-to-tool table is under "Ledger tool routing" in
+  `src/Meridian.Mcp/README.md`.
 - Web workstation dashboard: `src/Meridian.Ui/dashboard`
 - Host-served workstation route: `http://localhost:8080/workstation/`
 - Active WPF desktop workstation: `src/Meridian.Wpf/Meridian.Wpf.csproj`

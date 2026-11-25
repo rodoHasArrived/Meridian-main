@@ -13,7 +13,7 @@ namespace Meridian.Tests.Mcp;
 /// <c>apply_repo_edit</c>, and <c>explain_repo_edit_plan</c> tools. Argument and
 /// path-boundary checks run without Python. The end-to-end cases copy the real
 /// <c>build/scripts/ai/ai-edit-tool.py</c> into a throwaway repository and run it through
-/// <see cref="RepoEditTools"/>; they no-op when no <c>python</c> executable is on PATH.
+/// <see cref="RepoEditTools"/>; they no-op when the platform's Python executable (<c>python</c> on Windows, <c>python3</c> elsewhere) is not on PATH.
 /// </summary>
 [Collection(McpRepoRootCollection.CollectionName)]
 public sealed class RepoEditToolsTests
@@ -343,7 +343,8 @@ public sealed class RepoEditToolsTests
 
     private static bool PythonAvailable()
     {
-        var names = OperatingSystem.IsWindows() ? new[] { "python.exe", "python" } : new[] { "python" };
+        // Mirror PythonLauncher: the tool launches "python" on Windows and "python3" elsewhere.
+        var names = OperatingSystem.IsWindows() ? new[] { "python.exe", "python" } : new[] { "python3" };
         return (Environment.GetEnvironmentVariable("PATH") ?? string.Empty)
             .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
             .Any(dir => names.Any(name => File.Exists(Path.Combine(dir.Trim('"'), name))));

@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-25T11:14:04Z",
-  "generatorVersion": "1.0",
+  "generatedAt": "2026-11-25T20:44:30Z",
+  "generatorVersion": "1.1",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
     {
@@ -394,7 +394,8 @@
         "docs/ai/README.md",
         "docs/ai/ai-known-errors.md",
         "docs/ai/claude/CLAUDE.fsharp.md",
-        "docs/ai/navigation/README.md"
+        "docs/ai/navigation/README.md",
+        "src/Meridian.Mcp/README.md"
       ],
       "recommendedStart": "Meridian.Domain",
       "docCoverageHint": "high"
@@ -437,10 +438,11 @@
       "relatedDocs": [
         "docs/ai/README.md",
         "docs/ai/ai-known-errors.md",
-        "docs/ai/navigation/README.md"
+        "docs/ai/navigation/README.md",
+        "src/Meridian.Mcp/README.md"
       ],
       "recommendedStart": "Meridian.Mcp",
-      "docCoverageHint": "medium"
+      "docCoverageHint": "high"
     }
   ],
   "projects": [
@@ -848,7 +850,9 @@
         "Meridian.Core",
         "Meridian.FSharp.Ledger"
       ],
-      "relatedDocs": []
+      "relatedDocs": [
+        "src/Meridian.Mcp/README.md"
+      ]
     },
     {
       "name": "Meridian.LifecycleSupervisor",
@@ -917,7 +921,9 @@
       "projectReferences": [
         "Meridian.Core"
       ],
-      "relatedDocs": []
+      "relatedDocs": [
+        "src/Meridian.Mcp/README.md"
+      ]
     },
     {
       "name": "Meridian.ProviderSdk",
@@ -1340,6 +1346,7 @@
       ],
       "projectReferences": [],
       "relatedDocs": [
+        "src/Meridian.Mcp/README.md",
         "docs/ai/claude/CLAUDE.fsharp.md"
       ]
     },
@@ -1400,7 +1407,991 @@
       "relatedDocs": []
     }
   ],
+  "projectIndex": [
+    {
+      "name": "Meridian",
+      "path": "src/Meridian",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "host-shell",
+      "projectReferences": [
+        "Meridian.Application",
+        "Meridian.Audit",
+        "Meridian.Backtesting",
+        "Meridian.Contracts",
+        "Meridian.Core",
+        "Meridian.Domain",
+        "Meridian.Identity",
+        "Meridian.Infrastructure",
+        "Meridian.ProviderSdk",
+        "Meridian.QuantScript",
+        "Meridian.QuantScript.Worker",
+        "Meridian.Storage",
+        "Meridian.Storage.Accounting",
+        "Meridian.Ui.Services",
+        "Meridian.Ui.Shared"
+      ]
+    },
+    {
+      "name": "Meridian.Application",
+      "path": "src/Meridian.Application",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "host-shell",
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Core",
+        "Meridian.DataIntegration",
+        "Meridian.Domain",
+        "Meridian.Entities",
+        "Meridian.FSharp",
+        "Meridian.FSharp.DirectLending.Aggregates",
+        "Meridian.FSharp.Ledger",
+        "Meridian.FinancialOperations",
+        "Meridian.Identity",
+        "Meridian.Infrastructure",
+        "Meridian.Instruments",
+        "Meridian.Ledger",
+        "Meridian.Platform",
+        "Meridian.PortfolioRecords",
+        "Meridian.ProviderSdk",
+        "Meridian.ReferenceData",
+        "Meridian.Storage",
+        "Meridian.Storage.Accounting",
+        "Meridian.Workflow"
+      ]
+    },
+    {
+      "name": "Meridian.Audit",
+      "path": "src/Meridian.Audit",
+      "area": "source",
+      "catalogued": false,
+      "subsystem": null,
+      "projectReferences": [
+        "Meridian.Identity",
+        "Meridian.Storage"
+      ]
+    },
+    {
+      "name": "Meridian.Backtesting",
+      "path": "src/Meridian.Backtesting",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "backtesting-research",
+      "projectReferences": [
+        "Meridian.Backtesting.Sdk",
+        "Meridian.Contracts",
+        "Meridian.Instruments",
+        "Meridian.Platform",
+        "Meridian.Storage",
+        "Meridian.Strategies"
+      ]
+    },
+    {
+      "name": "Meridian.Backtesting.Sdk",
+      "path": "src/Meridian.Backtesting.Sdk",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "backtesting-research",
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Ledger"
+      ]
+    },
+    {
+      "name": "Meridian.Contracts",
+      "path": "src/Meridian.Contracts",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "host-shell",
+      "projectReferences": []
+    },
+    {
+      "name": "Meridian.Core",
+      "path": "src/Meridian.Core",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "host-shell",
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Domain",
+        "Meridian.ProviderSdk"
+      ]
+    },
+    {
+      "name": "Meridian.DataIntegration",
+      "path": "src/Meridian.DataIntegration",
+      "area": "source",
+      "catalogued": false,
+      "subsystem": null,
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Core",
+        "Meridian.Domain",
+        "Meridian.FSharp",
+        "Meridian.ProviderSdk",
+        "Meridian.Storage"
+      ]
+    },
+    {
+      "name": "Meridian.Documents",
+      "path": "src/Meridian.Documents",
+      "area": "source",
+      "catalogued": false,
+      "subsystem": null,
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Core",
+        "Meridian.Ledger",
+        "Meridian.Storage"
+      ]
+    },
+    {
+      "name": "Meridian.Domain",
+      "path": "src/Meridian.Domain",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "domain-ledger-fsharp",
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.ProviderSdk"
+      ]
+    },
+    {
+      "name": "Meridian.Entities",
+      "path": "src/Meridian.Entities",
+      "area": "source",
+      "catalogued": false,
+      "subsystem": null,
+      "projectReferences": [
+        "Meridian.Contracts"
+      ]
+    },
+    {
+      "name": "Meridian.Execution",
+      "path": "src/Meridian.Execution",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "execution-risk",
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Core",
+        "Meridian.Execution.Sdk",
+        "Meridian.Ledger",
+        "Meridian.Storage",
+        "Meridian.Storage.Accounting"
+      ]
+    },
+    {
+      "name": "Meridian.Execution.Sdk",
+      "path": "src/Meridian.Execution.Sdk",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "execution-risk",
+      "projectReferences": [
+        "Meridian.Contracts"
+      ]
+    },
+    {
+      "name": "Meridian.FSharp",
+      "path": "src/Meridian.FSharp",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "domain-ledger-fsharp",
+      "projectReferences": [
+        "Meridian.Backtesting.Sdk",
+        "Meridian.Contracts",
+        "Meridian.Execution.Sdk",
+        "Meridian.Identity"
+      ]
+    },
+    {
+      "name": "Meridian.FSharp.DirectLending.Aggregates",
+      "path": "src/Meridian.FSharp.DirectLending.Aggregates",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "domain-ledger-fsharp",
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.FSharp"
+      ]
+    },
+    {
+      "name": "Meridian.FSharp.Ledger",
+      "path": "src/Meridian.FSharp.Ledger",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "domain-ledger-fsharp",
+      "projectReferences": []
+    },
+    {
+      "name": "Meridian.FSharp.Trading",
+      "path": "src/Meridian.FSharp.Trading",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "domain-ledger-fsharp",
+      "projectReferences": []
+    },
+    {
+      "name": "Meridian.FinancialOperations",
+      "path": "src/Meridian.FinancialOperations",
+      "area": "source",
+      "catalogued": false,
+      "subsystem": null,
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.DataIntegration",
+        "Meridian.Domain",
+        "Meridian.Entities",
+        "Meridian.Execution.Sdk",
+        "Meridian.FSharp",
+        "Meridian.Identity",
+        "Meridian.Instruments",
+        "Meridian.Ledger",
+        "Meridian.ProviderSdk",
+        "Meridian.Storage",
+        "Meridian.Storage.Accounting"
+      ]
+    },
+    {
+      "name": "Meridian.IbApi.SmokeStub",
+      "path": "src/Meridian.IbApi.SmokeStub",
+      "area": "source",
+      "catalogued": false,
+      "subsystem": null,
+      "projectReferences": []
+    },
+    {
+      "name": "Meridian.Identity",
+      "path": "src/Meridian.Identity",
+      "area": "source",
+      "catalogued": false,
+      "subsystem": null,
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Storage"
+      ]
+    },
+    {
+      "name": "Meridian.Infrastructure",
+      "path": "src/Meridian.Infrastructure",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "providers-data",
+      "projectReferences": [
+        "$(ResolvedIbApiProjectPath)",
+        "Meridian.Contracts",
+        "Meridian.Core",
+        "Meridian.Domain",
+        "Meridian.Execution.Sdk",
+        "Meridian.IbApi.SmokeStub",
+        "Meridian.ProviderSdk"
+      ]
+    },
+    {
+      "name": "Meridian.Instruments",
+      "path": "src/Meridian.Instruments",
+      "area": "source",
+      "catalogued": false,
+      "subsystem": null,
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Core",
+        "Meridian.Domain",
+        "Meridian.ProviderSdk",
+        "Meridian.Storage",
+        "Meridian.Storage.Accounting"
+      ]
+    },
+    {
+      "name": "Meridian.Launcher",
+      "path": "src/Meridian.Launcher",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "host-shell",
+      "projectReferences": [
+        "Meridian.Contracts"
+      ]
+    },
+    {
+      "name": "Meridian.Ledger",
+      "path": "src/Meridian.Ledger",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "domain-ledger-fsharp",
+      "projectReferences": [
+        "Meridian.Core",
+        "Meridian.FSharp.Ledger"
+      ]
+    },
+    {
+      "name": "Meridian.LifecycleSupervisor",
+      "path": "src/Meridian.LifecycleSupervisor",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "host-shell",
+      "projectReferences": [
+        "Meridian.Contracts"
+      ]
+    },
+    {
+      "name": "Meridian.Mcp",
+      "path": "src/Meridian.Mcp",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "mcp-integration",
+      "projectReferences": [
+        "Meridian.Core"
+      ]
+    },
+    {
+      "name": "Meridian.Platform",
+      "path": "src/Meridian.Platform",
+      "area": "source",
+      "catalogued": false,
+      "subsystem": null,
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Core"
+      ]
+    },
+    {
+      "name": "Meridian.PortfolioRecords",
+      "path": "src/Meridian.PortfolioRecords",
+      "area": "source",
+      "catalogued": false,
+      "subsystem": null,
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Storage",
+        "Meridian.Storage.Accounting"
+      ]
+    },
+    {
+      "name": "Meridian.ProcessIsolation",
+      "path": "src/Meridian.ProcessIsolation",
+      "area": "source",
+      "catalogued": false,
+      "subsystem": null,
+      "projectReferences": []
+    },
+    {
+      "name": "Meridian.ProviderSdk",
+      "path": "src/Meridian.ProviderSdk",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "providers-data",
+      "projectReferences": [
+        "Meridian.Contracts"
+      ]
+    },
+    {
+      "name": "Meridian.QuantScript",
+      "path": "src/Meridian.QuantScript",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "backtesting-research",
+      "projectReferences": [
+        "Meridian.Backtesting",
+        "Meridian.Backtesting.Sdk",
+        "Meridian.Contracts",
+        "Meridian.Domain",
+        "Meridian.ProcessIsolation",
+        "Meridian.ProviderSdk",
+        "Meridian.Storage"
+      ]
+    },
+    {
+      "name": "Meridian.QuantScript.Worker",
+      "path": "src/Meridian.QuantScript.Worker",
+      "area": "source",
+      "catalogued": false,
+      "subsystem": null,
+      "projectReferences": [
+        "Meridian.QuantScript"
+      ]
+    },
+    {
+      "name": "Meridian.ReferenceData",
+      "path": "src/Meridian.ReferenceData",
+      "area": "source",
+      "catalogued": false,
+      "subsystem": null,
+      "projectReferences": [
+        "Meridian.Contracts"
+      ]
+    },
+    {
+      "name": "Meridian.Reporting",
+      "path": "src/Meridian.Reporting",
+      "area": "source",
+      "catalogued": false,
+      "subsystem": null,
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Ledger"
+      ]
+    },
+    {
+      "name": "Meridian.Reporting.ReadModels",
+      "path": "src/Meridian.Reporting.ReadModels",
+      "area": "source",
+      "catalogued": false,
+      "subsystem": null,
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Ledger",
+        "Meridian.Reporting",
+        "Meridian.Storage.Accounting"
+      ]
+    },
+    {
+      "name": "Meridian.Risk",
+      "path": "src/Meridian.Risk",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "execution-risk",
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Execution.Sdk",
+        "Meridian.FSharp"
+      ]
+    },
+    {
+      "name": "Meridian.Setup",
+      "path": "src/Meridian.Setup",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "host-shell",
+      "projectReferences": []
+    },
+    {
+      "name": "Meridian.Storage",
+      "path": "src/Meridian.Storage",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "providers-data",
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Core",
+        "Meridian.Domain",
+        "Meridian.ProviderSdk"
+      ]
+    },
+    {
+      "name": "Meridian.Storage.Accounting",
+      "path": "src/Meridian.Storage.Accounting",
+      "area": "source",
+      "catalogued": false,
+      "subsystem": null,
+      "projectReferences": [
+        "Meridian.Ledger",
+        "Meridian.Reporting",
+        "Meridian.Storage"
+      ]
+    },
+    {
+      "name": "Meridian.Strategies",
+      "path": "src/Meridian.Strategies",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "execution-risk",
+      "projectReferences": [
+        "Meridian.Backtesting.Sdk",
+        "Meridian.Contracts",
+        "Meridian.Core",
+        "Meridian.Execution",
+        "Meridian.Execution.Sdk",
+        "Meridian.FSharp",
+        "Meridian.FSharp.Ledger",
+        "Meridian.FSharp.Trading",
+        "Meridian.Instruments",
+        "Meridian.ProviderSdk"
+      ]
+    },
+    {
+      "name": "Meridian.Ui.Services",
+      "path": "src/Meridian.Ui.Services",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "workstation-ui",
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Infrastructure",
+        "Meridian.Platform",
+        "Meridian.Reporting",
+        "Meridian.Storage",
+        "Meridian.Ui.Shared"
+      ]
+    },
+    {
+      "name": "Meridian.Ui.Shared",
+      "path": "src/Meridian.Ui.Shared",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "workstation-ui",
+      "projectReferences": [
+        "Meridian.Application",
+        "Meridian.Audit",
+        "Meridian.Backtesting",
+        "Meridian.Backtesting.Sdk",
+        "Meridian.Contracts",
+        "Meridian.DataIntegration",
+        "Meridian.Documents",
+        "Meridian.Entities",
+        "Meridian.Execution",
+        "Meridian.FSharp",
+        "Meridian.FSharp.Ledger",
+        "Meridian.FinancialOperations",
+        "Meridian.Identity",
+        "Meridian.Instruments",
+        "Meridian.Platform",
+        "Meridian.PortfolioRecords",
+        "Meridian.ProviderSdk",
+        "Meridian.QuantScript",
+        "Meridian.ReferenceData",
+        "Meridian.Reporting",
+        "Meridian.Reporting.ReadModels",
+        "Meridian.Risk",
+        "Meridian.Storage",
+        "Meridian.Storage.Accounting",
+        "Meridian.Strategies"
+      ]
+    },
+    {
+      "name": "Meridian.Workflow",
+      "path": "src/Meridian.Workflow",
+      "area": "source",
+      "catalogued": false,
+      "subsystem": null,
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Entities",
+        "Meridian.Storage"
+      ]
+    },
+    {
+      "name": "Meridian.Wpf",
+      "path": "src/Meridian.Wpf",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "workstation-ui",
+      "projectReferences": [
+        "Meridian.Backtesting",
+        "Meridian.Contracts",
+        "Meridian.Identity",
+        "Meridian.Infrastructure",
+        "Meridian.Platform",
+        "Meridian.QuantScript",
+        "Meridian.QuantScript.Worker",
+        "Meridian.Reporting",
+        "Meridian.Storage",
+        "Meridian.Storage.Accounting",
+        "Meridian.Strategies",
+        "Meridian.Ui.Services",
+        "Meridian.Ui.Shared",
+        "Meridian.Workflow"
+      ]
+    },
+    {
+      "name": "Meridian.Ui.Dashboard",
+      "path": "src/Meridian.Ui/dashboard",
+      "area": "source",
+      "catalogued": true,
+      "subsystem": "workstation-ui",
+      "projectReferences": []
+    },
+    {
+      "name": "Meridian.Backtesting.Tests",
+      "path": "tests/Meridian.Backtesting.Tests",
+      "area": "test",
+      "projectReferences": [
+        "Meridian.Backtesting",
+        "Meridian.Backtesting.Sdk",
+        "Meridian.Infrastructure"
+      ],
+      "covers": [
+        "Meridian.Backtesting",
+        "Meridian.Backtesting.Sdk",
+        "Meridian.Infrastructure"
+      ]
+    },
+    {
+      "name": "Meridian.Contracts.UnitTests",
+      "path": "tests/Meridian.Contracts.UnitTests",
+      "area": "test",
+      "projectReferences": [
+        "Meridian.Contracts"
+      ],
+      "covers": [
+        "Meridian.Contracts"
+      ]
+    },
+    {
+      "name": "Meridian.Core.UnitTests",
+      "path": "tests/Meridian.Core.UnitTests",
+      "area": "test",
+      "projectReferences": [
+        "Meridian.Core"
+      ],
+      "covers": [
+        "Meridian.Core"
+      ]
+    },
+    {
+      "name": "Meridian.Demo.Tests",
+      "path": "tests/Meridian.Demo.Tests",
+      "area": "test",
+      "projectReferences": [
+        "Meridian",
+        "Meridian.TestSupport"
+      ],
+      "covers": [
+        "Meridian"
+      ]
+    },
+    {
+      "name": "Meridian.DesignModules.Tests",
+      "path": "tests/Meridian.DesignModules.Tests",
+      "area": "test",
+      "projectReferences": [
+        "Meridian.Audit",
+        "Meridian.DataIntegration",
+        "Meridian.Documents",
+        "Meridian.Entities",
+        "Meridian.FinancialOperations",
+        "Meridian.Identity",
+        "Meridian.Instruments",
+        "Meridian.Platform",
+        "Meridian.PortfolioRecords",
+        "Meridian.ReferenceData",
+        "Meridian.Reporting",
+        "Meridian.Workflow"
+      ],
+      "covers": [
+        "Meridian.Audit",
+        "Meridian.DataIntegration",
+        "Meridian.Documents",
+        "Meridian.Entities",
+        "Meridian.FinancialOperations",
+        "Meridian.Identity",
+        "Meridian.Instruments",
+        "Meridian.Platform",
+        "Meridian.PortfolioRecords",
+        "Meridian.ReferenceData",
+        "Meridian.Reporting",
+        "Meridian.Workflow"
+      ]
+    },
+    {
+      "name": "Meridian.DirectLending.Tests",
+      "path": "tests/Meridian.DirectLending.Tests",
+      "area": "test",
+      "projectReferences": [
+        "Meridian.Application",
+        "Meridian.Contracts",
+        "Meridian.Storage",
+        "Meridian.Storage.Accounting",
+        "Meridian.TestSupport"
+      ],
+      "covers": [
+        "Meridian.Application",
+        "Meridian.Contracts",
+        "Meridian.Storage",
+        "Meridian.Storage.Accounting"
+      ]
+    },
+    {
+      "name": "Meridian.Execution.Tests",
+      "path": "tests/Meridian.Execution.Tests",
+      "area": "test",
+      "projectReferences": [
+        "Meridian.Application",
+        "Meridian.Backtesting",
+        "Meridian.Core",
+        "Meridian.Domain",
+        "Meridian.Execution",
+        "Meridian.Execution.Sdk",
+        "Meridian.FinancialOperations",
+        "Meridian.Identity",
+        "Meridian.Infrastructure",
+        "Meridian.Ledger",
+        "Meridian.Reporting",
+        "Meridian.Risk",
+        "Meridian.Storage",
+        "Meridian.Storage.Accounting"
+      ],
+      "covers": [
+        "Meridian.Application",
+        "Meridian.Backtesting",
+        "Meridian.Core",
+        "Meridian.Domain",
+        "Meridian.Execution",
+        "Meridian.Execution.Sdk",
+        "Meridian.FinancialOperations",
+        "Meridian.Identity",
+        "Meridian.Infrastructure",
+        "Meridian.Ledger",
+        "Meridian.Reporting",
+        "Meridian.Risk",
+        "Meridian.Storage",
+        "Meridian.Storage.Accounting"
+      ]
+    },
+    {
+      "name": "Meridian.FSharp.Tests",
+      "path": "tests/Meridian.FSharp.Tests",
+      "area": "test",
+      "projectReferences": [
+        "Meridian.Backtesting.Sdk",
+        "Meridian.Contracts",
+        "Meridian.Execution.Sdk",
+        "Meridian.FSharp",
+        "Meridian.FSharp.DirectLending.Aggregates",
+        "Meridian.FSharp.Ledger",
+        "Meridian.FSharp.Trading",
+        "Meridian.Identity",
+        "Meridian.Ledger"
+      ],
+      "covers": [
+        "Meridian.Backtesting.Sdk",
+        "Meridian.Contracts",
+        "Meridian.Execution.Sdk",
+        "Meridian.FSharp",
+        "Meridian.FSharp.DirectLending.Aggregates",
+        "Meridian.FSharp.Ledger",
+        "Meridian.FSharp.Trading",
+        "Meridian.Identity",
+        "Meridian.Ledger"
+      ]
+    },
+    {
+      "name": "Meridian.FundStructure.Tests",
+      "path": "tests/Meridian.FundStructure.Tests",
+      "area": "test",
+      "projectReferences": [
+        "Meridian.Application",
+        "Meridian.Contracts",
+        "Meridian.DataIntegration",
+        "Meridian.Entities",
+        "Meridian.Ui.Shared",
+        "Meridian.Workflow"
+      ],
+      "covers": [
+        "Meridian.Application",
+        "Meridian.Contracts",
+        "Meridian.DataIntegration",
+        "Meridian.Entities",
+        "Meridian.Ui.Shared",
+        "Meridian.Workflow"
+      ]
+    },
+    {
+      "name": "Meridian.Lifecycle.Tests",
+      "path": "tests/Meridian.Lifecycle.Tests",
+      "area": "test",
+      "projectReferences": [
+        "Meridian.Application",
+        "Meridian.Contracts",
+        "Meridian.Storage"
+      ],
+      "covers": [
+        "Meridian.Application",
+        "Meridian.Contracts",
+        "Meridian.Storage"
+      ]
+    },
+    {
+      "name": "Meridian.LifecycleSupervisor.Tests",
+      "path": "tests/Meridian.LifecycleSupervisor.Tests",
+      "area": "test",
+      "projectReferences": [
+        "Meridian.Contracts",
+        "Meridian.Launcher",
+        "Meridian.LifecycleSupervisor"
+      ],
+      "covers": [
+        "Meridian.Contracts",
+        "Meridian.Launcher",
+        "Meridian.LifecycleSupervisor"
+      ]
+    },
+    {
+      "name": "Meridian.ProcessTestHelper",
+      "path": "tests/Meridian.ProcessTestHelper",
+      "area": "test",
+      "projectReferences": [
+        "Meridian.Application",
+        "Meridian.Documents",
+        "Meridian.Storage",
+        "Meridian.Storage.Accounting"
+      ],
+      "covers": [
+        "Meridian.Application",
+        "Meridian.Documents",
+        "Meridian.Storage",
+        "Meridian.Storage.Accounting"
+      ]
+    },
+    {
+      "name": "Meridian.QuantScript.Tests",
+      "path": "tests/Meridian.QuantScript.Tests",
+      "area": "test",
+      "projectReferences": [
+        "Meridian.QuantScript",
+        "Meridian.QuantScript.Worker"
+      ],
+      "covers": [
+        "Meridian.QuantScript",
+        "Meridian.QuantScript.Worker"
+      ]
+    },
+    {
+      "name": "Meridian.Setup.Tests",
+      "path": "tests/Meridian.Setup.Tests",
+      "area": "test",
+      "projectReferences": [
+        "Meridian.Setup"
+      ],
+      "covers": [
+        "Meridian.Setup"
+      ]
+    },
+    {
+      "name": "Meridian.Storage.Tests",
+      "path": "tests/Meridian.Storage.Tests",
+      "area": "test",
+      "projectReferences": [
+        "Meridian.Core",
+        "Meridian.Domain",
+        "Meridian.Infrastructure",
+        "Meridian.Storage"
+      ],
+      "covers": [
+        "Meridian.Core",
+        "Meridian.Domain",
+        "Meridian.Infrastructure",
+        "Meridian.Storage"
+      ]
+    },
+    {
+      "name": "Meridian.TestSupport",
+      "path": "tests/Meridian.TestSupport",
+      "area": "test",
+      "projectReferences": [],
+      "covers": []
+    },
+    {
+      "name": "Meridian.Tests",
+      "path": "tests/Meridian.Tests",
+      "area": "test",
+      "projectReferences": [
+        "Meridian",
+        "Meridian.Application",
+        "Meridian.Audit",
+        "Meridian.Backtesting",
+        "Meridian.Backtesting.Sdk",
+        "Meridian.Core",
+        "Meridian.DataIntegration",
+        "Meridian.Documents",
+        "Meridian.Domain",
+        "Meridian.Entities",
+        "Meridian.Execution",
+        "Meridian.Execution.Sdk",
+        "Meridian.FinancialOperations",
+        "Meridian.Identity",
+        "Meridian.Infrastructure",
+        "Meridian.Instruments",
+        "Meridian.Ledger",
+        "Meridian.Mcp",
+        "Meridian.Platform",
+        "Meridian.ProcessTestHelper",
+        "Meridian.QuantScript.Worker",
+        "Meridian.ReferenceData",
+        "Meridian.Reporting",
+        "Meridian.Risk",
+        "Meridian.Storage",
+        "Meridian.Storage.Accounting",
+        "Meridian.Strategies",
+        "Meridian.TestSupport",
+        "Meridian.Ui.Services",
+        "Meridian.Ui.Shared",
+        "Meridian.Workflow"
+      ],
+      "covers": [
+        "Meridian",
+        "Meridian.Application",
+        "Meridian.Audit",
+        "Meridian.Backtesting",
+        "Meridian.Backtesting.Sdk",
+        "Meridian.Core",
+        "Meridian.DataIntegration",
+        "Meridian.Documents",
+        "Meridian.Domain",
+        "Meridian.Entities",
+        "Meridian.Execution",
+        "Meridian.Execution.Sdk",
+        "Meridian.FinancialOperations",
+        "Meridian.Identity",
+        "Meridian.Infrastructure",
+        "Meridian.Instruments",
+        "Meridian.Ledger",
+        "Meridian.Mcp",
+        "Meridian.Platform",
+        "Meridian.QuantScript.Worker",
+        "Meridian.ReferenceData",
+        "Meridian.Reporting",
+        "Meridian.Risk",
+        "Meridian.Storage",
+        "Meridian.Storage.Accounting",
+        "Meridian.Strategies",
+        "Meridian.Ui.Services",
+        "Meridian.Ui.Shared",
+        "Meridian.Workflow"
+      ]
+    },
+    {
+      "name": "Meridian.Ui.Tests",
+      "path": "tests/Meridian.Ui.Tests",
+      "area": "test",
+      "projectReferences": [
+        "Meridian.Ui.Services"
+      ],
+      "covers": [
+        "Meridian.Ui.Services"
+      ]
+    },
+    {
+      "name": "Meridian.Wpf.Tests",
+      "path": "tests/Meridian.Wpf.Tests",
+      "area": "test",
+      "projectReferences": [
+        "Meridian.Reporting",
+        "Meridian.Ui.Services",
+        "Meridian.Wpf"
+      ],
+      "covers": [
+        "Meridian.Reporting",
+        "Meridian.Ui.Services",
+        "Meridian.Wpf"
+      ]
+    }
+  ],
   "documents": [
+    {
+      "path": "src/Meridian.Mcp/README.md",
+      "title": "Meridian MCP host and ledger tool routing",
+      "area": "mcp",
+      "whenToConsult": "When choosing an MCP tool, especially which read-only ledger tool answers a run-ledger or posted-books question.",
+      "keywords": [
+        "mcp",
+        "ledger",
+        "trial balance",
+        "journal",
+        "running balance",
+        "completeness"
+      ]
+    },
     {
       "path": "docs/reference/lifecycle-control-plane.md",
       "title": "Installed lifecycle control plane",
@@ -1681,6 +2672,21 @@
       ]
     },
     {
+      "name": "LedgerTools",
+      "kind": "mcp-tools",
+      "path": "src/Meridian.Mcp/Tools/LedgerTools.cs",
+      "project": "Meridian.Mcp",
+      "reason": "Read-only MCP tools for run ledgers (runId) and posted books (periodId); they call the workstation API.",
+      "keywords": [
+        "ledger",
+        "trial balance",
+        "journal",
+        "running balance",
+        "completeness",
+        "mcp"
+      ]
+    },
+    {
       "name": "Program",
       "kind": "mcp-entrypoint",
       "path": "src/Meridian.Mcp/Program.cs",
@@ -1919,6 +2925,51 @@
         "docs/ai/README.md"
       ],
       "recommendedSkill": "meridian-repo-navigation",
+      "recommendedAgent": "repo-navigation-agent"
+    },
+    {
+      "id": "ledger-mcp-reads",
+      "title": "Accounting, posting controls, and ledger reads",
+      "description": "Use for event-based accounting design, posting-control or projection/replay review, or answering a question from a strategy run's ledger or the posted books with the read-only ledger MCP tools.",
+      "keywords": [
+        "ledger",
+        "accounting",
+        "posting",
+        "trial balance",
+        "journal",
+        "running balance",
+        "completeness",
+        "posted",
+        "integrity",
+        "reversal",
+        "period lock",
+        "projection",
+        "replay"
+      ],
+      "subsystems": [
+        "mcp-integration",
+        "domain-ledger-fsharp"
+      ],
+      "subsystemTitles": [
+        "MCP Integration",
+        "Domain, Ledger, and F#"
+      ],
+      "startProjects": [
+        "Meridian.Mcp",
+        "Meridian.Ledger"
+      ],
+      "startSymbols": [
+        {
+          "name": "LedgerTools",
+          "path": "src/Meridian.Mcp/Tools/LedgerTools.cs",
+          "reason": "Read-only MCP tools for run ledgers (runId) and posted books (periodId); they call the workstation API."
+        }
+      ],
+      "authoritativeDocs": [
+        "src/Meridian.Mcp/README.md",
+        "docs/ai/context/accounting-context.md"
+      ],
+      "recommendedSkill": "meridian-accounting",
       "recommendedAgent": "repo-navigation-agent"
     }
   ],
@@ -2426,20 +3477,316 @@
   ],
   "recentChanges": [
     {
+      "path": "src/Meridian.Mcp/README.md",
+      "subsystem": "MCP Integration",
+      "lastModified": "2026-11-25T19:59:36+00:00",
+      "lastCommit": "0c47736d",
+      "lastSummary": "feat(ai): add Claude meridian-accounting skill and agent",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Mcp/Resources/AdrResources.cs",
+      "subsystem": "MCP Integration",
+      "lastModified": "2026-11-25T19:34:30+00:00",
+      "lastCommit": "1ca2a0eb",
+      "lastSummary": "fix(mcp,docs): read archived ADRs, unify Python launcher, fix stale AI paths",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Mcp/Services/RepoPathService.cs",
+      "subsystem": "MCP Integration",
+      "lastModified": "2026-11-25T19:34:30+00:00",
+      "lastCommit": "1ca2a0eb",
+      "lastSummary": "fix(mcp,docs): read archived ADRs, unify Python launcher, fix stale AI paths",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Mcp/Tools/AdrTools.cs",
+      "subsystem": "MCP Integration",
+      "lastModified": "2026-11-25T19:34:30+00:00",
+      "lastCommit": "1ca2a0eb",
+      "lastSummary": "fix(mcp,docs): read archived ADRs, unify Python launcher, fix stale AI paths",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Mcp/Tools/AuditTools.cs",
+      "subsystem": "MCP Integration",
+      "lastModified": "2026-11-25T19:34:30+00:00",
+      "lastCommit": "1ca2a0eb",
+      "lastSummary": "fix(mcp,docs): read archived ADRs, unify Python launcher, fix stale AI paths",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Mcp/Tools/ProviderTools.cs",
+      "subsystem": "MCP Integration",
+      "lastModified": "2026-11-25T19:34:30+00:00",
+      "lastCommit": "1ca2a0eb",
+      "lastSummary": "fix(mcp,docs): read archived ADRs, unify Python launcher, fix stale AI paths",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Mcp/Tools/RepoEditTools.cs",
+      "subsystem": "MCP Integration",
+      "lastModified": "2026-11-25T19:34:30+00:00",
+      "lastCommit": "1ca2a0eb",
+      "lastSummary": "fix(mcp,docs): read archived ADRs, unify Python launcher, fix stale AI paths",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Mcp/Tools/PythonLauncher.cs",
+      "subsystem": "MCP Integration",
+      "lastModified": "2026-11-25T19:34:30+00:00",
+      "lastCommit": "1ca2a0eb",
+      "lastSummary": "fix(mcp,docs): read archived ADRs, unify Python launcher, fix stale AI paths",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Services/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T12:10:16-07:00",
+      "lastCommit": "464f53d7",
+      "lastSummary": "ci(windows-desktop): revert the #3759 speed-up attempts; keep the navigation sweep timing output (#3772)",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T12:10:16-07:00",
+      "lastCommit": "464f53d7",
+      "lastSummary": "ci(windows-desktop): revert the #3759 speed-up attempts; keep the navigation sweep timing output (#3772)",
+      "touches": 3
+    },
+    {
       "path": "src/Meridian.Ui/dashboard/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 25
+      "lastModified": "2026-11-25T09:31:55-07:00",
+      "lastCommit": "dc55ac89",
+      "lastSummary": "ci: cut runner queue hops across Meridian CI, Golden Path and CodeQL (#3761)",
+      "touches": 24
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 18
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 15
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.Application/Backfill/BackfillCoordinator.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Infrastructure/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Storage/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Core/ProviderRotationStrategy.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Storage/Backfill/BackfillStatusStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/NYSE/NyseHistoricalDataProvider.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/NYSE/NyseHttpResponseGuard.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Services/Services/ProviderHealthService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataProviders.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ProviderMetricsLookup.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T07:27:41-07:00",
+      "lastCommit": "57f8f306",
+      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/scripts/run-vitest-stable.mjs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T05:29:58-07:00",
+      "lastCommit": "adc8f97c",
+      "lastSummary": "ci: shorten the quality-gate critical path (#3742)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/scripts/merge-vitest-shards.mjs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T05:29:58-07:00",
+      "lastCommit": "adc8f97c",
+      "lastSummary": "ci: shorten the quality-gate critical path (#3742)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/scripts/merge-vitest-shards.test.mjs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T05:29:58-07:00",
+      "lastCommit": "adc8f97c",
+      "lastSummary": "ci: shorten the quality-gate critical path (#3742)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/scripts/vitest-files.mjs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T05:29:58-07:00",
+      "lastCommit": "adc8f97c",
+      "lastSummary": "ci: shorten the quality-gate critical path (#3742)",
+      "touches": 1
     },
     {
       "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
@@ -2447,308 +3794,13 @@
       "lastModified": "2026-11-25T03:02:09-07:00",
       "lastCommit": "cb5d7320",
       "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 13
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/trading-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Strategies/README.md",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Execution/README.md",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/types.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.TableViews.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Ui/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Strategies/Live/LiveTradingEngine.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Execution/OrderManagementSystem.RiskOutcomes.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Execution/Serialization/ExecutionJsonContext.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Audit.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Execution.Sdk/OrderIntent.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Execution.Sdk/README.md",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Execution/OrderManagement/BrokerOrderSweep.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Execution/OrderManagement/OrderExecutionAudit.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Execution/OrderManagement/OrderIntentJournal.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Execution/OrderManagementSystem.Cancellation.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Execution/OrderManagementSystem.OrderIntents.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Execution/Services/ExecutionAuditTrailService.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Strategies/Artifacts/StrategyArtifact.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Strategies/Live/Designer/DesignerPaperExecution.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/trading-screen.audit-trail.view-model.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Execution.Sdk/CancelAllIncident.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Execution/OrderManagement/CancelAllIncidentRecorder.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Execution/OrderManagementSystem.CancelIncidents.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Execution/Services/ExecutionAuditTrailService.CancelIncidents.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.CancelIncidents.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ExecutionAuditPublicProjection.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 1
+      "touches": 11
     }
   ],
   "recentChangesWindowDays": 14,
   "notes": {
     "purpose": "Orientation-first navigation dataset for assistants working inside Meridian.",
-    "scope": "High-signal subsystems, contracts, docs, and task routes rather than exhaustive symbol search."
+    "scope": "High-signal subsystems, contracts, docs, and task routes rather than exhaustive symbol search.",
+    "projectIndex": "Every src/ and tests/ project. 'projects' and 'subsystems' cover only seeded (catalogued) projects."
   }
 }

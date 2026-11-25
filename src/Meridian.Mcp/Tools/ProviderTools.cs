@@ -20,8 +20,10 @@ public sealed class ProviderTools(RepoPathService repo)
     [McpServerTool(Name = "get_provider_template")]
     [Description("Get a scaffold template file for implementing a new Meridian provider. Type: streaming | historical | symbol-search | factory | config | constants")]
     public string GetProviderTemplate(
-        [Description("Provider type: streaming | historical | symbol-search | factory | config | constants")] string type)
+        [Description("Provider type: streaming | historical | symbol-search | factory | config | constants")] string type,
+        CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         if (!TemplateFileMap.TryGetValue(type, out var fileName))
         {
             return $"Unknown provider type '{type}'.\n\n" +
@@ -44,7 +46,7 @@ public sealed class ProviderTools(RepoPathService repo)
 
     [McpServerTool(Name = "list_providers")]
     [Description("List all registered data providers in the Meridian codebase by scanning [DataSource] attributes. Returns provider name, type, class, and location.")]
-    public string ListProviders()
+    public string ListProviders(CancellationToken ct = default)
     {
         if (!Directory.Exists(repo.AdaptersPath))
             return $"Adapters directory not found at: {repo.AdaptersPath}";
@@ -58,6 +60,7 @@ public sealed class ProviderTools(RepoPathService repo)
 
         foreach (var file in Directory.EnumerateFiles(repo.AdaptersPath, "*.cs", SearchOption.AllDirectories))
         {
+            ct.ThrowIfCancellationRequested();
             var content = File.ReadAllText(file);
             if (!content.Contains("[DataSource("))
                 continue;

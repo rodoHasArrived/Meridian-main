@@ -66,44 +66,44 @@ The capability matrix covers 22 direct adapter folders across six shared contrac
 ### Core Abstractions (ProviderSdk)
 | File | Purpose |
 |------|---------|
-| `ProviderSdk/IDataSource.cs` | Base interface for all data sources |
-| `ProviderSdk/IRealtimeDataSource.cs` | Real-time streaming extension |
-| `ProviderSdk/IHistoricalDataSource.cs` | Historical data retrieval |
-| `ProviderSdk/IMarketDataClient.cs` | Market data client interface |
-| `ProviderSdk/DataSourceAttribute.cs` | Attribute for auto-discovery |
-| `ProviderSdk/DataSourceRegistry.cs` | Registry for data source discovery |
-| `ProviderSdk/IProviderMetadata.cs` | Provider metadata interface |
-| `ProviderSdk/IProviderModule.cs` | Provider module interface |
-| `ProviderSdk/IHistoricalBarWriter.cs` | Historical bar data writer |
-| `ProviderSdk/CredentialValidator.cs` | Credential validation |
-| `ProviderSdk/HistoricalDataCapabilities.cs` | Historical capability flags |
-| `ProviderSdk/ImplementsAdrAttribute.cs` | ADR implementation tracking |
-| `ProviderSdk/ProviderHttpUtilities.cs` | HTTP utility methods |
+| `src/Meridian.ProviderSdk/IDataSource.cs` | Base interface for all data sources |
+| `src/Meridian.ProviderSdk/IRealtimeDataSource.cs` | Real-time streaming extension |
+| `src/Meridian.ProviderSdk/IHistoricalDataSource.cs` | Historical data retrieval |
+| `src/Meridian.ProviderSdk/IMarketDataClient.cs` | Market data client interface |
+| `src/Meridian.ProviderSdk/DataSourceAttribute.cs` | Attribute for auto-discovery |
+| `src/Meridian.ProviderSdk/DataSourceRegistry.cs` | Registry for data source discovery |
+| `src/Meridian.ProviderSdk/IProviderMetadata.cs` | Provider metadata interface |
+| `src/Meridian.ProviderSdk/IProviderModule.cs` | Provider module interface |
+| `src/Meridian.ProviderSdk/IHistoricalBarWriter.cs` | Historical bar data writer |
+| `src/Meridian.ProviderSdk/CredentialValidator.cs` | Credential validation |
+| `src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs` | Historical capability flags |
+| `src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs` | ADR implementation tracking |
+| `src/Meridian.ProviderSdk/ProviderHttpUtilities.cs` | HTTP utility methods |
 
 ### Infrastructure Base Classes
 | File | Purpose |
 |------|---------|
-| `Infrastructure/DataSources/DataSourceBase.cs` | Base class for data sources |
-| `Infrastructure/DataSources/DataSourceConfiguration.cs` | Data source configuration |
+| `src/Meridian.Infrastructure/DataSources/DataSourceBase.cs` | Base class for data sources |
+| `src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs` | Data source configuration |
 
 ### Provider Core Framework
 | File | Purpose |
 |------|---------|
-| `Infrastructure/Adapters/Core/ProviderFactory.cs` | Factory for creating providers |
-| `Infrastructure/Adapters/Core/ProviderRegistry.cs` | Registry of available providers |
-| `Infrastructure/Adapters/Core/ProviderServiceExtensions.cs` | DI service extensions |
-| `Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs` | Subscription range management |
-| `Infrastructure/Adapters/Core/ProviderTemplate.cs` | Provider template/base |
+| `src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs` | Factory for creating providers |
+| `src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs` | Registry of available providers |
+| `src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs` | DI service extensions |
+| `src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs` | Subscription range management |
+| `src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs` | Provider template/base |
 
 ### Streaming Providers
 | Provider | Location | Files |
 |----------|----------|-------|
-| Alpaca | `Infrastructure/Adapters/Alpaca/` | 1 |
-| Interactive Brokers | `Infrastructure/Adapters/InteractiveBrokers/` | 8 |
+| Alpaca | `src/Meridian.Infrastructure/Adapters/Alpaca/` | 1 |
+| Interactive Brokers | `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/` | 8 |
 | StockSharp | _no such directory_ | 0 |
-| NYSE | `Infrastructure/Adapters/NYSE/` | 3 |
-| Polygon | `Infrastructure/Adapters/Polygon/` | 1 |
-| Failover | `Infrastructure/Adapters/Failover/` | 3 |
+| NYSE | `src/Meridian.Infrastructure/Adapters/NYSE/` | 3 |
+| Polygon | `src/Meridian.Infrastructure/Adapters/Polygon/` | 1 |
+| Failover | `src/Meridian.Infrastructure/Adapters/Failover/` | 3 |
 
 **Interactive Brokers files:**
 - `IBMarketDataClient.cs` - Main streaming client
@@ -128,28 +128,28 @@ expecting an adapter to modify.
 ### Historical Providers
 | Provider | Location |
 |----------|----------|
-| Base class | `Infrastructure/Adapters/BaseHistoricalDataProvider.cs` |
-| Interface | `Infrastructure/Adapters/IHistoricalDataProvider.cs` |
-| Composite (failover) | `Infrastructure/Adapters/CompositeHistoricalDataProvider.cs` |
-| Alpaca | `Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs` |
-| Yahoo Finance | `Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs` |
-| Stooq | `Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs` |
-| Tiingo | `Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs` |
-| Finnhub | `Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs` |
-| Alpha Vantage | `Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` |
-| Nasdaq Data Link | `Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs` |
-| Polygon | `Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs` |
+| Base class | `src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs` |
+| Interface | `src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs` |
+| Composite (failover) | `src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs` |
+| Alpaca | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs` |
+| Yahoo Finance | `src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs` |
+| Stooq | `src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs` |
+| Tiingo | `src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs` |
+| Finnhub | `src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs` |
+| Alpha Vantage | `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` |
+| Nasdaq Data Link | `src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs` |
+| Polygon | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs` |
 | StockSharp | _not implemented_ |
-| Interactive Brokers | `Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs` |
+| Interactive Brokers | `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs` |
 
 ### Historical Support Modules
 | Module | Location | Purpose |
 |--------|----------|---------|
-| Gap Analysis | `Infrastructure/Adapters/GapAnalysis/` | Data gap detection and repair |
-| Rate Limiting | `Infrastructure/Adapters/RateLimiting/` | Per-provider rate limit tracking |
-| Queue | `Infrastructure/Adapters/Queue/` | Backfill job queue and workers |
-| Symbol Resolution | `Infrastructure/Adapters/SymbolResolution/` | Cross-provider symbol resolution |
-| Core | `Infrastructure/Adapters/Core/` | Response handling utilities |
+| Gap Analysis | `src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/` | Data gap detection and repair |
+| Rate Limiting | `src/Meridian.Infrastructure/Adapters/Core/RateLimiting/` | Per-provider rate limit tracking |
+| Queue | `src/Meridian.Infrastructure/Adapters/Core/Backfill/` | Backfill job queue and workers |
+| Symbol Resolution | `src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/` | Cross-provider symbol resolution |
+| Core | `src/Meridian.Infrastructure/Adapters/Core/` | Response handling utilities |
 
 **Gap Analysis files:**
 - `DataGapAnalyzer.cs` - Gap analysis and reporting
@@ -175,12 +175,12 @@ expecting an adapter to modify.
 ### Symbol Search Providers
 | Provider | Location |
 |----------|----------|
-| Alpaca | `Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs` |
-| EDGAR | `Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs` |
-| Polygon | `Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs` |
-| Finnhub | `Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProvider.cs` |
-| OpenFIGI | `Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs` |
-| Robinhood | `Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs` |
+| Alpaca | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs` |
+| EDGAR | `src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs` |
+| Polygon | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs` |
+| Finnhub | `src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProvider.cs` |
+| OpenFIGI | `src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs` |
+| Robinhood | `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs` |
 
 Supporting files:
 - `ISymbolSearchProvider.cs` - Base interface
@@ -190,12 +190,12 @@ Supporting files:
 ### Resilience Infrastructure
 | File | Purpose |
 |------|---------|
-| `Infrastructure/Resilience/HttpResiliencePolicy.cs` | HTTP resilience with Polly |
-| `Infrastructure/Resilience/WebSocketResiliencePolicy.cs` | WebSocket resilience |
-| `Infrastructure/Resilience/WebSocketConnectionManager.cs` | WebSocket connection lifecycle |
-| `Infrastructure/Resilience/WebSocketConnectionConfig.cs` | WebSocket configuration |
-| `Infrastructure/Http/SharedResiliencePolicies.cs` | Shared Polly policies |
-| `Infrastructure/Adapters/Core/BackfillProgressTracker.cs` | Backfill progress tracking |
+| `src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs` | HTTP resilience with Polly |
+| `src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs` | WebSocket resilience |
+| `src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs` | WebSocket connection lifecycle |
+| `src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs` | WebSocket configuration |
+| `src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs` | Shared Polly policies |
+| `src/Meridian.Infrastructure/Adapters/Core/BackfillProgressTracker.cs` | Backfill progress tracking |
 
 ---
 
@@ -222,10 +222,10 @@ export MERIDIAN_SECURITY_MASTER_SCHEMA="security_master"
 **Files:**
 | File | Purpose |
 |------|---------|
-| `Application/SecurityMaster/SecurityMasterService.cs` | Command service (create, amend, deactivate) |
-| `Contracts/SecurityMaster/ISecurityMasterQueryService.cs` | Canonical query service contract (get, search, history) |
-| `Storage/SecurityMaster/ISecurityMasterEventStore.cs` | Event store (append, load) |
-| `Storage/SecurityMaster/PostgresSecurityMasterStore.cs` | PostgreSQL implementation |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs` | Command service (create, amend, deactivate) |
+| `src/Meridian.Contracts/SecurityMaster/ISecurityMasterQueryService.cs` | Canonical query service contract (get, search, history) |
+| `src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs` | Event store (append, load) |
+| `src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs` | PostgreSQL implementation |
 | `FSharp/Domain/SecurityMaster.fs` | Domain types and asset class definitions |
 | `Ui.Shared/Endpoints/SecurityMasterEndpoints.cs` | REST API endpoints |
 

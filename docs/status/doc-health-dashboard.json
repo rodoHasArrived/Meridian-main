@@ -1,12 +1,16 @@
 {
-  "total_files": 1303,
-  "orphaned_count": 394,
+  "total_files": 1307,
+  "orphaned_count": 398,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:82250b79f0fb117914d928dfefcf0e8a4cb783bfe1537d8d16a2b11eddab3461",
+  "signal_digest": "sha256:c13a1b04f577d5054d5d4a81113bb3411cd5b3d6bf0053cf86d8703f511a6ced",
   "orphaned_files": [
+    ".agents/skills/meridian-accounting/SKILL.md",
+    ".agents/skills/meridian-accounting/references/event-accounting-patterns.md",
+    ".agents/skills/meridian-accounting/references/posting-control-checklist.md",
+    ".agents/skills/meridian-accounting/references/projection-replay-checklist.md",
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
     ".agents/skills/meridian-brainstorm/SKILL.md",
@@ -641,6 +645,34 @@
       "path": ".agents/skills/_shared/project-context.md",
       "has_heading": true,
       "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-accounting/references/event-accounting-patterns.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-accounting/references/posting-control-checklist.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-accounting/references/projection-replay-checklist.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-accounting/SKILL.md",
+      "has_heading": true,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },

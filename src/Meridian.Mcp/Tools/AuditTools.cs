@@ -59,7 +59,7 @@ public sealed class AuditTools(RepoPathService repo, ILogger<AuditTools> logger)
         // individually. Concatenating into a single argument string would let a
         // caller-supplied value (e.g. pathFilter containing a quote) break out of its
         // quoting and inject additional arguments to the audit script.
-        var psi = new ProcessStartInfo("python3")
+        var psi = new ProcessStartInfo(PythonLauncher.Executable)
         {
             WorkingDirectory = repo.Root,
             RedirectStandardOutput = true,
@@ -90,7 +90,7 @@ public sealed class AuditTools(RepoPathService repo, ILogger<AuditTools> logger)
     {
         var sb = new StringBuilder();
         sb.AppendLine($"## {label}\n");
-        sb.AppendLine($"**Command:** `python3 ai-repo-updater.py {command}`");
+        sb.AppendLine($"**Command:** `{PythonLauncher.Executable} ai-repo-updater.py {command}`");
         sb.AppendLine($"**Exit code:** {exitCode}\n");
 
         if (!string.IsNullOrWhiteSpace(stdout))

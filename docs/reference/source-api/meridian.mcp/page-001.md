@@ -76,8 +76,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[McpServerResource(UriTemplate = &quot;mdc://adrs&quot;, Name = &quot;adr_index&quot;, Title = &quot;ADR Index — All Architecture Decision Records&quot;, MimeType = &quot;text/markdown&quot;)][Description(&quot;Index of all 17 Architecture Decision Records in the Meridian project.&quot;)] public string GetAdrIndex();</code> | [src/Meridian.Mcp/Resources/AdrResources.cs:14](../../../../src/Meridian.Mcp/Resources/AdrResources.cs#L14) |  |
-| <code>[McpServerResource(UriTemplate = &quot;mdc://adrs/{id}&quot;, Name = &quot;adr&quot;, Title = &quot;Architecture Decision Record&quot;, MimeType = &quot;text/markdown&quot;)][Description(&quot;Full content of a specific ADR. Use ID like &#x27;007&#x27; or &#x27;001&#x27;.&quot;)] public string GetAdr(string id);</code> | [src/Meridian.Mcp/Resources/AdrResources.cs:63](../../../../src/Meridian.Mcp/Resources/AdrResources.cs#L63) |  |
+| <code>[McpServerResource(UriTemplate = &quot;mdc://adrs&quot;, Name = &quot;adr_index&quot;, Title = &quot;ADR Index — Active and Archived Architecture Decision Records&quot;, MimeType = &quot;text/markdown&quot;)][Description(&quot;Index of the active and archived Architecture Decision Records in the Meridian project.&quot;)] public string GetAdrIndex();</code> | [src/Meridian.Mcp/Resources/AdrResources.cs:14](../../../../src/Meridian.Mcp/Resources/AdrResources.cs#L14) |  |
+| <code>[McpServerResource(UriTemplate = &quot;mdc://adrs/{id}&quot;, Name = &quot;adr&quot;, Title = &quot;Architecture Decision Record&quot;, MimeType = &quot;text/markdown&quot;)][Description(&quot;Full content of a specific ADR. Use ID like &#x27;007&#x27; or &#x27;001&#x27;.&quot;)] public string GetAdr(string id);</code> | [src/Meridian.Mcp/Resources/AdrResources.cs:56](../../../../src/Meridian.Mcp/Resources/AdrResources.cs#L56) |  |
 
 ## ConventionResources
 
@@ -176,24 +176,27 @@ Declared public members:
 | <code>public string Root { get; }</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:12](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L12) |  |
 | <code>public string DocsPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:13](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L13) |  |
 | <code>public string AdrPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:14](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L14) |  |
-| <code>public string AiDocsPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:15](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L15) |  |
-| <code>public string GithubPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:16](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L16) |  |
-| <code>public string InstructionsPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:17](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L17) |  |
-| <code>public string AgentsPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:18](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L18) |  |
-| <code>public string AiClaudePath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:19](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L19) |  |
-| <code>public string TemplatesPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:20](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L20) |  |
-| <code>public string AdaptersPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:21](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L21) |  |
-| <code>public string AuditScriptPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:22](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L22) |  |
-| <code>public string AiEditToolPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:23](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L23) |  |
-| <code>public RepoPathService();</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:25](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L25) |  |
-| <code>public string KnownErrorsFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:66](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L66) |  |
-| <code>public string CSharpInstructionsFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:67](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L67) |  |
-| <code>public string CodeReviewAgentFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:68](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L68) |  |
-| <code>public string ProvidersGuideFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:69](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L69) |  |
-| <code>public string TestingGuideFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:70](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L70) |  |
-| <code>public string StorageGuideFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:71](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L71) |  |
-| <code>public string FSharpGuideFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:72](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L72) |  |
-| <code>public string ResolveInsideRoot(string path);</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:74](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L74) |  |
+| <code>public string ArchivedAdrPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:15](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L15) |  |
+| <code>public string AiDocsPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:16](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L16) |  |
+| <code>public string GithubPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:17](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L17) |  |
+| <code>public string InstructionsPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:18](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L18) |  |
+| <code>public string AgentsPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:19](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L19) |  |
+| <code>public string AiClaudePath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:20](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L20) |  |
+| <code>public string TemplatesPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:21](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L21) |  |
+| <code>public string AdaptersPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:22](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L22) |  |
+| <code>public string AuditScriptPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:23](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L23) |  |
+| <code>public string AiEditToolPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:24](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L24) |  |
+| <code>public RepoPathService();</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:26](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L26) |  |
+| <code>public string KnownErrorsFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:67](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L67) |  |
+| <code>public string CSharpInstructionsFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:68](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L68) |  |
+| <code>public string CodeReviewAgentFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:69](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L69) |  |
+| <code>public string ProvidersGuideFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:70](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L70) |  |
+| <code>public string TestingGuideFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:71](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L71) |  |
+| <code>public string StorageGuideFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:72](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L72) |  |
+| <code>public string FSharpGuideFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:73](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L73) |  |
+| <code>public IEnumerable&lt;(string Path, bool Archived)&gt; EnumerateAdrFiles(CancellationToken ct = default);</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:80](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L80) | Enumerates decision records: active records from AdrPath first, then archived records from ArchivedAdrPath. README and underscore-prefixed support files are excluded. Missing directories are skipped. |
+| <code>public string? FindAdrFile(string normalizedId);</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:103](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L103) | Finds the record for a normalized three-digit ID. An active record takes precedence over an archived record with the same ID. Callers must validate the ID before passing it here, because it becomes part of a file-search pattern. |
+| <code>public string ResolveInsideRoot(string path);</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:116](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L116) |  |
 
 ## AdrTools
 
@@ -211,8 +214,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[McpServerTool(Name = &quot;list_adrs&quot;)][Description(&quot;List all Architecture Decision Records with their IDs, titles, and status. Returns a Markdown table.&quot;)] public string ListAdrs();</code> | [src/Meridian.Mcp/Tools/AdrTools.cs:11](../../../../src/Meridian.Mcp/Tools/AdrTools.cs#L11) |  |
-| <code>[McpServerTool(Name = &quot;get_adr&quot;)][Description(&quot;Get the full content of a specific Architecture Decision Record. Accepts &#x27;001&#x27;, &#x27;ADR-001&#x27;, or &#x27;1&#x27;.&quot;)] public string GetAdr([Description(&quot;ADR ID, e.g. &#x27;007&#x27;, &#x27;ADR-007&#x27;, or &#x27;7&#x27;&quot;)] string id);</code> | [src/Meridian.Mcp/Tools/AdrTools.cs:40](../../../../src/Meridian.Mcp/Tools/AdrTools.cs#L40) |  |
+| <code>[McpServerTool(Name = &quot;list_adrs&quot;)][Description(&quot;List all Architecture Decision Records, active and archived, with their IDs, titles, and status. Returns a Markdown table.&quot;)] public string ListAdrs(CancellationToken ct = default);</code> | [src/Meridian.Mcp/Tools/AdrTools.cs:11](../../../../src/Meridian.Mcp/Tools/AdrTools.cs#L11) |  |
+| <code>[McpServerTool(Name = &quot;get_adr&quot;)][Description(&quot;Get the full content of a specific Architecture Decision Record, active or archived. Accepts &#x27;001&#x27;, &#x27;ADR-001&#x27;, or &#x27;1&#x27;.&quot;)] public string GetAdr([Description(&quot;ADR ID, e.g. &#x27;007&#x27;, &#x27;ADR-007&#x27;, or &#x27;7&#x27;&quot;)] string id, CancellationToken ct = default);</code> | [src/Meridian.Mcp/Tools/AdrTools.cs:38](../../../../src/Meridian.Mcp/Tools/AdrTools.cs#L38) |  |
 
 ## AuditTools
 
@@ -318,8 +321,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[McpServerTool(Name = &quot;get_provider_template&quot;)][Description(&quot;Get a scaffold template file for implementing a new Meridian provider. Type: streaming &#124; historical &#124; symbol-search &#124; factory &#124; config &#124; constants&quot;)] public string GetProviderTemplate([Description(&quot;Provider type: streaming &#124; historical &#124; symbol-search &#124; factory &#124; config &#124; constants&quot;)] string type);</code> | [src/Meridian.Mcp/Tools/ProviderTools.cs:22](../../../../src/Meridian.Mcp/Tools/ProviderTools.cs#L22) |  |
-| <code>[McpServerTool(Name = &quot;list_providers&quot;)][Description(&quot;List all registered data providers in the Meridian codebase by scanning [DataSource] attributes. Returns provider name, type, class, and location.&quot;)] public string ListProviders();</code> | [src/Meridian.Mcp/Tools/ProviderTools.cs:47](../../../../src/Meridian.Mcp/Tools/ProviderTools.cs#L47) |  |
+| <code>[McpServerTool(Name = &quot;get_provider_template&quot;)][Description(&quot;Get a scaffold template file for implementing a new Meridian provider. Type: streaming &#124; historical &#124; symbol-search &#124; factory &#124; config &#124; constants&quot;)] public string GetProviderTemplate([Description(&quot;Provider type: streaming &#124; historical &#124; symbol-search &#124; factory &#124; config &#124; constants&quot;)] string type, CancellationToken ct = default);</code> | [src/Meridian.Mcp/Tools/ProviderTools.cs:22](../../../../src/Meridian.Mcp/Tools/ProviderTools.cs#L22) |  |
+| <code>[McpServerTool(Name = &quot;list_providers&quot;)][Description(&quot;List all registered data providers in the Meridian codebase by scanning [DataSource] attributes. Returns provider name, type, class, and location.&quot;)] public string ListProviders(CancellationToken ct = default);</code> | [src/Meridian.Mcp/Tools/ProviderTools.cs:49](../../../../src/Meridian.Mcp/Tools/ProviderTools.cs#L49) |  |
 
 ## RepoEditTools
 

@@ -12,6 +12,7 @@ public sealed class RepoPathService
     public string Root { get; }
     public string DocsPath => Path.Combine(Root, "docs");
     public string AdrPath => Path.Combine(Root, "docs", "adr");
+    public string ArchivedAdrPath => Path.Combine(Root, "archive", "docs", "adr");
     public string AiDocsPath => Path.Combine(Root, "docs", "ai");
     public string GithubPath => Path.Combine(Root, ".github");
     public string InstructionsPath => Path.Combine(Root, ".github", "instructions");
@@ -70,6 +71,47 @@ public sealed class RepoPathService
     public string TestingGuideFile => Path.Combine(AiClaudePath, "CLAUDE.testing.md");
     public string StorageGuideFile => Path.Combine(AiClaudePath, "CLAUDE.storage.md");
     public string FSharpGuideFile => Path.Combine(AiClaudePath, "CLAUDE.fsharp.md");
+
+    /// <summary>
+    /// Enumerates decision records: active records from <see cref="AdrPath"/> first, then
+    /// archived records from <see cref="ArchivedAdrPath"/>. README and underscore-prefixed
+    /// support files are excluded. Missing directories are skipped.
+    /// </summary>
+    public IEnumerable<(string Path, bool Archived)> EnumerateAdrFiles(CancellationToken ct = default)
+    {
+        foreach (var (directory, archived) in new[] { (AdrPath, false), (ArchivedAdrPath, true) })
+        {
+            if (!Directory.Exists(directory))
+                continue;
+
+            foreach (var file in Directory.EnumerateFiles(directory, "*.md")
+                         .Where(f => !Path.GetFileName(f).StartsWith('_') &&
+                                     !Path.GetFileName(f).Equals("README.md", StringComparison.OrdinalIgnoreCase))
+                         .OrderBy(f => f, StringComparer.Ordinal))
+            {
+                ct.ThrowIfCancellationRequested();
+                yield return (file, archived);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Finds the record for a normalized three-digit ID. An active record takes precedence over
+    /// an archived record with the same ID. Callers must validate the ID before passing it here,
+    /// because it becomes part of a file-search pattern.
+    /// </summary>
+    public string? FindAdrFile(string normalizedId)
+    {
+        foreach (var directory in new[] { AdrPath, ArchivedAdrPath })
+        {
+            if (!Directory.Exists(directory))
+                continue;
+            var match = Directory.EnumerateFiles(directory, $"{normalizedId}-*.md").FirstOrDefault();
+            if (match is not null)
+                return match;
+        }
+        return null;
+    }
 
     public string ResolveInsideRoot(string path)
     {

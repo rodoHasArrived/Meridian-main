@@ -8,47 +8,40 @@ namespace Meridian.Mcp.Resources;
 public sealed class AdrResources(RepoPathService repo)
 {
     [McpServerResource(UriTemplate = "mdc://adrs", Name = "adr_index",
-        Title = "ADR Index — All Architecture Decision Records",
+        Title = "ADR Index — Active and Archived Architecture Decision Records",
         MimeType = "text/markdown")]
-    [Description("Index of all 17 Architecture Decision Records in the Meridian project.")]
+    [Description("Index of the active and archived Architecture Decision Records in the Meridian project.")]
     public string GetAdrIndex()
     {
-        if (!Directory.Exists(repo.AdrPath))
+        if (!Directory.Exists(repo.AdrPath) && !Directory.Exists(repo.ArchivedAdrPath))
             return $"ADR directory not found at {repo.AdrPath}";
 
         var sb = new StringBuilder();
         sb.AppendLine("# Meridian — Architecture Decision Records\n");
         sb.AppendLine("These ADRs are the architectural law of the project. Every significant implementation must reference the relevant ADR via `[ImplementsAdr(\"ADR-XXX\", \"reason\")]`.\n");
-        sb.AppendLine("| ID | Title | Key Enforcement |");
-        sb.AppendLine("|----|-------|-----------------|");
+        sb.AppendLine("| ID | Title | State | Key Enforcement |");
+        sb.AppendLine("|----|-------|-------|-----------------|");
 
         var summaries = new Dictionary<string, string>
         {
             ["001"] = "Use `[ImplementsAdr(\"ADR-001\")]` on all providers",
             ["002"] = "Hot/warm/cold storage tiers; use `TierMigrationService`",
-            ["003"] = "Monolith preferred — no microservice decomposition",
             ["004"] = "`CancellationToken ct = default` on every async method",
             ["005"] = "`[DataSource]` attribute for automatic discovery",
             ["006"] = "Domain events: sealed record + static factories",
             ["007"] = "`AtomicFileWriter` for all sink writes; WAL before queue",
-            ["008"] = "`CompositeSink` for JSONL + Parquet simultaneous writes",
-            ["009"] = "F# discriminated unions; handle all DU cases in C#",
             ["010"] = "`IHttpClientFactory` — never construct `HttpClient` directly",
-            ["011"] = "Env vars for credentials; no hardcoding",
-            ["012"] = "Unified health checks + Prometheus metrics pipeline",
             ["013"] = "`EventPipelinePolicy.*.CreateChannel<T>()` — no raw channel creation",
             ["014"] = "`MarketDataJsonContext` on all `JsonSerializer` calls",
         };
 
-        foreach (var file in Directory.EnumerateFiles(repo.AdrPath, "*.md")
-                     .Where(f => !Path.GetFileName(f).StartsWith("_") &&
-                                 !Path.GetFileName(f).Equals("README.md", StringComparison.OrdinalIgnoreCase))
-                     .OrderBy(f => f))
+        foreach (var (file, archived) in repo.EnumerateAdrFiles())
         {
             var id = Path.GetFileNameWithoutExtension(file).Split('-')[0];
             var title = ExtractFirstHeading(file);
             summaries.TryGetValue(id, out var enforcement);
-            sb.AppendLine($"| [ADR-{id}](mdc://adrs/{id}) | {title} | {enforcement ?? "—"} |");
+            var state = archived ? "Archived" : "Active";
+            sb.AppendLine($"| [ADR-{id}](mdc://adrs/{id}) | {title} | {state} | {enforcement ?? "—"} |");
         }
 
         sb.AppendLine();
@@ -66,10 +59,8 @@ public sealed class AdrResources(RepoPathService repo)
         // separators out of EnumerateFiles even on hosts with permissive search patterns.
         if (string.IsNullOrEmpty(id) || id.Length > 3 || id.Any(c => c is < '0' or > '9'))
             return $"ADR '{id}' not found. Use a numeric ID such as '007'.";
-        if (!Directory.Exists(repo.AdrPath))
-            return $"ADR '{id}' not found. See mdc://adrs for the full index.";
         var normalized = id.PadLeft(3, '0');
-        var match = Directory.EnumerateFiles(repo.AdrPath, $"{normalized}-*.md").FirstOrDefault();
+        var match = repo.FindAdrFile(normalized);
         if (match is null)
             return $"ADR '{id}' not found. See mdc://adrs for the full index.";
         return File.ReadAllText(match);

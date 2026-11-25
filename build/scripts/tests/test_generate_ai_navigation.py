@@ -52,6 +52,57 @@ class GenerateAiNavigationTests(unittest.TestCase):
         for document in dataset["documents"]:
             self.assertTrue((nav.REPO_ROOT / document["path"]).exists(), document["path"])
 
+    def test_project_index_lists_every_source_and_test_project(self) -> None:
+        dataset = nav.build_dataset(nav.REPO_ROOT)
+        index = {item["name"]: item for item in dataset["projectIndex"]}
+
+        for area in ("src", "tests"):
+            for project_file in list(nav.REPO_ROOT.glob(f"{area}/*/*.csproj")) + list(nav.REPO_ROOT.glob(f"{area}/*/*.fsproj")):
+                self.assertIn(project_file.stem, index, project_file)
+                self.assertEqual(index[project_file.stem]["path"], f"{area}/{project_file.parent.name}")
+
+        for item in dataset["projectIndex"]:
+            self.assertTrue((nav.REPO_ROOT / item["path"]).exists(), item["path"])
+
+        self.assertTrue(index["Meridian.Wpf"]["catalogued"])
+        self.assertEqual(index["Meridian.Wpf"]["subsystem"], "workstation-ui")
+        self.assertIn("Meridian.Wpf", index["Meridian.Wpf.Tests"]["covers"])
+
+        seeded = {item["name"] for item in dataset["projects"]}
+        for item in dataset["projectIndex"]:
+            if item["area"] == "source":
+                self.assertEqual(item["catalogued"], item["name"] in seeded, item["name"])
+
+    def test_project_index_keeps_unseeded_projects(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            for relative in ("src/Meridian.Brand.New/Meridian.Brand.New.csproj", "src/Meridian.Wpf/Meridian.Wpf.csproj"):
+                (root / relative).parent.mkdir(parents=True)
+                (root / relative).write_text("<Project />", encoding="utf-8")
+            test_project = root / "tests/Meridian.Brand.New.Tests/Meridian.Brand.New.Tests.csproj"
+            test_project.parent.mkdir(parents=True)
+            test_project.write_text(
+                '<Project><ItemGroup><ProjectReference Include="..\\..\\src\\Meridian.Brand.New\\Meridian.Brand.New.csproj" /></ItemGroup></Project>',
+                encoding="utf-8",
+            )
+            ignored = root / "src/Meridian.Brand.New/obj/Ignored/Ignored.csproj"
+            ignored.parent.mkdir(parents=True)
+            ignored.write_text("<Project />", encoding="utf-8")
+
+            index = {item["name"]: item for item in nav.discover_project_index(root)}
+
+            self.assertNotIn("Meridian.Brand.New", {item["name"] for item in nav.discover_projects(root)})
+            self.assertFalse(index["Meridian.Brand.New"]["catalogued"])
+            self.assertIsNone(index["Meridian.Brand.New"]["subsystem"])
+            self.assertTrue(index["Meridian.Wpf"]["catalogued"])
+            self.assertEqual(index["Meridian.Brand.New.Tests"]["covers"], ["Meridian.Brand.New"])
+            self.assertNotIn("Ignored", index)
+
+            markdown = "\n".join(nav.render_project_index(list(index.values())))
+            self.assertIn("| `Meridian.Brand.New` | `src/Meridian.Brand.New` | _uncatalogued_ |", markdown)
+            self.assertIn("| `Meridian.Brand.New.Tests` | `tests/Meridian.Brand.New.Tests` | `Meridian.Brand.New` |", markdown)
+            self.assertIn("1 source project(s) are uncatalogued", markdown)
+
     def test_main_writes_json_and_markdown_outputs(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             json_output = Path(temp_dir) / "repo-navigation.json"

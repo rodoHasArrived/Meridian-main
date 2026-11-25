@@ -55,6 +55,32 @@ per-symbol and accounting-completeness reads to the workstation API. Run tools a
 aggregate and financial-account scope. The API applies its usual permissions and tenant visibility;
 these tools do not read journal files directly or grant posting authority.
 
+#### Ledger tool routing
+
+Pick the tool by the question and by which ledger holds the answer. A **run** ledger belongs to one
+retained strategy run (backtest or paper) and is keyed by `runId`. The **posted** books are the
+governed accounting ledger, keyed by an accounting `periodId`. All eleven tools are read-only.
+
+| Question | Tool | Required inputs |
+|---|---|---|
+| Run trial balance at an exact instant | `get_run_trial_balance` | `runId`, `asOf` (UTC offset required) |
+| Run trial balance, current or optional as-of, filterable by financial account | `get_ledger_trial_balance` | `runId` (`asOf`, `financialAccountId` optional) |
+| Account summaries with balances, totals, posting counts and dates | `get_ledger_accounts` | `runId` |
+| Running balance of one run account | `get_ledger_running_balance` | `runId`, `accountName` (qualify with `accountType`, `symbol`, `financialAccountId` when ambiguous) |
+| Full run journal with audit metadata (paged) | `get_ledger_journal` | `runId` (`from`, `to`, `offset`, `limit` optional) |
+| Journals that touch one symbol, including cash legs (paged) | `get_symbol_ledger` | `runId`, `symbol` |
+| Whether the run's hash-chained journal is intact | `get_run_ledger_integrity` | `runId` |
+| Posted journal entries for an accounting period | `get_posted_ledger_journal` | `periodId` |
+| Posted trial balance for an accounting period | `get_posted_trial_balance` | `periodId` |
+| Posted running balance of one account | `get_posted_running_balance` | `periodId`, `account` |
+| Whether every fill, asset and loan event reached the posted books | `get_ledger_completeness` | `ledgerBookId`, `periodId`, `aggregateId`, `financialAccountId` |
+
+To post, correct or close a ledger, use the workstation's governed accounting flows. No MCP tool
+writes to a ledger. A refused or unavailable result means the session lacks access or the ledger is
+not retained; do not fall back to reading journal files. Assistants route here through the
+`meridian-accounting` skill. `LedgerToolRoutingTests` fails when a tool in `Tools/LedgerTools.cs`
+is missing from this table, the Claude project context, or that skill.
+
 Set `MDC_API_URL` to the API origin (default `http://localhost:8080/`). HTTPS is required for
 non-loopback hosts. HTTP password sign-in on loopback is supported only when the server explicitly
 declares its `LocalWorkstation` posture and receives a loopback connection. Other server postures

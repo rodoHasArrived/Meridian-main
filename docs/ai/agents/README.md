@@ -188,6 +188,7 @@ the former `meridian-navigation` and `meridian-user-panel` aliases were pruned h
 
 | Agent | Purpose |
 | ------ | --------- |
+| [`meridian-accounting.md`](../../../.claude/agents/meridian-accounting.md) | Event-based accounting design, posting-control and projection/replay review, and read-only ledger data questions through the ledger MCP tools |
 | [`meridian-archive-organizer.md`](../../../.claude/agents/meridian-archive-organizer.md) | Archive stale files and keep repository structure tidy |
 | [`meridian-blueprint.md`](../../../.claude/agents/meridian-blueprint.md) | Blueprint and design specialist |
 | [`meridian-brainstorm.md`](../../../.claude/agents/meridian-brainstorm.md) | Generate Meridian-native product and architecture ideas |

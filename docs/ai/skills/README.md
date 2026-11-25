@@ -107,6 +107,7 @@ any mirror drift. Keep Codex-only package evals, scripts, profile wiring, and ro
 
 | Skill | SKILL.md | Purpose |
 | ------ | --------- | --------- |
+| `meridian-accounting` | [`SKILL.md`](../../../.claude/skills/meridian-accounting/SKILL.md) | Design and review event accounting, posting controls, and ledger projection/replay; answer ledger questions with the read-only ledger MCP tools. Portable counterpart of the three Codex accounting skills |
 | `meridian-archive-organizer` | [`SKILL.md`](../../../.claude/skills/meridian-archive-organizer/SKILL.md) | Archive stale files and keep the repository structure tidy |
 | `meridian-blueprint` | [`SKILL.md`](../../../.claude/skills/meridian-blueprint/SKILL.md) | Turn one idea into an implementation-ready technical blueprint |
 | `meridian-brainstorm` | [`SKILL.md`](../../../.claude/skills/meridian-brainstorm/SKILL.md) | Generate high-value product and architecture ideas |

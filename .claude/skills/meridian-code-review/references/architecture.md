@@ -522,7 +522,7 @@ Skipping step 4 or 5 causes in-flight event loss on graceful shutdown.
 
 ### IFlushable Contract
 
-All `IStorageSink` implementations must implement `IFlushable` (from `Core/Services/IFlushable.cs`):
+All `IStorageSink` implementations must implement `IFlushable` (from `src/Meridian.Core/Services/IFlushable.cs`):
 
 ```csharp
 public interface IFlushable

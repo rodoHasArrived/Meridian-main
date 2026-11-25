@@ -8,6 +8,12 @@ Meridian-main
 │   └── skills
 │       ├── _shared
 │       │   └── project-context.md
+│       ├── meridian-accounting
+│       │   ├── references
+│       │   │   ├── event-accounting-patterns.md
+│       │   │   ├── posting-control-checklist.md
+│       │   │   └── projection-replay-checklist.md
+│       │   └── SKILL.md
 │       ├── meridian-archive-organizer
 │       │   ├── agents
 │       │   │   └── openai.yaml
@@ -142,6 +148,7 @@ Meridian-main
 │           └── SKILL.md
 ├── .claude
 │   ├── agents
+│   │   ├── meridian-accounting.md
 │   │   ├── meridian-archive-organizer.md
 │   │   ├── meridian-blueprint.md
 │   │   ├── meridian-brainstorm.md
@@ -196,6 +203,12 @@ Meridian-main
 │   ├── skills
 │   │   ├── _shared
 │   │   │   └── project-context.md
+│   │   ├── meridian-accounting
+│   │   │   ├── references
+│   │   │   │   ├── event-accounting-patterns.md
+│   │   │   │   ├── posting-control-checklist.md
+│   │   │   │   └── projection-replay-checklist.md
+│   │   │   └── SKILL.md
 │   │   ├── meridian-archive-organizer
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
@@ -7944,6 +7957,7 @@ Meridian-main
 │   │   │   ├── KnownErrorTools.cs
 │   │   │   ├── LedgerTools.cs
 │   │   │   ├── ProviderTools.cs
+│   │   │   ├── PythonLauncher.cs
 │   │   │   ├── RepoEditTools.cs
 │   │   │   ├── ToolProcessExecution.cs
 │   │   │   └── ToolProcessRunner.cs
@@ -10893,6 +10907,7 @@ Meridian-main
 │   │   │   │   │   ├── cash-dividend-attestation-fixtures.ts
 │   │   │   │   │   ├── fixtures.ts
 │   │   │   │   │   ├── ledger-amount-proof-fixtures.ts
+│   │   │   │   │   ├── narrow-workbench.ts
 │   │   │   │   │   ├── render.tsx
 │   │   │   │   │   ├── reporting-income-comparison-fixtures.ts
 │   │   │   │   │   ├── scenarios.ts
@@ -14460,6 +14475,7 @@ Meridian-main
 │   │   │   ├── StructuredNoteAccountingTemplateTests.cs
 │   │   │   └── YearEndCloseTests.cs
 │   │   ├── Mcp
+│   │   │   ├── LedgerToolRoutingTests.cs
 │   │   │   ├── LedgerToolsTests.cs
 │   │   │   ├── McpRepoRootFixture.cs
 │   │   │   ├── RepoEditToolsTests.cs
@@ -15312,6 +15328,7 @@ Meridian-main
 │   │   │   ├── MarketScenarioBuilder.cs
 │   │   │   ├── PolygonStubClient.cs
 │   │   │   ├── RecordingLogger.cs
+│   │   │   ├── RepositoryFileWalker.cs
 │   │   │   ├── SecurityMasterTestCapabilityFloor.cs
 │   │   │   ├── SignalingMarketEventPublisher.cs
 │   │   │   ├── StubHttpMessageHandler.cs
@@ -16374,6 +16391,7 @@ Meridian-main
 │   │   ├── test_msix_predecessor_workflow.py
 │   │   ├── test_nullable_warning_ratchet.py
 │   │   ├── test_postgresql_payload.py
+│   │   ├── test_pr_draft_gating.py
 │   │   ├── test_prepare_dk1_operator_signoff.py
 │   │   ├── test_production_certification_workflow.py
 │   │   ├── test_production_readiness_registry.py
