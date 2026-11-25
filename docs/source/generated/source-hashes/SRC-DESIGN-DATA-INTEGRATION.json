@@ -1,0 +1,7 @@
+{
+  "id": "SRC-DESIGN-DATA-INTEGRATION",
+  "path": "src/Meridian.DataIntegration",
+  "readme": "src/Meridian.DataIntegration/README.md",
+  "readme_hash": "b85fbdb29c16ff8f2589728a8804117d720a55098216c584a1bc57e5d1cadf8b",
+  "source_hash": "6c065c7d937dd291c7470a9d9cf52d8045ff33c5b7485a1bffb4b621468670e5"
+}
