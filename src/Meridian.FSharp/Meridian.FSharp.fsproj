@@ -4,6 +4,10 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarnOn>3390;$(WarnOn)</WarnOn>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <!-- An incomplete pattern match (FS0025) is an error: adding a case to a discriminated union
+         such as SecurityKind or BondCouponStructure must break the build at every match site that
+         does not handle it, not only surface a warning or a parity test failure. -->
+    <WarningsAsErrors>$(WarningsAsErrors);FS0025</WarningsAsErrors>
     <AssemblyName>Meridian.FSharp</AssemblyName>
     <RootNamespace>Meridian.FSharp</RootNamespace>
     <Version>1.0.0</Version>

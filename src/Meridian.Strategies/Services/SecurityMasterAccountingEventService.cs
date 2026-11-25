@@ -413,6 +413,21 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
             issues.Add(CreateIssue("SM_COUPON_TERMS_MISSING", "security-master", security.Symbol, accountId, $"Security '{security.Symbol}' is missing coupon type.", ReconciliationBreakSeverity.High));
         }
 
+        // Accrual generation accrues Fixed coupons, refuses Floating with its own reset-terms reason,
+        // and correctly generates no coupon for ZeroCoupon. Any other declared structure (Step, InflationLinked, or a value this
+        // service has never seen) must block with a typed reason: passing coverage here and then
+        // generating no coupon events would report a plausible zero accrual for a coupon-bearing bond.
+        if (!string.IsNullOrWhiteSpace(terms.CouponType) && !IsRecognizedCouponStructure(terms.CouponType))
+        {
+            issues.Add(CreateIssue(
+                CouponStructureUnsupported,
+                "security-master",
+                security.Symbol,
+                accountId,
+                $"Security '{security.Symbol}' declares coupon structure '{terms.CouponType.Trim()}', which expected-accrual generation does not support. No coupon accrual or receipt was generated.",
+                ReconciliationBreakSeverity.High));
+        }
+
         if (terms.CouponType?.Equals("Floating", StringComparison.OrdinalIgnoreCase) == true)
         {
             issues.Add(CreateIssue("SM_RATE_RESET_TERMS_MISSING", "security-master", security.Symbol, accountId, $"Security '{security.Symbol}' is floating-rate and requires reset terms before expected accruals can be generated.", ReconciliationBreakSeverity.High));
@@ -466,6 +481,16 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
 
         return issues;
     }
+
+    /// <summary>Issue code for a declared coupon structure that expected-accrual generation cannot handle.</summary>
+    public const string CouponStructureUnsupported = "SM_COUPON_STRUCTURE_UNSUPPORTED";
+
+    /// <summary>Coupon structures this service accrues (Fixed), refuses with a dedicated reason (Floating), or that pay no coupon (ZeroCoupon).</summary>
+    private static bool IsRecognizedCouponStructure(string couponType)
+        => couponType.Trim() is var value
+           && (value.Equals("Fixed", StringComparison.OrdinalIgnoreCase)
+               || value.Equals("Floating", StringComparison.OrdinalIgnoreCase)
+               || value.Equals("ZeroCoupon", StringComparison.OrdinalIgnoreCase));
 
     private static void GenerateFixedCouponEvents(
         SecurityMasterAccountingEventRequest request,

@@ -657,7 +657,7 @@ internal static partial class SecurityTermsProjectionRegistry
                     PostgresSecurityMasterStore.DeriveSwapType(record.AssetSpecificTerms)),
                 Gate("effective_date", "effectiveDate", SecurityAssetTermFieldType.Date),
                 Gate("maturity_date", "maturityDate", SecurityAssetTermFieldType.Date),
-                SecurityTermsProjectionColumn.Derived("lifecycle_stat", static _ => "Active")
+                SecurityTermsProjectionColumn.Derived("lifecycle_stat", static record => SwapLifecycleState(record))
             ],
             ChildTables: []),
         new(
@@ -1103,6 +1103,25 @@ internal static partial class SecurityTermsProjectionRegistry
             : expiry < DateOnly.FromDateTime(DateTime.UtcNow) ? "Expired"
             : PostgresSecurityMasterStore.GetOptionalBool(record.AssetSpecificTerms, "isRollTarget") == true ? "RollTarget"
             : "Active";
+    }
+
+    /// <summary>
+    /// Terminated once the record has an effective-to date, matured once its maturity date has
+    /// passed, else active. The values match the states <c>PostgresSwapReferenceProjectionStore</c>
+    /// already excludes from its maturing-before query; a constant "Active" left matured swaps
+    /// looking live in relational reports.
+    /// </summary>
+    private static string SwapLifecycleState(SecurityProjectionRecord record)
+    {
+        if (record.EffectiveTo.HasValue)
+        {
+            return "Terminated";
+        }
+
+        return PostgresSecurityMasterStore.GetOptionalDateOnly(record.AssetSpecificTerms, "maturityDate") is { } maturity
+            && maturity < DateOnly.FromDateTime(DateTime.UtcNow)
+                ? "Matured"
+                : "Active";
     }
 
     /// <summary>The asset classes covered by a schema-driven projection.</summary>
