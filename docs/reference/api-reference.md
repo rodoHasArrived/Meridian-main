@@ -1109,17 +1109,17 @@ Source: [src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs](../../src/M
 | `/api/projections/{projectionRunId}/flows` | GET | `async (Guid projectionRunId, HttpContext context) => …` | `Results.Json` | — | [L1156](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1156) |
 | `/api/loans/{loanId}/journals` | GET | `async (Guid loanId, HttpContext context) => …` | `Results.Json` | — | [L1165](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1165) |
 | `/api/journals/{journalEntryId}/post` | POST | `async (Guid journalEntryId, HttpContext context) => …` | `Results.NotFound`; `Results.Json` | — | [L1173](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1173) |
-| `/api/loans/{loanId}/reconcile` | POST | `async (Guid loanId, HttpContext context) => …` | `Results.Problem`; `Results.NotFound`; `Results.Json` | — | [L1196](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1196) |
-| `/api/loans/{loanId}/reconciliation-runs` | GET | `async (Guid loanId, HttpContext context) => …` | `Results.Json` | — | [L1222](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1222) |
-| `/api/reconciliation/{runId}/results` | GET | `async (Guid runId, HttpContext context) => …` | `Results.Json` | — | [L1230](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1230) |
-| `/api/reconciliation/exceptions` | GET | `async (HttpContext context) => …` | `Results.Json` | — | [L1239](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1239) |
-| `/api/reconciliation/exceptions/{exceptionId}/resolve` | POST | `async (Guid exceptionId, JsonElement body, HttpContext context) => …`<br>Body reads: `Deserialize` | `Results.Problem`; `Results.NotFound`; `Results.Json` | — | [L1248](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1248) |
-| `/api/servicer-reports` | POST | `async (JsonElement body, HttpContext context) => …` | `Results.Problem`; `Results.Json` | — | [L1271](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1271) |
-| `/api/servicer-reports/{batchId}` | GET | `async (Guid batchId, HttpContext context) => …` | `Results.NotFound`; `Results.Json` | — | [L1299](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1299) |
-| `/api/servicer-reports/{batchId}/position-lines` | GET | `async (Guid batchId, HttpContext context) => …` | `Results.Json` | — | [L1307](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1307) |
-| `/api/servicer-reports/{batchId}/transaction-lines` | GET | `async (Guid batchId, HttpContext context) => …` | `Results.Json` | — | [L1316](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1316) |
-| `/api/loans/rebuild-checkpoints` | GET | `async (HttpContext context) => …` | `Results.Json` | — | [L1325](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1325) |
-| `/api/loans/rebuild-all` | POST | `async (HttpContext context) => …` | `Results.Json` | — | [L1345](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1345) |
+| `/api/loans/{loanId}/reconcile` | POST | `async (Guid loanId, ReconcileLoanRequest? request, HttpContext context) => …` | `Results.Problem`; `Results.NotFound`; `Results.Json` | — | [L1196](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1196) |
+| `/api/loans/{loanId}/reconciliation-runs` | GET | `async (Guid loanId, HttpContext context) => …` | `Results.Json` | — | [L1224](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1224) |
+| `/api/reconciliation/{runId}/results` | GET | `async (Guid runId, HttpContext context) => …` | `Results.Json` | — | [L1232](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1232) |
+| `/api/reconciliation/exceptions` | GET | `async (HttpContext context) => …` | `Results.Json` | — | [L1241](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1241) |
+| `/api/reconciliation/exceptions/{exceptionId}/resolve` | POST | `async (Guid exceptionId, JsonElement body, HttpContext context) => …`<br>Body reads: `Deserialize` | `Results.Problem`; `Results.NotFound`; `Results.Json` | — | [L1250](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1250) |
+| `/api/servicer-reports` | POST | `async (JsonElement body, HttpContext context) => …` | `Results.Problem`; `Results.Json` | — | [L1273](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1273) |
+| `/api/servicer-reports/{batchId}` | GET | `async (Guid batchId, HttpContext context) => …` | `Results.NotFound`; `Results.Json` | — | [L1301](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1301) |
+| `/api/servicer-reports/{batchId}/position-lines` | GET | `async (Guid batchId, HttpContext context) => …` | `Results.Json` | — | [L1309](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1309) |
+| `/api/servicer-reports/{batchId}/transaction-lines` | GET | `async (Guid batchId, HttpContext context) => …` | `Results.Json` | — | [L1318](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1318) |
+| `/api/loans/rebuild-checkpoints` | GET | `async (HttpContext context) => …` | `Results.Json` | — | [L1327](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1327) |
+| `/api/loans/rebuild-all` | POST | `async (HttpContext context) => …` | `Results.Json` | — | [L1347](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1347) |
 
 ### EnvironmentDesignerEndpoints
 

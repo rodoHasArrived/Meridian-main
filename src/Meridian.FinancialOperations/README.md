@@ -11,6 +11,21 @@ last_reviewed: 2026-11-23
 
 # src/Meridian.FinancialOperations
 
+The legacy external-GL review state store merges current retained documents across service
+instances in one process and compares the observed record and review dependencies before publication.
+The `AccountingSystemIntegrationService.State` partial owns the shared retention and dependency
+checks. Reads refresh their local projections, and review packages pin their mapping contents. A changed
+mapping or concurrent certification requires renewed review. Historical packages without that pin
+remain readable but cannot receive a new certification. PostgreSQL destination-bound posting
+packages, approvals, versions and receipts remain the production posting authority.
+
+`registered-collections.json` adopts existing review documents without rewriting their records and
+records which collections must survive restart. Missing or unreadable registered documents refuse
+access; restore the directory from its backup rather than recreating empty review history. Back up
+this marker and `registration-established` receipt with the three collection files. Empty collection provisioning permits an interrupted
+first write to retry without treating a lost retained document as new. The file store still supports
+one process per directory; it does not fence concurrent hosts.
+
 External-GL reconciliation projects each row's external trial-balance currency and resolved ledger
 book currency separately. Unknown or absent source currencies remain null rather than inheriting
 the legacy display fallback. This additive metadata lets the workstation preserve conflicting units;

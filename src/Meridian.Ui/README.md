@@ -11,6 +11,11 @@ last_reviewed: 2026-11-23
 
 # src/Meridian.Ui
 
+The existing Posted Ledger view downloads complete-period journal CSV files from the authorized
+shared snapshot route. Strategy run detail shows retained source-quality warnings, and reconciliation
+views retain quantity and monetary units separately. Missing comparison evidence remains unavailable.
+The dashboard and shared-service READMEs document the source and validation boundaries.
+
 Trading → Risk now includes retained cancel-all incident history for the selected execution
 account. The browser reopens complete per-order observations, shows uncertainty and broker coverage,
 and preserves exact quantity text. Its account-authorized shared endpoints and public audit

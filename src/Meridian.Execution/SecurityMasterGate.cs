@@ -46,7 +46,10 @@ public sealed class SecurityMasterGate : ISecurityMasterGate
 
         if (securityId.HasValue)
         {
-            return new SecurityMasterGateResult(true);
+            return new SecurityMasterGateResult(true)
+            {
+                SecurityId = securityId.Value == Guid.Empty ? null : securityId
+            };
         }
 
         _logger.LogWarning("Security Master gate: symbol '{Symbol}' not found or inactive", LogSanitizer.Sanitize(symbol));

@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationStateModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationStateModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:56](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L56).
+
+```csharp
+public sealed record WorkstationStateModel(WorkstationStateKind Kind, string Title, string Detail, string ActionText = "", string TargetText = "", string EvidenceText = "", string Glyph = "", string Tone = WorkspaceTone.Neutral, WorkstationReadinessTone ReadinessTone = WorkstationReadinessTone.Neutral, WorkstationActionPostureModel? ActionPosture = null, IReadOnlyList<WorkstationEvidenceLinkModel>? EvidenceLinks = null, IReadOnlyList<WorkstationRecoveryActionModel>? RecoveryActions = null, WorkstationSignoffRequirementModel? SignoffRequirement = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;WorkstationEvidenceLinkModel&gt; VisibleEvidenceLinks =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:71](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L71) |  |
+| <code>public IReadOnlyList&lt;WorkstationRecoveryActionModel&gt; VisibleRecoveryActions =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:73](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L73) |  |
+| <code>public bool HasActionPosture =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:75](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L75) |  |
+| <code>public bool HasSignoffRequirement =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:77](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L77) |  |
+| <code>public static WorkstationStateModel Ready(string title, string detail, string actionText = &quot;&quot;, string targetText = &quot;&quot;, string evidenceText = &quot;&quot;, string glyph = &quot;\uE73E&quot;, string tone = WorkspaceTone.Success) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:79](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L79) |  |
+| <code>public static WorkstationStateModel Loading(string title, string detail, string glyph = &quot;\uE72C&quot;) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:89](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L89) |  |
+| <code>public static WorkstationStateModel Empty(string title, string detail, string actionText = &quot;&quot;, string targetText = &quot;&quot;, string glyph = &quot;\uE946&quot;) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:92](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L92) |  |
+| <code>public static WorkstationStateModel Error(string title, string detail, string actionText = &quot;&quot;, string targetText = &quot;&quot;, string evidenceText = &quot;&quot;, string glyph = &quot;\uE783&quot;) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:100](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L100) |  |
+| <code>public static WorkstationStateModel Blocked(string title, string detail, WorkstationActionPostureModel actionPosture, IReadOnlyList&lt;WorkstationEvidenceLinkModel&gt;? evidenceLinks = null, IReadOnlyList&lt;WorkstationRecoveryActionModel&gt;? recoveryActions = null, WorkstationSignoffRequirementModel? signoffRequirement = null, string evidenceText = &quot;&quot;, string glyph = &quot;\uE783&quot;) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:109](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L109) |  |
+| <code>public static WorkstationStateModel Recovery(string title, string detail, WorkstationActionPostureModel actionPosture, IReadOnlyList&lt;WorkstationEvidenceLinkModel&gt;? evidenceLinks = null, IReadOnlyList&lt;WorkstationRecoveryActionModel&gt;? recoveryActions = null, WorkstationSignoffRequirementModel? signoffRequirement = null, string evidenceText = &quot;&quot;, string glyph = &quot;\uE930&quot;) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:133](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L133) |  |
+
 ## WorkstationTableColumnModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationTableColumnModel</code>. Kind: `record`.

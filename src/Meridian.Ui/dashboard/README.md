@@ -101,11 +101,22 @@ operator identifiers remain visible. Cash Ladder keeps its engine version in Pro
 Reconciliation case evidence retains exact source, scope, and policy IDs in Evidence identifiers
 and groups missing comparison context into one explicit notice. Screenshot readiness checks
 exercise the current Match Workbench's retained case evidence.
+Financial value groups show missing condition evidence once while keeping each value's condition,
+reason and matching Amount passport accessible. Known conditions keep their own labels. Instrument
+positions identify their source, and raw case, report-run and mark-policy IDs remain in technical details.
+
+Designer run proof follows the account and complete document, date and evidence request submitted
+by the browser. Context changes withhold earlier proof and late responses while retaining unsaved
+drafts. This local receipt records the request; retained account ownership and posting permissions
+come from server evidence and governance.
 
 `FinancialValue.conditionContextId` links unavailable data conditions to one visible shared
 notice in Trial Balance, case comparisons, and instrument positions. Each value keeps its exact
 amount, currency/unit, individual reason, and scoped proof control; the focused proof control
 references the notice through `aria-describedby`. Other conditions remain visible inline.
+An explicit condition context takes precedence over an inherited `FinancialValueConditionGroup`
+notice; the inherited context remains a fallback for existing grouped callers. Both paths preserve
+the value's own reason and the focused proof control's accessible description.
 Primary summaries use business labels while immutable IDs stay in technical disclosures and
 continue to drive requests, record identity, and evidence links. Reporting review and income
 comparison panels use distinct per-run keys so form updates retain stable review evidence.
@@ -172,6 +183,22 @@ bounded tolerances, volume mode, asset-class overrides, a required reason when l
 history and a preview of what the draft would have flagged over the last 30 days for one symbol,
 with its provider-call cost shown first. Focused coverage:
 `data-quality-watch.cross-provider-policy.test.tsx`.
+
+## Posted journals and retained input quality
+
+Ledger Explorer offers **Download journal CSV** for the selected book period through the shared
+`POST /api/ledger/periods/{periodId}/journal-export` route. The download preserves the server artifact;
+its complete-period scope is independent of the table's filters. A changed book or period aborts a
+pending download, and authorization or storage failures remain visible for retry.
+
+Reconciliation queue labels, accessible descriptions and tolerance details preserve the retained
+quantity or monetary unit. Unavailable comparisons do not fall back to a dollar residual.
+
+Strategy run **Replay data sources** shows retained repaired, gap-filled, low-quality and unknown
+input warnings with affected-fill counts and expandable source assessments. Missing assessment
+coverage remains distinct from an assessed run without warnings. Focused coverage lives in
+`PostedJournalCsvButton.test.tsx`, `ledger-journal-export.test.ts` and
+`strategy-screen.replay-provenance.test.tsx`; these tests use synthetic responses.
 
 ## Fixed-income workflow access
 

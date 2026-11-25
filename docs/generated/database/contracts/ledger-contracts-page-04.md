@@ -277,8 +277,8 @@ classDiagram
         +IReadOnlyList~ExternalGlExportLineDto~ GeneratedLines
         +IReadOnlyList~Guid~ JournalEntryIds
         +Guid? LedgerBookId
+        +string? MappingContentHash
         +string? MappingProfileId
-        +DateOnly PeriodEnd
     }
     class Meridian_Contracts_Ledger_ExternalGlExportPackageManifestDto["ExternalGlExportPackageManifestDto"] {
         +AccountingCertificationStateDto CertificationState

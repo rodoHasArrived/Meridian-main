@@ -48,6 +48,14 @@ public sealed class CanonicalBacktestActionsTests : IDisposable
         result.LedgerIntegrityBreaks.Should().BeEmpty();
         result.Ledger.Journal.Count(journal => journal.Metadata.ActivityType == "canonical_dividend_declaration").Should().Be(1);
         result.Ledger.Journal.Count(journal => journal.Metadata.ActivityType == "canonical_dividend_settlement").Should().Be(settledCash == 0m ? 0 : 1);
+        var entitlement = result.CashFlows.OfType<AssetEventCashFlow>().Should().ContainSingle().Which;
+        entitlement.PositionEvidenceVersion.Should().Be(1);
+        entitlement.QuantityUnit.Should().Be(SecurityLotUnitKind.Shares);
+        entitlement.LotMultiplier.Should().Be(1m);
+        entitlement.FunctionalCurrency.Should().Be("USD");
+        entitlement.UnitsImpacted.Should().Be(10);
+        entitlement.PositionFactor.Should().Be(1m);
+        entitlement.FractionalUnits.Should().Be(0m);
         query.ActionReads.Should().Be(1);
         result.CanonicalCorporateActions!.ContentHash.Should().HaveLength(64);
         result.ToResolvedRealismDescriptor().ToCanonicalString().Should().Contain(result.CanonicalCorporateActions.ContentHash);

@@ -648,14 +648,20 @@ Source: [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:4](../../../../
 Immutable evidence for a backfill response whose accepted rows reached storage.
 
 ```csharp
-public sealed record BackfillBatchReceipt(string RevisionId, string RequestedProvider, string? ServingProvider, string Feed, string Instrument, string Granularity, DateOnly? From, DateOnly? To, string Status, int RowCount, string ContentHash, string? Calendar, IReadOnlyList<DateOnly>? ExpectedSessions, IReadOnlyList<DateOnly> ReceivedSessions);
+public sealed record BackfillBatchReceipt(string RevisionId, string RequestedProvider, string? ServingProvider, string Feed, string Instrument, string Granularity, DateOnly? From, DateOnly? To, string Status, int RowCount, string ContentHash, string? Calendar, IReadOnlyList<DateOnly>? ExpectedSessions, IReadOnlyList<DateOnly> ReceivedSessions)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.Operations.MarketDataInputEvidence? InputEvidence { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:22](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L22) | Optional source quality snapshot bound by the content-addressed receipt. |
 
 ## BackfillBatchReceiptSummary
 
 Qualified name: <code>Meridian.Contracts.Backfill.BackfillBatchReceiptSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:21](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L21).
+Source: [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:26](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L26).
 
 Batch evidence for execution history. The revision retains the underlying session dates.
 
@@ -667,7 +673,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static BackfillBatchReceiptSummary FromReceipt(BackfillBatchReceipt receipt) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:37](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L37) |  |
+| <code>public static BackfillBatchReceiptSummary FromReceipt(BackfillBatchReceipt receipt) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:42](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L42) |  |
 
 ## BackfillJobStatus
 

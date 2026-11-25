@@ -11,6 +11,13 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Backtesting.Sdk
 
+`PortfolioSnapshot.AccountingPositions` optionally retains one atomic native paper accounting
+receipt. It carries exact signed quantities and monetary basis with their account, security,
+unit, multiplier, currency and retained run attribution; it never manufactures simulation lots
+from quoted average prices. The snapshot timestamp is the captured economic population cut.
+Null means unavailable or legacy coverage, while an authorized captured empty partition is an
+empty list. Existing backtest open-lot receipts continue through their original path.
+
 `BacktestEngineMetadata` carries optional `FinancingCoverageStatus` and nullable
 `RunAttributedMarginInterest` as init properties, preserving its existing constructor. An explicit
 `Unavailable` status means the decimal metric is a compatibility placeholder and financing/gross
@@ -169,3 +176,10 @@ Keep SDK changes backward-compatible unless the roadmap explicitly accepts a bre
 
 - `docs/architecture/module-map.md`
 - `docs/source/generated/source-module-index.md`
+
+New bound-ledger simulations retain nullable functional currency on account/portfolio snapshots
+and open lots, and the resolved canonical security ID on each open lot. The declarations come from
+the existing ledger policy and historical security resolver. Absent fields in old serialized results
+stay unknown. Processed asset-event cash-flow receipts additionally retain versioned native unit,
+multiplier and currency, including zero-cash splits; a scheduled event alone is not application
+proof for quantity reconciliation.

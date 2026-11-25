@@ -267,15 +267,16 @@ public sealed partial class StrategyRunReadService
                 .ConfigureAwait(false);
         }
         var portfolioTask = _portfolioReadService.BuildSummaryAsync(run, ct);
-        var ledgerTask = BuildRunLedgerSummaryAsync(run, scope, ct);
+        var ledgerTask = CaptureLedgerDetailAsync();
 
         await Task.WhenAll(portfolioTask, ledgerTask).ConfigureAwait(false);
+        var ledgerDetail = await ledgerTask.ConfigureAwait(false);
 
         return new StrategyRunDetail(
             Summary: ToSummary(run, promotionLookup),
             Parameters: run.ParameterSet ?? EmptyParameters,
             Portfolio: await portfolioTask.ConfigureAwait(false),
-            Ledger: await ledgerTask.ConfigureAwait(false),
+            Ledger: ledgerDetail.Summary,
             Execution: BuildExecutionSummary(run),
             Promotion: BuildPromotionSummary(run, promotionLookup),
             Governance: BuildGovernanceSummary(run),
@@ -283,18 +284,30 @@ public sealed partial class StrategyRunReadService
             GovernanceHooks: BuildGovernanceHooks(run, promotionLookup),
             BiasDisclosure: MapBiasDisclosure(run.Metrics?.BiasDisclosure))
         {
-            ReplayProvenance = BuildReplayProvenance(run),
+            ReplayProvenance = BuildReplayProvenance(run,
+                ledgerDetail.Selection.HasAuthoritativeRunAttribution ? ledgerDetail.Selection.Ledger?.Journal ?? [] : []),
             StrategyArtifactId = run.StrategyArtifactId,
             EvidenceLoop = BuildEvidenceLoop(run),
             ProviderProvenance = run.RunType == RunType.Backtest ? run.ProviderProvenance : null,
             AcceptanceChecklist = BuildAcceptanceChecklist(run, promotionLookup, promotionTargetRun, scope)
         };
+
+        async Task<(RunLedgerSelection Selection, LedgerSummary? Summary)> CaptureLedgerDetailAsync()
+        {
+            var selected = await ReadRunLedgerAsync(run, scope, ct).ConfigureAwait(false);
+            var summary = await BuildRunLedgerSummaryAsync(run, scope, ct, selected).ConfigureAwait(false);
+            return (selected, summary);
+        }
     }
 
-    private static StrategyRunReplayProvenanceDto? BuildReplayProvenance(StrategyRunEntry run)
+    private static StrategyRunReplayProvenanceDto? BuildReplayProvenance(StrategyRunEntry run,
+        IReadOnlyList<Meridian.Ledger.JournalEntry> journals)
     {
+        var warnings = BuildMarketDataWarnings(run, journals);
+        var assessed = (run.Metrics?.Fills?.Count ?? 0) > 0 || journals.Any(journal => journal.Metadata.FillId.HasValue);
         if (run.Metrics is not { EngineMetadata.InputCoverage: { } coverage })
-            return null;
+            return !assessed ? null : new StrategyRunReplayProvenanceDto([], [], null, null)
+            { DataQualityWarnings = warnings };
 
         var revisions = coverage.Revisions
             .Where(static row => Sha256Digest.IsCanonical(row.RevisionId) && Sha256Digest.IsCanonical(row.ContentHash))
@@ -303,7 +316,7 @@ public sealed partial class StrategyRunReadService
                 PublicReplayGranularity(row.Granularity)))
             .ToArray();
         var sourceMixHash = coverage.SourceMixHash;
-        if (sourceMixHash is null && revisions.Length == 0)
+        if (sourceMixHash is null && revisions.Length == 0 && !assessed)
             return null;
 
         string? completedInputHash = null;
@@ -329,7 +342,27 @@ public sealed partial class StrategyRunReadService
             .OrderBy(static row => row.Symbol, StringComparer.Ordinal)
             .ThenBy(static row => row.Source, StringComparer.Ordinal)
             .ToArray() ?? [];
-        return new StrategyRunReplayProvenanceDto(sourceMix, revisions, sourceMixHash, completedInputHash);
+        return new StrategyRunReplayProvenanceDto(sourceMix, revisions, sourceMixHash, completedInputHash)
+        { DataQualityWarnings = assessed ? warnings : null };
+    }
+
+    private static IReadOnlyList<MarketDataQualityWarningDto> BuildMarketDataWarnings(StrategyRunEntry run,
+        IReadOnlyList<Meridian.Ledger.JournalEntry> journals)
+    {
+        var observed = journals.Where(journal => journal.Metadata.FillId.HasValue)
+            .GroupBy(journal => journal.Metadata.FillId!.Value)
+            .ToDictionary(group => group.Key, group => (IReadOnlyList<MarketDataInputEvidence>)group.SelectMany(journal =>
+                MarketDataInputEvidenceTags.Read(journal.Metadata.Tags)).Distinct().ToArray());
+        var fills = run.Metrics?.Fills ?? [];
+        var expectedIds = fills.Where(fill => fill.FillId != Guid.Empty).Select(fill => fill.FillId).ToHashSet();
+        var sources = expectedIds.Order().Select(id => (IReadOnlyList<MarketDataInputEvidence>?)
+            observed.GetValueOrDefault(id) ?? []).ToList();
+        // Join on identity: another journal's clean evidence cannot substitute for a missing fill.
+        foreach (var fill in fills.Where(fill => fill.FillId == Guid.Empty))
+            sources.Add([]);
+        foreach (var pair in observed.Where(pair => !expectedIds.Contains(pair.Key)))
+            sources.Add(pair.Key == Guid.Empty ? [] : pair.Value);
+        return MarketDataInputEvidenceTags.BuildWarnings(sources);
     }
 
     private static string PublicReplayProviderId(string? source) =>
@@ -714,10 +747,14 @@ public sealed partial class StrategyRunReadService
         var run = await GetRunForScopeAsync(runId, scope, ct).ConfigureAwait(false);
         if (run is null)
             return null;
-        var ledger = await ReadRunLedgerAsync(run, scope, ct).ConfigureAwait(false);
-        return asOf.HasValue
-            ? await _ledgerReadService.BuildSummaryAsync(run, asOf.Value, ct, ledger).ConfigureAwait(false)
-            : await _ledgerReadService.BuildSummaryAsync(run, ct, ledger).ConfigureAwait(false);
+        var selected = await ReadRunLedgerAsync(run, scope, ct, asOf).ConfigureAwait(false);
+        var ledger = selected.Ledger;
+        if (ledger is null)
+            return null;
+        var summary = asOf.HasValue
+            ? await _ledgerReadService.BuildSummaryAsync(run, asOf.Value, ct, ledger, selected.PostingChart).ConfigureAwait(false)
+            : await _ledgerReadService.BuildSummaryAsync(run, ct, ledger, selected.PostingChart).ConfigureAwait(false);
+        return ApplyLedgerSelectionCoverage(summary, selected);
     }
 
     public Task<IReadOnlyList<StrategyRunComparison>> CompareRunsAsync(

@@ -6,10 +6,14 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Backtesting
+
+Canonical cash-dividend entitlement receipts retain versioned position evidence, the native unit
+and lot multiplier, and the ledger functional currency. Declaration and cash settlement leave
+position quantity and carrying basis unchanged; the entitlement remains fixed through later sales.
 
 Simulated security buys, disposals, short sales/covers, return of capital and fractional
 corporate-action settlements retain producer-supplied investing cash-flow attribution when
@@ -390,3 +394,7 @@ Keep backtesting deterministic and separate from live broker actions.
 
 - `docs/source/generated/source-roadmap-traceability.md`
 - [`archive/docs/plans/waves-2-4-operator-readiness-addendum.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/waves-2-4-operator-readiness-addendum.md)
+
+## Retained input-quality snapshots
+
+Replayed prices retain repair and range-level quality facts from the existing verified backfill batch receipt. The receipt address includes optional quality evidence before rows are stamped; legacy absent evidence retains its previous hash. Equal-time duplicate rows pin a deterministic verified revision before strategy execution, so file enumeration order cannot select a different quality assessment for identical prices. Later unverified marks do not inherit an earlier bar's repair claim. The quality assessment range, calculation time and threshold remain inspectable; missing or out-of-range assessments stay unknown. `BacktestInputQualityEvidenceTests` covers the capture boundary.

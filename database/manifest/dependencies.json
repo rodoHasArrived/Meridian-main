@@ -12652,6 +12652,30 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.MarketDataInputEvidence"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.MarketDataInputEvidenceJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.MarketDataInputEvidenceTags"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.MarketDataQualityWarningDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Operations.OperationArtifactReference"
     },
     {
@@ -21166,6 +21190,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationMonetaryTotal"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationObservedMatchGroup"
     },
     {
@@ -23039,6 +23069,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.StrategyDesignValidationResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StrategyPositionAccountingEvidence"
     },
     {
       "kind": "contract-set-member",
@@ -38601,6 +38637,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Backfill.BackfillBatchReceipt",
+      "target": "contract:Meridian.Contracts.Operations.MarketDataInputEvidence"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Backfill.BackfillProgress",
       "target": "contract:Meridian.Contracts.Backfill.SymbolBackfillProgress"
     },
@@ -48429,6 +48471,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Operations.MarketDataQualityWarningDto",
+      "target": "contract:Meridian.Contracts.Operations.MarketDataInputEvidence"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Operations.OperationIssue",
       "target": "contract:Meridian.Contracts.Operations.OperationIssueSeverity"
     },
@@ -54705,6 +54753,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.LedgerSummary",
+      "target": "contract:Meridian.Contracts.Workstation.StrategyPositionAccountingEvidence"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.LedgerTrialBalanceLine",
       "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto"
     },
@@ -56427,6 +56481,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.PortfolioSummary",
+      "target": "contract:Meridian.Contracts.Workstation.StrategyPositionAccountingEvidence"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.PostLedgerEntries",
       "target": "contract:Meridian.Contracts.Workstation.FundWorkflowCommandMetadata"
     },
@@ -57095,6 +57155,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReconciliationMatchDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsContinuityCorrelationKeysDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationMatchDto",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto"
     },
     {
       "kind": "contract-reference",
@@ -59867,6 +59933,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StrategyRunPromotionSummary",
       "target": "contract:Meridian.Contracts.Workstation.StrategyRunPromotionState"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StrategyRunReplayProvenanceDto",
+      "target": "contract:Meridian.Contracts.Operations.MarketDataQualityWarningDto"
     },
     {
       "kind": "contract-reference",
@@ -72118,7 +72190,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "782e2112c771980a650d0aed4b32a487d14025de678d921d02ef0e7dc2b579ea",
+  "fingerprint": "b3936fb2854a0f23fcd6749718ec534c7a22ecf0e61d6672d698f5afc40649a7",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -84821,6 +84893,30 @@
     },
     {
       "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.MarketDataInputEvidence",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.MarketDataInputEvidence"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Operations.MarketDataInputEvidenceJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.MarketDataInputEvidenceJsonContext"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Operations.MarketDataInputEvidenceTags",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.MarketDataInputEvidenceTags"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Operations.MarketDataQualityWarningDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.MarketDataQualityWarningDto"
+    },
+    {
+      "classification": "record",
       "id": "contract:Meridian.Contracts.Operations.OperationArtifactReference",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Operations.OperationArtifactReference"
@@ -93335,6 +93431,12 @@
     },
     {
       "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.ReconciliationMonetaryTotal",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReconciliationMonetaryTotal"
+    },
+    {
+      "classification": "record",
       "id": "contract:Meridian.Contracts.Workstation.ReconciliationObservedMatchGroup",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ReconciliationObservedMatchGroup"
@@ -95210,6 +95312,12 @@
       "id": "contract:Meridian.Contracts.Workstation.StrategyDesignValidationResult",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.StrategyDesignValidationResult"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.StrategyPositionAccountingEvidence",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StrategyPositionAccountingEvidence"
     },
     {
       "classification": "dto",
@@ -105965,11 +106073,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4416,
-    "contract_set_memberships": 5821,
-    "edges": 11980,
+    "contract_references": 4422,
+    "contract_set_memberships": 5827,
+    "edges": 11992,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5886
+    "nodes": 5892
   }
 }

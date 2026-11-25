@@ -25,6 +25,7 @@ export * from "./types/operator-preferences";
 export * from "./types/operator-surface-visit";
 export * from "./types/preparer-attestation-evidence";
 export * from "./types/market-data";
+export type * from "./types/market-data-input-evidence";
 export * from "./types/canonical-symbol";
 export * from "./types/cash-dividend-attestation";
 export * from "./types/consolidation";

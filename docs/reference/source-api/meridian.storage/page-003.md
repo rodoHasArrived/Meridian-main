@@ -228,7 +228,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Storage.Export.LedgerJournalExporter</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Export/LedgerJournalExporter.cs:17](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L17).
+Source: [src/Meridian.Storage/Export/LedgerJournalExporter.cs:18](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L18).
 
 Exports one row per immutable journal line, retaining the full audit envelopes. Decimal amounts are invariant decimal text in both formats so Parquet readers cannot truncate monetary precision. Mapping changes only the external account column and never the source journal.
 
@@ -240,10 +240,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static byte[] ExportCsv(IReadOnlyLedger ledger, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, LedgerQuery? query = null, IReadOnlyDictionary&lt;Guid, string&gt;? postingMetadata = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:27](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L27) |  |
-| <code>public static async Task&lt;byte[]&gt; ExportParquetAsync(IReadOnlyLedger ledger, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, LedgerQuery? query = null, CancellationToken ct = default, IReadOnlyDictionary&lt;Guid, string&gt;? postingMetadata = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:41](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L41) |  |
-| <code>public static byte[] ExportCsv(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, Guid? ledgerBookId = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:69](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L69) | Preserves governed posting metadata (book, period, source event, rules and approval). |
-| <code>public static Task&lt;byte[]&gt; ExportParquetAsync(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, CancellationToken ct = default, Guid? ledgerBookId = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:75](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L75) |  |
+| <code>public static byte[] ExportCsv(IReadOnlyLedger ledger, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, LedgerQuery? query = null, IReadOnlyDictionary&lt;Guid, string&gt;? postingMetadata = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:28](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L28) |  |
+| <code>public static async Task&lt;byte[]&gt; ExportParquetAsync(IReadOnlyLedger ledger, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, LedgerQuery? query = null, CancellationToken ct = default, IReadOnlyDictionary&lt;Guid, string&gt;? postingMetadata = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:42](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L42) |  |
+| <code>public static byte[] ExportCsv(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, Guid? ledgerBookId = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:70](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L70) | Preserves governed posting metadata (book, period, source event, rules and approval). |
+| <code>public static Task&lt;byte[]&gt; ExportParquetAsync(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, CancellationToken ct = default, Guid? ledgerBookId = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:76](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L76) |  |
 
 ## NormalizationType
 
