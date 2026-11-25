@@ -19,7 +19,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 1283 |
+| Total documentation files | 1293 |
 | Orphaned files | 378 |
 | Files without headings | 231 |
 | Stale files (>90 days) | 0 |
@@ -95,7 +95,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 86 | 1283 | 378 | 0 |
+| 1970-01-01 | 86 | 1293 | 378 | 0 |
 
 ---
 

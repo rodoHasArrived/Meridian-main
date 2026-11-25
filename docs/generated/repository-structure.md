@@ -1374,6 +1374,19 @@ Meridian-main
 │   └── README.md
 ├── docs
 │   ├── adr
+│   │   ├── historical
+│   │   │   ├── 001-provider-abstraction.md
+│   │   │   ├── 002-tiered-storage-architecture.md
+│   │   │   ├── 004-async-streaming-patterns.md
+│   │   │   ├── 005-attribute-based-discovery.md
+│   │   │   ├── 006-domain-events-polymorphic-payload.md
+│   │   │   ├── 007-write-ahead-log-durability.md
+│   │   │   ├── 010-httpclient-factory.md
+│   │   │   ├── 013-bounded-channel-policy.md
+│   │   │   ├── 014-json-source-generators.md
+│   │   │   ├── 015-strategy-execution-contract.md
+│   │   │   ├── 016-platform-architecture-migration.md
+│   │   │   └── README.md
 │   │   ├── 017-modular-operational-monolith.md
 │   │   ├── 018-declarative-statement-mapping-profiles.md
 │   │   ├── 019-production-support-matrix-and-deployment-posture.md
@@ -2366,7 +2379,6 @@ Meridian-main
 │   │   ├── edgar-reference-data.md
 │   │   ├── environment-variables.md
 │   │   ├── export-preflight-rules.md
-│   │   ├── governance-report-packs.md
 │   │   ├── interactive-brokers-api-compatibility.md
 │   │   ├── ledger-journal-store.md
 │   │   ├── lifecycle-control-plane.md
@@ -2378,7 +2390,6 @@ Meridian-main
 │   │   ├── provider-validation-matrix.md
 │   │   ├── README.md
 │   │   ├── reconciliation-break-taxonomy.md
-│   │   ├── research-briefing-workflow.md
 │   │   ├── strategy-briefing-workflow.md
 │   │   ├── strategy-promotion-history.md
 │   │   ├── ufl-capability-model.md
@@ -16139,7 +16150,6 @@ Meridian-main
 │   │   ├── test_alpaca_paper_order_probe.py
 │   │   ├── test_analysis_level_baseline.py
 │   │   ├── test_api_contract_coverage_dashboard.py
-│   │   ├── test_archive_code_tombstones.py
 │   │   ├── test_artifact_retention_module.py
 │   │   ├── test_benchmark_ci.py
 │   │   ├── test_benchmark_pipeline.py
