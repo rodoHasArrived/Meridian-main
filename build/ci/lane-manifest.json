@@ -135,7 +135,7 @@
         "artifacts/publish/desktop-smoke/"
       ],
       "timeoutMinutes": 55,
-      "pathTriggerNotes": "Path-filtered for WPF and dependency changes; smoke publish runs on main, manual request, or WPF/publish graph PR changes.",
+      "pathTriggerNotes": "Path-filtered for WPF and dependency changes; smoke publish runs as a parallel job on main, manual request, or WPF/publish graph PR changes.",
       "requiredCheckRole": "evidence"
     },
     {
