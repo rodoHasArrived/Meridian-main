@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Core;
 using Serilog;
 using Timer = System.Timers.Timer;
@@ -180,17 +181,17 @@ public sealed class ProviderHealthService : IDisposable
         return new ProviderHealthComparison
         {
             Providers = healthData,
-            BestOverall = healthData.OrderByDescending(p => p.OverallScore).FirstOrDefault()?.ProviderId,
-            BestLatency = healthData.OrderBy(p => p.Metrics.AverageLatencyMs).FirstOrDefault()?.ProviderId,
-            BestCompleteness = healthData.OrderByDescending(p => p.Metrics.DataCompletenessPercent).FirstOrDefault()?.ProviderId,
-            BestStability = healthData.OrderByDescending(p => p.Metrics.ConnectionStabilityScore).FirstOrDefault()?.ProviderId
+            BestOverall = healthData.Where(p => p.OverallScore.HasValue).MaxBy(p => p.OverallScore)?.ProviderId,
+            BestLatency = healthData.Where(p => p.Metrics.AverageLatencyMs.HasValue).MinBy(p => p.Metrics.AverageLatencyMs)?.ProviderId,
+            BestCompleteness = healthData.Where(p => p.Metrics.DataCompletenessPercent.HasValue).MaxBy(p => p.Metrics.DataCompletenessPercent)?.ProviderId,
+            BestStability = healthData.Where(p => p.Metrics.ConnectionStabilityScore.HasValue).MaxBy(p => p.Metrics.ConnectionStabilityScore)?.ProviderId
         };
     }
 
     private async Task RefreshHealthDataAsync(CancellationToken ct = default)
     {
         var response = await _apiClient.GetWithResponseAsync<ProviderHealthResponse>(
-            "/api/providers/health",
+            UiApiRoutes.ProviderHealth,
             ct);
 
         if (response.Success && response.Data?.Providers != null)
@@ -198,6 +199,7 @@ public sealed class ProviderHealthService : IDisposable
             foreach (var provider in response.Data.Providers)
             {
                 var providerId = ProviderIdentity.NormalizeId(provider.ProviderId);
+                var breakdown = CalculateBreakdown(provider);
                 var healthData = new ProviderHealthData
                 {
                     ProviderId = providerId,
@@ -212,21 +214,25 @@ public sealed class ProviderHealthService : IDisposable
                     ReconnectAttempts = provider.ReconnectAttempts,
                     LastFailureKind = provider.LastFailureKind,
                     LastUpdated = DateTime.UtcNow,
-                    OverallScore = CalculateOverallScore(provider),
+                    OverallScore = breakdown.ConnectionStability.WeightedScore +
+                        breakdown.LatencyConsistency.WeightedScore +
+                        breakdown.DataCompleteness.WeightedScore +
+                        breakdown.ReconnectionFrequency.WeightedScore,
                     Metrics = new HealthMetrics
                     {
                         ConnectionStabilityScore = provider.ConnectionStabilityScore,
                         AverageLatencyMs = provider.AverageLatencyMs,
+                        LatencyObservedAt = provider.LatencyObservedAt,
                         LatencyP99Ms = provider.LatencyP99Ms,
                         LatencyConsistencyScore = provider.LatencyConsistencyScore,
                         DataCompletenessPercent = provider.DataCompletenessPercent,
                         ReconnectsLastHour = provider.ReconnectsLastHour,
-                        ReconnectionScore = CalculateReconnectionScore(provider.ReconnectsLastHour),
+                        ReconnectionScore = breakdown.ReconnectionFrequency.Score,
                         UptimePercent = provider.UptimePercent,
                         MessagesPerSecond = provider.MessagesPerSecond,
                         ErrorsLastHour = provider.ErrorsLastHour
                     },
-                    Breakdown = CalculateBreakdown(provider)
+                    Breakdown = breakdown
                 };
 
                 _providerHealth[providerId] = healthData;
@@ -295,88 +301,63 @@ public sealed class ProviderHealthService : IDisposable
         }
     }
 
-    private double CalculateOverallScore(ProviderHealthInfo provider)
-    {
-        var breakdown = CalculateBreakdown(provider);
-        return breakdown.ConnectionStability.WeightedScore +
-               breakdown.LatencyConsistency.WeightedScore +
-               breakdown.DataCompleteness.WeightedScore +
-               breakdown.ReconnectionFrequency.WeightedScore;
-    }
-
-    private HealthScoreBreakdown CalculateBreakdown(ProviderHealthInfo provider)
-    {
-        var latencyScore = Math.Max(0, 100 - provider.AverageLatencyMs / 5);
-        var reconnectionScore = CalculateReconnectionScore(provider.ReconnectsLastHour);
-
-        return new HealthScoreBreakdown
+    private static HealthScoreBreakdown CalculateBreakdown(ProviderHealthInfo provider)
+        => new()
         {
-            ConnectionStability = new ScoreComponent
-            {
-                Weight = 30,
-                Score = provider.ConnectionStabilityScore,
-                WeightedScore = provider.ConnectionStabilityScore * 0.3
-            },
-            LatencyConsistency = new ScoreComponent
-            {
-                Weight = 25,
-                Score = latencyScore,
-                WeightedScore = latencyScore * 0.25
-            },
-            DataCompleteness = new ScoreComponent
-            {
-                Weight = 25,
-                Score = provider.DataCompletenessPercent,
-                WeightedScore = provider.DataCompletenessPercent * 0.25
-            },
-            ReconnectionFrequency = new ScoreComponent
-            {
-                Weight = 20,
-                Score = reconnectionScore,
-                WeightedScore = reconnectionScore * 0.2
-            }
+            ConnectionStability = Score(30, provider.ConnectionStabilityScore),
+            LatencyConsistency = Score(25, provider.LatencyConsistencyScore),
+            DataCompleteness = Score(25, provider.DataCompletenessPercent),
+            ReconnectionFrequency = Score(20, CalculateReconnectionScore(provider.ReconnectsLastHour))
         };
-    }
 
-    private static double CalculateReconnectionScore(int reconnectsLastHour)
+    private static ScoreComponent Score(int weight, double? score)
+        => new()
+        {
+            Weight = weight,
+            Score = score,
+            WeightedScore = score * (weight / 100d)
+        };
+
+    private static double? CalculateReconnectionScore(int? reconnectsLastHour)
     {
         return reconnectsLastHour switch
         {
+            null => null,
             0 => 100,
             1 => 90,
             2 => 75,
             3 => 60,
             4 => 40,
             5 => 20,
-            _ => Math.Max(0, 100 - reconnectsLastHour * 15)
+            _ => Math.Max(0, 100 - reconnectsLastHour.Value * 15)
         };
     }
 
     private void CheckHealthAlerts(ProviderHealthData healthData)
     {
-        if (healthData.OverallScore < 70)
+        if (healthData.OverallScore is { } overallScore && overallScore < 70)
         {
             HealthAlert?.Invoke(this, new HealthAlertEventArgs
             {
                 ProviderId = healthData.ProviderId,
                 ProviderName = healthData.ProviderName,
                 AlertType = HealthAlertType.LowOverallScore,
-                CurrentValue = healthData.OverallScore,
+                CurrentValue = overallScore,
                 Threshold = 70,
-                Message = $"Provider health score ({healthData.OverallScore:F1}) is below threshold"
+                Message = $"Provider health score ({overallScore:F1}) is below threshold"
             });
         }
 
-        if (healthData.Metrics.AverageLatencyMs > 200)
+        if (healthData.Metrics.AverageLatencyMs is { } averageLatencyMs && averageLatencyMs > 200)
         {
             HealthAlert?.Invoke(this, new HealthAlertEventArgs
             {
                 ProviderId = healthData.ProviderId,
                 ProviderName = healthData.ProviderName,
                 AlertType = HealthAlertType.HighLatency,
-                CurrentValue = healthData.Metrics.AverageLatencyMs,
+                CurrentValue = averageLatencyMs,
                 Threshold = 200,
-                Message = $"Average latency ({healthData.Metrics.AverageLatencyMs:F0}ms) exceeds threshold"
+                Message = $"Average latency ({averageLatencyMs:F0}ms) exceeds threshold"
             });
         }
     }
@@ -442,7 +423,7 @@ public sealed class ProviderHealthData
     public int? ReconnectAttempts { get; set; }
     public string? LastFailureKind { get; set; }
     public DateTime LastUpdated { get; set; }
-    public double OverallScore { get; set; }
+    public double? OverallScore { get; set; }
     public HealthMetrics Metrics { get; set; } = new();
     public HealthScoreBreakdown Breakdown { get; set; } = new();
 }
@@ -452,16 +433,17 @@ public sealed class ProviderHealthData
 /// </summary>
 public sealed class HealthMetrics
 {
-    public double ConnectionStabilityScore { get; set; }
-    public double AverageLatencyMs { get; set; }
-    public double LatencyP99Ms { get; set; }
-    public double LatencyConsistencyScore { get; set; }
-    public double DataCompletenessPercent { get; set; }
-    public int ReconnectsLastHour { get; set; }
-    public double ReconnectionScore { get; set; }
-    public double UptimePercent { get; set; }
-    public double MessagesPerSecond { get; set; }
-    public int ErrorsLastHour { get; set; }
+    public double? ConnectionStabilityScore { get; set; }
+    public double? AverageLatencyMs { get; set; }
+    public DateTimeOffset? LatencyObservedAt { get; set; }
+    public double? LatencyP99Ms { get; set; }
+    public double? LatencyConsistencyScore { get; set; }
+    public double? DataCompletenessPercent { get; set; }
+    public int? ReconnectsLastHour { get; set; }
+    public double? ReconnectionScore { get; set; }
+    public double? UptimePercent { get; set; }
+    public double? MessagesPerSecond { get; set; }
+    public int? ErrorsLastHour { get; set; }
 }
 
 /// <summary>
@@ -481,8 +463,8 @@ public sealed class HealthScoreBreakdown
 public sealed class ScoreComponent
 {
     public int Weight { get; set; }
-    public double Score { get; set; }
-    public double WeightedScore { get; set; }
+    public double? Score { get; set; }
+    public double? WeightedScore { get; set; }
 }
 
 /// <summary>
@@ -491,9 +473,9 @@ public sealed class ScoreComponent
 public sealed class HealthHistoryPoint
 {
     public DateTime Timestamp { get; set; }
-    public double OverallScore { get; set; }
-    public double LatencyMs { get; set; }
-    public double CompletenessPercent { get; set; }
+    public double? OverallScore { get; set; }
+    public double? LatencyMs { get; set; }
+    public double? CompletenessPercent { get; set; }
 }
 
 /// <summary>
@@ -549,15 +531,16 @@ public sealed class ProviderHealthInfo
     public DateTimeOffset? LastReconnectAttemptAt { get; set; }
     public int? ReconnectAttempts { get; set; }
     public string? LastFailureKind { get; set; }
-    public double ConnectionStabilityScore { get; set; }
-    public double AverageLatencyMs { get; set; }
-    public double LatencyP99Ms { get; set; }
-    public double LatencyConsistencyScore { get; set; }
-    public double DataCompletenessPercent { get; set; }
-    public int ReconnectsLastHour { get; set; }
-    public double UptimePercent { get; set; }
-    public double MessagesPerSecond { get; set; }
-    public int ErrorsLastHour { get; set; }
+    public double? ConnectionStabilityScore { get; set; }
+    public double? AverageLatencyMs { get; set; }
+    public DateTimeOffset? LatencyObservedAt { get; set; }
+    public double? LatencyP99Ms { get; set; }
+    public double? LatencyConsistencyScore { get; set; }
+    public double? DataCompletenessPercent { get; set; }
+    public int? ReconnectsLastHour { get; set; }
+    public double? UptimePercent { get; set; }
+    public double? MessagesPerSecond { get; set; }
+    public int? ErrorsLastHour { get; set; }
 }
 
 /// <summary>

@@ -1180,6 +1180,7 @@ Meridian-main
 │       │   ├── integration_evidence.py
 │       │   ├── local_gate.py
 │       │   ├── maintenance_refresh.py
+│       │   ├── merge-dotnet-shard-summaries.py
 │       │   ├── publish-certified-release.py
 │       │   ├── release-envelope.py
 │       │   ├── release-preflight.py
@@ -1187,6 +1188,7 @@ Meridian-main
 │       │   ├── requirements.txt
 │       │   ├── resolve-consumer-predecessor.py
 │       │   ├── run-dotnet-ci-tests.py
+│       │   ├── run-meridian-integrations.py
 │       │   ├── run-script-tests.py
 │       │   ├── run-windows-ci-tests.py
 │       │   ├── scan-commit-secrets.py
@@ -6121,7 +6123,6 @@ Meridian-main
 │   │   │   ├── IntercompanyAccountDtos.cs
 │   │   │   ├── IntercompanyAccrualEvidenceDtos.cs
 │   │   │   ├── IntercompanyAccrualScheduleDtos.cs
-│   │   │   ├── IntercompanyAgreementWorkQueueDtos.cs
 │   │   │   ├── IntercompanyBalanceConfirmationDtos.cs
 │   │   │   ├── IntercompanyBalanceScheduleDtos.cs
 │   │   │   ├── IntercompanyConfirmationClosePolicyDtos.cs
@@ -7005,8 +7006,6 @@ Meridian-main
 │   │   │   ├── IntercompanyAccountingArrangementService.cs
 │   │   │   ├── IntercompanyAccrualScheduleRules.cs
 │   │   │   ├── IntercompanyAccrualSourceBuilder.cs
-│   │   │   ├── IntercompanyAgreementWorkQueueService.cs
-│   │   │   ├── IntercompanyAgreementWorkQueueService.History.cs
 │   │   │   ├── IntercompanyBalanceConfirmationRules.cs
 │   │   │   ├── IntercompanyBalanceConfirmationService.cs
 │   │   │   ├── IntercompanyBalanceScheduleService.cs
@@ -9022,10 +9021,11 @@ Meridian-main
 │   │   │   │   ├── design-system-smoke.test.mjs
 │   │   │   │   ├── generate-contracts.mjs
 │   │   │   │   ├── generate-contracts.test.mjs
+│   │   │   │   ├── merge-vitest-shards.mjs
+│   │   │   │   ├── merge-vitest-shards.test.mjs
 │   │   │   │   ├── run-vitest-stable.mjs
 │   │   │   │   ├── smoke-design-system-adoption.mjs
 │   │   │   │   ├── smoke-design-system.mjs
-│   │   │   │   ├── smoke-intercompany-work-queue.mjs
 │   │   │   │   ├── smoke-workstation-a11y.mjs
 │   │   │   │   ├── smoke-workstation-a11y.test.mjs
 │   │   │   │   ├── smoke-workstation-axe-baseline.json
@@ -9037,6 +9037,7 @@ Meridian-main
 │   │   │   │   ├── typography-floor-baseline.json
 │   │   │   │   ├── vitest-evidence.mjs
 │   │   │   │   ├── vitest-evidence.test.mjs
+│   │   │   │   ├── vitest-files.mjs
 │   │   │   │   ├── workstation-governance-baseline.json
 │   │   │   │   ├── workstation-governance.mjs
 │   │   │   │   └── workstation-governance.test.mjs
@@ -9772,8 +9773,6 @@ Meridian-main
 │   │   │   │   │   │   ├── income-receipt-queue.api.ts
 │   │   │   │   │   │   ├── intercompany-agreements.api.test.ts
 │   │   │   │   │   │   ├── intercompany-agreements.api.ts
-│   │   │   │   │   │   ├── intercompany-work-queue.api.test.ts
-│   │   │   │   │   │   ├── intercompany-work-queue.api.ts
 │   │   │   │   │   │   ├── mark-freshness.api.ts
 │   │   │   │   │   │   ├── market-data.api.ts
 │   │   │   │   │   │   ├── operations-continuity.api.ts
@@ -10262,8 +10261,6 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.intercompany-agreements.test.tsx
 │   │   │   │   │   ├── accounting-screen.intercompany-agreements.tsx
 │   │   │   │   │   ├── accounting-screen.intercompany-close-advisories.tsx
-│   │   │   │   │   ├── accounting-screen.intercompany-work-queue.test.tsx
-│   │   │   │   │   ├── accounting-screen.intercompany-work-queue.tsx
 │   │   │   │   │   ├── accounting-screen.journal-arrangements.test.tsx
 │   │   │   │   │   ├── accounting-screen.journal-entries.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.journal-entries.view-model.ts
@@ -10891,7 +10888,6 @@ Meridian-main
 │   │   │   │   │   ├── intercompany-fees.ts
 │   │   │   │   │   ├── intercompany-obligations.ts
 │   │   │   │   │   ├── intercompany-rate-fixings.ts
-│   │   │   │   │   ├── intercompany-work-queue.ts
 │   │   │   │   │   ├── jest-axe.d.ts
 │   │   │   │   │   ├── ledger-amount-proof.ts
 │   │   │   │   │   ├── ledger-tax-results.ts
@@ -11009,7 +11005,6 @@ Meridian-main
 │   │   │   ├── Accounting
 │   │   │   │   ├── AccountingProjectionQueryService.cs
 │   │   │   │   ├── IntercompanyAccrualScheduleWorkspace.cs
-│   │   │   │   ├── IntercompanyAgreementWorkQueueWorkspace.cs
 │   │   │   │   ├── IntercompanyAgreementWorkspace.cs
 │   │   │   │   ├── IntercompanyAgreementWorkspace.LegacyCoverage.cs
 │   │   │   │   ├── IntercompanyAgreementWorkspace.StructuredTerms.cs
@@ -11036,7 +11031,6 @@ Meridian-main
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Obligations.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Proposals.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.RateFixings.cs
-│   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.WorkQueue.cs
 │   │   │   │   ├── WorkstationManualJournalApiClient.cs
 │   │   │   │   └── WorkstationOnboardingApiClient.cs
 │   │   │   ├── Comparisons
@@ -11260,7 +11254,6 @@ Meridian-main
 │   │   │   ├── IntercompanyAccountingArrangementEndpoints.cs
 │   │   │   ├── IntercompanyAccrualScheduleEndpoints.cs
 │   │   │   ├── IntercompanyAgreementEndpoints.cs
-│   │   │   ├── IntercompanyAgreementWorkQueueEndpoints.cs
 │   │   │   ├── IntercompanyBalanceConfirmationEndpoints.cs
 │   │   │   ├── IntercompanyConfirmationClosePolicyEndpoints.cs
 │   │   │   ├── IntercompanyDecimalJsonConverter.cs
@@ -12613,8 +12606,6 @@ Meridian-main
 │   │   │   ├── IntercompanyAccrualSchedulesControl.xaml.cs
 │   │   │   ├── IntercompanyAgreementsControl.xaml
 │   │   │   ├── IntercompanyAgreementsControl.xaml.cs
-│   │   │   ├── IntercompanyAgreementWorkQueueControl.xaml
-│   │   │   ├── IntercompanyAgreementWorkQueueControl.xaml.cs
 │   │   │   ├── IntercompanyBalanceConfirmationControl.xaml
 │   │   │   ├── IntercompanyBalanceConfirmationControl.xaml.cs
 │   │   │   ├── IntercompanyCounterpartProposalsControl.xaml
@@ -13916,8 +13907,6 @@ Meridian-main
 │   │   │   │   └── LegacyIntercompanyAttributionTests.cs
 │   │   │   ├── Intercompany
 │   │   │   │   ├── IntercompanyAccrualSourceBuilderTests.cs
-│   │   │   │   ├── IntercompanyAgreementWorkQueueAdversarialTests.cs
-│   │   │   │   ├── IntercompanyAgreementWorkQueueServiceTests.cs
 │   │   │   │   ├── IntercompanyBalanceConfirmationRulesTests.cs
 │   │   │   │   ├── IntercompanyBalanceConfirmationServiceTests.cs
 │   │   │   │   ├── IntercompanyBalanceScheduleTests.cs
@@ -15449,7 +15438,6 @@ Meridian-main
 │   │   │   ├── IntercompanyAgreementEvidenceAuthorityTests.cs
 │   │   │   ├── IntercompanyAgreementJournalProjectionTests.cs
 │   │   │   ├── IntercompanyAgreementReviewPermissionTests.cs
-│   │   │   ├── IntercompanyAgreementWorkQueueEndpointTests.cs
 │   │   │   ├── IntercompanyBalanceConfirmationEndpointTests.cs
 │   │   │   ├── IntercompanyCloseAdvisoryAuthorizationTests.cs
 │   │   │   ├── IntercompanyCloseAdvisoryMembershipTests.cs
@@ -15836,7 +15824,6 @@ Meridian-main
 │   │   │   ├── GuardedSharedConfigServiceTests.cs
 │   │   │   ├── IntegrityEventsServiceTests.cs
 │   │   │   ├── IntercompanyAccrualScheduleWorkspaceTests.cs
-│   │   │   ├── IntercompanyAgreementWorkQueueWorkspaceTests.cs
 │   │   │   ├── IntercompanyAgreementWorkspaceTests.cs
 │   │   │   ├── IntercompanyAgreementWorkspaceTests.Structured.cs
 │   │   │   ├── IntercompanyBalanceConfirmationWorkspaceTests.cs
@@ -15888,7 +15875,6 @@ Meridian-main
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Obligations.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Proposals.cs
-│   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.WorkQueue.cs
 │   │   │   └── WorkstationManualJournalApiClientTests.cs
 │   │   ├── Meridian.Ui.Tests.csproj
 │   │   └── README.md
@@ -16174,7 +16160,6 @@ Meridian-main
 │   │   │   ├── IntercompanyNativeControlSmokeTests.InterestAccrual.cs
 │   │   │   ├── IntercompanyNativeControlSmokeTests.ManagementFee.cs
 │   │   │   ├── IntercompanyNativeControlSmokeTests.RateFixings.cs
-│   │   │   ├── IntercompanyNativeControlSmokeTests.WorkQueue.cs
 │   │   │   ├── LifecycleControlPageSmokeTests.cs
 │   │   │   ├── MainPageLaunchNavigationTests.cs
 │   │   │   ├── MainPageNormalNavigationTests.cs
@@ -16270,6 +16255,7 @@ Meridian-main
 │   │   ├── test_check_test_skip_register.py
 │   │   ├── test_check_unimplemented_surfaces.py
 │   │   ├── test_check_workflow_docs_parity.py
+│   │   ├── test_ci_browser_results_dir.py
 │   │   ├── test_ci_evidence_controls.py
 │   │   ├── test_ci_metrics.py
 │   │   ├── test_ci_summary.py
@@ -16293,6 +16279,7 @@ Meridian-main
 │   │   ├── test_documentation_reference_integration.py
 │   │   ├── test_documentation_workflow.py
 │   │   ├── test_documentation_workflow_consolidation.py
+│   │   ├── test_dotnet_ci_shards.py
 │   │   ├── test_endpoint_benchmark.py
 │   │   ├── test_export_project_artifact_workflow.py
 │   │   ├── test_fund_economics_golden_consistency.py

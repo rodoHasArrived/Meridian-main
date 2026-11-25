@@ -744,7 +744,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.ScoreComponent</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:481](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L481).
+Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:463](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L463).
 
 Describes a health-score component&#x27;s weight, raw score, and weighted contribution.
 
@@ -756,9 +756,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int Weight { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:483](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L483) |  |
-| <code>public double Score { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:484](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L484) |  |
-| <code>public double WeightedScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:485](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L485) |  |
+| <code>public int Weight { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:465](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L465) |  |
+| <code>public double? Score { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:466](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L466) |  |
+| <code>public double? WeightedScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:467](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L467) |  |
 
 ## SearchOptions
 
