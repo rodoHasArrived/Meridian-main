@@ -463,7 +463,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRestatementDecision</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:32](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L32).
+Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:34](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L34).
 
 The restatement outcome a publish reports to the operator: whether a closed-period edit requires restatement, and the report packs proposed for it (the operator approves each via the existing governed report-pack restatement path; the workbench only proposes).
 

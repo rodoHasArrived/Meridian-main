@@ -593,6 +593,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public SecurityMasterAccountingEventService(IFactorPaydownProjectionService? factorPaydownProjector = null);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:191](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L191) |  |
 | <code>public SecurityMasterAccountingEventResult Generate(SecurityMasterAccountingEventRequest request);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:196](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L196) |  |
+| <code>public const string CouponStructureUnsupported = &quot;SM_COUPON_STRUCTURE_UNSUPPORTED&quot;;</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:486](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L486) | Issue code for a declared coupon structure that expected-accrual generation cannot handle. |
 
 ## SecurityMasterAccountingEventSourceAdapter
 

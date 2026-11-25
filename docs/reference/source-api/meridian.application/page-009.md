@@ -82,7 +82,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.NullRestatementCandidateResolver</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:78](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L78).
+Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:80](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L80).
 
 No-op candidate resolver retained as the fallback for hosts without a report-pack backend. The report-pack-backed resolver (ReportPackRestatementCandidateResolver in the workstation layer) is the registered default; this surfaces no packs, leaving the caller&#x27;s default-deny safety net to flag a hard-closed book for manual locate.
 
@@ -94,7 +94,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Task&lt;RestatementCandidateResult&gt; ResolveAsync(Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; changedFields, string? fundProfileId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:80](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L80) |  |
+| <code>public Task&lt;RestatementCandidateResult&gt; ResolveAsync(Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; changedFields, string? fundProfileId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:82](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L82) |  |
 
 ## NullSecurityMasterCashFlowService
 
@@ -373,7 +373,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.PeriodAwareRestatementResolver</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:118](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L118).
+Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:120](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L120).
 
 Default IPeriodAwareRestatementResolver over the authoritative ILedgerPeriodLockReader. Pure routing — it never posts; it only proposes.
 
@@ -385,8 +385,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PeriodAwareRestatementResolver(ILedgerPeriodLockReader lockReader, IRestatementCandidateResolver candidateResolver, ILogger&lt;PeriodAwareRestatementResolver&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:124](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L124) |  |
-| <code>public async Task&lt;SecurityMasterRestatementDecision&gt; ResolveAsync(SecurityMasterRevisionPublishedEvent publishedEvent, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:134](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L134) |  |
+| <code>public PeriodAwareRestatementResolver(ILedgerPeriodLockReader lockReader, IRestatementCandidateResolver candidateResolver, ILogger&lt;PeriodAwareRestatementResolver&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:126](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L126) |  |
+| <code>public async Task&lt;SecurityMasterRestatementDecision&gt; ResolveAsync(SecurityMasterRevisionPublishedEvent publishedEvent, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:136](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L136) |  |
 
 ## PostgresSecurityMasterConflictService
 
@@ -627,7 +627,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.RestatementCandidateResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:46](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L46).
+Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:48](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L48).
 
 The outcome of locating report packs that consumed a changed line in a locked period: the actionable restatement Candidates, plus HasNonActionableMatches — true when at least one published pack referenced the security but could not be turned into an actionable candidate (for example an already-restated pack the workflow cannot re-restate). The caller uses the flag to require a manual follow-up for a soft-closed book even when no actionable candidate was produced, so a real match is never silently dropped. RestatementCandidateResult.IsAuthoritative is false when the configured reporting authority cannot answer the lookup at all; that indeterminate state also requires manual follow-up and must not be interpreted as an authoritative empty result.
 
@@ -639,7 +639,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static RestatementCandidateResult Empty { get; } = new ([], false);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:51](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L51) |  |
+| <code>public static RestatementCandidateResult Empty { get; } = new ([], false);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:53](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L53) |  |
 
 ## SecurityAssetProfileGovernanceService
 
