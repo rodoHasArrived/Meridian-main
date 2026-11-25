@@ -9,6 +9,7 @@ using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Integrity;
 using Meridian.Domain.Events;
+using Meridian.Storage.Archival;
 using Meridian.Storage.Backfill;
 using Serilog;
 
@@ -37,6 +38,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     internal const byte EntryVersionSinkDurable = 2;
 
     private readonly ILogger _log = LoggingSetup.ForContext<PersistentDedupLedger>();
+    private readonly string _ledgerDirectory;
     private readonly string _ledgerPath;
     private readonly TimeSpan _entryTtl;
     private readonly TimeProvider _timeProvider;
@@ -60,6 +62,22 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
 
     private readonly SemaphoreSlim _writeLock = new(1, 1);
     private StreamWriter? _writer;
+
+    // Whether this process has fsynced the ledger directory since it last could have changed the
+    // ledger's directory entry (first creation or a compaction rename). Written under _writeLock.
+    private bool _ledgerDirectoryEntrySynced;
+
+    /// <summary>
+    /// Forces flushed ledger bytes to stable storage. Commits of durability-confirmed entries are
+    /// only published after this returns. Replaceable by tests to inject failures or record ordering.
+    /// </summary>
+    internal Action<FileStream> FlushToDisk { get; set; } = static stream => stream.Flush(flushToDisk: true);
+
+    /// <summary>
+    /// Fsyncs the ledger directory so a newly created or renamed ledger file survives power loss.
+    /// Replaceable by tests to inject failures or record ordering.
+    /// </summary>
+    internal Func<string, CancellationToken, Task> SyncLedgerDirectory { get; set; } = AtomicFileWriter.SyncDirectoryAsync;
 
     // Automatic compaction. Every admitted identity appends a line, so without compaction the
     // file grows for the life of the deployment and each startup re-reads all of it. The fields
@@ -106,6 +124,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         TimeProvider? timeProvider = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(compactionMinLines);
+        _ledgerDirectory = ledgerDirectory;
         _ledgerPath = Path.Combine(ledgerDirectory, "dedup_ledger.jsonl");
         _entryTtl = entryTtl ?? TimeSpan.FromHours(24);
         _timeProvider = timeProvider ?? TimeProvider.System;
@@ -518,8 +537,17 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
                 validatedIndexes.Add(i);
             }
 
-            // Stage 2: make the committed identities durable before publishing them.
+            // Stage 2: make the committed identities durable before publishing them. The
+            // StreamWriter flush only reaches the OS page cache, which a power loss discards;
+            // WAL recovery trusts these version-2 lines to suppress replay, so they must be
+            // fsynced (and the file's directory entry made durable) before stage 3 runs.
             await _writer!.FlushAsync(ct).ConfigureAwait(false);
+            FlushToDisk((FileStream)_writer.BaseStream);
+            if (!_ledgerDirectoryEntrySynced)
+            {
+                await SyncLedgerDirectory(_ledgerDirectory, ct).ConfigureAwait(false);
+                _ledgerDirectoryEntrySynced = true;
+            }
 
             // Stage 3: post-durability bookkeeping. Publish each committed entry BEFORE dropping
             // its pending claim: a concurrent TryReserveAsync that wins the freed slot re-checks
@@ -1061,6 +1089,20 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             File.Move(tempPath, _ledgerPath, overwrite: true);
             _diskLineCount = kept;
             _compactionDueAtLineCount = NextCompactionDueAt(kept);
+
+            // The rename has committed; make it durable so a power loss cannot revert the
+            // ledger to its pre-compaction file. Not cancellable, and a failure only means the
+            // next durable commit must sync the directory again.
+            _ledgerDirectoryEntrySynced = false;
+            try
+            {
+                await SyncLedgerDirectory(_ledgerDirectory, CancellationToken.None).ConfigureAwait(false);
+                _ledgerDirectoryEntrySynced = true;
+            }
+            catch (Exception ex)
+            {
+                _log.Warning(ex, "Dedup ledger directory fsync after compaction failed; the next durable commit retries it");
+            }
             _log.Information("Compacted dedup ledger: {KeptCount} entries retained", kept);
             return true;
         }

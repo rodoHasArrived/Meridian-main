@@ -287,6 +287,94 @@ public sealed class PersistentDedupLedgerTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task CommitDurableAsync_FsyncsLedgerAndDirectoryBeforePublishing_DirectoryOncePerProcess()
+    {
+        var steps = new List<string>();
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory);
+        _firstLedger.FlushToDisk = stream =>
+        {
+            stream.Name.Should().Be(LedgerPath);
+            steps.Add("fsync");
+            stream.Flush(flushToDisk: true);
+        };
+        _firstLedger.SyncLedgerDirectory = (directory, _) =>
+        {
+            directory.Should().Be(_ledgerDirectory);
+            steps.Add("dirsync");
+            return Task.CompletedTask;
+        };
+        await _firstLedger.InitializeAsync();
+
+        for (var i = 1; i <= 2; i++)
+        {
+            var reserved = await _firstLedger.TryReserveAsync(CreateTradeEvent("SPY", i), DedupLookupScope.WalRecovery);
+            reserved.Status.Should().Be(DedupReservationStatus.Reserved);
+            await _firstLedger.CommitDurableAsync([reserved.Reservation]);
+        }
+
+        steps.Should().Equal(
+            ["fsync", "dirsync", "fsync"],
+            "every commit fsyncs its lines, and the new ledger's directory entry is made durable once");
+    }
+
+    [Fact]
+    public async Task CommitDurableAsync_FsyncFails_DoesNotPublishTheCommitAndRetrySucceeds()
+    {
+        var evt = CreateTradeEvent("SPY", 1);
+        var failFsync = true;
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory);
+        _firstLedger.FlushToDisk = stream =>
+        {
+            if (failFsync)
+                throw new IOException("simulated fsync failure");
+            stream.Flush(flushToDisk: true);
+        };
+        await _firstLedger.InitializeAsync();
+
+        var reserved = await _firstLedger.TryReserveAsync(evt, DedupLookupScope.WalRecovery);
+        var commit = () => _firstLedger.CommitDurableAsync([reserved.Reservation]);
+
+        await commit.Should().ThrowAsync<IOException>();
+        _firstLedger.Release(reserved.Reservation).Should().BeTrue(
+            "a commit whose lines never reached stable storage must leave the claim pending, not committed");
+
+        var retried = await _firstLedger.TryReserveAsync(evt, DedupLookupScope.WalRecovery);
+        retried.Status.Should().Be(DedupReservationStatus.Reserved, "the identity was never published as durable");
+
+        failFsync = false;
+        await _firstLedger.CommitDurableAsync([retried.Reservation]);
+        (await _firstLedger.TryReserveAsync(evt, DedupLookupScope.WalRecovery)).Status
+            .Should().Be(DedupReservationStatus.Duplicate);
+    }
+
+    [Fact]
+    public async Task Compaction_FsyncsDirectoryAfterTheRename()
+    {
+        const int identities = 4;
+        var renameObserved = new List<bool>();
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory, compactionMinLines: identities);
+        _firstLedger.SyncLedgerDirectory = (directory, _) =>
+        {
+            // True only for a sync that runs after compaction replaced the ledger.
+            renameObserved.Add(!File.Exists(LedgerPath + ".tmp") && _firstLedger.DiskLineCount == identities);
+            return Task.CompletedTask;
+        };
+        await _firstLedger.InitializeAsync();
+
+        var events = Enumerable.Range(1, identities).Select(i => CreateTradeEvent("AAPL", i)).ToArray();
+        foreach (var evt in events)
+            (await _firstLedger.IsDuplicateAsync(evt)).Should().BeFalse();
+        var reservations = new List<DedupReservation>();
+        foreach (var evt in events)
+            reservations.Add((await _firstLedger.TryReserveAsync(evt, DedupLookupScope.WalRecovery)).Reservation);
+        await _firstLedger.CommitDurableAsync(reservations);
+
+        _firstLedger.DiskLineCount.Should().Be(identities, "the commit crossed the threshold and compacted");
+        renameObserved.Should().HaveCount(2).And.EndWith(true,
+            "the commit syncs the directory once and compaction syncs it again after its rename");
+    }
+
+    [Fact]
     public async Task Appends_BelowThreshold_DoNotCompact()
     {
         _firstLedger = new PersistentDedupLedger(_ledgerDirectory, compactionMinLines: 100);
