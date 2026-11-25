@@ -373,6 +373,36 @@ investment evidence, and sandbox transfer testing. Operator setup and sync behav
 Production Plaid credentials do not imply live transfer approval. Live transfers require a separate
 readiness flag plus treasury and compliance sign-off before transfer creation is allowed.
 
+## Provider-integration actor audit
+
+Before PR rodoHasArrived/Meridian-main#3754, the provider-integration routes stored the actor the
+client sent: `approvedBy`, `savedBy`, `importedBy`, `requestedBy`, `checkedBy`, `reviewedBy`. The
+browser sent the workstation session's desk label ("Meridian Operator" or "<strategy> Desk") or a
+Settings placeholder ("settings-operator", "settings-screen"). The routes now record the signed-in
+operator, but records written earlier may not name a person. That includes the activation approver
+on a manifest version.
+
+These records are not backfilled:
+
+- **No source:** nothing else recorded who made those requests.
+- **Pinned digests:** `approvedBy` is part of each immutable manifest version's `contentDigest`.
+  Rewriting it would break the references that readiness reviews and connections pin to.
+
+List them with the read-only audit. It reads the file store under `<data root>/_integrations`
+(including tenant partitions) and never writes:
+
+```bash
+python3 build/scripts/audit_provider_integration_actors.py --data-root <storage root> --format json
+```
+
+- Add `--extra-label "<label>"` for any custom session display name the host used.
+- `--fail-on-findings` exits 1 when anything is flagged.
+- Each finding names the file, the field's JSON path, the stored value, why it was flagged, and the
+  nearest timestamp.
+
+Treat a flagged approval or review as unattributed. Re-approve or re-review it through the
+governed flow if the decision still matters; the new version records the signed-in operator.
+
 ## Legacy links moved into canonical lane
 
 - [Provider credential management (legacy source)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/provider-credential-management.md)
