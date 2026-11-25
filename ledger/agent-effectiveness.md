@@ -1,0 +1,33 @@
+# Agent effectiveness ledger
+
+Scope per run: agent PRs opened or closed since the previous run (first run: 14 days). Agent types: `claude/` branches, `codex/` branches, `ccr-*` (scheduled docs routines), bots (`automation/`), and Dependabot for reference.
+
+## Scorecard history
+
+First-pass green: the share of branches whose first push with a decided Meridian CI result (success or failure) passed. Runs that were only cancelled are skipped. Pushes-to-green: the number of distinct head SHAs up to and including the first green SHA.
+
+| Run date | main | Window | Type | PRs | Merged | Open | Closed unmerged | Median open→merge | First-pass green | Median pushes to green (mean) | CI runs cancelled | Template headings | Phase marker | Median merged size |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-11-25 | be2baba0 | 11-11..11-25 | claude | 153 | 108 | 38 | 7 | 5.2 h | 44/65 (68%) | 3 (3.2) | 57% (353/614) | 152/153 | 108/153 | 17 files / 648 lines (n=11, Nov 20+) |
+| 2026-11-25 | be2baba0 | 11-11..11-25 | codex | 99 | 84 | 13 | 2 | 2.0 h | 17/65 (26%) | 2 (4.2) | 58% (180/312) | 57/99 | 60/99 | 108 files / 9,193 lines (n=23, Nov 20+) |
+| 2026-11-25 | be2baba0 | 11-11..11-25 | ccr (scheduled docs) | 16 | 14 | 2 | 0 | 0.6 h | 14/15 (93%) | 1 (1.2) | 32% | 16/16 | 3/16 | 1 file / 37 lines (n=5) |
+| 2026-11-25 | be2baba0 | 11-11..11-25 | bot screenshots | 6 | 3 | 0 | 3 | 0.1 h | 1/5 | - | 0% | n/a | n/a | n/a |
+| 2026-11-25 | be2baba0 | 11-11..11-25 | dependabot | 22 | 15 | 4 | 3 | 12.6 h | 12/21 | 1 | 8% | n/a | n/a | 2 files |
+
+Data limits (2026-11-25): CI run data covers 11-13..11-25, because the API caps listing at 1,000 runs. The clone is shallow from 11-20, so merged sizes count only merges since then. Reused branches blur per-PR first-pass figures.
+
+## Failure patterns
+
+| ID | Pattern | Example PRs / runs | Occurrences | First seen | Last seen | Proposed guidance change | Status |
+|---|---|---|---|---|---|---|---|
+| agent-effectiveness-001 | Committed generated outputs drift and make every PR conflict with every other: reviewed-generated stale in CI, follow-up hash repairs, owner had to request an integration stack | Failed runs: codex/accounting-integration-current, codex/provider-correctness, codex/provider-controls, claude/quirky-pascal, claude/admiring-rubin, claude/compassionate-curie, claude/provider-config-hot-reload. Hash repairs: #3773, #3747, #3500, #3473, #3461. Integration stack: #3767 (13 PRs). 19/21 open agent PRs touch docs/generated/repository-structure.md | 7/15 sampled failed runs; 19/21 open PRs | 2026-11-10 | 2026-11-25 | Pre-push line in CLAUDE.md/AGENTS.md: run `buildctl.py regen --fix` before every push that changes src/ public API, screens or docs. Owner review: move repository-structure.md and the source-api pages to CI artifacts (#3778 already split the hashes per module) | open |
+| agent-effectiveness-002 | `dotnet format` whitespace errors fail verify-dotnet | codex/provider-controls, codex/bond-lot-evidence (31), codex/governed-execution-foundations (126), claude/quirky-pascal, claude/provider-config-hot-reload | 5/15 | 2026-11-13 | 2026-11-23 | One pre-push line: `dotnet format whitespace Meridian.sln --verify-no-changes --include <changed .cs>`. The .claude/settings.json format hook uses keys that are not Claude Code hook events (postEditFile, beforeCommit; see ai-tooling-011), so it probably never runs. Replace it with a PostToolUse hook on Edit/Write for *.cs | open |
+| agent-effectiveness-003 | Baseline ratchets tripped (god-file over 2000 lines, duplicate helper, inline SHA256, design-system number formatting, hard-coded capture count) | claude/happy-brahmagupta (#3661), claude/compassionate-curie (#3674), codex/effective-config-safe, codex/provider-config-ack plus claude/zen-bohr (same violation, possibly inherited), claude/zen-goldberg | 5/15 (+1) | 2026-11-17 | 2026-11-21 | Known-errors entry naming each ratchet and its fix (TextPrimitives, @/lib/format, split files over 2000 lines). `make verify-fast` before push catches all of them | open |
+| agent-effectiveness-004 | Phase marker is required by scope-gate but documented only in a 50-line known-errors entry, and that entry is stale: it says body edits don't retrigger, but the workflow has listed `edited` since 11-20 (5fd70923). Markers are ritual (PR7 98, PR9 62 of 172); claude coverage fell from 74/87 to 34/66 | Scope-gate failures: #3728, #3730, #3610, #3523 (pr-hygiene). Roadmap Source Docs: 91/100 recent runs cancelled by edited/labeled churn | 4 PRs failing; 133/268 bodies missing marker | 2026-11-12 | 2026-11-25 | Template default first line `<!-- phase:PR7 -->` plus one-sentence rule (PR8 when .github/workflows changes, PR9 only when needed). Fix the stale known-errors text. Owner review: retire the gate or drop `edited` from its triggers | open |
+| agent-effectiveness-005 | Codex PRs oversized and off-template: Codex is the main source of red first pushes | Merged codex median 108 files / 9.2k lines; 14/23 over 100 files. Template use fell from 41/60 to 16/39. Open: #3712 (401 files), #3730, #3733 | 23 merges; 39 PRs | 2026-11-11 | 2026-11-24 | AGENTS.md: fill .github/pull_request_template.md verbatim; split PRs over ~40 hand-authored files | open |
+| agent-effectiveness-006 | Parallel sessions work the same subsystem at once, producing duplicates and conflicts | Security Master opened 11-25: #3736, #3744, #3754, #3755, #3757, #3760, #3770 (+#3678, #3662, #3586; codex #3603 abandoned). Storage/WAL: #3743, #3756, #3766, #3771. Duplicate pairs: #3753/#3761, #3625/#3628 (same head SHA), #3584/#3588 | ~15 PRs | 2026-11-14 | 2026-11-25 | CLAUDE.md/AGENTS.md: before opening, search open PRs touching the same project directory; if any exist, stack on that branch or name it in the body | open |
+| agent-effectiveness-007 | CI-governance churn: changes merged without measured evidence and reverted the same day | #3759 reverted by #3772; 9 ci: PRs merged 11-25; 55% of Meridian CI PR runs cancelled | 1 revert | 2026-11-25 | 2026-11-25 | Keep the existing rule. CI performance PRs state a before/after run as evidence | watch |
+
+## Run log
+
+- **2026-11-25 13:27 MST** (first recorded run; no prior file). main be2baba0. Window 11-11..11-25: 296 PRs created (claude 153, codex 99, ccr 16, bot 6, dependabot 22) plus 21 created earlier and closed in the window. CI: 1,000 Meridian CI pull_request runs (11-13..11-25); subagent triaged 15 first-failed runs from logs. Opened patterns 001-007. Sibling ledgers: ai-tooling present (fixes pending in draft #3775); pr-hygiene present (2 runs today); dev-pace missing.
