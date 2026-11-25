@@ -278,6 +278,7 @@ public sealed partial class BackfillCoordinator : IDisposable
                 throw new BackfillCloneConflictException(MissingCloneConfiguration(source.Receipt));
 
             ArgumentNullException.ThrowIfNull(cfg);
+            using var historyScope = ProviderRateLimitHistory.ForDataRoot(dataRoot, new AtomicFileWriterAdapter()).BeginScope();
             var attempts = new ConcurrentQueue<BackfillRoutingAttempt>();
             using var service = await CreateOperationServiceAsync(cfg, tenantId, ct, statusStore, tracker,
                 publishCheckpointStatus: !queued, captureAttempt: attempts.Enqueue).ConfigureAwait(false);
