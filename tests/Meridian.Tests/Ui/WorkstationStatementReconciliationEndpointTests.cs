@@ -536,10 +536,12 @@ public sealed partial class WorkstationEndpointsTests
         var service = new StubReconciliationApiService();
         var accountId = Guid.NewGuid();
         var accounts = CreateStatementAccount(accountId);
+        var intake = new FixedStatementIntakeAuthority();
         await using var app = await CreateAppAsync(services =>
         {
             services.AddSingleton<IReconciliationApiService>(service);
             services.AddSingleton<IAccountQueryService>(accounts);
+            services.AddSingleton<IStatementReconciliationIntakeAuthority>(intake);
         }, currentUserPermissions: Meridian.Identity.Auth.UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
 
@@ -567,6 +569,11 @@ public sealed partial class WorkstationEndpointsTests
         reconcile.StatusCode.Should().Be(HttpStatusCode.OK);
         service.CreatedRequests.Should().ContainSingle();
         service.CreatedRequests[0].ImportedBy.Should().Be("ops-user");
+        service.CreatedRequests[0].ResolvedAccountingScope.Should().Be(
+            FixedStatementIntakeAuthority.ToDto(FixedStatementIntakeAuthority.DefaultScope));
+        intake.Requests.Should().ContainSingle(item =>
+            item.TenantId == "tenant-test" && item.CompanyId == "tenant-test" &&
+            item.FundAccountId == accountId.ToString("D") && item.RequestedScope == null);
         service.ReconciledRequests.Should().ContainSingle();
         service.ReconciledRequests[0].RunId.Should().Be("statement-run-1");
         service.ReconciledRequests[0].Request.Actor.Should().Be("ops-user");
@@ -574,6 +581,67 @@ public sealed partial class WorkstationEndpointsTests
             scope.TenantId == "tenant-test" &&
             scope.CompanyId == "tenant-test");
     }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_StatementRunCreate_WhenTheIntakeAuthorityRefusesTheScope_CreatesNothing()
+    {
+        var service = new StubReconciliationApiService();
+        var accountId = Guid.NewGuid();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationApiService>(service);
+            services.AddSingleton<IAccountQueryService>(CreateStatementAccount(accountId));
+            services.AddSingleton<IStatementReconciliationIntakeAuthority>(
+                new FixedStatementIntakeAuthority(refusalCode: "STATEMENT_ACCOUNTING_PERIOD_REQUIRED"));
+        }, currentUserPermissions: Meridian.Identity.Auth.UserPermission.AdminMaintenance);
+
+        var response = await app.GetTestClient().PostAsJsonAsync(
+            UiApiRoutes.ReconciliationStatementRuns,
+            StatementRunCreateRequest(accountId),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        (await response.Content.ReadAsStringAsync()).Should().Contain("STATEMENT_ACCOUNTING_PERIOD_REQUIRED");
+        service.CreatedRequests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_StatementRunCreate_IgnoresAClientSuppliedAccountingScope()
+    {
+        var service = new StubReconciliationApiService();
+        var accountId = Guid.NewGuid();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationApiService>(service);
+            services.AddSingleton<IAccountQueryService>(CreateStatementAccount(accountId));
+            services.AddSingleton<IStatementReconciliationIntakeAuthority>(new FixedStatementIntakeAuthority());
+        }, currentUserPermissions: Meridian.Identity.Auth.UserPermission.AdminMaintenance);
+        var body = System.Text.Json.JsonSerializer.SerializeToNode(StatementRunCreateRequest(accountId), ServerJsonOptions)!.AsObject();
+        body["resolvedAccountingScope"] = System.Text.Json.Nodes.JsonNode.Parse(
+            """{"fundProfileId":"other-fund","ledgerBookId":"44444444-4444-4444-4444-444444444444","accountingPeriodId":"55555555-5555-5555-5555-555555555555","asOfDate":"2026-05-31"}""");
+
+        var response = await app.GetTestClient().PostAsync(
+            UiApiRoutes.ReconciliationStatementRuns,
+            new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        service.CreatedRequests.Should().ContainSingle().Which.ResolvedAccountingScope.Should().Be(
+            FixedStatementIntakeAuthority.ToDto(FixedStatementIntakeAuthority.DefaultScope));
+    }
+
+    private static StatementRunCreateDto StatementRunCreateRequest(Guid accountId)
+        => new(
+            Broker: "custodian",
+            SourceInstitution: "Sample Custodian",
+            FundAccountId: accountId.ToString("D"),
+            ExternalAccountId: "external-allowed",
+            StatementPeriodStart: new DateOnly(2026, 5, 1),
+            StatementPeriodEnd: new DateOnly(2026, 5, 31),
+            SourcePath: "/retained/statement.csv",
+            OriginalFileName: "statement.csv",
+            MappingProfileId: "mapping-v1",
+            ToleranceProfileId: "tolerance-v1",
+            ImportedBy: "browser-spoof");
 
     [Fact]
     public async Task MapWorkstationEndpoints_StatementRunRoutes_WithoutCompanyScope_ShouldFailClosed()

@@ -94,7 +94,11 @@ public sealed class ReconciliationApiServiceTests
                 OriginalFileName: "custodian-statement.csv",
                 MappingProfileId: "canonical-csv-v1",
                 ToleranceProfileId: "statement-default",
-                ImportedBy: "ops-user"),
+                ImportedBy: "ops-user")
+            {
+                ResolvedAccountingScope = new StatementReconciliationAccountingScopeDto(
+                    fundId.ToString("D"), Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2026, 5, 31))
+            },
             AlphaScope,
             CancellationToken.None);
 
@@ -351,6 +355,37 @@ public sealed class ReconciliationApiServiceTests
             InternalReconciliationPopulationContext context,
             CancellationToken ct = default)
             => Task.FromResult(populations);
+    }
+
+    [Fact]
+    public async Task CreateStatementRunAsync_WithoutResolvedAccountingScope_RefusesBeforeReadingTheLedger()
+    {
+        var accountId = Guid.NewGuid();
+        var fundId = Guid.NewGuid();
+        var workflow = new StubStatementRunWorkflowService();
+        var service = new ReconciliationApiService(
+            workflow,
+            await CreateAccountsAsync((accountId, fundId, "ALPHA")),
+            new StaticFundProfileTenancyRegistry(
+                new FundProfileOwnership(fundId.ToString("D"), AlphaScope.TenantId, AlphaScope.CompanyId)));
+
+        var create = () => service.CreateStatementRunAsync(
+            new StatementRunCreateDto(
+                Broker: "custodian",
+                SourceInstitution: "Sample Custodian",
+                FundAccountId: accountId.ToString("D"),
+                ExternalAccountId: "ALPHA",
+                StatementPeriodStart: new DateOnly(2026, 5, 1),
+                StatementPeriodEnd: new DateOnly(2026, 5, 31),
+                SourcePath: "/retained/alpha.csv",
+                OriginalFileName: "alpha.csv",
+                MappingProfileId: "mapping-v1",
+                ToleranceProfileId: "tolerance-v1",
+                ImportedBy: "ops-user"),
+            AlphaScope);
+
+        await create.Should().ThrowAsync<InvalidOperationException>().WithMessage("*accounting scope*");
+        workflow.CreateCallCount.Should().Be(0);
     }
 
     private static async Task<InMemoryFundAccountService> CreateAccountsAsync(

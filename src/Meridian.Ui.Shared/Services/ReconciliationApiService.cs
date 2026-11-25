@@ -78,6 +78,13 @@ public class ReconciliationApiService : IReconciliationApiService
             return null;
         }
 
+        // Without a scope the ledger population is read by date across every book in the store.
+        if (request.ResolvedAccountingScope is null)
+        {
+            throw new InvalidOperationException(
+                "A statement run requires an accounting scope resolved by the statement intake authority.");
+        }
+
         var result = await _statementRunWorkflowService
             .CreateAsync(ToWorkflowRequest(request), ct)
             .ConfigureAwait(false);
@@ -742,7 +749,12 @@ public class ReconciliationApiService : IReconciliationApiService
             request.MappingProfileId.Trim(),
             request.ToleranceProfileId.Trim(),
             request.ImportedBy.Trim(),
-            string.IsNullOrWhiteSpace(request.SourceFileHash) ? string.Empty : request.SourceFileHash.Trim());
+            string.IsNullOrWhiteSpace(request.SourceFileHash) ? string.Empty : request.SourceFileHash.Trim())
+        {
+            AccountingScope = request.ResolvedAccountingScope is { } scope
+                ? new StatementAccountingScope(scope.FundProfileId, scope.LedgerBookId, scope.AccountingPeriodId, scope.AsOfDate)
+                : null
+        };
 
     private static StatementRunBreakDto ToRunBreakDto(ReconciliationBreakRecord item)
         => new(
