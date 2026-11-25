@@ -19,7 +19,7 @@ public sealed record LedgerSecurityKeyRekeyProposal(
     Guid PeriodId,
     long ExpectedPeriodVersion,
     DateTimeOffset EffectiveAt,
-    Guid BookPositionId,
+    IReadOnlyList<Guid> BookPositionIds,
     LedgerSecurityKeyMappingRow Mapping,
     LedgerAccountRekeyInstruction Instruction,
     Guid MutationBatchId,
@@ -155,18 +155,22 @@ public sealed class LedgerSecurityKeyRekeyService
             return null;
         }
 
-        var positions = open.Select(static lot => lot.BookPositionId).Distinct().ToArray();
-        if (positions.Length != 1 || positions[0] == Guid.Empty)
+        // A holding may sit in several book positions of the same security; the re-key moves them
+        // all in one batch (one reclass pair per position). A lot without a position cannot be
+        // attributed and blocks the account.
+        if (open.Any(static lot => lot.BookPositionId == Guid.Empty))
         {
-            reason = "The legacy account's open lots span several book positions or none; split them before re-keying.";
+            reason = "An open lot on the legacy account has no book position, so its basis cannot be attributed; assign it first.";
             return null;
         }
+
+        var positions = open.Select(static lot => lot.BookPositionId).Distinct().Order().ToArray();
 
         LedgerAccountRekeyLot[] lots;
         try
         {
             lots = open.Select(lot => new LedgerAccountRekeyLot(lot.TaxLotRecordId, lot.LotId, lot.Version, lot.OpenQuantity,
-                LedgerAccountRekeyRules.OpenBasis(lot))).ToArray();
+                LedgerAccountRekeyRules.OpenBasis(lot), lot.BookPositionId)).ToArray();
             var instruction = new LedgerAccountRekeyInstruction(row.LegacyAccount, row.TargetAccount, row.Balance, lots);
             LedgerAccountRekeyRules.ValidateInstruction(instruction, direction);
             var key = $"security-key-rekey:{ledgerBookId:D}:{row.LegacyAccount}:{securityId:D}";
@@ -175,7 +179,7 @@ public sealed class LedgerSecurityKeyRekeyService
                 period.PeriodId,
                 period.Version,
                 effectiveAt,
-                positions[0],
+                positions,
                 row,
                 instruction,
                 MutationBatchId: DeterministicGuid(key, "batch"),
@@ -210,24 +214,29 @@ public sealed class LedgerSecurityKeyRekeyService
 
         var instruction = proposal.Instruction;
         var securityId = instruction.TargetAccount.SecurityId!.Value;
-        var amount = instruction.LegacyBalance;
         var debitNormal = instruction.LegacyAccount.AccountType is LedgerAccountType.Asset or LedgerAccountType.Expense;
         var (debited, credited) = debitNormal
             ? (instruction.TargetAccount, instruction.LegacyAccount)
             : (instruction.LegacyAccount, instruction.TargetAccount);
         var description = $"Re-key {instruction.LegacyAccount} to Security Master {securityId:D} (Security Master review F2)";
-        var dimensions = new LedgerLineDimensionSet(InstrumentId: securityId, BookId: book.LedgerBookId.ToString("D"),
-            AccountId: instruction.LegacyAccount.FinancialAccountId)
-        { PositionId = proposal.BookPositionId };
-        var lines = new[]
+        // One debit and one credit per book position, each moving that position's lot basis, so
+        // position-dimensioned views stay whole. The single-position line identities are unchanged.
+        var positionAmounts = LedgerAccountRekeyRules.PositionAmounts(instruction);
+        var lines = new List<LedgerEntry>(positionAmounts.Count * 2);
+        for (var index = 0; index < positionAmounts.Count; index++)
         {
-            new LedgerEntry(DeterministicGuid(proposal.IdempotencyKey, "line:0"), proposal.JournalEntryId, proposal.EffectiveAt,
-                debited, amount, 0m, description, dimensions,
-                new LedgerEntryCurrency(book.BaseCurrency, book.BaseCurrency, amount, 0m, 1m)),
-            new LedgerEntry(DeterministicGuid(proposal.IdempotencyKey, "line:1"), proposal.JournalEntryId, proposal.EffectiveAt,
-                credited, 0m, amount, description, dimensions,
-                new LedgerEntryCurrency(book.BaseCurrency, book.BaseCurrency, 0m, amount, 1m))
-        };
+            var (positionId, positionAmount) = positionAmounts[index];
+            var dimensions = new LedgerLineDimensionSet(InstrumentId: securityId, BookId: book.LedgerBookId.ToString("D"),
+                AccountId: instruction.LegacyAccount.FinancialAccountId)
+            { PositionId = positionId };
+            var suffix = positionAmounts.Count == 1 ? string.Empty : $":{positionId:N}";
+            lines.Add(new LedgerEntry(DeterministicGuid(proposal.IdempotencyKey, $"line:0{suffix}"), proposal.JournalEntryId,
+                proposal.EffectiveAt, debited, positionAmount, 0m, description, dimensions,
+                new LedgerEntryCurrency(book.BaseCurrency, book.BaseCurrency, positionAmount, 0m, 1m)));
+            lines.Add(new LedgerEntry(DeterministicGuid(proposal.IdempotencyKey, $"line:1{suffix}"), proposal.JournalEntryId,
+                proposal.EffectiveAt, credited, 0m, positionAmount, description, dimensions,
+                new LedgerEntryCurrency(book.BaseCurrency, book.BaseCurrency, 0m, positionAmount, 1m)));
+        }
         var tags = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             [LedgerAccountRekeyRules.JournalTag] = instruction.LegacyAccount.ToString(),

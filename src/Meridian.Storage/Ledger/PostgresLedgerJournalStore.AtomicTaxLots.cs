@@ -1966,6 +1966,23 @@ public sealed partial class PostgresLedgerJournalStore
             return (source.SecurityId, source.BookPositionId);
         }
 
+        // A Security Master review F2 re-key moves one legacy account's whole holding, which can sit in
+        // several book positions of the same security. Every line still names that security and a
+        // position; the batch records the lowest position as its representative scope, and the
+        // re-key lock checks each lot against the position its instruction names.
+        if (journal.Entry.Metadata.Tags?.ContainsKey(LedgerAccountRekeyRules.JournalTag) == true)
+        {
+            var positions = journal.Entry.Lines
+                .Select(static line => (SecurityId: line.Dimensions?.InstrumentId ?? Guid.Empty,
+                    BookPositionId: line.Dimensions?.PositionId ?? Guid.Empty))
+                .Distinct()
+                .ToArray();
+            if (positions.Length == 0 || positions.Any(scope => scope.SecurityId != securityId || scope.BookPositionId == Guid.Empty))
+                throw new LedgerValidationException(
+                    "Every account re-key journal line must carry the target Security Master identity and a book position.");
+            return (securityId, positions.Min(static scope => scope.BookPositionId));
+        }
+
         var lineScopes = journal.Entry.Lines
             .Select(static line => (
                 SecurityId: line.Dimensions?.InstrumentId ?? Guid.Empty,

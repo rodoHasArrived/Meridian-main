@@ -21,7 +21,7 @@ public sealed partial class PostgresLedgerJournalStore
         CancellationToken ct)
     {
         var instruction = command.AccountRekey!;
-        var scope = ResolveAtomicAssetScope(command.Journal);
+        _ = ResolveAtomicAssetScope(command.Journal);
         var lotIds = instruction.Lots.Select(static lot => lot.TaxLotRecordId).ToArray();
         var locked = (await LoadTaxLotsForUpdateAsync(connection, transaction, command.LedgerBookId, lotIds, ct)
                 .ConfigureAwait(false))
@@ -34,7 +34,7 @@ public sealed partial class PostgresLedgerJournalStore
                 throw new LedgerValidationException("Account re-key lot no longer exists in the ledger book.");
             if (lot.Account != instruction.LegacyAccount || lot.Account.SecurityId is not null
                 || lot.SecurityId != instruction.TargetAccount.SecurityId
-                || lot.BookPositionId != scope.BookPositionId
+                || lot.BookPositionId != expected.BookPositionId
                 || !string.Equals(lot.LotId, expected.LotId, StringComparison.Ordinal)
                 || lot.Version != expected.ExpectedVersion || lot.OpenQuantity != expected.ExpectedOpenQuantity
                 || lot.OpenQuantity <= 0m
@@ -50,7 +50,7 @@ public sealed partial class PostgresLedgerJournalStore
             instruction.LegacyAccount, ct).ConfigureAwait(false);
         if (openOnLegacy.Count != lotIds.Length || openOnLegacy.Any(id => !locked.ContainsKey(id)))
             throw new LedgerValidationException(
-                "Account re-key must move every open lot on the legacy account; lots in another instrument or position need their own correction first.");
+                "Account re-key must move every open lot on the legacy account, across all of its book positions.");
 
         var balance = await ReadAccountBalanceAsync(connection, transaction, command.LedgerBookId,
             instruction.LegacyAccount, ct).ConfigureAwait(false);

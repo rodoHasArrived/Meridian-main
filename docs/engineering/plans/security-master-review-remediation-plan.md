@@ -722,6 +722,11 @@ Tax-lot re-key (follow-through, 2026-11-25):
 
 - `LedgerSecurityKeyRekeyService` plans one proposal per lot-carrying legacy account from the
   canonical mapping report and lists balance-only and blocked accounts.
+- A legacy account whose lots span several book positions of the same security is re-keyed in one
+  batch. The reclass journal has one debit and one credit per position, each dimensioned by the
+  SecurityId and position and moving that position's lot basis. Each lot is checked against the
+  position its instruction names. The batch row records the lowest position as its representative
+  scope.
 - An approved proposal posts one atomic `AccountRekey` batch: the reclass journal plus an in-place
   re-key of every open lot. It also copies the relief-policy history to the target key.
 - Migration `V_ledger_084` adds the batch instruction column, widens the mutation-kind checks and
@@ -730,8 +735,8 @@ Tax-lot re-key (follow-through, 2026-11-25):
 
 Known follow-ups:
 
-- Legacy accounts whose lots span several book positions, or lack a SecurityId or position, are
-  listed as blocked by `LedgerSecurityKeyRekeyService` and are not re-keyed. A re-key whose lot
+- A legacy account with an open lot that has no book position, or whose instrument is not the
+  resolved SecurityId, is listed as blocked by `LedgerSecurityKeyRekeyService`. A re-key whose lot
   label already exists on the target key is rejected by the unique index.
 - `LedgerSecurityKeyRekeyService` is not registered in DI; callers construct it.
 - The UI correction flows and `LedgerPeriodTrialBalanceLineDto` do not yet carry the account

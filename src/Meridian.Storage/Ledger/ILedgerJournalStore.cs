@@ -498,7 +498,8 @@ public sealed record LedgerAccountRekeyLot(
     string LotId,
     long ExpectedVersion,
     decimal ExpectedOpenQuantity,
-    decimal ExpectedCostBasis);
+    decimal ExpectedCostBasis,
+    Guid BookPositionId);
 
 /// <summary>
 /// The reviewed re-key of a legacy ticker-keyed per-security account onto its SecurityId-keyed

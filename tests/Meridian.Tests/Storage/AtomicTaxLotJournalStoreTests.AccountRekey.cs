@@ -93,7 +93,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
     }
 
     [Fact]
-    public void AccountRekey_ProposalIsBlockedForAmbiguousTickersAndMultiPositionAccounts()
+    public void AccountRekey_ProposalIsBlockedForAmbiguousTickersAndUnpositionedLots()
     {
         var bookId = Guid.NewGuid();
         var period = RekeyPeriod(bookId, Guid.NewGuid(), version: 0);
@@ -106,18 +106,56 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             .Should().BeNull();
         ambiguousReason.Should().Contain("Ambiguous");
 
-        var resolved = ResolvedRekeyRow(10_000m);
+        var unpositioned = LegacyRekeyLot(bookId, Guid.NewGuid()) with { BookPositionId = Guid.Empty };
+        LedgerSecurityKeyRekeyService.TryPropose(bookId, period, RekeyAt, ResolvedRekeyRow(10_000m), [unpositioned],
+                out var unpositionedReason)
+            .Should().BeNull();
+        unpositionedReason.Should().Contain("no book position");
+    }
+
+    [Fact]
+    public void AccountRekey_MultiPositionAccount_MovesEveryPositionInOneBatchWithAReclassPairPerPosition()
+    {
+        var bookId = Guid.NewGuid();
+        var period = RekeyPeriod(bookId, Guid.NewGuid(), version: 0);
+        var otherPosition = Guid.Parse("f2f2f2f2-0000-4000-8000-0000000000e1");
         var split = new[]
         {
-            lot with { OriginalQuantity = 50m, OpenQuantity = 50m },
+            LegacyRekeyLot(bookId, Guid.NewGuid()) with { OriginalQuantity = 60m, OpenQuantity = 60m },
             LegacyRekeyLot(bookId, Guid.NewGuid()) with
             {
-                LotId = "lot-other-position", OriginalQuantity = 50m, OpenQuantity = 50m, BookPositionId = Guid.NewGuid()
+                LotId = "lot-other-position", OriginalQuantity = 40m, OpenQuantity = 40m, BookPositionId = otherPosition
             }
         };
-        LedgerSecurityKeyRekeyService.TryPropose(bookId, period, RekeyAt, resolved, split, out var splitReason)
-            .Should().BeNull();
-        splitReason.Should().Contain("several book positions");
+
+        var proposal = LedgerSecurityKeyRekeyService.TryPropose(bookId, period, RekeyAt, ResolvedRekeyRow(10_000m), split,
+            out var reason);
+
+        proposal.Should().NotBeNull(reason);
+        proposal!.BookPositionIds.Should().BeEquivalentTo([TestBookPositionId, otherPosition]);
+        proposal.Instruction.Lots.Should().HaveCount(2);
+        var command = LedgerSecurityKeyRekeyService.BuildCommand(proposal, RekeyApproval(), RekeyBook(bookId));
+        var lines = command.Journal.Entry.Lines;
+        lines.Should().HaveCount(4);
+        command.Journal.Entry.IsBalanced.Should().BeTrue();
+        lines.Where(line => line.Dimensions?.PositionId == TestBookPositionId && line.Account == TargetRekeyAccount)
+            .Should().ContainSingle().Which.Debit.Should().Be(6_000m);
+        lines.Where(line => line.Dimensions?.PositionId == otherPosition && line.Account == LegacyRekeyAccount)
+            .Should().ContainSingle().Which.Credit.Should().Be(4_000m);
+        lines.Should().OnlyContain(line => line.Dimensions!.InstrumentId == TestSecurityId);
+        var validate = () => LedgerAccountRekeyRules.Validate(command);
+        validate.Should().NotThrow();
+
+        // Collapsing the per-position pairs into one unattributed pair no longer matches the lots.
+        var instruction = proposal.Instruction;
+        var merged = new JournalEntry(command.Journal.Entry.JournalEntryId, command.Journal.Entry.Timestamp,
+            command.Journal.Entry.Description,
+            [
+                RebuildLine(lines[0], TargetRekeyAccount, 10_000m, 0m),
+                RebuildLine(lines[1], LegacyRekeyAccount, 0m, 10_000m)
+            ], command.Journal.Entry.Metadata);
+        var shape = () => LedgerAccountRekeyRules.ValidateJournalShape(merged, instruction);
+        shape.Should().Throw<LedgerValidationException>().WithMessage("*per book position*");
     }
 
     [Fact]

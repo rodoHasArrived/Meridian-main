@@ -108,13 +108,16 @@ therefore keeps one account history.
   proposal per lot-carrying legacy account. Accounts without lots (for example a dividend
   receivable) are listed as balance-only, and accounts it cannot move are listed with a reason.
   `ExecuteAsync` takes an approved adjustment and posts one atomic `AccountRekey` batch
-  (`V_ledger_084__tax_lot_account_rekey`). The batch appends the two-line reclass and re-keys
-  every open lot of the legacy account in place.
+  (`V_ledger_084__tax_lot_account_rekey`). The batch appends the reclass and re-keys every open lot
+  of the legacy account in place. The reclass has one debit and one credit per book position, each
+  dimensioned by the SecurityId and position and moving that position's lot basis, so a holding
+  spread over several positions moves in one batch.
   - The store refuses the batch unless all of these hold:
     - the target is the legacy account keyed by SecurityId (`IsRetainedEquivalent`);
     - every listed lot is still open on the legacy account at its reviewed version, quantity and
       basis;
-    - each lot's instrument is the target SecurityId, and all lots share one book position;
+    - each lot's instrument is the target SecurityId, and each lot is in the book position its
+      instruction names;
     - the listed lots are every open lot on the legacy account;
     - the reclass amount equals the legacy balance and the lots' open basis;
     - the posting is an approved adjustment with retained mapping evidence.

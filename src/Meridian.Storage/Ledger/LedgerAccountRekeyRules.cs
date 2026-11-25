@@ -68,8 +68,9 @@ public static class LedgerAccountRekeyRules
         if (instruction.Lots.Count == 0
             || instruction.Lots.Select(static lot => lot.TaxLotRecordId).Distinct().Count() != instruction.Lots.Count
             || instruction.Lots.Any(static lot => lot.TaxLotRecordId == Guid.Empty || string.IsNullOrWhiteSpace(lot.LotId)
-                || lot.ExpectedVersion < 0 || lot.ExpectedOpenQuantity <= 0m || lot.ExpectedCostBasis < 0m))
-            throw new LedgerValidationException("Account re-key must list each open lot once with its reviewed version, quantity and basis.");
+                || lot.ExpectedVersion < 0 || lot.ExpectedOpenQuantity <= 0m || lot.ExpectedCostBasis < 0m
+                || lot.BookPositionId == Guid.Empty))
+            throw new LedgerValidationException("Account re-key must list each open lot once with its reviewed version, quantity, basis and book position.");
         if (instruction.Lots.Sum(static lot => lot.ExpectedCostBasis) != instruction.LegacyBalance)
             throw new LedgerValidationException(
                 "Account re-key lot basis must equal the legacy balance; a balance without lots, or lots without balance, needs its own correction first.");
@@ -93,22 +94,48 @@ public static class LedgerAccountRekeyRules
             throw new LedgerValidationException("Account re-key requires complete approved adjustment metadata before posting.");
     }
 
-    /// <summary>The journal is exactly the balanced reclass of the legacy balance onto the target.</summary>
+    /// <summary>
+    /// The open basis each book position moves: the reclass journal carries one debit and one credit
+    /// per position with non-zero basis, so position-level ledger views stay whole after the re-key.
+    /// </summary>
+    public static IReadOnlyList<(Guid BookPositionId, decimal Amount)> PositionAmounts(LedgerAccountRekeyInstruction instruction)
+    {
+        ArgumentNullException.ThrowIfNull(instruction);
+        return instruction.Lots
+            .GroupBy(static lot => lot.BookPositionId)
+            .Select(static group => (group.Key, group.Sum(static lot => lot.ExpectedCostBasis)))
+            .Where(static position => position.Item2 != 0m)
+            .OrderBy(static position => position.Key)
+            .ToArray();
+    }
+
+    /// <summary>
+    /// The journal is exactly the balanced reclass of the legacy balance onto the target: for every
+    /// book position, one debit and one credit of that position's lot basis, dimensioned by the target
+    /// SecurityId and the position. A single-position account is one debit and one credit.
+    /// </summary>
     public static void ValidateJournalShape(JournalEntry entry, LedgerAccountRekeyInstruction instruction)
     {
         ArgumentNullException.ThrowIfNull(entry);
         ArgumentNullException.ThrowIfNull(instruction);
-        var amount = instruction.LegacyBalance;
+        var securityId = instruction.TargetAccount.SecurityId;
         var debitNormal = instruction.LegacyAccount.AccountType is LedgerAccountType.Asset or LedgerAccountType.Expense;
         var (debited, credited) = debitNormal
             ? (instruction.TargetAccount, instruction.LegacyAccount)
             : (instruction.LegacyAccount, instruction.TargetAccount);
         var lines = entry.Lines;
-        if (lines.Count != 2
-            || lines.Count(line => line.Account == debited && line.Debit == amount && line.Credit == 0m) != 1
-            || lines.Count(line => line.Account == credited && line.Credit == amount && line.Debit == 0m) != 1)
+        var positions = PositionAmounts(instruction);
+        bool InPosition(LedgerEntry line, Guid positionId)
+            => line.Dimensions?.InstrumentId == securityId && line.Dimensions?.PositionId == positionId;
+        if (lines.Count != positions.Count * 2
+            || positions.Sum(static position => position.Amount) != instruction.LegacyBalance
+            || positions.Any(position =>
+                lines.Count(line => line.Account == debited && line.Debit == position.Amount && line.Credit == 0m
+                    && InPosition(line, position.BookPositionId)) != 1
+                || lines.Count(line => line.Account == credited && line.Credit == position.Amount && line.Debit == 0m
+                    && InPosition(line, position.BookPositionId)) != 1))
             throw new LedgerValidationException(
-                "Account re-key journal must be exactly one debit and one credit moving the whole legacy balance onto the SecurityId-keyed account.");
+                "Account re-key journal must be exactly one debit and one credit per book position, together moving the whole legacy balance onto the SecurityId-keyed account.");
         if (lines.Any(line => line.Currency is { } currency
                 && (!currency.IsFunctionalCurrency || currency.TransactionDebit != line.Debit || currency.TransactionCredit != line.Credit)))
             throw new LedgerValidationException("Account re-key moves functional-currency carrying basis only.");
