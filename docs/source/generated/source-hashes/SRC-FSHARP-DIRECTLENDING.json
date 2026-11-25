@@ -1,0 +1,7 @@
+{
+  "id": "SRC-FSHARP-DIRECTLENDING",
+  "path": "src/Meridian.FSharp.DirectLending.Aggregates",
+  "readme": "src/Meridian.FSharp.DirectLending.Aggregates/README.md",
+  "readme_hash": "2e0393619f488bc336980545efbed199c7d068fc58e779fcfd050940f845067e",
+  "source_hash": "158831d7a0a1dec23765000bd40c2ae4b6e02fd194b962f6ff0754059a049ead"
+}
