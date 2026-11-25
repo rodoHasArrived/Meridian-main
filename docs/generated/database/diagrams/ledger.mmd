@@ -144,6 +144,7 @@ erDiagram
         jsonb corporate_action_instruction
         jsonb capital_return_instruction
         jsonb factor_paydown_instruction
+        jsonb account_rekey_instruction
     }
     ledger_automated_posting_grants {
         uuid grant_id PK
@@ -520,6 +521,7 @@ erDiagram
         numeric_38_10_ fx_rate_to_functional
         text memo
         jsonb chart_account
+        uuid account_security_id
     }
     ledger_ledger_balance_checkpoint_rows {
         uuid checkpoint_id PK,FK
@@ -532,6 +534,7 @@ erDiagram
         numeric debit
         numeric credit
         bigint entry_count
+        uuid account_security_id
     }
     ledger_ledger_balance_checkpoints {
         uuid checkpoint_id PK
@@ -850,6 +853,7 @@ erDiagram
         integer wash_sale_window_days
         text wash_sale_scope
         date wash_sale_effective_date
+        uuid account_security_id
     }
     ledger_tax_lots {
         uuid tax_lot_record_id PK
@@ -879,6 +883,7 @@ erDiagram
         jsonb acquisition_terms
         jsonb basis_adjustment
         numeric_38_12_ current_factor
+        uuid account_security_id
     }
     ledger_wash_sale_deferrals {
         uuid deferral_id PK
@@ -899,6 +904,7 @@ erDiagram
         integer window_days
         text scope
         timestamp_with_time_zone recorded_at
+        uuid disposal_account_security_id
     }
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_chart_nodes : "accounting_configuration_chart_nodes_workspace_fkey"
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_journal_templates : "accounting_configuration_journal_templates_workspace_fkey"

@@ -329,6 +329,18 @@
       "rule_id": "migration-truncate",
       "reason": "Authorized by the repository owner on 2026-11-17. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the retained recurring journal state (W10-JRNL-001); this migration executes no data truncation. Without it, a truncated table would read as unprovisioned and explicit re-initialization would start from empty state, reissuing occurrence claims and draft identities. PostgreSQL regression coverage attempts delete and truncate, requires the guard SQLSTATE 55000, and verifies the retained document is unchanged.",
       "review_after": "2027-05-17"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_083__security_id_account_keys.sql",
+      "rule_id": "migration-drop-object",
+      "reason": "Authorized by the repository owner on 2026-11-25 (Security Master review F2: key ledger security accounts by SecurityId). Replaces only ux_tax_lots_book_account_lot, ix_tax_lots_book_account_open and ux_tax_lot_policies_book_account_effective with equivalents keyed on coalesce(account_security_id::text, symbol, '') so a SecurityId-keyed account is one identity across ticker renames. The replacement indexes are created in the same migration transaction; no rows, columns, constraints or triggers are removed, and legacy ticker-keyed rows keep the same uniqueness they had. Failure rolls back the original indexes.",
+      "review_after": "2027-02-25"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_084__tax_lot_account_rekey.sql",
+      "rule_id": "migration-drop-table-member",
+      "reason": "Authorized by the repository owner on 2026-11-25 (Security Master review F2 tax-lot re-key). Replaces ck_atomic_tax_lot_batch_kind, ck_tax_lot_mutations_kind, ck_tax_lot_mutations_quantities and ck_tax_lot_mutations_cost with strict supersets that admit the AccountRekey kind, and adds ck_atomic_tax_lot_account_rekey_instruction (drop-if-exists for idempotent reapply). Every existing kind keeps its exact prior predicate. The migration runner performs drop and replacement within one transaction; no rows, columns or immutability triggers are removed. Never narrow these checks while AccountRekey batches exist.",
+      "review_after": "2027-02-25"
     }
   ],
   "removed_migrations": [

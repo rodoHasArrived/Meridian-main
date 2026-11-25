@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "60f710a130aa836dcad94729ef71a4213580217960b40e729c5937a4511058f6",
+  "database_fingerprint": "2fd8ee2f0aa0894337af4bba586df59264f690472ca59d110a9f19fe171de0f7",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -2306,6 +2306,30 @@
       "target_schema": "ledger"
     },
     {
+      "fingerprint": "b06cd251eb4f5c0e90728788d3560b3bf434530b6a23ba58e495b0070b21eb1f",
+      "kind": "normal",
+      "source": "ledger.ck_atomic_tax_lot_account_rekey_instruction on ledger.atomic_tax_lot_posting_batches",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.atomic_tax_lot_posting_batches.account_rekey_instruction",
+      "target_kind": "table column",
+      "target_name": "atomic_tax_lot_posting_batches",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "947f9637b3c885d69e9004951b8b3b7334b843f3c9e3f17785274cc8446835fc",
+      "kind": "normal",
+      "source": "ledger.ck_atomic_tax_lot_account_rekey_instruction on ledger.atomic_tax_lot_posting_batches",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.atomic_tax_lot_posting_batches.mutation_kind",
+      "target_kind": "table column",
+      "target_name": "atomic_tax_lot_posting_batches",
+      "target_schema": "ledger"
+    },
+    {
       "fingerprint": "38818adb0f6fc3497778314e33be2e68ef687e730354a6d30c556cb3d232daa5",
       "kind": "normal",
       "source": "ledger.ck_atomic_tax_lot_batch_asset_scope on ledger.atomic_tax_lot_posting_batches",
@@ -2567,6 +2591,18 @@
       "target": "ledger.journal_leg_currency_affirmations.legs_repaired",
       "target_kind": "table column",
       "target_name": "journal_leg_currency_affirmations",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "a27b6a90947c73cfeeb8da678ec58c540fca6065c5acd286da20a1a3df32add8",
+      "kind": "normal",
+      "source": "ledger.ck_journal_legs_account_security_id on ledger.journal_legs",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.journal_legs.account_security_id",
+      "target_kind": "table column",
+      "target_name": "journal_legs",
       "target_schema": "ledger"
     },
     {
@@ -17263,6 +17299,10 @@
       "object": "column:ledger.accounting_policies.source_event_id"
     },
     {
+      "fingerprint": "2b508b996cb4eed4540de75a0288478abea95d88abb12f4e19629883a604aa00",
+      "object": "column:ledger.atomic_tax_lot_posting_batches.account_rekey_instruction"
+    },
+    {
       "fingerprint": "bf79c0ef5ee278449cb6c7510146163efd2a3ce4c9a03e1dfb1845228d5beee8",
       "object": "column:ledger.atomic_tax_lot_posting_batches.book_position_id"
     },
@@ -18435,6 +18475,10 @@
       "object": "column:ledger.journal_legs.account_name"
     },
     {
+      "fingerprint": "3a9857c95262c1698b7c361b55aa622afb6428c7d814c63dbfe7a6bea0d7ab17",
+      "object": "column:ledger.journal_legs.account_security_id"
+    },
+    {
       "fingerprint": "47635497ed660f3e475e0785e0e1b0bd92a259907b678b697dd0163556d384c9",
       "object": "column:ledger.journal_legs.account_type"
     },
@@ -18561,6 +18605,10 @@
     {
       "fingerprint": "d148f2d7958fb9f249065ed85b6369c0a709c90d1d894a4e6873dfbbf6e679d3",
       "object": "column:ledger.ledger_balance_checkpoint_rows.account_name"
+    },
+    {
+      "fingerprint": "84100ef6eabf3586b0d3ecfeb80b7a6559483e086e58c82da6694e3a1c40875f",
+      "object": "column:ledger.ledger_balance_checkpoint_rows.account_security_id"
     },
     {
       "fingerprint": "9ad517380ee8cc0a7de3ec1aa3effa3f5103eccc997519086ff1f7df6e5388ef",
@@ -19603,6 +19651,10 @@
       "object": "column:ledger.tax_lot_policies.account_name"
     },
     {
+      "fingerprint": "2629e26ffe368192a0d857b14aee03996a24ac4993956ea5a733fc60f253c43c",
+      "object": "column:ledger.tax_lot_policies.account_security_id"
+    },
+    {
       "fingerprint": "9ad517380ee8cc0a7de3ec1aa3effa3f5103eccc997519086ff1f7df6e5388ef",
       "object": "column:ledger.tax_lot_policies.account_type"
     },
@@ -19665,6 +19717,10 @@
     {
       "fingerprint": "d148f2d7958fb9f249065ed85b6369c0a709c90d1d894a4e6873dfbbf6e679d3",
       "object": "column:ledger.tax_lots.account_name"
+    },
+    {
+      "fingerprint": "dbb66df0c548ee4fc1a78d559eaa238aabd925a8b7ad29c14d837182be0153c6",
+      "object": "column:ledger.tax_lots.account_security_id"
     },
     {
       "fingerprint": "9ad517380ee8cc0a7de3ec1aa3effa3f5103eccc997519086ff1f7df6e5388ef",
@@ -19781,6 +19837,10 @@
     {
       "fingerprint": "2fff168b13f0062898f0aefa515c1e9223aec8c08c9d8377c5e88a01b8e16e87",
       "object": "column:ledger.wash_sale_deferrals.disposal_account_name"
+    },
+    {
+      "fingerprint": "d06a92dd218df664b1d6bd7d14483245ea05fcbe041f0660d5f01ceca28a6c2d",
+      "object": "column:ledger.wash_sale_deferrals.disposal_account_security_id"
     },
     {
       "fingerprint": "c7907ec02567308a36a5696770aae95c8aa4ea879d2dd71caecd34651a80c397",
@@ -26987,6 +27047,26 @@
       "object": "column:security_master.warrant_projection.warrant_type"
     },
     {
+      "fingerprint": "6ff5cb2bccc2dd101fc9ac83d8174f3d1d06e3c0dcbcf0fc502de427ba1886bf",
+      "object": "comment:column:ledger.journal_legs.account_security_id"
+    },
+    {
+      "fingerprint": "5b4ec3523505ef8df628328dec77157cbdacbca69f08a72475d3998014b5265f",
+      "object": "comment:column:ledger.ledger_balance_checkpoint_rows.account_security_id"
+    },
+    {
+      "fingerprint": "13f670112e54bd88eea237ee4db85ea4155d2c36700662c85d40497304e5d767",
+      "object": "comment:column:ledger.tax_lot_policies.account_security_id"
+    },
+    {
+      "fingerprint": "efe9d2319e45d88981d8d5a3ff6b46cdc36677c37cc1548c6beb6384aa44f889",
+      "object": "comment:column:ledger.tax_lots.account_security_id"
+    },
+    {
+      "fingerprint": "64b7d4d5f2b654d2899ec8e8b039704b6b776d789f6cb6a789fad8d170479bd1",
+      "object": "comment:column:ledger.wash_sale_deferrals.disposal_account_security_id"
+    },
+    {
       "fingerprint": "d0a593e3bdd7e57d384d4d2b53d925745939a94b492a291ed56ea52ab74764f1",
       "object": "comment:column:security_master.security_alias_revisions.history_available_from"
     },
@@ -27895,6 +27975,10 @@
       "object": "constraint:ledger.atomic_tax_lot_posting_batches.atomic_tax_lot_posting_batches_pkey"
     },
     {
+      "fingerprint": "fbed5cfcdd1e2bc70dc9b0c6d42d6661b689a02f3add476e16e8b04e0db25958",
+      "object": "constraint:ledger.atomic_tax_lot_posting_batches.ck_atomic_tax_lot_account_rekey_instruction"
+    },
+    {
       "fingerprint": "bc71401eddac2564d074a692638d2b027cd61cfcdece149009ea77661f452e7c",
       "object": "constraint:ledger.atomic_tax_lot_posting_batches.ck_atomic_tax_lot_batch_asset_scope"
     },
@@ -27911,7 +27995,7 @@
       "object": "constraint:ledger.atomic_tax_lot_posting_batches.ck_atomic_tax_lot_batch_idempotency"
     },
     {
-      "fingerprint": "8e467357a8b541b3245a8c4665902446f33ba3a4ee0a09fc82eb6db06cb012bd",
+      "fingerprint": "2f52ecea49665389e00664ff3439ea4e51d3283bd67ffed79363cf955f181488",
       "object": "constraint:ledger.atomic_tax_lot_posting_batches.ck_atomic_tax_lot_batch_kind"
     },
     {
@@ -28487,6 +28571,10 @@
       "object": "constraint:ledger.journal_leg_currency_affirmations.journal_leg_currency_affirmations_pkey"
     },
     {
+      "fingerprint": "1fb8269f593cccbe1b9e42f18accf15a6eec91628dd1ed9368ac115052f2764c",
+      "object": "constraint:ledger.journal_legs.ck_journal_legs_account_security_id"
+    },
+    {
       "fingerprint": "da0762c28c0275b81f861fc1c3c1be0211c349695748255feafa24e1437d1b50",
       "object": "constraint:ledger.journal_legs.ck_journal_legs_adjustment_approval_metadata"
     },
@@ -29011,7 +29099,7 @@
       "object": "constraint:ledger.tax_lot_mutations.ck_tax_lot_mutations_asset_scope"
     },
     {
-      "fingerprint": "f10ad2d8059a364869c5e8f483784399f7f090f6c343d507b6a98ebe0c702773",
+      "fingerprint": "2bbc46a9652a191149afd95d6f83a177c6f3a21497d0d0636dc973b573a7c39f",
       "object": "constraint:ledger.tax_lot_mutations.ck_tax_lot_mutations_cost"
     },
     {
@@ -29019,7 +29107,7 @@
       "object": "constraint:ledger.tax_lot_mutations.ck_tax_lot_mutations_evidence"
     },
     {
-      "fingerprint": "9ac8d4b42326b002917a0a0d1930b92667bee2c77e3f736247ad2e1046b17b88",
+      "fingerprint": "bc9262a26f24bdd0162f58befc400bd2d74843d1eeb1f118ca51e11c5e8baeee",
       "object": "constraint:ledger.tax_lot_mutations.ck_tax_lot_mutations_kind"
     },
     {
@@ -29027,7 +29115,7 @@
       "object": "constraint:ledger.tax_lot_mutations.ck_tax_lot_mutations_ordinal"
     },
     {
-      "fingerprint": "468126d6bad3a60a3797f290c253b5cb5ebe440ec72ea2e495bb56aabae42498",
+      "fingerprint": "ce873a7dcb901bff9276c8ebfad0efade88e130b6159cfd0bdeea55ac4ee940b",
       "object": "constraint:ledger.tax_lot_mutations.ck_tax_lot_mutations_quantities"
     },
     {
@@ -32183,6 +32271,14 @@
       "object": "dependency:ledger.ck_accounting_periods_status on ledger.accounting_periods->ledger.accounting_periods.status:normal"
     },
     {
+      "fingerprint": "b06cd251eb4f5c0e90728788d3560b3bf434530b6a23ba58e495b0070b21eb1f",
+      "object": "dependency:ledger.ck_atomic_tax_lot_account_rekey_instruction on ledger.atomic_tax_lot_posting_batches->ledger.atomic_tax_lot_posting_batches.account_rekey_instruction:normal"
+    },
+    {
+      "fingerprint": "947f9637b3c885d69e9004951b8b3b7334b843f3c9e3f17785274cc8446835fc",
+      "object": "dependency:ledger.ck_atomic_tax_lot_account_rekey_instruction on ledger.atomic_tax_lot_posting_batches->ledger.atomic_tax_lot_posting_batches.mutation_kind:normal"
+    },
+    {
       "fingerprint": "38818adb0f6fc3497778314e33be2e68ef687e730354a6d30c556cb3d232daa5",
       "object": "dependency:ledger.ck_atomic_tax_lot_batch_asset_scope on ledger.atomic_tax_lot_posting_batches->ledger.atomic_tax_lot_posting_batches.book_position_id:normal"
     },
@@ -32269,6 +32365,10 @@
     {
       "fingerprint": "3c58708c712c3cb5daec653a7ab7c801d957087c7814efa5f10e16271800dd75",
       "object": "dependency:ledger.ck_journal_leg_currency_affirmations_legs on ledger.journal_leg_currency_affirmations->ledger.journal_leg_currency_affirmations.legs_repaired:normal"
+    },
+    {
+      "fingerprint": "a27b6a90947c73cfeeb8da678ec58c540fca6065c5acd286da20a1a3df32add8",
+      "object": "dependency:ledger.ck_journal_legs_account_security_id on ledger.journal_legs->ledger.journal_legs.account_security_id:normal"
     },
     {
       "fingerprint": "2c8b7f79234360cb4f38ebcd94f86dfc77a73e77ecdddadf042ac7100a1f6f31",
@@ -36303,6 +36403,10 @@
       "object": "function:ledger.protect_private_capital_authority()"
     },
     {
+      "fingerprint": "a305bd8111d73c60630025e7780007b906955840d73a86d2d36ab10c16c95ad3",
+      "object": "function:ledger.protect_tax_lot_account_key()"
+    },
+    {
       "fingerprint": "936419cbfaefcefccc774453c3b8ac66366cc7a9e1314b60c9d4c5595a37287c",
       "object": "function:ledger.refuse_completed_manual_journal_receipt_rewrite()"
     },
@@ -37419,6 +37523,10 @@
       "object": "index:ledger.ix_journal_leg_currency_affirmations_book"
     },
     {
+      "fingerprint": "1ff1f035796715269d0ef980ff243d35ffebd8dd3414e70bbbcec8be9bc07bbe",
+      "object": "index:ledger.ix_journal_legs_account_security"
+    },
+    {
       "fingerprint": "a4c77e66d4db2ff249bdb4db32b81331ab7a81d308f604e004ac25363799e6f3",
       "object": "index:ledger.ix_journal_legs_aggregate"
     },
@@ -37563,8 +37671,8 @@
       "object": "index:ledger.ix_tax_lots_asset_scope_open"
     },
     {
-      "fingerprint": "4bd3c7c2cc8f99b8dabe74a4d37a6e3721c71f8a17ee41b41ab053c0ba0812ff",
-      "object": "index:ledger.ix_tax_lots_book_account_open"
+      "fingerprint": "1c3b93da7f9a2c4a2943ce361fc0325a06e31363171be2872f92d2d2cdbb3c96",
+      "object": "index:ledger.ix_tax_lots_book_account_instrument_open"
     },
     {
       "fingerprint": "0fbf608943b76f599f6a8cf7b4ce4f6626a230ee3eac2de4b6a52ac4688caef8",
@@ -37883,12 +37991,12 @@
       "object": "index:ledger.ux_tax_lot_mutations_batch_ordinal"
     },
     {
-      "fingerprint": "04270fc7b289c6d288903a0ff7a442bd2e51208f41d1caa7a12e49fc531b386d",
-      "object": "index:ledger.ux_tax_lot_policies_book_account_effective"
+      "fingerprint": "6f74c8ef0b2c8341f74478777dde2e33b3591af7f1c47a7098f49fec57dd936e",
+      "object": "index:ledger.ux_tax_lot_policies_book_account_instrument_effective"
     },
     {
-      "fingerprint": "ca85da81e39fe9170cb771bb2c496d2ee5d315fd070074e736264cd0b4e2b895",
-      "object": "index:ledger.ux_tax_lots_book_account_lot"
+      "fingerprint": "b9056ef56fa164a3d241d9171736f585c2a0c69da3fd9c9c14ff8f88d6b46a5e",
+      "object": "index:ledger.ux_tax_lots_book_account_instrument_lot"
     },
     {
       "fingerprint": "4af441df0cf8476c60fb3813f89aa621fe632b6eed34ee1a769a37954c7f0284",
@@ -40619,7 +40727,7 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "8d39a0241d05b29a6f8988a8aa92014729f9bc65352f7a74ba59c284235851d0",
+      "fingerprint": "73d88735caa8eef13d0725ccac97e03c3a5604139c66e3c046f0a71cadff8f57",
       "object": "schema:ledger"
     },
     {
@@ -40955,7 +41063,7 @@
       "object": "table:ledger.accounting_policies"
     },
     {
-      "fingerprint": "09898a8c6063ededd39cd5721be1f25c6a13613d01f4709ed119f3569f5555f7",
+      "fingerprint": "e2f6c0e8c7219f1d0294a35ce608c09d42b89c8b91d9898a9726bff27fa554ed",
       "object": "table:ledger.atomic_tax_lot_posting_batches"
     },
     {
@@ -41079,11 +41187,11 @@
       "object": "table:ledger.journal_leg_currency_affirmations"
     },
     {
-      "fingerprint": "461ec8746a42a1dbded084323e2569e38dc2d1717eb8b12d9ead490488fc6959",
+      "fingerprint": "6af1f629a4a845690a5332f0314c15192c9be8158de0274fb1b5fb42ec46834c",
       "object": "table:ledger.journal_legs"
     },
     {
-      "fingerprint": "e247796db49ad0d90df44a19530b9331d4c06e096712b1e53bed539b4492d471",
+      "fingerprint": "968db248be38c86af02b543a98a32e9802506e2c8983d8b91be683e357cef1ac",
       "object": "table:ledger.ledger_balance_checkpoint_rows"
     },
     {
@@ -41183,19 +41291,19 @@
       "object": "table:ledger.recurring_journal_state"
     },
     {
-      "fingerprint": "31a264810b0ab9c5e7ea9f500709a2992df9c68e644b322539db713ba79b722e",
+      "fingerprint": "bfe9429ad20e363c4eb7cfe0fc35cba14666cbbe4d73ffb18c2dc55430fddc26",
       "object": "table:ledger.tax_lot_mutations"
     },
     {
-      "fingerprint": "4d492accdc3cb6948f54503fb4b616e56cbd0b79f5d4c936a40b292a88af1c03",
+      "fingerprint": "2a664da7bc5f981907a39abe0a447fbcb43dc0a71ef63b6cef4b79890987f899",
       "object": "table:ledger.tax_lot_policies"
     },
     {
-      "fingerprint": "f0a79a745ff079c9ca0e16dbc2e0800a68746d5e4a09fa8ce91af26031509578",
+      "fingerprint": "dd6b01770c848f44f535d53ec3b4727c7ee41b482810a2ccf9b3ca921f919a00",
       "object": "table:ledger.tax_lots"
     },
     {
-      "fingerprint": "ece8a127ef211f9c7789a92ba534380d96627ffa362100a56527594f38d9abd9",
+      "fingerprint": "1d8175f82ae854fd6e88ebae6cd625226f7dc5e1b35f9e7d642459140b263454",
       "object": "table:ledger.wash_sale_deferrals"
     },
     {
@@ -42241,6 +42349,10 @@
     {
       "fingerprint": "adaab71c80b6c839f5a7d0ac5e89129875bc25ce89105f362e8e5313f8548103",
       "object": "trigger:ledger.tax_lots.protect_open_lot_current_factor"
+    },
+    {
+      "fingerprint": "35aa9963e1bed398d657c24411eb19eb9b5a9eab4c860d7c42446defda633a28",
+      "object": "trigger:ledger.tax_lots.protect_tax_lot_account_key"
     },
     {
       "fingerprint": "d61d65d76a3235aa359fecf4538018beeedd6be16ebb40a1a3b77b14c887b21c",
@@ -84969,6 +85081,36 @@
       "comment": null,
       "comments": [
         {
+          "comment": "Security Master identity keying a per-security account. When present, symbol is display-only and does not participate in account identity.",
+          "fingerprint": "6ff5cb2bccc2dd101fc9ac83d8174f3d1d06e3c0dcbcf0fc502de427ba1886bf",
+          "object": "ledger.journal_legs.account_security_id",
+          "object_type": "column"
+        },
+        {
+          "comment": "Account key of a per-security checkpoint row; symbol is the retained display ticker.",
+          "fingerprint": "5b4ec3523505ef8df628328dec77157cbdacbca69f08a72475d3998014b5265f",
+          "object": "ledger.ledger_balance_checkpoint_rows.account_security_id",
+          "object_type": "column"
+        },
+        {
+          "comment": "Account key of the per-security account this relief policy governs.",
+          "fingerprint": "13f670112e54bd88eea237ee4db85ea4155d2c36700662c85d40497304e5d767",
+          "object": "ledger.tax_lot_policies.account_security_id",
+          "object_type": "column"
+        },
+        {
+          "comment": "Account key of the lot's owning per-security account (distinct from the lot instrument security_id).",
+          "fingerprint": "efe9d2319e45d88981d8d5a3ff6b46cdc36677c37cc1548c6beb6384aa44f889",
+          "object": "ledger.tax_lots.account_security_id",
+          "object_type": "column"
+        },
+        {
+          "comment": "Account key of the disposing per-security account.",
+          "fingerprint": "64b7d4d5f2b654d2899ec8e8b039704b6b776d789f6cb6a789fad8d170479bd1",
+          "object": "ledger.wash_sale_deferrals.disposal_account_security_id",
+          "object_type": "column"
+        },
+        {
           "comment": "Single-row head of the accounting-action audit hash chain: the next sequence, the last entry hash, and the declared genesis boundary separating chained events from the pre-chain history that was appended before V_ledger_032 and which nothing ever protected. Locked FOR UPDATE and advanced inside the append transaction so concurrent writers cannot fork the chain.",
           "fingerprint": "2559e9695ea90341f1cd97f7f81d9851a9d587bec525d982fecbe6b33bb2b332",
           "object": "ledger.accounting_action_audit_chain_head",
@@ -86016,6 +86158,30 @@
           "target_schema": "ledger"
         },
         {
+          "fingerprint": "b06cd251eb4f5c0e90728788d3560b3bf434530b6a23ba58e495b0070b21eb1f",
+          "kind": "normal",
+          "source": "ledger.ck_atomic_tax_lot_account_rekey_instruction on ledger.atomic_tax_lot_posting_batches",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.atomic_tax_lot_posting_batches.account_rekey_instruction",
+          "target_kind": "table column",
+          "target_name": "atomic_tax_lot_posting_batches",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "947f9637b3c885d69e9004951b8b3b7334b843f3c9e3f17785274cc8446835fc",
+          "kind": "normal",
+          "source": "ledger.ck_atomic_tax_lot_account_rekey_instruction on ledger.atomic_tax_lot_posting_batches",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.atomic_tax_lot_posting_batches.mutation_kind",
+          "target_kind": "table column",
+          "target_name": "atomic_tax_lot_posting_batches",
+          "target_schema": "ledger"
+        },
+        {
           "fingerprint": "38818adb0f6fc3497778314e33be2e68ef687e730354a6d30c556cb3d232daa5",
           "kind": "normal",
           "source": "ledger.ck_atomic_tax_lot_batch_asset_scope on ledger.atomic_tax_lot_posting_batches",
@@ -86277,6 +86443,18 @@
           "target": "ledger.journal_leg_currency_affirmations.legs_repaired",
           "target_kind": "table column",
           "target_name": "journal_leg_currency_affirmations",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "a27b6a90947c73cfeeb8da678ec58c540fca6065c5acd286da20a1a3df32add8",
+          "kind": "normal",
+          "source": "ledger.ck_journal_legs_account_security_id on ledger.journal_legs",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.journal_legs.account_security_id",
+          "target_kind": "table column",
+          "target_name": "journal_legs",
           "target_schema": "ledger"
         },
         {
@@ -90616,7 +90794,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "8d39a0241d05b29a6f8988a8aa92014729f9bc65352f7a74ba59c284235851d0",
+      "fingerprint": "73d88735caa8eef13d0725ccac97e03c3a5604139c66e3c046f0a71cadff8f57",
       "foreign_tables": [],
       "functions": [
         {
@@ -91143,6 +91321,37 @@
           "security_definer": false,
           "security_labels": [],
           "signature": "protect_private_capital_authority()",
+          "strict": false,
+          "volatility": "volatile"
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "PUBLIC",
+              "grantor": "meridian",
+              "privilege": "execute"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "execute"
+            }
+          ],
+          "comment": null,
+          "definition_hash": "24df697e5626de6401108eed4d2110ba48ddd60abbae3f39e984479003df7fed",
+          "fingerprint": "a305bd8111d73c60630025e7780007b906955840d73a86d2d36ab10c16c95ad3",
+          "kind": "function",
+          "language": "plpgsql",
+          "name": "protect_tax_lot_account_key",
+          "owner": "meridian",
+          "parallel_safety": "unsafe",
+          "result_type": "trigger",
+          "schema": "ledger",
+          "security_definer": false,
+          "security_labels": [],
+          "signature": "protect_tax_lot_account_key()",
           "strict": false,
           "volatility": "volatile"
         },
@@ -95720,10 +95929,47 @@
               "security_labels": [],
               "type_name": "jsonb",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "2b508b996cb4eed4540de75a0288478abea95d88abb12f4e19629883a604aa00",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "account_rekey_instruction",
+              "nullable": true,
+              "ordinal_position": 22,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "mutation_kind",
+                "account_rekey_instruction"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (mutation_kind = 'AccountRekey'::text AND account_rekey_instruction IS NOT NULL AND jsonb_typeof(account_rekey_instruction) = 'object'::text OR mutation_kind <> 'AccountRekey'::text AND account_rekey_instruction IS NULL)",
+              "delete_action": null,
+              "fingerprint": "fbed5cfcdd1e2bc70dc9b0c6d42d6661b689a02f3add476e16e8b04e0db25958",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_atomic_tax_lot_account_rekey_instruction",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "security_id",
@@ -95811,9 +96057,9 @@
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (mutation_kind = ANY (ARRAY['Acquisition'::text, 'Disposal'::text, 'Amortization'::text, 'CorporateAction'::text, 'CapitalReturn'::text, 'FactorPaydown'::text]))",
+              "definition": "CHECK (mutation_kind = ANY (ARRAY['Acquisition'::text, 'Disposal'::text, 'Amortization'::text, 'CorporateAction'::text, 'CapitalReturn'::text, 'FactorPaydown'::text, 'AccountRekey'::text]))",
               "delete_action": null,
-              "fingerprint": "8e467357a8b541b3245a8c4665902446f33ba3a4ee0a09fc82eb6db06cb012bd",
+              "fingerprint": "2f52ecea49665389e00664ff3439ea4e51d3283bd67ffed79363cf955f181488",
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_atomic_tax_lot_batch_kind",
@@ -96041,7 +96287,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "09898a8c6063ededd39cd5721be1f25c6a13613d01f4709ed119f3569f5555f7",
+          "fingerprint": "e2f6c0e8c7219f1d0294a35ce608c09d42b89c8b91d9898a9726bff27fa554ed",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -109250,10 +109496,46 @@
               "security_labels": [],
               "type_name": "jsonb",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Security Master identity keying a per-security account. When present, symbol is display-only and does not participate in account identity.",
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "3a9857c95262c1698b7c361b55aa622afb6428c7d814c63dbfe7a6bea0d7ab17",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "account_security_id",
+              "nullable": true,
+              "ordinal_position": 33,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "account_security_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (account_security_id IS NULL OR account_security_id <> '00000000-0000-0000-0000-000000000000'::uuid)",
+              "delete_action": null,
+              "fingerprint": "1fb8269f593cccbe1b9e42f18accf15a6eec91628dd1ed9368ac115052f2764c",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_journal_legs_account_security_id",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "posting_kind",
@@ -109427,10 +109709,32 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "461ec8746a42a1dbded084323e2569e38dc2d1717eb8b12d9ead490488fc6959",
+          "fingerprint": "6af1f629a4a845690a5332f0314c15192c9be8158de0274fb1b5fb42ec46834c",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_journal_legs_account_security ON ledger.journal_legs USING btree (account_security_id) WHERE (account_security_id IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "1ff1f035796715269d0ef980ff243d35ffebd8dd3414e70bbbcec8be9bc07bbe",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "account_security_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_journal_legs_account_security",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "account_security_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
             {
               "comment": null,
               "definition": "CREATE INDEX ix_journal_legs_aggregate ON ledger.journal_legs USING btree (aggregate_id, occurred_at)",
@@ -109927,6 +110231,22 @@
               "security_labels": [],
               "type_name": "int8",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Account key of a per-security checkpoint row; symbol is the retained display ticker.",
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "84100ef6eabf3586b0d3ecfeb80b7a6559483e086e58c82da6694e3a1c40875f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "account_security_id",
+              "nullable": true,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": "Exact account and line-dimension debit/credit totals in one immutable hard-close balance checkpoint, including known zero balances.",
@@ -110097,7 +110417,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "e247796db49ad0d90df44a19530b9331d4c06e096712b1e53bed539b4492d471",
+          "fingerprint": "968db248be38c86af02b543a98a32e9802506e2c8983d8b91be683e357cef1ac",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -120284,9 +120604,9 @@
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (unit_cost >= 0::numeric AND cost_basis >= 0::numeric AND (cost_basis = (abs(quantity_delta) * unit_cost) OR lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text OR (mutation_kind = ANY (ARRAY['Amortization'::text, 'CorporateAction'::text, 'CapitalReturn'::text])) AND cost_basis > 0::numeric OR mutation_kind = 'FactorPaydown'::text OR mutation_kind = 'Disposal'::text AND (lower(COALESCE(relief_method, ''::text)) = ANY (ARRAY['fifo'::text, 'lifo'::text, 'hifo'::text, 'specificid'::text])) AND COALESCE(jsonb_typeof(lot_snapshot_before -> 'acquisition'::text) = 'object'::text, false) AND COALESCE(jsonb_typeof(lot_snapshot_before -> 'basisAdjustment'::text) = 'object'::text, false)))",
+              "definition": "CHECK (unit_cost >= 0::numeric AND cost_basis >= 0::numeric AND (cost_basis = (abs(quantity_delta) * unit_cost) OR lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text OR (mutation_kind = ANY (ARRAY['Amortization'::text, 'CorporateAction'::text, 'CapitalReturn'::text])) AND cost_basis > 0::numeric OR (mutation_kind = ANY (ARRAY['FactorPaydown'::text, 'AccountRekey'::text])) OR mutation_kind = 'Disposal'::text AND (lower(COALESCE(relief_method, ''::text)) = ANY (ARRAY['fifo'::text, 'lifo'::text, 'hifo'::text, 'specificid'::text])) AND COALESCE(jsonb_typeof(lot_snapshot_before -> 'acquisition'::text) = 'object'::text, false) AND COALESCE(jsonb_typeof(lot_snapshot_before -> 'basisAdjustment'::text) = 'object'::text, false)))",
               "delete_action": null,
-              "fingerprint": "f10ad2d8059a364869c5e8f483784399f7f090f6c343d507b6a98ebe0c702773",
+              "fingerprint": "2bbc46a9652a191149afd95d6f83a177c6f3a21497d0d0636dc973b573a7c39f",
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_tax_lot_mutations_cost",
@@ -120325,9 +120645,9 @@
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (mutation_kind = ANY (ARRAY['Acquisition'::text, 'Disposal'::text, 'BasisRedistribution'::text, 'Amortization'::text, 'CorporateAction'::text, 'CapitalReturn'::text, 'FactorPaydown'::text]))",
+              "definition": "CHECK (mutation_kind = ANY (ARRAY['Acquisition'::text, 'Disposal'::text, 'BasisRedistribution'::text, 'Amortization'::text, 'CorporateAction'::text, 'CapitalReturn'::text, 'FactorPaydown'::text, 'AccountRekey'::text]))",
               "delete_action": null,
-              "fingerprint": "9ac8d4b42326b002917a0a0d1930b92667bee2c77e3f736247ad2e1046b17b88",
+              "fingerprint": "bc9262a26f24bdd0162f58befc400bd2d74843d1eeb1f118ca51e11c5e8baeee",
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_tax_lot_mutations_kind",
@@ -120371,9 +120691,9 @@
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (quantity_before >= 0::numeric AND quantity_after >= 0::numeric AND quantity_after = (quantity_before + quantity_delta) AND (mutation_kind = 'Acquisition'::text AND quantity_before = 0::numeric AND quantity_delta > 0::numeric OR mutation_kind = 'Disposal'::text AND quantity_delta < 0::numeric OR mutation_kind = 'BasisRedistribution'::text AND quantity_delta = 0::numeric AND quantity_before > 0::numeric AND lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text OR (mutation_kind = ANY (ARRAY['Amortization'::text, 'CapitalReturn'::text])) AND quantity_delta = 0::numeric AND quantity_before > 0::numeric AND relief_method IS NULL AND policy_revision IS NULL OR mutation_kind = 'FactorPaydown'::text AND quantity_before > 0::numeric AND relief_method IS NULL AND policy_revision IS NULL AND lot_snapshot_before IS NOT NULL AND (quantity_delta = 0::numeric OR quantity_after = 0::numeric) OR mutation_kind = 'CorporateAction'::text AND relief_method IS NULL AND policy_revision IS NULL AND (quantity_before > 0::numeric AND quantity_after = 0::numeric AND lot_snapshot_before IS NOT NULL OR quantity_before = 0::numeric AND quantity_after > 0::numeric AND lot_snapshot_before IS NULL)))",
+              "definition": "CHECK (quantity_before >= 0::numeric AND quantity_after >= 0::numeric AND quantity_after = (quantity_before + quantity_delta) AND (mutation_kind = 'Acquisition'::text AND quantity_before = 0::numeric AND quantity_delta > 0::numeric OR mutation_kind = 'Disposal'::text AND quantity_delta < 0::numeric OR mutation_kind = 'BasisRedistribution'::text AND quantity_delta = 0::numeric AND quantity_before > 0::numeric AND lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text OR (mutation_kind = ANY (ARRAY['Amortization'::text, 'CapitalReturn'::text])) AND quantity_delta = 0::numeric AND quantity_before > 0::numeric AND relief_method IS NULL AND policy_revision IS NULL OR mutation_kind = 'FactorPaydown'::text AND quantity_before > 0::numeric AND relief_method IS NULL AND policy_revision IS NULL AND lot_snapshot_before IS NOT NULL AND (quantity_delta = 0::numeric OR quantity_after = 0::numeric) OR mutation_kind = 'AccountRekey'::text AND quantity_delta = 0::numeric AND quantity_before > 0::numeric AND relief_method IS NULL AND policy_revision IS NULL AND lot_snapshot_before IS NOT NULL OR mutation_kind = 'CorporateAction'::text AND relief_method IS NULL AND policy_revision IS NULL AND (quantity_before > 0::numeric AND quantity_after = 0::numeric AND lot_snapshot_before IS NOT NULL OR quantity_before = 0::numeric AND quantity_after > 0::numeric AND lot_snapshot_before IS NULL)))",
               "delete_action": null,
-              "fingerprint": "468126d6bad3a60a3797f290c253b5cb5ebe440ec72ea2e495bb56aabae42498",
+              "fingerprint": "ce873a7dcb901bff9276c8ebfad0efade88e130b6159cfd0bdeea55ac4ee940b",
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_tax_lot_mutations_quantities",
@@ -120538,7 +120858,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "31a264810b0ab9c5e7ea9f500709a2992df9c68e644b322539db713ba79b722e",
+          "fingerprint": "bfe9429ad20e363c4eb7cfe0fc35cba14666cbbe4d73ffb18c2dc55430fddc26",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -120991,6 +121311,22 @@
               "security_labels": [],
               "type_name": "date",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Account key of the per-security account this relief policy governs.",
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "2629e26ffe368192a0d857b14aee03996a24ac4993956ea5a733fc60f253c43c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "account_security_id",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -121081,7 +121417,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "4d492accdc3cb6948f54503fb4b616e56cbd0b79f5d4c936a40b292a88af1c03",
+          "fingerprint": "2a664da7bc5f981907a39abe0a447fbcb43dc0a71ef63b6cef4b79890987f899",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -121133,22 +121469,22 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_tax_lot_policies_book_account_effective ON ledger.tax_lot_policies USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), effective_date)",
-              "expression": "COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
-              "fingerprint": "04270fc7b289c6d288903a0ff7a442bd2e51208f41d1caa7a12e49fc531b386d",
+              "definition": "CREATE UNIQUE INDEX ux_tax_lot_policies_book_account_instrument_effective ON ledger.tax_lot_policies USING btree (ledger_book_id, account_name, account_type, COALESCE((account_security_id)::text, symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), effective_date)",
+              "expression": "COALESCE(account_security_id::text, symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
+              "fingerprint": "6f74c8ef0b2c8341f74478777dde2e33b3591af7f1c47a7098f49fec57dd936e",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
                 "ledger_book_id",
                 "account_name",
                 "account_type",
-                "COALESCE(symbol, ''::text)",
+                "COALESCE(account_security_id::text, symbol, ''::text)",
                 "lower(COALESCE(financial_account_id, ''::text))",
                 "effective_date"
               ],
               "live": true,
               "method": "btree",
-              "name": "ux_tax_lot_policies_book_account_effective",
+              "name": "ux_tax_lot_policies_book_account_instrument_effective",
               "options": [],
               "owner": "meridian",
               "predicate": null,
@@ -121651,6 +121987,22 @@
               "security_labels": [],
               "type_name": "numeric",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Account key of the lot's owning per-security account (distinct from the lot instrument security_id).",
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "dbb66df0c548ee4fc1a78d559eaa238aabd925a8b7ad29c14d837182be0153c6",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "account_security_id",
+              "nullable": true,
+              "ordinal_position": 28,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -121979,7 +122331,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "f0a79a745ff079c9ca0e16dbc2e0800a68746d5e4a09fa8ce91af26031509578",
+          "fingerprint": "dd6b01770c848f44f535d53ec3b4727c7ee41b482810a2ccf9b3ca921f919a00",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -122011,23 +122363,23 @@
             },
             {
               "comment": null,
-              "definition": "CREATE INDEX ix_tax_lots_book_account_open ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), acquired_date, lot_id) WHERE (open_quantity > (0)::numeric)",
-              "expression": "COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
-              "fingerprint": "4bd3c7c2cc8f99b8dabe74a4d37a6e3721c71f8a17ee41b41ab053c0ba0812ff",
+              "definition": "CREATE INDEX ix_tax_lots_book_account_instrument_open ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE((account_security_id)::text, symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), acquired_date, lot_id) WHERE (open_quantity > (0)::numeric)",
+              "expression": "COALESCE(account_security_id::text, symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
+              "fingerprint": "1c3b93da7f9a2c4a2943ce361fc0325a06e31363171be2872f92d2d2cdbb3c96",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
                 "ledger_book_id",
                 "account_name",
                 "account_type",
-                "COALESCE(symbol, ''::text)",
+                "COALESCE(account_security_id::text, symbol, ''::text)",
                 "lower(COALESCE(financial_account_id, ''::text))",
                 "acquired_date",
                 "lot_id"
               ],
               "live": true,
               "method": "btree",
-              "name": "ix_tax_lots_book_account_open",
+              "name": "ix_tax_lots_book_account_instrument_open",
               "options": [],
               "owner": "meridian",
               "predicate": "open_quantity > 0::numeric",
@@ -122152,22 +122504,22 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_tax_lots_book_account_lot ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), lot_id)",
-              "expression": "COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
-              "fingerprint": "ca85da81e39fe9170cb771bb2c496d2ee5d315fd070074e736264cd0b4e2b895",
+              "definition": "CREATE UNIQUE INDEX ux_tax_lots_book_account_instrument_lot ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE((account_security_id)::text, symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), lot_id)",
+              "expression": "COALESCE(account_security_id::text, symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
+              "fingerprint": "b9056ef56fa164a3d241d9171736f585c2a0c69da3fd9c9c14ff8f88d6b46a5e",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
                 "ledger_book_id",
                 "account_name",
                 "account_type",
-                "COALESCE(symbol, ''::text)",
+                "COALESCE(account_security_id::text, symbol, ''::text)",
                 "lower(COALESCE(financial_account_id, ''::text))",
                 "lot_id"
               ],
               "live": true,
               "method": "btree",
-              "name": "ux_tax_lots_book_account_lot",
+              "name": "ux_tax_lots_book_account_instrument_lot",
               "options": [],
               "owner": "meridian",
               "predicate": null,
@@ -122240,6 +122592,23 @@
               "function_signature": "protect_open_lot_current_factor()",
               "level": "row",
               "name": "protect_open_lot_current_factor",
+              "relation": "tax_lots",
+              "schema": "ledger",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER protect_tax_lot_account_key BEFORE UPDATE ON ledger.tax_lots FOR EACH ROW EXECUTE FUNCTION ledger.protect_tax_lot_account_key()",
+              "definition_hash": "41cc2437b671a214eeddd04c59f48fb4203dc61d1ea8e3f3f226fb6ca5940422",
+              "enabled": "origin",
+              "events": [
+                "update"
+              ],
+              "fingerprint": "35aa9963e1bed398d657c24411eb19eb9b5a9eab4c860d7c42446defda633a28",
+              "function_schema": "ledger",
+              "function_signature": "protect_tax_lot_account_key()",
+              "level": "row",
+              "name": "protect_tax_lot_account_key",
               "relation": "tax_lots",
               "schema": "ledger",
               "timing": "before"
@@ -122579,6 +122948,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Account key of the disposing per-security account.",
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "d06a92dd218df664b1d6bd7d14483245ea05fcbe041f0660d5f01ceca28a6c2d",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "disposal_account_security_id",
+              "nullable": true,
+              "ordinal_position": 19,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -122792,7 +123177,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "ece8a127ef211f9c7789a92ba534380d96627ffa362100a56527594f38d9abd9",
+          "fingerprint": "1d8175f82ae854fd6e88ebae6cd625226f7dc5e1b35f9e7d642459140b263454",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -127541,10 +127926,47 @@
               "security_labels": [],
               "type_name": "jsonb",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "2b508b996cb4eed4540de75a0288478abea95d88abb12f4e19629883a604aa00",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "account_rekey_instruction",
+              "nullable": true,
+              "ordinal_position": 22,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "mutation_kind",
+                "account_rekey_instruction"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (mutation_kind = 'AccountRekey'::text AND account_rekey_instruction IS NOT NULL AND jsonb_typeof(account_rekey_instruction) = 'object'::text OR mutation_kind <> 'AccountRekey'::text AND account_rekey_instruction IS NULL)",
+              "delete_action": null,
+              "fingerprint": "fbed5cfcdd1e2bc70dc9b0c6d42d6661b689a02f3add476e16e8b04e0db25958",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_atomic_tax_lot_account_rekey_instruction",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "security_id",
@@ -127632,9 +128054,9 @@
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (mutation_kind = ANY (ARRAY['Acquisition'::text, 'Disposal'::text, 'Amortization'::text, 'CorporateAction'::text, 'CapitalReturn'::text, 'FactorPaydown'::text]))",
+              "definition": "CHECK (mutation_kind = ANY (ARRAY['Acquisition'::text, 'Disposal'::text, 'Amortization'::text, 'CorporateAction'::text, 'CapitalReturn'::text, 'FactorPaydown'::text, 'AccountRekey'::text]))",
               "delete_action": null,
-              "fingerprint": "8e467357a8b541b3245a8c4665902446f33ba3a4ee0a09fc82eb6db06cb012bd",
+              "fingerprint": "2f52ecea49665389e00664ff3439ea4e51d3283bd67ffed79363cf955f181488",
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_atomic_tax_lot_batch_kind",
@@ -127862,7 +128284,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "09898a8c6063ededd39cd5721be1f25c6a13613d01f4709ed119f3569f5555f7",
+          "fingerprint": "e2f6c0e8c7219f1d0294a35ce608c09d42b89c8b91d9898a9726bff27fa554ed",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -140714,10 +141136,46 @@
               "security_labels": [],
               "type_name": "jsonb",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Security Master identity keying a per-security account. When present, symbol is display-only and does not participate in account identity.",
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "3a9857c95262c1698b7c361b55aa622afb6428c7d814c63dbfe7a6bea0d7ab17",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "account_security_id",
+              "nullable": true,
+              "ordinal_position": 33,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "account_security_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (account_security_id IS NULL OR account_security_id <> '00000000-0000-0000-0000-000000000000'::uuid)",
+              "delete_action": null,
+              "fingerprint": "1fb8269f593cccbe1b9e42f18accf15a6eec91628dd1ed9368ac115052f2764c",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_journal_legs_account_security_id",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "posting_kind",
@@ -140891,10 +141349,32 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "461ec8746a42a1dbded084323e2569e38dc2d1717eb8b12d9ead490488fc6959",
+          "fingerprint": "6af1f629a4a845690a5332f0314c15192c9be8158de0274fb1b5fb42ec46834c",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_journal_legs_account_security ON ledger.journal_legs USING btree (account_security_id) WHERE (account_security_id IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "1ff1f035796715269d0ef980ff243d35ffebd8dd3414e70bbbcec8be9bc07bbe",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "account_security_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_journal_legs_account_security",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "account_security_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
             {
               "comment": null,
               "definition": "CREATE INDEX ix_journal_legs_aggregate ON ledger.journal_legs USING btree (aggregate_id, occurred_at)",
@@ -141391,6 +141871,22 @@
               "security_labels": [],
               "type_name": "int8",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Account key of a per-security checkpoint row; symbol is the retained display ticker.",
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "84100ef6eabf3586b0d3ecfeb80b7a6559483e086e58c82da6694e3a1c40875f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "account_security_id",
+              "nullable": true,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": "Exact account and line-dimension debit/credit totals in one immutable hard-close balance checkpoint, including known zero balances.",
@@ -141561,7 +142057,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "e247796db49ad0d90df44a19530b9331d4c06e096712b1e53bed539b4492d471",
+          "fingerprint": "968db248be38c86af02b543a98a32e9802506e2c8983d8b91be683e357cef1ac",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -151748,9 +152244,9 @@
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (unit_cost >= 0::numeric AND cost_basis >= 0::numeric AND (cost_basis = (abs(quantity_delta) * unit_cost) OR lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text OR (mutation_kind = ANY (ARRAY['Amortization'::text, 'CorporateAction'::text, 'CapitalReturn'::text])) AND cost_basis > 0::numeric OR mutation_kind = 'FactorPaydown'::text OR mutation_kind = 'Disposal'::text AND (lower(COALESCE(relief_method, ''::text)) = ANY (ARRAY['fifo'::text, 'lifo'::text, 'hifo'::text, 'specificid'::text])) AND COALESCE(jsonb_typeof(lot_snapshot_before -> 'acquisition'::text) = 'object'::text, false) AND COALESCE(jsonb_typeof(lot_snapshot_before -> 'basisAdjustment'::text) = 'object'::text, false)))",
+              "definition": "CHECK (unit_cost >= 0::numeric AND cost_basis >= 0::numeric AND (cost_basis = (abs(quantity_delta) * unit_cost) OR lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text OR (mutation_kind = ANY (ARRAY['Amortization'::text, 'CorporateAction'::text, 'CapitalReturn'::text])) AND cost_basis > 0::numeric OR (mutation_kind = ANY (ARRAY['FactorPaydown'::text, 'AccountRekey'::text])) OR mutation_kind = 'Disposal'::text AND (lower(COALESCE(relief_method, ''::text)) = ANY (ARRAY['fifo'::text, 'lifo'::text, 'hifo'::text, 'specificid'::text])) AND COALESCE(jsonb_typeof(lot_snapshot_before -> 'acquisition'::text) = 'object'::text, false) AND COALESCE(jsonb_typeof(lot_snapshot_before -> 'basisAdjustment'::text) = 'object'::text, false)))",
               "delete_action": null,
-              "fingerprint": "f10ad2d8059a364869c5e8f483784399f7f090f6c343d507b6a98ebe0c702773",
+              "fingerprint": "2bbc46a9652a191149afd95d6f83a177c6f3a21497d0d0636dc973b573a7c39f",
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_tax_lot_mutations_cost",
@@ -151789,9 +152285,9 @@
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (mutation_kind = ANY (ARRAY['Acquisition'::text, 'Disposal'::text, 'BasisRedistribution'::text, 'Amortization'::text, 'CorporateAction'::text, 'CapitalReturn'::text, 'FactorPaydown'::text]))",
+              "definition": "CHECK (mutation_kind = ANY (ARRAY['Acquisition'::text, 'Disposal'::text, 'BasisRedistribution'::text, 'Amortization'::text, 'CorporateAction'::text, 'CapitalReturn'::text, 'FactorPaydown'::text, 'AccountRekey'::text]))",
               "delete_action": null,
-              "fingerprint": "9ac8d4b42326b002917a0a0d1930b92667bee2c77e3f736247ad2e1046b17b88",
+              "fingerprint": "bc9262a26f24bdd0162f58befc400bd2d74843d1eeb1f118ca51e11c5e8baeee",
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_tax_lot_mutations_kind",
@@ -151835,9 +152331,9 @@
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (quantity_before >= 0::numeric AND quantity_after >= 0::numeric AND quantity_after = (quantity_before + quantity_delta) AND (mutation_kind = 'Acquisition'::text AND quantity_before = 0::numeric AND quantity_delta > 0::numeric OR mutation_kind = 'Disposal'::text AND quantity_delta < 0::numeric OR mutation_kind = 'BasisRedistribution'::text AND quantity_delta = 0::numeric AND quantity_before > 0::numeric AND lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text OR (mutation_kind = ANY (ARRAY['Amortization'::text, 'CapitalReturn'::text])) AND quantity_delta = 0::numeric AND quantity_before > 0::numeric AND relief_method IS NULL AND policy_revision IS NULL OR mutation_kind = 'FactorPaydown'::text AND quantity_before > 0::numeric AND relief_method IS NULL AND policy_revision IS NULL AND lot_snapshot_before IS NOT NULL AND (quantity_delta = 0::numeric OR quantity_after = 0::numeric) OR mutation_kind = 'CorporateAction'::text AND relief_method IS NULL AND policy_revision IS NULL AND (quantity_before > 0::numeric AND quantity_after = 0::numeric AND lot_snapshot_before IS NOT NULL OR quantity_before = 0::numeric AND quantity_after > 0::numeric AND lot_snapshot_before IS NULL)))",
+              "definition": "CHECK (quantity_before >= 0::numeric AND quantity_after >= 0::numeric AND quantity_after = (quantity_before + quantity_delta) AND (mutation_kind = 'Acquisition'::text AND quantity_before = 0::numeric AND quantity_delta > 0::numeric OR mutation_kind = 'Disposal'::text AND quantity_delta < 0::numeric OR mutation_kind = 'BasisRedistribution'::text AND quantity_delta = 0::numeric AND quantity_before > 0::numeric AND lower(COALESCE(relief_method, ''::text)) = 'averagecost'::text OR (mutation_kind = ANY (ARRAY['Amortization'::text, 'CapitalReturn'::text])) AND quantity_delta = 0::numeric AND quantity_before > 0::numeric AND relief_method IS NULL AND policy_revision IS NULL OR mutation_kind = 'FactorPaydown'::text AND quantity_before > 0::numeric AND relief_method IS NULL AND policy_revision IS NULL AND lot_snapshot_before IS NOT NULL AND (quantity_delta = 0::numeric OR quantity_after = 0::numeric) OR mutation_kind = 'AccountRekey'::text AND quantity_delta = 0::numeric AND quantity_before > 0::numeric AND relief_method IS NULL AND policy_revision IS NULL AND lot_snapshot_before IS NOT NULL OR mutation_kind = 'CorporateAction'::text AND relief_method IS NULL AND policy_revision IS NULL AND (quantity_before > 0::numeric AND quantity_after = 0::numeric AND lot_snapshot_before IS NOT NULL OR quantity_before = 0::numeric AND quantity_after > 0::numeric AND lot_snapshot_before IS NULL)))",
               "delete_action": null,
-              "fingerprint": "468126d6bad3a60a3797f290c253b5cb5ebe440ec72ea2e495bb56aabae42498",
+              "fingerprint": "ce873a7dcb901bff9276c8ebfad0efade88e130b6159cfd0bdeea55ac4ee940b",
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_tax_lot_mutations_quantities",
@@ -152002,7 +152498,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "31a264810b0ab9c5e7ea9f500709a2992df9c68e644b322539db713ba79b722e",
+          "fingerprint": "bfe9429ad20e363c4eb7cfe0fc35cba14666cbbe4d73ffb18c2dc55430fddc26",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -152455,6 +152951,22 @@
               "security_labels": [],
               "type_name": "date",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Account key of the per-security account this relief policy governs.",
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "2629e26ffe368192a0d857b14aee03996a24ac4993956ea5a733fc60f253c43c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "account_security_id",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -152545,7 +153057,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "4d492accdc3cb6948f54503fb4b616e56cbd0b79f5d4c936a40b292a88af1c03",
+          "fingerprint": "2a664da7bc5f981907a39abe0a447fbcb43dc0a71ef63b6cef4b79890987f899",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -152597,22 +153109,22 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_tax_lot_policies_book_account_effective ON ledger.tax_lot_policies USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), effective_date)",
-              "expression": "COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
-              "fingerprint": "04270fc7b289c6d288903a0ff7a442bd2e51208f41d1caa7a12e49fc531b386d",
+              "definition": "CREATE UNIQUE INDEX ux_tax_lot_policies_book_account_instrument_effective ON ledger.tax_lot_policies USING btree (ledger_book_id, account_name, account_type, COALESCE((account_security_id)::text, symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), effective_date)",
+              "expression": "COALESCE(account_security_id::text, symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
+              "fingerprint": "6f74c8ef0b2c8341f74478777dde2e33b3591af7f1c47a7098f49fec57dd936e",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
                 "ledger_book_id",
                 "account_name",
                 "account_type",
-                "COALESCE(symbol, ''::text)",
+                "COALESCE(account_security_id::text, symbol, ''::text)",
                 "lower(COALESCE(financial_account_id, ''::text))",
                 "effective_date"
               ],
               "live": true,
               "method": "btree",
-              "name": "ux_tax_lot_policies_book_account_effective",
+              "name": "ux_tax_lot_policies_book_account_instrument_effective",
               "options": [],
               "owner": "meridian",
               "predicate": null,
@@ -153115,6 +153627,22 @@
               "security_labels": [],
               "type_name": "numeric",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Account key of the lot's owning per-security account (distinct from the lot instrument security_id).",
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "dbb66df0c548ee4fc1a78d559eaa238aabd925a8b7ad29c14d837182be0153c6",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "account_security_id",
+              "nullable": true,
+              "ordinal_position": 28,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -153443,7 +153971,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "f0a79a745ff079c9ca0e16dbc2e0800a68746d5e4a09fa8ce91af26031509578",
+          "fingerprint": "dd6b01770c848f44f535d53ec3b4727c7ee41b482810a2ccf9b3ca921f919a00",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -153475,23 +154003,23 @@
             },
             {
               "comment": null,
-              "definition": "CREATE INDEX ix_tax_lots_book_account_open ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), acquired_date, lot_id) WHERE (open_quantity > (0)::numeric)",
-              "expression": "COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
-              "fingerprint": "4bd3c7c2cc8f99b8dabe74a4d37a6e3721c71f8a17ee41b41ab053c0ba0812ff",
+              "definition": "CREATE INDEX ix_tax_lots_book_account_instrument_open ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE((account_security_id)::text, symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), acquired_date, lot_id) WHERE (open_quantity > (0)::numeric)",
+              "expression": "COALESCE(account_security_id::text, symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
+              "fingerprint": "1c3b93da7f9a2c4a2943ce361fc0325a06e31363171be2872f92d2d2cdbb3c96",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
                 "ledger_book_id",
                 "account_name",
                 "account_type",
-                "COALESCE(symbol, ''::text)",
+                "COALESCE(account_security_id::text, symbol, ''::text)",
                 "lower(COALESCE(financial_account_id, ''::text))",
                 "acquired_date",
                 "lot_id"
               ],
               "live": true,
               "method": "btree",
-              "name": "ix_tax_lots_book_account_open",
+              "name": "ix_tax_lots_book_account_instrument_open",
               "options": [],
               "owner": "meridian",
               "predicate": "open_quantity > 0::numeric",
@@ -153616,22 +154144,22 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_tax_lots_book_account_lot ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), lot_id)",
-              "expression": "COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
-              "fingerprint": "ca85da81e39fe9170cb771bb2c496d2ee5d315fd070074e736264cd0b4e2b895",
+              "definition": "CREATE UNIQUE INDEX ux_tax_lots_book_account_instrument_lot ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE((account_security_id)::text, symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), lot_id)",
+              "expression": "COALESCE(account_security_id::text, symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
+              "fingerprint": "b9056ef56fa164a3d241d9171736f585c2a0c69da3fd9c9c14ff8f88d6b46a5e",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
                 "ledger_book_id",
                 "account_name",
                 "account_type",
-                "COALESCE(symbol, ''::text)",
+                "COALESCE(account_security_id::text, symbol, ''::text)",
                 "lower(COALESCE(financial_account_id, ''::text))",
                 "lot_id"
               ],
               "live": true,
               "method": "btree",
-              "name": "ux_tax_lots_book_account_lot",
+              "name": "ux_tax_lots_book_account_instrument_lot",
               "options": [],
               "owner": "meridian",
               "predicate": null,
@@ -153704,6 +154232,23 @@
               "function_signature": "protect_open_lot_current_factor()",
               "level": "row",
               "name": "protect_open_lot_current_factor",
+              "relation": "tax_lots",
+              "schema": "ledger",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER protect_tax_lot_account_key BEFORE UPDATE ON ledger.tax_lots FOR EACH ROW EXECUTE FUNCTION ledger.protect_tax_lot_account_key()",
+              "definition_hash": "41cc2437b671a214eeddd04c59f48fb4203dc61d1ea8e3f3f226fb6ca5940422",
+              "enabled": "origin",
+              "events": [
+                "update"
+              ],
+              "fingerprint": "35aa9963e1bed398d657c24411eb19eb9b5a9eab4c860d7c42446defda633a28",
+              "function_schema": "ledger",
+              "function_signature": "protect_tax_lot_account_key()",
+              "level": "row",
+              "name": "protect_tax_lot_account_key",
               "relation": "tax_lots",
               "schema": "ledger",
               "timing": "before"
@@ -154043,6 +154588,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Account key of the disposing per-security account.",
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "d06a92dd218df664b1d6bd7d14483245ea05fcbe041f0660d5f01ceca28a6c2d",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "disposal_account_security_id",
+              "nullable": true,
+              "ordinal_position": 19,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -154256,7 +154817,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "ece8a127ef211f9c7789a92ba534380d96627ffa362100a56527594f38d9abd9",
+          "fingerprint": "1d8175f82ae854fd6e88ebae6cd625226f7dc5e1b35f9e7d642459140b263454",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -155734,6 +156295,23 @@
           "function_signature": "protect_open_lot_current_factor()",
           "level": "row",
           "name": "protect_open_lot_current_factor",
+          "relation": "tax_lots",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER protect_tax_lot_account_key BEFORE UPDATE ON ledger.tax_lots FOR EACH ROW EXECUTE FUNCTION ledger.protect_tax_lot_account_key()",
+          "definition_hash": "41cc2437b671a214eeddd04c59f48fb4203dc61d1ea8e3f3f226fb6ca5940422",
+          "enabled": "origin",
+          "events": [
+            "update"
+          ],
+          "fingerprint": "35aa9963e1bed398d657c24411eb19eb9b5a9eab4c860d7c42446defda633a28",
+          "function_schema": "ledger",
+          "function_signature": "protect_tax_lot_account_key()",
+          "level": "row",
+          "name": "protect_tax_lot_account_key",
           "relation": "tax_lots",
           "schema": "ledger",
           "timing": "before"

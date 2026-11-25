@@ -2,11 +2,42 @@
 
 # `security-master-contracts` data objects - page 8 of 8
 
-Objects 561-607 of 607. References crossing pages remain available in the dependency manifest.
+Objects 561-611 of 611. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityValidationReportDto["SecurityValidationReportDto"] {
+        +int CriticalIssueCount
+        +int ErrorIssueCount
+        +DateTimeOffset EvaluatedAtUtc
+        +bool HasBlockingIssues
+        +IReadOnlyList~SecurityValidationIssueDto~ Issues
+        +string Scope
+        +Guid? SecurityId
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityValidationSeverityDto["SecurityValidationSeverityDto"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto["SecurityValidationSnapshotDto"] {
+        +string? Actor
+        +IReadOnlyList~SecurityEvidenceLinkDto~ EvidenceLinks
+        +string Reason
+        +DateTimeOffset RecordedAtUtc
+        +SecurityValidationReportDto Report
+        +string ReportHashSha256
+        +string Scope
+        +Guid? SecurityId
+        +Guid SnapshotId
+        +SecurityValidationWorkflowDto Workflow
+        +string? WorkflowReference
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotRequestDto["SecurityValidationSnapshotRequestDto"] {
+        +string? Actor
+        +IReadOnlyList~SecurityEvidenceLinkDto~ EvidenceLinks
+        +string Reason
+        +SecurityValidationWorkflowDto Workflow
+        +string? WorkflowReference
+    }
     class Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto["SecurityValidationWorkflowDto"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityValuationAccountingTreatment["SecurityValuationAccountingTreatment"] {
@@ -367,6 +398,9 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
+    Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityValidationReportDto
+    Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto
+    Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotRequestDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto
     Meridian_Contracts_SecurityMaster_SecurityValuationRequest --> Meridian_Contracts_SecurityMaster_SecurityValuationCurveInput
     Meridian_Contracts_SecurityMaster_SecurityValuationRequest --> Meridian_Contracts_SecurityMaster_SecurityValuationModelKind
     Meridian_Contracts_SecurityMaster_SecurityValuationResult --> Meridian_Contracts_SecurityMaster_SecurityValuationBlockerDto

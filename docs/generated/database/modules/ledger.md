@@ -3,8 +3,8 @@
 # `ledger` schema
 
 - Relations: 74
-- Functions/procedures: 38
-- Triggers: 78
+- Functions/procedures: 39
+- Triggers: 79
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -156,6 +156,7 @@ erDiagram
         jsonb corporate_action_instruction
         jsonb capital_return_instruction
         jsonb factor_paydown_instruction
+        jsonb account_rekey_instruction
     }
     ledger_automated_posting_grants {
         uuid grant_id PK
@@ -532,6 +533,7 @@ erDiagram
         numeric_38_10_ fx_rate_to_functional
         text memo
         jsonb chart_account
+        uuid account_security_id
     }
     ledger_ledger_balance_checkpoint_rows {
         uuid checkpoint_id PK,FK
@@ -544,6 +546,7 @@ erDiagram
         numeric debit
         numeric credit
         bigint entry_count
+        uuid account_security_id
     }
     ledger_ledger_balance_checkpoints {
         uuid checkpoint_id PK
@@ -862,6 +865,7 @@ erDiagram
         integer wash_sale_window_days
         text wash_sale_scope
         date wash_sale_effective_date
+        uuid account_security_id
     }
     ledger_tax_lots {
         uuid tax_lot_record_id PK
@@ -891,6 +895,7 @@ erDiagram
         jsonb acquisition_terms
         jsonb basis_adjustment
         numeric_38_12_ current_factor
+        uuid account_security_id
     }
     ledger_wash_sale_deferrals {
         uuid deferral_id PK
@@ -911,6 +916,7 @@ erDiagram
         integer window_days
         text scope
         timestamp_with_time_zone recorded_at
+        uuid disposal_account_security_id
     }
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_chart_nodes : "accounting_configuration_chart_nodes_workspace_fkey"
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_journal_templates : "accounting_configuration_journal_templates_workspace_fkey"
@@ -1012,7 +1018,7 @@ erDiagram
 | `accounting_configuration_workspaces` | table | 9 | `tenant_id`, `company_id`, `fund_profile_id`, `configuration_scope_id` | 0 | 1 | - |
 | `accounting_periods` | table | 14 | `period_id` | 1 | 8 | - |
 | `accounting_policies` | table | 14 | `accounting_policy_key` | 0 | 3 | - |
-| `atomic_tax_lot_posting_batches` | table | 21 | `mutation_batch_id` | 4 | 5 | - |
+| `atomic_tax_lot_posting_batches` | table | 22 | `mutation_batch_id` | 4 | 5 | - |
 | `automated_posting_grants` | table | 19 | `grant_id` | 2 | 1 | - |
 | `bond_coupon_cash_consumption` | table | 12 | `ledger_book_id`, `account_id`, `allocation_id`, `receipt_id` | 2 | 3 | - |
 | `bond_coupon_recognition` | table | 10 | `receipt_id` | 5 | 4 | - |
@@ -1047,8 +1053,8 @@ erDiagram
 | `journal_entry_open_postings` | table | 2 | `journal_entry_id` | 1 | 1 | - |
 | `journal_leg_currency_affirmations` | table | 7 | `affirmation_id` | 1 | 2 | Operator assertions that a ledger book with no retained currency evidence transacted only in its base currency, and the currency-blind journal legs each assertion completed. Append-only: this is the authority for a repair the data alone could not determine. |
 | `journal_leg_currency_backfill_status` | view | 8 | - | 0 | 0 | - |
-| `journal_legs` | table | 32 | `entry_id` | 1 | 9 | - |
-| `ledger_balance_checkpoint_rows` | table | 10 | `checkpoint_id`, `row_no` | 1 | 1 | Exact account and line-dimension debit/credit totals in one immutable hard-close balance checkpoint, including known zero balances. |
+| `journal_legs` | table | 33 | `entry_id` | 1 | 10 | - |
+| `ledger_balance_checkpoint_rows` | table | 11 | `checkpoint_id`, `row_no` | 1 | 1 | Exact account and line-dimension debit/credit totals in one immutable hard-close balance checkpoint, including known zero balances. |
 | `ledger_balance_checkpoints` | table | 14 | `checkpoint_id` | 3 | 4 | Immutable cumulative balances captured atomically with an authoritative hard close and bound to its retained audit evidence. |
 | `ledger_book_control_activation` | table | 8 | `receipt_id` | 1 | 1 | - |
 | `ledger_book_controls` | table | 8 | `ledger_book_id` | 1 | 1 | - |
@@ -1074,6 +1080,6 @@ erDiagram
 | `private_capital_postings` | table | 17 | `tenant_id`, `company_id`, `fund_profile_id`, `ledger_book_id`, `posting_id` | 4 | 8 | Immutable issuance and funding receipts committed atomically with their ledger journals and source identities. |
 | `recurring_journal_state` | table | 6 | `store_id` | 0 | 1 | Retained recurring journal definitions, activations and occurrence claims (W10-JRNL-001). |
 | `tax_lot_mutations` | table | 25 | `mutation_record_id` | 4 | 5 | - |
-| `tax_lot_policies` | table | 16 | `policy_record_id` | 1 | 3 | - |
-| `tax_lots` | table | 27 | `tax_lot_record_id` | 4 | 8 | - |
-| `wash_sale_deferrals` | table | 18 | `deferral_id` | 3 | 4 | - |
+| `tax_lot_policies` | table | 17 | `policy_record_id` | 1 | 3 | - |
+| `tax_lots` | table | 28 | `tax_lot_record_id` | 4 | 8 | - |
+| `wash_sale_deferrals` | table | 19 | `deferral_id` | 3 | 4 | - |
