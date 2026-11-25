@@ -55,5 +55,26 @@ public static partial class SecurityMasterEndpoints
         .Produces<AppSecurityMaster.MergeSecuritiesResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status409Conflict);
+
+        // ADR-034: GET terms valid at `validAt` as known at `knownAt` (default now).
+        group.MapGet(UiApiRoutes.SecurityMasterTermsAsOf, async (
+            Guid securityId,
+            DateTimeOffset validAt,
+            DateTimeOffset? knownAt,
+            [FromServices] AppSecurityMaster.SecurityMasterValidTimeQuery? validTime,
+            CancellationToken ct) =>
+        {
+            if (validTime is null)
+            {
+                return Results.Problem("Valid-time reads need the Security Master event store.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var terms = await validTime.GetAsync(securityId, validAt, knownAt, ct).ConfigureAwait(false);
+            return terms is null ? Results.NotFound() : Results.Json(terms, jsonOptions);
+        })
+        .WithName("GetSecurityMasterTermsAsOf")
+        .RequireAnyPermission(Meridian.Identity.Auth.UserPermission.ViewSecurityMaster, Meridian.Identity.Auth.UserPermission.ModifySecurityMaster)
+        .Produces<AppSecurityMaster.SecurityTermsAsOf>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
     }
 }

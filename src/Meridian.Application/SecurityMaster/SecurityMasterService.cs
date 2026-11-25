@@ -272,7 +272,8 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
                 request.UpdatedBy,
                 request.SourceSystem,
                 request.Reason,
-                projection.Version);
+                projection.Version,
+                validFrom: request.EffectiveFrom);
 
             // A governed field that just changed invalidates any prior conflict-resolution attribution
             // for that path: the recorded winner no longer supplied the current value. Changed paths

@@ -118,17 +118,24 @@ internal static partial class SecurityMasterMapping
         string actor,
         string sourceSystem,
         string? reason,
-        long streamVersion)
+        long streamVersion,
+        DateTimeOffset? validFrom = null)
     {
-        var metadata = JsonSerializer.SerializeToElement(
-            new Dictionary<string, object?>
-            {
-                ["sourceSystem"] = sourceSystem,
-                ["reason"] = reason,
-                [SecurityMasterEventPayloads.SchemaVersionMetadataKey] = SecurityMasterEventPayloads.EconomicDefinitionVersion,
-                [SecurityMasterEventPayloads.PayloadTypeMetadataKey] = SecurityMasterEventPayloads.EconomicDefinition
-            },
-            SecurityMasterJsonContext.Default.DictionaryStringObject);
+        var entries = new Dictionary<string, object?>
+        {
+            ["sourceSystem"] = sourceSystem,
+            ["reason"] = reason,
+            [SecurityMasterEventPayloads.SchemaVersionMetadataKey] = SecurityMasterEventPayloads.EconomicDefinitionVersion,
+            [SecurityMasterEventPayloads.PayloadTypeMetadataKey] = SecurityMasterEventPayloads.EconomicDefinition
+        };
+        if (validFrom is { } assertedFrom)
+        {
+            // ADR-034: the request's intended effective date, kept separately from the economic
+            // record's EffectiveFrom (which an amendment does not move).
+            entries[SecurityMasterEventPayloads.ValidFromMetadataKey] = assertedFrom.UtcDateTime.ToString("O", System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        var metadata = JsonSerializer.SerializeToElement(entries, SecurityMasterJsonContext.Default.DictionaryStringObject);
 
         return new SecurityMasterEventEnvelope(
             GlobalSequence: null,

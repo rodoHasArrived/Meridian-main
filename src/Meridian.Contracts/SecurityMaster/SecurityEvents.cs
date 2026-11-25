@@ -66,6 +66,13 @@ public static class SecurityMasterEventPayloads
     /// <summary>The metadata key that historically carried the payload version.</summary>
     public const string SchemaVersionMetadataKey = "schemaVersion";
 
+    /// <summary>
+    /// ADR-034 valid time: the instant from which the event's full economic state is asserted to hold.
+    /// Recording time is the event timestamp; together they make term history bitemporal. Events
+    /// written before ADR-034 carry no key and read their state's own effective-from instead.
+    /// </summary>
+    public const string ValidFromMetadataKey = "validFrom";
+
     /// <summary>Every payload family this node can replay, with its newest supported version.</summary>
     public static IReadOnlyDictionary<string, int> SupportedVersions { get; } = new Dictionary<string, int>(StringComparer.Ordinal)
     {

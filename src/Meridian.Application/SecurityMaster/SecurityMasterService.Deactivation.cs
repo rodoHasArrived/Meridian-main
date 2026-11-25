@@ -41,7 +41,8 @@ public sealed partial class SecurityMasterService
             request.UpdatedBy,
             request.SourceSystem,
             request.Reason,
-            projection.Version);
+            projection.Version,
+            validFrom: request.EffectiveTo);
 
         await _canonicalWriteScope.ExecuteAsync(request.SecurityId, async () =>
         {
