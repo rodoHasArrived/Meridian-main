@@ -17800,6 +17800,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.AssignSecurityMasterExceptionCaseRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.AuditTrailExplorerQueryDto"
     },
     {
@@ -22312,6 +22318,30 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionCaseDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionCaseQueueItemDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionCaseStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionSyncResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterFactorPointDto"
     },
     {
@@ -22319,6 +22349,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterGovernanceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterHeldAmendmentDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterHeldAmendmentStatusDto"
     },
     {
       "kind": "contract-set-member",
@@ -58755,6 +58797,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionCaseQueueItemDto",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionCaseDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.SecurityMasterIdentifierSummaryDto",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterProviderSymbolMappingDto"
     },
@@ -72469,7 +72517,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "026f448d852444bb7fd116c6779038974e4b793f51c16d3a455291b14c81e3d6",
+  "fingerprint": "56ed71451693005bab526b330c8169e632f6eae9fdd3c203f8c241b652b5b42b",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -90319,6 +90367,12 @@
       "label": "Meridian.Contracts.Workstation.AssignOnboardingDifferenceRequestDto"
     },
     {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Workstation.AssignSecurityMasterExceptionCaseRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.AssignSecurityMasterExceptionCaseRequest"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.AuditTrailExplorerQueryDto",
       "kind": "contract-type",
@@ -94832,6 +94886,30 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionCaseDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterExceptionCaseDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionCaseQueueItemDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterExceptionCaseQueueItemDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionCaseStatusDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterExceptionCaseStatusDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionSyncResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterExceptionSyncResultDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.SecurityMasterFactorPointDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.SecurityMasterFactorPointDto"
@@ -94841,6 +94919,18 @@
       "id": "contract:Meridian.Contracts.Workstation.SecurityMasterGovernanceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.SecurityMasterGovernanceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterHeldAmendmentDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterHeldAmendmentDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterHeldAmendmentStatusDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterHeldAmendmentStatusDto"
     },
     {
       "classification": "dto",
@@ -106613,11 +106703,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4419,
-    "contract_set_memberships": 5840,
-    "edges": 12038,
+    "contract_references": 4420,
+    "contract_set_memberships": 5847,
+    "edges": 12046,
     "foreign_keys": 224,
     "logical_references": 6,
-    "nodes": 5941
+    "nodes": 5948
   }
 }
