@@ -591,13 +591,19 @@ public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposab
 
     private async Task<MaintenanceOperationResult> ExecuteTierMigrationAsync(MaintenanceJob job, CancellationToken ct)
     {
-        var plan = await _tierMigrationService.PlanMigrationAsync(TimeSpan.FromDays(1), ct);
+        // Execute only what is due now; a look-ahead horizon would move files before their tier's
+        // age limit. Moving (DeleteSource) rather than copying is what retires a file from its
+        // source tier: a copy left the source in place, so every run re-copied the same files.
+        // MigrateFileAsync only deletes after the target's checksum matches and holds the writer
+        // fences, so a file still being written is refused, not deleted.
+        var plan = await _tierMigrationService.PlanMigrationAsync(TimeSpan.Zero, ct);
         var results = new List<(PlannedMigrationAction Action, MigrationResult Result)>();
+        var moveOptions = new MigrationOptions(DeleteSource: true);
 
         foreach (var action in plan.Actions)
         {
             var result = await _tierMigrationService
-                .MigrateAsync(action.SourcePath, action.TargetTier, new MigrationOptions(), ct)
+                .MigrateAsync(action.SourcePath, action.TargetTier, moveOptions, ct)
                 .ConfigureAwait(false);
             results.Add((action, result));
         }

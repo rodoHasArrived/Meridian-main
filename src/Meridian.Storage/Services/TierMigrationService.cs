@@ -152,10 +152,25 @@ public sealed class TierMigrationService : ITierMigrationService
             Errors: [error]);
     }
 
+    /// <summary>
+    /// Plans every move from an age-bounded tier to the next tier in the chain for files that are
+    /// due now or become due within <paramref name="horizon"/>. Each action carries its
+    /// <see cref="PlannedMigrationAction.DueAt"/>; callers that execute a plan should pass
+    /// <see cref="TimeSpan.Zero"/> so nothing moves before its tier's age limit.
+    /// </summary>
+    /// <remarks>
+    /// The chain is the tiers with <see cref="TierConfig.MaxAgeDays"/> in ascending age, followed by
+    /// the tiers without one (normally the final archive tier) in configuration order, so the last
+    /// age-bounded tier now migrates into the archive tier instead of never moving. A tier whose
+    /// name is not a <see cref="StorageTier"/> cannot be addressed by <see cref="MigrateAsync"/>
+    /// and is left out of the chain rather than silently mapped to another tier.
+    /// </remarks>
     public Task<MigrationPlan> PlanMigrationAsync(TimeSpan horizon, CancellationToken ct = default)
     {
         var actions = new List<PlannedMigrationAction>();
         var now = DateTime.UtcNow;
+        if (horizon < TimeSpan.Zero)
+            horizon = TimeSpan.Zero;
 
         if (_options.Tiering?.Enabled != true || _options.Tiering.Tiers.Count == 0)
         {
@@ -168,17 +183,24 @@ public sealed class TierMigrationService : ITierMigrationService
             ));
         }
 
-        // Sort tiers by age threshold
-        var sortedTiers = _options.Tiering.Tiers
+        var chain = _options.Tiering.Tiers
             .Where(t => t.MaxAgeDays.HasValue)
             .OrderBy(t => t.MaxAgeDays!.Value)
+            .Concat(_options.Tiering.Tiers.Where(t => !t.MaxAgeDays.HasValue))
+            .Select(t => (Config: t, Parsed: Enum.TryParse<StorageTier>(t.Name, true, out var parsed), Tier: parsed))
+            .Where(t => t.Parsed)
             .ToList();
 
-        for (int i = 0; i < sortedTiers.Count - 1; i++)
+        for (int i = 0; i < chain.Count - 1; i++)
         {
-            var sourceTier = sortedTiers[i];
-            var targetTier = sortedTiers[i + 1];
-            var cutoffDate = now.AddDays(-sourceTier.MaxAgeDays!.Value);
+            ct.ThrowIfCancellationRequested();
+            var sourceTier = chain[i].Config;
+            if (!sourceTier.MaxAgeDays.HasValue)
+                break; // unbounded tiers sit at the end of the chain and never age out
+
+            var targetTier = chain[i + 1];
+            var maxAge = TimeSpan.FromDays(sourceTier.MaxAgeDays.Value);
+            var planCutoff = now - maxAge + horizon;
 
             if (!Directory.Exists(sourceTier.Path))
                 continue;
@@ -186,18 +208,22 @@ public sealed class TierMigrationService : ITierMigrationService
             var eligibleFiles = Directory.EnumerateFiles(sourceTier.Path, "*", SearchOption.AllDirectories)
                 .Where(IsDataFile)
                 .Select(f => new FileInfo(f))
-                .Where(f => f.LastWriteTimeUtc < cutoffDate)
+                .Where(f => f.LastWriteTimeUtc < planCutoff)
                 .ToList();
 
             foreach (var file in eligibleFiles)
             {
+                var dueAt = new DateTimeOffset(file.LastWriteTimeUtc + maxAge, TimeSpan.Zero);
                 actions.Add(new PlannedMigrationAction(
                     SourcePath: file.FullName,
-                    TargetTier: Enum.TryParse<StorageTier>(targetTier.Name, true, out var tier) ? tier : StorageTier.Warm,
-                    Reason: $"Age > {sourceTier.MaxAgeDays} days",
+                    TargetTier: targetTier.Tier,
+                    Reason: dueAt <= now
+                        ? $"Age > {sourceTier.MaxAgeDays} days"
+                        : $"Reaches {sourceTier.MaxAgeDays} days on {dueAt:yyyy-MM-dd}",
                     SizeBytes: file.Length,
                     FileAge: now - file.LastWriteTimeUtc,
-                    EstimatedSavings: EstimateSavings(file, sourceTier, targetTier)
+                    EstimatedSavings: EstimateSavings(file, sourceTier, targetTier.Config),
+                    DueAt: dueAt
                 ));
             }
         }
@@ -621,13 +647,18 @@ public sealed record MigrationPlan(
     TimeSpan EstimatedDuration
 );
 
+/// <param name="DueAt">
+/// When the file reaches its tier's age limit. A plan built with a look-ahead horizon also holds
+/// actions that are not due yet; only actions due at or before now should be executed.
+/// </param>
 public sealed record PlannedMigrationAction(
     string SourcePath,
     StorageTier TargetTier,
     string Reason,
     long SizeBytes,
     TimeSpan FileAge,
-    long EstimatedSavings
+    long EstimatedSavings,
+    DateTimeOffset? DueAt = null
 );
 
 public sealed record FileMigrationResult(

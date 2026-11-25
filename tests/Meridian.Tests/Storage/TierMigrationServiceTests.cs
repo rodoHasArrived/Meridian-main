@@ -348,7 +348,7 @@ public sealed class TierMigrationServiceTests : IDisposable
         File.SetLastWriteTimeUtc(agedFile, DateTime.UtcNow.AddDays(-10));
         File.SetLastWriteTimeUtc(recentFile, DateTime.UtcNow.AddDays(-2));
 
-        var plan = await _sut.PlanMigrationAsync(TimeSpan.FromDays(30));
+        var plan = await _sut.PlanMigrationAsync(TimeSpan.Zero);
 
         plan.Actions.Should().ContainSingle(action => action.SourcePath == agedFile).Which.Should().BeEquivalentTo(new
         {
@@ -356,8 +356,97 @@ public sealed class TierMigrationServiceTests : IDisposable
             Reason = "Age > 7 days",
             SizeBytes = new FileInfo(agedFile).Length
         }, options => options.ExcludingMissingMembers());
-        plan.Actions.Should().NotContain(action => action.SourcePath == recentFile);
+        plan.Actions.Single().DueAt.Should().BeBefore(DateTimeOffset.UtcNow);
+        plan.Actions.Should().NotContain(action => action.SourcePath == recentFile,
+            "with no horizon only files already past the tier's age limit are planned");
         plan.EstimatedBytesToMigrate.Should().Be(new FileInfo(agedFile).Length);
+    }
+
+    [Fact]
+    public async Task PlanMigrationAsync_Horizon_AddsFilesThatBecomeDueWithinIt()
+    {
+        var sourceDirectory = Path.Combine(_hot, "polygon", "MSFT", "HistoricalBar");
+        Directory.CreateDirectory(sourceDirectory);
+        var soonFile = Path.Combine(sourceDirectory, "soon.jsonl");
+        var laterFile = Path.Combine(sourceDirectory, "later.jsonl");
+        await File.WriteAllTextAsync(soonFile, "soon");
+        await File.WriteAllTextAsync(laterFile, "later");
+        File.SetLastWriteTimeUtc(soonFile, DateTime.UtcNow.AddDays(-5));  // due in ~2 days
+        File.SetLastWriteTimeUtc(laterFile, DateTime.UtcNow.AddDays(-1)); // due in ~6 days
+
+        var threeDays = await _sut.PlanMigrationAsync(TimeSpan.FromDays(3));
+        var none = await _sut.PlanMigrationAsync(TimeSpan.Zero);
+
+        none.Actions.Should().BeEmpty("neither file is past the 7-day hot limit yet");
+        var soon = threeDays.Actions.Should().ContainSingle("only the file reaching 7 days within the horizon is planned").Subject;
+        soon.SourcePath.Should().Be(soonFile);
+        soon.DueAt.Should().BeAfter(DateTimeOffset.UtcNow);
+        soon.Reason.Should().StartWith("Reaches 7 days on ");
+        threeDays.Horizon.Should().Be(TimeSpan.FromDays(3));
+    }
+
+    [Fact]
+    public async Task PlanMigrationAsync_TierWithoutMaxAge_ReceivesFilesFromTheLastAgedTier()
+    {
+        var cold = Path.Combine(_root, "cold");
+        var archive = Path.Combine(_root, "archive");
+        Directory.CreateDirectory(cold);
+        var service = new TierMigrationService(new StorageOptions
+        {
+            RootPath = _root,
+            Tiering = new TieringOptions
+            {
+                Enabled = true,
+                Tiers =
+                [
+                    new TierConfig { Name = "Archive", Path = archive, Format = "jsonl", Compression = CompressionCodec.Gzip },
+                    new TierConfig { Name = "Hot", Path = _hot, MaxAgeDays = 7, Format = "jsonl" },
+                    new TierConfig { Name = "Cold", Path = cold, MaxAgeDays = 180, Format = "jsonl", Compression = CompressionCodec.Gzip }
+                ]
+            }
+        });
+        var agedCold = Path.Combine(cold, "SPY", "old.jsonl.gz");
+        Directory.CreateDirectory(Path.GetDirectoryName(agedCold)!);
+        await File.WriteAllTextAsync(agedCold, "old");
+        File.SetLastWriteTimeUtc(agedCold, DateTime.UtcNow.AddDays(-200));
+
+        var plan = await service.PlanMigrationAsync(TimeSpan.Zero);
+
+        plan.Actions.Should().ContainSingle().Which.Should().BeEquivalentTo(new
+        {
+            SourcePath = agedCold,
+            TargetTier = StorageTier.Archive,
+            Reason = "Age > 180 days"
+        }, options => options.ExcludingMissingMembers());
+    }
+
+    [Fact]
+    public async Task PlanMigrationAsync_TierNameThatIsNotAStorageTier_IsSkippedNotMappedToWarm()
+    {
+        var nearline = Path.Combine(_root, "nearline");
+        var cold = Path.Combine(_root, "cold");
+        var service = new TierMigrationService(new StorageOptions
+        {
+            RootPath = _root,
+            Tiering = new TieringOptions
+            {
+                Enabled = true,
+                Tiers =
+                [
+                    new TierConfig { Name = "Hot", Path = _hot, MaxAgeDays = 7, Format = "jsonl" },
+                    new TierConfig { Name = "Nearline", Path = nearline, MaxAgeDays = 30, Format = "jsonl" },
+                    new TierConfig { Name = "Cold", Path = cold, MaxAgeDays = 180, Format = "jsonl" }
+                ]
+            }
+        });
+        var agedHot = Path.Combine(_hot, "aged.jsonl");
+        await File.WriteAllTextAsync(agedHot, "aged");
+        File.SetLastWriteTimeUtc(agedHot, DateTime.UtcNow.AddDays(-10));
+
+        var plan = await service.PlanMigrationAsync(TimeSpan.Zero);
+
+        plan.Actions.Should().ContainSingle().Which.TargetTier.Should().Be(StorageTier.Cold,
+            "MigrateAsync cannot address a tier named 'Nearline', so the chain skips to the next addressable tier");
     }
 
     [Fact]

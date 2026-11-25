@@ -279,7 +279,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.FileMigrationResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:633](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L633).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:664](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L664).
 
 ```csharp
 public sealed record FileMigrationResult(string SourcePath, string TargetPath, long OriginalSize, long NewSize);
@@ -627,7 +627,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.IMaintenanceScheduler</code>. Kind: `interface`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1487](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1487).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1493](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1493).
 
 Interface for maintenance scheduler.
 
@@ -639,16 +639,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;ScheduleDecision&gt; CanRunNowAsync(MaintenanceType operation, ResourceRequirements requirements, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1489](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1489) |  |
-| <code>Task&lt;ScheduleSlot?&gt; FindNextWindowAsync(MaintenanceType operation, TimeSpan estimatedDuration, ResourceRequirements requirements, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1490](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1490) |  |
-| <code>Task&lt;ScheduledJob&gt; ScheduleAsync(MaintenanceJob job, ScheduleOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1491](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1491) |  |
-| <code>Task&lt;OperationalState&gt; GetStateAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1492](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1492) |  |
-| <code>Task&lt;JobExecutionStatus&gt; ExecuteJobAsync(MaintenanceJob job, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1493](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1493) |  |
-| <code>IReadOnlyList&lt;ScheduledJob&gt; GetPendingJobs();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1494](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1494) |  |
-| <code>IReadOnlyList&lt;ScheduledJob&gt; GetRunningJobs();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1495](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1495) |  |
-| <code>JobExecutionStatus? GetJobStatus(string jobId);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1496](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1496) |  |
-| <code>bool IsRealTimeCollectionActive();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1497](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1497) |  |
-| <code>TimeSpan? GetTimeUntilCollectionEnds();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1498](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1498) |  |
+| <code>Task&lt;ScheduleDecision&gt; CanRunNowAsync(MaintenanceType operation, ResourceRequirements requirements, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1495](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1495) |  |
+| <code>Task&lt;ScheduleSlot?&gt; FindNextWindowAsync(MaintenanceType operation, TimeSpan estimatedDuration, ResourceRequirements requirements, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1496](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1496) |  |
+| <code>Task&lt;ScheduledJob&gt; ScheduleAsync(MaintenanceJob job, ScheduleOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1497](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1497) |  |
+| <code>Task&lt;OperationalState&gt; GetStateAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1498](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1498) |  |
+| <code>Task&lt;JobExecutionStatus&gt; ExecuteJobAsync(MaintenanceJob job, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1499](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1499) |  |
+| <code>IReadOnlyList&lt;ScheduledJob&gt; GetPendingJobs();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1500](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1500) |  |
+| <code>IReadOnlyList&lt;ScheduledJob&gt; GetRunningJobs();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1501](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1501) |  |
+| <code>JobExecutionStatus? GetJobStatus(string jobId);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1502](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1502) |  |
+| <code>bool IsRealTimeCollectionActive();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1503](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1503) |  |
+| <code>TimeSpan? GetTimeUntilCollectionEnds();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1504](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1504) |  |
 
 ## IMetadataTagService
 
@@ -879,7 +879,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.ITierMigrationService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:582](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L582).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:608](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L608).
 
 Interface for tier migration service.
 
@@ -891,16 +891,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;MigrationResult&gt; MigrateAsync(string sourcePath, StorageTier targetTier, MigrationOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:584](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L584) |  |
-| <code>Task&lt;MigrationPlan&gt; PlanMigrationAsync(TimeSpan horizon, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:585](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L585) |  |
-| <code>StorageTier DetermineTargetTier(string filePath);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:586](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L586) |  |
-| <code>Task&lt;TierStatistics&gt; GetTierStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:587](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L587) |  |
+| <code>Task&lt;MigrationResult&gt; MigrateAsync(string sourcePath, StorageTier targetTier, MigrationOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:610](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L610) |  |
+| <code>Task&lt;MigrationPlan&gt; PlanMigrationAsync(TimeSpan horizon, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:611](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L611) |  |
+| <code>StorageTier DetermineTargetTier(string filePath);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:612](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L612) |  |
+| <code>Task&lt;TierStatistics&gt; GetTierStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:613](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L613) |  |
 
 ## JobExecutionStatus
 
 Qualified name: <code>Meridian.Storage.Services.JobExecutionStatus</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1676](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1676).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1682](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1682).
 
 ```csharp
 public sealed record JobExecutionStatus(string JobId, MaintenanceType Type, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt, JobStatus Status, int Progress, string Message, IReadOnlyList<string> Errors)
@@ -910,5 +910,5 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public VerifiedOperationOutcome? Outcome { get; init; }</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1687](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1687) |  |
-| <code>public bool AdmissionRetained { get; init; }</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1688](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1688) |  |
+| <code>public VerifiedOperationOutcome? Outcome { get; init; }</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1693](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1693) |  |
+| <code>public bool AdmissionRetained { get; init; }</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1694](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1694) |  |

@@ -534,6 +534,14 @@ owns this operation and the backup helper shared with repair.
 Tier migration decodes compressed input with the production JSONL replay decoder before applying an explicitly requested output codec. An unspecified codec preserves source bytes; `None` emits uncompressed bytes with the compression suffix removed. Gzip rollover therefore produces one gzip layer. Deleting a source always requires equal logical-payload checksums through that decoder, including when optional copy verification is disabled; regression coverage also replays migrated events through `JsonlReplayer`.
 Migration writes JSONL only and compresses with Gzip only; parquet or Zstd tier targets are refused. The built-in `Archival` profile therefore tiers hot (JSONL) → warm, cold and archive (JSONL + Gzip).
 
+`PlanMigrationAsync` chains the tiers with `MaxAgeDays` in ascending age and then the tiers without one
+(the archive tier), so the last aged tier now migrates into archive. A tier whose name is not a
+`StorageTier` is skipped, not mapped to Warm. `horizon` is a look-ahead: the plan also lists files that
+reach their age limit within it, each with a `DueAt`. The maintenance scheduler and scheduled archive
+maintenance execute plans, so they plan with a zero horizon. The scheduler moves files
+(`DeleteSource`, which deletes only after the target checksum matches); copying left the source in
+place, so every run re-copied the same files.
+
 `PostgresSecurityMasterPricingStore.ClosePrices` extends retained pricing receipts with immutable
 account/book/date price snapshots and separate independent-review records (Security Master
 migration 037). Source receipts must match exactly; scoped advisory locks fence approvals and

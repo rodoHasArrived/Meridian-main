@@ -70,7 +70,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Storage.Services.ResourceLimits</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1583](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1583).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1589](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1589).
 
 ```csharp
 public sealed record ResourceLimits(int MaxCpuPct = 80, int MaxMemoryPct = 70, int MaxDiskIoMbps = 500);
@@ -80,7 +80,7 @@ public sealed record ResourceLimits(int MaxCpuPct = 80, int MaxMemoryPct = 70, i
 
 Qualified name: <code>Meridian.Storage.Services.ResourceRequirements</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1618](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1618).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1624](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1624).
 
 ```csharp
 public sealed record ResourceRequirements(int CpuCores = 1, long MemoryBytes = 1_073_741_824, long DiskIoMbps = 100, long NetworkIoMbps = 0, bool RequiresExclusiveLock = false, string[]? ExclusivePaths = null);
@@ -166,7 +166,7 @@ public sealed record RetentionViolation(string FilePath, string Symbol, int AgeD
 
 Qualified name: <code>Meridian.Storage.Services.ScheduleDecision</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1637](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1637).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1643](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1643).
 
 ```csharp
 public sealed record ScheduleDecision(bool Allowed, string Reason, MaintenanceWindow? CurrentWindow, TimeSpan? WaitTime, ResourceLimits? ApplicableLimits);
@@ -176,7 +176,7 @@ public sealed record ScheduleDecision(bool Allowed, string Reason, MaintenanceWi
 
 Qualified name: <code>Meridian.Storage.Services.ScheduledJob</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1653](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1653).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1659](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1659).
 
 ```csharp
 public sealed record ScheduledJob(string Id, MaintenanceJob Job, DateTimeOffset ScheduledStart, JobStatus Status, DateTimeOffset CreatedAt);
@@ -186,7 +186,7 @@ public sealed record ScheduledJob(string Id, MaintenanceJob Job, DateTimeOffset 
 
 Qualified name: <code>Meridian.Storage.Services.ScheduleOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1661](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1661).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1667](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1667).
 
 ```csharp
 public sealed record ScheduleOptions(bool AllowImmediate = true, TimeSpan MaxWaitTime = default);
@@ -196,7 +196,7 @@ public sealed record ScheduleOptions(bool AllowImmediate = true, TimeSpan MaxWai
 
 Qualified name: <code>Meridian.Storage.Services.ScheduleSlot</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1645](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1645).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1651](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1651).
 
 ```csharp
 public sealed record ScheduleSlot(DateTimeOffset Start, DateTimeOffset End, MaintenanceWindow Window, ResourceLimits Limits, int AvailableConcurrencySlots);
@@ -521,7 +521,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.TierInfo</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:645](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L645).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:676](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L676).
 
 ```csharp
 public sealed record TierInfo(int FileCount, long TotalBytes, DateTime? OldestFile, DateTime? NewestFile);
@@ -545,15 +545,15 @@ Declared public members:
 | --- | --- | --- |
 | <code>public TierMigrationService(StorageOptions options, ISourceRegistry? sourceRegistry = null);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:33](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L33) |  |
 | <code>public async Task&lt;MigrationResult&gt; MigrateAsync(string sourcePath, StorageTier targetTier, MigrationOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:40](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L40) |  |
-| <code>public Task&lt;MigrationPlan&gt; PlanMigrationAsync(TimeSpan horizon, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:155](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L155) |  |
-| <code>public StorageTier DetermineTargetTier(string filePath);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:217](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L217) |  |
-| <code>public Task&lt;TierStatistics&gt; GetTierStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:236](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L236) |  |
+| <code>public Task&lt;MigrationPlan&gt; PlanMigrationAsync(TimeSpan horizon, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:168](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L168) | Plans every move from an age-bounded tier to the next tier in the chain for files that are due now or become due within horizon. Each action carries its PlannedMigrationAction.DueAt; callers that execute a plan should pass TimeSpan.Zero so nothing moves before its tier&#x27;s age limit. |
+| <code>public StorageTier DetermineTargetTier(string filePath);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:243](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L243) |  |
+| <code>public Task&lt;TierStatistics&gt; GetTierStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:262](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L262) |  |
 
 ## TierStatistics
 
 Qualified name: <code>Meridian.Storage.Services.TierStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:640](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L640).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:671](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L671).
 
 ```csharp
 public sealed record TierStatistics(DateTimeOffset GeneratedAt, Dictionary<StorageTier, TierInfo> TierInfo);
@@ -563,7 +563,7 @@ public sealed record TierStatistics(DateTimeOffset GeneratedAt, Dictionary<Stora
 
 Qualified name: <code>Meridian.Storage.Services.TradingSession</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1562](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1562).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1568](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1568).
 
 ```csharp
 public sealed record TradingSession(string Name, DayOfWeek[] ActiveDays, TimeSpan PreMarketStart, TimeSpan RegularStart, TimeSpan RegularEnd, TimeSpan AfterHoursEnd, bool IncludesPreMarket = true, bool IncludesAfterHours = true);

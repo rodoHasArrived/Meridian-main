@@ -835,7 +835,9 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
         }
 
         // Get migration plan
-        var plan = await _tierMigrationService.PlanMigrationAsync(TimeSpan.FromDays(365), ct);
+        // Due-now only: a 365-day look-ahead would migrate files up to a year before their tier's
+        // age limit, because this service executes the plan it gets.
+        var plan = await _tierMigrationService.PlanMigrationAsync(TimeSpan.Zero, ct);
 
         if (plan.Actions.Count == 0)
         {

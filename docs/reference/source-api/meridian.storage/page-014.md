@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Storage.Services.JobPriority</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1627](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1627).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1633](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1633).
 
 ```csharp
 public enum JobPriority : byte
@@ -20,17 +20,17 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Critical</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1629](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1629) |  |
-| <code>High</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1630](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1630) |  |
-| <code>Normal</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1631](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1631) |  |
-| <code>Low</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1632](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1632) |  |
-| <code>Deferred</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1633](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1633) |  |
+| <code>Critical</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1635](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1635) |  |
+| <code>High</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1636](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1636) |  |
+| <code>Normal</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1637](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1637) |  |
+| <code>Low</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1638](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1638) |  |
+| <code>Deferred</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1639](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1639) |  |
 
 ## JobStatus
 
 Qualified name: <code>Meridian.Storage.Services.JobStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1666](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1666).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1672](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1672).
 
 ```csharp
 public enum JobStatus : byte
@@ -40,12 +40,12 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Pending</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1668](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1668) |  |
-| <code>Running</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1669](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1669) |  |
-| <code>Completed</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1670](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1670) |  |
-| <code>Failed</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1671](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1671) |  |
-| <code>Cancelled</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1672](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1672) |  |
-| <code>Blocked</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1673](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1673) |  |
+| <code>Pending</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1674](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1674) |  |
+| <code>Running</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1675](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1675) |  |
+| <code>Completed</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1676](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1676) |  |
+| <code>Failed</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1677](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1677) |  |
+| <code>Cancelled</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1678](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1678) |  |
+| <code>Blocked</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1679](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1679) |  |
 
 ## JsonlPositionSnapshotStore
 
@@ -216,7 +216,7 @@ public sealed record LineageReport(DateTime GeneratedAtUtc, int TotalTrackedFile
 
 Qualified name: <code>Meridian.Storage.Services.MaintenanceJob</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1605](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1605).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1611](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1611).
 
 ```csharp
 public sealed record MaintenanceJob(string Id, MaintenanceType Type, JobPriority Priority, string Description, ResourceRequirements Requirements, TimeSpan EstimatedDuration, string[] TargetPaths, Dictionary<string, object>? Parameters = null, bool Interruptible = true, int MaxRetries = 3);
@@ -250,13 +250,13 @@ Declared public members:
 | <code>public IReadOnlyList&lt;ScheduledJob&gt; GetPendingJobs() =&gt; …;</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:410](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L410) |  |
 | <code>public IReadOnlyList&lt;ScheduledJob&gt; GetRunningJobs() =&gt; …;</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:412](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L412) |  |
 | <code>public JobExecutionStatus? GetJobStatus(string jobId);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:414](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L414) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1461](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1461) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1467](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1467) |  |
 
 ## MaintenanceType
 
 Qualified name: <code>Meridian.Storage.Services.MaintenanceType</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1589](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1589).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1595](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1595).
 
 ```csharp
 public enum MaintenanceType : byte
@@ -266,23 +266,23 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>All</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1591](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1591) |  |
-| <code>HealthCheck</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1592](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1592) |  |
-| <code>IntegrityValidation</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1593](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1593) |  |
-| <code>Backfill</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1594](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1594) |  |
-| <code>Compaction</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1595](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1595) |  |
-| <code>TierMigration</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1596](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1596) |  |
-| <code>IndexRebuild</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1597](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1597) |  |
-| <code>Archival</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1598](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1598) |  |
-| <code>Backup</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1599](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1599) |  |
-| <code>Reconciliation</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1600](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1600) |  |
-| <code>QualityScoring</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1601](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1601) |  |
+| <code>All</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1597](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1597) |  |
+| <code>HealthCheck</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1598](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1598) |  |
+| <code>IntegrityValidation</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1599](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1599) |  |
+| <code>Backfill</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1600](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1600) |  |
+| <code>Compaction</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1601](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1601) |  |
+| <code>TierMigration</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1602](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1602) |  |
+| <code>IndexRebuild</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1603](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1603) |  |
+| <code>Archival</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1604](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1604) |  |
+| <code>Backup</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1605](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1605) |  |
+| <code>Reconciliation</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1606](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1606) |  |
+| <code>QualityScoring</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1607](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1607) |  |
 
 ## MaintenanceWindow
 
 Qualified name: <code>Meridian.Storage.Services.MaintenanceWindow</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1573](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1573).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1579](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1579).
 
 ```csharp
 public sealed record MaintenanceWindow(string Name, TimeSpan Start, TimeSpan End, DayOfWeek[] Days, MaintenanceType[] AllowedOperations, int MaxConcurrentJobs = 4, ResourceLimits Limits = null !);
@@ -348,7 +348,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.MigrationOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:591](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L591).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:617](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L617).
 
 ```csharp
 public sealed record MigrationOptions(bool DeleteSource = false, bool VerifyChecksum = true, bool ConvertFormat = false, int ParallelFiles = 4, Action<MigrationProgress>? OnProgress = null);
@@ -358,7 +358,7 @@ public sealed record MigrationOptions(bool DeleteSource = false, bool VerifyChec
 
 Qualified name: <code>Meridian.Storage.Services.MigrationPlan</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:616](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L616).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:642](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L642).
 
 ```csharp
 public sealed record MigrationPlan(DateTimeOffset GeneratedAt, TimeSpan Horizon, IReadOnlyList<PlannedMigrationAction> Actions, long EstimatedBytesToMigrate, TimeSpan EstimatedDuration);
@@ -368,7 +368,7 @@ public sealed record MigrationPlan(DateTimeOffset GeneratedAt, TimeSpan Horizon,
 
 Qualified name: <code>Meridian.Storage.Services.MigrationProgress</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:599](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L599).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:625](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L625).
 
 ```csharp
 public sealed record MigrationProgress(string CurrentFile, int FilesProcessed, int TotalFiles, long BytesProcessed);
@@ -388,7 +388,7 @@ public sealed record MigrationRecord(DateTime TimestampUtc, string SourceTier, s
 
 Qualified name: <code>Meridian.Storage.Services.MigrationResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:606](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L606).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:632](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L632).
 
 ```csharp
 public sealed record MigrationResult(bool Success, int FilesProcessed, int FilesFailed, long BytesProcessed, long BytesSaved, TimeSpan Duration, IReadOnlyList<string> Errors);
@@ -398,7 +398,7 @@ public sealed record MigrationResult(bool Success, int FilesProcessed, int Files
 
 Qualified name: <code>Meridian.Storage.Services.OperationalScheduleConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1502](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1502).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1508](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1508).
 
 ```csharp
 public sealed record OperationalScheduleConfig(string Name = "Default", TradingSession[] TradingSessions = null !, MaintenanceWindow[] MaintenanceWindows = null !, string[] Holidays = null !, TimeZoneInfo PrimaryTimeZone = null !)
@@ -408,14 +408,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public OperationalScheduleConfig() : this(&quot;Default&quot;, Array.Empty&lt;TradingSession&gt;(), Array.Empty&lt;MaintenanceWindow&gt;(), Array.Empty&lt;string&gt;(), TimeZoneInfo.Utc);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1510](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1510) |  |
-| <code>public static OperationalScheduleConfig Default =&gt; …;</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1512](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1512) |  |
+| <code>public OperationalScheduleConfig() : this(&quot;Default&quot;, Array.Empty&lt;TradingSession&gt;(), Array.Empty&lt;MaintenanceWindow&gt;(), Array.Empty&lt;string&gt;(), TimeZoneInfo.Utc);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1516](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1516) |  |
+| <code>public static OperationalScheduleConfig Default =&gt; …;</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1518](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1518) |  |
 
 ## OperationalState
 
 Qualified name: <code>Meridian.Storage.Services.OperationalState</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1691](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1691).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1697](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1697).
 
 ```csharp
 public sealed record OperationalState(bool IsRealTimeCollectionActive, TradingSession? CurrentSession, MaintenanceWindow? CurrentMaintenanceWindow, int RunningMaintenanceJobs, ScheduledJob[] PendingJobs, DateTimeOffset NextMaintenanceWindowStart);
@@ -464,10 +464,10 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.PlannedMigrationAction</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:624](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L624).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:654](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L654).
 
 ```csharp
-public sealed record PlannedMigrationAction(string SourcePath, StorageTier TargetTier, string Reason, long SizeBytes, TimeSpan FileAge, long EstimatedSavings);
+public sealed record PlannedMigrationAction(string SourcePath, StorageTier TargetTier, string Reason, long SizeBytes, TimeSpan FileAge, long EstimatedSavings, DateTimeOffset? DueAt = null);
 ```
 
 ## QualityAlert
