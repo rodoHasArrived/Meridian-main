@@ -61,7 +61,12 @@ class GoldenPathValidationWorkflowTests(unittest.TestCase):
         for job_id in ["browser-w4-parity", "wpf-w4-acceptance", "pilot-harness"]:
             with self.subTest(job=job_id):
                 header = self.job(job_id).split("    steps:\n", 1)[0]
-                self.assertNotRegex(header, r"(?m)^    (needs|if):")
+                self.assertNotRegex(header, r"(?m)^    needs:")
+                if job_id == "wpf-w4-acceptance":
+                    # Windows Desktop Build owns WPF W4 on PRs and main pushes.
+                    self.assertIn("    if: github.event_name == 'workflow_dispatch'\n", header)
+                else:
+                    self.assertNotRegex(header, r"(?m)^    if:")
         self.assertIn("    timeout-minutes: 35\n", self.job("pilot-harness"))
         self.assertNotIn("continue-on-error:", self.workflow)
 
@@ -106,26 +111,39 @@ class GoldenPathValidationWorkflowTests(unittest.TestCase):
         self.assertNotIn("actions/checkout", gate)
         self.assertNotIn("dotnet ", gate)
 
+    def run_gate(self, results: dict[str, str]) -> subprocess.CompletedProcess:
+        keys = ("BROWSER_RESULT", "WPF_RESULT", "PILOT_RESULT", "EVENT_NAME")
+        base_environment = {key: value for key, value in os.environ.items() if key not in keys}
+        return subprocess.run(
+            [sys.executable, "-c", self.gate_script()],
+            env={**base_environment, **results},
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+
     def test_acceptance_gate_passes_only_when_all_evidence_succeeds(self) -> None:
-        script = self.gate_script()
+        self.assertIn("EVENT_NAME: ${{ github.event_name }}", self.job("pilot-acceptance"))
         success = dict.fromkeys(["BROWSER_RESULT", "WPF_RESULT", "PILOT_RESULT"], "success")
-        cases = [("all succeeded", success, 0)]
-        for variable in success:
-            for result in ["failure", "cancelled", "skipped", "unknown", ""]:
-                cases.append((f"{variable}={result!r}", {**success, variable: result}, 1))
-            missing = {key: value for key, value in success.items() if key != variable}
-            cases.append((f"{variable} missing", missing, 1))
-        base_environment = {key: value for key, value in os.environ.items() if key not in success}
+        manual = {**success, "EVENT_NAME": "workflow_dispatch"}
+        automatic = {**success, "WPF_RESULT": "skipped", "EVENT_NAME": "pull_request"}
+        cases = [("manual all succeeded", manual, 0), ("automatic WPF skipped", automatic, 0),
+                 ("push WPF skipped", {**automatic, "EVENT_NAME": "push"}, 0)]
+        for base_label, base in (("manual", manual), ("automatic", automatic)):
+            for variable in success:
+                for result in ["failure", "cancelled", "skipped", "unknown", ""]:
+                    if base[variable] == result:
+                        continue
+                    cases.append((f"{base_label} {variable}={result!r}", {**base, variable: result}, 1))
+                missing = {key: value for key, value in base.items() if key != variable}
+                cases.append((f"{base_label} {variable} missing", missing, 1))
+        # A manual run must produce WPF evidence; a missing event name is never automatic.
+        cases.append(("manual WPF skipped", {**manual, "WPF_RESULT": "skipped"}, 1))
+        cases.append(("event missing", {k: v for k, v in automatic.items() if k != "EVENT_NAME"}, 1))
         for label, results, expected_exit in cases:
             with self.subTest(case=label):
-                completed = subprocess.run(
-                    [sys.executable, "-c", script],
-                    env={**base_environment, **results},
-                    capture_output=True,
-                    text=True,
-                    timeout=10,
-                    check=False,
-                )
+                completed = self.run_gate(results)
                 self.assertEqual(completed.returncode, expected_exit, completed.stdout + completed.stderr)
                 if expected_exit:
                     self.assertIn("::error::", completed.stdout)
@@ -142,14 +160,15 @@ class GoldenPathValidationWorkflowTests(unittest.TestCase):
                 self.assertIn("          if-no-files-found: ignore\n", upload)
                 self.assertIn("          retention-days: 30\n", upload)
 
-    def test_workflow_triggers_on_w4_browser_and_desktop_surfaces(self) -> None:
+    def test_workflow_triggers_on_w4_browser_surfaces(self) -> None:
         for watched_path in [
             "src/Meridian.Ui/dashboard/package.json",
             "src/Meridian.Ui/dashboard/src/screens/**",
-            "src/Meridian.Wpf/**",
-            "tests/Meridian.Wpf.Tests/**",
         ]:
             self.assertIn(watched_path, self.workflow)
+        # WPF-only changes start Windows Desktop Build, which owns WPF W4 on automatic runs.
+        for unwatched_path in ["src/Meridian.Wpf/**", "tests/Meridian.Wpf.Tests/**"]:
+            self.assertNotIn(f'"{unwatched_path}"', self.workflow)
 
     def test_workflow_triggers_on_shared_golden_path_surfaces(self) -> None:
         for watched_path in [

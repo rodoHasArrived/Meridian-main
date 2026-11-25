@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
+from pathlib import Path
 
 LEGACY_VERSION = "1.0.0"
 REVIEW_VERSION = "2.0.0"
@@ -85,3 +87,93 @@ def reviewed_readme_text(content: bytes, module_id: str) -> str:
 
 def reviewed_readme_hash(content: bytes, module_id: str) -> str:
     return hashlib.sha256(reviewed_readme_text(content, module_id).encode("utf-8")).hexdigest()
+
+
+# Reviewed fingerprints are stored one module per file so that branches which
+# review different modules never touch the same file. The header holds the
+# schema/generator/contract shared by every entry; it changes only on an
+# explicit fingerprint migration.
+HASH_DIRECTORY = "docs/source/generated/source-hashes"
+HEADER_NAME = "_manifest.json"
+HEADER_KEYS = frozenset({"schema", "generator", "contract"})
+_MODULE_FILE_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*\Z")
+
+
+def module_file_name(module_id: object) -> str:
+    if not isinstance(module_id, str) or _MODULE_FILE_ID.match(module_id) is None or module_id.endswith(".json"):
+        raise ValueError(f"Source module ID cannot name a reviewed fingerprint file: {module_id!r}")
+    return f"{module_id}.json"
+
+
+def _dump(value: object) -> bytes:
+    return (json.dumps(value, indent=2, sort_keys=True) + "\n").encode("utf-8")
+
+
+def serialize_manifest(manifest: dict) -> dict[str, bytes]:
+    """Split a logical manifest into its header file and one file per module."""
+    header = {key: value for key, value in manifest.items() if key != "modules"}
+    files = {HEADER_NAME: _dump(header)}
+    for entry in manifest.get("modules", []):
+        name = module_file_name(entry.get("id") if isinstance(entry, dict) else None)
+        if name in files:
+            raise ValueError(f"Duplicate reviewed module entry: {entry['id']}")
+        files[name] = _dump(entry)
+    return files
+
+
+def assemble_manifest(files: dict[str, bytes], loads=json.loads) -> dict:
+    """Rebuild the logical manifest; every file must be the header or a named module."""
+    if HEADER_NAME not in files:
+        raise ValueError(f"Reviewed fingerprint header {HEADER_NAME} is missing")
+    header = loads(files[HEADER_NAME])
+    if not isinstance(header, dict) or set(header) != HEADER_KEYS:
+        raise ValueError("Reviewed fingerprint header must contain schema, generator and contract only")
+    modules = []
+    for name in sorted(files):
+        if name == HEADER_NAME:
+            continue
+        entry = loads(files[name])
+        if not isinstance(entry, dict) or module_file_name(entry.get("id")) != name:
+            raise ValueError(f"Reviewed fingerprint file does not hold its own module entry: {name}")
+        modules.append(entry)
+    return {**header, "modules": sorted(modules, key=lambda entry: entry["id"])}
+
+
+def read_manifest_directory(directory: Path, loads=json.loads) -> dict | None:
+    """Return the logical manifest, or None when no reviewed baseline exists."""
+    if directory.is_symlink():
+        raise ValueError("Reviewed fingerprint directory must not be a symbolic link")
+    if not directory.exists():
+        return None
+    if not directory.is_dir():
+        raise ValueError("Reviewed fingerprint path must be a directory")
+    files = {}
+    for child in directory.iterdir():
+        if child.is_symlink() or not child.is_file():
+            raise ValueError(f"Unexpected reviewed fingerprint entry: {child.name}")
+        files[child.name] = child.read_bytes()
+    return assemble_manifest(files, loads)
+
+
+def write_manifest_directory(directory: Path, manifest: dict) -> bool:
+    """Write only the files whose bytes change and remove entries for dropped modules."""
+    files = serialize_manifest(manifest)
+    if directory.is_symlink():
+        raise ValueError("Reviewed fingerprint directory must not be a symbolic link")
+    directory.mkdir(parents=True, exist_ok=True)
+    changed = False
+    for child in directory.iterdir():
+        if child.name in files:
+            if child.is_symlink() or not child.is_file():
+                raise ValueError(f"Unexpected reviewed fingerprint entry: {child.name}")
+            continue
+        if child.is_symlink() or not child.is_file() or not child.name.endswith(".json"):
+            raise ValueError(f"Unexpected reviewed fingerprint entry: {child.name}")
+        child.unlink()
+        changed = True
+    for name, content in files.items():
+        path = directory / name
+        if not path.exists() or path.read_bytes() != content:
+            path.write_bytes(content)
+            changed = True
+    return changed
