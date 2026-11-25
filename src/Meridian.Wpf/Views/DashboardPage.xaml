@@ -71,17 +71,6 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
-                            <Button Command="{Binding RefreshStatusCommand}"
-                                    Style="{StaticResource PrimaryButtonStyle}"
-                                    Margin="0,0,8,0">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{StaticResource IconRefresh}"
-                                               FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                               FontSize="14"
-                                               Margin="0,0,6,0" />
-                                    <TextBlock Text="Refresh" />
-                                </StackPanel>
-                            </Button>
                             <Button Command="{Binding ViewAllIntegrityEventsCommand}"
                                     Style="{StaticResource GhostButtonStyle}">
                                 <StackPanel Orientation="Horizontal">

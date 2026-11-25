@@ -3,11 +3,45 @@ using Meridian.Contracts.Domain.Enums;
 
 namespace Meridian.Contracts.SecurityMaster;
 
-/// <summary>Canonical class identities for policies that require exact Security Master classes.</summary>
+/// <summary>
+/// Canonical Security Master asset-class names, one constant per class, in the F#
+/// <c>AssetClassRegistry</c> declaration order. A test holds this set equal to the F# registry,
+/// so a class added to the domain without a constant here fails the build's test lane.
+/// </summary>
 public static class SecurityAssetClassNames
 {
     public const string Equity = "Equity";
+    public const string Option = "Option";
+    public const string Future = "Future";
     public const string Bond = "Bond";
+    public const string FxSpot = "FxSpot";
+    public const string Deposit = "Deposit";
+    public const string MoneyMarketFund = "MoneyMarketFund";
+    public const string CertificateOfDeposit = "CertificateOfDeposit";
+    public const string CommercialPaper = "CommercialPaper";
+    public const string TreasuryBill = "TreasuryBill";
+    public const string Repo = "Repo";
+    public const string CashSweep = "CashSweep";
+    public const string OtherSecurity = "OtherSecurity";
+    public const string Swap = "Swap";
+    public const string DirectLoan = "DirectLoan";
+    public const string StructuredCredit = "StructuredCredit";
+    public const string PrivateFundInterest = "PrivateFundInterest";
+    public const string PrivateCompanyEquity = "PrivateCompanyEquity";
+    public const string RealEstateHolding = "RealEstateHolding";
+    public const string CommitmentGuarantee = "CommitmentGuarantee";
+    public const string Commodity = "Commodity";
+    public const string CryptoCurrency = "CryptoCurrency";
+    public const string Cfd = "Cfd";
+    public const string Warrant = "Warrant";
+    public const string FxForward = "FxForward";
+    public const string NonDeliverableForward = "NonDeliverableForward";
+    public const string CreditDefaultSwap = "CreditDefaultSwap";
+    public const string Swaption = "Swaption";
+    public const string CapFloor = "CapFloor";
+    public const string StructuredNote = "StructuredNote";
+    public const string InvestmentFund = "InvestmentFund";
+    public const string CustomAsset = "CustomAsset";
 }
 
 /// <summary>
@@ -60,7 +94,7 @@ public static class SecurityAssetClassCatalog
             // carries the whole contract.
             SupportsIdentifierOnlyImport: true) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "Option",
+            AssetClass: SecurityAssetClassNames.Option,
             UsesOccOptionSymbols: true,
             AssetPackIds: ["derivatives-fx"],
             InstrumentTypes: [InstrumentType.EquityOption, InstrumentType.IndexOption, InstrumentType.FuturesOption],
@@ -78,7 +112,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode
             ]) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "Future",
+            AssetClass: SecurityAssetClassNames.Future,
             AssetPackIds: ["derivatives-fx"],
             InstrumentTypes: [InstrumentType.Future, InstrumentType.SingleStockFuture],
             LotUnit: SecurityLotUnitKind.Contracts,
@@ -155,7 +189,7 @@ public static class SecurityAssetClassCatalog
             ]
         },
         new(
-            AssetClass: "FxSpot",
+            AssetClass: SecurityAssetClassNames.FxSpot,
             AssetPackIds: ["derivatives-fx"],
             InstrumentTypes: [InstrumentType.Forex],
             LotUnit: SecurityLotUnitKind.CurrencyAmount,
@@ -170,7 +204,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode
             ]) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "Deposit",
+            AssetClass: SecurityAssetClassNames.Deposit,
             QuotesRatesAsFractions: true,
             AssetPackIds: ["cash-bank"],
             InstrumentTypes: [InstrumentType.Deposit],
@@ -198,7 +232,7 @@ public static class SecurityAssetClassCatalog
             AccountingOutsideSlice = true
         },
         new(
-            AssetClass: "MoneyMarketFund",
+            AssetClass: SecurityAssetClassNames.MoneyMarketFund,
             AssetPackIds: ["cash-bank"],
             InstrumentTypes: [InstrumentType.Equity],
             LotUnit: SecurityLotUnitKind.Units,
@@ -215,7 +249,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode
             ]) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "CertificateOfDeposit",
+            AssetClass: SecurityAssetClassNames.CertificateOfDeposit,
             AssetPackIds: ["fixed-income"],
             InstrumentTypes: [InstrumentType.Deposit],
             LotUnit: SecurityLotUnitKind.FaceValue,
@@ -257,7 +291,7 @@ public static class SecurityAssetClassCatalog
             StampFloor = 1
         },
         new(
-            AssetClass: "CommercialPaper",
+            AssetClass: SecurityAssetClassNames.CommercialPaper,
             AssetPackIds: ["fixed-income"],
             SupportsCanonicalBulletAmortization: true,
             InstrumentTypes: [InstrumentType.Bond],
@@ -288,7 +322,7 @@ public static class SecurityAssetClassCatalog
             StampFloor = 1
         },
         new(
-            AssetClass: "TreasuryBill",
+            AssetClass: SecurityAssetClassNames.TreasuryBill,
             AssetPackIds: ["fixed-income"],
             SupportsCanonicalBulletAmortization: true,
             InstrumentTypes: [InstrumentType.Bond],
@@ -319,7 +353,7 @@ public static class SecurityAssetClassCatalog
             StampFloor = 1
         },
         new(
-            AssetClass: "Repo",
+            AssetClass: SecurityAssetClassNames.Repo,
             TradesAsBilateralContract: true,
             AssetPackIds: ["fixed-income"],
             InstrumentTypes: [InstrumentType.Repo],
@@ -347,7 +381,7 @@ public static class SecurityAssetClassCatalog
             AccountingOutsideSlice = true
         },
         new(
-            AssetClass: "CashSweep",
+            AssetClass: SecurityAssetClassNames.CashSweep,
             AssetPackIds: ["cash-bank"],
             InstrumentTypes: [InstrumentType.Deposit],
             LotUnit: SecurityLotUnitKind.CurrencyAmount,
@@ -363,7 +397,7 @@ public static class SecurityAssetClassCatalog
             TermsVersion: 2,
             TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1, AccountingOutsideSlice = true },
         new(
-            AssetClass: "OtherSecurity",
+            AssetClass: SecurityAssetClassNames.OtherSecurity,
             AssetPackIds: ["controlled-other-asset"],
             RequiresGovernedProfile: true,
             LotUnit: SecurityLotUnitKind.Units,
@@ -379,7 +413,7 @@ public static class SecurityAssetClassCatalog
             ],
             SupportsProfileBackedTerms: true) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "CustomAsset",
+            AssetClass: SecurityAssetClassNames.CustomAsset,
             RequiresProfileReference: true,
             AssetPackIds: ["controlled-other-asset"],
             RequiresGovernedProfile: true,
@@ -401,7 +435,7 @@ public static class SecurityAssetClassCatalog
             ],
             SupportsProfileBackedTerms: true) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "Swap",
+            AssetClass: SecurityAssetClassNames.Swap,
             TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             InstrumentTypes: [InstrumentType.Swap],
@@ -441,7 +475,7 @@ public static class SecurityAssetClassCatalog
             AccountingOutsideSlice = true
         },
         new(
-            AssetClass: "DirectLoan",
+            AssetClass: SecurityAssetClassNames.DirectLoan,
             AssetPackIds: ["private-loan-credit", "mortgage-facility-intercompany"],
             InstrumentTypes: [InstrumentType.DirectLoan],
             LotUnit: SecurityLotUnitKind.FaceValue,
@@ -474,7 +508,7 @@ public static class SecurityAssetClassCatalog
             AccountingOutsideSlice = true
         },
         new(
-            AssetClass: "StructuredCredit",
+            AssetClass: SecurityAssetClassNames.StructuredCredit,
             AssetPackIds: ["fixed-income"],
             LotUnit: SecurityLotUnitKind.FaceValue,
             CashFlowBehavior: SecurityCashFlowBehavior.FactorAmortizing,
@@ -529,7 +563,7 @@ public static class SecurityAssetClassCatalog
             ReclassifyingProfileIds = ["structured-credit-io-po"]
         },
         new(
-            AssetClass: "PrivateFundInterest",
+            AssetClass: SecurityAssetClassNames.PrivateFundInterest,
             AssetPackIds: ["private-fund-partnership"],
             LotUnit: SecurityLotUnitKind.Commitment,
             CashFlowBehavior: SecurityCashFlowBehavior.ProviderSupplied,
@@ -553,7 +587,7 @@ public static class SecurityAssetClassCatalog
             ReclassifyingProfileIds = ["private-fund-interest"]
         },
         new(
-            AssetClass: "PrivateCompanyEquity",
+            AssetClass: SecurityAssetClassNames.PrivateCompanyEquity,
             AssetPackIds: ["private-fund-partnership"],
             LotUnit: SecurityLotUnitKind.Shares,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
@@ -574,7 +608,7 @@ public static class SecurityAssetClassCatalog
             ReclassifyingProfileIds = ["private-company-equity"]
         },
         new(
-            AssetClass: "RealEstateHolding",
+            AssetClass: SecurityAssetClassNames.RealEstateHolding,
             AssetPackIds: ["real-estate"],
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.ProviderSupplied,
@@ -594,7 +628,7 @@ public static class SecurityAssetClassCatalog
             ReclassifyingProfileIds = ["real-estate-holding"]
         },
         new(
-            AssetClass: "CommitmentGuarantee",
+            AssetClass: SecurityAssetClassNames.CommitmentGuarantee,
             AssetPackIds: ["commitment-guarantee"],
             LotUnit: SecurityLotUnitKind.Commitment,
             CashFlowBehavior: SecurityCashFlowBehavior.ProviderSupplied,
@@ -614,7 +648,7 @@ public static class SecurityAssetClassCatalog
             ReclassifyingProfileIds = ["commitment-guarantee"]
         },
         new(
-            AssetClass: "Commodity",
+            AssetClass: SecurityAssetClassNames.Commodity,
             AssetPackIds: ["controlled-other-asset"],
             InstrumentTypes: [InstrumentType.Commodity],
             LotUnit: SecurityLotUnitKind.Units,
@@ -630,7 +664,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode
             ]) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "CryptoCurrency",
+            AssetClass: SecurityAssetClassNames.CryptoCurrency,
             AssetPackIds: ["controlled-other-asset"],
             InstrumentTypes: [InstrumentType.Crypto],
             LotUnit: SecurityLotUnitKind.Units,
@@ -645,7 +679,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode
             ]) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "Cfd",
+            AssetClass: SecurityAssetClassNames.Cfd,
             TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             InstrumentTypes: [InstrumentType.CFD],
@@ -662,7 +696,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Upi
             ]) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "Warrant",
+            AssetClass: SecurityAssetClassNames.Warrant,
             UsesOccOptionSymbols: true,
             AssetPackIds: ["derivatives-fx"],
             InstrumentTypes: [InstrumentType.Warrant],
@@ -681,7 +715,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode
             ]) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "FxForward",
+            AssetClass: SecurityAssetClassNames.FxForward,
             TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             LotUnit: SecurityLotUnitKind.CurrencyAmount,
@@ -697,7 +731,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Upi
             ]) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "NonDeliverableForward",
+            AssetClass: SecurityAssetClassNames.NonDeliverableForward,
             TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             LotUnit: SecurityLotUnitKind.CurrencyAmount,
@@ -713,7 +747,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Upi
             ]) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "CreditDefaultSwap",
+            AssetClass: SecurityAssetClassNames.CreditDefaultSwap,
             TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             LotUnit: SecurityLotUnitKind.Notional,
@@ -733,7 +767,7 @@ public static class SecurityAssetClassCatalog
             ],
             RequiresMaturity: true) { SupportsCreditLifecycle = true, AccountingOutsideSlice = true },
         new(
-            AssetClass: "Swaption",
+            AssetClass: SecurityAssetClassNames.Swaption,
             TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             LotUnit: SecurityLotUnitKind.Notional,
@@ -751,7 +785,7 @@ public static class SecurityAssetClassCatalog
             TermsVersion: 2,
             TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1, AccountingOutsideSlice = true },
         new(
-            AssetClass: "CapFloor",
+            AssetClass: SecurityAssetClassNames.CapFloor,
             TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             LotUnit: SecurityLotUnitKind.Notional,
@@ -770,7 +804,7 @@ public static class SecurityAssetClassCatalog
             TermsVersion: 2,
             TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1, AccountingOutsideSlice = true },
         new(
-            AssetClass: "StructuredNote",
+            AssetClass: SecurityAssetClassNames.StructuredNote,
             AssetPackIds: ["fixed-income"],
             LotUnit: SecurityLotUnitKind.FaceValue,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
@@ -793,7 +827,7 @@ public static class SecurityAssetClassCatalog
             ValuationAccountingTreatment = SecurityValuationAccountingTreatment.FairValueThroughProfitOrLoss
         },
         new(
-            AssetClass: "InvestmentFund",
+            AssetClass: SecurityAssetClassNames.InvestmentFund,
             AssetPackIds: ["public-equity-etf"],
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.FundDistributions,

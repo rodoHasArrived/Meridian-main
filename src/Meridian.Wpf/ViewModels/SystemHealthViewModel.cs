@@ -224,7 +224,6 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
             if (SetProperty(ref _isRefreshEnabled, value))
             {
                 RefreshCommand.NotifyCanExecuteChanged();
-                OnPropertyChanged(nameof(RefreshTooltip));
                 OnPropertyChanged(nameof(HealthActionStateTitle));
                 OnPropertyChanged(nameof(HealthActionStateDetail));
             }
@@ -246,10 +245,6 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
             }
         }
     }
-
-    public string RefreshTooltip => IsRefreshEnabled
-        ? "Refresh system metrics, provider posture, storage health, and recent events."
-        : "Health refresh is already running.";
 
     public string DiagnosticsTooltip => IsDiagnosticsEnabled
         ? "Generate a diagnostic bundle for the current support posture."

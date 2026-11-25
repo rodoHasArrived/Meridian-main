@@ -9,8 +9,9 @@ import { TableWorkbench } from "@/components/meridian/table-workbench";
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Briefcase, RefreshCcw } from "lucide-react";
+import { Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
@@ -36,6 +37,7 @@ import type {
   ExecutionGatewayHealth
 } from "@/types/execution-blotter.types";
 import { cn } from "@/lib/utils";
+import { describeExecutionGatewaySource, positionSourceAttributes } from "@/lib/position-source";
 import { usesTrackedCaps } from "@/design-system/label-case";
 
 /** The status these endpoints answer when their execution service is not registered. */
@@ -54,7 +56,6 @@ export function ExecutionBlotterPanel() {
 
   const refresh = useCallback(async () => {
     setReadState("loading");
-    setError(null);
     const [healthResult, accountResult, blotterResult] = await Promise.allSettled([
       getExecutionGatewayHealth(),
       getExecutionAccountSnapshot(),
@@ -66,14 +67,14 @@ export function ExecutionBlotterPanel() {
     setBlotter(blotterResult.status === "fulfilled" ? blotterResult.value : null);
 
     if (blotterResult.status === "fulfilled") {
-      setReadState("ready");
+      setReadState("ready"); setError(null);
       return;
     }
 
     // A host without execution services answers 503 on every one of these reads.
     // Reporting that as a failure would send an operator chasing a broken gateway.
     if (isServiceInactive(blotterResult.reason)) {
-      setReadState("inactive");
+      setReadState("inactive"); setError(null);
       return;
     }
 
@@ -125,10 +126,7 @@ export function ExecutionBlotterPanel() {
               account figures behind it.
             </CardDescription>
           </div>
-          <Button size="sm" variant="outline" onClick={() => void refresh()}>
-            <RefreshCcw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
+          <PanelReload reload={() => (busy || (upsizeKey !== null && readState !== "error") ? undefined : refresh())} failed={readState === "error"} what="the execution blotter" />
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -136,7 +134,7 @@ export function ExecutionBlotterPanel() {
         {notice ? <StatusBanner tone="success" title="Execution action accepted" detail={notice} /> : null}
         <StatusBanner tone={bannerTone(provenance.tone)} title={provenance.label} detail={provenance.detail} />
 
-        <div className="grid gap-2 md:grid-cols-4" aria-label="Execution gateway posture">
+        <div className="grid gap-2 md:grid-cols-4" aria-label="Execution gateway status">
           {metrics.map((metric) => (
             <div key={metric.id} className="rounded-[2px] border border-border bg-secondary/20 p-3">
               <div className={cn("text-xs text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase tracking-wide")}>{metric.label}</div>
@@ -146,6 +144,7 @@ export function ExecutionBlotterPanel() {
           ))}
         </div>
 
+        <div {...positionSourceAttributes(describeExecutionGatewaySource(provenance.label))}>
         <TableWorkbench<(typeof rows)[number]> workbenchId="trading-execution-blotter" sourceKey={`${blotter?.source ?? "unavailable"}:${blotter?.asOf ?? ""}`} sourceDescription="Authoritative execution position snapshot. Source numbers are exported without display formatting; provenance remains explicit."
  completePopulation={readState === "ready" && !error} rows={rows} getRowId={(row)=>row.positionKey} getRowAriaLabel={(row)=>row.ariaLabel}
  maxVisibleRows={null} ariaLabel="Execution blotter positions" emptyText={executionBlotterEmptyMessage(readState)}
@@ -183,6 +182,7 @@ export function ExecutionBlotterPanel() {
                     )
                   ) : null}
                 </>)}]} />
+        </div>
       </CardContent>
     </Card>
   );

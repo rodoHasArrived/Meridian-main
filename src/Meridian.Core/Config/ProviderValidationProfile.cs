@@ -1,3 +1,5 @@
+using Meridian.Infrastructure.Adapters.Core;
+
 namespace Meridian.Core.Config;
 
 /// <summary>Provider-specific, non-secret validation tolerances. Zero latency disables that check.</summary>
@@ -24,8 +26,19 @@ public sealed record ProviderValidationProfile(
         (previous.MaxLatencyMs > 0 && (MaxLatencyMs == 0 || MaxLatencyMs > previous.MaxLatencyMs));
 
     public static ProviderValidationProfile Resolve(BackfillConfig? config, string providerName)
-        => config?.ValidationProfiles?.FirstOrDefault(pair =>
-            string.Equals(pair.Key, providerName, StringComparison.OrdinalIgnoreCase)).Value ?? Default;
+        => ResolveProfiles(config?.ValidationProfiles, providerName);
+
+    /// <summary>Resolves canonical provider IDs, with fallback to an existing alias entry.</summary>
+    public static ProviderValidationProfile ResolveProfiles(
+        IReadOnlyDictionary<string, ProviderValidationProfile>? profiles, string? providerName)
+    {
+        if (profiles is null || string.IsNullOrWhiteSpace(providerName))
+            return Default;
+        var canonical = ProviderIdentity.NormalizeId(providerName);
+        return profiles.FirstOrDefault(pair => string.Equals(pair.Key, canonical, StringComparison.OrdinalIgnoreCase)).Value
+            ?? profiles.FirstOrDefault(pair => ProviderIdentity.EqualsId(pair.Key, canonical)).Value
+            ?? Default;
+    }
 }
 
 /// <summary>Before/after evidence saved atomically with each profile change.</summary>
@@ -37,4 +50,5 @@ public sealed record ProviderValidationProfileAudit(
     string? Reason,
     bool Loosened,
     ProviderValidationProfile Before,
-    ProviderValidationProfile After);
+    ProviderValidationProfile After,
+    bool ResetToDefault = false);

@@ -85,11 +85,12 @@ export function approveGovernedReportingRun(
   runId: string,
   expectedVersion: number,
   decisionNote: string,
-  options: ApiRequestOptions = {}
+  options: ApiRequestOptions = {},
+  reviewEvidenceId?: string
 ) {
   return apiPostJson<unknown>(
     governedReportingTransitionPath(runId, "approve"),
-    { expectedVersion, decisionNote },
+    { expectedVersion, decisionNote, ...(reviewEvidenceId ? { reviewEvidenceId } : {}) },
     options
   ).then(adaptGovernedReportingRunResponse);
 }
@@ -200,7 +201,7 @@ function canonicalReadOptions(options: ApiRequestOptions): ApiRequestOptions {
 
 /** Converts additive legacy aliases once, before canonical governed-run data reaches React. */
 export function adaptGovernedReportingRunResponse(value: unknown): GovernedReportingRun {
-  const wire = requireObject(value, "Governed reporting run") as unknown as LegacyGovernedReportingRunWire;
+  const wire = requireObject(value, "Reporting run") as unknown as LegacyGovernedReportingRunWire;
   const {
     access,
     normalizedParameters,
@@ -210,12 +211,12 @@ export function adaptGovernedReportingRunResponse(value: unknown): GovernedRepor
     availableActions,
     ...canonical
   } = wire;
-  const retainedVersion = requireVersion(wire.version, "Governed reporting run version");
+  const retainedVersion = requireVersion(wire.version, "Reporting run version");
   const retainedParameters = normalizedParameters
     ?? legacyParameters
     ?? parseCertifiedParameters(wire.snapshot?.parametersCanonicalJson);
   if (!isReportingRunParameters(retainedParameters)) {
-    throw new TypeError("Governed reporting run did not include canonical normalizedParameters.");
+    throw new TypeError("Reporting run did not include canonical normalizedParameters.");
   }
 
   return {
@@ -233,39 +234,39 @@ export function adaptGovernedReportingRunResponse(value: unknown): GovernedRepor
 }
 
 function adaptReportingAccessScope(value: unknown): ReportingGovernanceAccessScope {
-  const access = requireObject(value, "Governed reporting access scope");
+  const access = requireObject(value, "Reporting access scope");
   if (typeof access.allowOwnerAccess !== "boolean") {
-    throw new TypeError("Governed reporting access scope did not include canonical allowOwnerAccess evidence.");
+    throw new TypeError("Reporting access scope did not include canonical allowOwnerAccess evidence.");
   }
   if (!Array.isArray(access.principals)) {
-    throw new TypeError("Governed reporting access scope did not include canonical typed principals.");
+    throw new TypeError("Reporting access scope did not include canonical typed principals.");
   }
 
   const ownerPrincipalId = access.ownerPrincipalId === null
     ? null
-    : requireString(access.ownerPrincipalId, "Governed reporting owner principal");
+    : requireString(access.ownerPrincipalId, "Reporting owner principal");
 
   return {
-    policyId: requireString(access.policyId, "Governed reporting policy ID"),
-    policyVersion: requireString(access.policyVersion, "Governed reporting policy version"),
-    mode: requireString(access.mode, "Governed reporting access mode"),
+    policyId: requireString(access.policyId, "Reporting policy ID"),
+    policyVersion: requireString(access.policyVersion, "Reporting policy version"),
+    mode: requireString(access.mode, "Reporting access mode"),
     ownerPrincipalId,
     allowOwnerAccess: access.allowOwnerAccess,
     principals: access.principals.map(adaptReportingAccessPrincipal),
-    policyHash: requireString(access.policyHash, "Governed reporting policy hash")
+    policyHash: requireString(access.policyHash, "Reporting policy hash")
   };
 }
 
 function adaptReportingAccessPrincipal(value: unknown): ReportingGovernanceAccessPrincipal {
-  const principal = requireObject(value, "Governed reporting access principal");
-  const kind = requireString(principal.kind, "Governed reporting access principal kind");
+  const principal = requireObject(value, "Reporting access principal");
+  const kind = requireString(principal.kind, "Reporting access principal kind");
   if (!isReportingAccessPrincipalKind(kind)) {
-    throw new TypeError(`Governed reporting access principal kind ${kind} is unsupported.`);
+    throw new TypeError(`Reporting access principal kind ${kind} is unsupported.`);
   }
 
   return {
     kind,
-    principalId: requireString(principal.principalId, "Governed reporting access principal ID")
+    principalId: requireString(principal.principalId, "Reporting access principal ID")
   };
 }
 

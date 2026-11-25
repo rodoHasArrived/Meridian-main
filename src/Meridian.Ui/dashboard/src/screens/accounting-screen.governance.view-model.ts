@@ -176,6 +176,7 @@ interface AccountingChartAccountDraft {
   path: string;
   accountName: string;
   accountType: string;
+  accountCode: string;
   parentPath: string;
   financialAccountId: string;
   evidenceText: string;
@@ -1087,6 +1088,8 @@ export function useAccountingConfigurationViewModel(
     const path = chartAccountDraft.path.trim();
     const accountName = chartAccountDraft.accountName.trim();
     const accountType = chartAccountDraft.accountType.trim();
+    const retainedCode = workspace.chartOfAccounts.find(node => node.nodeId.toLowerCase() === nodeId.toLowerCase())?.accountCode;
+    const accountCode = retainedCode ?? chartAccountDraft.accountCode.trim();
     if (!nodeId || !path || !accountName || !accountType) {
       setChartAccountSaveError({
         summary: "Chart account is missing required fields.",
@@ -1112,6 +1115,7 @@ export function useAccountingConfigurationViewModel(
           path,
           accountName,
           accountType,
+          ...(accountCode ? { accountCode } : {}),
           parentPath: chartAccountDraft.parentPath.trim() || null,
           financialAccountId: chartAccountDraft.financialAccountId.trim() || null,
           isArchived: false
@@ -2005,6 +2009,8 @@ export function useAccountingConfigurationViewModel(
         : !workspace.ledgerBookSetupCandidate
           ? "No server-provided ledger-book setup candidate is available for this configuration scope."
           : null;
+    const retainedChartAccountCode = workspace?.chartOfAccounts.find(node =>
+      node.nodeId.toLowerCase() === chartAccountDraft.nodeId.trim().toLowerCase())?.accountCode;
     const chartAccountSaveDisabledReason = loading
       ? "Accounting configuration is still loading."
       : !workspace
@@ -2473,6 +2479,8 @@ export function useAccountingConfigurationViewModel(
         pathValue: chartAccountDraft.path,
         accountNameValue: chartAccountDraft.accountName,
         accountTypeValue: chartAccountDraft.accountType,
+        accountCodeValue: retainedChartAccountCode ?? chartAccountDraft.accountCode,
+        accountCodeReadOnly: Boolean(retainedChartAccountCode),
         parentPathValue: chartAccountDraft.parentPath,
         financialAccountIdValue: chartAccountDraft.financialAccountId,
         evidenceValue: chartAccountDraft.evidenceText,
@@ -2801,6 +2809,7 @@ function buildDefaultAccountingChartAccountDraft(): AccountingChartAccountDraft 
     path: "Assets:Cash:Operating",
     accountName: "Operating Cash",
     accountType: "Asset",
+    accountCode: "",
     parentPath: "Assets:Cash",
     financialAccountId: "",
     evidenceText: "browser://accounting/configure/chart-account/setup"
@@ -2814,6 +2823,7 @@ function buildNextAccountingChartAccountDraft(workspace: AccountingConfiguration
     path: `Assets:Configured Account ${nextIndex}`,
     accountName: `Configured Account ${nextIndex}`,
     accountType: "Asset",
+    accountCode: "",
     parentPath: "Assets",
     financialAccountId: "",
     evidenceText: `browser://accounting/configure/chart-account/${nextIndex}`
@@ -3136,7 +3146,7 @@ function buildAccountingProductionReadinessViewModel(
           ? `Fund ${workspace.fundProfileId}`
           : "Accounting scope not loaded",
       issueSummaryLabel: error?.summary ?? "Load accounting configuration to assess rollout readiness.",
-      externalGlLabel: "External GL posture unavailable",
+      externalGlLabel: "External GL status unavailable",
       ledgerBookRolloutLabel: "Ledger-book rollout unavailable",
       dimensionalReportingLabel: "Dimensional reporting unavailable",
       dimensionalReportingEvidenceLabel: "No dimensional reporting evidence loaded",
@@ -3359,7 +3369,7 @@ function buildAccountingProductionCertificationProfileControls(
     {
       id: "direct-lending-book",
       label: "Direct lending by book",
-      description: "Loan-account and borrower projections retain the selected ledger book.",
+      description: "Loan-account and borrower views retain the selected ledger book.",
       checked: draft?.directLendingLedgerBookNativeCertified ?? false
     },
     {
@@ -3571,7 +3581,7 @@ function buildAccountingTenantAdministrationProfileControls(
     {
       id: "admin-roles",
       label: "Admin roles",
-      description: "Accounting admin role profiles are configured for governed setup.",
+      description: "Accounting admin role profiles are configured for controlled setup.",
       checked: draft?.adminRoleProfileConfigured ?? false
     },
     {
@@ -3589,7 +3599,7 @@ function buildAccountingTenantAdministrationProfileControls(
     {
       id: "operator-surface",
       label: "Operator surface",
-      description: "Accounting setup controls are exposed through the governed operator surface.",
+      description: "Accounting setup controls are exposed through the controlled operator surface.",
       checked: draft?.accountingAdminSurfaceConfigured ?? false
     },
     {
@@ -4472,7 +4482,7 @@ function buildAccountingRulesStudioJournalCandidateViewModel(
     : "Approval state unavailable.";
 
   return {
-    title: "Governed journal draft candidate",
+    title: "Journal draft candidate",
     selectedRuleLabel: result.selectedRuleId
       ? `Selected rule ${result.selectedRuleId}${result.selectedRuleVersion ? ` version ${result.selectedRuleVersion}` : ""}`
       : "No selected posting rule",

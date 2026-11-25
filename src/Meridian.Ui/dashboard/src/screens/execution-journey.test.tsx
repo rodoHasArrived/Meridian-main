@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ExecutionJourneyPanel } from "@/screens/execution-journey";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { buildExecutionJourney } from "@/screens/execution-journey.view-model";
 import * as api from "@/lib/api/execution-audit.api";
 import type { AuditTrailExplorerResult, AuditTrailTimelineEntry } from "@/types/execution-audit.types";
@@ -29,12 +30,14 @@ describe("execution journey", () => {
     search.mockResolvedValue(result([audit]));
     const user = userEvent.setup();
     render(<ExecutionJourneyPanel orderId="order-1" fills={[fill]} />);
-    await screen.findByText(/Submission: OrderSubmitted/);
+    await screen.findByText(/Submission: Order submitted · Waiting for approval/);
     expect(search).toHaveBeenCalledWith({ orderId: "order-1", limit: 1000 }, expect.objectContaining({ allowDevelopmentFallback: false }));
     expect(screen.getByText(/Control outcomes are unknown/)).toBeInTheDocument();
-    await user.click(screen.getByText(/Submission: OrderSubmitted/));
+    await user.click(screen.getByText(/Submission: Order submitted/));
+    expect(screen.getByText("Jun 1, 2026, 12:01:00 UTC")).toBeInTheDocument();
+    expect(screen.queryByText(/2026-06-01T12:01:00Z/)).not.toBeInTheDocument();
     expect(screen.getByText("original evidence")).toBeVisible();
-    expect(screen.getByText(/WalRetained #91/)).toBeVisible();
+    expect(screen.getByText(/Retained in write-ahead log #91/)).toBeVisible();
     expect(screen.getByText(/Sequence jumps can reflect other orders/)).toBeInTheDocument();
     expect(within(screen.getByRole("list")).getAllByRole("listitem")).toHaveLength(2);
   });
@@ -44,6 +47,17 @@ describe("execution journey", () => {
     render(<ExecutionJourneyPanel orderId="order-1" />);
     expect(await screen.findByText(/Execution audit source is not configured/)).toBeInTheDocument();
     expect(screen.getByText(/Results truncated/)).toBeInTheDocument();
+  });
+  it("reloads on the header refresh and offers Retry only after a failed read", async () => {
+    search.mockRejectedValueOnce(new Error("audit offline")).mockResolvedValue(result([audit]));
+    const { rerender } = render(<GlobalRefreshProvider sequence={0}><ExecutionJourneyPanel orderId="order-1" /></GlobalRefreshProvider>);
+    expect(await screen.findByRole("alert")).toHaveTextContent("audit offline");
+    expect(screen.queryByRole("button", { name: "Refresh journey" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Retry loading the execution journey" }));
+    await waitFor(() => expect(search).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.queryByRole("button", { name: /Retry/ })).not.toBeInTheDocument());
+    rerender(<GlobalRefreshProvider sequence={1}><ExecutionJourneyPanel orderId="order-1" /></GlobalRefreshProvider>);
+    await waitFor(() => expect(search).toHaveBeenCalledTimes(3));
   });
   it("does not mix ambiguous order evidence with previous links or loaded fills", async () => {
     const ambiguous = { ...result([audit]), orderIdentityStatus: "Ambiguous" };
@@ -60,9 +74,9 @@ describe("execution journey", () => {
     search.mockImplementation((query) => query?.orderId === "order-1" ? old : Promise.resolve(result([{ ...audit, auditId: "new", objectId: "order-2", action: "SecondOrder", }])));
     const { rerender } = render(<ExecutionJourneyPanel orderId="order-1" />);
     rerender(<ExecutionJourneyPanel orderId="order-2" />);
-    await screen.findByText(/SecondOrder/);
+    await screen.findByText(/Second order/);
     resolveOld(result([audit]));
-    await waitFor(() => expect(screen.queryByText(/OrderSubmitted/)).not.toBeInTheDocument());
-    expect(screen.getByText(/SecondOrder/)).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByText(/Order submitted/)).not.toBeInTheDocument());
+    expect(screen.getByText(/Second order/)).toBeInTheDocument();
   });
 });

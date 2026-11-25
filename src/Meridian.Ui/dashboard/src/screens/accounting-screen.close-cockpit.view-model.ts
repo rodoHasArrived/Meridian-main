@@ -1,3 +1,4 @@
+import { buildCloseBoard } from "@/lib/close-board";
 import { accountingCloseReadinessBlockReason, accountingCloseScopeKey } from "./accounting-screen.close-scope";
 import type { CloseWorkflowQuery } from "./accounting-screen.close-sources";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -97,7 +98,7 @@ import type {
   UpsertClosePeriodPlanConfigurationRequest,
   AccountingCertificationState,
 } from "@/types";
-import { formatCount as formatCountValue, formatCurrencyWithCode } from "@/lib/format";
+import { formatCount as formatCountValue, formatCountOfTotal, formatCurrencyWithCode } from "@/lib/format";
 
 const defaultAccountingCloseReportPackageServices: AccountingCloseReportPackageServices = {
   getClosePlan: (workflowId) => getLedgerCloseManagementPeriodPlan(workflowId),
@@ -432,7 +433,7 @@ export function useAccountingCloseReportPackageViewModel(
 
     if (!lockClosePeriodArmed) {
       setLockClosePeriodArmed(true);
-      setLockClosePeriodStatusText(`Locking close period ${closePlan.periodId} blocks further posting until a governed reopen. Select Confirm lock period to proceed.`);
+      setLockClosePeriodStatusText(`Locking close period ${closePlan.periodId} blocks further posting until an approved reopen. Select Confirm lock period to proceed.`);
       setLockClosePeriodStatusTone("neutral");
       return;
     }
@@ -480,7 +481,7 @@ export function useAccountingCloseReportPackageViewModel(
     }
 
     if (closePlan.isPeriodLocked) {
-      setConfigureClosePlanStatusText("The period is locked; close-plan setup changes require a governed reopen workflow.");
+      setConfigureClosePlanStatusText("The period is locked; close-plan setup changes require an approved reopen workflow.");
       setConfigureClosePlanStatusTone("danger");
       return;
     }
@@ -616,7 +617,7 @@ export function useAccountingCloseReportPackageViewModel(
     }
 
     if (closePlan.isPeriodLocked) {
-      setCreateLateAdjustmentStatusText("The period is locked; late adjustments must use governed reopen or remediation.");
+      setCreateLateAdjustmentStatusText("The period is locked; late adjustments must use approved reopen or remediation.");
       setCreateLateAdjustmentStatusTone("danger");
       return;
     }
@@ -716,7 +717,7 @@ export function useAccountingCloseReportPackageViewModel(
     }
 
     if (closePlan.isPeriodLocked) {
-      setReviewCloseEvidenceStatusText("The period is locked; evidence review changes require a governed reopen workflow.");
+      setReviewCloseEvidenceStatusText("The period is locked; evidence review changes require an approved reopen workflow.");
       setReviewCloseEvidenceStatusTone("danger");
       return;
     }
@@ -1005,7 +1006,7 @@ export function buildAccountingWorkflowLaunchViewState({
     buildAccountingWorkflowStep({
       id: "exceptions",
       label: "Exception Casework",
-      caption: "Casework, comments, evidence, and sign-off handoffs.",
+      caption: "Review cases, comments, and evidence, then send for sign-off.",
       href: WORKSTATION_ROUTE_CATALOG.accountingExceptions,
       metricLabel: "Cases",
       metricValue: String(totalBreakCount),
@@ -1129,7 +1130,7 @@ function buildAccountingWorkflowStep({
     statusLabel,
     tone,
     isActive,
-    ariaLabel: `${label}: ${statusLabel}${isActive ? ", current Accounting workstream" : ""}`
+    ariaLabel: `${label}: ${statusLabel}${isActive ? ", current Accounting area" : ""}`
   };
 }
 
@@ -1398,7 +1399,7 @@ function buildAccountingCloseReportPackageViewState({
     : !closePlan
       ? "A close plan must be loaded before configuring close setup."
       : locked
-        ? "The period is locked; close setup changes require a governed reopen workflow."
+        ? "The period is locked; close setup changes require an approved reopen workflow."
         : validateCloseSetupMaterialityDraft(closeSetupDraft)
           ?? validateCloseSetupTaskSelection(closePlan, closeSetupDraft)
           ?? validateCloseSetupSignOffDraft(closeSetupDraft)
@@ -1437,7 +1438,7 @@ function buildAccountingCloseReportPackageViewState({
     : !closePlan
       ? "A close plan must be loaded before retaining blocker review."
       : locked
-        ? "The period is locked; evidence review changes require a governed reopen workflow."
+        ? "The period is locked; evidence review changes require an approved reopen workflow."
         : !evidenceReviewRows.some((row) => row.issueCode && !row.reviewDisabledReason)
           ? "No active close blocker is ready for evidence review."
           : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy || reviewCloseEvidenceBusy
@@ -1584,6 +1585,7 @@ function buildAccountingCloseReportPackageViewState({
       }
     ],
     closeCalendar,
+    closeBoard: buildCloseBoard(closePlan, new Date().toISOString().slice(0, 10)),
     tasks,
     dependencyGraphRows,
     signOffMatrixRows,
@@ -1653,7 +1655,7 @@ function buildAccountingReportCertificationSafeguards(
     {
       id: "checklist-signoff",
       label: "Checklist sign-off",
-      value: closePlan ? `${signedOffTaskCount}/${tasks.length}` : "Not loaded",
+      value: closePlan ? formatCountOfTotal(signedOffTaskCount, tasks.length, "close task") : "Not loaded",
       detail: closePlan
         ? openTaskCount > 0
           ? `${formatCount(openTaskCount, "close task")} still requires retained sign-off evidence.`
@@ -1673,7 +1675,7 @@ function buildAccountingReportCertificationSafeguards(
         ? closePlan.isPeriodLocked
           ? "Close lock is retained; posted entries require reversal or rebook workflows."
           : "Period remains open, so late adjustments can still change the package evidence set."
-        : "Load the close plan before evaluating period-lock posture.",
+        : "Load the close plan before evaluating period-lock status.",
       tone: closePlan?.isPeriodLocked ? "success" : closePlan ? "warning" : "default"
     },
     {
@@ -1690,7 +1692,7 @@ function buildAccountingReportCertificationSafeguards(
       label: "Export certification",
       value: bundle
         ? exportArtifacts.length > 0
-          ? `${certifiedExportCount}/${exportArtifacts.length}`
+          ? formatCountOfTotal(certifiedExportCount, exportArtifacts.length, "export")
           : "No artifacts"
         : "Not loaded",
       detail: bundle
@@ -1813,7 +1815,7 @@ function buildAccountingCloseWorkflowSteps({
       detail: tasks.length === 0
         ? "Shared checklist tasks have not loaded."
         : openTaskCount === 0
-          ? "All loaded checklist tasks report retained sign-off posture."
+          ? "All loaded checklist tasks report retained sign-off status."
           : "Retain the next ready checklist task decision through close management.",
       evidenceLabel: tasks.length === 0
         ? "No checklist rows"
@@ -1884,7 +1886,7 @@ function buildAccountingCloseWorkflowSteps({
         ? "The selected report package is certified with retained certification evidence."
         : readyPackage
           ? "The selected report package is ready for certification once remaining close blockers are acceptable to the service."
-          : "Certification waits for a ready report package and service-owned validation posture.",
+          : "Certification waits for a ready report package and service-owned validation status.",
       evidenceLabel: selectedBundle
         ? formatCount(selectedBundle.certification.evidenceLinks.length, "certification evidence link")
         : "No certification evidence",
@@ -1898,7 +1900,7 @@ function buildAccountingCloseWorkflowSteps({
       label: "Export manifest",
       statusLabel: selectedExportArtifact ? formatAccountingCertificationState(selectedExportArtifact.certificationState) : "Pending",
       detail: selectedExportArtifact
-        ? "Inspect the retained export manifest before period lock or downstream GL handoff."
+        ? "Inspect the retained export manifest before period lock or downstream GL delivery."
         : "The selected package has no retained export artifact to inspect.",
       evidenceLabel: selectedExportArtifact
         ? selectedExportArtifact.artifactId
@@ -1913,7 +1915,7 @@ function buildAccountingCloseWorkflowSteps({
       label: "Period lock",
       statusLabel: locked ? "Locked" : closePlan ? "Open" : "Pending",
       detail: locked
-        ? "The close period is locked; new close changes require a governed reopen workflow."
+        ? "The close period is locked; new close changes require an approved reopen workflow."
         : closePlan
           ? "Period lock submits workflow version, report package, checklist approvals, manifest route, and ledger-book evidence to the shared service."
           : "Load a close plan before period-lock review.",
@@ -1978,6 +1980,8 @@ function buildCloseCalendarMilestoneRow(milestone: CloseCalendarMilestone): Acco
     displayName: milestone.displayName,
     ownerLabel: milestone.owner || "Unassigned",
     dueDateLabel: formatDateOnly(milestone.dueDate),
+    dueDate: milestone.dueDate ?? null,
+    dueDone: milestone.isSatisfied,
     statusLabel: formatCloseTaskStatus(milestone.status),
     statusTone: milestone.isBlocked ? "danger" : milestone.isSatisfied ? "success" : statusTone,
     dependencyLabel: milestone.dependencyCount > 0
@@ -2264,7 +2268,7 @@ function buildCloseEvidenceReviewRows(
         ? `${latestReview.reviewedBy} on ${formatDateTimeLabel(latestReview.reviewedAtUtc)} | ${latestReview.notes}`
         : null,
       reviewDisabledReason: periodLocked
-        ? "The period is locked; evidence review changes require a governed reopen workflow."
+        ? "The period is locked; evidence review changes require an approved reopen workflow."
         : latestReview
           ? "Close evidence review is already retained for this issue."
           : null

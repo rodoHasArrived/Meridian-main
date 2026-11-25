@@ -40,7 +40,8 @@ internal sealed partial class LedgerPostgresTestDatabase
     // Explicit fixture setup, never called by a posting wrapper. Commands must state the versions
     // they reviewed, and later fixture drift is not silently repaired before exercising the store.
     public async Task<LotReferenceAuthority> SeedLotReferenceAuthorityAsync(
-        Guid bookId, Guid securityId, Guid positionId, string currency = "USD", string positionSide = BookPositionSides.Long)
+        Guid bookId, Guid securityId, Guid positionId, string currency = "USD", string positionSide = BookPositionSides.Long, string? financialAccountId = null,
+        string assetClass = "Equity")
     {
         if (_lotSecurities is null)
         {
@@ -58,8 +59,8 @@ internal sealed partial class LedgerPostgresTestDatabase
         var json = JsonSerializer.SerializeToElement(new { });
         var at = DateTimeOffset.Parse("2020-01-01T00:00:00Z");
         var date = new DateOnly(2020, 1, 1);
-        var security = new SecurityProjectionRecord(securityId, "Equity", SecurityStatusDto.Active,
-            "Reference fixture", currency, "ISIN", securityId.ToString("N"), json, json, json, 1, at, null, [], []);
+        var security = new SecurityProjectionRecord(securityId, assetClass, SecurityStatusDto.Active,
+            "Reference fixture", currency, "ISIN", securityId.ToString("N"), json, SecurityTermsEnvelope.StampDeclaredFormat(json), json, 1, at, null, [], []);
         await _lotSecurities.UpsertProjectionAsync(security);
         var eventId = Guid.NewGuid();
         var evidence = new RetainedEvidenceIdentityDto("lot-position", "evidence://lot/position", new string('a', 64),
@@ -76,7 +77,7 @@ internal sealed partial class LedgerPostgresTestDatabase
             book.AccountingPolicyId, book.AccountingPolicyVersion);
         var position = await _lotPositions!.UpsertAsync(role,
             new BookPositionDto(positionId, securityId, role.RoleId, context, positionSide, "Active", date,
-                OriginEvent: origin, EvidenceLinks: [evidence.EvidenceUri])
+                PrimaryAccountId: financialAccountId, OriginEvent: origin, EvidenceLinks: [evidence.EvidenceUri])
             { RetainedEvidence = [evidence] }, null, 0,
             new("reviewer", "evidence://lot/position-approval", "Reviewed fixture position", at.AddMinutes(3)));
         return new(_lotSecurityOptions!, _lotPositionOptions!, _lotSecurities, _lotPositions, security, role, position);

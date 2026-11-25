@@ -1,5 +1,6 @@
 using System.Globalization;
 using Meridian.Contracts.Integrity;
+using Meridian.Core.Net;
 using Meridian.Execution.Sdk;
 
 namespace Meridian.Execution.Services;
@@ -55,6 +56,13 @@ public sealed class ExecutionAlertService(ExecutionJournal journal, TimeProvider
         if (settings.WebhookEnabled && (!Uri.TryCreate(settings.WebhookUrl, UriKind.Absolute, out var url)
             || url.Scheme != Uri.UriSchemeHttps || url.IsLoopback || !string.IsNullOrEmpty(url.UserInfo)))
             throw new ArgumentException("An enabled webhook requires an absolute HTTPS URL without user information.");
+        // The server POSTs to this URL, so a literal private, link-local (169.254.x, including
+        // cloud metadata), or otherwise internal address is refused here. Host names are checked
+        // where they resolve: the delivery client validates the addresses it actually dials.
+        if (settings.WebhookEnabled && Uri.TryCreate(settings.WebhookUrl, UriKind.Absolute, out var target)
+            && System.Net.IPAddress.TryParse(target.IdnHost.Trim('[', ']'), out var literal)
+            && PublicNetworkAddress.IsBlocked(literal))
+            throw new ArgumentException("An enabled webhook must target a public address; private, link-local, and other internal addresses are not allowed.");
         await _settingsGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {

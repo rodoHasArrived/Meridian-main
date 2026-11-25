@@ -483,6 +483,8 @@ Declared public members:
 | --- | --- | --- |
 | <code>LedgerAccount GetDefinition(LedgerAccountRole role);</code> | [src/Meridian.Ledger/IChartOfAccounts.cs:7](../../../../src/Meridian.Ledger/IChartOfAccounts.cs#L7) | Returns registered name and type metadata without authorizing a scoped posting. |
 | <code>LedgerAccount Resolve(LedgerAccountRole role, string? financialAccountId = null, string? symbol = null);</code> | [src/Meridian.Ledger/IChartOfAccounts.cs:9](../../../../src/Meridian.Ledger/IChartOfAccounts.cs#L9) |  |
+| <code>bool TryGetRegistered(LedgerAccount account, out LedgerAccountRole role);</code> | [src/Meridian.Ledger/IChartOfAccounts.cs:19](../../../../src/Meridian.Ledger/IChartOfAccounts.cs#L19) | Returns true when account is exactly an account this chart can resolve: a registered name and type, with symbol and financial-account scope that satisfy the role&#x27;s registration. Implementations must not infer a role from a name prefix or number. |
+| <code>LedgerAccountChartReference? GetPostingReference(LedgerAccount account) =&gt; …;</code> | [src/Meridian.Ledger/IChartOfAccounts.cs:22](../../../../src/Meridian.Ledger/IChartOfAccounts.cs#L22) | Returns the registered posting identity, if the chart exposes stable account codes. |
 
 ## IDepreciationScheduleCalculator
 
@@ -694,7 +696,7 @@ Declared public members:
 | <code>public IReadOnlyList&lt;LedgerEntry&gt; Lines { get; private init; }</code> | [src/Meridian.Ledger/JournalEntry.cs:22](../../../../src/Meridian.Ledger/JournalEntry.cs#L22) | The individual debit/credit lines that make up this entry. |
 | <code>public JournalEntryMetadata Metadata { get; private init; }</code> | [src/Meridian.Ledger/JournalEntry.cs:27](../../../../src/Meridian.Ledger/JournalEntry.cs#L27) | Optional audit metadata that links the journal entry back to trading-domain events. |
 | <code>public JournalEntry(Guid journalEntryId, DateTimeOffset timestamp, string description, IReadOnlyList&lt;LedgerEntry&gt; lines, JournalEntryMetadata? metadata = null);</code> | [src/Meridian.Ledger/JournalEntry.cs:37](../../../../src/Meridian.Ledger/JournalEntry.cs#L37) | Initializes a new JournalEntry with validation. |
-| <code>public bool IsBalanced { get; }</code> | [src/Meridian.Ledger/JournalEntry.cs:103](../../../../src/Meridian.Ledger/JournalEntry.cs#L103) | Returns true when debits approximately equal credits in one functional currency (within BalanceTolerance). Legacy lines without currency detail inherit that journal currency; explicitly different functional currencies can never offset. Transaction currencies may differ for a foreign-exchange transaction: their amounts are converted by each leg&#x27;s recorded rate before this balance is measured. When every line declares the same transaction currency, that currency must also balance; differing conversion rates cannot hide a missing transaction-currency leg. |
+| <code>public bool IsBalanced { get; }</code> | [src/Meridian.Ledger/JournalEntry.cs:108](../../../../src/Meridian.Ledger/JournalEntry.cs#L108) | Returns true when debits approximately equal credits in one functional currency (within BalanceTolerance). Legacy lines without currency detail inherit that journal currency; explicitly different functional currencies can never offset. Transaction currencies may differ for a foreign-exchange transaction: their amounts are converted by each leg&#x27;s recorded rate before this balance is measured. When every line declares the same transaction currency, that currency must also balance; differing conversion rates cannot hide a missing transaction-currency leg. |
 
 ## JournalEntryMetadata
 
@@ -806,7 +808,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ledger.JournalTemplateInstance</code>. Kind: `record`.
 
-Source: [src/Meridian.Ledger/JournalTemplate.cs:289](../../../../src/Meridian.Ledger/JournalTemplate.cs#L289).
+Source: [src/Meridian.Ledger/JournalTemplate.cs:295](../../../../src/Meridian.Ledger/JournalTemplate.cs#L295).
 
 A balanced, template-derived journal ready to post to a Ledger.
 
@@ -818,16 +820,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal TotalDebits =&gt; …;</code> | [src/Meridian.Ledger/JournalTemplate.cs:296](../../../../src/Meridian.Ledger/JournalTemplate.cs#L296) |  |
-| <code>public decimal TotalCredits =&gt; …;</code> | [src/Meridian.Ledger/JournalTemplate.cs:298](../../../../src/Meridian.Ledger/JournalTemplate.cs#L298) |  |
-| <code>public bool IsBalanced =&gt; …;</code> | [src/Meridian.Ledger/JournalTemplate.cs:300](../../../../src/Meridian.Ledger/JournalTemplate.cs#L300) |  |
-| <code>public JournalEntry ToJournalEntry();</code> | [src/Meridian.Ledger/JournalTemplate.cs:303](../../../../src/Meridian.Ledger/JournalTemplate.cs#L303) | Materializes this instance into a validated, balanced JournalEntry. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyDictionary&lt;int, string&gt;? LineMemos { get; init; }</code> | [src/Meridian.Ledger/JournalTemplate.cs:303](../../../../src/Meridian.Ledger/JournalTemplate.cs#L303) |  |
+| <code>public decimal TotalDebits =&gt; …;</code> | [src/Meridian.Ledger/JournalTemplate.cs:305](../../../../src/Meridian.Ledger/JournalTemplate.cs#L305) |  |
+| <code>public decimal TotalCredits =&gt; …;</code> | [src/Meridian.Ledger/JournalTemplate.cs:307](../../../../src/Meridian.Ledger/JournalTemplate.cs#L307) |  |
+| <code>public bool IsBalanced =&gt; …;</code> | [src/Meridian.Ledger/JournalTemplate.cs:309](../../../../src/Meridian.Ledger/JournalTemplate.cs#L309) |  |
+| <code>public JournalEntry ToJournalEntry();</code> | [src/Meridian.Ledger/JournalTemplate.cs:312](../../../../src/Meridian.Ledger/JournalTemplate.cs#L312) | Materializes this instance into a validated, balanced JournalEntry. |
 
 ## JournalTemplateInstantiation
 
 Qualified name: <code>Meridian.Ledger.JournalTemplateInstantiation</code>. Kind: `record`.
 
-Source: [src/Meridian.Ledger/JournalTemplate.cs:275](../../../../src/Meridian.Ledger/JournalTemplate.cs#L275).
+Source: [src/Meridian.Ledger/JournalTemplate.cs:281](../../../../src/Meridian.Ledger/JournalTemplate.cs#L281).
 
 Inputs for turning a JournalTemplate into a concrete, postable journal.
 
@@ -839,7 +842,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyDictionary&lt;string, decimal&gt; Parameters { get; init; } = Parameters?? new Dictionary&lt;string, decimal&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Ledger/JournalTemplate.cs:282](../../../../src/Meridian.Ledger/JournalTemplate.cs#L282) |  |
+| <code>public IReadOnlyDictionary&lt;string, decimal&gt; Parameters { get; init; } = Parameters?? new Dictionary&lt;string, decimal&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Ledger/JournalTemplate.cs:288](../../../../src/Meridian.Ledger/JournalTemplate.cs#L288) |  |
 
 ## JournalTemplateLine
 
@@ -894,31 +897,34 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Ledger();</code> | [src/Meridian.Ledger/Ledger.cs:43](../../../../src/Meridian.Ledger/Ledger.cs#L43) |  |
-| <code>public IReadOnlyList&lt;JournalEntry&gt; Journal =&gt; …;</code> | [src/Meridian.Ledger/Ledger.cs:49](../../../../src/Meridian.Ledger/Ledger.cs#L49) | All journal entries in chronological posting order. |
-| <code>public IReadOnlyCollection&lt;LedgerAccount&gt; Accounts =&gt; …;</code> | [src/Meridian.Ledger/Ledger.cs:52](../../../../src/Meridian.Ledger/Ledger.cs#L52) | All accounts that have been posted to, in first-seen order. |
-| <code>public int JournalEntryCount =&gt; …;</code> | [src/Meridian.Ledger/Ledger.cs:55](../../../../src/Meridian.Ledger/Ledger.cs#L55) | Total number of journal entries posted to this ledger. |
-| <code>public int TotalLedgerEntryCount =&gt; …;</code> | [src/Meridian.Ledger/Ledger.cs:58](../../../../src/Meridian.Ledger/Ledger.cs#L58) | Total number of individual ledger entry lines (debit/credit rows) posted. |
-| <code>public void Post(JournalEntry entry);</code> | [src/Meridian.Ledger/Ledger.cs:65](../../../../src/Meridian.Ledger/Ledger.cs#L65) | Posts a JournalEntry to the ledger. |
-| <code>public IReadOnlyList&lt;LedgerEntry&gt; GetEntries(LedgerAccount account);</code> | [src/Meridian.Ledger/Ledger.cs:92](../../../../src/Meridian.Ledger/Ledger.cs#L92) | Returns all individual ledger lines posted to account. |
-| <code>public IReadOnlyList&lt;LedgerEntry&gt; GetEntries(LedgerAccount account, DateTimeOffset? from, DateTimeOffset? to);</code> | [src/Meridian.Ledger/Ledger.cs:104](../../../../src/Meridian.Ledger/Ledger.cs#L104) | Returns all individual ledger lines posted to account within the supplied time range. |
-| <code>public decimal GetBalance(LedgerAccount account);</code> | [src/Meridian.Ledger/Ledger.cs:121](../../../../src/Meridian.Ledger/Ledger.cs#L121) | Returns the net balance for account using normal-balance rules. Assets and expenses carry debit-normal balances (debits − credits). Liabilities, equity, and revenues carry credit-normal balances (credits − debits). |
-| <code>public decimal GetBalanceAsOf(LedgerAccount account, DateTimeOffset timestamp);</code> | [src/Meridian.Ledger/Ledger.cs:133](../../../../src/Meridian.Ledger/Ledger.cs#L133) | Returns the balance for account considering only postings on or before timestamp. |
-| <code>public IReadOnlyList&lt;JournalEntry&gt; GetJournalEntries(DateTimeOffset? from = null, DateTimeOffset? to = null, string? descriptionContains = null);</code> | [src/Meridian.Ledger/Ledger.cs:151](../../../../src/Meridian.Ledger/Ledger.cs#L151) | Returns journal entries matching the supplied range and optional description filter. |
-| <code>public IReadOnlyList&lt;JournalEntry&gt; GetJournalEntries(LedgerQuery query);</code> | [src/Meridian.Ledger/Ledger.cs:162](../../../../src/Meridian.Ledger/Ledger.cs#L162) | Returns journal entries matching the supplied structured query. |
-| <code>public bool HasAccount(LedgerAccount account);</code> | [src/Meridian.Ledger/Ledger.cs:253](../../../../src/Meridian.Ledger/Ledger.cs#L253) | Returns whether the ledger contains postings for account. |
-| <code>public LedgerAccountSummary GetAccountSummary(LedgerAccount account);</code> | [src/Meridian.Ledger/Ledger.cs:263](../../../../src/Meridian.Ledger/Ledger.cs#L263) | Returns a summarized view of a posted account, including totals and posting metadata. Accounts with no activity return a zero-valued summary. |
-| <code>public IReadOnlyList&lt;LedgerAccountSummary&gt; SummarizeAccounts(LedgerAccountType? accountType = null, string? financialAccountId = null, LedgerLineDimensionSet? lineDimensions = null);</code> | [src/Meridian.Ledger/Ledger.cs:283](../../../../src/Meridian.Ledger/Ledger.cs#L283) | Returns account summaries for every posted account, optionally filtered by account type and account scope. |
-| <code>public IReadOnlyDictionary&lt;LedgerAccount, decimal&gt; TrialBalance(string? financialAccountId = null, LedgerLineDimensionSet? lineDimensions = null);</code> | [src/Meridian.Ledger/Ledger.cs:315](../../../../src/Meridian.Ledger/Ledger.cs#L315) | Returns a trial balance mapping every account that has been posted to its net balance. If accounting is correct the sum of asset and expense balances equals the sum of liability, equity, and revenue balances (the accounting equation holds). |
-| <code>public IReadOnlyDictionary&lt;LedgerAccount, decimal&gt; TrialBalanceAsOf(DateTimeOffset timestamp, string? financialAccountId = null, LedgerLineDimensionSet? lineDimensions = null);</code> | [src/Meridian.Ledger/Ledger.cs:337](../../../../src/Meridian.Ledger/Ledger.cs#L337) | Returns a trial balance as of the supplied timestamp. |
-| <code>public IReadOnlyList&lt;LedgerBalancePoint&gt; GetRunningBalance(LedgerAccount account, DateTimeOffset? from = null, DateTimeOffset? to = null);</code> | [src/Meridian.Ledger/Ledger.cs:397](../../../../src/Meridian.Ledger/Ledger.cs#L397) | Returns running-balance checkpoints for an account in chronological order. |
-| <code>public LedgerSnapshot SnapshotAsOf(DateTimeOffset timestamp, string? financialAccountId = null, LedgerLineDimensionSet? lineDimensions = null);</code> | [src/Meridian.Ledger/Ledger.cs:444](../../../../src/Meridian.Ledger/Ledger.cs#L444) | Returns point-in-time balances and posting counts. |
-| <code>public void PostLines(DateTimeOffset timestamp, string description, IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; lines) =&gt; …;</code> | [src/Meridian.Ledger/Ledger.cs:479](../../../../src/Meridian.Ledger/Ledger.cs#L479) | Creates a balanced JournalEntry from a list of (account, debit, credit) tuples and immediately posts it. All lines share the same journal entry ID and timestamp. |
-| <code>public void PostLines(DateTimeOffset timestamp, string description, IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; lines, JournalEntryMetadata? metadata);</code> | [src/Meridian.Ledger/Ledger.cs:488](../../../../src/Meridian.Ledger/Ledger.cs#L488) | Creates and posts a balanced journal entry with optional audit metadata. |
-| <code>public void PostLines(DateTimeOffset timestamp, string description, IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit, LedgerLineDimensionSet? dimensions)&gt; lines, JournalEntryMetadata? metadata = null);</code> | [src/Meridian.Ledger/Ledger.cs:511](../../../../src/Meridian.Ledger/Ledger.cs#L511) | Creates and posts a balanced journal entry with optional line-level dimensional accounting scope. |
-| <code>public void PostLines(DateTimeOffset timestamp, string description, IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit, LedgerLineDimensionSet? dimensions, LedgerEntryCurrency? currency)&gt; lines, JournalEntryMetadata? metadata = null);</code> | [src/Meridian.Ledger/Ledger.cs:535](../../../../src/Meridian.Ledger/Ledger.cs#L535) | Creates and posts a balanced journal entry whose lines carry explicit transaction-currency detail alongside their functional (base) debit/credit amounts. |
-| <code>public static decimal CalculateNetBalance(LedgerAccount account, decimal debits, decimal credits);</code> | [src/Meridian.Ledger/Ledger.cs:924](../../../../src/Meridian.Ledger/Ledger.cs#L924) | Calculates the normal-balance net amount for an account using the shared posting kernel. |
-| <code>public static decimal CalculateNetBalance(LedgerAccountType accountType, decimal debits, decimal credits) =&gt; …;</code> | [src/Meridian.Ledger/Ledger.cs:936](../../../../src/Meridian.Ledger/Ledger.cs#L936) | Calculates the normal-balance net amount for an account type using the shared posting kernel. This is the single sanctioned entrypoint for debit/credit balance math; callers must not reimplement the Asset/Expense =&gt; debits - credits rule locally (see the LedgerNetBalanceCentralizationTests architecture guard). |
+| <code>public Ledger();</code> | [src/Meridian.Ledger/Ledger.cs:51](../../../../src/Meridian.Ledger/Ledger.cs#L51) | Creates an unbound ledger that accepts any account and lines without currency detail. |
+| <code>public Ledger(LedgerPolicy policy) : this();</code> | [src/Meridian.Ledger/Ledger.cs:60](../../../../src/Meridian.Ledger/Ledger.cs#L60) | Creates a ledger bound to policy: every line must use an account registered in the policy&#x27;s chart and carry currency detail in its functional currency. |
+| <code>public LedgerPolicy? Policy { get; }</code> | [src/Meridian.Ledger/Ledger.cs:67](../../../../src/Meridian.Ledger/Ledger.cs#L67) | The posting rules this ledger enforces, or null for a transitional unbound ledger. |
+| <code>public void AddPostingObserver(Action&lt;JournalEntry&gt; observer);</code> | [src/Meridian.Ledger/Ledger.cs:76](../../../../src/Meridian.Ledger/Ledger.cs#L76) | Registers a callback that receives every journal entry after it has been validated and posted, in posting order. Used to stream a ledger into a durable journal log. Observers run synchronously on the posting thread, so they must hand work off rather than block on I/O. |
+| <code>public IReadOnlyList&lt;JournalEntry&gt; Journal =&gt; …;</code> | [src/Meridian.Ledger/Ledger.cs:83](../../../../src/Meridian.Ledger/Ledger.cs#L83) | All journal entries in chronological posting order. |
+| <code>public IReadOnlyCollection&lt;LedgerAccount&gt; Accounts =&gt; …;</code> | [src/Meridian.Ledger/Ledger.cs:86](../../../../src/Meridian.Ledger/Ledger.cs#L86) | All accounts that have been posted to, in first-seen order. |
+| <code>public int JournalEntryCount =&gt; …;</code> | [src/Meridian.Ledger/Ledger.cs:89](../../../../src/Meridian.Ledger/Ledger.cs#L89) | Total number of journal entries posted to this ledger. |
+| <code>public int TotalLedgerEntryCount =&gt; …;</code> | [src/Meridian.Ledger/Ledger.cs:92](../../../../src/Meridian.Ledger/Ledger.cs#L92) | Total number of individual ledger entry lines (debit/credit rows) posted. |
+| <code>public void Post(JournalEntry entry);</code> | [src/Meridian.Ledger/Ledger.cs:99](../../../../src/Meridian.Ledger/Ledger.cs#L99) | Posts a JournalEntry to the ledger. |
+| <code>public IReadOnlyList&lt;LedgerEntry&gt; GetEntries(LedgerAccount account);</code> | [src/Meridian.Ledger/Ledger.cs:129](../../../../src/Meridian.Ledger/Ledger.cs#L129) | Returns all individual ledger lines posted to account. |
+| <code>public IReadOnlyList&lt;LedgerEntry&gt; GetEntries(LedgerAccount account, DateTimeOffset? from, DateTimeOffset? to);</code> | [src/Meridian.Ledger/Ledger.cs:141](../../../../src/Meridian.Ledger/Ledger.cs#L141) | Returns all individual ledger lines posted to account within the supplied time range. |
+| <code>public decimal GetBalance(LedgerAccount account);</code> | [src/Meridian.Ledger/Ledger.cs:158](../../../../src/Meridian.Ledger/Ledger.cs#L158) | Returns the net balance for account using normal-balance rules. Assets and expenses carry debit-normal balances (debits − credits). Liabilities, equity, and revenues carry credit-normal balances (credits − debits). |
+| <code>public decimal GetBalanceAsOf(LedgerAccount account, DateTimeOffset timestamp);</code> | [src/Meridian.Ledger/Ledger.cs:170](../../../../src/Meridian.Ledger/Ledger.cs#L170) | Returns the balance for account considering only postings on or before timestamp. |
+| <code>public IReadOnlyList&lt;JournalEntry&gt; GetJournalEntries(DateTimeOffset? from = null, DateTimeOffset? to = null, string? descriptionContains = null);</code> | [src/Meridian.Ledger/Ledger.cs:188](../../../../src/Meridian.Ledger/Ledger.cs#L188) | Returns journal entries matching the supplied range and optional description filter. |
+| <code>public IReadOnlyList&lt;JournalEntry&gt; GetJournalEntries(LedgerQuery query);</code> | [src/Meridian.Ledger/Ledger.cs:199](../../../../src/Meridian.Ledger/Ledger.cs#L199) | Returns journal entries matching the supplied structured query. |
+| <code>public bool HasAccount(LedgerAccount account);</code> | [src/Meridian.Ledger/Ledger.cs:300](../../../../src/Meridian.Ledger/Ledger.cs#L300) | Returns whether the ledger contains postings for account. |
+| <code>public LedgerAccountSummary GetAccountSummary(LedgerAccount account);</code> | [src/Meridian.Ledger/Ledger.cs:310](../../../../src/Meridian.Ledger/Ledger.cs#L310) | Returns a summarized view of a posted account, including totals and posting metadata. Accounts with no activity return a zero-valued summary. |
+| <code>public IReadOnlyList&lt;LedgerAccountSummary&gt; SummarizeAccounts(LedgerAccountType? accountType = null, string? financialAccountId = null, LedgerLineDimensionSet? lineDimensions = null);</code> | [src/Meridian.Ledger/Ledger.cs:330](../../../../src/Meridian.Ledger/Ledger.cs#L330) | Returns account summaries for every posted account, optionally filtered by account type and account scope. |
+| <code>public IReadOnlyDictionary&lt;LedgerAccount, decimal&gt; TrialBalance(string? financialAccountId = null, LedgerLineDimensionSet? lineDimensions = null);</code> | [src/Meridian.Ledger/Ledger.cs:362](../../../../src/Meridian.Ledger/Ledger.cs#L362) | Returns a trial balance mapping every account that has been posted to its net balance. If accounting is correct the sum of asset and expense balances equals the sum of liability, equity, and revenue balances (the accounting equation holds). |
+| <code>public IReadOnlyDictionary&lt;LedgerAccount, decimal&gt; TrialBalanceAsOf(DateTimeOffset timestamp, string? financialAccountId = null, LedgerLineDimensionSet? lineDimensions = null);</code> | [src/Meridian.Ledger/Ledger.cs:384](../../../../src/Meridian.Ledger/Ledger.cs#L384) | Returns a trial balance as of the supplied timestamp. |
+| <code>public IReadOnlyList&lt;LedgerBalancePoint&gt; GetRunningBalance(LedgerAccount account, DateTimeOffset? from = null, DateTimeOffset? to = null);</code> | [src/Meridian.Ledger/Ledger.cs:444](../../../../src/Meridian.Ledger/Ledger.cs#L444) | Returns running-balance checkpoints for an account in chronological order. |
+| <code>public LedgerSnapshot SnapshotAsOf(DateTimeOffset timestamp, string? financialAccountId = null, LedgerLineDimensionSet? lineDimensions = null);</code> | [src/Meridian.Ledger/Ledger.cs:491](../../../../src/Meridian.Ledger/Ledger.cs#L491) | Returns point-in-time balances and posting counts. |
+| <code>public void PostLines(DateTimeOffset timestamp, string description, IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; lines) =&gt; …;</code> | [src/Meridian.Ledger/Ledger.cs:526](../../../../src/Meridian.Ledger/Ledger.cs#L526) | Creates a balanced JournalEntry from a list of (account, debit, credit) tuples and immediately posts it. All lines share the same journal entry ID and timestamp. |
+| <code>public void PostLines(DateTimeOffset timestamp, string description, IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; lines, JournalEntryMetadata? metadata);</code> | [src/Meridian.Ledger/Ledger.cs:535](../../../../src/Meridian.Ledger/Ledger.cs#L535) | Creates and posts a balanced journal entry with optional audit metadata. |
+| <code>public void PostLines(DateTimeOffset timestamp, string description, IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit, LedgerLineDimensionSet? dimensions)&gt; lines, JournalEntryMetadata? metadata = null);</code> | [src/Meridian.Ledger/Ledger.cs:559](../../../../src/Meridian.Ledger/Ledger.cs#L559) | Creates and posts a balanced journal entry with optional line-level dimensional accounting scope. |
+| <code>public void PostLines(DateTimeOffset timestamp, string description, IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit, LedgerLineDimensionSet? dimensions, LedgerEntryCurrency? currency)&gt; lines, JournalEntryMetadata? metadata = null);</code> | [src/Meridian.Ledger/Ledger.cs:584](../../../../src/Meridian.Ledger/Ledger.cs#L584) | Creates and posts a balanced journal entry whose lines carry explicit transaction-currency detail alongside their functional (base) debit/credit amounts. |
+| <code>public static decimal CalculateNetBalance(LedgerAccount account, decimal debits, decimal credits);</code> | [src/Meridian.Ledger/Ledger.cs:1021](../../../../src/Meridian.Ledger/Ledger.cs#L1021) | Calculates the normal-balance net amount for an account using the shared posting kernel. |
+| <code>public static decimal CalculateNetBalance(LedgerAccountType accountType, decimal debits, decimal credits) =&gt; …;</code> | [src/Meridian.Ledger/Ledger.cs:1033](../../../../src/Meridian.Ledger/Ledger.cs#L1033) | Calculates the normal-balance net amount for an account type using the shared posting kernel. This is the single sanctioned entrypoint for debit/credit balance math; callers must not reimplement the Asset/Expense =&gt; debits - credits rule locally (see the LedgerNetBalanceCentralizationTests architecture guard). |
 
 ## LedgerAccount
 
@@ -939,6 +945,18 @@ Declared public members:
 | <code>public bool Equals(LedgerAccount? other) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccount.cs:23](../../../../src/Meridian.Ledger/LedgerAccount.cs#L23) |  |
 | <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccount.cs:31](../../../../src/Meridian.Ledger/LedgerAccount.cs#L31) |  |
 | <code>public override string ToString();</code> | [src/Meridian.Ledger/LedgerAccount.cs:39](../../../../src/Meridian.Ledger/LedgerAccount.cs#L39) |  |
+
+## LedgerAccountChartReference
+
+Qualified name: <code>Meridian.Ledger.LedgerAccountChartReference</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/LedgerAccountChartReference.cs:6](../../../../src/Meridian.Ledger/LedgerAccountChartReference.cs#L6).
+
+Posting-time chart evidence, independent of the ledger account&#x27;s balance identity.
+
+```csharp
+public sealed record LedgerAccountChartReference(string NodeId, string Revision, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? AccountCode = null);
+```
 
 ## LedgerAccountingCompleteness
 
@@ -1005,15 +1023,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public bool IsComplete =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccountingCompleteness.cs:94](../../../../src/Meridian.Ledger/LedgerAccountingCompleteness.cs#L94) |  |
-
-## LedgerAccountingExpectation
-
-Qualified name: <code>Meridian.Ledger.LedgerAccountingExpectation</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/LedgerAccountingCompleteness.cs:23](../../../../src/Meridian.Ledger/LedgerAccountingCompleteness.cs#L23).
-
-One retained source event and the exact originating journal purposes required by its policy. A fill may require both &quot;trade-fill&quot; and &quot;commission&quot;. Journal legs are never counted as entries. Sources with no accounting consequence use an empty list, explicitly, rather than being omitted.
-
-```csharp
-public sealed record LedgerAccountingExpectation(LedgerAccountingScope Scope, LedgerAccountingSourceKind SourceKind, string SourceId, IReadOnlyList<string> RequiredPostingKeys);
-```

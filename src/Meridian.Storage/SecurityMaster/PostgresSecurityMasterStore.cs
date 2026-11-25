@@ -286,7 +286,26 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
 
         // Use full-text search when the query is long enough for meaningful tokenisation.
         // The ILIKE fallback catches short identifiers (e.g. "GE", "T") that tsvector skips.
-        command.CommandText = useFts
+        command.CommandText = request.PrefixOnly
+            ? $"""
+               select security_id
+               from {Qualified("securities")}
+               where (security_id::text = @exact_id
+                   or lower(primary_identifier_value) = lower(@query)
+                   or lower(display_name) = lower(@query)
+                   or (length(@query) >= 2 and (
+                       starts_with(security_id::text, lower(@query))
+                       or starts_with(lower(primary_identifier_value), lower(@query))
+                       or starts_with(lower(display_name), lower(@query)))))
+                 and (@active_only = false or status = 'Active')
+               order by case
+                   when security_id::text = @exact_id then 0
+                   when lower(primary_identifier_value) = lower(@query) or lower(display_name) = lower(@query) then 1
+                   when starts_with(security_id::text, lower(@query)) or starts_with(lower(primary_identifier_value), lower(@query)) then 2
+                   else 3 end, display_name, security_id
+               limit @take offset @skip;
+               """
+            : useFts
             ? $"""
                select security_id,
                       ts_rank(search_vector, plainto_tsquery('simple', @query)) as rank
@@ -311,7 +330,14 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                """;
 
         command.Parameters.AddWithValue("query", trimmedQuery);
-        command.Parameters.AddWithValue("pattern", $"%{trimmedQuery}%");
+        if (request.PrefixOnly)
+        {
+            command.Parameters.AddWithValue("exact_id", Guid.TryParse(trimmedQuery, out var id) ? id.ToString("D") : string.Empty);
+        }
+        else
+        {
+            command.Parameters.AddWithValue("pattern", $"%{trimmedQuery}%");
+        }
         command.Parameters.AddWithValue("active_only", request.ActiveOnly);
         command.Parameters.AddWithValue("take", request.Take);
         command.Parameters.AddWithValue("skip", request.Skip);
@@ -1205,16 +1231,28 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             : null;
 
     /// <summary>
-    /// The terms-payload family written to the <c>terms_format</c> column (migration 042). A declared
-    /// <see cref="SecurityTermsEnvelope.FormatKey"/> wins; a payload that predates the tag is
-    /// classified by the same shape rule the migration backfill applied, so the column has one
-    /// definition whether the row was migrated or written. The stored payload is never mutated to add
-    /// the tag — writers own stamping. A declared format this node does not know is refused here with
-    /// a precise reason rather than by the column's check constraint.
+    /// The terms-payload family written to the <c>terms_format</c> column (migration 042): the declared
+    /// <see cref="SecurityTermsEnvelope.FormatKey"/>, which migration 068's
+    /// <c>ck_securities_terms_format_declared</c> requires to equal the column. The store never infers a
+    /// family and never mutates the payload to add the tag — writers own stamping. An untagged payload
+    /// is refused here with <see cref="SecurityTermsFormatUndeclaredException"/> (ADR-024 amendment
+    /// 2026-11-13 step 5), and a declared format this node does not know with a precise reason, rather
+    /// than by the check constraints.
     /// </summary>
     internal static string ResolveStorableTermsFormat(SecurityProjectionRecord record)
     {
-        var format = SecurityTermsEnvelope.ResolveFormat(record.AssetSpecificTerms);
+        string format;
+        try
+        {
+            format = SecurityTermsEnvelope.ResolveFormat(record.AssetSpecificTerms);
+        }
+        catch (SecurityTermsFormatUndeclaredException exception)
+        {
+            throw new InvalidOperationException(
+                $"Security '{record.SecurityId}' ({record.AssetClass}) cannot be stored: {exception.Message}",
+                exception);
+        }
+
         if (!SecurityTermsFormats.IsKnown(format))
         {
             throw new InvalidOperationException(

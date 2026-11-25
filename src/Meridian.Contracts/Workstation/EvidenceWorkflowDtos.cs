@@ -115,7 +115,8 @@ public enum EvidenceDocumentLinkKindDto
     Fund = 9,
     StatementRun = 10,
     StatementImport = 11,
-    IntercompanyAgreement = 12
+    IntercompanyAgreement = 12,
+    LegalEntity = 13
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<EvidenceDocumentReviewStatusDto>))]

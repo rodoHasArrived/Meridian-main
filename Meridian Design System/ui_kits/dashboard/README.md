@@ -10,6 +10,13 @@ Minimal JSX kit that mirrors the live dashboard components. Load in this order:
 <script type="text/babel" src="my-page.jsx"></script>
 ```
 
+The standalone JSX catalog demonstrates presentation. In the production browser
+workstation, `MetricCard` and `StatStrip` take typed registry IDs and resolve their
+owning read models through `KpiProvider`; they never accept raw values. The catalog's
+raw card presentation corresponds to `MetricTile`, which is reserved for feature-local
+read-model output, not workspace headlines. See the [dashboard source guide](../../../src/Meridian.Ui/dashboard/README.md#registry-owned-headline-figures)
+for scope, currency, unavailable-state, and screenshot consistency contracts.
+
 ## Components
 
 | Name | Purpose |

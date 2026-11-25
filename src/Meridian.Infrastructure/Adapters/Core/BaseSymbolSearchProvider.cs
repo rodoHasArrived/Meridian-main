@@ -36,6 +36,7 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     protected virtual RateLimiter RequestRateLimiter => RateLimiter;
     protected virtual bool OwnsHttpRetries => false;
     private readonly TimeProvider _timeProvider;
+    private readonly CancellationTokenSource _lifetime = new();
     protected readonly ILogger Log;
     protected bool Disposed;
 
@@ -240,7 +241,10 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
             return Array.Empty<SymbolSearchResult>();
         }
 
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(ct, _lifetime.Token);
+        ct = cancellation.Token;
         await RequestRateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
+        ct.ThrowIfCancellationRequested();
 
         try
         {
@@ -314,7 +318,10 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
         if (!HasValidCredentials())
             return null;
 
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(ct, _lifetime.Token);
+        ct = cancellation.Token;
         await RequestRateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
+        ct.ThrowIfCancellationRequested();
 
         var symbolValue = symbol.Value;
 
@@ -586,6 +593,9 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
 
         if (disposing)
         {
+            _lifetime.Cancel();
+            // Concurrent operations may still be linking this token. Keep the source
+            // alive until they finish, without disposing a registry-owned quota limiter.
             RateLimiter.Dispose();
             Http.Dispose();
         }

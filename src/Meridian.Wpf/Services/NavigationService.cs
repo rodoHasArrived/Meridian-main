@@ -61,6 +61,24 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         => ReferenceEquals(_frame, frame) && _presentationMode == presentationMode;
 
     /// <summary>
+    /// Gets the content the navigation frame currently shows for <paramref name="pageTag"/>, or
+    /// <see langword="null"/> when the frame shows a different page. Used by the shell refresh to
+    /// reload the active page in place instead of re-navigating.
+    /// </summary>
+    internal object? GetActivePageContent(string? pageTag)
+    {
+        var content = _frame?.Content;
+        var contentPageTag = GetContentPageTag(content);
+        return contentPageTag is null ||
+            string.Equals(
+                contentPageTag,
+                ShellNavigationCatalog.GetCanonicalPageTag(pageTag ?? string.Empty),
+                StringComparison.OrdinalIgnoreCase)
+            ? content
+            : null;
+    }
+
+    /// <summary>
     /// Gets the singleton instance of the NavigationService.
     /// </summary>
     public static NavigationService Instance => _instance.Value;
@@ -216,7 +234,8 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         catch (Exception ex)
         {
             var pageName = pageType.Name;
-            LoggingService.Instance.LogError($"Navigation to {pageName} failed: {ex}");
+            LoggingService.Instance.LogError("Navigation to {Page} failed: {Error}", ex,
+                ("Page", pageName), ("Error", ex.ToString()));
             if (_serviceProvider is null)
             {
                 try
@@ -434,7 +453,8 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
             catch (Exception ex)
             {
                 // Unit tests and partial workspace scopes may not load the full app resource graph.
-                LoggingService.Instance.LogError($"Construction of page '{pageTag}' ({pageType.Name}) failed; using compatibility fallback.", ex);
+                LoggingService.Instance.LogError("Construction of page '{PageTag}' ({PageType}) failed; using compatibility fallback.", ex,
+                    ("PageTag", pageTag), ("PageType", pageType.Name));
                 return CreateFallbackPage(pageTag, serviceProvider);
             }
         }

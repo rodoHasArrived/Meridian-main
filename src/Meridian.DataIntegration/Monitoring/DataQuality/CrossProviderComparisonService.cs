@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Meridian.Core.Config;
 using Meridian.Core.Logging;
 using Serilog;
 
@@ -12,6 +13,8 @@ public sealed class CrossProviderComparisonService : IDisposable
     private readonly ILogger _log = LoggingSetup.ForContext<CrossProviderComparisonService>();
     private readonly ConcurrentDictionary<string, ProviderDataTracker> _providerData = new();
     private readonly CrossProviderConfig _config;
+    private readonly Func<string, string?>? _assetClassResolver;
+    private volatile CrossProviderTolerancePolicy _policy;
     private readonly Timer _cleanupTimer;
     private volatile bool _isDisposed;
 
@@ -20,14 +23,55 @@ public sealed class CrossProviderComparisonService : IDisposable
     /// </summary>
     public event Action<ProviderDiscrepancy>? OnDiscrepancyDetected;
 
-    public CrossProviderComparisonService(CrossProviderConfig? config = null)
+    public CrossProviderComparisonService(
+        CrossProviderConfig? config = null,
+        CrossProviderTolerancePolicy? policy = null,
+        Func<string, string?>? assetClassResolver = null)
     {
         _config = config ?? CrossProviderConfig.Default;
+        _policy = policy ?? _config.ToPolicy();
+        _assetClassResolver = assetClassResolver;
         _cleanupTimer = new Timer(CleanupOldData, null,
             TimeSpan.FromHours(1), TimeSpan.FromHours(1));
 
         _log.Information("CrossProviderComparisonService initialized with {PriceThreshold}% price threshold",
             _config.PriceDiscrepancyThresholdPercent);
+    }
+
+    /// <summary>The tolerance policy currently used for new comparisons.</summary>
+    public CrossProviderTolerancePolicy Policy => _policy;
+
+    /// <summary>
+    /// Replaces the tolerance policy. Takes effect for the next recorded event; already recorded
+    /// discrepancies are kept as they were classified.
+    /// </summary>
+    public void UpdatePolicy(CrossProviderTolerancePolicy policy)
+    {
+        ArgumentNullException.ThrowIfNull(policy);
+        policy.Validate();
+        _policy = policy;
+        _log.Information(
+            "Cross-provider tolerances updated: price {PricePercent}%, quote {QuotePercent}%, volume {VolumePercent}% ({VolumeMode}), {OverrideCount} asset-class overrides",
+            policy.PriceTolerancePercent, policy.QuoteTolerancePercent, policy.VolumeTolerancePercent,
+            policy.VolumeMode, policy.AssetClassOverrides?.Count ?? 0);
+    }
+
+    private CrossProviderTolerances TolerancesFor(string symbol)
+    {
+        string? assetClass = null;
+        if (_assetClassResolver is not null)
+        {
+            try
+            {
+                assetClass = _assetClassResolver(symbol);
+            }
+            catch (Exception ex)
+            {
+                _log.Debug(ex, "Asset-class lookup failed for {Symbol}; using default tolerances", symbol);
+            }
+        }
+
+        return _policy.Resolve(assetClass);
     }
 
     /// <summary>
@@ -150,8 +194,11 @@ public sealed class CrossProviderComparisonService : IDisposable
     /// </summary>
     public ProviderComparisonStatistics GetStatistics()
     {
+        // Informational discrepancies (volume in Informational mode) stay visible in discrepancy
+        // lists but are not alerts, so they are excluded from the statistics' alert counts.
         var allDiscrepancies = _providerData.Values
             .SelectMany(t => t.GetRecentDiscrepancies(1000))
+            .Where(d => !d.IsInformational)
             .ToList();
 
         var providerCounts = _providerData.Values
@@ -184,6 +231,8 @@ public sealed class CrossProviderComparisonService : IDisposable
         if (recentData.Count < 2)
             return;
 
+        var tolerances = TolerancesFor(tracker.Symbol);
+
         var providers = recentData.Keys.ToList();
         for (int i = 0; i < providers.Count - 1; i++)
         {
@@ -204,7 +253,7 @@ public sealed class CrossProviderComparisonService : IDisposable
                     var priceDiff = Math.Abs(latestP1.Price - latestP2.Price);
                     var priceDiffPercent = priceDiff / Math.Max(latestP1.Price, latestP2.Price) * 100;
 
-                    if ((double)priceDiffPercent > _config.PriceDiscrepancyThresholdPercent)
+                    if ((double)priceDiffPercent > tolerances.PriceTolerancePercent)
                     {
                         var discrepancy = new ProviderDiscrepancy(
                             Timestamp: timestamp,
@@ -223,13 +272,15 @@ public sealed class CrossProviderComparisonService : IDisposable
                     }
                 }
 
-                if (latestP1.Volume > 0 && latestP2.Volume > 0)
+                if (tolerances.VolumeMode != CrossProviderVolumeMode.Off &&
+                    latestP1.Volume > 0 && latestP2.Volume > 0)
                 {
                     var volumeDiff = Math.Abs(latestP1.Volume - latestP2.Volume);
                     var volumeDiffPercent = volumeDiff / Math.Max(latestP1.Volume, latestP2.Volume) * 100;
 
-                    if ((double)volumeDiffPercent > _config.VolumeDiscrepancyThresholdPercent)
+                    if ((double)volumeDiffPercent > tolerances.VolumeTolerancePercent)
                     {
+                        var informational = tolerances.VolumeMode == CrossProviderVolumeMode.Informational;
                         var discrepancy = new ProviderDiscrepancy(
                             Timestamp: timestamp,
                             DiscrepancyType: "VolumeDifference",
@@ -239,8 +290,11 @@ public sealed class CrossProviderComparisonService : IDisposable
                             Value1: latestP1.Volume.ToString("F4"),
                             Value2: latestP2.Volume.ToString("F4"),
                             Difference: (double)volumeDiff,
-                            Severity: ClassifyDiscrepancySeverity(volumeDiffPercent)
-                        );
+                            Severity: informational ? DiscrepancySeverity.Low : ClassifyDiscrepancySeverity(volumeDiffPercent)
+                        )
+                        {
+                            IsInformational = informational
+                        };
 
                         tracker.RecordDiscrepancy(discrepancy);
                         RaiseDiscrepancyEvent(discrepancy);
@@ -255,6 +309,8 @@ public sealed class CrossProviderComparisonService : IDisposable
         var recentQuotes = tracker.GetRecentQuotesByProvider(TimeSpan.FromSeconds(_config.ComparisonWindowSeconds));
         if (recentQuotes.Count < 2)
             return;
+
+        var tolerances = TolerancesFor(tracker.Symbol);
 
         var providers = recentQuotes.Keys.ToList();
         for (int i = 0; i < providers.Count - 1; i++)
@@ -276,7 +332,7 @@ public sealed class CrossProviderComparisonService : IDisposable
                     var bidDiff = Math.Abs(q1.BidPrice - q2.BidPrice);
                     var bidDiffPercent = bidDiff / Math.Max(q1.BidPrice, q2.BidPrice) * 100;
 
-                    if ((double)bidDiffPercent > _config.QuoteDiscrepancyThresholdPercent)
+                    if ((double)bidDiffPercent > tolerances.QuoteTolerancePercent)
                     {
                         var discrepancy = new ProviderDiscrepancy(
                             Timestamp: timestamp,
@@ -300,7 +356,7 @@ public sealed class CrossProviderComparisonService : IDisposable
                     var askDiff = Math.Abs(q1.AskPrice - q2.AskPrice);
                     var askDiffPercent = askDiff / Math.Max(q1.AskPrice, q2.AskPrice) * 100;
 
-                    if ((double)askDiffPercent > _config.QuoteDiscrepancyThresholdPercent)
+                    if ((double)askDiffPercent > tolerances.QuoteTolerancePercent)
                     {
                         var discrepancy = new ProviderDiscrepancy(
                             Timestamp: timestamp,
@@ -415,6 +471,8 @@ public sealed class CrossProviderComparisonService : IDisposable
             _symbol = symbol;
             _eventType = eventType;
         }
+
+        public string Symbol => _symbol;
 
         public void RecordEvent(string provider, DateTimeOffset timestamp, decimal price, decimal volume, long? sequence)
         {
@@ -612,6 +670,12 @@ public sealed record CrossProviderConfig
     public int RetentionDays { get; init; } = 7;
 
     public static CrossProviderConfig Default => new();
+
+    /// <summary>The equivalent tolerance policy for these thresholds (volume alerts, no overrides).</summary>
+    public CrossProviderTolerancePolicy ToPolicy() => new(
+        PriceTolerancePercent: PriceDiscrepancyThresholdPercent,
+        QuoteTolerancePercent: QuoteDiscrepancyThresholdPercent,
+        VolumeTolerancePercent: VolumeDiscrepancyThresholdPercent);
 }
 
 /// <summary>

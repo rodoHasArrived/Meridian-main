@@ -4,6 +4,8 @@ using Meridian.Application.Services;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
+using Meridian.DataIntegration.Credentials;
+using Meridian.Storage;
 // Import extension methods for DTO to domain conversion
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Services;
@@ -25,6 +27,7 @@ public static class ConfigEndpoints
     public static void MapConfigEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("").WithTags("Configuration");
+        group.AddEndpointFilter(new ProviderConfigurationCredentialFilter());
         var requireModifyConfig = EndpointAuthorization.Require(UserPermission.ModifyConfig);
 
         // SEC-001: configuration reads expose masked secrets and provider wiring, so every route in
@@ -76,41 +79,66 @@ public static class ConfigEndpoints
         // Get effective configuration with source annotations
         group.MapGet(UiApiRoutes.ConfigEffective, (ConfigStore store) =>
         {
-            var cfg = store.Load();
+            AppConfig cfg;
+            try
+            {
+                cfg = store.Load();
+            }
+            catch (InvalidDataException)
+            {
+                return Results.Problem("The saved configuration could not be read.",
+                    statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+
             var envOverride = new ConfigEnvironmentOverride();
             var envVars = envOverride.GetRecognizedVariables();
 
-            // Build effective config entries with source annotations
             var entries = new List<object>();
+            var legacyKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            void AddEntry(string key, string value, string? envVar, string? defaultValue)
+            {
+                legacyKeys.Add(key);
+                entries.Add(BuildEntry(key, value, envVars, envVar, defaultValue));
+            }
 
             // Core settings
-            entries.Add(BuildEntry("dataSource", cfg.DataSource.ToString(), envVars, "MDC_DATASOURCE", "IB"));
-            entries.Add(BuildEntry("dataRoot", cfg.DataRoot, envVars, "MDC_DATA_ROOT", "data"));
-            entries.Add(BuildEntry("compress", cfg.Compress?.ToString() ?? "null", envVars, "MDC_COMPRESS", "null"));
+            AddEntry("dataSource", cfg.DataSource.ToString(), "MDC_DATASOURCE", new AppConfig().DataSource.ToString());
+            AddEntry("dataRoot", cfg.DataRoot, "MDC_DATA_ROOT", "data");
+            AddEntry("compress", cfg.Compress?.ToString() ?? "null", "MDC_COMPRESS", "null");
 
             // Alpaca settings
             if (cfg.Alpaca != null)
             {
-                entries.Add(BuildEntry("alpaca.keyId", SensitiveValueMasker.Mask(cfg.Alpaca.KeyId), envVars, "MDC_ALPACA_KEY_ID", null));
-                entries.Add(BuildEntry("alpaca.secretKey", SensitiveValueMasker.MaskCompletely(cfg.Alpaca.SecretKey), envVars, "MDC_ALPACA_SECRET_KEY", null));
-                entries.Add(BuildEntry("alpaca.feed", cfg.Alpaca.Feed ?? "iex", envVars, "MDC_ALPACA_FEED", "iex"));
-                entries.Add(BuildEntry("alpaca.useSandbox", cfg.Alpaca.UseSandbox.ToString(), envVars, "MDC_ALPACA_SANDBOX", "False"));
+                AddEntry("alpaca.keyId", string.IsNullOrEmpty(cfg.Alpaca.KeyId) ? "[empty]" : "[set]", "MDC_ALPACA_KEY_ID", null);
+                AddEntry("alpaca.secretKey", string.IsNullOrEmpty(cfg.Alpaca.SecretKey) ? "[empty]" : "[set]", "MDC_ALPACA_SECRET_KEY", null);
+                var feed = cfg.Alpaca.Feed ?? "iex";
+                AddEntry("alpaca.feed", feed.ToLowerInvariant() is "iex" or "sip" or "delayed_sip" or "boats" or "overnight" or "otc" or "test"
+                    ? feed : "[set]", "MDC_ALPACA_FEED", "iex");
+                AddEntry("alpaca.useSandbox", cfg.Alpaca.UseSandbox.ToString(), "MDC_ALPACA_SANDBOX", "False");
             }
 
             // Storage settings
             var storage = cfg.Storage;
-            entries.Add(BuildEntry("storage.namingConvention", storage?.NamingConvention ?? "BySymbol", envVars, "MDC_STORAGE_NAMING", "BySymbol"));
-            entries.Add(BuildEntry("storage.datePartition", storage?.DatePartition ?? "Daily", envVars, "MDC_STORAGE_PARTITION", "Daily"));
-            entries.Add(BuildEntry("storage.retentionDays", storage?.RetentionDays?.ToString() ?? "null", envVars, "MDC_STORAGE_RETENTION_DAYS", "null"));
-            entries.Add(BuildEntry("storage.enableParquetSink", storage?.EnableParquetSink.ToString() ?? "False", envVars, null, "False"));
+            AddEntry("storage.namingConvention", KnownEnumValue<FileNamingConvention>(storage?.NamingConvention ?? "BySymbol"),
+                "MDC_STORAGE_NAMING", "BySymbol");
+            AddEntry("storage.datePartition", KnownEnumValue<DatePartition>(storage?.DatePartition ?? "Daily"),
+                "MDC_STORAGE_PARTITION", "Daily");
+            AddEntry("storage.retentionDays", storage?.RetentionDays?.ToString() ?? "null", "MDC_STORAGE_RETENTION_DAYS", "null");
+            AddEntry("storage.enableParquetSink", storage?.EnableParquetSink.ToString() ?? "False", null, "False");
 
             // Backfill settings
             var backfill = cfg.Backfill;
-            entries.Add(BuildEntry("backfill.enabled", backfill?.Enabled.ToString() ?? "False", envVars, "MDC_BACKFILL_ENABLED", "False"));
-            entries.Add(BuildEntry("backfill.provider", backfill?.Provider ?? "composite", envVars, "MDC_BACKFILL_PROVIDER", "composite"));
+            AddEntry("backfill.enabled", backfill?.Enabled.ToString() ?? "False", "MDC_BACKFILL_ENABLED", "False");
+            var providerId = backfill?.Provider ?? "composite";
+            var knownProvider = providerId.ToLowerInvariant() is "composite" or "ib" or "ibkr" or "synthetic" or "fred" or "robinhood"
+                || BackfillProviderCatalog.Providers.Any(provider => provider.Id.Equals(providerId, StringComparison.OrdinalIgnoreCase));
+            AddEntry("backfill.provider", knownProvider ? providerId : "[set]", "MDC_BACKFILL_PROVIDER", "composite");
 
-            // Symbols summary
-            entries.Add(new { key = "symbols.count", value = (cfg.Symbols?.Length ?? 0).ToString(), source = "config", impact = ConfigurationChangeImpact.Live });
+            foreach (var entry in Meridian.Application.UI.EffectiveConfigurationProjection.Build(cfg, envVars))
+            {
+                if (!legacyKeys.Contains(entry.Key))
+                    entries.Add(new { key = entry.Key, value = entry.Value, source = entry.Source, impact = entry.Impact });
+            }
 
             // Environment overrides summary
             var activeOverrides = envVars.Where(v => v.IsSet).Select(v => new
@@ -127,8 +155,8 @@ public static class ConfigEndpoints
                 environmentOverrides = activeOverrides
             }, jsonOptions);
         }).WithName("GetConfigEffective")
-        .WithDescription("Returns the resolved effective configuration with source annotations showing where each value comes from.")
-        .Produces(200);
+        .WithDescription("Returns the saved configuration with source and activation annotations. Opaque settings and credentials are redacted.")
+        .Produces(200).ProducesProblem(StatusCodes.Status503ServiceUnavailable);
 
         // Update data source
         group.MapPost(UiApiRoutes.ConfigDataSource, async (ConfigStore store, DataSourceRequest req, CancellationToken ct) =>
@@ -148,14 +176,51 @@ public static class ConfigEndpoints
         // Update Alpaca settings
         group.MapPost(UiApiRoutes.ConfigAlpaca, async (ConfigStore store, AlpacaOptionsDto alpaca, CancellationToken ct) =>
         {
-            var alpacaDomain = alpaca.ToDomain();
-            await store.UpdateAsync(cfg => cfg with { Alpaca = alpacaDomain }, ct);
+            await store.UpdateAsync(cfg => cfg with { Alpaca = alpaca.ToDomain(cfg.Alpaca) }, ct);
             return Results.Ok(store.GetChangeStatus());
         }).WithName("UpdateAlpaca")
         .WithDescription("Updates Alpaca provider connection settings.")
         .Produces(200).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(requireModifyConfig)
         .RequirePermission(UserPermission.ModifyConfig);
+
+        group.MapGet(UiApiRoutes.ConfigAlpacaFeed, (ConfigStore store) =>
+            Results.Json(new { feed = AlpacaFeedConfiguration.SavedFeed(store.Load()) }, jsonOptions))
+            .WithName("GetAlpacaEquityFeed");
+
+        group.MapPut(UiApiRoutes.ConfigAlpacaFeed, async (HttpContext context, AlpacaFeedUpdateDto request,
+            [FromServices] ProviderConnectionLifecycleService connections, CancellationToken ct) =>
+        {
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (string.Equals(request.Feed?.Trim(), "sip", StringComparison.OrdinalIgnoreCase) &&
+                (!tenant.HasTenantScope || !EndpointAuthorization.HasPermission(context, UserPermission.ManageCredentials)))
+                return EndpointHelpers.Forbidden();
+            try
+            {
+                var status = await connections.SetAlpacaFeedAsync(request, tenant.TenantId, ct).ConfigureAwait(false);
+                return Results.Json(status, jsonOptions);
+            }
+            catch (ArgumentException)
+            {
+                return Results.BadRequest(new { error = "Select IEX, SIP, or delayed SIP for Alpaca." });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return EndpointHelpers.Forbidden();
+            }
+            catch (ProviderCredentialConflictException failure)
+            {
+                return Results.Conflict(new { error = failure.Message });
+            }
+            catch (AlpacaFeedVerificationException failure)
+            {
+                return Results.UnprocessableEntity(new { error = failure.Message });
+            }
+        })
+        .WithName("UpdateAlpacaEquityFeed")
+        .RequirePermission(UserPermission.ModifyConfig)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .Produces<ConfigurationChangeStatus>(StatusCodes.Status200OK);
 
         // Update storage settings
         group.MapPost(UiApiRoutes.ConfigStorage, async (ConfigStore store, StorageSettingsRequest req, CancellationToken ct) =>
@@ -274,6 +339,10 @@ public static class ConfigEndpoints
 
         return new { key, value, source, impact = Meridian.Application.UI.ConfigStore.GetSettingImpact(key) };
     }
+
+    private static string KnownEnumValue<T>(string value) where T : struct, Enum
+        => Enum.GetNames<T>().Contains(value, StringComparer.OrdinalIgnoreCase) ? value : "[set]";
+
     // Clone the response projection: masking must never alter the persisted credentials.
     private static BackfillConfig? MaskBackfill(BackfillConfig? config)
     {

@@ -150,7 +150,7 @@ function GettingStartedRow({
             {step.label}
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {step.isComplete ? `Done ${formatRelativeAge(step.completedAtUtc).toLowerCase()}` : step.isNext ? "Next step" : "Not done yet"}
+            {step.isComplete ? formatDoneLabel(step.completedAtUtc) : step.isNext ? "Next step" : "Not done yet"}
           </p>
         </div>
         <button
@@ -164,4 +164,10 @@ function GettingStartedRow({
       </div>
     </div>
   );
+}
+
+/** "Done 5h ago" or, past the relative-age window, "Done since May 8, 2026" with the month kept capitalised. */
+function formatDoneLabel(completedAtUtc: string | null): string {
+  const age = formatRelativeAge(completedAtUtc);
+  return age.startsWith("since ") ? `Done ${age}` : `Done ${age.toLowerCase()}`;
 }

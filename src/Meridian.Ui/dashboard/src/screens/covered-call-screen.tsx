@@ -1,3 +1,4 @@
+import { ProviderProvenancePanel } from "@/components/meridian/provider-provenance-panel";
 import { AlertCircle, ArrowLeft, ArrowRight, CircleX, FileText, Info, Layers, LineChart, Play, RotateCw, SlidersHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -5,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScreenLayout } from "@/components/ui/screen-layout";
 import { ChartCard, EquityCurve as EquityCurveChart } from "@/components/charts";
+import { ChartEvidenceMark, ChartEvidenceView, type ChartEvidence } from "@/components/charts/chart-evidence";
 import { SeverityBadge } from "@/components/operations";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
@@ -21,6 +23,7 @@ import { Select } from "@/components/ui/select";
 import { OptionScreeningMap } from "@/components/meridian/option-screening-map";
 import { formatDecimal, formatPrefixedCurrency, formatRatioAsPercent } from "@/lib/format";
 import { toSeverity } from "@/design-system/status-styles";
+import { coveredCallRunResultEndpoint } from "@/lib/workstation-endpoints";
 
 const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewModel>[] = [
   {
@@ -372,7 +375,7 @@ function ConfigureStage({ vm }: { vm: CoveredCallScreenViewModel }) {
             </Button>
             <Button type="button" variant="ghost" onClick={() => void vm.refreshChainPreview()}>
               <RotateCw className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">Refresh chain</span>
+              <span className="ml-1.5">Fetch latest chain</span>
             </Button>
           </div>
           <CommandFeedback id={vm.runCommand.feedbackId} message={vm.runCommand.feedbackText} />
@@ -578,6 +581,7 @@ function ResultsStage({ vm }: { vm: CoveredCallScreenViewModel }) {
     <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
       <div className="space-y-4">
         <MetricsTable result={result} />
+        <ProviderProvenancePanel receipt={result.providerProvenance} />
         <EquityCurve result={result} />
         <PositionTimeline vm={vm} />
       </div>
@@ -673,33 +677,51 @@ function EquityCurve({ result }: { result: NonNullable<CoveredCallScreenViewMode
   const underlying = points.map((p) => p.underlyingEquity);
   const finalStrategy = strategy[strategy.length - 1];
   const finalUnderlying = underlying[underlying.length - 1];
+  const proof = { href: coveredCallRunResultEndpoint(result.runId), label: "Open run equity evidence" };
+  const evidence: ChartEvidence[] = points.map((point, index) => ({
+    id: `${result.runId}:${point.date}:${index}`,
+    label: `${result.underlyingSymbol} backtest equity`,
+    asOf: point.date,
+    values: [
+      { series: "Covered-call strategy", value: point.strategyEquity, unit: "Model currency units", basis: "Engine portfolio value plus cumulative option P&L and unrealized P&L on open options." },
+      { series: "Underlying-only benchmark", value: point.underlyingEquity, unit: "Model currency units", basis: "Engine portfolio value scaled by current underlying price ÷ initial underlying price, when both prices are positive." }
+    ],
+    proof,
+    sourceDetail: `Backtest run ${result.runId}.`
+  }));
   return (
-    <ChartCard
-      title="Equity curve"
-      subtitle="Strategy vs underlying-only buy-and-hold."
-      readout={[
-        { label: "Strategy", value: formatPrefixedCurrency(finalStrategy), color: "var(--chart-equity, #2E7655)" },
-        { label: "Underlying", value: formatPrefixedCurrency(finalUnderlying), color: "var(--chart-axis, #606870)" }
-      ]}
-      height={220}
-      style={{ flexShrink: 0 }}
-    >
-      <EquityCurveChart
-        ariaLabel="Covered-call strategy versus underlying equity curve"
-        ariaDescription={`${points.length} points from ${points[0].date} to ${points[points.length - 1].date}. Final strategy equity ${formatPrefixedCurrency(
-          finalStrategy
-        )}, underlying buy-and-hold ${formatPrefixedCurrency(finalUnderlying)}.`}
-        accessibleData={{
-          columns: ["Date", "Strategy", "Underlying"],
-          rows: points.map((p) => [p.date, formatPrefixedCurrency(p.strategyEquity), formatPrefixedCurrency(p.underlyingEquity)])
-        }}
-        series={[
-          { label: "Strategy", color: "var(--chart-equity, #2E7655)", points: strategy },
-          { label: "Underlying", color: "var(--chart-axis, #606870)", points: underlying, dashed: true, area: false }
-        ]}
-        valueFmt={(value) => formatPrefixedCurrency(value)}
-      />
-    </ChartCard>
+    <ChartEvidenceView label="Covered-call equity" evidence={evidence} initialIndex={points.length - 1}>
+      {(inspection) => (
+        <ChartCard
+          title="Equity curve"
+          subtitle="Strategy vs underlying-only buy-and-hold."
+          readout={[
+            { label: "Strategy", value: formatPrefixedCurrency(finalStrategy), color: "var(--chart-equity, #2E7655)" },
+            { label: "Underlying", value: formatPrefixedCurrency(finalUnderlying), color: "var(--chart-axis, #606870)" }
+          ]}
+          height={220}
+          style={{ flexShrink: 0 }}
+        >
+          <EquityCurveChart
+            ariaLabel="Covered-call strategy versus underlying equity curve"
+            ariaDescription={`${points.length} points from ${points[0].date} to ${points[points.length - 1].date}. Final strategy equity ${formatPrefixedCurrency(
+              finalStrategy
+            )}, underlying buy-and-hold ${formatPrefixedCurrency(finalUnderlying)}.`}
+            accessibleData={{
+              columns: ["Date", "Strategy", "Underlying"],
+              rows: points.map((p) => [p.date, formatPrefixedCurrency(p.strategyEquity), formatPrefixedCurrency(p.underlyingEquity)])
+            }}
+            series={[
+              { label: "Strategy", color: "var(--chart-equity, #2E7655)", points: strategy },
+              { label: "Underlying", color: "var(--chart-axis, #606870)", points: underlying, dashed: true, area: false }
+            ]}
+            valueFmt={(value) => formatPrefixedCurrency(value)}
+            inspection={inspection}
+            crosshairIndex={inspection.activeIndex}
+          />
+        </ChartCard>
+      )}
+    </ChartEvidenceView>
   );
 }
 
@@ -754,8 +776,9 @@ function PositionTimeline({ vm }: { vm: CoveredCallScreenViewModel }) {
 
 function PayoffDiagramPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
   const panel = vm.payoffPanel;
+  const chart = panel.chart;
 
-  if (!panel.chart) {
+  if (!chart) {
     return (
       <Card>
         <CardHeader>
@@ -763,7 +786,7 @@ function PayoffDiagramPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
           <CardDescription>{panel.description}</CardDescription>
         </CardHeader>
         <CardContent className="py-10 text-center text-sm text-muted-foreground">
-          {panel.emptyText}
+          {panel.emptyText ?? "Payoff inputs are unavailable for the selected position."}
         </CardContent>
       </Card>
     );
@@ -790,16 +813,25 @@ function PayoffDiagramPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
                 className="h-auto flex-col items-start gap-0.5 px-3 py-2 text-left"
               >
                 <span className="font-mono">{option.label}</span>
-                <span className="text-[11px] font-normal text-muted-foreground">{option.description}</span>
+                <span className="text-xs font-normal text-muted-foreground">{option.description}</span>
               </Button>
             ))}
           </div>
         ) : null}
-        <svg viewBox={panel.chart.viewBox} role="img" aria-label={panel.chart.ariaLabel} className="h-44 w-full">
-          <line {...panel.chart.zeroLine} stroke="currentColor" strokeOpacity={0.25} />
-          <line {...panel.chart.strikeLine} stroke="currentColor" strokeOpacity={0.25} strokeDasharray="3 3" />
-          <path d={panel.chart.path} fill="none" stroke="hsl(var(--primary))" strokeWidth={1.8} />
-        </svg>
+        <ChartEvidenceView label="Covered-call payoff" evidence={[...chart.observations, ...chart.references]}>
+          {(inspection) => (
+            <svg viewBox={chart.viewBox} role="group" aria-label={chart.ariaLabel} aria-describedby={inspection.hintId} className="h-44 w-full overflow-visible">
+              <line {...chart.zeroLine} stroke="currentColor" strokeOpacity={0.25} />
+              <line {...chart.strikeLine} stroke="currentColor" strokeOpacity={0.25} strokeDasharray="3 3" />
+              <path d={chart.path} fill="none" stroke="hsl(var(--primary))" strokeWidth={1.8} />
+              <ChartEvidenceMark inspection={inspection} index={chart.observations.length} geometry={{ x: chart.strikeLine.x1 - 3, y: chart.strikeLine.y1, width: 6, height: chart.strikeLine.y2 - chart.strikeLine.y1 }} />
+              <ChartEvidenceMark inspection={inspection} index={chart.observations.length + 1} geometry={{ x: chart.zeroLine.x1, y: chart.zeroLine.y1 - 3, width: chart.zeroLine.x2 - chart.zeroLine.x1, height: 6 }} />
+              {chart.observations.map((point, index) => (
+                <ChartEvidenceMark key={point.id} inspection={inspection} index={index} geometry={{ x: point.x, y: point.y, radius: 3 }} />
+              ))}
+            </svg>
+          )}
+        </ChartEvidenceView>
         <p className="mt-2 text-xs text-muted-foreground">
           {panel.note}
         </p>

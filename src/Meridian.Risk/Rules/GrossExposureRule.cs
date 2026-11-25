@@ -84,7 +84,12 @@ public sealed class GrossExposureRule : IRiskRule
         {
             var reason = decision.Reasons.FirstOrDefault() ?? "Gross exposure limit exceeded.";
             _logger.LogWarning("Gross exposure rule rejected the order; the projected book exceeds the configured ceiling");
-            return Task.FromResult(RiskValidationResult.Rejected(reason));
+            return Task.FromResult(RiskValidationResult.Rejected(reason) with
+            {
+                Code = "GROSS_EXPOSURE_EXCEEDED",
+                ObservedValue = Interop.RiskInterop.ProjectGrossExposure(context),
+                LimitValue = maxGrossExposure.Value,
+            });
         }
 
         return Task.FromResult(RiskValidationResult.Approved());

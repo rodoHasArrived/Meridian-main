@@ -4,15 +4,30 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { BackfillProviderEditorRegion } from "@/screens/data-screen.backfill-provider-editor";
 import { renderWithRouter } from "@/test/render";
 import { apiGetJson, apiPutJson } from "@/lib/api";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
+
+function HeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence(value => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
+}
 
 vi.mock("@/lib/api", () => ({ apiGetJson: vi.fn(), apiPutJson: vi.fn() }));
 const snapshot = [{ metadata: { providerId: "polygon", displayName: "Polygon", tiers: [
   { id: "free", label: "Basic", rateLimitPerMinute: 5, rateLimitPerHour: null },
   { id: "starter", label: "Starter", rateLimitPerMinute: 100, rateLimitPerHour: null }
 ] }, options: { enabled: true, priority: 12, tierId: "free", rateLimitPerMinute: 5, rateLimitPerHour: null } }];
+const effectiveOrder = {
+  providers: [{ providerId: "tiingo", displayName: "Tiingo", priority: 10, isSimulated: false }],
+  fallbackEnabled: true,
+  rotationEnabled: true
+};
 
 describe("Backfill provider editor", () => {
-  beforeEach(() => { vi.clearAllMocks(); vi.mocked(apiGetJson).mockResolvedValue(structuredClone(snapshot)); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(apiGetJson).mockImplementation(async path => structuredClone(path.endsWith("effective-order") ? effectiveOrder : snapshot));
+  });
 
   it("loads authoritative configuration only after opening and saves a tier preset", async () => {
     const user = userEvent.setup();
@@ -42,6 +57,24 @@ describe("Backfill provider editor", () => {
     expect(apiPutJson).not.toHaveBeenCalled();
   });
 
+  it("shows runtime ordering and confirms a priority change for the next job", async () => {
+    const user = userEvent.setup();
+    vi.mocked(apiPutJson).mockResolvedValue({ changeImpact: {
+      requiresRestart: true,
+      changes: [{ path: "Backfill.Providers.Polygon.Priority", impact: "Live" }],
+      lastApply: { entries: [{ path: "Backfill.Providers.Polygon.Priority", kind: "AppliedLive" }] }
+    } });
+    renderWithRouter(<BackfillProviderEditorRegion />);
+    await user.click(screen.getByRole("button", { name: "Edit provider priorities and limits" }));
+    expect(await screen.findByText("Tiingo")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Polygon" }));
+    await user.clear(screen.getByLabelText("Priority"));
+    await user.type(screen.getByLabelText("Priority"), "7");
+    await user.click(screen.getByRole("button", { name: "Save provider" }));
+    expect(await screen.findByText("Saved. Routing applies to the next job.")).toBeVisible();
+    expect(vi.mocked(apiGetJson).mock.calls.filter(([path]) => path.endsWith("effective-order"))).toHaveLength(2);
+  });
+
   it("shows a save failure and preserves the draft for retry", async () => {
     const user = userEvent.setup();
     vi.mocked(apiPutJson).mockRejectedValue(new Error("Host configuration validation refused the save."));
@@ -53,5 +86,31 @@ describe("Backfill provider editor", () => {
     expect(await screen.findByText("Host configuration validation refused the save.")).toBeVisible();
     await waitFor(() => expect(screen.getByRole("button", { name: "Save provider" })).toBeEnabled());
     expect(screen.getByLabelText("Vendor tier")).toHaveValue("starter");
+  });
+
+  it("reloads with the header refresh, never over an unsaved draft, and offers Retry only after a failed load", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<HeaderRefresh><BackfillProviderEditorRegion /></HeaderRefresh>);
+    await user.click(screen.getByRole("button", { name: "Edit provider priorities and limits" }));
+    await user.click(await screen.findByRole("button", { name: "Polygon" }));
+    expect(screen.queryByRole("button", { name: /Refresh/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Retry loading provider settings" })).not.toBeInTheDocument();
+    expect(apiGetJson).toHaveBeenCalledTimes(2);
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    await waitFor(() => expect(apiGetJson).toHaveBeenCalledTimes(4));
+    await waitFor(() => expect(screen.queryByText("Loading provider configuration…")).not.toBeInTheDocument());
+
+    await user.selectOptions(screen.getByLabelText("Vendor tier"), "starter");
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    expect(apiGetJson).toHaveBeenCalledTimes(4);
+    expect(screen.getByLabelText("Vendor tier")).toHaveValue("starter");
+
+    await user.click(screen.getByRole("button", { name: "Discard changes" }));
+    vi.mocked(apiGetJson).mockRejectedValueOnce(new Error("Provider host offline."));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    expect(await screen.findByText("Provider host offline.")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Retry loading provider settings" }));
+    await waitFor(() => expect(apiGetJson).toHaveBeenCalledTimes(8));
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Retry loading provider settings" })).not.toBeInTheDocument());
   });
 });

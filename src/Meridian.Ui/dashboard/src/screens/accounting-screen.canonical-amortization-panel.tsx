@@ -89,12 +89,12 @@ function ScopedAmortizationPanel({ bookId, periodId, periodVersion, fundProfileI
   const locked = busy === "draft" || uncertain || !!draft;
   const available = !!bookId && !!periodId && periodVersion !== null && !!fundProfileId;
   return <Card className="panel-surface min-w-0" role="region" aria-label="Canonical lot amortization">
-    <CardHeader><CardTitle>Accretion and amortization occurrences</CardTitle><CardDescription>Configure an occurrence from the lot's retained acquisition method and yield. Preview exact carrying-value changes, review the journal, then hand off for independent approval and governed posting. Requires ledger management permission and reviewed evidence.</CardDescription></CardHeader>
+    <CardHeader><CardTitle>Accretion and amortization occurrences</CardTitle><CardDescription>Configure an occurrence from the lot's retained acquisition method and yield. Preview exact carrying-value changes, review the journal, then send it for independent approval and posting. Requires ledger management permission and reviewed evidence.</CardDescription></CardHeader>
     <CardContent className="space-y-4">
       {!available ? <p role="status">Select an authoritative ledger book and period to configure amortization.</p> : <>
         <form onSubmit={event => { event.preventDefault(); void prepare(); }}>
           <fieldset disabled={locked} className="space-y-3"><legend className="sr-only">Amortization schedule and occurrence configuration</legend>
-            <p className="text-sm text-muted-foreground">Method and effective yield come from the canonical acquisition. Changing them requires a separate governed acquisition correction.</p>
+            <p className="text-sm text-muted-foreground">Method and effective yield come from the canonical acquisition. Changing them requires a separate acquisition correction.</p>
             <FormGrid columns={2}>{fields.map(([key, label, type]) => <FormRow key={key} label={label} labelFor={`${id}-${key}`}><Input id={`${id}-${key}`} type={type ?? "text"} value={form[key]} onChange={event => edit(key, event.target.value)} /></FormRow>)}</FormGrid>
             <label className="flex gap-2 text-sm"><input type="checkbox" checked={form.remaining} onChange={event => edit("remaining", event.target.checked)} />Amortize remaining face after retained paydowns</label>
             <label className="flex gap-2 text-sm"><input type="checkbox" checked={form.worst} onChange={event => edit("worst", event.target.checked)} />Select automatic yield to worst for independent review</label>
@@ -125,7 +125,7 @@ function ScopedAmortizationPanel({ bookId, periodId, periodVersion, fundProfileI
             emptyText="No schedule occurrences were prepared." maxVisibleRows={null}
           /> : null}
           {preview.result.instruction.yieldToWorst ? <details><summary>Automatic yield-to-worst comparison</summary><pre className="overflow-auto text-xs">{JSON.stringify(preview.result.instruction.yieldToWorst, null, 2)}</pre></details> : null}
-          <fieldset disabled={locked} className="space-y-3"><legend className="sr-only">Amortization journal handoff</legend>
+          <fieldset disabled={locked} className="space-y-3"><legend className="sr-only">Send amortization journal for review</legend>
             <FormRow label="Amortization journal description" labelFor={`${id}-description`}><Input id={`${id}-description`} value={description} onChange={event => { setDescription(event.target.value); setConfirmed(false); }} /></FormRow>
             <label className="flex gap-2 text-sm"><input type="checkbox" checked={confirmed} onChange={event => setConfirmed(event.target.checked)} />I reviewed the retained schedule, evidence, occurrence and proposed journal.</label>
           </fieldset>
@@ -135,7 +135,7 @@ function ScopedAmortizationPanel({ bookId, periodId, periodVersion, fundProfileI
       {uncertain ? <p role="status">The draft outcome is uncertain. Keep these reviewed inputs and retry the same occurrence.</p> : null}
       {error ? <p role="alert" className="text-sm text-danger">{error}</p> : null}
       {draft?.candidate.issues.length ? <ul aria-label="Amortization draft blockers">{draft.candidate.issues.map((issue, index) => <li key={index}>{issue.message}</li>)}</ul> : null}
-      {draft?.candidate.journalEntryId ? <p role="status"><Link className="text-primary underline" to={`/accounting/journal-entries?${new URLSearchParams({ fundProfileId, ledgerBookId: bookId, periodId: periodId ?? "", journalEntryId: draft.candidate.journalEntryId })}`}>Open amortization journal review</Link>. Validation, independent approval and canonical posting remain in the governed journal workflow.</p> : null}
+      {draft?.candidate.journalEntryId ? <p role="status"><Link className="text-primary underline" to={`/accounting/journal-entries?${new URLSearchParams({ fundProfileId, ledgerBookId: bookId, periodId: periodId ?? "", journalEntryId: draft.candidate.journalEntryId })}`}>Open amortization journal review</Link>. Validation, independent approval and canonical posting remain in the journal workflow.</p> : null}
     </CardContent>
   </Card>;
 }

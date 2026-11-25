@@ -1,18 +1,36 @@
 import { CategoryBars, type CategoryBar } from "@/components/charts/CategoryBars";
 import { ChartCard } from "@/components/charts/ChartCard";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, pluralizeCount } from "@/lib/format";
 import type { CloseTask, OperationsCloseChecklistTask, ProviderConnectionRow, ReconciliationBreakQueueItem } from "@/types";
+
+/** Fewer categories than this read better as figures and a sentence than as a bar chart (UX Phase F). */
+export const CHART_MIN_CATEGORIES = 3;
 
 function EvidenceBars({ title, basis, rows, emptyText, note }: {
   title: string; basis: string; rows: CategoryBar[]; emptyText: string; note?: string;
 }) {
+  if (rows.length > 0 && rows.length < CHART_MIN_CATEGORIES) {
+    return <section aria-label={title} className="space-y-2" data-chart-figures={title}>
+      <div className="border border-border p-4">
+        <h3 className="text-sm font-medium">{title}</h3>
+        <dl className="mt-2 flex flex-wrap gap-x-8 gap-y-2">
+          {rows.map((row) => <div key={row.id}>
+            <dt className="text-xs text-muted-foreground">{row.label}</dt>
+            <dd className="text-xl font-semibold tabular-nums">{row.valueLabel}</dd>
+          </div>)}
+        </dl>
+        <p className="mt-2 text-xs text-muted-foreground">{basis}.</p>
+      </div>
+      {note ? <p className="text-xs text-muted-foreground">{note}</p> : null}
+    </section>;
+  }
   return <section aria-label={title} className="space-y-2">
     {rows.length > 0 ? <ChartCard title={title} subtitle={basis} height={Math.min(300, Math.max(110, rows.length * 40))}>
       <CategoryBars rows={rows} label={title} />
     </ChartCard> : <div className="border border-border p-4"><h3 className="text-sm font-medium">{title}</h3><p role="status" className="mt-2 text-sm text-muted-foreground">{emptyText}</p></div>}
     {note ? <p className="text-xs text-muted-foreground">{note}</p> : null}
-    {rows.length > 0 ? <details className="workspace-task-disclosure">
+    {rows.length > 0 ? <details className="workspace-task-disclosure" data-chart-table={title}>
       <summary>View {title.toLowerCase()} as a table</summary>
       <TableWorkbench workbenchId={`${title.toLowerCase().replaceAll(" ", "-")}-data`} sourceKey={`${basis}:${rows.map((row) => `${row.id}:${row.value}`).join("|")}`} sourceDescription={`${basis}. ${note ?? ""}`} completePopulation tableId={`${title.toLowerCase().replaceAll(" ", "-")}-data`} rows={rows} getRowId={(row) => row.id}
         columns={[{ id: "label", label: "Category", render: (row) => row.label, exportValue: (row) => row.label }, { id: "value", label: "Value", render: (row) => row.valueLabel, exportValue: (row) => row.value }]}
@@ -21,22 +39,47 @@ function EvidenceBars({ title, basis, rows, emptyText, note }: {
   </section>;
 }
 
+export type EvidenceAgeUnit = "hours" | "days" | "months";
+
+const AGE_UNIT = { hours: { ms: 3_600_000, suffix: "h" }, days: { ms: 86_400_000, suffix: "d" }, months: { ms: 30 * 86_400_000, suffix: "mo" } } as const;
+
+/** One readable unit for the whole chart, from its oldest age: hours under 48h, days under 60d, then months. */
+export function chooseEvidenceAgeUnit(oldestMs: number): EvidenceAgeUnit {
+  return oldestMs < 48 * 3_600_000 ? "hours" : oldestMs < 60 * 86_400_000 ? "days" : "months";
+}
+
+/**
+ * Every provider in use, oldest evidence first. A provider with no usable timestamp is listed as
+ * "No timestamp" (no bar) rather than left out, so the chart covers the same providers the
+ * provider health count does (UX Phase D).
+ */
 export function buildProviderFreshnessRows(providers: ProviderConnectionRow[], nowMs: number) {
-  const rows: CategoryBar[] = [];
+  const timed: { provider: ProviderConnectionRow; ageMs: number }[] = [];
+  const untimed: ProviderConnectionRow[] = [];
   for (const provider of providers) {
     const timestamp = Date.parse(provider.lastSuccessfulAt ?? "");
-    if (!Number.isFinite(timestamp) || timestamp > nowMs) continue;
-    const hours = (nowMs - timestamp) / 3_600_000;
-    rows.push({ id: provider.providerId, label: provider.displayName, value: hours, valueLabel: `${formatNumber(hours, { maximumFractionDigits: 1 })}h` });
+    if (!Number.isFinite(timestamp) || timestamp > nowMs) untimed.push(provider);
+    else timed.push({ provider, ageMs: nowMs - timestamp });
   }
-  return { rows, unavailable: providers.length - rows.length };
+  const unit = chooseEvidenceAgeUnit(Math.max(0, ...timed.map((entry) => entry.ageMs)));
+  const { ms, suffix } = AGE_UNIT[unit];
+  const rows: CategoryBar[] = [
+    ...timed.sort((a, b) => b.ageMs - a.ageMs).map(({ provider, ageMs }) => {
+      const value = ageMs / ms;
+      // A recent age in a long unit would round to "0mo"; say it is under a tenth instead.
+      const valueLabel = value > 0 && value < 0.05 ? `<0.1${suffix}` : `${formatNumber(value, { maximumFractionDigits: 1 })}${suffix}`;
+      return { id: provider.providerId, label: provider.displayName, value, valueLabel };
+    }),
+    ...untimed.map((provider) => ({ id: provider.providerId, label: provider.displayName, value: 0, valueLabel: "No timestamp" }))
+  ];
+  return { rows, unit, unavailable: untimed.length, timed: timed.length };
 }
 
 export function ProviderFreshnessChart({ providers, nowMs = Date.now() }: { providers: ProviderConnectionRow[]; nowMs?: number }) {
   const model = buildProviderFreshnessRows(providers, nowMs);
-  return <EvidenceBars title="Provider evidence age" basis="Hours since last successful evidence · current loaded connections"
-    rows={model.rows} emptyText="Timestamped provider evidence is unavailable. Connection state does not establish freshness."
-    note={`${model.unavailable} connection(s) have no usable timestamp. This snapshot does not show historical uptime or error rate.`} />;
+  return <EvidenceBars title="Provider evidence age" basis={`${model.unit[0]!.toUpperCase()}${model.unit.slice(1)} since last successful evidence · providers in use`}
+    rows={model.timed > 0 ? model.rows : []} emptyText="Timestamped provider evidence is unavailable. Connection state does not establish freshness."
+    note={model.unavailable > 0 ? `${pluralizeCount(model.unavailable, "provider")} with no usable timestamp ${model.unavailable === 1 ? "is" : "are"} listed without a bar. This snapshot does not show historical uptime or error rate.` : "This snapshot does not show historical uptime or error rate."} />;
 }
 
 export function buildBreakAgingRows(breaks: ReconciliationBreakQueueItem[], nowMs: number) {

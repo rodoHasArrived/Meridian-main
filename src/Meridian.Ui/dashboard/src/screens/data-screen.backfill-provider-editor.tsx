@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Select } from "@/components/ui/select";
 import { apiGetJson, apiPutJson } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { loadEffectiveBackfillOrder, type EffectiveBackfillOrder } from "@/screens/data-screen.backfill-routing";
+import type { ConfigurationChangeStatus } from "@/screens/settings-change-impact";
 
 interface VendorTier {
   id: string; label: string; rateLimitPerMinute: number | null; rateLimitPerHour: number | null;
@@ -17,15 +21,33 @@ interface ProviderStatus {
   options: ProviderOptions;
 }
 
+function describeProviderSave(status: ConfigurationChangeStatus | undefined): string {
+  const entries = status?.lastApply?.entries ?? [];
+  const live = entries.some(entry => entry.kind === "AppliedLive");
+  const deferred = entries.find(entry => entry.kind === "Deferred");
+  const restart = deferred || status?.changes?.some(change => change.impact === "RestartHost") ||
+    (!live && status?.requiresRestart);
+  if (live && !restart) return "Saved. Routing applies to the next job.";
+  if (restart) {
+    const activation = live ? "Routing applies to the next job. " : "";
+    return `Saved. ${activation}Pending host restart. ${deferred?.detail ?? "Running jobs keep their current settings."}`;
+  }
+  if (status?.requiresReconnect) return "Saved. Pending provider reconnect. Running jobs keep their current settings.";
+  return `Saved. ${entries.find(entry => entry.kind === "NoRuntimeEffect")?.detail ?? "Awaiting host activation status."}`;
+}
+
 /** The host owns tier defaults and validates caps again on save. No credential fields are accepted. */
 export function BackfillProviderEditorRegion() {
   const [open, setOpen] = useState(false);
   const [providers, setProviders] = useState<ProviderStatus[]>([]);
+  const [effectiveOrder, setEffectiveOrder] = useState<EffectiveBackfillOrder | null>(null);
+  const [orderLoadFailed, setOrderLoadFailed] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [draft, setDraft] = useState<ProviderOptions | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dragged, setDragged] = useState<string | null>(null);
   const requests = useRef(new Set<AbortController>());
@@ -34,15 +56,34 @@ export function BackfillProviderEditorRegion() {
   const provider = providers.find(p => p.metadata.providerId === selected);
   const dirty = !!provider && JSON.stringify(provider.options) !== JSON.stringify(draft);
   const tier = provider?.metadata.tiers.find(t => t.id === draft?.tierId);
-  const refresh = useCallback(async (signal?: AbortSignal) => {
-    setLoading(true); setError(null);
+  const refreshOrder = useCallback(async (signal?: AbortSignal) => {
     try {
-      const data = await apiGetJson<ProviderStatus[]>("/api/backfill/providers/statuses", { signal, allowDevelopmentFallback: false });
+      const order = await loadEffectiveBackfillOrder(signal);
+      if (mounted.current && !signal?.aborted) {
+        setEffectiveOrder(order);
+        setOrderLoadFailed(false);
+      }
+    } catch {
+      if (mounted.current && !signal?.aborted) {
+        setEffectiveOrder(null);
+        setOrderLoadFailed(true);
+      }
+    }
+  }, []);
+  const refresh = useCallback(async (signal?: AbortSignal) => {
+    setLoading(true); setError(null); setLoadFailed(false);
+    const settings = apiGetJson<ProviderStatus[]>("/api/backfill/providers/statuses", { signal, allowDevelopmentFallback: false });
+    const order = refreshOrder(signal);
+    try {
+      const data = await settings;
       if (mounted.current && !signal?.aborted) setProviders(data);
     } catch (cause) {
-      if (mounted.current && !signal?.aborted) setError(cause instanceof Error ? cause.message : "Provider configuration is unavailable.");
-    } finally { if (mounted.current && !signal?.aborted) setLoading(false); }
-  }, []);
+      if (mounted.current && !signal?.aborted) { setLoadFailed(true); setError(cause instanceof Error ? cause.message : "Provider configuration is unavailable."); }
+    } finally {
+      await order;
+      if (mounted.current && !signal?.aborted) setLoading(false);
+    }
+  }, [refreshOrder]);
   useEffect(() => { if (!open) return; const controller = new AbortController(); const activeRequests = requests.current; activeRequests.add(controller); void refresh(controller.signal); return () => { controller.abort(); activeRequests.delete(controller); }; }, [open, refresh]);
 
   function select(item: ProviderStatus, priority?: number) {
@@ -58,12 +99,15 @@ export function BackfillProviderEditorRegion() {
     setSaving(true); setError(null); setNotice(null);
     const controller = new AbortController(); requests.current.add(controller);
     try {
-      const result = await apiPutJson<{ changeImpact?: { impact?: string; requiresRestart?: boolean; requiresReconnect?: boolean } }>(`/api/backfill/providers/${encodeURIComponent(selected)}`, draft, { signal: controller.signal });
+      const result = await apiPutJson<{ options?: ProviderOptions; changeImpact?: ConfigurationChangeStatus }>(
+        `/api/backfill/providers/${encodeURIComponent(selected)}`, draft, { signal: controller.signal });
       if (!mounted.current || controller.signal.aborted) return;
-      setProviders(current => current.map(p => p.metadata.providerId === selected ? { ...p, options: draft } : p));
-      const impact = result.changeImpact;
-      setNotice(impact?.requiresRestart ? "Saved. Pending host restart; active requests keep their existing limits." : impact?.requiresReconnect ? "Saved. Pending provider reconnect; active requests keep their existing limits." : `Saved. Change impact: ${impact?.impact ?? "awaiting host status"}.`);
+      const saved = result.options ?? draft;
+      setProviders(current => current.map(p => p.metadata.providerId === selected ? { ...p, options: saved } : p));
+      setDraft(saved);
+      setNotice(describeProviderSave(result.changeImpact));
       window.dispatchEvent(new Event("meridian:configuration-saved"));
+      await refreshOrder(controller.signal);
     } catch (cause) { if (mounted.current && !controller.signal.aborted) setError(cause instanceof Error ? cause.message : "Provider settings were not saved."); }
     finally { requests.current.delete(controller); if (mounted.current && !controller.signal.aborted) setSaving(false); }
   }
@@ -83,6 +127,20 @@ export function BackfillProviderEditorRegion() {
         {notice ? <StatusBanner role="status" tone="warning" title="Provider settings saved" detail={notice} /> : null}
         {loading ? <p role="status">Loading provider configuration…</p> : null}
         {!loading && providers.length === 0 ? <p>No provider configuration is available.</p> : null}
+        {!loading ? <section aria-label="Effective backfill order" className="rounded border border-border p-3 text-sm">
+          <h4 className="font-semibold">Effective order for new jobs</h4>
+          {effectiveOrder?.providers.length ? <>
+            <ol className="mt-1 flex list-decimal flex-wrap gap-x-8 gap-y-1 pl-5">
+              {effectiveOrder.providers.map(item => <li key={item.providerId}>
+                {item.displayName}{item.isSimulated ? " (simulated)" : ""}
+              </li>)}
+            </ol>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {effectiveOrder.fallbackEnabled ? "Fallback enabled." : "Fallback disabled."}{" "}
+              {effectiveOrder.rotationEnabled ? "Live quota state may change the attempt order." : "Quota rotation is disabled."}
+            </p>
+          </> : <p className="mt-1 text-muted-foreground">{effectiveOrder ? "No providers are available for new jobs." : "Running order is unavailable."}</p>}
+        </section> : null}
         <div className="grid gap-4 lg:grid-cols-2">
           <ol className="space-y-1" aria-label="Configured provider priority">
             {ordered.map((item, index) => <li key={item.metadata.providerId} draggable={!saving && !dirty}
@@ -108,10 +166,10 @@ export function BackfillProviderEditorRegion() {
             <label className="flex items-center gap-2"><input type="checkbox" checked={draft.enabled} disabled={saving}
               onChange={event => setDraft({ ...draft, enabled: event.target.checked })} />Enabled</label>
             <label className="block text-sm">Vendor tier
-              <select className="mt-1 block w-full rounded border bg-background p-2" value={draft.tierId} disabled={saving}
+              <Select className="mt-1" value={draft.tierId} disabled={saving}
                 onChange={event => { const chosen = provider.metadata.tiers.find(t => t.id === event.target.value); if (chosen) setDraft({ ...draft, tierId: chosen.id, rateLimitPerMinute: chosen.rateLimitPerMinute, rateLimitPerHour: chosen.rateLimitPerHour }); }}>
                 {provider.metadata.tiers.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
-              </select>
+              </Select>
             </label>
             {selected !== "openfigi" ? <label className="block text-sm">Priority<Input type="number" min={0} max={10000} step={1} value={draft.priority} disabled={saving}
               onChange={event => setDraft({ ...draft, priority: Number(event.target.value) })} /></label> : <p className="text-xs text-muted-foreground">Identifier resolution only; OpenFIGI is outside the historical fallback chain.</p>}
@@ -126,7 +184,7 @@ export function BackfillProviderEditorRegion() {
               <Button type="button" variant="outline" disabled={saving || !dirty} onClick={() => { setDraft({ ...provider.options }); setError(null); }}>Discard changes</Button></div>
           </form> : <p className="text-sm text-muted-foreground">Select a provider to edit its tier, priority and limits.</p>}
         </div>
-        <Button type="button" variant="outline" size="sm" disabled={loading || saving || dirty} onClick={() => { const controller = new AbortController(); requests.current.add(controller); void refresh(controller.signal).finally(() => requests.current.delete(controller)); }}>Refresh provider settings</Button>
+        <PanelReload what="provider settings" failed={loadFailed || orderLoadFailed} busy={loading || saving || dirty} reload={() => { if (loading || saving || dirty) return; const controller = new AbortController(); requests.current.add(controller); void refresh(controller.signal).finally(() => requests.current.delete(controller)); }} />
       </CardContent> : null}
     </Card>
   </section>;

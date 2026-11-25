@@ -1,5 +1,5 @@
 import type { LedgerBook } from "@/types";
-import type { AgreementDetail, AgreementEvidence, AgreementRevision } from "./intercompany-agreements";
+import type { AgreementDetail, AgreementEvidence, AgreementRevision, AgreementExternalReviewAttestation } from "./intercompany-agreements";
 
 export interface EntityOperationCapabilities {
   canManageAgreements: boolean;
@@ -19,7 +19,7 @@ export interface EntityOperationScope {
   graph: EntityOperationGraph | null;
   capabilities: EntityOperationCapabilities;
 }
-export type AccountingArrangementTemplate = "Loan" | "CostRecharge" | "ManagementFee" | "ExpenseShare" | "CashSweep" | "Guarantee" | "Manual";
+export type AccountingArrangementTemplate = "Loan" | "CostRecharge" | "ManagementFee" | "ExpenseShare" | "CashSweep" | "Guarantee" | "Manual" | "LoanInterest";
 export type AccountingArrangementStatus = "Draft" | "Submitted" | "Approved" | "Rejected" | "Retired";
 export interface AccountingArrangementPartyMapping {
   entityId: string; ledgerBookId: string; receivableAccountNodeId: string; payableAccountNodeId: string;
@@ -54,7 +54,7 @@ export interface EntityLifecycleState {
 }
 export interface EntityLifecycleRevision {
   entityId: string; revision: number; recordedBy: string; recordedAtUtc: string; reason: string;
-  evidenceReference: string; contentHash: string; timeline: EntityLifecycleState[]; legacySnapshot: boolean;
+  evidenceReference: string; contentHash: string; timeline: EntityLifecycleState[]; legacySnapshot: boolean; externalReview?: AgreementExternalReviewAttestation | null;
 }
 export interface BookControlProfile {
   ledgerBookId: string; mode: "LegacyWarning" | "Enforced"; version: number; policyVersion: string;
@@ -64,6 +64,15 @@ export interface BookControlPreflight {
   ledgerBookId: string; profileVersion: number; policyVersion: string; digest: string; preparedAtUtc: string; canActivate: boolean;
   decisions: { control: string; code: string; allowed: boolean; message: string; evidenceRevision: string | null }[];
 }
+/** A posted journal in an approved destination book that currently reciprocates the proposal's source. */
+export interface IntercompanyCounterpartCandidate {
+  journalEntryId: string;
+  effectiveDate: string;
+  description: string;
+  amount: number;
+  currency: string;
+}
+
 export interface IntercompanyProposal {
   source: { proposalId: string; sourceJournalId: string; sourceBookId: string; sourceEntityId: string; counterpartyEntityId: string; requiresSourceAllocation?: boolean;
     accountingArrangementId: string; accountingArrangementRevisionId: string; intercompanyAgreementId?: string;
@@ -101,6 +110,7 @@ export interface ConsolidationFxConfiguration {
     openingTranslatedSignedAmount: string | number | null; evidenceReference: string }[] | null;
 }
 export interface EntityTimeline {
+  canAttestExternalLifecycleReview?: boolean;
   organizationId: string;
   entity: { entityId: string; name: string; baseCurrency: string; lifecycleStatus: string };
   asOf: string; lifecycleRevisions: EntityLifecycleRevision[];
@@ -127,4 +137,41 @@ export interface IntercompanyAccountBinding {
   role: "Receivable" | "Payable" | "Revenue" | "Expense" | "TranslationReserve";
   accountPath: string; accountName: string; accountType: string; effectiveFrom: string; effectiveTo: string | null;
   historicalNames: string[]; recordedBy: string; recordedAt: string; reason: string; isArchived: boolean;
+}
+
+/** Operator selection only. Rates, day counts, principal and amounts are always server-resolved. */
+export interface IntercompanyAccrualRequest {
+  sourceBookId: string; interestArrangementId: string; principalArrangementId: string;
+  /** Half-open window: accrualFrom is the first accrued day, accrualTo the first day not accrued. */
+  accrualFrom: string; accrualTo: string;
+}
+/** Exact server decimals arrive as text and are shown without numeric conversion. */
+export interface IntercompanyAccrualSlice {
+  sequence: number; from: string; to: string; accountingArrangementRevisionId: string; agreementVersion: number;
+  agreementPayloadHash: string; schedulePeriodSequence: number; principal: string; annualRate: string; dayCount: string;
+  /** Rule v3 only: posted accrued interest added to principal at the period start. */
+  compoundedInterest?: string | null;
+  yearFraction: string; unroundedAmount: string; principalEvidenceReference: string;
+  /** Present only on floating slices: annualRate equals indexRate + spreadBps / 10000. */
+  fixing?: IntercompanyAccrualSliceFixing | null;
+}
+/** The approved index fixing that set a floating slice's rate, held for the whole schedule period. */
+export interface IntercompanyAccrualSliceFixing {
+  fixingId: string; indexReference: string; fixingDate: string; indexRate: string; spreadBps: string;
+  fixingLagBusinessDays: number; valueDigest: string;
+}
+export interface IntercompanyAccrualComputation {
+  status: "Ready" | "Unavailable" | string; ruleVersion: string; agreementId?: string | null; currency?: string | null;
+  accrualFrom: string; accrualTo: string; amount?: string | null; unroundedAmount?: string | null; kernelVersion: string;
+  calendars: { calendarId: string; contentHash: string }[]; slices: IntercompanyAccrualSlice[]; diagnostics: string[];
+}
+/** Preview and draft share one shape so the operator reviews exactly what would be retained. */
+export interface IntercompanyAccrualProposal {
+  computation: IntercompanyAccrualComputation; diagnostics: string[];
+  evidence?: { postingDate: string; transactionId: string; functionalCurrency: string; functionalAmount: string;
+    postingAgreementVersion: number; postingArrangementRevisionId: string;
+    principal: { openingPrincipal: string; openingJournalCount: number; movements: { journalEntryId: string; effectiveDate: string; signedAmount: string }[] };
+    fx?: import("@/types").ManualJournalEntryDraft["intercompanyFx"] } | null;
+  evidenceDigest?: string | null;
+  draft?: import("@/types").ManualJournalEntryDraft | null;
 }

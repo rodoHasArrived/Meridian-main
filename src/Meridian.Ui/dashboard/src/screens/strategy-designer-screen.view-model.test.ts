@@ -159,7 +159,7 @@ describe("strategy designer view-model", () => {
     // references this screen cannot collect. The command stays blocked and says why, so the
     // status text, aria-label, and button agree instead of advertising a run that cannot happen.
     expect(vm.backtest.runCommand.disabled).toBe(true);
-    expect(vm.backtest.runCommand.disabledReason).toContain("governed evidence references");
+    expect(vm.backtest.runCommand.disabledReason).toContain("evidence references");
     expect(vm.backtest.statusLabel).toBe("Blocked");
     expect(vm.backtest.routeActions).toEqual(
       expect.arrayContaining([

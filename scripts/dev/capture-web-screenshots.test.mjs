@@ -6,8 +6,22 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import {
+  screenshotRouteMatches,
+  findMissingCaptureRoutePaths,
   CAPTURE_CONTENT_ISSUE_KINDS,
   captureRouteWithRetries,
+  checkHoldingsTotals,
+  checkKpiConsistency,
+  checkKpiLabelConsistency,
+  findStatusContradictions,
+  isPositionsTableLabel,
+  findRepeatedUnavailableLines,
+  describePrimaryTaskPosition,
+  describeFailureNotices,
+  describeNavRowBudget,
+  checkSeverityLabelConsistency,
+  loadKpiDefinitions,
+  collectKpiSnapshots,
   collectAllowedContentIssueKinds,
   createCaptureApiTracker,
   describeCaptureContentIssues,
@@ -446,7 +460,7 @@ test("a cleanup failure after capture success fails the run after retaining its 
   assert.equal(JSON.parse(await fs.readFile(file, "utf8")).status, "failed");
 });
 
-async function captureWithStub(outputDir, { bytes = 100, strictError = false, closeError = false } = {}) {
+async function captureWithStub(outputDir, { bytes = 100, strictError = false, closeError = false, actualUrl = "http://localhost/workstation/accounting", captureOverrides = {} } = {}) {
   let closed = false;
   const page = new EventEmitter();
   Object.assign(page, {
@@ -456,7 +470,8 @@ async function captureWithStub(outputDir, { bytes = 100, strictError = false, cl
     async waitForSelector() {},
     async waitForFunction() {},
     async evaluate() { return 100; },
-    url() { return "http://localhost/workstation/accounting"; },
+    locator() { return { async evaluateAll() { return []; } }; },
+    url() { return actualUrl; },
     async screenshot({ path: file }) {
       const image = Buffer.alloc(bytes);
       await fs.writeFile(file, image);
@@ -476,7 +491,7 @@ async function captureWithStub(outputDir, { bytes = 100, strictError = false, cl
   });
   const promise = captureRouteWithRetries(
     browser,
-    { id: "W-test", name: "accounting", path: "/accounting" },
+    { id: "W-test", name: "accounting", path: "/accounting", ...captureOverrides },
     createResolver,
     outputDir,
     "http://localhost/workstation",
@@ -532,6 +547,7 @@ test("a ready shell cannot capture before its configured loaded-data text appear
       };
     },
     async evaluate() { return 100; },
+    locator() { return { async evaluateAll() { return []; } }; },
     url() { return "http://localhost/workstation/accounting"; },
     async screenshot({ path: file }) {
       captured = true;
@@ -621,6 +637,126 @@ test("readiness reports spawn errors and removes its child listeners", async (t)
   assert.equal(child.listenerCount("error"), 0);
 });
 
+function kpiCapture(route, value, { scope = '{"accountId":"paper","source":"live"}', display = value, scenario, revision = null } = {}) {
+  return {
+    name: route.slice(1), route, status: "passed", scenario,
+    kpis: [{ id: "portfolio.open-positions", scope, value, display, revision }]
+  };
+}
+
+test("KPI consistency detects cross-route raw and displayed value differences", () => {
+  const result = checkKpiConsistency([
+    kpiCapture("/portfolio", "2"),
+    kpiCapture("/settings", "5"),
+    kpiCapture("/trading", "2", { display: "2 positions" })
+  ]);
+  assert.equal(result.observationCount, 3);
+  assert.equal(result.comparisonCount, 2);
+  assert.equal(result.conflicts.length, 2);
+  assert.equal(result.conflicts[0].previous.route, "/portfolio");
+  assert.equal(result.conflicts[0].current.route, "/settings");
+  assert.equal(result.conflicts[1].current.display, "2 positions");
+});
+
+test("KPI consistency canonicalizes scope keys and accepts matching values", () => {
+  const result = checkKpiConsistency([
+    kpiCapture("/portfolio", "2"),
+    kpiCapture("/settings", "2", { scope: '{"source":"live","accountId":"paper"}' })
+  ]);
+  assert.equal(result.comparisonCount, 1);
+  assert.deepEqual(result.conflicts, []);
+});
+
+test("KPI consistency keeps accounts, sources, runs, currencies, datasets and read revisions separate", () => {
+  const result = checkKpiConsistency([
+    kpiCapture("/portfolio", "2"),
+    ...[
+      { scope: '{"accountId":"other","source":"live"}' },
+      { scope: '{"accountId":"paper","source":"retained","runId":42}' },
+      { scope: '{"accountId":"paper","source":"retained","runId":43}' },
+      { scope: '{"accountId":"paper","source":"live","currency":"EUR"}' },
+      { scenario: "portfolio.degraded" },
+      { revision: "snapshot-2" }
+    ].map((options, index) => kpiCapture(`/route-${index}`, "5", options)),
+    { ...kpiCapture("/failed", "9"), status: "failed" }
+  ]);
+  assert.equal(result.observationCount, 7);
+  assert.equal(result.comparisonCount, 0);
+  assert.deepEqual(result.conflicts, []);
+});
+
+test("KPI collection rejects missing and invalid scope contracts", async () => {
+  const page = (snapshot) => ({ locator: () => ({ evaluateAll: async () => [snapshot] }) });
+  const valid = { ...kpiCapture("/portfolio", "2").kpis[0], renderedDisplay: "2" };
+  assert.deepEqual(await collectKpiSnapshots(page(valid)), [valid]);
+  await assert.rejects(collectKpiSnapshots(page({ ...valid, display: null })), /Incomplete KPI/);
+  await assert.rejects(collectKpiSnapshots(page({ ...valid, scope: "live" })), /invalid scope JSON/);
+  await assert.rejects(collectKpiSnapshots(page({ ...valid, scope: "[]" })), /must be a JSON object/);
+  await assert.rejects(collectKpiSnapshots(page({ ...valid, renderedDisplay: null })), /missing \[data-kpi-rendered-value\]/);
+  await assert.rejects(collectKpiSnapshots(page({ ...valid, renderedDisplay: "5" })), /does not match its rendered value '5'/);
+});
+
+test("KPI collection reads the rendered value independently of its metadata", async (t) => {
+  const previousGetComputedStyle = globalThis.getComputedStyle;
+  globalThis.getComputedStyle = () => ({ visibility: "visible" });
+  t.after(() => {
+    if (previousGetComputedStyle) globalThis.getComputedStyle = previousGetComputedStyle;
+    else delete globalThis.getComputedStyle;
+  });
+  const attributes = {
+    "data-kpi-id": "portfolio.open-positions",
+    "data-kpi-scope": "{}",
+    "data-kpi-value": "2",
+    "data-kpi-display": "2"
+  };
+  let renderedText = "  2  ";
+  const element = {
+    getClientRects: () => [{}],
+    getAttribute: (key) => attributes[key] ?? null,
+    querySelector(selector) {
+      assert.equal(selector, "[data-kpi-rendered-value]");
+      return { textContent: renderedText };
+    }
+  };
+  const page = { locator: () => ({ evaluateAll: async (callback) => callback([element]) }) };
+  assert.equal((await collectKpiSnapshots(page))[0].renderedDisplay, "2");
+  renderedText = "5";
+  await assert.rejects(collectKpiSnapshots(page), /does not match its rendered value '5'/);
+});
+
+test("KPI collection excludes closed disclosure contents even when Chromium retains layout boxes", async (t) => {
+  const previousGetComputedStyle = globalThis.getComputedStyle;
+  globalThis.getComputedStyle = () => ({ visibility: "visible" });
+  t.after(() => {
+    if (previousGetComputedStyle) globalThis.getComputedStyle = previousGetComputedStyle;
+    else delete globalThis.getComputedStyle;
+  });
+  let open = false;
+  let inSummary = false;
+  const details = {
+    tagName: "DETAILS", parentElement: null,
+    hasAttribute: () => open,
+    querySelector: () => ({ contains: () => inSummary })
+  };
+  const attributes = {
+    "data-kpi-id": "portfolio.open-positions", "data-kpi-scope": "{}",
+    "data-kpi-value": "2", "data-kpi-display": "2"
+  };
+  const element = {
+    parentElement: details,
+    getClientRects: () => [{}],
+    getAttribute: (key) => attributes[key] ?? null,
+    querySelector: () => ({ textContent: "2" })
+  };
+  const page = { locator: () => ({ evaluateAll: async (callback) => callback([element]) }) };
+  assert.deepEqual(await collectKpiSnapshots(page), []);
+  open = true;
+  assert.equal((await collectKpiSnapshots(page)).length, 1);
+  open = false;
+  inSummary = true;
+  assert.equal((await collectKpiSnapshots(page)).length, 1);
+});
+
 test("rendered identifiers are reported once each, whatever their case", () => {
   const guid = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
   const issues = findCaptureContentIssues(
@@ -707,6 +843,21 @@ test("a clipped status badge is reported once per badge text", () => {
     ]
   );
   assert.deepEqual(findCaptureContentIssues("Reconciliation", { truncatedBadges: [] }), []);
+});
+
+test("a detail panel that clips content without a cue is reported once per panel", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Portfolio", { clippedDetailPanels: ["Holding detail", "Holding detail"] }),
+    [{ kind: "detail-rail-clipped", excerpt: "Holding detail" }]
+  );
+  assert.deepEqual(findCaptureContentIssues("Portfolio", { clippedDetailPanels: [] }), []);
+});
+
+test("overlapping chart labels are reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("NAV", { overlappingChartLabels: ['"Sep \'26" overlaps "Oct \'26"'] }),
+    [{ kind: "chart-label-overlap", excerpt: '"Sep \'26" overlaps "Oct \'26"' }]
+  );
 });
 
 test("a Latency term followed by a clock time or Never is reported", () => {
@@ -815,4 +966,207 @@ test("the content-issue failure names the route, the excerpts and the remedy", (
   assert.match(message, /singular-count-plural-noun "1 thing0s"/);
   assert.match(message, /and 2 more/);
   assert.match(message, /allowedContentIssues/);
+});
+
+function holdingsCapture(table, headline = { status: "available", value: "37699", currency: "USD" }, display = "$37,699") {
+  return {
+    name: "portfolio", route: "/portfolio", status: "passed",
+    kpis: headline ? [{ id: "portfolio.total-exposure", value: JSON.stringify(headline), display }] : [],
+    holdingsTables: [{ loadedCount: 2, total: "37699", totalCurrency: "USD", rowAmounts: ["7159", "30540"], rowCurrencies: ["USD", "USD"], ...table }]
+  };
+}
+
+test("holdings total check passes when table rows, table total and headline agree", () => {
+  assert.deepEqual(checkHoldingsTotals([holdingsCapture({})]), { checkedCount: 1, conflicts: [] });
+  assert.deepEqual(checkHoldingsTotals([holdingsCapture({ rowAmounts: ["7159.5", "30539.50"] })]).conflicts, []);
+});
+
+test("holdings total check flags a table that disagrees with the headline figure", () => {
+  const result = checkHoldingsTotals([holdingsCapture({ rowAmounts: ["7159", "30000"], total: "37159" })]);
+  assert.equal(result.conflicts.length, 1);
+  assert.match(result.conflicts[0].problem, /headline figure '\$37,699'/);
+  const stale = checkHoldingsTotals([holdingsCapture({ rowAmounts: ["7159", "30000"] })]);
+  assert.deepEqual(stale.conflicts.map((conflict) => conflict.problem.includes("table total")), [true, false]);
+});
+
+test("holdings total check flags a headline shown over rows that cannot be summed", () => {
+  const missing = checkHoldingsTotals([holdingsCapture({ rowAmounts: ["7159", ""], total: null })]);
+  assert.match(missing.conflicts[0].problem, /cannot be summed/);
+  const mixed = checkHoldingsTotals([holdingsCapture({ rowCurrencies: ["USD", "EUR"], total: null }, { status: "unavailable", value: null, currency: null }, "Unavailable")]);
+  assert.deepEqual(mixed.conflicts, []);
+});
+
+test("holdings total check skips filtered tables and failed captures", () => {
+  assert.equal(checkHoldingsTotals([holdingsCapture({ rowAmounts: ["7159"], rowCurrencies: ["USD"] })]).checkedCount, 0);
+  assert.equal(checkHoldingsTotals([{ ...holdingsCapture({ rowAmounts: ["1", "2"] }), status: "failed" }]).checkedCount, 0);
+});
+
+test("content check flags the article 'a' before a vowel sound", () => {
+  const issues = findCaptureContentIssues("Ops Desk has a Operator session. Add a entry or a Admin. Class A income, a user, a one-time code, a European fund, an owner, data access.");
+  assert.deepEqual(issues.filter((issue) => issue.kind === "article-before-vowel").map((issue) => issue.excerpt),
+    ["a Operator", "a entry", "a Admin"]);
+});
+
+test("the status bar may not say up to date while the masthead or the page needs review", () => {
+  assert.deepEqual(findStatusContradictions({ statusBar: "Sync up to date", pageFreshness: null, shellFreshness: null }), []);
+  assert.deepEqual(findStatusContradictions({ statusBar: "Sync connected Freshness Providers 1 of 4 healthy", pageFreshness: "Stale", shellFreshness: "Providers 1 of 4 healthy" }), []);
+  assert.deepEqual(
+    findStatusContradictions({ statusBar: "Sync up to date", pageFreshness: null, shellFreshness: "Providers 1 of 4 healthy" }),
+    ['status bar "Sync up to date" vs masthead "Providers 1 of 4 healthy"']
+  );
+  assert.equal(findStatusContradictions({ statusBar: "Sync up to date", pageFreshness: "Stale", shellFreshness: "Providers" }).length, 2);
+});
+
+test("a positions table that does not name its source is reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Trading", { unsourcedPositionTables: ["Session positions evidence", "Session positions evidence"] }),
+    [{ kind: "position-source-missing", excerpt: "Session positions evidence" }]
+  );
+  assert.deepEqual(findCaptureContentIssues("Trading", { unsourcedPositionTables: [] }), []);
+});
+
+test("figures sharing a label and population must agree across ids and routes", async () => {
+  const definitions = await loadKpiDefinitions();
+  assert.ok(definitions.some((definition) => definition.id === "system.providers-online"), "shared KPI catalog loads");
+  const kpi = (id, value, population = "Providers in use") => ({ id, value, display: value, population });
+  const capture = (route, kpis, scenario = null) => ({ status: "passed", route, scenario, kpis });
+
+  const conflicting = checkKpiLabelConsistency([
+    capture("/", [kpi("system.providers-online", "1 of 4 providers")]),
+    capture("/data", [kpi("data.providers-healthy", "0 of 3 providers")])
+  ], definitions);
+  assert.equal(conflicting.conflicts.length, 1);
+  assert.equal(conflicting.conflicts[0].group, "Providers healthy · Providers in use");
+
+  // The same value, a different dataset, or a different rendered population is not a conflict.
+  assert.equal(checkKpiLabelConsistency([
+    capture("/", [kpi("system.providers-online", "1 of 4 providers")]),
+    capture("/data", [kpi("data.providers-healthy", "1 of 4 providers")]),
+    capture("/data", [kpi("data.providers-healthy", "0 of 3 providers")], "stale"),
+    capture("/settings", [kpi("data.providers-healthy", "0 of 3 providers", "Providers visible to you")])
+  ], definitions).conflicts.length, 0);
+});
+
+test("only tables named as positions books must name their source", () => {
+  assert.equal(isPositionsTableLabel("Execution blotter positions"), true);
+  assert.equal(isPositionsTableLabel("Alpaca paper current positions"), true);
+  assert.equal(isPositionsTableLabel("Alpaca paper brokerage accounts"), false);
+  assert.equal(isPositionsTableLabel("Retained account margin position contributions"), false);
+  assert.equal(isPositionsTableLabel(null), false);
+});
+
+test("a repeated unavailable line is reported once with its count; two repeats pass", () => {
+  const text = "Ledger\nEntity name unavailable\nEntity name unavailable\nEntity name unavailable\nAge unavailable\nAge unavailable";
+  assert.deepEqual(findRepeatedUnavailableLines(text), ["Entity name unavailable ×3"]);
+  assert.deepEqual(findCaptureContentIssues(text).filter((issue) => issue.kind === "repeated-unavailable"),
+    [{ kind: "repeated-unavailable", excerpt: "Entity name unavailable ×3" }]);
+  assert.deepEqual(findRepeatedUnavailableLines("Basis\nNo data"), []);
+});
+
+test("a declared primary task must start within its limit", () => {
+  const task = { selector: "[aria-label=\"Today queue\"]", maxTop: 600 };
+  assert.equal(describePrimaryTaskPosition(task, 423), null);
+  assert.equal(describePrimaryTaskPosition(task, 1012.4), "[aria-label=\"Today queue\"] starts at 1012px (limit 600px)");
+  assert.equal(describePrimaryTaskPosition(task, null), "[aria-label=\"Today queue\"] not found");
+  assert.equal(describePrimaryTaskPosition(undefined, 2000), null);
+  assert.deepEqual(findCaptureContentIssues("Today", { primaryTaskIssues: ["x starts at 900px (limit 600px)"] }),
+    [{ kind: "primary-task-below-fold", excerpt: "x starts at 900px (limit 600px)" }]);
+});
+
+test("one backend failure shows at most the declared number of notices and Retry buttons", () => {
+  assert.deepEqual(describeFailureNotices(1, { alerts: 1, retries: 1 }), []);
+  assert.deepEqual(describeFailureNotices(1, { alerts: 2, retries: 3 }), ["2 alerts (limit 1)", "3 Retry buttons (limit 1)"]);
+  assert.deepEqual(describeFailureNotices(undefined, { alerts: 9, retries: 9 }), []);
+  assert.deepEqual(findCaptureContentIssues("Journal", { failureNoticeIssues: ["2 alerts (limit 1)"] }),
+    [{ kind: "single-failure-notice", excerpt: "2 alerts (limit 1)" }]);
+});
+
+test("one status label renders with one severity across routes", () => {
+  const capture = (route, severityBadges, scenario = null) => ({ status: "passed", route, scenario, severityBadges });
+  const conflicting = checkSeverityLabelConsistency([
+    capture("/", [{ label: "Review", severity: "review" }]),
+    capture("/settings", [{ label: "review", severity: "blocked" }, { label: "Blocked", severity: "blocked" }])
+  ]);
+  assert.equal(conflicting.conflicts.length, 1);
+  assert.equal(conflicting.conflicts[0].label, "review");
+  assert.equal(checkSeverityLabelConsistency([
+    capture("/", [{ label: "Review", severity: "review" }]),
+    capture("/settings", [{ label: "Review", severity: "review" }]),
+    capture("/settings", [{ label: "Review", severity: "action" }], "stale")
+  ]).conflicts.length, 0);
+});
+
+test("wrapped figures, uncued overflow and monospace prose are reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Close", { wrappedDetailValues: ["Jan 1, 2026"], uncuedOverflowTables: ["Positions"], monospaceProse: ["Select a row to inspect"] }),
+    [
+      { kind: "detail-value-wraps", excerpt: "Jan 1, 2026" },
+      { kind: "table-overflow-without-cue", excerpt: "Positions" },
+      { kind: "monospace-prose", excerpt: "Select a row to inspect" }
+    ]
+  );
+});
+
+test("an expanded workspace stays within the sidebar row budget", () => {
+  assert.deepEqual(describeNavRowBudget(7, 5), []);
+  assert.deepEqual(describeNavRowBudget(7, 22), ["22 sidebar sub-rows (limit 7)"]);
+  assert.deepEqual(describeNavRowBudget(undefined, 22), []);
+  assert.deepEqual(findCaptureContentIssues("Accounting", { navRowIssues: ["22 sidebar sub-rows (limit 7)"] }),
+    [{ kind: "nav-row-budget", excerpt: "22 sidebar sub-rows (limit 7)" }]);
+});
+
+test("a chart without a table alternative is reported", () => {
+  assert.deepEqual(findCaptureContentIssues("Data", { chartsWithoutTables: ["Provider evidence age", ""] }), [
+    { kind: "chart-without-table", excerpt: "Provider evidence age" },
+    { kind: "chart-without-table", excerpt: "(unlabelled chart)" }
+  ]);
+});
+
+test("route coverage requires a concrete identity at exact parameter boundaries", () => {
+  const pattern = "/records/instrument/:id";
+  assert.equal(screenshotRouteMatches(pattern, "/records/instrument/sec-dev-001?tab=positions"), true);
+  assert.equal(screenshotRouteMatches(pattern, "/records/instrument/a0000000-0000-0000-0000-000000000001"), true);
+  for (const invalid of ["/records/instrument/:id", "/records/instrument/%3Aid", "/records/instrument/", "/records/instrument", "/records/instrument/sec-1/extra", "/records/instrument/sec-1/", "/records/other/sec-1", "/records/instrument/sec%2Fother", "/records/instrument/sec%5Cother", "/records/instrument/sec%252fother", "/records/instrument/%GG"]) {
+    assert.equal(screenshotRouteMatches(pattern, invalid), false, invalid);
+  }
+  assert.equal(screenshotRouteMatches(pattern + "#evidence", "/records/instrument/sec-dev-001#evidence"), true);
+  assert.equal(screenshotRouteMatches(pattern + "#evidence", "/records/instrument/sec-dev-001"), false);
+  assert.equal(screenshotRouteMatches("/accounting/close", "/accounting/close?closeTab=evidence"), true);
+  assert.equal(screenshotRouteMatches("/accounting/close", "/accounting/closed"), false);
+});
+
+test("global coverage accepts a concrete dossier capture and rejects a literal pattern capture", async (t) => {
+  const directory = await temporaryDirectory(t);
+  const catalog = path.join(directory, "workspace.ts");
+  const app = path.join(directory, "app.tsx");
+  await fs.writeFile(catalog, 'export const WORKSTATION_ROUTE_CATALOG = {\n  dossier: "/records/instrument/:id"\n} as const;');
+  await fs.writeFile(app, '<Route path="/records/instrument/:id" />');
+  assert.deepEqual(await findMissingCaptureRoutePaths([{ path: "/" }, { path: "/records/instrument/sec-dev-001" }], catalog, app), []);
+  assert.deepEqual(await findMissingCaptureRoutePaths([{ path: "/" }, { path: "/records/instrument/:id" }], catalog, app), ["/records/instrument/:id"]);
+  assert.deepEqual(await findMissingCaptureRoutePaths([{ path: "/records/instrument/sec-dev-001" }], catalog, app), ["/"]);
+});
+
+
+for (const [name, actualUrl, expectedError] of [
+  ["query", "http://localhost/workstation/accounting/close?workflowId=another#retained", /lost its retained redirect query/],
+  ["anchor", "http://localhost/workstation/accounting/close?workflowId=workflow-1#another", /lost its retained redirect anchor/]
+]) {
+  test(`redirect capture rejects loss of its declared ${name}`, async (t) => {
+    const directory = await temporaryDirectory(t);
+    const run = await captureWithStub(directory, { actualUrl, captureOverrides: {
+      path: "/accounting/operations-continuity?workflowId=workflow-1#retained",
+      expectedRedirectPath: "/accounting/close?workflowId=workflow-1#retained"
+    } });
+    await assert.rejects(run.promise, expectedError);
+    await assert.rejects(fs.access(path.join(directory, "accounting.png")), { code: "ENOENT" });
+  });
+}
+
+test("redirect capture accepts the exact declared retained query and anchor", async (t) => {
+  const directory = await temporaryDirectory(t);
+  const run = await captureWithStub(directory, {
+    actualUrl: "http://localhost/workstation/accounting/close?workflowId=workflow-1#retained",
+    captureOverrides: { path: "/accounting/operations-continuity?workflowId=workflow-1#retained", expectedRedirectPath: "/accounting/close?workflowId=workflow-1#retained" }
+  });
+  assert.equal((await run.promise).status, "passed");
 });

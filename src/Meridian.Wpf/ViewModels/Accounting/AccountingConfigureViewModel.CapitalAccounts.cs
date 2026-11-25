@@ -18,6 +18,8 @@ namespace Meridian.Wpf.ViewModels.Accounting;
 
 public sealed partial class AccountingConfigureViewModel
 {
+    public PrivateCapitalUnitRegisterViewModel? UnitRegister { get; }
+
     private async Task LoadCapitalAccountWorkbenchAsync(CancellationToken ct)
     {
         if (_activeFundProfile is null)
@@ -68,7 +70,7 @@ public sealed partial class AccountingConfigureViewModel
         {
             var published = lineage.PublishedAtUtc is null
                 ? lineage.ReportWorkflowState ?? "not published"
-                : $"{lineage.ReportWorkflowState ?? "Published"} by {lineage.PublishedBy ?? "unknown"} at {UtcFormat.FormatUtcTimestamp(lineage.PublishedAtUtc.Value)}";
+                : $"{lineage.ReportWorkflowState ?? "Published"} by {lineage.PublishedBy ?? "unknown"} at {UtcFormat.FormatDisplayTimestamp(lineage.PublishedAtUtc.Value)}";
             var restatement = lineage.HasRestatementLineage
                 ? $"{lineage.RestatementReasonCode ?? "Restated"} | {lineage.RestatementChangedLineCount} changed line(s) | {lineage.RestatementEvidenceLinkCount} evidence"
                 : lineage.RestatementStatus;

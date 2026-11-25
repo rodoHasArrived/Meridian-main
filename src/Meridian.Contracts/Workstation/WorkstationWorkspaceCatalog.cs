@@ -52,7 +52,7 @@ public static class WorkstationWorkspaceCatalog
     public const string ReportingBrowserDescription = "Report packs, governed exports, loader scripts, data dictionaries, and approval posture.";
     public const string ReportingBrowserMaturity = "Available";
     public const string ReportingDesktopDescription = "Report packs, dashboards, analysis export, and reusable export presets.";
-    public const string ReportingDesktopSummary = "Prepare reporting outputs and analysis handoffs from a focused workspace.";
+    public const string ReportingDesktopSummary = "Prepare reporting outputs and analysis exports from a focused workspace.";
     public const string ReportingDesktopTileSummary = "Packs | Dashboard | Export";
     public const string ReportingDesktopShellDisplayName = "Reporting Workspace";
 

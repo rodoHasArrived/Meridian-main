@@ -6,12 +6,44 @@ module_id: SRC-EXECUTION-SDK
 path: src/Meridian.Execution.Sdk
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Execution.Sdk
 
+`CancelAllIncident` and `CancelAllOrderOutcome` define historical cancel-all evidence with stable
+incident and order identities, authority and account attribution, gateway/environment scope,
+filled and possible remaining quantities, explicit broker coverage and nullable valuation.
+`CancelAllOrderDisposition` separates confirmed cancellations, fills during cancellation, other
+terminal outcomes, still-working orders, unknown state and withdrawals before dispatch.
+`EvidenceStatus=Complete` means the full observation record was captured, not that exposure is zero.
+Account projections exclude foreign and unattributed orders and set `IsAccountProjection`; historical
+`ObservedAt` and valuation-reference timestamps must remain visible in consumers.
+`KillSwitchSweepResult.IncidentId`, `EvidenceRetained` and `EvidenceError` report retention separately
+from the sweep's cancellation result. Storage failure never authorizes skipping cancellation.
+
+`StrategyOrderAuthority.StrategyArtifactId` is optional Designer artifact lineage. It propagates
+through the OMS authority and retained intent claim when present; null is omitted from JSON so old
+intent fingerprints remain stable. The existing authority fingerprint rejects a reused intent key
+whose artifact identity changed.
+
 `IOrderManager.GetUnitReservingOrders` returns the exposure reservations, except that a pending amendment reserves its larger-quantity outcome rather than its larger-value one, for unit limits.
+
+Order authority (`OrderCommandAuthority.cs`): `OrderSubmissionAuthority` records who or what
+originated an order (`OrderCommandOrigin`), the `ExecutionAccountGrant` an endpoint verified, and
+for strategy orders the run id. It is built only by validating factories and has no public or
+JSON constructor; `OrderSubmissionAuthorityRecord` is its server-retained form, restored through
+the same factories. `ForEscalationRelease` takes an optional `releaseGrant`: the approver's grant,
+which must cover the parked order's account. When present, grant age is judged from it, so a late
+approval can still release the order. `IOrderManager.SubmitAsync(OrderSubmitCommand)` submits under it.
+`IOrderManager.CancelAllAsync(OrderCancelAllCommand)` runs the kill-switch sweep under `KillSwitch`
+authority (the only origin the command accepts). The default implementation runs the unattributed
+sweep. `OrderState.Origin` and
+`OrderResult.AuthorityDecision` carry the origin and the authority outcome back to callers;
+`OrderCommandOrigin` serializes by name.
+`ExecutionOrderMetadataPolicy` treats `runId`, `run_id`, `sessionId`, `session_id` and
+`orderOrigin` as server-owned, so clients cannot supply run or session identity. See
+`docs/engineering/blueprints/governed-order-command-boundary-blueprint.md`.
 
 `CanonicalTaxLotAdapter` now compares explicit retained direction with the execution lot's sign,
 then compares absolute quantity, original date, identity and exact basis. Matching short lots may

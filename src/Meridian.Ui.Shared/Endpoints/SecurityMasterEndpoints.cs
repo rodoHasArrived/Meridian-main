@@ -1052,7 +1052,7 @@ public static partial class SecurityMasterEndpoints
                     return Results.Problem(
                         title: "Governed field conflict",
                         detail:
-                            $"Conflict '{conflictId:D}' is a {existing.ConflictKind} field conflict and the governed " +
+                            $"Conflict '{conflictId:D}' is a field conflict of kind {existing.ConflictKind} and the governed " +
                             "workbench command service is not wired in this host; use the workbench resolve-conflict " +
                             $"route (POST {UiApiRoutes.SecurityMasterWorkbenchResolveConflict}).",
                         statusCode: StatusCodes.Status400BadRequest);
@@ -1431,6 +1431,19 @@ public static partial class SecurityMasterEndpoints
         if (app.Services.GetService<ISecurityMasterStructuredCreditReclassificationService>()
             is not (null or AppSecurityMaster.NullSecurityMasterStructuredCreditReclassificationService))
             MapStructuredCreditReclassificationEndpoints(group, jsonOptions);
+
+        if (app.Services.GetService<ISecurityMasterClassificationDriftReportService>()
+            is not (null or AppSecurityMaster.NullSecurityMasterClassificationDriftReportService))
+            MapClassificationDriftEndpoints(group, jsonOptions);
+
+        if (app.Services.GetService<ISecurityMasterProfilePromotionService>()
+            is not (null or AppSecurityMaster.NullSecurityMasterProfilePromotionService))
+            MapProfilePromotionEndpoints(group, jsonOptions);
+
+        // The generic registry projection read is composed with Security Master storage; a host
+        // without it leaves the route unmapped rather than inferring the service as a body.
+        if (app.Services.GetService<IRegistryProjectionReadService>() is not null)
+            MapRegistryProjectionEndpoints(group, jsonOptions);
 
         MapOtcContractEndpoints(group, jsonOptions);
         MapOtcCollateralEndpoints(app, group, jsonOptions);
@@ -1888,25 +1901,35 @@ public static partial class SecurityMasterEndpoints
         .Produces(StatusCodes.Status404NotFound);
     }
 
-    // ── Structured-credit reclassification report (ADR-022) ─────────────────
+    // ── CustomAsset profile promotion report (ADR-022) ──────────────────────
 
-    private static void MapStructuredCreditReclassificationEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
+    private static void MapProfilePromotionEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
-        // Report only: the scan proposes StructuredCredit terms for legacy securitised Bond and
-        // CustomAsset rows and never writes. Applying a proposal is a governed amendment.
-        group.MapPost(UiApiRoutes.SecurityMasterStructuredCreditReclassificationReport, async (
+        // Report only: the scan dry-runs each CustomAsset record pinned to a reclassifying profile
+        // under the profile's target class and never writes. Promotion is an amendment that
+        // resubmits the pinned envelope.
+        group.MapPost(UiApiRoutes.SecurityMasterProfilePromotionReport, async (
+            string profileId,
             HttpContext context,
-            [FromServices] ISecurityMasterStructuredCreditReclassificationService reclassificationService,
+            [FromServices] ISecurityMasterProfilePromotionService promotionService,
             CancellationToken ct) =>
         {
             if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
                 return EndpointHelpers.Forbidden();
 
-            var report = await reclassificationService.BuildReportAsync(ct).ConfigureAwait(false);
+            if (!SecurityAssetPackRegistry.ProfileAssetClasses.ContainsKey(profileId))
+            {
+                return Results.Problem(
+                    detail: $"'{profileId}' is not a reclassifying profile; only a profile a class declares in ReclassifyingProfileIds can be promoted.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var report = await promotionService.BuildReportAsync(profileId, ct).ConfigureAwait(false);
             return Results.Json(report, jsonOptions);
         })
-        .WithName("BuildSecurityMasterStructuredCreditReclassificationReport")
-        .Produces<StructuredCreditReclassificationReportDto>(StatusCodes.Status200OK)
+        .WithName("BuildSecurityMasterProfilePromotionReport")
+        .Produces<SecurityMasterProfilePromotionReportDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden);
     }
 

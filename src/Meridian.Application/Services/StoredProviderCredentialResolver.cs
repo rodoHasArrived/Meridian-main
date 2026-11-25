@@ -1,4 +1,5 @@
 using Meridian.Application.Config.Credentials;
+using Meridian.Contracts.Operations;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
@@ -16,6 +17,8 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
     private readonly IProviderCredentialResolver _fallback;
     private readonly ProviderCredentialScope? _scope;
     private readonly UI.ConfigStore? _configStore;
+    private readonly ProviderRouting.ProviderCredentialOwnershipPolicy _ownershipPolicy =
+        ProviderRouting.ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
 
     public StoredProviderCredentialResolver(
         IProviderCredentialStore credentialStore,
@@ -27,9 +30,11 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
 
     /// <summary>Resolves host defaults from the current retained configuration at provider construction.</summary>
     public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore,
-        IProviderCredentialResolver fallback, UI.ConfigStore configStore) : this(credentialStore, fallback)
+        IProviderCredentialResolver fallback, UI.ConfigStore configStore,
+        ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : this(credentialStore, fallback)
     {
         _configStore = configStore ?? throw new ArgumentNullException(nameof(configStore));
+        _ownershipPolicy = ownershipPolicy ?? ProviderRouting.ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
     }
 
     /// <summary>
@@ -57,6 +62,9 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
         {
             if (_scope is not null)
                 throw new InvalidOperationException("Scoped credentials require a catalog-managed provider.");
+            if (_ownershipPolicy.RequireExplicitOwnership &&
+                (AttributeCredentialResolver.GetAttributes(providerType).Count > 0 || configuredValues?.Count > 0))
+                throw new ProviderCredentialOwnershipRequiredException();
             return _fallback.CreateContext(providerType, configuredValues);
         }
 
@@ -90,7 +98,9 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
             foreach (var attribute in AttributeCredentialResolver.GetAttributes(providerType))
                 values[attribute.Name] = ResolveStoredValue(stored, descriptor, attribute.Name);
         }
-        return new ResolvedCredentialContext(values, stored?.Environment ?? scope?.Environment);
+        return new ResolvedCredentialContext(values, stored?.Environment ?? scope?.Environment,
+            scope is null ? null : ProviderProvenanceLabels.ConnectionId(providerId, scope.TenantId, scope.ConnectionId),
+            scope?.TenantId, ProviderProvenanceLabels.RuntimeRevision(stored?.CredentialGeneration));
     }
 
     /// <inheritdoc />
@@ -161,6 +171,8 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
     {
         var scope = _scope ?? (_configStore is null ? null : ProviderRouting.ProviderRuntimeCredentialService.ResolveScope(
             _configStore.LoadRequired(), providerId));
+        if (scope is null && _ownershipPolicy.ProhibitsLegacy(providerId))
+            return (null, null); // Authoritative missing credentials; never consult the unassigned vault or fallback.
         var stored = scope is null
             ? await _credentialStore.ReadForProviderAsync(providerId, ct).ConfigureAwait(false)
             : await (_credentialStore as IScopedProviderCredentialStore
@@ -267,11 +279,18 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
         private readonly IReadOnlyDictionary<string, string?> _values;
 
         public string? CredentialEnvironment { get; }
+        public string? ProvenanceConnectionId { get; }
+        public string? ProvenanceTenantId { get; }
+        public string? ProvenanceRuntimeRevision { get; }
 
-        public ResolvedCredentialContext(IReadOnlyDictionary<string, string?> values, string? credentialEnvironment)
+        public ResolvedCredentialContext(IReadOnlyDictionary<string, string?> values, string? credentialEnvironment,
+            string? connectionId, string? tenantId, string? runtimeRevision)
         {
             _values = values;
             CredentialEnvironment = credentialEnvironment;
+            ProvenanceConnectionId = connectionId;
+            ProvenanceTenantId = tenantId;
+            ProvenanceRuntimeRevision = runtimeRevision;
         }
 
         public string? Get(string name)

@@ -7,6 +7,7 @@ using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.FinancialOperations.Intercompany;
@@ -71,15 +72,44 @@ public sealed partial class AccountingSystemIntegrationService
     private readonly ConcurrentDictionary<string, AccountingSystemImportDetailDto> _latestImports = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, ScopedExternalGlMappingProfile> _mappingProfiles = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, ExternalGlExportPackageDto> _exportPackages = new(StringComparer.OrdinalIgnoreCase);
+    private readonly AccountingSystemIntegrationStateStore? _stateStore;
+    private const string ImportsCollection = "latest-imports";
+    private const string MappingProfilesCollection = "mapping-profiles";
+    private const string ExportPackagesCollection = "export-packages";
 
     public AccountingSystemIntegrationService(
         IEnumerable<IAccountingSystemProvider> providers,
         ILedgerJournalStore? ledgerJournalStore = null,
-        IIntercompanyBalanceScheduleSource? intercompanyBalances = null)
+        IIntercompanyBalanceScheduleSource? intercompanyBalances = null,
+        AccountingSystemIntegrationStateStore? stateStore = null)
     {
         _providers = providers?.ToArray() ?? [];
         _ledgerJournalStore = ledgerJournalStore;
         _intercompanyBalances = intercompanyBalances;
+        _stateStore = stateStore;
+        if (stateStore is null)
+            return;
+
+        foreach (var (key, value) in stateStore.Load<AccountingSystemImportDetailDto>(ImportsCollection, JsonOptions))
+            _latestImports[key] = value;
+        foreach (var (key, value) in stateStore.Load<ScopedExternalGlMappingProfile>(MappingProfilesCollection, JsonOptions))
+            _mappingProfiles[key] = value;
+        foreach (var (key, value) in stateStore.Load<ExternalGlExportPackageDto>(ExportPackagesCollection, JsonOptions))
+            _exportPackages[key] = value;
+    }
+
+    /// <summary>
+    /// Retains a record durably before publishing it when a state store is configured; without one
+    /// the record lives for the process lifetime only.
+    /// </summary>
+    private Task RetainAsync<T>(
+        string collection, ConcurrentDictionary<string, T> rows, string key, T value, CancellationToken ct)
+    {
+        if (_stateStore is not null)
+            return _stateStore.RetainAsync(collection, rows, key, value, JsonOptions, ct);
+
+        rows[key] = value;
+        return Task.CompletedTask;
     }
 
     public async Task<IReadOnlyList<AccountingSystemProviderDto>> ListProvidersAsync(CancellationToken ct = default)
@@ -167,6 +197,7 @@ public sealed partial class AccountingSystemIntegrationService
             DisplayName = RequireText(request.Profile.DisplayName, "Mapping profile display name"),
             UpdatedAtUtc = DateTimeOffset.UtcNow,
             CertificationState = certificationState,
+            CertifiedPostingDestination = null,
             AccountMappings = NormalizeAccountMappings(request.Profile.AccountMappings),
             DimensionMappings = (request.Profile.DimensionMappings ?? [])
                 .Select(mapping => mapping with { ProviderId = providerId })
@@ -178,10 +209,39 @@ public sealed partial class AccountingSystemIntegrationService
             normalizedProfile = normalizedProfile with { CertificationState = AccountingCertificationStateDto.Draft };
         }
 
-        _mappingProfiles[MappingProfileKey(providerId, fundProfileId, request.LedgerBookId, profileId, tenantId, companyId)] =
-            new ScopedExternalGlMappingProfile(providerId, fundProfileId, request.LedgerBookId, normalizedProfile, actor, evidenceLinks, tenantId, companyId);
+        var postingDestination = request.PostingDestination;
+        var scoped = request.LedgerBookId.HasValue && TenantReadPredicate.IsResolvedTenant(tenantId) &&
+            TenantReadPredicate.IsResolvedTenant(companyId);
+        if (postingDestination is not null)
+        {
+            if (!scoped || _ledgerJournalStore is not PostgresLedgerJournalStore ||
+                normalizedProfile.CertificationState != AccountingCertificationStateDto.Certified ||
+                !string.Equals(providerId, postingDestination.ProviderId, StringComparison.Ordinal))
+                throw new ArgumentException("Posting mapping certification requires the certified profile and exact owned book destination.");
+            normalizedProfile = normalizedProfile with { CertifiedPostingDestination = postingDestination };
+        }
 
-        return Task.FromResult(normalizedProfile);
+        return RetainProfileAsync();
+
+        async Task<ExternalGlMappingProfileDto> RetainProfileAsync()
+        {
+            var retained = new ScopedExternalGlMappingProfile(providerId, fundProfileId, request.LedgerBookId,
+                normalizedProfile, actor, evidenceLinks, tenantId, companyId);
+            if (postingDestination is not null && _ledgerJournalStore is PostgresLedgerJournalStore postgres &&
+                request.LedgerBookId is { } bookId)
+            {
+                await postgres.RetainExternalGlMappingProfileAsync(bookId, tenantId!, companyId!, fundProfileId,
+                    providerId, profileId, JsonSerializer.Serialize(retained, JsonOptions), postingDestination, ct).ConfigureAwait(false);
+            }
+            else
+            {
+                await RetainAsync(MappingProfilesCollection, _mappingProfiles,
+                    MappingProfileKey(providerId, fundProfileId, request.LedgerBookId, profileId, tenantId, companyId), retained, ct)
+                    .ConfigureAwait(false);
+            }
+
+            return normalizedProfile;
+        }
     }
 
     public async Task<ExternalGlExportPackageDto> CreateExportPackageAsync(
@@ -277,7 +337,7 @@ public sealed partial class AccountingSystemIntegrationService
             tenantId,
             companyId,
             reconciliationSnapshotHash);
-        _exportPackages[package.ExportPackageId] = package;
+        await RetainAsync(ExportPackagesCollection, _exportPackages, package.ExportPackageId, package, ct).ConfigureAwait(false);
         return package;
     }
 
@@ -376,7 +436,7 @@ public sealed partial class AccountingSystemIntegrationService
                 package.ReconciliationSafeguardIssueCodes,
                 certification.State)
         };
-        _exportPackages[certified.ExportPackageId] = certified;
+        await RetainAsync(ExportPackagesCollection, _exportPackages, certified.ExportPackageId, certified, ct).ConfigureAwait(false);
         return certified;
     }
 
@@ -440,7 +500,12 @@ public sealed partial class AccountingSystemIntegrationService
 
         if (request.PersistPreview)
         {
-            _latestImports[ImportKey(detail.Summary.ProviderId, detail.Summary.FundProfileId, detail.Summary.LedgerBookId, tenantId, companyId)] = detail;
+            await RetainAsync(
+                ImportsCollection,
+                _latestImports,
+                ImportKey(detail.Summary.ProviderId, detail.Summary.FundProfileId, detail.Summary.LedgerBookId, tenantId, companyId),
+                detail,
+                ct).ConfigureAwait(false);
         }
 
         return detail;
@@ -2233,6 +2298,8 @@ public sealed partial class AccountingSystemIntegrationService
         public string AccountName { get; }
 
         public string Currency { get; }
+
+        public string? SourceCurrency { get; init; }
 
         public decimal Debit { get; set; }
 

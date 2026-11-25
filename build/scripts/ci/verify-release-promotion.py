@@ -3,6 +3,7 @@
 from __future__ import annotations
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -12,7 +13,11 @@ import subprocess
 import tempfile
 import zipfile
 
-FAMILIES = {('desktop-installer', 'win-x64'), ('desktop-installer', 'win-arm64'), ('consumer-setup', 'win-x64')}
+spec = importlib.util.spec_from_file_location('release_envelope', Path(__file__).with_name('release-envelope.py'))
+envelope = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(envelope)
+FAMILIES = envelope.FAMILIES
+required_families = envelope.required_families
 GATES = {'eligibility', 'ci', 'secrets', 'codeql', 'production', 'smoke', 'release-preflight',
          'build-msix', 'build-consumer-setup', 'certify-installed-desktop', 'certify-installed-consumer'}
 
@@ -29,7 +34,7 @@ AUDIT_BUNDLE = 'release-audit-evidence.zip'
 MAX_EVIDENCE_BYTES = 2 * 1024**3 - 1024**2
 
 
-def required_evidence(run_id: str, number: str, attempt: str) -> set[str]:
+def required_evidence(run_id: str, number: str, attempt: str, version: str | None = None) -> set[str]:
     """Exact names emitted by the reviewed coordinator and its reusable workflows."""
     numbered = ('meridian-ci-dotnet', 'meridian-ci-browser', 'meridian-ci-docs',
                 'meridian-ci-workflows', 'production-certification',
@@ -37,11 +42,13 @@ def required_evidence(run_id: str, number: str, attempt: str) -> set[str]:
                 'desktop-release-preflight-test-results', 'meridian-web-workstation-win-x64')
     identified = ('commit-secret-scan', 'production-recovery-drill',
                   'codeql-csharp', 'codeql-javascript-typescript',
-                  'desktop-install-certification-win-x64', 'desktop-install-certification-win-arm64',
-                  'consumer-install-certification-win-x64',
-                  'release-attestation-desktop-installer-win-x64',
-                  'release-attestation-desktop-installer-win-arm64',
-                  'release-attestation-consumer-setup-win-x64')
+                  'consumer-install-certification-win-x64')
+    identified += tuple(f'release-attestation-{project}-{runtime}'
+                        for project, runtime in sorted(required_families(version)))
+    identified += tuple(f'desktop-install-certification-{runtime}'
+                        for project, runtime in sorted(required_families(version)) if project == 'desktop-installer')
+    if version is not None:
+        identified += ('production-recovery-objectives', 'release-signing-readiness')
     return {f'{name}-{number}-{attempt}' for name in numbered} | {
         f'{name}-{run_id}-{attempt}' for name in identified}
 
@@ -62,7 +69,7 @@ class EvidenceApi:
 
 
 def collect_upstream_evidence(output: Path, *, repository: str, commit: str, run_id: str,
-                              number: str, attempt: str, needs: dict, api=None):
+                              number: str, attempt: str, needs: dict, api=None, version: str | None = None):
     """Keep original artifact archives and their verified API provenance, never execute them.
 
     Archives are deliberately stored without extraction. The retained inner ZIPs
@@ -74,7 +81,7 @@ def collect_upstream_evidence(output: Path, *, repository: str, commit: str, run
             or str(run.get('run_number')) != number or run.get('head_sha') != commit
             or run.get('path') != '.github/workflows/desktop-installer-packaging.yml'):
         raise ValueError('Upstream evidence is not bound to this release coordinator attempt.')
-    expected = required_evidence(run_id, number, attempt)
+    expected = required_evidence(run_id, number, attempt, version)
     selected = {}
     count = 0
     for page in range(1, 11):
@@ -126,6 +133,8 @@ def collect_upstream_evidence(output: Path, *, repository: str, commit: str, run
                             runId=run_id, runAttempt=attempt, runNumber=number,
                             workflowPath=run['path'], validations=needs, artifacts=provenance,
                             retention='Retain with the corresponding published release; Actions expiry does not remove this bundle.')
+            if version is not None:
+                manifest.update(version=version, supportScope=envelope.support_scope(version))
             entry = zipfile.ZipInfo('manifest.json', date_time=(1980, 1, 1, 0, 0, 0))
             bundle.writestr(entry, json.dumps(manifest, indent=2, sort_keys=True) + '\n')
     if output.stat().st_size > MAX_EVIDENCE_BYTES:
@@ -223,18 +232,22 @@ def verify_consumer_receipt(receipts: Path, tracked: dict, assets: dict,
     return receipt
 
 
-def verify(root: Path, receipts: Path, smoke: Path, commit: str, run_id: str, attempt: str, needs: dict):
+def verify(root: Path, receipts: Path, smoke: Path, commit: str, run_id: str, attempt: str, needs: dict,
+           version: str | None = None):
     if any(needs.get(gate, {}).get('result') != 'success' for gate in GATES):
         raise ValueError('Every release dependency must succeed; missing, skipped or failed gates cannot publish.')
     manifests = list(root.rglob('*-release-evidence.json'))
     found = set()
     assets = {}
     certified = []
+    families = required_families(version)
     for file in manifests:
         manifest = json.loads(file.read_text(encoding='utf-8'))
         family = (manifest['project'], manifest['runtime'])
-        if family not in FAMILIES or family in found:
+        if family not in families or family in found:
             raise ValueError(f'Unexpected or duplicate package family: {family}')
+        if version is not None and manifest.get('version') != version:
+            raise ValueError('Packaged release version does not match the coordinator version.')
         found.add(family)
         for field, expected in [('commitSha', commit), ('workflowRunId', run_id), ('workflowRunAttempt', attempt)]:
             if str(manifest.get(field)) != expected:
@@ -287,7 +300,7 @@ def verify(root: Path, receipts: Path, smoke: Path, commit: str, run_id: str, at
             certified.append(receipt)
         else:
             certified.append(verify_consumer_receipt(receipts, tracked, assets, commit, run_id, attempt))
-    if found != FAMILIES:
+    if found != families:
         raise ValueError('Missing required release package families/runtimes.')
     if 'Meridian-Setup.exe' not in assets:
         raise ValueError('Missing consumer setup package.')
@@ -308,8 +321,9 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     needs = json.loads(os.environ['RELEASE_NEEDS'])
+    version = os.environ.get('RELEASE_VERSION')
     assets, receipts, startup = verify(args.root, args.receipts, args.smoke, os.environ['GITHUB_SHA'],
-                              os.environ['GITHUB_RUN_ID'], os.environ['GITHUB_RUN_ATTEMPT'], needs)
+                              os.environ['GITHUB_RUN_ID'], os.environ['GITHUB_RUN_ATTEMPT'], needs, version)
     args.output.mkdir(parents=True, exist_ok=True)
     if list(args.output.iterdir()):
         raise ValueError('Publication directory must be fresh.')
@@ -321,7 +335,7 @@ def main():
     upstream = collect_upstream_evidence(
         bundle, repository=os.environ['GITHUB_REPOSITORY'], commit=os.environ['GITHUB_SHA'],
         run_id=os.environ['GITHUB_RUN_ID'], number=os.environ['GITHUB_RUN_NUMBER'],
-        attempt=os.environ['GITHUB_RUN_ATTEMPT'], needs=needs)
+        attempt=os.environ['GITHUB_RUN_ATTEMPT'], needs=needs, version=version)
     assets[AUDIT_BUNDLE] = {'path': bundle, 'sha256': digest(bundle)}
     evidence = dict(schemaVersion=2, repository=os.environ['GITHUB_REPOSITORY'],
                     commitSha=os.environ['GITHUB_SHA'], runId=os.environ['GITHUB_RUN_ID'],
@@ -329,6 +343,9 @@ def main():
                     runUrl=f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}/attempts/{os.environ['GITHUB_RUN_ATTEMPT']}",
                     validations=needs, lifecycle=receipts, installedStartup=startup, upstreamEvidence=upstream,
                     assets={name: asset['sha256'] for name, asset in assets.items()})
+    if version is not None:
+        evidence.update(version=version, candidatePolicy='p0-candidate-v1', supportScope=envelope.support_scope(version),
+                        supportedRuntimes=sorted({runtime for _, runtime in required_families(version)}))
     (args.output / 'release-gate-evidence.json').write_text(json.dumps(evidence, indent=2) + '\n', encoding='utf-8')
     print(f'Verified {len(assets)} unique release assets at the exact certified commit.')
 

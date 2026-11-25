@@ -18,8 +18,8 @@ export function AssetAccountingWorkflowPanel({ view }: { view: AssetAccountingWo
     try { await navigator.clipboard.writeText(rawReceipt); setCopyStatus({ hash: approval.contentHashSha256, text: "Copied exact retained receipt JSON." }); }
     catch { setCopyStatus({ hash: approval.contentHashSha256, text: "Copy is unavailable. Select the retained text below." }); }
   }
-  return <section className="space-y-3 rounded border border-border bg-secondary/15 p-3" aria-label="Governed asset approval and posting">
-    <div className="flex flex-wrap items-start justify-between gap-3"><div><h4 className="text-sm font-semibold">Governed asset workflow</h4>
+  return <section className="space-y-3 rounded border border-border bg-secondary/15 p-3" aria-label="Asset approval and posting">
+    <div className="flex flex-wrap items-start justify-between gap-3"><div><h4 className="text-sm font-semibold">Asset workflow</h4>
       <p className="text-xs text-muted-foreground">Source fields remain immutable. Available decisions come from your authenticated workflow authority. Reversal, rebook and close-lock actions remain unavailable here.</p></div>
       <Button type="button" size="sm" variant="outline" disabled={view.loading || !!view.busyAction} onClick={() => void view.reload()}>{view.loading ? "Loading workflow…" : "Reload retained workflow"}</Button>
     </div>

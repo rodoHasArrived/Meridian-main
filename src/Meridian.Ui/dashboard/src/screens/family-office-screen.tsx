@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Select } from "@/components/ui/select";
 import { AlertTriangle, Boxes, GitBranch, Landmark, Network, TableProperties, WalletCards } from "lucide-react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,8 +9,10 @@ import { EmptyState } from "@/components/data/empty-state";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 import { FamilyOwnershipGraph } from "@/screens/family-ownership-graph";
 import { PrivateCapitalLifecyclePanel } from "@/components/meridian/private-capital-lifecycle-panel";
+import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
+import type { RecordIdentity } from "@/lib/record-workspace-context";
 import {
-  MetricCard,
+  MetricTile,
   KeyValueGrid
 } from "@/components/data/concrete";
 import { ScreenLayout } from "@/components/ui/screen-layout";
@@ -59,7 +62,7 @@ function loadStateSourceLabel(loadState: FamilyOfficeLoadState): string {
 function emptyStateCopy(loadState: FamilyOfficeLoadState): { title: string; detail: string | null } {
   switch (loadState) {
     case "loading":
-      return { title: "Loading family office data", detail: "Reading the consolidated household projection." };
+      return { title: "Loading family office data", detail: "Reading the consolidated household view." };
     case "error":
       return {
         title: "Family office data could not be loaded",
@@ -150,6 +153,20 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
     ? loadedReadScope === readScopeKey ? loadedStructure : null
     : entityStructure;
   const vm = buildFamilyOfficeScreenViewModel(selectedNodeId, resolvedStructure);
+  const fund = resolvedStructure?.entities.find((entity) => entity.entityId === vm.ownershipGraph.selectedNodeId && entity.entityType === "Fund");
+  const linkedFundUnavailable = selectedNodeId && vm.ownershipGraph.selectedNodeId !== selectedNodeId;
+  const fundNeedsReview = Boolean(fund && (fund.reconciliationBreakCount > 0 || fund.staleValuationWarningCount > 0));
+  const fundRecord: RecordIdentity | null = fund && !linkedFundUnavailable ? {
+    kind: "fund",
+    id: fund.entityId,
+    name: fund.displayName,
+    entity: fund.displayName,
+    asOf: resolvedStructure?.asOfDate,
+    trust: fundNeedsReview ? "Exposure evidence needs review" : "No flagged checks",
+    trustTone: fundNeedsReview ? "review" : "ready",
+    scope: { entityId: fund.entityId }
+  } : null;
+  const fundContext = useRecordWorkspaceContext(fundRecord, { ownershipNode: fund?.entityId }, "#family-office-ownership-detail");
   const selectNode = (nodeId: string) => {
     updateQuery((current) => { const next = new URLSearchParams(current); next.set("ownershipNode", nodeId); return next; });
   };
@@ -161,9 +178,9 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
       description={vm.route.description}
     >
       {entityStructure === undefined && availableClients.length > 0 ? <label className="block text-sm">Family office
-        <select className="ml-3 rounded border border-border bg-background p-2" value={familyOfficeId || (availableClients.length === 1 ? availableClients[0].clientId : "")} onChange={(event) => {
+        <Select className="ml-3" value={familyOfficeId || (availableClients.length === 1 ? availableClients[0].clientId : "")} onChange={(event) => {
           updateQuery((current) => { const next = new URLSearchParams(current); next.set("familyOfficeId", event.target.value); next.delete("ownershipNode"); return next; });
-        }}><option value="">Select a family office</option>{availableClients.map((client) => <option key={client.clientId} value={client.clientId}>{client.displayName}</option>)}</select>
+        }}><option value="">Select a family office</option>{availableClients.map((client) => <option key={client.clientId} value={client.clientId}>{client.displayName}</option>)}</Select>
       </label> : null}
       {entityStructure === undefined ? <form className="flex flex-wrap items-end gap-3 rounded-sm border border-border p-3" onSubmit={(event) => {
         event.preventDefault();
@@ -184,6 +201,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
       </form> : null}
       <OperationalTrustSummary
         label="Family office data confidence"
+        showWhenClear
         source={{
           value: resolvedStructure?.displayName ?? loadStateSourceLabel(loadState),
           detail: "Entity, portfolio, accounting, and private-asset sources",
@@ -208,7 +226,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
         }}
         blocker={vm.notConnected ? {
           value: "Entity setup required",
-          detail: "Connect governed sources before using consolidated values for decisions",
+          detail: "Connect approved sources before using consolidated values for decisions",
           tone: "blocked"
         } : undefined}
       />
@@ -288,7 +306,9 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
             role="region"
             aria-label={vm.ownershipGraph.selectedDetailTitle}
           >
-            {vm.ownershipGraph.selectedNode ? (
+            {linkedFundUnavailable ? (
+              <p role="status" className="text-sm text-muted-foreground">The linked fund is unavailable in the current ownership structure.</p>
+            ) : vm.ownershipGraph.selectedNode ? (
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -316,6 +336,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
             ) : (
               <p className="text-sm text-muted-foreground">{vm.ownershipGraph.selectedDetailEmptyTitle}</p>
             )}
+            {fundRecord ? <RecordIdentitySpine record={fundRecord} context={fundContext} /> : null}
           </section>
         </CardContent>
       </Card>
@@ -333,7 +354,7 @@ function FamilyOfficePanel({ panel }: { panel: FamilyOfficePanelViewModel }) {
 
   return (
     <div className="grid gap-2" aria-label={panel.ariaLabel} role="group">
-      <MetricCard label={panel.label} value={panel.value} tone={statusMetricTone(panel.tone)} />
+      <MetricTile label={panel.label} value={panel.value} tone={statusMetricTone(panel.tone)} />
       <p className="flex items-start gap-2 px-1 text-xs leading-5 text-muted-foreground">
         <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
         <span>{panel.detail}</span>

@@ -1,5 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ApiError } from "@/lib/api-errors";
 import {
   useManualJournalEntryWorkbenchViewModel,
 } from "@/screens/accounting-screen.view-model";
@@ -1288,7 +1289,7 @@ describe("accounting-screen journal-entry view model", () => {
       expect.objectContaining({
         id: "audit",
         value: "1 transition",
-        detail: "Lifecycle transitions retain audit id, correlation id, actor, notes, and evidence routes.",
+        detail: "Lifecycle transitions retain audit id, correlation id, actor, notes, and supporting record links.",
         tone: "success"
       })
     ]));
@@ -1591,7 +1592,7 @@ describe("accounting-screen journal-entry view model", () => {
     expect(services.saveDraft).not.toHaveBeenCalled();
     expect(services.applyLifecycleAction).not.toHaveBeenCalled();
     for (const action of ["Approve", "Post", "Reverse", "Rebook", "LockAfterClose"]) {
-      expect(result.current.lifecycleCommands.find((command) => command.action === action)?.disabledReason).toContain("governed asset workflow");
+      expect(result.current.lifecycleCommands.find((command) => command.action === action)?.disabledReason).toContain("asset workflow");
     }
     expect(result.current.lifecycleStatusText).toContain("generic approval, posting and corrections are unavailable");
   });
@@ -1607,7 +1608,7 @@ describe("accounting-screen journal-entry view model", () => {
     await act(async () => { await result.current.submit(); });
     expect(services.submitApproval).toHaveBeenCalledTimes(1);
     expect(result.current.draft.status).toBe("Submitted");
-    expect(result.current.lifecycleCommands.find((command) => command.action === "Approve")?.disabledReason).toContain("governed asset workflow");
+    expect(result.current.lifecycleCommands.find((command) => command.action === "Approve")?.disabledReason).toContain("asset workflow");
     expect(result.current.lifecycleCommands.find((command) => command.action === "Reject")?.disabledReason).toBeNull();
   });
 
@@ -1762,4 +1763,112 @@ describe("accounting-screen journal-entry view model", () => {
   });
 
 
+});
+
+function lifecycleResult(draft: ManualJournalEntryDraft): JournalEntryLifecycleActionResult {
+  return { journalEntry: draft, generatedJournalEntries: [], transition: {
+    transitionId: "guarded-post", action: "Post", fromStatus: "Approved", toStatus: "Posted",
+    actor: "browser-user", recordedAtUtc: "2026-06-30T03:00:00Z", correlationId: "manual-je-post", evidenceLinks: []
+  } };
+}
+
+describe("manual journal lifecycle response guards and conflicts", () => {
+  it("ignores a late lifecycle receipt after selecting another retained draft", async () => {
+    const target = { ...manualJournalDraft, journalEntryId: "other-journal", memo: "Other draft" };
+    let resolve!: (value: JournalEntryLifecycleActionResult) => void;
+    const services = createJournalServices({
+      getWorkbench: vi.fn().mockResolvedValue({ ...manualJournalWorkbench, drafts: [manualJournalDraft, target] }),
+      applyLifecycleAction: vi.fn().mockReturnValue(new Promise((done) => { resolve = done; }))
+    });
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+    await waitFor(() => expect(result.current.available).toBe(true));
+    let command!: Promise<void>;
+    act(() => { command = result.current.applyLifecycleAction("Post"); });
+    act(() => result.current.selectDraft(target.journalEntryId));
+    await act(async () => { resolve(lifecycleResult({ ...manualJournalDraft, status: "Posted", version: 2 })); await command; });
+    expect(result.current.draft.journalEntryId).toBe(target.journalEntryId);
+    expect(result.current.draft.memo).toBe("Other draft");
+    expect(result.current.lifecycleConflict).toBeNull();
+    expect(result.current.lifecycleStatusText).toBeNull();
+  });
+
+  it("ignores a late conflict after a route scope change and does not reread the old scope", async () => {
+    const other = { ...manualJournalDraft, fundProfileId: "fund-beta", ledgerBookId: "book-beta", journalEntryId: "beta-draft" };
+    let reject!: (error: Error) => void;
+    const services = createJournalServices({
+      getWorkbench: vi.fn().mockResolvedValueOnce(manualJournalWorkbench)
+        .mockResolvedValueOnce({ ...manualJournalWorkbench, fundProfileId: "fund-beta", ledgerBookId: "book-beta", drafts: [other] }),
+      applyLifecycleAction: vi.fn().mockReturnValue(new Promise((_done, fail) => { reject = fail; }))
+    });
+    const view = renderHook(({ search }) => useManualJournalEntryWorkbenchViewModel(true, services, search), { initialProps: { search: "" } });
+    await waitFor(() => expect(view.result.current.available).toBe(true));
+    let command!: Promise<void>;
+    act(() => { command = view.result.current.applyLifecycleAction("Post"); });
+    view.rerender({ search: "?fundProfileId=fund-beta&ledgerBookId=book-beta" });
+    await waitFor(() => expect(view.result.current.draft.journalEntryId).toBe("beta-draft"));
+    await act(async () => { reject(new ApiError({ path: "/journal/lifecycle", status: 409 })); await command; });
+    expect(view.result.current.draft.fundProfileId).toBe("fund-beta");
+    expect(view.result.current.errorText).toBeNull();
+    expect(view.result.current.lifecycleConflict).toBeNull();
+    expect(services.getWorkbench).toHaveBeenCalledTimes(2);
+  });
+
+  it("retains edits made at the same version while a lifecycle action is pending", async () => {
+    let resolve!: (value: JournalEntryLifecycleActionResult) => void;
+    const services = createJournalServices({ applyLifecycleAction: vi.fn().mockReturnValue(new Promise((done) => { resolve = done; })) });
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+    await waitFor(() => expect(result.current.available).toBe(true));
+    let command!: Promise<void>;
+    act(() => { command = result.current.applyLifecycleAction("Post", "  reviewed exactly\n"); });
+    act(() => result.current.updateHeader("memo", "New local notes while posting"));
+    await act(async () => { resolve(lifecycleResult({ ...manualJournalDraft, status: "Posted", version: 2 })); await command; });
+    expect(result.current.draft.memo).toBe("New local notes while posting");
+    expect(result.current.draft.version).toBe(1);
+    expect(result.current.lifecycleConflict?.latest?.version).toBe(2);
+    expect(result.current.lifecycleConflict?.notes).toBe("  reviewed exactly\n");
+    expect(result.current.lifecycleStatusText).toContain("local draft changed");
+    expect(services.applyLifecycleAction).toHaveBeenCalledOnce();
+  });
+
+  it("rereads a 409 once, shows changes, preserves exact notes, and requires explicit latest review", async () => {
+    const latest = { ...manualJournalDraft, memo: "Other operator update", version: 3, status: "Approved" as const,
+      totalDebits: 200, totalCredits: 200, validationIssues: [], lines: manualJournalDraft.lines.map((line) => ({ ...line, amount: 200 })) };
+    const services = createJournalServices({
+      getWorkbench: vi.fn().mockResolvedValueOnce(manualJournalWorkbench).mockResolvedValueOnce({ ...manualJournalWorkbench, drafts: [latest] }),
+      applyLifecycleAction: vi.fn().mockRejectedValue(new ApiError({ path: "/journal/lifecycle", status: 409 }))
+    });
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+    await waitFor(() => expect(result.current.available).toBe(true));
+    await act(async () => result.current.applyLifecycleAction("Post", "  Exact operator note\nSecond line  "));
+    expect(result.current.draft.version).toBe(1);
+    expect(result.current.lifecycleConflict).toMatchObject({ notes: "  Exact operator note\nSecond line  ", loading: false, reviewedLatest: false,
+      latest: { version: 3 }, changes: expect.arrayContaining([{ label: "Version", before: "1", after: "3" }, { label: "Total debits", before: "100 USD", after: "200 USD" }]) });
+    expect(services.getWorkbench).toHaveBeenCalledTimes(2);
+    expect(services.getWorkbench).toHaveBeenLastCalledWith({ fundProfileId: "fund-alpha", ledgerBookId: "book-alpha", journalEntryId: "manual-je-1", periodId: "2026-06" });
+    expect(services.applyLifecycleAction).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ notes: "  Exact operator note\nSecond line  " }));
+    act(() => result.current.reviewLatestLifecycleDraft!());
+    expect(result.current.draft.version).toBe(3);
+    expect(result.current.validationIsCurrent).toBe(false);
+    expect(result.current.lifecycleConflict?.reviewedLatest).toBe(true);
+    expect(services.applyLifecycleAction).toHaveBeenCalledOnce();
+  });
+
+  it("keeps the original draft when the conflict reread fails and discards only the decision", async () => {
+    const services = createJournalServices({
+      getWorkbench: vi.fn().mockResolvedValueOnce(manualJournalWorkbench).mockRejectedValueOnce(new Error("Unavailable")),
+      applyLifecycleAction: vi.fn().mockRejectedValue(new ApiError({ path: "/journal/lifecycle", status: 409 }))
+    });
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+    await waitFor(() => expect(result.current.available).toBe(true));
+    act(() => result.current.updateHeader("memo", "Unsaved local explanation"));
+    await act(async () => result.current.applyLifecycleAction("Post", "Keep these exact notes  "));
+    expect(result.current.draft.memo).toBe("Unsaved local explanation");
+    expect(result.current.lifecycleConflict?.latest).toBeNull();
+    expect(result.current.lifecycleConflict?.unavailableReason).toContain("no command was retried");
+    expect(result.current.lifecycleConflict?.notes).toBe("Keep these exact notes  ");
+    act(() => result.current.discardLifecycleConflict!());
+    expect(result.current.lifecycleConflict).toBeNull();
+    expect(result.current.draft.memo).toBe("Unsaved local explanation");
+    expect(services.applyLifecycleAction).toHaveBeenCalledOnce();
+  });
 });

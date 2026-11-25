@@ -116,7 +116,7 @@ export function buildAssetProfileGovernancePanel(
   return {
     title: "Asset Profile accounting",
     summary: approvedProfiles.length > 0
-      ? `${approvedProfiles.length} approved alternative-asset profile${approvedProfiles.length === 1 ? "" : "s"} are available for governed Security Master creation.`
+      ? `${approvedProfiles.length} approved alternative-asset profile${approvedProfiles.length === 1 ? "" : "s"} are available for Security Master creation.`
       : "No approved asset profiles are available for Security Master creation.",
     statusLabel: approvedProfiles.length > 0 ? `${approvedProfiles.length} approved` : "Approval needed",
     statusVariant,
@@ -175,7 +175,7 @@ export function buildOperationsControlCenter(payload: SettingsScreenPayload): Se
       ? `${checkingCount} configuration surface${checkingCount === 1 ? "" : "s"} still loading; ${loadedCount} loaded.`
       : reviewCount > 0
         ? `${reviewCount} configuration surface${reviewCount === 1 ? "" : "s"} need operator review before close accounting is clean.`
-        : "Ledger mappings, role authority, approval rules, and close posture are loaded for operator review.",
+        : "Ledger mappings, role authority, approval rules, and close status are loaded for operator review.",
     statusLabel: checkingCount > 0
       ? `${checkingCount} checking`
       : reviewCount > 0

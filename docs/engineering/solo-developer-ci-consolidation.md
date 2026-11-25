@@ -2,7 +2,7 @@
 
 **Status:** Documentation Automation consolidation implemented in PR #3336; current-head verification and owner review remain explicit.
 **Owner:** core-team
-**Reviewed:** 2026-10-31 (combined with the workflow inventory from merged PR #3337)
+**Reviewed:** 2026-10-31
 **Scope:** remove duplicate execution without deleting required check identities or financial/security validation.
 
 ## Documentation Automation: one worker, two existing results
@@ -78,9 +78,9 @@ Other workflow or branch-rule changes still require their own explicit owner dec
 | Pull request (path-filtered) | `roadmap-source-docs.yml`, `schema-control.yml`, `golden-path-validation.yml`, `demo-smoke.yml`, `ibapi-smoke.yml`, `windows-desktop-build.yml`, `pipeline-benchmark.yml`, `dependency-locks.yml`, `maintenance.yml`, `web-screenshot-capture.yml`, `copilot-setup-steps.yml` |
 | Merge group | `meridian-ci.yml`, `ci.yml`, `documentation.yml`, `codeql.yml` |
 | Push to `main` | The every-PR set above, `generated-repair-publish.yml`, plus the path-filtered `roadmap-source-docs`, `golden-path-validation`, `demo-smoke`, `ibapi-smoke`, `windows-desktop-build`, `pipeline-benchmark`, `maintenance` |
-| Scheduled | `ci.yml` (daily), `ci-metrics.yml` (daily), `generated-repair-publish.yml` (daily), `production-certification.yml` (Sunday), `desktop-installer-packaging.yml` (Sunday), `codeql.yml` (Tuesday), and, each on a Monday, `maintenance.yml`, `ai-navigation-refresh.yml`, `provider-validation.yml`, `ibapi-runtime.yml` and `release-readiness.yml` |
+| Scheduled | `ci.yml` (daily), `ci-metrics.yml` (daily), `generated-repair-publish.yml` (daily), `production-certification.yml` (Sunday), `desktop-installer-packaging.yml` (Sunday), `codeql.yml` (Tuesday), and, each on a Monday, `maintenance.yml`, `ai-navigation-refresh.yml`, `provider-validation.yml`, `ibapi-runtime.yml`, `release-readiness.yml`, `web-screenshot-capture.yml` and `desktop-screenshot-capture.yml` |
 | `v*` tag | `desktop-installer-packaging.yml`, which calls `meridian-ci`, `ci`, `codeql`, `production-certification` and `publish-smoke` |
-| Manual only | `targeted-test.yml`, `wpf-dev-validation.yml`, `wpf-route-validation.yml`, `robinhood-options-smoke.yml`, `roadmap-tools-manual.yml`, `branch-cleanup.yml`, `ci-concurrency-benchmark.yml`, desktop screenshot/manual/prerelease/publish runners, and `workflow_dispatch` on most others |
+| Manual only | `targeted-test.yml` (including the WPF dev-loop and route modes), `robinhood-options-smoke.yml`, `roadmap-tools-manual.yml`, `branch-cleanup.yml`, `ci-concurrency-benchmark.yml`, desktop manual/prerelease/publish runners, and `workflow_dispatch` on most others |
 | Private / live provider | `provider-validation.yml` and `ibapi-runtime.yml` are scheduled/manual only (never PR-triggered); live-provider evidence belongs here or in the owner's private records. Missing live access yields `live-untested`, never a blocked PR. |
 
 Path filters, exact job conditions, and event sub-types are in each workflow file and [`.github/workflows/README.md`](../../.github/workflows/README.md); this table is a navigation aid and the files remain authoritative.

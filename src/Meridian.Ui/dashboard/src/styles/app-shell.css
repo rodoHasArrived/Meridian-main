@@ -406,7 +406,7 @@ a.workstation-trust-item:focus-visible {
 }
 
 .masthead-status-pill-status {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -435,7 +435,7 @@ a.workstation-trust-item:focus-visible {
   font-size: 0.75rem;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 980px) {
   .masthead-status-pill-title {
     display: none;
   }
@@ -452,7 +452,7 @@ a.workstation-trust-item:focus-visible {
   border-radius: var(--radius-chip, 2px);
   background: var(--topbar-field-bg);
   font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 /* The environment badge is the one part of the session card that must never shrink:
@@ -504,6 +504,15 @@ a.workstation-trust-item:focus-visible {
   min-height: 0;
   overflow: hidden;
   background: var(--theme-bg-canvas, var(--ws-page-bg, #F2F0EB));
+}
+
+/* Route changes and the skip link move focus to <main> so screen readers land in the workbench.
+   It is a non-interactive landmark, not a control, so it draws no ring around the whole page
+   (UX Phase F); controls inside it keep their own focus-visible rings. */
+#workbench-content:focus,
+#workbench-content:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 .workbench-scroll {
@@ -590,7 +599,7 @@ a.workstation-trust-item:focus-visible {
   border-top: 1px solid var(--topbar-border, #3A444D);
   color: var(--statusbar-text, #C9CFD4);
   font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -737,7 +746,10 @@ button.operating-scope-chip:focus-visible { outline: 2px solid var(--interaction
 .operating-scope-chip-item-retained { color: var(--ws-text-muted); font-weight: 500; }
 .operating-scope-chip-sep { color: var(--ws-text-muted); }
 /* The permanent scope bar: "Scope  Account All authorized › Period All authorized". */
-.operating-scope-bar { min-width: 0; }
+.operating-scope-bar { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.operating-scope-bar-account { flex-shrink: 0; width: 13rem; max-width: 40vw; }
+/* "Choose account…" is a prompt, not data: body face so it does not read as a disabled field. */
+.operating-scope-bar-account input { font-family: var(--font-body, ui-sans-serif, system-ui, sans-serif); }
 .operating-scope-bar-button {
   display: inline-flex; align-items: center; gap: 0.5rem; max-width: min(40rem, 46vw); min-height: 1.75rem;
   padding: 0.125rem 0.625rem; border: 1px solid var(--ws-border); border-radius: var(--radius-sm);
@@ -803,12 +815,17 @@ button.operating-scope-bar-button:focus-visible { outline: 2px solid var(--inter
   .workbench-scroll { height: auto; min-height: 16rem; overflow: visible; }
 }
 
-/* Non-real provenance remains visible even with every disclosure closed. */
-.workstation-masthead[data-provenance]:not([data-provenance="real"]) {
+/*
+ * Non-real data inside a LIVE session is the case that can mislead, so it keeps the hazard stripe
+ * even with every disclosure closed. In paper or demo sessions seeded data is expected and the
+ * SEEDED chip in the masthead pill already says so; a permanent stripe there trained operators to
+ * ignore it (UX Phase C).
+ */
+.workstation-masthead[data-environment="live"][data-provenance]:not([data-provenance="real"]) {
   position: relative;
   border-top: 3px solid transparent;
 }
-.workstation-masthead[data-provenance]:not([data-provenance="real"])::before {
+.workstation-masthead[data-environment="live"][data-provenance]:not([data-provenance="real"])::before {
   content: "";
   position: absolute;
   inset: -3px 0 auto;
@@ -823,7 +840,7 @@ button.operating-scope-bar-button:focus-visible { outline: 2px solid var(--inter
   border-radius: var(--radius-chip);
   padding: 0.125rem 0.3125rem;
   color: var(--chrome-warn);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
   line-height: 1.2;
 }

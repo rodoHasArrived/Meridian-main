@@ -10,6 +10,7 @@ import { LocalDateText } from "@/components/ui/local-date-text";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { describeApiError, isApiError } from "@/lib/api-errors";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { captureClosePlanTemplate, createPreparedClosePlan, getClosePreparationBooks, getClosePreparationPeriods, getClosePreparationSource, listClosePlanTemplates, listClosePreparationSources, previewClosePreparation } from "@/lib/api/close-preparation.api";
 import type { ClosePeriodPlan, LedgerBook, LedgerPeriod, OperationsContinuityWorkflowSummary } from "@/types";
 import type { CaptureClosePlanTemplateRequest, ClosePlanTemplate, ClosePreparationHistory, ClosePreparationPreview, PreparedClosePlanResult } from "@/types/close-preparation";
@@ -138,15 +139,17 @@ function ClosePreparationTemplateEditor({ workflowId }: { workflowId: string }) 
   const [busy, setBusy] = useState(false);
   const [hasPending, setHasPending] = useState(false);
   const controller = useRef<AbortController | null>(null);
+  const softRevision = useRef(-1); // A header refresh re-reads the plan without resetting the operator's template selection.
+  useOnGlobalRefresh(() => { if (!busy && !hasPending) { softRevision.current = revision + 1; setRevision(revision + 1); } });
   useEffect(() => {
     const request = new AbortController();
     controller.current = request;
-    setLoaded(null); setError(null); setSelected(""); setPrevious(null); setHasPending(false);
+    if (softRevision.current !== revision) { setLoaded(null); setError(null); setSelected(""); setPrevious(null); setHasPending(false); }
     void Promise.all([getClosePreparationSource(workflowId, request.signal), listClosePlanTemplates(workflowId, request.signal)])
       .then(async ([plan, templates]) => {
         const books = await getClosePreparationBooks(plan.ledgerBookId!, request.signal);
         if (!request.signal.aborted) {
-          setLoaded({ plan, templates, books });
+          setLoaded({ plan, templates, books }); setError(null);
           const pendingTemplate = templates.find(item => matchingPendingCreation(item, books));
           setHasPending(Boolean(pendingTemplate));
           if (pendingTemplate) setSelected(templateKey(pendingTemplate));
@@ -174,7 +177,7 @@ function ClosePreparationTemplateEditor({ workflowId }: { workflowId: string }) 
     {error ? <StatusBanner tone="danger" title="Preparation unavailable" detail={error} role="alert" /> : null}
     {!loaded && error ? <Button variant="outline" onClick={() => setRevision(value => value + 1)}>Retry selected plan</Button> : null}
     {loaded ? <>
-      <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap gap-3 text-sm"><Badge variant="outline">{loaded.plan.periodStart} – {loaded.plan.periodEnd}</Badge><span>{loaded.plan.tasks.length} tasks</span><span>{loaded.plan.isPeriodLocked ? "Source period locked" : "Source period open"}</span></div><Button size="sm" variant="outline" disabled={busy || hasPending} onClick={() => setRevision(value => value + 1)}>Refresh source plan</Button></div>
+      <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap gap-3 text-sm"><Badge variant="outline">{loaded.plan.periodStart} – {loaded.plan.periodEnd}</Badge><span>{loaded.plan.tasks.length} tasks</span><span>{loaded.plan.isPeriodLocked ? "Source period locked" : "Source period open"}</span></div></div>
       {loaded.plan.configuration?.preparation ? <section aria-label="Retained plan creation" className="space-y-2 rounded border border-border p-3 text-sm">
         <h4 className="font-semibold">Retained plan creation</h4>
         <p className="break-words">Template {loaded.plan.configuration.preparation.templateId} · v{loaded.plan.configuration.preparation.templateVersion}</p>
@@ -281,7 +284,7 @@ function ClosePreparationTarget({ template, books, onPendingChange }: { template
         if (isStalePreviewError(reason)) {
           clearPendingCreation(command); setPending(null);
           setPreview(null); creationKey.current = null; setRetryCreate(false);
-          setError(`${message(reason)} Refresh the preview before creating the plan.`);
+          setError(`${message(reason)} Recalculate the preview before creating the plan.`);
         } else { setRetryCreate(true); setError(`${message(reason)} Retry creation to recover the same plan; the retry keeps the original request identity.`); }
       }
     } finally { if (requestGeneration === generation.current && !request.signal.aborted) setBusy(null); }
@@ -316,11 +319,11 @@ function ClosePreparationTarget({ template, books, onPendingChange }: { template
       {selectedBook ? <p className="text-sm"><strong>{selectedPolicyChanged ? "Policy changed" : "Book policy"}:</strong> {template.sourceAccountingPolicyId} · {template.sourceAccountingPolicyVersion} → {selectedBook.accountingPolicyId} · {selectedBook.accountingPolicyVersion}</p> : null}
       <Checkbox label="I have reviewed policy changes for this target book and period" checked={policyAcknowledged} onCheckedChange={checked => { invalidate(); setPolicyAcknowledged(checked); }} />
     </fieldset>
-    {!result ? <Button variant="outline" disabled={!bookId || !periodId || Boolean(busy) || Boolean(pending)} onClick={() => void runPreview()}>{busy === "preview" ? "Calculating preview…" : preview || error ? "Refresh preview" : "Preview next period"}</Button> : null}
+    {!result ? <Button variant="outline" disabled={!bookId || !periodId || Boolean(busy) || Boolean(pending)} onClick={() => void runPreview()}>{busy === "preview" ? "Calculating preview…" : preview || error ? "Recalculate preview" : "Preview next period"}</Button> : null}
     {error ? <StatusBanner tone="danger" title="Preparation needs attention" detail={error} role="alert" /> : null}
     {preview ? <ClosePreparationPreviewDetails preview={preview} /> : null}
     {preview && !result ? <>
-      {expired ? <StatusBanner tone="warning" title="Preview expired" detail="Refresh the preview to recheck the source, target period, calendar and policies." role="status" /> : null}
+      {expired ? <StatusBanner tone="warning" title="Preview expired" detail="Recalculate the preview to recheck the source, target period, calendar and policies." role="status" /> : null}
       <p className="text-xs text-muted-foreground">Preview valid until {preview.expiresAtUtc}. Creation rechecks current source and target versions.</p>
       <Button disabled={!preview.canCreate || preview.issues.some(issue => issue.isBlocking) || Boolean(busy) || (expired && !retryCreate)} onClick={() => void create()}>{busy === "create" ? "Creating fresh plan…" : retryCreate ? "Retry creation" : "Create next-period plan"}</Button>
     </> : null}

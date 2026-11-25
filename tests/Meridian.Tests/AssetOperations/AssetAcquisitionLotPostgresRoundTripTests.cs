@@ -63,8 +63,12 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
 
     private static async Task AssertSpineAcquisitionAsync(bool faceLot,
         BondAmortizationMethod? method = BondAmortizationMethod.StraightLine,
-        bool legacyDraft = false, bool retainedApproval = false)
+        bool legacyDraft = false, bool retainedApproval = false, bool receiptBacked = false)
     {
+        var acquiredQuantity = receiptBacked ? 1_000m : Quantity;
+        var acquiredUnitCost = receiptBacked ? 101.25m : UnitCost;
+        var acquiredAmount = acquiredQuantity * acquiredUnitCost;
+        var journalAmount = acquiredAmount + (receiptBacked ? 1_500m : 0m);
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
         var ct = timeout.Token;
         await using var server = await PostgresTestServer.CreateAsync("MERIDIAN_LEDGER_CONNECTION_STRING", ct: ct);
@@ -98,7 +102,7 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
         var books = new PostgresLedgerBookService(journal);
         assets = new PostgresAssetOperationsProjectionStore(assetOptions, journal);
         var securityId = Guid.NewGuid();
-        var securityQuery = await CreateSecurityAsync(securityOptions, securityId, ct);
+        var securityQuery = await CreateSecurityAsync(securityOptions, securityId, faceLot, ct);
         var bookId = Guid.NewGuid();
         var periodId = Guid.NewGuid();
         var ownerId = Guid.NewGuid();
@@ -121,13 +125,15 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
                     RequiresApproval: true, AllowsAutoPosting: false)])), ct);
         var configurationStore = new PostgresAccountingConfigurationStore(ledgerOptions);
         var configuration = new AccountingConfigurationService(configurationStore, configurationStore, books);
-        await ConfigureAcquisitionRuleAsync(configuration, bookId, ct);
+        await ConfigureAcquisitionRuleAsync(configuration, bookId, ct, receiptBacked);
         var candidateBuilder = new AccountingPostingCandidateService(configuration,
             new AccountingJournalDraftService(policies, new AccountingBasisProjectionService(policies)),
             books, policies, taxLotStore: journal);
+        var settlementService = receiptBacked ? CreateGoldenBondSettlementService(securityId) : null;
         var spineService = new AssetAccountingEventSpineService(
             legacyDraft ? new LegacyAcquisitionDraftFixtureStore(assets) : assets,
-            assets, securityQuery, books, policies, configuration, candidateBuilder, journal);
+            assets, securityQuery, books, policies, configuration, candidateBuilder, journal,
+            bondSettlementConsiderationService: settlementService);
 
         var positionId = Guid.NewGuid();
         var eventId = Guid.NewGuid();
@@ -167,30 +173,48 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
         { RetainedEvidence = [retainedEvidence] }, null, 0,
             new AssetOperationsWriteApprovalDto(Approver, "document://position-approval/acquisition",
                 "Retain the explicitly identified holding for this test.", DateTimeOffset.UtcNow), ct);
+        var projectedLines = new List<ProjectedAccountingEffectLineDto>
+        {
+            new(InvestmentAccount, acquiredAmount, 0m, "USD", Dimensions: dimensions),
+            new("assets/cash", 0m, journalAmount, "USD", Dimensions: dimensions)
+        };
+        if (receiptBacked)
+            projectedLines.Add(new("assets/purchased-interest", 1_500m, 0m, "USD", Dimensions: dimensions));
         var projectedEffect = new ProjectedAccountingEffectDto(lineage.ProjectionRunId, lineage.ModelKey,
-            lineage.ModelVersion, EffectiveDate, Amount, Amount, "USD",
-            [new ProjectedAccountingEffectLineDto(InvestmentAccount, Amount, 0m, "USD", Dimensions: dimensions),
-             new ProjectedAccountingEffectLineDto("assets/cash", 0m, Amount, "USD", Dimensions: dimensions)]);
+            lineage.ModelVersion, EffectiveDate, journalAmount, journalAmount, "USD", projectedLines);
         var scope = new AssetAccountingEventScopeDto(securityId, 1, positionId, position.Version, bookId, periodId,
             AccountingBasisKindDto.Gaap, Fund, Tenant, Company, dimensions);
         await spineService.ProjectAsync(new ProjectAssetAccountingEventRequestDto(
             AssetAccountingEventKindDto.Acquisition, scope, economicEvent, lineage, projectedEffect,
-            Amount, "USD", period.Version, Preparer, DateTimeOffset.UtcNow, [retainedEvidence]), ct);
+            acquiredAmount, "USD", period.Version, Preparer, DateTimeOffset.UtcNow, [retainedEvidence]), ct);
 
         var lotRecordId = Guid.NewGuid();
         var draftRequest = new AssetAccountingPostingCandidateRequestDto(
-            AssetAccountingEventKindDto.Acquisition, scope, economicEvent, lineage, Amount, "USD",
+            AssetAccountingEventKindDto.Acquisition, scope, economicEvent, lineage, acquiredAmount, "USD",
             Preparer, DateTimeOffset.UtcNow, "100 shares at USD 25", 2, period.Version,
             RetainedEvidence: [retainedEvidence],
             LotMutation: new AssetLotMutationInstructionDto(
                 AssetLotMutationIntentDto.Acquire,
                 faceLot
                     // 2,500 face at 100 per 100 of par: quantity is the face per 100 of par.
-                    ? new AssetAcquisitionLotDto(lotRecordId, "lot-acquired", EffectiveDate, Quantity, UnitCost,
-                        InvestmentAccount, OriginalFace: Quantity * 100m, BookedFactor: 1m, ParBasis: 100m,
+                    ? new AssetAcquisitionLotDto(lotRecordId, "lot-acquired", EffectiveDate, acquiredQuantity, acquiredUnitCost,
+                        InvestmentAccount, OriginalFace: acquiredQuantity * 100m, BookedFactor: 1m, ParBasis: 100m,
                         AmortizationMethod: method)
                     : new AssetAcquisitionLotDto(lotRecordId, "lot-acquired", EffectiveDate, Quantity, UnitCost,
                         InvestmentAccount)));
+        if (receiptBacked)
+        {
+            var prepared = await settlementService!.PrepareAsync(new BondSettlementConsiderationRequest(
+                new BondAnalyticsRequest(securityId, new BondCalculationContext(DateTimeOffset.UtcNow, EffectiveDate), CleanPrice: 101.25m),
+                100_000m, 1m, 0m, 102_750m, retainedEvidence.EvidenceId, "assets/cash", "assets/purchased-interest"), ct);
+            prepared.IsBlocked.Should().BeFalse();
+            draftRequest = draftRequest with
+            {
+                Description = "100,000 face premium bond with purchased interest",
+                LotMutation = draftRequest.LotMutation! with
+                { Acquisition = draftRequest.LotMutation.Acquisition! with { SettlementConsideration = prepared.Settlement } }
+            };
+        }
         if (faceLot && method is null)
         {
             var draft = () => spineService.BuildPostingCandidateAsync(draftRequest, ct);
@@ -219,7 +243,8 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
             AssetAccountingEvidenceSubjects.PostingApprovalSubjectId(
                 eventId, 1, Fund, bookId, periodId, AccountingBasisKindDto.Gaap, approvalId,
                 drafted.DraftedCandidateFingerprint!, Tenant, Company));
-        var posting = new AccountingPostingCandidatePostService(candidateBuilder, journal, assetAccountingEventStore: assets);
+        var posting = new AccountingPostingCandidatePostService(candidateBuilder, journal, assetAccountingEventStore: assets,
+            bondSettlementConsiderationService: settlementService);
         var postRequest = new PostPostingRuleJournalCandidateRequestDto(
             candidate, Approver, approvalId, ApprovalNotes: "Approve the confirmed acquisition.",
             TenantId: Tenant, CompanyId: Company)
@@ -267,7 +292,12 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
             }
         }
         var originalApproval = retainedApproval ? (await assets.GetAsync(eventId, 1, 4, ct))!.Projection : null;
-        var posted = await posting.PostCandidateAsync(postRequest, ct);
+        PostedPostingRuleJournalCandidateResultDto posted;
+        if (receiptBacked)
+            (posted, postRequest) = await PostGoldenBondThroughReviewAsync(ledgerOptions, configuration, configurationStore,
+                journal, spineService, posting, new AssetAccountingPostingCandidateDto(drafted, drafted.DraftedCandidateResult!), ct);
+        else
+            posted = await posting.PostCandidateAsync(postRequest, ct);
         posted.WasReplay.Should().BeFalse();
         posted.TaxLotMutationBatchId.Should().NotBeNull();
 
@@ -290,8 +320,8 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
         facts.AcquisitionCurrency.Should().Be("USD");
         facts.FunctionalCurrency.Should().Be("USD");
         facts.AcquisitionFxRateToFunctional.Should().Be(1m);
-        facts.TransactionCostBasis.Should().Be(Amount);
-        facts.FunctionalCostBasis.Should().Be(Amount);
+        facts.TransactionCostBasis.Should().Be(acquiredAmount);
+        facts.FunctionalCostBasis.Should().Be(acquiredAmount);
         facts.HoldingPeriodStartDate.Should().Be(EffectiveDate);
         facts.Evidence.Should().HaveCount(legacyDraft ? 2 : 1);
         var lotEvidence = facts.Evidence.Single(item => item.EvidenceUri == retainedEvidence.EvidenceUri);
@@ -301,15 +331,15 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
         lotEvidence.ContentHashSha256.Should().Be(sourceHash);
         lotEvidence.ReviewedBy.Should().Be(Approver, "the independent approver reviewed the lot-bound facts");
 
-        lot.ToOpenLot().OpenFunctionalCostBasis.Should().Be(Amount);
+        lot.ToOpenLot().OpenFunctionalCostBasis.Should().Be(acquiredAmount);
         var relief = CanonicalOpenLotDisposalGuard.Validate(
             [lot],
             [new LedgerTaxLotDisposalSelection(lot.TaxLotRecordId, lot.LotId, lot.Version, lot.OpenQuantity,
-                40m, 0, retainedEvidence.EvidenceId, UnitCost, 40m * UnitCost)],
+                40m, 0, retainedEvidence.EvidenceId, acquiredUnitCost, 40m * acquiredUnitCost)],
             LedgerTaxLotReliefMethod.Fifo,
             "USD");
         relief.Quantity.Should().Be(faceLot ? 40m * 100m : 40m, "face relief is stated in face, units relief in units");
-        relief.FunctionalCostBasis.Should().Be(40m * UnitCost);
+        relief.FunctionalCostBasis.Should().Be(40m * acquiredUnitCost);
 
         // A retry replays the retained batch exactly rather than colliding on the fact-bearing fingerprint.
         var replaySecurities = new PostgresSecurityMasterStore(securityOptions);
@@ -319,10 +349,25 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
             postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
         replayAssets = new PostgresAssetOperationsProjectionStore(assetOptions, replayJournal);
         var replay = await new AccountingPostingCandidatePostService(
-                candidateBuilder, replayJournal, assetAccountingEventStore: replayAssets)
+                candidateBuilder, replayJournal, assetAccountingEventStore: replayAssets,
+                bondSettlementConsiderationService: settlementService)
             .PostCandidateAsync(postRequest, ct);
         replay.WasReplay.Should().BeTrue();
         replay.TaxLotMutationBatchId.Should().Be(posted.TaxLotMutationBatchId);
+        if (receiptBacked)
+        {
+            var retainedJournal = (await replayJournal.GetByPeriodAsync(periodId, ct: ct)).Should().ContainSingle().Subject.Entry;
+            retainedJournal.Lines.Sum(line => line.Debit).Should().Be(102_750m);
+            retainedJournal.Lines.Sum(line => line.Credit).Should().Be(102_750m);
+            retainedJournal.Lines.Should().ContainSingle(line => line.Account == new LedgerAccount("Investments", LedgerAccountType.Asset)
+                && line.Debit == 101_250m && line.Credit == 0m);
+            retainedJournal.Lines.Should().ContainSingle(line => line.Account == new LedgerAccount("Purchased accrued interest", LedgerAccountType.Asset)
+                && line.Debit == 1_500m && line.Credit == 0m);
+            retainedJournal.Lines.Should().ContainSingle(line => line.Account == new LedgerAccount("Cash", LedgerAccountType.Asset)
+                && line.Credit == 102_750m && line.Debit == 0m);
+            (await replayJournal.ListOpenTaxLotsByAssetScopeAsync(bookId, securityId, positionId, EffectiveDate, ct))
+                .Should().ContainSingle().Which.Acquisition!.FunctionalCostBasis.Should().Be(101_250m);
+        }
         if (legacyDraft)
         {
             var retainedDraft = (await assets.GetAsync(eventId, 1, 3, ct))!.Projection;
@@ -350,7 +395,7 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
     }
 
     private static async Task<SecurityMasterQueryService> CreateSecurityAsync(
-        SecurityMasterOptions options, Guid securityId, CancellationToken ct)
+        SecurityMasterOptions options, Guid securityId, bool faceLot, CancellationToken ct)
     {
         var events = new PostgresSecurityMasterEventStore(options, NullLogger<PostgresSecurityMasterEventStore>.Instance);
         var snapshots = new PostgresSecurityMasterSnapshotStore(options);
@@ -358,6 +403,25 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
         var rebuilder = new SecurityMasterAggregateRebuilder(events, snapshots);
         var service = new SecurityMasterService(events, snapshots, store, rebuilder, options,
             NullLogger<SecurityMasterService>.Instance);
+        // Only a face-value class may be booked with a Face quantity basis (LotQuantityBasisRules),
+        // so the face-lot cases acquire a bond and the unit-lot cases an equity.
+        if (faceLot)
+        {
+            await service.CreateAsync(new CreateSecurityRequest(securityId, "Bond",
+                JsonSerializer.SerializeToElement(new
+                {
+                    displayName = "Acquisition test bond",
+                    currency = "USD",
+                    countryOfRisk = "US",
+                    issuerName = "Fixture issuer"
+                }),
+                JsonSerializer.SerializeToElement(new { maturity = "2036-01-15", couponRate = 0.05m }),
+                [new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "ACQB" + securityId.ToString("N"), true,
+                    new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero))],
+                new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero), "test", Preparer, null, "Test bond"), ct);
+            return new SecurityMasterQueryService(events, store, rebuilder);
+        }
+
         await service.CreateAsync(new CreateSecurityRequest(securityId, "Equity",
             JsonSerializer.SerializeToElement(new
             {
@@ -377,7 +441,7 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
     }
 
     private static async Task ConfigureAcquisitionRuleAsync(
-        AccountingConfigurationService configuration, Guid bookId, CancellationToken ct)
+        AccountingConfigurationService configuration, Guid bookId, CancellationToken ct, bool receiptBacked = false)
     {
         foreach (var node in new[] {
             new ChartOfAccountsNodeDto("investments", InvestmentAccount, "Investments", "Asset"),
@@ -386,13 +450,26 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
             await configuration.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
                 Fund, node, Approver, CompanyId: Company, LedgerBookId: bookId, TenantId: Tenant), ct);
         }
+        if (receiptBacked)
+            await configuration.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(Fund,
+                new ChartOfAccountsNodeDto("purchased-interest", "assets/purchased-interest", "Purchased accrued interest", "Asset"),
+                Approver, CompanyId: Company, LedgerBookId: bookId, TenantId: Tenant), ct);
+        var formulas = new List<AccountingRuleFormulaDto> { new("amount", AccountingRuleFormulaKindDto.SourceAmount, 0m) };
+        var postings = new List<GeneratedPostingLineDto>
+        {
+            new("investments", InvestmentAccount, AccountingTemplateLineSideDto.Debit, "amount", 0m, "USD"),
+            new("cash", "assets/cash", AccountingTemplateLineSideDto.Credit, receiptBacked ? "dirty" : "amount", 0m, "USD")
+        };
+        if (receiptBacked)
+        {
+            formulas.Add(new("purchased", AccountingRuleFormulaKindDto.FixedAmount, 1_500m));
+            formulas.Add(new("dirty", AccountingRuleFormulaKindDto.FixedAmount, 102_750m));
+            postings.Add(new("purchased-interest", "assets/purchased-interest", AccountingTemplateLineSideDto.Debit, "purchased", 0m, "USD"));
+        }
         await configuration.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(Fund,
             new PostingRuleDto(Rule, "Asset acquisition", "AssetAccounting.Acquisition", "generated", "v1",
                 EffectiveFrom: new DateOnly(2026, 1, 1), Priority: 100,
-                Formulas: [new AccountingRuleFormulaDto("amount", AccountingRuleFormulaKindDto.SourceAmount, 0m)],
-                GeneratedPostings: [
-                    new GeneratedPostingLineDto("investments", InvestmentAccount, AccountingTemplateLineSideDto.Debit, "amount", 0m, "USD"),
-                    new GeneratedPostingLineDto("cash", "assets/cash", AccountingTemplateLineSideDto.Credit, "amount", 0m, "USD")]),
+                Formulas: formulas, GeneratedPostings: postings),
             Approver, CompanyId: Company, LedgerBookId: bookId, TenantId: Tenant), ct);
     }
 }

@@ -33,6 +33,8 @@ export interface ProviderRateLimitRow {
   status: string;
   statusTone: "success" | "warning" | "danger";
   requestUsage: string;
+  backfillAttempts: string;
+  dailyUsage: string;
   remaining: string;
   resetCountdown: string;
   failureReason: string;
@@ -52,7 +54,7 @@ export interface ProviderAccountingPanelState {
   observedAt: string | null;
 }
 
-const HISTORY_GUIDANCE = "Inspect retained observations in Rate-limit and quota history below. History is bounded and cleared on host restart.";
+const HISTORY_GUIDANCE = "Rate-limit and quota history shows recent events and seven UTC days of retained daily totals.";
 
 const defaultServices: ProviderAccountingServices = {
   getCatalog: (signal) => workstationApi.getProviderCatalog({ signal }),
@@ -184,6 +186,7 @@ function buildRateLimitRow(
   const resetCountdown = formatResetCountdown(provider.resetAt, now);
   const limited = provider.stateAvailable && provider.isRateLimited;
   const reason = normalizeReason(provider.reason);
+  const unit = provider.quotaUnit ?? "requests";
 
   return {
     source: provider,
@@ -193,9 +196,17 @@ function buildRateLimitRow(
     status: !provider.stateAvailable ? "State unavailable" : limited ? "Rate limited" : "Available",
     statusTone: !provider.stateAvailable ? "warning" : limited ? "danger" : "success",
     requestUsage: provider.requestsInWindow === null
-      ? `Unavailable / ${provider.maxRequestsPerWindow}`
-      : `${provider.requestsInWindow} / ${provider.maxRequestsPerWindow}`,
-    remaining: provider.remainingRequests === null ? "Unavailable" : provider.remainingRequests.toString(),
+      ? `Unavailable / ${provider.maxRequestsPerWindow} ${unit}`
+      : `${provider.requestsInWindow} / ${provider.maxRequestsPerWindow} ${unit}`,
+    backfillAttempts: provider.backfillAttemptsInWindow == null
+      ? "Unavailable"
+      : `${provider.backfillAttemptsInWindow} per ${provider.backfillAttemptWindowSeconds}s`,
+    remaining: provider.remainingRequests === null ? "Unavailable" : `${provider.remainingRequests} ${unit}`,
+    dailyUsage: !provider.stateAvailable || provider.dailyMaximum === undefined
+      ? "Unavailable"
+      : provider.dailyMaximum === null
+        ? "No daily cap modeled"
+        : `${provider.dailyUnitsUsed ?? "Unavailable"} / ${provider.dailyMaximum} ${unit} · ${provider.dailyResetPolicy === "utc-midnight" ? "midnight UTC" : provider.dailyResetPolicy === "rolling-24-hours" ? "rolling 24 hours" : "reset policy unavailable"}`,
     resetCountdown,
     failureReason: limited
       ? `Current rate-limit reason: ${reason ?? "reason unavailable"}.`
@@ -244,7 +255,7 @@ function normalizeProviderId(value: string): string {
 }
 
 function buildRetryPosture(provider: ProviderRateLimitSnapshot, resetCountdown: string): string {
-  if (!provider.stateAvailable) return "Retry posture unavailable until runtime diagnostics are exposed.";
+  if (!provider.stateAvailable) return "Retry status unavailable until runtime diagnostics are exposed.";
   if (!provider.isRateLimited) return "Requests may proceed within the reported window.";
   if (provider.resetAt) return `Retry after ${resetCountdown.toLowerCase()}.`;
   return "Retry is blocked; the provider did not report a reset time.";

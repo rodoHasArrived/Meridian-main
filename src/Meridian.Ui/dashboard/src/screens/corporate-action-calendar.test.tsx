@@ -9,6 +9,7 @@ import { CorporateActionDeadlinePanel } from "@/screens/corporate-action-deadlin
 import { corporateActionCalendarRange, updateCorporateActionCalendarSearch } from "@/screens/corporate-action-calendar.view-state";
 import * as api from "@/lib/api/corporate-action-calendar.api";
 import { ApiError } from "@/lib/api-errors";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import type { CorporateActionCalendarPage, CorporateActionCaseDeadlines, CorporateActionDeadlineMutationResult } from "@/types/corporate-action-calendar.types";
 
 vi.mock("@/lib/api/corporate-action-calendar.api", () => ({ getCorporateActionCalendar: vi.fn(), getCorporateActionCaseDeadlines: vi.fn(), recordCorporateActionDeadline: vi.fn(), previewCorporateActionDeadlineImport: vi.fn(), importCorporateActionDeadlines: vi.fn() }));
@@ -174,6 +175,22 @@ describe("sourced deadline capture", () => {
     await user.type(screen.getByLabelText("Deadline CSV"), "changed");
     expect(screen.queryByRole("button", { name: "Accept reviewed deadline CSV" })).not.toBeInTheDocument();
     expect(api.importCorporateActionDeadlines).not.toHaveBeenCalled();
+  });
+  it("keeps a CSV preview under review across a header refresh and re-reads deadlines otherwise", async () => {
+    vi.mocked(api.getCorporateActionCaseDeadlines).mockResolvedValue(detail);
+    vi.mocked(api.previewCorporateActionDeadlineImport).mockResolvedValue({ previewHash: "preview-1", expectedVersion: 1, rows: [{ row: 2, deadline: { seriesId: "series-1", kind: "IssuerElection", sourceParty: "Issuer", date: "2026-11-16", withdrawn: false, sourceText: "Source deadline November 16" }, evidenceReference: "document://notice", evidenceHash: "a".repeat(64), rationale: "Reviewed source" }], errors: [] });
+    const user = userEvent.setup();
+    const view = render(<GlobalRefreshProvider sequence={0}><CorporateActionDeadlinePanel caseId="case-1" onChanged={vi.fn()} /></GlobalRefreshProvider>);
+    const headerRefresh = (sequence: number) => view.rerender(<GlobalRefreshProvider sequence={sequence}><CorporateActionDeadlinePanel caseId="case-1" onChanged={vi.fn()} /></GlobalRefreshProvider>);
+    await user.click(await screen.findByText("Import sourced deadline CSV"));
+    expect(screen.queryByRole("button", { name: /Refresh/ })).not.toBeInTheDocument();
+    headerRefresh(1);
+    await waitFor(() => expect(api.getCorporateActionCaseDeadlines).toHaveBeenCalledTimes(2));
+    await user.click(screen.getByRole("button", { name: "Preview deadline CSV" }));
+    await screen.findByRole("button", { name: "Accept reviewed deadline CSV" });
+    headerRefresh(2);
+    expect(api.getCorporateActionCaseDeadlines).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole("button", { name: "Accept reviewed deadline CSV" })).toBeInTheDocument();
   });
   it.each(["mismatched-scope", "partial"])("retains the original CSV command for %s outcomes", async (outcome) => {
     vi.mocked(api.getCorporateActionCaseDeadlines).mockResolvedValue(detail);

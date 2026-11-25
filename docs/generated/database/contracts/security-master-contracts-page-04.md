@@ -2,11 +2,51 @@
 
 # `security-master-contracts` data objects - page 4 of 8
 
-Objects 241-320 of 577. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 607. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_OtcCollateralAgreementDto["OtcCollateralAgreementDto"] {
+        +Guid CollateralAgreementId
+        +string Currency
+        +DateOnly EffectiveDate
+        +IReadOnlyList~OtcEligibleCollateralDto~ EligibleCollateral
+        +decimal? IndependentAmount
+        +Guid MasterAgreementId
+        +decimal MinimumTransferAmount
+        +string? Notes
+        +decimal? RoundingAmount
+        +DateOnly? TerminationDate
+        +decimal ThresholdOurs
+        +decimal ThresholdTheirs
+    }
+    class Meridian_Contracts_SecurityMaster_OtcCollateralBalanceDto["OtcCollateralBalanceDto"] {
+        +Guid BalanceId
+        +Guid CollateralAgreementId
+        +string Currency
+        +OtcCollateralDirection Direction
+        +string EligibleCollateralDescription
+        +decimal HaircutPercent
+        +OtcCollateralKind Kind
+        +string? Notes
+        +decimal Quantity
+        +string? Reference
+        +Guid? SecurityId
+        +decimal UnitValue
+    }
+    class Meridian_Contracts_SecurityMaster_OtcCollateralDirection["OtcCollateralDirection"] {
+    }
+    class Meridian_Contracts_SecurityMaster_OtcCollateralHeldLineDto["OtcCollateralHeldLineDto"] {
+        +Guid BalanceId
+        +string Description
+        +OtcCollateralDirection Direction
+        +decimal HaircutAdjusted
+        +decimal HaircutPercent
+        +OtcCollateralKind Kind
+        +decimal ValuedAmount
+        +DateOnly ValuedAsOf
+    }
     class Meridian_Contracts_SecurityMaster_OtcCollateralJsonContext["OtcCollateralJsonContext"] {
     }
     class Meridian_Contracts_SecurityMaster_OtcCollateralKind["OtcCollateralKind"] {
@@ -300,6 +340,23 @@ classDiagram
         +decimal? PostPaydownFactor
         +decimal? PrincipalAmount
     }
+    class Meridian_Contracts_SecurityMaster_ProviderAssetClassCode["ProviderAssetClassCode"] {
+        +string CatalogAssetClass
+        +string Code
+        +IReadOnlyList~string~ InputAliases
+        +string Provider
+        +ProviderAssetClassCodeRoles Roles
+        +ProviderAssetClassCodeTraits Traits
+    }
+    class Meridian_Contracts_SecurityMaster_ProviderAssetClassCodeCatalog["ProviderAssetClassCodeCatalog"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ProviderAssetClassCodeProviders["ProviderAssetClassCodeProviders"] {
+        +IReadOnlyList~string~ All
+    }
+    class Meridian_Contracts_SecurityMaster_ProviderAssetClassCodeRoles["ProviderAssetClassCodeRoles"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ProviderAssetClassCodeTraits["ProviderAssetClassCodeTraits"] {
+    }
     class Meridian_Contracts_SecurityMaster_PublishSecurityCurveVersionRequest["PublishSecurityCurveVersionRequest"] {
         +DateOnly AsOf
         +Guid CurveId
@@ -444,34 +501,11 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_ScheduleSpecFactory["ScheduleSpecFactory"] {
     }
-    class Meridian_Contracts_SecurityMaster_ScheduleTermsWriteRules["ScheduleTermsWriteRules"] {
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleAnchorMode["ScheduleAnchorMode"] {
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarPurpose["ScheduleCalendarPurpose"] {
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarUsage["ScheduleCalendarUsage"] {
-        +string CalendarId
-        +string ContentHash
-        +ScheduleCalendarPurpose Purpose
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleDayCount["ScheduleDayCount"] {
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnostic["ScheduleDiagnostic"] {
-        +string CalendarId
-        +ScheduleDiagnosticCode Code
-        +DateOnly Date
-        +string Message
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnosticCode["ScheduleDiagnosticCode"] {
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleDirection["ScheduleDirection"] {
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailure["ScheduleFailure"] {
-        +ScheduleFailureCode Code
-        +DateOnly? Date
-        +string Message
-    }
+    Meridian_Contracts_SecurityMaster_OtcCollateralAgreementDto --> Meridian_Contracts_SecurityMaster_OtcEligibleCollateralDto
+    Meridian_Contracts_SecurityMaster_OtcCollateralBalanceDto --> Meridian_Contracts_SecurityMaster_OtcCollateralDirection
+    Meridian_Contracts_SecurityMaster_OtcCollateralBalanceDto --> Meridian_Contracts_SecurityMaster_OtcCollateralKind
+    Meridian_Contracts_SecurityMaster_OtcCollateralHeldLineDto --> Meridian_Contracts_SecurityMaster_OtcCollateralDirection
+    Meridian_Contracts_SecurityMaster_OtcCollateralHeldLineDto --> Meridian_Contracts_SecurityMaster_OtcCollateralKind
     Meridian_Contracts_SecurityMaster_OtcCollateralMovementDto --> Meridian_Contracts_SecurityMaster_OtcMovementKind
     Meridian_Contracts_SecurityMaster_OtcCollateralMovementDto --> Meridian_Contracts_SecurityMaster_OtcMovementParty
     Meridian_Contracts_SecurityMaster_OtcCompressionData --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
@@ -489,6 +523,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_OtcCreditEventData --> Meridian_Contracts_SecurityMaster_OtcCreditEventKind
     Meridian_Contracts_SecurityMaster_OtcCreditSupportSideDto --> Meridian_Contracts_SecurityMaster_OtcCollateralMovementDto
     Meridian_Contracts_SecurityMaster_OtcCreditSupportSideDto --> Meridian_Contracts_SecurityMaster_OtcMovementParty
+    Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcCollateralHeldLineDto
     Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcCollateralMovementDto
     Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcContractValuationDto
     Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcCreditSupportSideDto
@@ -501,11 +536,14 @@ classDiagram
     Meridian_Contracts_SecurityMaster_OtcMarginCallDto --> Meridian_Contracts_SecurityMaster_OtcMovementKind
     Meridian_Contracts_SecurityMaster_OtcMarginCallDto --> Meridian_Contracts_SecurityMaster_OtcMovementParty
     Meridian_Contracts_SecurityMaster_OtcMasterAgreementDto --> Meridian_Contracts_SecurityMaster_OtcMasterAgreementType
+    Meridian_Contracts_SecurityMaster_OtcNettingSetViewDto --> Meridian_Contracts_SecurityMaster_OtcCollateralAgreementDto
     Meridian_Contracts_SecurityMaster_OtcNettingSetViewDto --> Meridian_Contracts_SecurityMaster_OtcContractDto
     Meridian_Contracts_SecurityMaster_OtcNettingSetViewDto --> Meridian_Contracts_SecurityMaster_OtcMasterAgreementDto
     Meridian_Contracts_SecurityMaster_OtcNettingSetViewDto --> Meridian_Contracts_SecurityMaster_OtcNettingSetDto
     Meridian_Contracts_SecurityMaster_OtcNovationData --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
     Meridian_Contracts_SecurityMaster_OtcRateResetData --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
+    Meridian_Contracts_SecurityMaster_ProviderAssetClassCode --> Meridian_Contracts_SecurityMaster_ProviderAssetClassCodeRoles
+    Meridian_Contracts_SecurityMaster_ProviderAssetClassCode --> Meridian_Contracts_SecurityMaster_ProviderAssetClassCodeTraits
     Meridian_Contracts_SecurityMaster_RateUnitResolution_OutOfRange --> Meridian_Contracts_SecurityMaster_RateUnit
     Meridian_Contracts_SecurityMaster_RateUnitResolution_OutOfRange --> Meridian_Contracts_SecurityMaster_RateUnitResolution
     Meridian_Contracts_SecurityMaster_RateUnitResolution_OutOfRange --> Meridian_Contracts_SecurityMaster_RateUnitSource
@@ -513,6 +551,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_RateUnitResolution_Resolved --> Meridian_Contracts_SecurityMaster_RateUnitResolution
     Meridian_Contracts_SecurityMaster_RateUnitResolution_Resolved --> Meridian_Contracts_SecurityMaster_RateUnitSource
     Meridian_Contracts_SecurityMaster_RateUnitResolution_Undeclared --> Meridian_Contracts_SecurityMaster_RateUnitResolution
-    Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarUsage --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarPurpose
-    Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnostic --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnosticCode
 ```

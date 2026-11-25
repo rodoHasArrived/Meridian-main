@@ -1,4 +1,14 @@
+using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
+using Meridian.Identity.Auth;
 using Meridian.Tests.TestSupport;
+using Meridian.Ui.Shared.Endpoints;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Tenancy;
@@ -23,11 +33,11 @@ public sealed class IntercompanyProposalResolutionTests
         fixture.TargetRecords.Add(Record(IntercompanyProposalTestData.BookB, fixture.Proposal.TargetJournalId,
             new(2026, 7, 2), 100m, 2));
 
-        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", IntercompanyProposalTestData.BookA, new(2026, 6, 30)));
-        var broken = Assert.Single(await fixture.Service.BreaksAsync("tenant-a", IntercompanyProposalTestData.BookA, new(2026, 7, 1)));
+        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", "company-a", IntercompanyProposalTestData.BookA, new(2026, 6, 30)));
+        var broken = Assert.Single(await fixture.Service.BreaksAsync("tenant-a", "company-a", IntercompanyProposalTestData.BookA, new(2026, 7, 1)));
         Assert.Equal("AmountOrIdentityMismatch", broken.Classification);
         Assert.Contains("correction families", broken.Detail, StringComparison.Ordinal);
-        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", IntercompanyProposalTestData.BookA, new(2026, 7, 2)));
+        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", "company-a", IntercompanyProposalTestData.BookA, new(2026, 7, 2)));
     }
 
     [Fact]
@@ -47,7 +57,7 @@ public sealed class IntercompanyProposalResolutionTests
                 })
         });
 
-        Assert.Single(await fixture.Service.BreaksAsync("tenant-a", IntercompanyProposalTestData.BookA, new(2026, 7, 1)));
+        Assert.Single(await fixture.Service.BreaksAsync("tenant-a", "company-a", IntercompanyProposalTestData.BookA, new(2026, 7, 1)));
     }
 
     [Fact]
@@ -56,7 +66,7 @@ public sealed class IntercompanyProposalResolutionTests
         var fixture = Fixture();
         fixture.SourceRecords.Add(Record(IntercompanyProposalTestData.BookA, null, new(2026, 7, 1), -30m, 2));
 
-        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", IntercompanyProposalTestData.BookA, new(2026, 7, 1)));
+        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", "company-a", IntercompanyProposalTestData.BookA, new(2026, 7, 1)));
     }
 
     [Fact]
@@ -74,7 +84,7 @@ public sealed class IntercompanyProposalResolutionTests
             original.Entry.Description, [.. original.Entry.Lines, .. otherLines], original.Entry.Metadata)
         };
 
-        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", IntercompanyProposalTestData.BookA, new(2026, 6, 30)));
+        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", "company-a", IntercompanyProposalTestData.BookA, new(2026, 6, 30)));
     }
 
     [Fact]
@@ -88,7 +98,7 @@ public sealed class IntercompanyProposalResolutionTests
         var second = fixture.Proposal with { Source = fixture.Proposal.Source with { ProposalId = Guid.NewGuid(), SourceJournalId = secondSource.Entry.JournalEntryId }, TargetJournalId = secondTarget.Entry.JournalEntryId };
         fixture.Proposals.Setup(x => x.ListAsync("tenant-a", IntercompanyProposalTestData.BookA, It.IsAny<CancellationToken>())).ReturnsAsync([fixture.Proposal, second]);
 
-        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", IntercompanyProposalTestData.BookA, new(2026, 6, 30)));
+        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", "company-a", IntercompanyProposalTestData.BookA, new(2026, 6, 30)));
 
         fixture.Journals.Verify(x => x.QueryAsync(It.Is<LedgerJournalEntryQuery>(query => query.LedgerBookId == IntercompanyProposalTestData.BookA), It.IsAny<CancellationToken>()), Times.Once);
         fixture.Journals.Verify(x => x.QueryAsync(It.Is<LedgerJournalEntryQuery>(query => query.LedgerBookId == IntercompanyProposalTestData.BookB), It.IsAny<CancellationToken>()), Times.Once);
@@ -138,6 +148,100 @@ public sealed class IntercompanyProposalResolutionTests
 
         fixture.Proposals.Verify(x => x.LinkAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<LinkIntercompanyCounterpartRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         fixture.Proposals.Verify(x => x.LinkRejectedDraftAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<LinkIntercompanyCounterpartRequest>(), It.IsAny<string>(), It.IsAny<RejectedIntercompanyDraftEvidenceDto>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CounterpartCandidates_ListOnlyJournalsTheLinkCheckAccepts_AndEachOneLinks()
+    {
+        var fixture = Fixture();
+        fixture.TargetRecords.Clear();
+        var matching = Record(IntercompanyProposalTestData.BookB, null, new(2026, 6, 30), -100m, 1);
+        var wrongAmount = Record(IntercompanyProposalTestData.BookB, null, new(2026, 6, 30), -90m, 2);
+        var unrelated = Record(IntercompanyProposalTestData.BookB, null, new(2026, 6, 30), -100m, 3);
+        unrelated = unrelated with
+        {
+            Entry = new(unrelated.Entry.JournalEntryId, unrelated.Entry.Timestamp, unrelated.Entry.Description,
+                unrelated.Entry.Lines.Select(line => line.Dimensions is { } dimensions
+                    ? new LedgerEntry(line.EntryId, line.JournalEntryId, line.Timestamp, line.Account, line.Debit, line.Credit, line.Description,
+                        dimensions with { IntercompanyTransactionId = "another-invoice" })
+                    : line).ToArray(), unrelated.Entry.Metadata)
+        };
+        var future = Record(IntercompanyProposalTestData.BookB, null, new(2026, 8, 1), -100m, 4);
+        fixture.TargetRecords.AddRange([matching, wrongAmount, unrelated, future]);
+        fixture.SetProposal(fixture.Proposal with { Status = IntercompanyProposalStatusDto.Pending, TargetBookId = null, TargetJournalId = null });
+
+        var candidate = Assert.Single(await fixture.Service.ListCounterpartCandidatesAsync("tenant-a", fixture.Proposal.Source.ProposalId,
+            IntercompanyProposalTestData.BookB));
+        Assert.Equal((matching.Entry.JournalEntryId, new DateOnly(2026, 6, 30), -100m),
+            (candidate.JournalEntryId, candidate.EffectiveDate, candidate.Amount));
+
+        await fixture.Service.LinkAsync("tenant-a", fixture.Proposal.Source.ProposalId,
+            new(Guid.NewGuid(), IntercompanyProposalTestData.BookB, candidate.JournalEntryId, "Picked from the candidate list"), "reviewer");
+        fixture.Proposals.Verify(x => x.LinkAsync("tenant-a", fixture.Proposal.Source.ProposalId,
+            It.Is<LinkIntercompanyCounterpartRequest>(request => request.TargetJournalId == candidate.JournalEntryId), "reviewer",
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CounterpartCandidates_RefuseBooksOutsideTheApprovedMapping_AndListNothingOnceLinked()
+    {
+        var fixture = Fixture();
+        fixture.SetProposal(fixture.Proposal with { Status = IntercompanyProposalStatusDto.Pending, TargetBookId = null, TargetJournalId = null });
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Service.ListCounterpartCandidatesAsync("tenant-a",
+            fixture.Proposal.Source.ProposalId, IntercompanyProposalTestData.BookA));
+
+        fixture.SetProposal(fixture.Proposal with { Status = IntercompanyProposalStatusDto.Linked });
+        Assert.Empty(await fixture.Service.ListCounterpartCandidatesAsync("tenant-a", fixture.Proposal.Source.ProposalId,
+            IntercompanyProposalTestData.BookB));
+    }
+
+    [Theory]
+    [InlineData("tenant-a", HttpStatusCode.OK)]
+    [InlineData("tenant-b", HttpStatusCode.Forbidden)]
+    public async Task CounterpartCandidatesEndpoint_ReadsWithinTheSessionTenantOnly(string sessionTenant, HttpStatusCode expected)
+    {
+        var fixture = Fixture();
+        fixture.TargetRecords.Clear();
+        var matching = Record(IntercompanyProposalTestData.BookB, null, new(2026, 6, 30), -100m, 1);
+        fixture.TargetRecords.Add(matching);
+        fixture.SetProposal(fixture.Proposal with { Status = IntercompanyProposalStatusDto.Pending, TargetBookId = null, TargetJournalId = null });
+        // A forged lookup in another tenant still finds the record; the book scope check must refuse it.
+        if (sessionTenant != "tenant-a")
+            fixture.Proposals.Setup(x => x.GetAsync(sessionTenant, fixture.Proposal.Source.ProposalId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(fixture.Proposal);
+
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
+        builder.WebHost.UseTestServer();
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddSingleton(fixture.Service);
+        builder.Services.AddSingleton(fixture.Proposals.Object);
+        builder.Services.AddSingleton(fixture.Journals.Object);
+        var owners = new Mock<IFundProfileTenancyRegistry>();
+        owners.Setup(x => x.ResolveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns((string fund, CancellationToken _) =>
+            Task.FromResult<FundProfileOwnership?>(new(fund, "tenant-a", "company-a")));
+        builder.Services.AddSingleton(owners.Object);
+        await using var app = builder.Build();
+        app.Use(async (http, next) =>
+        {
+            http.Items[LoginSessionMiddleware.CurrentUserKey] = "reviewer";
+            http.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ViewLedgerReports;
+            http.Items[LoginSessionMiddleware.CurrentTenantIdKey] = sessionTenant;
+            http.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-a";
+            await next(http);
+        });
+        app.MapIntercompanyOperationsEndpoints(new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        await app.StartAsync();
+
+        var response = await app.GetTestClient().GetAsync(
+            $"/api/ledger/intercompany/proposals/{fixture.Proposal.Source.ProposalId:D}/counterpart-candidates?targetBookId={IntercompanyProposalTestData.BookB:D}");
+
+        Assert.Equal(expected, response.StatusCode);
+        if (expected == HttpStatusCode.OK)
+        {
+            var body = await response.Content.ReadFromJsonAsync<IntercompanyCounterpartCandidateDto[]>(new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            Assert.Equal(matching.Entry.JournalEntryId, Assert.Single(body!).JournalEntryId);
+        }
     }
 
     [Fact]

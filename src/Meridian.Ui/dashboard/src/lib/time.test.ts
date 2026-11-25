@@ -17,6 +17,8 @@ describe("formatRelativeAge", () => {
     const now = Date.parse("2026-05-09T12:00:00.000Z");
     expect(formatRelativeAge("2026-05-09T07:00:00.000Z", now)).toBe("5h ago");
     expect(formatRelativeAge("2026-05-06T12:00:00.000Z", now)).toBe("3d ago");
+    expect(formatRelativeAge("2026-05-07T13:00:00.000Z", now)).toBe("47h ago");
+    expect(formatRelativeAge("2026-03-10T12:00:00.000Z", now)).toBe("since Mar 10, 2026");
   });
 
   it("falls back to an absolute label in the display zone for future timestamps", () => {

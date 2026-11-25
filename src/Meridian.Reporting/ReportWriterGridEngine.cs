@@ -7,6 +7,8 @@ namespace Meridian.Reporting;
 /// <summary>Renders configured report grids from normalized dataset rows.</summary>
 public static class ReportWriterGridEngine
 {
+    internal const string MetricSourceCheckId = "metric-source-fields";
+
     public static IReadOnlyList<ReportWriterGridRenderDto> RenderGrids(
         IReadOnlyList<ReportWriterGridDefinitionDto>? grids,
         IReadOnlyList<IReadOnlyDictionary<string, string>>? datasetRows)
@@ -16,15 +18,17 @@ public static class ReportWriterGridEngine
             return [];
         }
 
-        var rows = NormalizeRows(datasetRows);
+        var sourceFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var rows = NormalizeRows(datasetRows, sourceFields);
         return grids
-            .Select(grid => RenderGrid(grid, rows))
+            .Select(grid => RenderGrid(grid, rows, sourceFields))
             .ToArray();
     }
 
     private static ReportWriterGridRenderDto RenderGrid(
         ReportWriterGridDefinitionDto grid,
-        IReadOnlyList<IReadOnlyDictionary<string, string>> rows)
+        IReadOnlyList<IReadOnlyDictionary<string, string>> rows,
+        IReadOnlySet<string> sourceFields)
     {
         var warnings = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
         var rowDimensions = NormalizeFields(grid.RowFields);
@@ -34,6 +38,10 @@ public static class ReportWriterGridEngine
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var metrics = NormalizeMetrics(grid.Metrics);
+        var invalidMetrics = rows.Count == 0
+            ? []
+            : metrics.Where(metric => metric.SourceField != "*" && !sourceFields.Contains(metric.SourceField)).ToArray();
+        var missingFields = invalidMetrics.Select(static metric => metric.SourceField).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var formulas = NormalizeFormulas(grid.Formulas);
         // Built once from the normalized definition so cycle detection and lineage split
         // hyphenated references against exactly the same names the rendered rows will carry.
@@ -46,6 +54,23 @@ public static class ReportWriterGridEngine
             warnings.Add($"Grid '{grid.GridId}' has no dataset rows to render.");
         }
 
+        ReportWriterGridValidationCheckDto? metricSourceCheck = null;
+        if (metrics.Any(static metric => metric.SourceField != "*"))
+        {
+            var detail = invalidMetrics.Length > 0
+                ? string.Join(" ", invalidMetrics.Select(metric =>
+                    $"Grid '{grid.GridId}' metric '{metric.Name}' uses field '{metric.SourceField}', which is absent from the dataset."))
+                : rows.Count == 0
+                    ? "Metric source fields could not be verified because the dataset supplied no rows."
+                    : "All metric source fields are present in the dataset.";
+            var status = invalidMetrics.Length > 0 ? "Failed" : rows.Count == 0 ? "Warning" : "Passed";
+            metricSourceCheck = new(MetricSourceCheckId, status, detail);
+            if (status != "Passed")
+            {
+                warnings.Add(detail);
+            }
+        }
+
         var filteredRows = ApplyFilters(grid, rows, filters, warnings);
         IReadOnlyList<ReportWriterGridColumnDto> columnList;
         IReadOnlyList<ReportWriterGridRowDto> renderedRows;
@@ -53,14 +78,14 @@ public static class ReportWriterGridEngine
         {
             var pivotColumns = BuildPivotColumns(filteredRows, columnDimensions);
             columnList = BuildPivotRenderColumns(rowDimensions, pivotColumns, metrics, formulas);
-            renderedRows = RenderPivotRows(grid, filteredRows, rowDimensions, columnDimensions, pivotColumns, metrics, formulas, circularFormulas, warnings);
+            renderedRows = RenderPivotRows(grid, filteredRows, rowDimensions, columnDimensions, pivotColumns, metrics, formulas, circularFormulas, missingFields, warnings);
         }
         else
         {
             columnList = BuildColumns(dimensions, metrics, formulas, includeContribution: grid.Kind == ReportWriterGridKindDto.Contribution);
             renderedRows = grid.Kind == ReportWriterGridKindDto.Detail
                 ? RenderDetailRows(grid, filteredRows, dimensions, metrics, formulas, circularFormulas, warnings)
-                : RenderAggregateRows(grid, filteredRows, dimensions, metrics, formulas, circularFormulas, warnings);
+                : RenderAggregateRows(grid, filteredRows, dimensions, metrics, formulas, circularFormulas, missingFields, warnings);
         }
 
         renderedRows = ApplyFormatRules(grid, renderedRows, warnings);
@@ -80,7 +105,7 @@ public static class ReportWriterGridEngine
             warnings.ToArray(),
             lineage,
             dataDictionary,
-            validationChecks,
+            metricSourceCheck is null ? validationChecks : [.. validationChecks, metricSourceCheck],
             chart);
     }
 
@@ -101,6 +126,12 @@ public static class ReportWriterGridEngine
                 Dictionary<string, ReportWriterCellStyleDto>? hints = null;
                 foreach (var rule in rules)
                 {
+                    if (rule.Operator is (ReportWriterFilterOperatorDto.GreaterThan or ReportWriterFilterOperatorDto.GreaterThanOrEqual
+                        or ReportWriterFilterOperatorDto.LessThan or ReportWriterFilterOperatorDto.LessThanOrEqual)
+                        && string.IsNullOrWhiteSpace(GetValue(row.Values, rule.Column)))
+                    {
+                        continue;
+                    }
                     var probe = new ReportWriterFilterDefinitionDto(rule.Column, rule.Operator, rule.Value, rule.Label);
                     if (!MatchesFilter(row.Values, probe, warnings))
                     {
@@ -170,8 +201,8 @@ public static class ReportWriterGridEngine
                 .Select(row =>
                     row.Values.TryGetValue(column, out var raw) &&
                     decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out var number)
-                        ? number
-                        : 0m)
+                        ? (decimal?)number
+                        : null)
                 .ToArray();
             series.Add(new ReportWriterChartSeriesDto(column, labelByKey.TryGetValue(column, out var label) ? label : column, values));
         }
@@ -214,12 +245,7 @@ public static class ReportWriterGridEngine
 
             foreach (var metric in metrics)
             {
-                var value = TryGetDecimal(row, metric.SourceField, warnings);
-                values[metric.Name] = value is null ? string.Empty : FormatDecimal(value.Value);
-                if (value is not null)
-                {
-                    numericValues[metric.Name] = value.Value;
-                }
+                SetNumericCell(values, numericValues, metric.Name, TryGetDecimal(row, metric.SourceField, warnings));
             }
 
             output.Add(new WorkingRow(values, numericValues));
@@ -240,6 +266,7 @@ public static class ReportWriterGridEngine
         IReadOnlyList<ReportWriterMetricDefinitionDto> metrics,
         IReadOnlyList<ReportWriterFormulaDefinitionDto> formulas,
         IReadOnlySet<string> circularFormulas,
+        IReadOnlySet<string> missingFields,
         ISet<string> warnings)
     {
         var groups = new Dictionary<string, PivotAggregateGroup>(StringComparer.Ordinal);
@@ -264,7 +291,7 @@ public static class ReportWriterGridEngine
         }
 
         var workingRows = groups.Values
-            .Select(group => group.ToWorkingRow(metrics, pivotColumns))
+            .Select(group => group.ToWorkingRow(metrics, pivotColumns, missingFields))
             .ToList();
         var metricTotals = BuildMetricTotals(workingRows);
         ApplyFormulas(workingRows, formulas, circularFormulas, metricTotals, warnings);
@@ -282,6 +309,7 @@ public static class ReportWriterGridEngine
         IReadOnlyList<ReportWriterMetricDefinitionDto> metrics,
         IReadOnlyList<ReportWriterFormulaDefinitionDto> formulas,
         IReadOnlySet<string> circularFormulas,
+        IReadOnlySet<string> missingFields,
         ISet<string> warnings)
     {
         var groups = new Dictionary<string, AggregateGroup>(StringComparer.Ordinal);
@@ -303,7 +331,7 @@ public static class ReportWriterGridEngine
         }
 
         var workingRows = groups.Values
-            .Select(group => group.ToWorkingRow(metrics))
+            .Select(group => group.ToWorkingRow(metrics, missingFields))
             .ToList();
 
         if (grid.Kind == ReportWriterGridKindDto.Contribution && metrics.Count > 0)
@@ -490,7 +518,7 @@ public static class ReportWriterGridEngine
                 var generated = formulaColumn
                     || string.IsNullOrWhiteSpace(sourceField)
                     || !sourceFields.Contains(sourceField, StringComparer.OrdinalIgnoreCase);
-                var dataType = InferColumnDataType(column.Key, rows);
+                var dataType = column.Role is "metric" or "formula" ? "decimal" : InferColumnDataType(column.Key, rows);
                 return new ReportWriterGridDataDictionaryFieldDto(
                     column.Key,
                     column.Label,
@@ -736,13 +764,12 @@ public static class ReportWriterGridEngine
         var total = rows.Sum(row => row.NumericValues.TryGetValue(metricName, out var value) ? Math.Abs(value) : 0m);
         foreach (var row in rows)
         {
-            var value = row.NumericValues.TryGetValue(metricName, out var metricValue) ? metricValue : 0m;
-            var contribution = total == 0m ? 0m : value / total * 100m;
-            var absoluteContribution = Math.Abs(contribution);
-            row.NumericValues["contributionPercent"] = contribution;
-            row.NumericValues["contributionAbsPercent"] = absoluteContribution;
-            row.Values["contributionPercent"] = FormatDecimal(contribution);
-            row.Values["contributionAbsPercent"] = FormatDecimal(absoluteContribution);
+            decimal? contribution = row.NumericValues.TryGetValue(metricName, out var value)
+                ? total == 0m ? 0m : value / total * 100m
+                : null;
+            SetNumericCell(row.Values, row.NumericValues, "contributionPercent", contribution);
+            SetNumericCell(row.Values, row.NumericValues, "contributionAbsPercent",
+                contribution is { } present ? Math.Abs(present) : null);
         }
     }
 
@@ -873,11 +900,13 @@ public static class ReportWriterGridEngine
             return rows;
         }
 
-        return grid.SortDescending
-            ? rows.OrderByDescending(row => SortValue(row, sortBy), NumericSortComparer.Instance)
-                .ThenBy(row => BuildGroupKey(row.Values, row.Values.Keys), StringComparer.Ordinal)
-            : rows.OrderBy(row => SortValue(row, sortBy), NumericSortComparer.Instance)
-                .ThenBy(row => BuildGroupKey(row.Values, row.Values.Keys), StringComparer.Ordinal);
+        var withSortValue = rows.Select(row => (Row: row, Value: SortValue(row, sortBy)))
+            .OrderBy(static item => item.Value is null);
+        var sorted = grid.SortDescending
+            ? withSortValue.ThenByDescending(static item => item.Value)
+            : withSortValue.ThenBy(static item => item.Value);
+        return sorted.ThenBy(static item => BuildGroupKey(item.Row.Values, item.Row.Values.Keys), StringComparer.Ordinal)
+            .Select(static item => item.Row);
     }
 
     private static decimal? SortValue(WorkingRow row, string sortBy) =>
@@ -904,7 +933,18 @@ public static class ReportWriterGridEngine
         var totals = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
         foreach (var field in fields.Where(static field => !string.IsNullOrWhiteSpace(field)).Distinct(StringComparer.OrdinalIgnoreCase))
         {
-            totals[field] = rows.Sum(row => TryGetDecimal(row, field, warnings) ?? 0m);
+            decimal? total = null;
+            foreach (var row in rows)
+            {
+                if (TryGetDecimal(row, field, warnings) is { } value)
+                {
+                    total = (total ?? 0m) + value;
+                }
+            }
+            if (total is { } present)
+            {
+                totals[field] = present;
+            }
         }
 
         return totals;
@@ -927,13 +967,32 @@ public static class ReportWriterGridEngine
     }
 
     private static IReadOnlyDictionary<string, string>[] NormalizeRows(
-        IReadOnlyList<IReadOnlyDictionary<string, string>>? rows) =>
-        rows?
-            .Select(row => row
-                .Where(static kvp => !string.IsNullOrWhiteSpace(kvp.Key))
-                .ToDictionary(kvp => kvp.Key.Trim(), kvp => kvp.Value?.Trim() ?? string.Empty, StringComparer.OrdinalIgnoreCase))
-            .Cast<IReadOnlyDictionary<string, string>>()
-            .ToArray() ?? [];
+        IReadOnlyList<IReadOnlyDictionary<string, string>>? rows,
+        ISet<string> sourceFields)
+    {
+        if (rows is null)
+        {
+            return [];
+        }
+
+        var normalized = new IReadOnlyDictionary<string, string>[rows.Count];
+        for (var index = 0; index < rows.Count; index++)
+        {
+            var row = rows[index];
+            var values = new Dictionary<string, string>(row.Count, StringComparer.OrdinalIgnoreCase);
+            foreach (var (key, value) in row)
+            {
+                if (!string.IsNullOrWhiteSpace(key))
+                {
+                    var field = key.Trim();
+                    values.Add(field, value?.Trim() ?? string.Empty);
+                    sourceFields.Add(field);
+                }
+            }
+            normalized[index] = values;
+        }
+        return normalized;
+    }
 
     private static string[] NormalizeFields(IReadOnlyList<string>? fields) =>
         fields?
@@ -1080,6 +1139,24 @@ public static class ReportWriterGridEngine
     private static string FormatDecimal(decimal value) =>
         ReportingNumberFormat.FormatDecimal(value);
 
+    private static void SetNumericCell(
+        Dictionary<string, string> values,
+        Dictionary<string, decimal> numericValues,
+        string key,
+        decimal? value)
+    {
+        if (value is { } present)
+        {
+            values[key] = FormatDecimal(present);
+            numericValues[key] = present;
+        }
+        else
+        {
+            values[key] = string.Empty;
+            numericValues.Remove(key);
+        }
+    }
+
     private sealed class AggregateGroup
     {
         private readonly Dictionary<string, MetricAccumulator> _metrics;
@@ -1104,19 +1181,18 @@ public static class ReportWriterGridEngine
         {
             if (_metrics.TryGetValue(metric.Name, out var accumulator))
             {
-                accumulator.Add(TryGetDecimal(row, metric.SourceField, warnings), metric.SourceField);
+                accumulator.Add(TryGetDecimal(row, metric.SourceField, warnings));
             }
         }
 
-        public WorkingRow ToWorkingRow(IReadOnlyList<ReportWriterMetricDefinitionDto> metrics)
+        public WorkingRow ToWorkingRow(IReadOnlyList<ReportWriterMetricDefinitionDto> metrics, IReadOnlySet<string> missingFields)
         {
             var values = new Dictionary<string, string>(DimensionValues, StringComparer.OrdinalIgnoreCase);
             var numericValues = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
             foreach (var metric in metrics)
             {
-                var value = _metrics[metric.Name].Result;
-                values[metric.Name] = FormatDecimal(value);
-                numericValues[metric.Name] = value;
+                var value = missingFields.Contains(metric.SourceField) ? null : _metrics[metric.Name].Result;
+                SetNumericCell(values, numericValues, metric.Name, value);
             }
 
             return new WorkingRow(values, numericValues);
@@ -1150,7 +1226,7 @@ public static class ReportWriterGridEngine
             var value = TryGetDecimal(row, metric.SourceField, warnings);
             if (_rowMetrics.TryGetValue(metric.Name, out var rowAccumulator))
             {
-                rowAccumulator.Add(value, metric.SourceField);
+                rowAccumulator.Add(value);
             }
 
             if (!_pivotMetrics.TryGetValue(pivotKey, out var pivotMetricAccumulators))
@@ -1165,20 +1241,20 @@ public static class ReportWriterGridEngine
                 pivotMetricAccumulators[metric.Name] = pivotAccumulator;
             }
 
-            pivotAccumulator.Add(value, metric.SourceField);
+            pivotAccumulator.Add(value);
         }
 
         public WorkingRow ToWorkingRow(
             IReadOnlyList<ReportWriterMetricDefinitionDto> metrics,
-            IReadOnlyList<PivotColumn> pivotColumns)
+            IReadOnlyList<PivotColumn> pivotColumns,
+            IReadOnlySet<string> missingFields)
         {
             var values = new Dictionary<string, string>(DimensionValues, StringComparer.OrdinalIgnoreCase);
             var numericValues = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
             foreach (var metric in metrics)
             {
-                var value = _rowMetrics[metric.Name].Result;
-                values[metric.Name] = FormatDecimal(value);
-                numericValues[metric.Name] = value;
+                var value = missingFields.Contains(metric.SourceField) ? null : _rowMetrics[metric.Name].Result;
+                SetNumericCell(values, numericValues, metric.Name, value);
             }
 
             foreach (var pivotColumn in pivotColumns)
@@ -1187,12 +1263,11 @@ public static class ReportWriterGridEngine
                 foreach (var metric in metrics)
                 {
                     var key = BuildPivotMetricKey(pivotColumn.Key, metric.Name);
-                    var value = pivotMetricAccumulators is not null &&
+                    var value = !missingFields.Contains(metric.SourceField) && pivotMetricAccumulators is not null &&
                                 pivotMetricAccumulators.TryGetValue(metric.Name, out var accumulator)
                         ? accumulator.Result
-                        : 0m;
-                    values[key] = FormatDecimal(value);
-                    numericValues[key] = value;
+                        : null;
+                    SetNumericCell(values, numericValues, key, value);
                 }
             }
 
@@ -1211,69 +1286,32 @@ public static class ReportWriterGridEngine
         private decimal? _min;
         private decimal? _max;
         private int _numericCount;
-        private int _rowCount;
 
         public MetricAccumulator(ReportWriterAggregateFunctionDto function)
         {
             _function = function;
         }
 
-        public decimal Result => _function switch
+        public decimal? Result => _function switch
         {
-            ReportWriterAggregateFunctionDto.Count => _rowCount,
-            ReportWriterAggregateFunctionDto.Average => _numericCount == 0 ? 0m : _sum / _numericCount,
-            ReportWriterAggregateFunctionDto.Min => _min ?? 0m,
-            ReportWriterAggregateFunctionDto.Max => _max ?? 0m,
-            _ => _sum
+            ReportWriterAggregateFunctionDto.Count => _numericCount,
+            ReportWriterAggregateFunctionDto.Average => _numericCount == 0 ? null : _sum / _numericCount,
+            ReportWriterAggregateFunctionDto.Min => _min,
+            ReportWriterAggregateFunctionDto.Max => _max,
+            _ => _numericCount == 0 ? null : _sum
         };
 
-        public void Add(decimal? value, string sourceField)
+        public void Add(decimal? value)
         {
-            if (string.Equals(sourceField, "*", StringComparison.Ordinal))
-            {
-                _rowCount++;
-                _numericCount++;
-                _sum += 1m;
-                _min = _min is null || 1m < _min.Value ? 1m : _min;
-                _max = _max is null || 1m > _max.Value ? 1m : _max;
-                return;
-            }
-
             if (value is null)
             {
                 return;
             }
 
-            _rowCount++;
             _numericCount++;
             _sum += value.Value;
             _min = _min is null || value.Value < _min.Value ? value.Value : _min;
             _max = _max is null || value.Value > _max.Value ? value.Value : _max;
-        }
-    }
-
-    private sealed class NumericSortComparer : IComparer<decimal?>
-    {
-        public static NumericSortComparer Instance { get; } = new();
-
-        public int Compare(decimal? x, decimal? y)
-        {
-            if (x is null && y is null)
-            {
-                return 0;
-            }
-
-            if (x is null)
-            {
-                return -1;
-            }
-
-            if (y is null)
-            {
-                return 1;
-            }
-
-            return x.Value.CompareTo(y.Value);
         }
     }
 

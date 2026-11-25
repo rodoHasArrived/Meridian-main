@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  compactTimestampLabel,
+  formatCompactTimestamp,
   formatRelativeTime,
   formatTimestamp,
   formatUtcTimestamp,
@@ -141,6 +143,14 @@ describe("formatRelativeTime", () => {
     expect(formatRelativeTime(now, now)).toBe("0s ago");
   });
 
+  it("keeps hours to 48h, days to 60d, then names the date", () => {
+    expect(formatRelativeTime("2026-05-07T13:00:00.000Z", now)).toBe("47h ago");
+    expect(formatRelativeTime("2026-05-07T12:00:00.000Z", now)).toBe("2d ago");
+    expect(formatRelativeTime("2026-03-11T12:00:00.000Z", now)).toBe("59d ago");
+    expect(formatRelativeTime("2026-03-10T12:00:00.000Z", now)).toBe("since Mar 10, 2026");
+    expect(formatRelativeTime("2025-10-26T12:00:00.000Z", now)).toBe("since Oct 26, 2025");
+  });
+
   it("renders future instants with 'in'", () => {
     expect(formatRelativeTime("2026-05-09T14:00:00.000Z", now)).toBe("in 2h");
     expect(formatRelativeTime("2026-05-09T12:00:45.000Z", now)).toBe("in 45s");
@@ -150,5 +160,23 @@ describe("formatRelativeTime", () => {
     setDisplayTimeZone("Asia/Tokyo");
     expect(formatRelativeTime("2026-05-09T11:55:00.000Z", now)).toBe("5m ago");
     expect(formatRelativeTime("bad", now)).toBe("Invalid Date");
+  });
+});
+
+describe("formatCompactTimestamp", () => {
+  it("fits a narrow cell and always names the zone", () => {
+    expect(formatCompactTimestamp("2026-01-01T00:00:00Z", { timeZone: "UTC" })).toBe("Jan 1 '26 00:00Z");
+    expect(formatCompactTimestamp("2026-06-30T18:05:00Z", { timeZone: "America/New_York" })).toBe("Jun 30 '26 14:05 EDT");
+    expect(formatCompactTimestamp("not a time")).toBe("Invalid Date");
+  });
+});
+
+describe("compactTimestampLabel", () => {
+  it("shortens a formatted timestamp and leaves other text alone", () => {
+    expect(compactTimestampLabel("Jan 1, 2026, 00:00 UTC")).toBe("Jan 1 '26 00:00Z");
+    expect(compactTimestampLabel("Jun 30, 2026, 14:05:07 EDT")).toBe("Jun 30 '26 14:05 EDT");
+    expect(compactTimestampLabel(formatTimestamp("2026-01-01T00:00:00Z", { timeZone: "UTC" }))).toBe(formatCompactTimestamp("2026-01-01T00:00:00Z", { timeZone: "UTC" }));
+    expect(compactTimestampLabel("3 open tasks")).toBe("3 open tasks");
+    expect(compactTimestampLabel("Not recorded")).toBe("Not recorded");
   });
 });

@@ -9,10 +9,14 @@
 # the root Makefile sets TEST_PROJECT after loading this module.
 CSHARP_UNIT_TEST_PROJECTS = $(TEST_PROJECT) $(if $(filter tests/Meridian.Tests/Meridian.Tests.csproj,$(TEST_PROJECT)),tests/Meridian.Contracts.UnitTests/Meridian.Contracts.UnitTests.csproj tests/Meridian.Core.UnitTests/Meridian.Core.UnitTests.csproj)
 
-test: ## Run unit tests (C# + F#)
-	@echo "$(BLUE)Running tests...$(NC)"
-	@$(MAKE) --no-print-directory test-unit
-	$(BUILDCTL) test --project tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --queue
+# Use the CI roster as the only aggregate project list. The runner builds with
+# --no-restore, so restore here before running it from a fresh checkout.
+DOTNET_CI_TEST_ARGS ?=
+
+test: ## Run the CI .NET test roster (excludes integration and performance tests)
+	@echo "$(BLUE)Running CI .NET tests...$(NC)"
+	dotnet restore Meridian.sln -p:EnableWindowsTargeting=true
+	python3 build/scripts/ci/run-dotnet-ci-tests.py $(DOTNET_CI_TEST_ARGS)
 
 test-unit: ## Run C# unit tests only (fastest)
 	@echo "$(BLUE)Running C# unit tests...$(NC)"

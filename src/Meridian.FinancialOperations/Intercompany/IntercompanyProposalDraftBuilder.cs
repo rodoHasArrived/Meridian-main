@@ -7,6 +7,12 @@ namespace Meridian.FinancialOperations.Intercompany;
 /// <summary>Creates a balanced proposal from retained source facts, never a posting instruction.</summary>
 public static class IntercompanyProposalDraftBuilder
 {
+    /// <summary>
+    /// Classifies a generated counterpart's treasury context. It is a label, not a private-capital fund event:
+    /// a counterpart carries no fund event identity or capital account.
+    /// </summary>
+    public const string MirrorFundEventType = "IntercompanyMirror";
+
     public static ManualJournalEntryDraftDto Build(IntercompanyProposalDto proposal,
         ResolvedIntercompanyAccountingArrangementDto agreement, LedgerBookRecord target, LedgerAccountingPeriod period,
         IReadOnlyList<IntercompanyAccountBindingDto> sourceBindings,
@@ -75,7 +81,7 @@ public static class IntercompanyProposalDraftBuilder
             || source.Lines.Sum(line => line.Debit - line.Credit) != 0m)
             throw new InvalidOperationException("Every retained source leg must belong exclusively to one balanced, supported intercompany event. Split unrelated or ambiguous activity before proposing a counterpart.");
         if (agreement.TemplateKind == IntercompanyAccountingTemplateKindDto.Loan && hasOperatingLeg)
-            throw new InvalidOperationException("Loan interest requires its own reviewed treatment; the loan mirror supports principal only.");
+            throw new InvalidOperationException("The loan mirror supports principal only; book interest under a separately reviewed LoanInterest accounting profile.");
         var contraNode = agreement.TemplateKind == IntercompanyAccountingTemplateKindDto.Loan || !hasOperatingLeg
             ? targetMap.SettlementAccountNodeId
             : sourceReceivable ? targetMap.ExpenseAccountNodeId : targetMap.RevenueAccountNodeId;
@@ -121,7 +127,7 @@ public static class IntercompanyProposalDraftBuilder
             $"{agreement.TemplateKind} counterpart of journal {source.SourceJournalId:D}", "intercompany-proposal-service",
             now, now, 1, lines, [$"journal:{source.SourceJournalId:D}", $"accounting-arrangement:{agreement.ArrangementId:D}/revision:{agreement.RevisionId:D}", $"intercompany-agreement:{agreement.CanonicalAgreementId:D}/version:{agreement.CanonicalAgreementVersion}"],
             [], TreasuryContext: new(source.EffectiveDate, $"intercompany-proposal:{source.ProposalId:D}",
-                FundEventType: "IntercompanyMirror"), TenantId: source.TenantId, CompanyId: source.CompanyId)
+                FundEventType: MirrorFundEventType), TenantId: source.TenantId, CompanyId: source.CompanyId)
         {
             IntercompanyProposalId = source.ProposalId,
             IntercompanyProposalSourceDigest = proposal.SourceDigest,

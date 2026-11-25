@@ -118,6 +118,9 @@ Run journal queries are available under `/api/workstation/runs/{runId}/ledger`: 
 rebuild from authorized posted journals carrying the exact `strategy.runId`, strategy and account
 provenance. An unspecified book selects only a unique primary book; parallel accounting bases
 are never added together. Existing WPF run-ledger views consume the shared summary.
+In-memory ledgers filter on the same tag through `LedgerQuery.RunId` (exact match on
+`LedgerQuery.StrategyRunIdTag`); the run stays a tag, not a metadata field, so retained journals
+compare unchanged on replay.
 
 `POST /api/workstation/runs/{runId}/ledger/export` and
 `POST /api/ledger/periods/{periodId}/journal-export` produce CSV or Parquet journal lines.
@@ -177,7 +180,9 @@ Both reference providers must be PostgreSQL stores in the same database as the l
 journal effective date is required for the position check. The versions, Active/effective reference
 state, Long or Asset position and complete ledger-book context must match. Position status uses
 ordinal case-insensitive equality with `Active`, matching candidate validation; inactive and other
-statuses remain refused. The acquisition currency
+statuses remain refused. An acquisition may state a `Face` quantity basis only when the locked
+security's catalog lot unit is `FaceValue` (`LotQuantityBasisRules`); a `Units` basis is accepted
+for every class, so a face-value class posted without face-value terms is unaffected. The acquisition currency
 must match Security Master; a disposal may retain
 the existing supported transaction/functional currency distinction. These checks and locks
 remain in force until the journal, lot mutations and audit record commit together. Rejected or

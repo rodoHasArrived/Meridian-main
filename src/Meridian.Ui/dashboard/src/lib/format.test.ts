@@ -19,7 +19,8 @@ import {
   formatPnl,
   normalizeFinancialLabel,
   pnlToneForValue,
-  pluralizeCount
+  pluralizeCount,
+  withIndefiniteArticle
 } from "@/lib/format";
 
 describe("formatNumber", () => {
@@ -237,6 +238,17 @@ describe("formatCurrencyWithCode", () => {
     [Number.NaN, "EUR", true, "— EUR"]
   ])("formats %s in %s (signed: %s)", (value, currency, signed, expected) => {
     expect(formatCurrencyWithCode(value, currency, { signed })).toBe(expected);
+  });
+});
+
+describe("withIndefiniteArticle", () => {
+  it("picks the article by the sound of the first word", () => {
+    expect(withIndefiniteArticle("Operator")).toBe("an Operator");
+    expect(withIndefiniteArticle("Admin")).toBe("an Admin");
+    expect(withIndefiniteArticle("Viewer")).toBe("a Viewer");
+    expect(withIndefiniteArticle("user")).toBe("a user");
+    expect(withIndefiniteArticle("one-time code")).toBe("a one-time code");
+    expect(withIndefiniteArticle("hour")).toBe("an hour");
   });
 });
 

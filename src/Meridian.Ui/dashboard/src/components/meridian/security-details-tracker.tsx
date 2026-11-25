@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Briefcase, ClipboardList, Pencil, Plus, Save, Trash2, X } from "lucide-react";
+import { Briefcase, ClipboardList, Info, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -125,6 +125,7 @@ export function SecurityDetailsPanel({
   const securityId = identity?.securityId ?? entry?.securityId ?? null;
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [inspectedKey, setInspectedKey] = useState<string | null>(null);
   const [draftValue, setDraftValue] = useState<string>("");
   const [serverStatus, setServerStatus] = useState<SecurityDetailsServerStatus>("idle");
   const [serverErrorText, setServerErrorText] = useState<string | null>(null);
@@ -140,6 +141,7 @@ export function SecurityDetailsPanel({
     if (!securityId) {
       setOverrides({});
       setEditingKey(null);
+      setInspectedKey(null);
       setServerStatus("idle");
       setServerErrorText(null);
       setUpdatedBy(null);
@@ -148,7 +150,10 @@ export function SecurityDetailsPanel({
     }
 
     setEditingKey(null);
+    setInspectedKey(null);
     setServerErrorText(null);
+    setUpdatedBy(null);
+    setUpdatedAt(null);
     setOverrides(loadOverrides(securityId));
     setServerStatus("loading");
 
@@ -269,24 +274,23 @@ export function SecurityDetailsPanel({
           <ClipboardList className="h-4 w-4 text-primary" />
           Security details
           {overrideCount > 0 && (
-            <Badge variant="outline" className="ml-2 font-mono text-[10px]">
+            <Badge variant="outline" className="ml-2 font-mono text-xs">
               {overrideCount} override{overrideCount === 1 ? "" : "s"}
             </Badge>
           )}
         </CardTitle>
         <CardDescription>
-          Extended reference data for <EntityLink record={{ kind: "security", id: securityId,
+          Reference values and operator overrides for <EntityLink record={{ kind: "security", id: securityId,
             label: identity?.displayName ?? entry?.displayName ?? "Security name unavailable",
             workspaceHref: workstationRouteWithQuery("accountingSecurityMaster", { securityId }),
             summary: [{ label: "Name", value: identity?.displayName ?? entry?.displayName ?? "Security name unavailable" },
               { label: "Asset class", value: identity?.assetClass ?? entry?.classification.assetClass ?? "Unavailable" }]
-          }} />. Operator overrides sync to the
-          server when available and fall back to local storage when offline.
+          }} />. Inspect a value to compare its layers. Governed terms are edited through Passport.
         </CardDescription>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {vm.syncStatus ? (
             <span
-              className={cn("rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]", vm.syncStatus.className)}
+              className={cn("rounded-sm border px-2 py-0.5 font-mono text-xs uppercase tracking-[0.12em]", vm.syncStatus.className)}
               aria-label={vm.syncStatus.ariaLabel}
             >
               {vm.syncStatus.label}
@@ -315,7 +319,7 @@ export function SecurityDetailsPanel({
       <CardContent className="space-y-6">
         {vm.groups.map((group) => (
           <section key={group.id} aria-label={group.title} className="space-y-2">
-            <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(group.title) && "uppercase tracking-[0.14em]")}>{group.title}</div>
+            <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(group.title) && "type-label--caps")}>{group.title}</div>
             <dl className="grid gap-2 sm:grid-cols-2">
               {group.fields.map((field) => {
                 return (
@@ -323,13 +327,14 @@ export function SecurityDetailsPanel({
                     key={field.key}
                     className={cn(
                       "grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)_auto] items-start gap-3 rounded-md border px-3 py-2",
+                      inspectedKey === field.key ? "sm:col-span-2" : "",
                       field.isOverridden ? "border-primary/40 bg-primary/5" : "border-border/60 bg-secondary/25"
                     )}
                   >
                     <dt className="min-w-0 text-xs text-muted-foreground">
                       {field.label}
                       {field.isOverridden && (
-                        <span className="ml-1 font-mono text-[9px] uppercase tracking-[0.12em] text-primary">override</span>
+                        <span className="ml-1 font-mono text-xs uppercase tracking-[0.12em] text-primary">override</span>
                       )}
                     </dt>
                     <dd className="min-w-0 break-words font-mono text-xs text-foreground">
@@ -345,7 +350,19 @@ export function SecurityDetailsPanel({
                         <span className={cn(field.value === "" ? "text-muted-foreground" : "")}>{field.displayValue}</span>
                       )}
                     </dd>
-                    <div className="flex shrink-0 items-center gap-1">
+                    <dd className="flex shrink-0 items-center gap-1">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={inspectedKey === field.key ? "secondary" : "ghost"}
+                        aria-label={`Inspect source and override for ${field.label}`}
+                        title={`Inspect source and override for ${field.label}`}
+                        aria-expanded={inspectedKey === field.key}
+                        aria-controls={inspectedKey === field.key ? field.inspectionId : undefined}
+                        onClick={() => setInspectedKey((current) => current === field.key ? null : field.key)}
+                      >
+                        <Info className="h-3.5 w-3.5" aria-hidden />
+                      </Button>
                       {field.isEditing ? (
                         <>
                           <Button
@@ -399,7 +416,16 @@ export function SecurityDetailsPanel({
                           )}
                         </>
                       )}
-                    </div>
+                    </dd>
+                    {inspectedKey === field.key ? (
+                      <dd className="col-span-3">
+                        <SecurityDetailValueInspector
+                          field={field}
+                          syncLabel={vm.syncStatus?.label ?? "Sync status unavailable"}
+                          updatedLabel={vm.updatedLabel}
+                        />
+                      </dd>
+                    ) : null}
                   </div>
                 );
               })}
@@ -408,6 +434,43 @@ export function SecurityDetailsPanel({
         ))}
       </CardContent>
     </Card>
+  );
+}
+
+function SecurityDetailValueInspector({
+  field,
+  syncLabel,
+  updatedLabel
+}: {
+  field: SecurityDetailFieldViewModel;
+  syncLabel: string;
+  updatedLabel: string | null;
+}) {
+  return (
+    <section
+      id={field.inspectionId}
+      aria-label={`${field.label} value inspection`}
+      className="space-y-3 border-t border-border/70 pt-3 text-xs"
+    >
+      <dl className="grid gap-3 sm:grid-cols-3">
+        {[
+          { label: "Loaded source value", value: field.sourceDisplayValue },
+          { label: "Operator override", value: field.overrideDisplayValue },
+          { label: "Effective value in this panel", value: field.displayValue }
+        ].map((item) => (
+          <div key={item.label} className="min-w-0">
+            <dt className="text-muted-foreground">{item.label}</dt>
+            <dd className="mt-1 break-words font-mono text-foreground">{item.value}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="leading-5 text-muted-foreground">{field.impactDescription}</p>
+      <div className="space-y-1 text-muted-foreground">
+        <p>Override sync: {syncLabel}.</p>
+        {updatedLabel ? <p>Latest override-set edit: {updatedLabel}.</p> : null}
+        <p>Per-field edit history and reasons are not available in this view.</p>
+      </div>
+    </section>
   );
 }
 
@@ -455,7 +518,7 @@ function SecurityDetailFieldEditor({ field, value, onChange, onSubmit, onCancel 
         <FieldSupportText
           helpId={editor.helperId}
           helpText={editor.helperText}
-          helpClassName="block text-[11px] leading-4"
+          helpClassName="block text-xs leading-4"
           disabledReason={editor.disabledReason}
           disabledReasonId={disabledReasonId}
           disabledReasonClassName="block"
@@ -483,7 +546,7 @@ function SecurityDetailFieldEditor({ field, value, onChange, onSubmit, onCancel 
       <FieldSupportText
         helpId={editor.helperId}
         helpText={editor.helperText}
-        helpClassName="block text-[11px] leading-4"
+        helpClassName="block text-xs leading-4"
         disabledReason={editor.disabledReason}
         disabledReasonId={disabledReasonId}
         disabledReasonClassName="block"
@@ -717,6 +780,7 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
         <CardDescription>
           {vm.description}
         </CardDescription>
+        <p className="text-xs leading-5 text-muted-foreground">{vm.valuationDescription}</p>
       </CardHeader>
       <CardContent className="space-y-4">
         <div role="group" aria-label={vm.formLabel} className="grid gap-2 sm:grid-cols-6">
@@ -859,7 +923,7 @@ function LotDraftField({
 }) {
   return (
     <div className={cn("min-w-0 space-y-1", className)}>
-      <label htmlFor={field.id} className={cn("text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.12em]")}>
+      <label htmlFor={field.id} className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "type-label--caps")}>
         {field.label}
       </label>
       <Input
@@ -874,11 +938,11 @@ function LotDraftField({
         className="min-h-8 px-2 py-1 text-xs"
         onChange={(event) => onChange(event.target.value)}
       />
-      <p id={field.helperId} className="text-[11px] leading-4 text-muted-foreground">
+      <p id={field.helperId} className="text-xs leading-4 text-muted-foreground">
         {field.helperText}
       </p>
       {field.errorText ? (
-        <p id={field.errorId} className="text-[11px] leading-4 text-danger">
+        <p id={field.errorId} className="text-xs leading-4 text-danger">
           {field.errorText}
         </p>
       ) : null}
@@ -889,7 +953,7 @@ function LotDraftField({
 function LotsMetric({ label, value, tone }: { label: string; value: string; tone?: "success" | "danger" }) {
   return (
     <div className="rounded-md border border-border/60 bg-secondary/25 px-3 py-2">
-      <div className={cn("text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.12em]")}>{label}</div>
+      <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</div>
       <div className={cn(
         "mt-1 font-mono text-sm font-semibold tabular-nums",
         tone === "success" ? "text-success" : tone === "danger" ? "text-danger" : "text-foreground"

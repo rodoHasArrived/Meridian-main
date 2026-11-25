@@ -185,7 +185,11 @@ export function buildOrderTicketStatusAnnouncement({
   }
 
   if (phase === "parked") {
-    return `Order parked for governed risk approval${escalationId ? `, escalation ${escalationId}` : ""}.`;
+    return `Order parked for risk approval${escalationId ? `, escalation ${escalationId}` : ""}.`;
+  }
+
+  if (phase === "reconciliation") {
+    return errorText ?? "This order requires reconciliation.";
   }
 
   if (errorText) {

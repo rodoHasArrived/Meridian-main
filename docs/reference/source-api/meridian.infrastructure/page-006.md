@@ -6,6 +6,361 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RobinhoodReadOnlyBrokerageSyncAdapter
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Robinhood.RobinhoodReadOnlyBrokerageSyncAdapter</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:42](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L42).
+
+Read-only Robinhood portfolio sync adapter for an authorized brokerage aggregation bridge. This adapter consumes normalized Meridian brokerage DTO payloads from configured endpoints; it intentionally does not call Robinhood&#x27;s unofficial trading endpoints or store passwords.
+
+```csharp
+public sealed class RobinhoodReadOnlyBrokerageSyncAdapter : IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public RobinhoodReadOnlyBrokerageSyncAdapter(IHttpClientFactory httpClientFactory, RobinhoodReadOnlyBrokerageOptions options, ILogger&lt;RobinhoodReadOnlyBrokerageSyncAdapter&gt; logger);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:56](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L56) |  |
+| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:66](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L66) |  |
+| <code>public string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:68](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L68) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;BrokerageExternalAccountDto&gt;&gt; GetAccountsAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:70](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L70) |  |
+| <code>public Task&lt;BrokeragePortfolioSnapshotDto&gt; GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:79](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L79) |  |
+| <code>public Task&lt;BrokerageActivitySnapshotDto&gt; GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:91](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L91) |  |
+
+## RobinhoodSymbolSearchProvider
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Robinhood.RobinhoodSymbolSearchProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:29](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L29).
+
+Symbol search provider backed by Robinhood&#x27;s public instruments API. No authentication required.
+
+```csharp
+public sealed class RobinhoodSymbolSearchProvider : BaseSymbolSearchProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:31](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L31) |  |
+| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:32](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L32) |  |
+| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:33](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L33) |  |
+| <code>public override IReadOnlyList&lt;string&gt; SupportedAssetTypes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:43](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L43) |  |
+| <code>public override IReadOnlyList&lt;string&gt; SupportedExchanges =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:48](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L48) |  |
+| <code>public RobinhoodSymbolSearchProvider(HttpClient? httpClient = null, ILogger? log = null) : base(apiKey : null, httpClient, log);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs:56](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs#L56) |  |
+
+## StooqHistoricalDataProvider
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Stooq.StooqHistoricalDataProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:22](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L22).
+
+Pulls free end-of-day historical bars from Stooq (https://stooq.pl). Extends BaseHistoricalDataProvider for common functionality.
+
+```csharp
+public sealed class StooqHistoricalDataProvider : BaseHistoricalDataProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:26](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L26) |  |
+| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:27](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L27) |  |
+| <code>public override string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:28](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L28) |  |
+| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:32](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L32) |  |
+| <code>public StooqHistoricalDataProvider(HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(httpClient, log, runtimeOptions : runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L34) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:55](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L55) |  |
+
+## SyntheticHistoricalDataProvider
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Synthetic.SyntheticHistoricalDataProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:14](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L14).
+
+Generates deterministic historical market data and corporate actions for offline development.
+
+```csharp
+public sealed class SyntheticHistoricalDataProvider : IHistoricalDataProvider, ICorporateActionSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SyntheticHistoricalDataProvider(SyntheticMarketDataConfig? config = null);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:19](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L19) |  |
+| <code>public bool IsSimulated =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:28](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L28) | Every bar this provider returns is a deterministic seeded walk, not an observed market price. Declared so valuation and reporting can mark derived figures as non-real. |
+| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:30](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L30) |  |
+| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:31](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L31) |  |
+| <code>public string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:32](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L32) |  |
+| <code>public int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:33](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L33) |  |
+| <code>public TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L34) |  |
+| <code>public HistoricalDataCapabilities Capabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:35](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L35) |  |
+| <code>public Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:37](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L37) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:65](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L65) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:75](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L75) |  |
+| <code>public Task&lt;HistoricalQuotesResult&gt; GetHistoricalQuotesAsync(string symbol, DateTimeOffset start, DateTimeOffset end, int? limit = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:85](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L85) |  |
+| <code>public Task&lt;HistoricalQuotesResult&gt; GetHistoricalQuotesAsync(IEnumerable&lt;string&gt; symbols, DateTimeOffset start, DateTimeOffset end, int? limit = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:88](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L88) |  |
+| <code>public Task&lt;HistoricalTradesResult&gt; GetHistoricalTradesAsync(string symbol, DateTimeOffset start, DateTimeOffset end, int? limit = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:91](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L91) |  |
+| <code>public Task&lt;HistoricalTradesResult&gt; GetHistoricalTradesAsync(IEnumerable&lt;string&gt; symbols, DateTimeOffset start, DateTimeOffset end, int? limit = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:94](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L94) |  |
+| <code>public Task&lt;HistoricalAuctionsResult&gt; GetHistoricalAuctionsAsync(string symbol, DateOnly start, DateOnly end, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:97](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L97) |  |
+| <code>public Task&lt;HistoricalAuctionsResult&gt; GetHistoricalAuctionsAsync(IEnumerable&lt;string&gt; symbols, DateOnly start, DateOnly end, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:100](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L100) |  |
+| <code>public Task&lt;IReadOnlyList&lt;DividendInfo&gt;&gt; GetDividendsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:103](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L103) |  |
+| <code>public Task&lt;IReadOnlyList&lt;SplitInfo&gt;&gt; GetSplitsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:112](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L112) |  |
+
+## SyntheticMarketDataClient
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Synthetic.SyntheticMarketDataClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:22](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L22).
+
+Publishes simulated trades, quotes, order books, and reference data for offline development.
+
+```csharp
+public sealed class SyntheticMarketDataClient : IMarketDataClient, ISymbolSearchProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SyntheticMarketDataClient(IMarketEventPublisher publisher, SyntheticMarketDataConfig? config = null);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L34) |  |
+| <code>public bool IsEnabled =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:46](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L46) |  |
+| <code>public bool IsSimulated =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:49](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L49) |  |
+| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:51](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L51) |  |
+| <code>public string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:52](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L52) |  |
+| <code>public string ProviderDescription =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:53](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L53) |  |
+| <code>public int ProviderPriority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:54](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L54) |  |
+| <code>public ProviderCapabilities ProviderCapabilities { get; } = ProviderCapabilities.Hybrid(trades : true, quotes : true, depth : true, adjustedPrices : true, intraday : true) with { SupportsSymbolSearch = true, SupportsAssetTypeFilter = true, SupportsExchangeFilter = true, SupportedAssetTypes = new[] { &quot;Stock&quot;, &quot;ETF&quot; }, SupportedExchanges = new[] { &quot;XNAS&quot;, &quot;XNYS&quot;, &quot;ARCX&quot; }, MaxDepthLevels = 50 };</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:55](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L55) |  |
+| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:65](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L65) |  |
+| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:66](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L66) |  |
+| <code>public int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:67](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L67) |  |
+| <code>public event Action&lt;WebSocketConnectionDiagnostics&gt;? ConnectionDiagnosticsChanged;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:70](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L70) |  |
+| <code>public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot();</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:73](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L73) |  |
+| <code>public Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:118](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L118) |  |
+| <code>public Task DisconnectAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:130](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L130) |  |
+| <code>public int SubscribeMarketDepth(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:133](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L133) |  |
+| <code>public void UnsubscribeMarketDepth(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:145](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L145) |  |
+| <code>public int SubscribeTrades(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:151](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L151) |  |
+| <code>public void UnsubscribeTrades(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:163](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L163) |  |
+| <code>public Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:169](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L169) |  |
+| <code>public Task&lt;IReadOnlyList&lt;SymbolSearchResult&gt;&gt; SearchAsync(string query, int limit = 10, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:171](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L171) |  |
+| <code>public Task&lt;SymbolDetails?&gt; GetDetailsAsync(SymbolId symbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:174](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L174) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:177](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L177) |  |
+
+## SyntheticOptionsChainProvider
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Synthetic.SyntheticOptionsChainProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:22](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L22).
+
+Deterministic synthetic options chain provider for offline development and testing. Generates realistic option chains around the current underlying price using a closed-form Black-Scholes model. All data is deterministic and reproducible.
+
+```csharp
+public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int DefaultStrikeRange = 10;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:30](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L30) |  |
+| <code>public const int MaxStrikeRange = 100;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:31](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L31) |  |
+| <code>public SyntheticOptionsChainProvider(SyntheticMarketDataConfig? config = null);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:35](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L35) |  |
+| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L44) |  |
+| <code>public string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:45](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L45) |  |
+| <code>public string ProviderDescription =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:46](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L46) |  |
+| <code>public int ProviderPriority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:47](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L47) |  |
+| <code>public ProviderCapabilities ProviderCapabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:48](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L48) |  |
+| <code>public OptionsChainCapabilities Capabilities { get; } = new () { SupportsGreeks = true, SupportsOpenInterest = true, SupportsImpliedVolatility = true, SupportsIndexOptions = true, SupportsHistorical = false, SupportsStreaming = false, SupportedInstrumentTypes = new[] { InstrumentType.EquityOption, InstrumentType.IndexOption } };</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:55](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L55) |  |
+| <code>public Task&lt;IReadOnlyList&lt;DateOnly&gt;&gt; GetExpirationsAsync(string underlyingSymbol, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:71](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L71) |  |
+| <code>public Task&lt;IReadOnlyList&lt;decimal&gt;&gt; GetStrikesAsync(string underlyingSymbol, DateOnly expiration, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:80](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L80) |  |
+| <code>public Task&lt;OptionChainSnapshot?&gt; GetChainSnapshotAsync(string underlyingSymbol, DateOnly expiration, int? strikeRange = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:92](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L92) |  |
+| <code>public Task&lt;OptionQuote?&gt; GetOptionQuoteAsync(OptionContractSpec contract, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:131](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L131) |  |
+
+## BrokerAdapterTemplate
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.BrokerAdapterTemplate</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:15](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L15).
+
+Broker adapter template showing strict boundary separation: - Broker-specific DTOs and enums stay inside this file/namespace. - Canonical Meridian contracts are exposed via execution SDK models.
+
+```csharp
+public static class BrokerAdapterTemplate
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void Register(IServiceCollection services);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:17](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L17) |  |
+
+## ITemplateBrokerStreamingClient
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.ITemplateBrokerStreamingClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:65](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L65).
+
+Defines asynchronous streaming and disposal for the template broker adapter.
+
+```csharp
+public interface ITemplateBrokerStreamingClient : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IAsyncEnumerable&lt;TemplateBrokerStreamMessage&gt; StreamAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:67](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L67) |  |
+
+## TemplateBrokerageGateway
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerageGateway</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:38](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L38).
+
+Template brokerage gateway scaffold. Copy this file and fill in the TODOs to implement a new brokerage provider. Steps to implement a new brokerage: 1. Copy this file to a new folder under Adapters/{BrokerName}/ 2. Rename the class to {BrokerName}BrokerageGateway 3. Replace the template &#91;DataSource&#93; and &#91;ImplementsAdr&#93; metadata with broker-specific values 4. Replace scaffold methods with broker-specific API calls 5. Add JSON DTOs and a JsonSerializerContext for ADR-014 compliance 6. Register in DI: services.AddBrokerageGateway&lt;{BrokerName}BrokerageGateway&gt;() 7. Add configuration options record if needed 8. Add tests under tests/Meridian.Tests/Brokerage/
+
+```csharp
+public sealed class TemplateBrokerageGateway : IBrokerageGateway
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TemplateBrokerageGateway(ILogger&lt;TemplateBrokerageGateway&gt; logger) : this(logger, new TemplateBrokerageGatewayOptions());</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:50](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L50) |  |
+| <code>public TemplateBrokerageGateway(ILogger&lt;TemplateBrokerageGateway&gt; logger, TemplateBrokerageGatewayOptions options);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:55](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L55) |  |
+| <code>public string GatewayId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:67](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L67) |  |
+| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:69](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L69) |  |
+| <code>public string BrokerDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:71](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L71) |  |
+| <code>public BrokerageCapabilities BrokerageCapabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:73](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L73) |  |
+| <code>public async Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:75](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L75) |  |
+| <code>public Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:88](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L88) |  |
+| <code>public async Task&lt;ExecutionReport&gt; SubmitOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:97](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L97) |  |
+| <code>public async Task&lt;ExecutionReport&gt; CancelOrderAsync(string orderId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:127](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L127) |  |
+| <code>public async Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:153](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L153) |  |
+| <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:183](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L183) |  |
+| <code>public Task&lt;AccountInfo&gt; GetAccountInfoAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:192](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L192) |  |
+| <code>public Task&lt;IReadOnlyList&lt;BrokerPosition&gt;&gt; GetPositionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:207](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L207) |  |
+| <code>public Task&lt;IReadOnlyList&lt;BrokerOrder&gt;&gt; GetOpenOrdersAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:214](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L214) |  |
+| <code>public async Task&lt;BrokerHealthStatus&gt; CheckHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:225](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L225) |  |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:240](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L240) |  |
+
+## TemplateBrokerageGatewayOptions
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerageGatewayOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:303](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L303).
+
+```csharp
+public sealed record TemplateBrokerageGatewayOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string GatewayId { get; init; } = &quot;template&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:305](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L305) |  |
+| <code>public string BrokerDisplayName { get; init; } = &quot;Template Broker&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:306](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L306) |  |
+| <code>public BrokerageCapabilities Capabilities { get; init; } = BrokerageCapabilities.UsEquity(modification : true, partialFills : true, shortSelling : false, fractional : false, extendedHours : false);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:307](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L307) |  |
+| <code>public bool ConnectionReady { get; init; } = true;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:314](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L314) |  |
+| <code>public string ConnectionFailureMessage { get; init; } = &quot;Template broker connection is not ready.&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:315](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L315) |  |
+| <code>public string AccountId { get; init; } = &quot;template-account&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:316](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L316) |  |
+| <code>public decimal Equity { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:317](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L317) |  |
+| <code>public decimal Cash { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:318](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L318) |  |
+| <code>public decimal BuyingPower { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:319](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L319) |  |
+| <code>public string Currency { get; init; } = &quot;USD&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:320](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L320) |  |
+| <code>public string AccountStatus { get; init; } = &quot;paper-template&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:321](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L321) |  |
+| <code>public IReadOnlyList&lt;BrokerPosition&gt; Positions { get; init; } = Array.Empty&lt;BrokerPosition&gt;();</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:322](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L322) |  |
+
+## TemplateBrokerDegradation
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerDegradation</code>. Kind: `enum`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:213](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L213).
+
+```csharp
+public enum TemplateBrokerDegradation
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:213](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L213) |  |
+| <code>Elevated</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:213](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L213) |  |
+| <code>Critical</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:213](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L213) |  |
+
+## TemplateBrokerExecutionExtensions
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerExecutionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:171](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L171).
+
+Provides template execution reconciliation by returning the supplied local execution log.
+
+```csharp
+public sealed class TemplateBrokerExecutionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;IReadOnlyList&lt;ExecutionReport&gt;&gt; ReconcileExecutionsAsync(IReadOnlyList&lt;ExecutionReport&gt; localExecutionLog, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:173](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L173) |  |
+
+## TemplateBrokerHealthPayload
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerHealthPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:208](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L208).
+
+```csharp
+public sealed record TemplateBrokerHealthPayload(bool IsApiReachable, int LatencyMs, TemplateBrokerDegradation DegradationLevel);
+```
+
+## TemplateBrokerHealthReporter
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerHealthReporter</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:133](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L133).
+
+Maps template broker health payloads to canonical broker health status.
+
+```csharp
+public sealed class TemplateBrokerHealthReporter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public BrokerHealthStatus MapHealth(TemplateBrokerHealthPayload payload);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:135](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L135) |  |
+
+## TemplateBrokerHttpClient
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerHttpClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:47](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L47).
+
+Posts JSON requests and deserializes responses for the template broker adapter.
+
+```csharp
+public sealed class TemplateBrokerHttpClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TemplateBrokerHttpClient(HttpClient httpClient) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:51](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L51) |  |
+| <code>public async Task&lt;TResponse&gt; PostJsonAsync&lt;TRequest, TResponse&gt;(string path, TRequest payload, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:53](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L53) |  |
+
 ## TemplateBrokerMapper
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerMapper</code>. Kind: `class`.
@@ -440,7 +795,7 @@ public sealed record TradierOrderTransition(OrderStatus Status, ExecutionReportT
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.TwelveData.TwelveDataCorporateActionProvider</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:35](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L35).
+Source: [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:36](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L36).
 
 Fetches dividend and split history from Twelve Data fundamentals endpoints.
 
@@ -452,19 +807,19 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public TwelveDataCorporateActionProvider(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger&lt;TwelveDataCorporateActionProvider&gt; logger, ICredentialContext? credentials = null, RateLimiterRegistry? rateLimiterRegistry = null, BackfillProviderRuntimeOptions? runtimeOptions = null);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:44](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L44) |  |
-| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:65](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L65) |  |
-| <code>public CorporateActionProviderReleaseStatusDto ReleaseStatus =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:67](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L67) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionCommand&gt;&gt; FetchAsync(string ticker, Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:71](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L71) |  |
-| <code>public async Task&lt;CorporateActionFetchResult&gt; FetchWithOutcomeAsync(string ticker, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:78](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L78) |  |
+| <code>public TwelveDataCorporateActionProvider(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger&lt;TwelveDataCorporateActionProvider&gt; logger, ICredentialContext? credentials = null, RateLimiterRegistry? rateLimiterRegistry = null, TwelveDataQuotaConfig? quotaConfig = null, BackfillProviderRuntimeOptions? runtimeOptions = null);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:47](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L47) |  |
+| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:67](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L67) |  |
+| <code>public CorporateActionProviderReleaseStatusDto ReleaseStatus =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:69](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L69) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionCommand&gt;&gt; FetchAsync(string ticker, Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:73](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L73) |  |
+| <code>public async Task&lt;CorporateActionFetchResult&gt; FetchWithOutcomeAsync(string ticker, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:80](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L80) |  |
 
 ## TwelveDataHistoricalDataProvider
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.TwelveData.TwelveDataHistoricalDataProvider</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:37](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L37).
+Source: [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:38](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L38).
 
-Historical data provider using the Twelve Data API (https://api.twelvedata.com). Provides OHLCV bars for US equities, ETFs, international stocks, forex, and crypto. Free tier: 800 requests/day, 8 requests/minute. Extends BaseHistoricalDataProvider for common functionality.
+Historical data provider using the Twelve Data API (https://api.twelvedata.com). Provides OHLCV bars for US equities, ETFs, international stocks, forex, and crypto. Basic profile: 800 credits/day, 8 credits/minute; daily history costs one credit per request. Extends BaseHistoricalDataProvider for common functionality.
 
 ```csharp
 public sealed partial class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvider
@@ -474,23 +829,23 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:52](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L52) |  |
-| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:53](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L53) |  |
-| <code>public override string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:54](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L54) |  |
-| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:59](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L59) |  |
-| <code>public override TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:60](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L60) |  |
+| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:54](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L54) |  |
+| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:55](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L55) |  |
+| <code>public override string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:56](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L56) |  |
+| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:61](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L61) |  |
+| <code>public override TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:62](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L62) |  |
 | <code>public override int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:63](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L63) |  |
 | <code>public override TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:64](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L64) |  |
 | <code>public override HistoricalDataCapabilities Capabilities { get; } = HistoricalDataCapabilities.BarsOnly.WithMarkets(&quot;US&quot;, &quot;UK&quot;, &quot;EU&quot;, &quot;CA&quot;, &quot;AU&quot;);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:66](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L66) |  |
-| <code>public TwelveDataHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, RateLimiterRegistry? rateLimiterRegistry = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(httpClient, log, timeProvider : rateLimiterRegistry?.TimeProvider, runtimeOptions : runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:70](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L70) |  |
-| <code>public override Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:79](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L79) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:90](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L90) |  |
+| <code>public TwelveDataHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, RateLimiterRegistry? rateLimiterRegistry = null, TwelveDataQuotaConfig? quotaConfig = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(httpClient, log, timeProvider : rateLimiterRegistry?.TimeProvider, runtimeOptions : runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:70](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L70) |  |
+| <code>public override Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:81](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L81) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:92](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L92) |  |
 
 ## TwelveDataSymbolSearchProvider
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.TwelveData.TwelveDataSymbolSearchProvider</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:24](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L24).
+Source: [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:25](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L25).
 
 Symbol search provider using the Twelve Data /symbol_search discovery endpoint.
 
@@ -502,12 +857,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:32](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L32) |  |
-| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:33](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L33) |  |
-| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:34](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L34) |  |
-| <code>public override IReadOnlyList&lt;string&gt; SupportedAssetTypes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:50](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L50) |  |
-| <code>public override IReadOnlyList&lt;string&gt; SupportedExchanges =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:62](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L62) |  |
-| <code>public TwelveDataSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, RateLimiterRegistry? rateLimiterRegistry = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(apiKey, httpClient, log, rateLimiterRegistry?.TimeProvider, runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:77](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L77) |  |
+| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:34](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L34) |  |
+| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:35](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L35) |  |
+| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:36](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L36) |  |
+| <code>public override IReadOnlyList&lt;string&gt; SupportedAssetTypes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:52](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L52) |  |
+| <code>public override IReadOnlyList&lt;string&gt; SupportedExchanges =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:64](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L64) |  |
+| <code>public TwelveDataSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, RateLimiterRegistry? rateLimiterRegistry = null, TwelveDataQuotaConfig? quotaConfig = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(apiKey, httpClient, log, rateLimiterRegistry?.TimeProvider, runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:79](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L79) |  |
 
 ## YahooFinanceHistoricalDataProvider
 
@@ -532,13 +887,13 @@ Declared public members:
 | <code>public override TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:45](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L45) |  |
 | <code>public override int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:48](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L48) |  |
 | <code>public override TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:49](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L49) |  |
-| <code>public override HistoricalDataCapabilities Capabilities { get; } = HistoricalDataCapabilities.BarsOnly with { Intraday = true, SupportedMarkets = [&quot;US&quot;, &quot;UK&quot;, &quot;DE&quot;, &quot;JP&quot;, &quot;CA&quot;, &quot;AU&quot;, &quot;HK&quot;, &quot;SG&quot;]};</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:51](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L51) |  |
-| <code>public IReadOnlyList&lt;DataGranularity&gt; SupportedGranularities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:58](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L58) |  |
-| <code>public YahooFinanceHistoricalDataProvider(HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(httpClient, log, runtimeOptions : runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:60](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L60) |  |
-| <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:69](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L69) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:82](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L82) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:92](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L92) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;AggregateBar&gt;&gt; GetAggregateBarsAsync(string symbol, DataGranularity granularity, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:122](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L122) |  |
+| <code>public override HistoricalDataCapabilities Capabilities { get; } = HistoricalDataCapabilities.BarsOnly with { Intraday = true, SupportedMarkets = [&quot;US&quot;, &quot;UK&quot;, &quot;DE&quot;, &quot;JP&quot;, &quot;CA&quot;, &quot;AU&quot;, &quot;HK&quot;, &quot;SG&quot;]};</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:52](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L52) |  |
+| <code>public IReadOnlyList&lt;DataGranularity&gt; SupportedGranularities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:59](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L59) |  |
+| <code>public YahooFinanceHistoricalDataProvider(HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(httpClient, log, runtimeOptions : runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:61](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L61) |  |
+| <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:70](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L70) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:83](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L83) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:93](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L93) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;AggregateBar&gt;&gt; GetAggregateBarsAsync(string symbol, DataGranularity granularity, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:123](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L123) |  |
 
 ## YahooFinanceProviderModule
 
@@ -562,340 +917,3 @@ Declared public members:
 | <code>public static ProviderCapabilityDescriptor Descriptor { get; } = new (&quot;yahoo&quot;, Historical : typeof(YahooFinanceHistoricalDataProvider), InstrumentTypes :[InstrumentType.Equity, InstrumentType.Index, InstrumentType.Forex, InstrumentType.Crypto], HistoricalFactory : static factory =&gt; CreateHistorical(factory), FactoryOwner : ProviderCapabilityFactoryOwner.Module);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:20](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L20) |  |
 | <code>public override void Register(IServiceCollection services, DataSourceRegistry registry);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:26](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L26) |  |
 | <code>public bool IsCapabilityConfigured(Type contract, IServiceProvider services) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:33](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L33) |  |
-
-## ContractVerificationExtensions
-
-Qualified name: <code>Meridian.Infrastructure.Contracts.ContractVerificationExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:10](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L10).
-
-Extension methods for adding contract verification to the DI container.
-
-```csharp
-public static class ContractVerificationExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddContractVerification(this IServiceCollection services);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:15](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L15) | Adds contract verification services to the DI container. |
-| <code>public static IHost VerifyContracts(this IHost host);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:25](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L25) | Verifies contracts at startup and logs results. |
-
-## ContractVerificationHostedService
-
-Qualified name: <code>Meridian.Infrastructure.Contracts.ContractVerificationHostedService</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:52](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L52).
-
-Background service that verifies contracts on startup.
-
-```csharp
-public sealed class ContractVerificationHostedService : IHostedService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ContractVerificationHostedService(ContractVerificationService verifier, ILogger&lt;ContractVerificationHostedService&gt; logger);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:57](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L57) |  |
-| <code>public Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:65](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L65) |  |
-| <code>public Task StopAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs:90](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs#L90) |  |
-
-## ContractVerificationService
-
-Qualified name: <code>Meridian.Infrastructure.Contracts.ContractVerificationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs:10](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs#L10).
-
-Service that verifies implementations satisfy documented ADR contracts at runtime. Run during application startup to catch contract violations early.
-
-```csharp
-public sealed class ContractVerificationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ContractVerificationService(ILogger&lt;ContractVerificationService&gt; logger);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs:15](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs#L15) |  |
-| <code>public IReadOnlyList&lt;ContractViolation&gt; Violations =&gt; …;</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs:23](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs#L23) | Gets all recorded violations from the last verification run. |
-| <code>public bool VerifyContracts(params Assembly[] assemblies);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs:30](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs#L30) | Verifies all ADR implementations in the specified assemblies. |
-
-## ContractViolation
-
-Qualified name: <code>Meridian.Infrastructure.Contracts.ContractViolation</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs:186](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs#L186).
-
-Represents a contract violation found during verification.
-
-```csharp
-public sealed record ContractViolation(string AdrId, string TypeName, string Message)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs:191](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs#L191) |  |
-
-## CapabilityConfig
-
-Qualified name: <code>Meridian.Infrastructure.DataSources.CapabilityConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:361](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L361).
-
-Capability configuration for a data source.
-
-```csharp
-public sealed record CapabilityConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int? HistoricalLookbackDays { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:366](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L366) | Maximum historical lookback in days. |
-| <code>public int? HistoricalLookbackYears { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:371](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L371) | Maximum historical lookback in years. |
-| <code>public string[]? IntradayBarIntervals { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:376](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L376) | Supported intraday bar intervals. |
-| <code>public int? MaxDepthLevels { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:381](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L381) | Maximum depth levels for market depth. |
-| <code>public bool SupportsL2 { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:386](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L386) | Whether this source supports L2 market depth. |
-| <code>public bool SupportsAdjustedPrices { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:391](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L391) | Whether this source supports adjusted prices. |
-| <code>public bool SupportsDividends { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:396](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L396) | Whether this source supports dividend data. |
-| <code>public bool SupportsSplits { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:401](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L401) | Whether this source supports split data. |
-| <code>public string[]? SupportedMarkets { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:406](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L406) | Supported market regions. |
-
-## ConnectionConfig
-
-Qualified name: <code>Meridian.Infrastructure.DataSources.ConnectionConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:320](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L320).
-
-Connection configuration for a data source.
-
-```csharp
-public sealed record ConnectionConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? BaseUrl { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:325](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L325) | Base URL for HTTP-based sources. |
-| <code>public string? Host { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:330](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L330) | Host for socket-based sources. |
-| <code>public int? Port { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:335](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L335) | Port for socket-based sources. |
-| <code>public bool UsePaper { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:340](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L340) | Whether to use paper/sandbox environment. |
-| <code>public bool EnableWebSocket { get; init; } = true;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:345](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L345) | Whether to use WebSocket connection. |
-| <code>public int TimeoutSeconds { get; init; } = 30;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:350](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L350) | Connection timeout in seconds. |
-| <code>public int KeepAliveSeconds { get; init; } = 30;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:355](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L355) | Keep-alive interval in seconds. |
-
-## CredentialConfig
-
-Qualified name: <code>Meridian.Infrastructure.DataSources.CredentialConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:412](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L412).
-
-Credential configuration for a data source.
-
-```csharp
-public sealed record CredentialConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Source { get; init; } = &quot;Environment&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:417](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L417) | Source of credentials: Environment, File, Vault, Config. |
-| <code>public string? ApiKeyVar { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:422](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L422) | Environment variable name for API key. |
-| <code>public string? KeyIdVar { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:427](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L427) | Environment variable name for key ID. |
-| <code>public string? SecretKeyVar { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:432](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L432) | Environment variable name for secret key. |
-| <code>public string? UsernameVar { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:437](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L437) | Environment variable name for username. |
-| <code>public string? PasswordVar { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:442](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L442) | Environment variable name for password. |
-| <code>public string? CredentialsPath { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:447](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L447) | Path to credentials file (if Source is File). |
-| <code>public string? VaultPath { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:453](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L453) | Vault path for credentials (if Source is Vault). Supports logical paths like &quot;marketdata/alpaca/prod&quot;. |
-| <code>public string? VaultProvider { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:458](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L458) | Vault provider name: AwsSecretsManager or AzureKeyVault. |
-| <code>public string ApiKeyKey { get; init; } = &quot;apiKey&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:464](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L464) | Optional key names within the vault payload for each credential. Defaults: apiKey, keyId, secretKey, username, password. |
-| <code>public string KeyIdKey { get; init; } = &quot;keyId&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:465](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L465) |  |
-| <code>public string SecretKeyKey { get; init; } = &quot;secretKey&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:466](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L466) |  |
-| <code>public string UsernameKey { get; init; } = &quot;username&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:467](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L467) |  |
-| <code>public string PasswordKey { get; init; } = &quot;password&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:468](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L468) |  |
-| <code>public static ISecretProvider SecretProvider { get; set; } = new EnvironmentSecretProvider();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:482](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L482) | Secret provider used for vault-backed credential resolution. Set at application startup via DI. Defaults to EnvironmentSecretProvider which uses MDC_VAULT__* environment variables as a bridge for local/test environments. Replace with a real vault provider (AWS Secrets Manager, Azure Key Vault) for production. |
-| <code>public string? ResolveApiKey();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:487](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L487) | Resolves the API key from configured source. |
-| <code>public string? ResolveKeyId();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:496](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L496) | Resolves the key ID from configured source. |
-| <code>public string? ResolveSecretKey();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:505](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L505) | Resolves the secret key from configured source. |
-| <code>public string? ResolveUsername();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:514](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L514) | Resolves the username from configured source. |
-| <code>public string? ResolvePassword();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:523](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L523) | Resolves the password from configured source. |
-| <code>public CredentialValidationResult Validate(bool requireApiKey = false, bool requireKeyIdAndSecret = false, bool requireUsernameAndPassword = false);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:577](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L577) | Validates that required credentials are configured and resolvable. Use this for pre-flight checks before starting a data source. |
-| <code>public void EnsureValid(string sourceName, bool requireApiKey = false, bool requireKeyIdAndSecret = false, bool requireUsernameAndPassword = false);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:711](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L711) | Performs a pre-flight check ensuring all credentials can be resolved. Throws InvalidOperationException if validation fails. |
-
-## CredentialValidationResult
-
-Qualified name: <code>Meridian.Infrastructure.DataSources.CredentialValidationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:729](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L729).
-
-Result of credential validation.
-
-```csharp
-public sealed record CredentialValidationResult(bool IsValid, IReadOnlyList<string> Errors)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static CredentialValidationResult Success { get; } = new (true, Array.Empty&lt;string&gt;());</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:734](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L734) | Creates a successful validation result. |
-
-## DataSourceBase
-
-Qualified name: <code>Meridian.Infrastructure.DataSources.DataSourceBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:16](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L16).
-
-Base class providing common functionality for data source implementations. Handles health tracking, rate limiting, retry logic, and lifecycle management.
-
-```csharp
-public abstract class DataSourceBase : IDataSource, IProviderRateLimitDiagnosticsSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public abstract string Id { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:36](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L36) |  |
-| <code>public abstract string DisplayName { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:39](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L39) |  |
-| <code>public abstract string Description { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:42](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L42) |  |
-| <code>public abstract DataSourceType Type { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:47](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L47) |  |
-| <code>public abstract DataSourceCategory Category { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:50](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L50) |  |
-| <code>public virtual int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:55](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L55) | Default priority, can be overridden by derived classes. |
-| <code>public abstract DataSourceCapabilities Capabilities { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:60](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L60) |  |
-| <code>public virtual DataSourceCapabilityInfo CapabilityInfo =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:63](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L63) |  |
-| <code>public abstract IReadOnlySet&lt;string&gt; SupportedMarkets { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:66](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L66) |  |
-| <code>public abstract IReadOnlySet&lt;AssetClass&gt; SupportedAssetClasses { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:69](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L69) |  |
-| <code>public DataSourceHealth Health =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:74](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L74) |  |
-| <code>public DataSourceStatus Status { get; protected set; } = DataSourceStatus.Uninitialized;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:77](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L77) |  |
-| <code>public RateLimitState RateLimitState =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:80](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L80) |  |
-| <code>public IObservable&lt;DataSourceHealthChanged&gt; HealthChanges =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:83](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L83) |  |
-| <code>public virtual async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:109](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L109) |  |
-| <code>public abstract Task&lt;bool&gt; ValidateCredentialsAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:148](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L148) |  |
-| <code>public abstract Task&lt;bool&gt; TestConnectivityAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:151](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L151) |  |
-| <code>public virtual async ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:154](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L154) |  |
-| <code>public ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:387](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L387) |  |
-
-## DataSourceConfigurationExtensions
-
-Qualified name: <code>Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:813](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L813).
-
-Extension methods for working with data source configuration.
-
-```csharp
-public static class DataSourceConfigurationExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static DataSourceOptions GetOptionsForSource(this UnifiedDataSourcesConfig config, string sourceId);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:818](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L818) | Gets the DataSourceOptions for a specific source, merging with defaults. |
-| <code>public static DataSourceType ParseType(this SourceConfig config);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:836](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L836) | Parses the DataSourceType from string. |
-| <code>public static DataSourceCategory ParseCategory(this SourceConfig config);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:851](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L851) | Parses the DataSourceCategory from string. |
-| <code>public static IEnumerable&lt;string&gt; GetEnabledSourceIds(this UnifiedDataSourcesConfig config);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:867](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L867) | Gets all enabled source IDs. |
-
-## DataSourceOptions
-
-Qualified name: <code>Meridian.Infrastructure.DataSources.DataSourceOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:600](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L600).
-
-Configuration options for a data source.
-
-```csharp
-public sealed record DataSourceOptions(int Priority = 100, RetryPolicyOptions? RetryPolicy = null, RateLimitOptions? RateLimits = null, HealthCheckOptions? HealthCheck = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RetryPolicyOptions RetryPolicy { get; } = RetryPolicy?? new RetryPolicyOptions();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:607](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L607) |  |
-| <code>public RateLimitOptions RateLimits { get; } = RateLimits?? new RateLimitOptions();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:608](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L608) |  |
-| <code>public HealthCheckOptions HealthCheck { get; } = HealthCheck?? new HealthCheckOptions();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:609](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L609) |  |
-| <code>public static DataSourceOptions Default =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:614](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L614) | Creates default options. |
-
-## DefaultsConfig
-
-Qualified name: <code>Meridian.Infrastructure.DataSources.DefaultsConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:125](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L125).
-
-Default settings applied to all data sources.
-
-```csharp
-public sealed record DefaultsConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RetryPolicyConfig RetryPolicy { get; init; } = new ();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:130](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L130) | Default retry policy for all sources. |
-| <code>public HealthCheckConfig HealthCheck { get; init; } = new ();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:135](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L135) | Default health check settings. |
-| <code>public RateLimitConfig RateLimits { get; init; } = new ();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:140](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L140) | Default rate limit settings. |
-
-## FailoverConfig
-
-Qualified name: <code>Meridian.Infrastructure.DataSources.FailoverConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:740](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L740).
-
-Failover configuration.
-
-```csharp
-public sealed record FailoverConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Enabled { get; init; } = true;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:745](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L745) | Whether failover is enabled. |
-| <code>public string Strategy { get; init; } = &quot;Priority&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:750](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L750) | Failover strategy: Priority, HealthScore, RoundRobin, Random. |
-| <code>public int MaxFailoverAttempts { get; init; } = 3;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:755](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L755) | Maximum number of failover attempts. |
-| <code>public int CooldownSeconds { get; init; } = 60;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:760](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L760) | Cooldown period in seconds after a source fails. |
-| <code>public FallbackOptions ToOptions();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:765](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L765) | Converts to internal options format. |
-
-## FallbackOptions
-
-Qualified name: <code>Meridian.Infrastructure.DataSources.FallbackOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:787](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L787).
-
-Fallback options for provider failover.
-
-```csharp
-public sealed record FallbackOptions(bool Enabled, FallbackStrategy Strategy, int MaxAttempts, TimeSpan CooldownPeriod);
-```
-
-## FallbackStrategy
-
-Qualified name: <code>Meridian.Infrastructure.DataSources.FallbackStrategy</code>. Kind: `enum`.
-
-Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:797](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L797).
-
-Fallback strategy for provider selection.
-
-```csharp
-public enum FallbackStrategy : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Priority</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:800](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L800) | Priority-based selection (use provider priority). |
-| <code>HealthScore</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:802](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L802) | Health-score-based selection. |
-| <code>RoundRobin</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:804](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L804) | Round-robin selection. |
-| <code>Random</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:806](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L806) | Random selection. |

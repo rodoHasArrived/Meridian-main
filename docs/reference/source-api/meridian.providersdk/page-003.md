@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IExternalGlPostingProvider
+
+Qualified name: <code>Meridian.ProviderSdk.AccountingSystem.IExternalGlPostingProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs:6](../../../../src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs#L6).
+
+Posts immutable, balanced Meridian documents and resolves their outcome by deterministic key.
+
+```csharp
+public interface IExternalGlPostingProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string ProviderId { get; }</code> | [src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs:8](../../../../src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs#L8) |  |
+| <code>Task&lt;ExternalGlDestination&gt; ResolveDestinationAsync(string tenantId, string connectionId, CancellationToken ct);</code> | [src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs:11](../../../../src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs#L11) | Resolves a verified, explicitly owned connection without falling back to provider-wide credentials. |
+| <code>void ValidateDocument(ExternalGlPostingDocument document);</code> | [src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs:14](../../../../src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs#L14) | Checks that a document can be represented losslessly before operator review. |
+| <code>Task&lt;ExternalGlProviderReceipt&gt; PostAsync(string tenantId, ExternalGlDestination destination, ExternalGlPostingDocument document, CancellationToken ct);</code> | [src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs:17](../../../../src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs#L17) | Creates a document using its retained idempotency key on every attempt. |
+| <code>Task&lt;ExternalGlProviderReceipt&gt; FindAsync(string tenantId, ExternalGlDestination destination, ExternalGlPostingDocument document, CancellationToken ct);</code> | [src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs:25](../../../../src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs#L25) | Queries by the Meridian idempotency key or by its deterministic searchable provider reference. Return NotFound only after a successful, conclusive lookup. Replays after an ambiguous create use the exact same document and key, which the provider must deduplicate. |
+
+## IBDataLineage
+
+Qualified name: <code>Meridian.ProviderSdk.IBDataLineage</code>. Kind: `record`.
+
+Source: [src/Meridian.ProviderSdk/IProviderDataReadService.cs:151](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L151).
+
+Complete, entitlement-aware lineage for an Interactive Brokers request or subscription.
+
+```csharp
+public sealed record IBDataLineage(int RequestId, string Service, string Symbol, string? Exchange, string? MarketRuleIds, string? MinimumIncrements, string? Subscription, IBMarketDataAvailability Availability, bool IsDelayed, string Status, DateTimeOffset ObservedAt);
+```
+
+## IBDataResult
+
+Qualified name: <code>Meridian.ProviderSdk.IBDataResult</code>. Kind: `record`.
+
+Source: [src/Meridian.ProviderSdk/IProviderDataReadService.cs:169](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L169).
+
+Storage-facing, normalized provider result. Snapshot identities are stable across retries and restarts; NormalizedPayload is the portable serialized read model and lineage is retained separately so consumers need not recover it from an opaque payload.
+
+```csharp
+public sealed record IBDataResult(string TenantId, string CompanyId, string ResultIdentity, string ProviderFamily, string Capability, string RequestIdentity, string? SubscriptionIdentity, string? Symbol, string? AccountId, DateTimeOffset CapturedAt, ProviderDataRequestStatus LifecycleStatus, string NormalizedPayload, IBDataLineage Lineage);
+```
+
 ## IBDataResultQuery
 
 Qualified name: <code>Meridian.ProviderSdk.IBDataResultQuery</code>. Kind: `record`.
@@ -350,7 +396,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.ProviderSdk.IProviderRateLimitDiagnosticsSource</code>. Kind: `interface`.
 
-Source: [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:35](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L35).
+Source: [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:47](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L47).
 
 Implemented by provider runtimes that can expose a coherent rate-limit snapshot.
 
@@ -362,7 +408,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot();</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:37](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L37) |  |
+| <code>ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot();</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:49](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L49) |  |
 
 ## IProviderScannerService
 
@@ -848,45 +894,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public decimal? BidSize { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderDataReadService.cs:100](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L100) | Bid-side size when the tick carries per-side quantities (for example BID_ASK). |
 | <code>public decimal? AskSize { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderDataReadService.cs:103](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L103) | Ask-side size when the tick carries per-side quantities (for example BID_ASK). |
-
-## ProviderInstrument
-
-Qualified name: <code>Meridian.ProviderSdk.ProviderInstrument</code>. Kind: `record`.
-
-Source: [src/Meridian.ProviderSdk/IProviderInstrumentDiscoveryService.cs:13](../../../../src/Meridian.ProviderSdk/IProviderInstrumentDiscoveryService.cs#L13).
-
-Provider-neutral instrument identity returned by discovery.
-
-```csharp
-public sealed record ProviderInstrument(string Symbol, string Name, string AssetClass, string? Exchange, string? Currency, string? ProviderInstrumentId, ProviderDataProvenance Provenance);
-```
-
-## ProviderInstrumentDiscoveryRequest
-
-Qualified name: <code>Meridian.ProviderSdk.ProviderInstrumentDiscoveryRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.ProviderSdk/IProviderInstrumentDiscoveryService.cs:6](../../../../src/Meridian.ProviderSdk/IProviderInstrumentDiscoveryService.cs#L6).
-
-Provider-neutral request for discoverable instruments and contracts.
-
-```csharp
-public sealed record ProviderInstrumentDiscoveryRequest(string Query, string? AssetClass = null, string? Market = null, int? Limit = null);
-```
-
-## ProviderInstrumentDiscoveryResult
-
-Qualified name: <code>Meridian.ProviderSdk.ProviderInstrumentDiscoveryResult</code>. Kind: `record`.
-
-Source: [src/Meridian.ProviderSdk/IProviderDataReadService.cs:253](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L253).
-
-Presentation-safe instrument discovery result supplied by providers that support search.
-
-```csharp
-public sealed record ProviderInstrumentDiscoveryResult(string InstrumentId, string Symbol, string DisplayName, string? Exchange, string? AssetClass, ProviderDataProvenance Provenance)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderInstrumentDiscoveryResult(string instrumentId, string symbol, string displayName, string? exchange = null, string? assetClass = null) : this(instrumentId, symbol, displayName, exchange, assetClass, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow));</code> | [src/Meridian.ProviderSdk/IProviderDataReadService.cs:261](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L261) |  |

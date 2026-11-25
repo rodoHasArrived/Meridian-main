@@ -30,7 +30,7 @@ describe("operatingScopeDimensionsForRoute", () => {
   });
 
   it("applies the entity only on the Accounting routes whose screens read it", () => {
-    for (const route of ["/accounting", "/accounting/configure", "/accounting/journal-entries", "/accounting/approvals", "/accounting/operations-continuity"]) {
+    for (const route of ["/accounting", "/accounting/configure", "/accounting/journal-entries", "/accounting/approvals", "/accounting/close"]) {
       expect(operatingScopeDimensionsForRoute(route)).toContain("entityId");
     }
     for (const route of ["/accounting/ledger", "/accounting/trial-balance", "/accounting/close-calendar"]) {
@@ -53,6 +53,27 @@ describe("operatingScopeDimensionsForRoute", () => {
     // Routes that do not narrow rows by fund keep it retained even with the graph.
     expect(operatingScopeDimensionsForRoute("/portfolio", { fundStructureReady: true })).not.toContain("fundId");
     expect(operatingScopeDimensionsForRoute("/accounting/ledger", { fundStructureReady: true })).not.toContain("fundId");
+  });
+
+  it("narrows the canonical Close hub and Statement import by fund while Close keeps its entity filter", () => {
+    expect(routeNarrowsByFundScope("/accounting/close?workflowId=wf-1")).toBe(true);
+    expect(routeNarrowsByFundScope("/accounting/operations-continuity")).toBe(false);
+    expect(routeNarrowsByFundScope("/accounting/statement-import")).toBe(true);
+    // The reporting delivery history has no fund-account key, so Reporting does not narrow.
+    expect(routeNarrowsByFundScope("/reporting")).toBe(false);
+
+    // The Close hub applies the entity to its close-readiness read with or without the graph…
+    expect(operatingScopeDimensionsForRoute("/accounting/close", { fundStructureReady: false })).toContain("entityId");
+    expect(operatingScopeDimensionsForRoute("/accounting/close", { fundStructureReady: false })).not.toContain("fundId");
+    // …and adds the fund once the graph can place its workflows' accounts, without duplicating the entity.
+    const ready = operatingScopeDimensionsForRoute("/accounting/close", { fundStructureReady: true });
+    expect(ready).toEqual(expect.arrayContaining(["entityId", "fundId", "fundAccountId"]));
+    expect(ready.filter((key) => key === "entityId")).toHaveLength(1);
+
+    expect(operatingScopeDimensionsForRoute("/accounting/statement-import", { fundStructureReady: false })).not.toContain("entityId");
+    expect(operatingScopeDimensionsForRoute("/accounting/statement-import", { fundStructureReady: true })).toEqual(
+      expect.arrayContaining(["entityId", "fundId"])
+    );
   });
 
   it("marks the bar's Entity and Fund applied on a fund-narrowing route and retained without the graph", () => {
@@ -285,5 +306,44 @@ describe("appendOperatingScopeToRoute", () => {
     expect(appendOperatingScopeToRoute("/trading/orders", scope)).toBe("/trading/orders?symbol=MSFT&fundAccountId=fund-1&provider=Alpaca");
     expect(appendOperatingScopeToRoute("/data/quotes?tab=book", scope)).toBe("/data/quotes?tab=book&symbol=MSFT&provider=Alpaca");
     expect(appendOperatingScopeToRoute("/trading", buildOperatingScopeFromSearch(""))).toBe("/trading");
+  });
+});
+
+describe("carryOperatingScopeIntoSearch (Phase 1)", () => {
+  it("preserves the explicit account in a record link independently of remembered filters", async () => {
+    const { carryOperatingScopeIntoSearch } = await import("./app-shell.operating-scope");
+    const search = "?recordScope=1&fundAccountId=account-b&workflowId=workflow-b";
+    expect(carryOperatingScopeIntoSearch("/accounting/operations-continuity", search, {
+      entityId: "entity-a", fundId: "fund-a", fundAccountId: "account-a"
+    })).toBe(search);
+  });
+
+  it("adds the stored fund hierarchy to a route that lacks it", async () => {
+    const { carryOperatingScopeIntoSearch } = await import("./app-shell.operating-scope");
+    const next = carryOperatingScopeIntoSearch("/portfolio/accounts", "?view=household", { entityId: "entity-1", fundId: "fund-1", fundAccountId: "acct-1", symbol: "MSFT" });
+    const params = new URLSearchParams(next);
+    expect(params.get("view")).toBe("household");
+    expect(params.get("entityId")).toBe("entity-1");
+    expect(params.get("fundId")).toBe("fund-1");
+    expect(params.get("fundAccountId")).toBe("acct-1");
+    // Symbol, run, provider and windows travel only through the view-model link builders.
+    expect(params.has("symbol")).toBe(false);
+  });
+
+  it("keeps explicit values, honours accountId, and returns the same string when nothing changes", async () => {
+    const { carryOperatingScopeIntoSearch } = await import("./app-shell.operating-scope");
+    const scope = { fundId: "fund-1", fundAccountId: "acct-1" };
+    expect(new URLSearchParams(carryOperatingScopeIntoSearch("/portfolio", "?fundId=fund-2", scope)).get("fundId")).toBe("fund-2");
+    expect(new URLSearchParams(carryOperatingScopeIntoSearch("/portfolio", "?accountId=acct-9", scope)).has("fundAccountId")).toBe(false);
+    const search = "?fundId=fund-1&fundAccountId=acct-1";
+    expect(carryOperatingScopeIntoSearch("/portfolio", search, scope)).toBe(search);
+    expect(carryOperatingScopeIntoSearch("/portfolio", "", {})).toBe("");
+  });
+
+  it("does not add a fund account where the workspace does not carry one", async () => {
+    const { carryOperatingScopeIntoSearch } = await import("./app-shell.operating-scope");
+    const params = new URLSearchParams(carryOperatingScopeIntoSearch("/data/providers", "", { fundId: "fund-1", fundAccountId: "acct-1" }));
+    expect(params.get("fundId")).toBe("fund-1");
+    expect(params.has("fundAccountId")).toBe(false);
   });
 });

@@ -108,6 +108,33 @@ public sealed partial class LedgerBalanceCheckpointPostgresTests
             .Should().Be(100m);
     }
 
+    [LedgerDatabaseFact]
+    public async Task OverlappingOpenPeriod_CannotPostIntoDatesAHardCloseFinalized()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var (book, may) = await CreateBookAndPeriod(database);
+        await Append(database, book, may, 100m);
+        // An adjustment period may legitimately overlap; it spans May and June here.
+        var adjustment = await database.JournalStore.SavePeriodAsync(new LedgerAccountingPeriod(Guid.NewGuid(),
+            book.LedgerBookId, 2026, 13, "2026-ADJ", new DateOnly(2026, 5, 1), new DateOnly(2026, 6, 30), "Open",
+            DateTimeOffset.Parse("2026-05-01T00:00:00Z"), null, 0), expectedVersion: 0);
+        await Append(database, book, adjustment, 10m, occurredAt: DateTimeOffset.Parse("2026-05-20T12:00:00Z"));
+        await HardClose(database, may);
+
+        var intoClosedDates = () => Append(database, book, adjustment, 25m,
+            occurredAt: DateTimeOffset.Parse("2026-05-15T12:00:00Z"), store: database.RestartJournalStore());
+        await intoClosedDates.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*2026-05-15*hard-closed accounting period '2026-05'*");
+
+        await Append(database, book, adjustment, 40m, occurredAt: DateTimeOffset.Parse("2026-06-10T12:00:00Z"),
+            store: database.RestartJournalStore());
+        var restarted = database.RestartJournalStore();
+        (await restarted.ReadTrialBalanceAsOfAsync(book.LedgerBookId, MayEnd))[Cash("broker-a")]
+            .Should().Be(110m, "the closed dates keep exactly what was posted before the close");
+        (await restarted.ReadTrialBalanceAsOfAsync(book.LedgerBookId, MayEnd.AddDays(30)))[Cash("broker-a")]
+            .Should().Be(150m, "the overlapping period still accepts dates outside the closed range");
+    }
+
     private sealed class CheckpointWorkerAccessor : IFundScopeTenantAccessor
     {
         public string? ResolveCallerTenant() => FundScopeTenantAuthority.CurrentTenantId;

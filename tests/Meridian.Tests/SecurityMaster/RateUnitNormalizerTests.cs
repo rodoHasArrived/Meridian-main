@@ -137,4 +137,16 @@ public sealed class RateUnitNormalizerTests
         SecurityRateFieldUnits.CouponFieldKey("DirectLoan").Should().Be("currentCouponRate");
         SecurityRateFieldUnits.CouponFieldKey("StructuredCredit").Should().Be("couponOrIndex");
     }
+
+    [Theory]
+    [InlineData(SecurityRateUnit.Fraction, 0.045, 0.045)]
+    [InlineData(SecurityRateUnit.Percent, 4.5, 0.045)]
+    [InlineData(SecurityRateUnit.BasisPoints, 450, 0.045)]
+    [InlineData(SecurityRateUnit.Percent, -0.25, -0.0025)]
+    public void AnObservedRateUnitConvertsToAFraction(SecurityRateUnit unit, double raw, double expected)
+        => RateUnitNormalizer.ToFractionOrNull((decimal)raw, unit).Should().Be((decimal)expected);
+
+    [Fact]
+    public void AnObservedIndexLevelIsNotARate()
+        => RateUnitNormalizer.ToFractionOrNull(312.5m, SecurityRateUnit.IndexLevel).Should().BeNull();
 }

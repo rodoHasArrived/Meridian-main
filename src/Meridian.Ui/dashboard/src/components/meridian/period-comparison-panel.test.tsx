@@ -1,0 +1,170 @@
+import { screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
+import { renderWithRouter } from "@/test/render";
+import { PeriodComparisonPanel } from "./period-comparison-panel";
+import { normalizePeriodComparison, type PeriodComparison } from "@/lib/api/period-comparison.api";
+import { defaultMaterialityPolicyForClass } from "@/lib/reporting-materiality";
+import { NavComparisonScreen, fundProfileOptionsFromBooks } from "@/screens/nav-comparison-screen";
+import type { LedgerBook } from "@/types";
+import { CashLadderPeriodComparison } from "@/screens/cash-ladder-screen.comparison";
+import { RunAttributionPeriodComparison } from "@/screens/portfolio-screen.attribution-comparison";
+import { NavTrendChart } from "@/components/meridian/nav-trend-chart";
+import type { FundNavTrend } from "@/lib/api/period-comparison.api";
+
+function trend(points: Array<[string, number]>, notes: string[] = [], exposure?: Array<[number, number]>): FundNavTrend {
+  return { fundProfileId: "fund-alpha", subject: "Alpha Fund", currency: "USD", generatedAt: "2026-11-17T12:00:00Z", notes,
+    points: points.map(([asOf, nav], index) => {
+      const [long, short] = exposure?.[index] ?? [null, null];
+      return { asOf, totalNav: String(nav), componentCount: 3,
+        longExposure: long === null ? null : String(long), shortExposure: short === null ? null : String(short),
+        grossExposure: long === null || short === null ? null : String(long + short), netExposure: long === null || short === null ? null : String(long - short) };
+    }) };
+}
+
+vi.mock("@/lib/table-workbench", async (load) => ({ ...await load<typeof import("@/lib/table-workbench")>(), loadTableViews: vi.fn(async () => []), saveTableView: vi.fn() }));
+
+function comparison(overrides: Partial<PeriodComparison> = {}): PeriodComparison {
+  return normalizePeriodComparison({
+    status: "Ready", reason: null, subject: "Alpha Fund", currency: "USD",
+    current: { label: "As of Nov 17, 2026", start: null, end: "2026-11-17", isPartial: true },
+    baseline: { label: "As of Oct 31, 2026", start: null, end: "2026-10-31", isPartial: false },
+    lines: [
+      { key: "total", label: "Total NAV", current: 1_450_000, prior: 1_100_000, change: 350_000, percentChange: 31.818181818, isTotal: true },
+      { key: "asset-class:Equity", label: "Equity", current: "500.00", prior: "0", change: "500.00", percentChange: null, isTotal: false },
+      { key: "breaches", label: "Buckets below the minimum", current: 2, prior: 1, change: 1, percentChange: 100, isTotal: false }
+    ],
+    notes: ["NAV is rebuilt from the posted ledger as of each date."],
+    generatedAt: "2026-11-17T12:00:00Z",
+    ...overrides
+  } as Parameters<typeof normalizePeriodComparison>[0]);
+}
+
+describe("normalizePeriodComparison", () => {
+  it("keeps amounts as decimal text and rejects malformed responses", () => {
+    expect(comparison().lines[0]).toMatchObject({ current: "1450000", prior: "1100000", change: "350000", percentChange: "31.818181818", isTotal: true });
+    expect(() => normalizePeriodComparison({ status: "Weird" } as never)).toThrow(/not a recognised/);
+    expect(() => normalizePeriodComparison({ ...comparison(), lines: [{ key: "x", label: "X", current: "1,000", prior: 0, change: 0, percentChange: null }] } as never)).toThrow(/invalid current/);
+  });
+});
+
+describe("PeriodComparisonPanel", () => {
+  it("shows both windows, flags material variances, keeps counts whole and lists the notes", () => {
+    renderWithRouter(<PeriodComparisonPanel title="NAV comparison" workbenchId="test-comparison" state={{ loading: false, error: null, result: comparison() }}
+      policy={defaultMaterialityPolicyForClass("Portfolio")} currentLabel="Now" countKeys={["breaches"]} />);
+    expect(screen.getByText(/Current: As of Nov 17, 2026\. Prior: As of Oct 31, 2026\./)).toBeInTheDocument();
+    const table = screen.getByRole("table", { name: "NAV comparison" });
+    const total = within(table).getByRole("row", { name: /Total NAV/ });
+    expect(total).toHaveTextContent("1,450,000.00");
+    expect(total).toHaveTextContent("31.82%");
+    expect(total.querySelector("[data-variance-material]")).not.toBeNull();
+    expect(within(table).getByRole("row", { name: /Equity/ })).toHaveTextContent("Not comparable · prior zero");
+    const breaches = within(table).getByRole("row", { name: /Buckets below/ });
+    expect(breaches).toHaveTextContent("2");
+    expect(breaches).not.toHaveTextContent("2.00");
+    expect(breaches.querySelector("[data-variance-material]")).toBeNull();
+    expect(screen.getByText("NAV is rebuilt from the posted ledger as of each date.")).toBeInTheDocument();
+  });
+
+  it("says why when there is nothing to compare, and offers a retry on failure", async () => {
+    const { rerender } = renderWithRouter(<PeriodComparisonPanel title="NAV comparison" workbenchId="t" state={{ loading: false, error: null, result: comparison({ status: "Unavailable", reason: "The ledger has no NAV components as of Dec 31, 2025.", lines: [] }) }} />);
+    expect(screen.getByText("The ledger has no NAV components as of Dec 31, 2025.")).toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    const retry = vi.fn();
+    rerender(<PeriodComparisonPanel title="NAV comparison" workbenchId="t" state={{ loading: false, error: "Server unavailable", result: null }} onRetry={retry} />);
+    await userEvent.setup().click(screen.getByRole("button", { name: "Retry comparison" }));
+    expect(retry).toHaveBeenCalledOnce();
+  });
+});
+
+describe("prior-period surfaces", () => {
+  it("NAV loads for the reporting fund and the chosen prior date", async () => {
+    const service = vi.fn(async () => comparison());
+    const trendService = vi.fn(async () => trend([["2026-09-30", 1_100_000], ["2026-10-31", 1_250_000], ["2026-11-17", 1_450_000]]));
+    renderWithRouter(<NavComparisonScreen defaultFundProfileId="fund-alpha" service={service} trendService={trendService} />, { initialEntries: ["/portfolio/nav?baselineAsOf=2026-09-30"] });
+    expect(await screen.findByRole("table", { name: "NAV comparison" })).toBeInTheDocument();
+    expect(service).toHaveBeenCalledWith({ fundProfileId: "fund-alpha", baselineAsOf: "2026-09-30T23:59:59Z" }, expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    const trendSection = await screen.findByRole("region", { name: "NAV trend" });
+    expect(trendSection).toHaveAttribute("data-chart-table", "nav-trend");
+    expect(within(trendSection).getByRole("img", { name: "Ledger NAV from 2026-09-30 to 2026-11-17" })).toBeInTheDocument();
+    expect(trendService).toHaveBeenCalledWith({ fundProfileId: "fund-alpha", months: 12 }, expect.anything());
+  });
+
+  it("NAV asks for a fund profile when none is known", () => {
+    const service = vi.fn();
+    const trendService = vi.fn();
+    renderWithRouter(<NavComparisonScreen service={service} trendService={trendService} />, { initialEntries: ["/portfolio/nav"] });
+    expect(screen.getByText("Choose a fund profile to compare its NAV with a prior date.")).toBeInTheDocument();
+    expect(service).not.toHaveBeenCalled();
+    expect(trendService).not.toHaveBeenCalled();
+  });
+
+  it("NAV offers fund profiles from the ledger books instead of a free-text ID (Phase 1)", async () => {
+    const service = vi.fn(async () => comparison());
+    const trendService = vi.fn(async () => trend([["2026-10-31", 1_250_000], ["2026-11-17", 1_450_000]]));
+    const booksService = vi.fn(async () => [
+      { ledgerBookId: "b1", fundProfileId: "alpha-income", displayName: "Alpha Master Book" },
+      { ledgerBookId: "b2", fundProfileId: "alpha-income", displayName: "Alpha Tax Book" },
+      { ledgerBookId: "b3", fundProfileId: "beta-growth", displayName: "Beta Book" }
+    ] as unknown as LedgerBook[]);
+    renderWithRouter(<NavComparisonScreen service={service} trendService={trendService} booksService={booksService} />, { initialEntries: ["/portfolio/nav"] });
+    const picker = await screen.findByRole("combobox", { name: "Fund profile" });
+    await userEvent.click(picker);
+    await userEvent.click(await screen.findByRole("option", { name: "Alpha Master Book, Alpha Tax Book · alpha-income" }));
+    await waitFor(() => expect(service).toHaveBeenCalledWith(expect.objectContaining({ fundProfileId: "alpha-income" }), expect.anything()));
+  });
+
+  it("NAV keeps typed entry when the ledger books cannot be read", async () => {
+    renderWithRouter(<NavComparisonScreen service={vi.fn()} trendService={vi.fn()} booksService={() => Promise.reject(new Error("offline"))} />, { initialEntries: ["/portfolio/nav"] });
+    expect(await screen.findByPlaceholderText("Fund profile ID")).toBeInTheDocument();
+    expect(fundProfileOptionsFromBooks([], "x")).toEqual([]);
+  });
+
+  it("the NAV trend needs two dated points and lists its notes", async () => {
+    const service = vi.fn(async () => trend([["2026-11-17", 1_450_000]], ["Months before the ledger's first NAV component are left out."]));
+    renderWithRouter(<NavTrendChart fundProfileId="fund-alpha" service={service} />);
+    expect(await screen.findByText("At least two dates with ledger NAV are needed for a trend.")).toBeInTheDocument();
+    expect(screen.getByText("Months before the ledger's first NAV component are left out.")).toBeInTheDocument();
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+  });
+
+  it("the exposure trend draws long, short and gross with a table, and is hidden without securities", async () => {
+    const service = vi.fn(async () => trend([["2026-10-31", 1_000], ["2026-11-17", 1_100]], [], [[700, 100], [800, 150]]));
+    const { unmount } = renderWithRouter(<NavTrendChart fundProfileId="fund-alpha" service={service} />);
+    const section = await screen.findByRole("region", { name: "Exposure trend" });
+    expect(section).toHaveAttribute("data-chart-table", "exposure-trend");
+    expect(within(section).getByRole("img", { name: "Securities exposure from 2026-10-31 to 2026-11-17" })).toBeInTheDocument();
+    expect(within(section).getByRole("table")).toHaveTextContent("950.00");
+    unmount();
+
+    const flat = vi.fn(async () => trend([["2026-10-31", 1_000], ["2026-11-17", 1_100]], [], [[0, 0], [0, 0]]));
+    renderWithRouter(<NavTrendChart fundProfileId="fund-alpha" service={flat} />);
+    expect(await screen.findByRole("img", { name: /Ledger NAV from/ })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Exposure trend" })).not.toBeInTheDocument();
+  });
+
+  it("the NAV trend offers a retry when it fails", async () => {
+    const service = vi.fn().mockRejectedValueOnce(new Error("Ledger unavailable")).mockResolvedValue(trend([["2026-10-31", 1], ["2026-11-17", 2]]));
+    renderWithRouter(<NavTrendChart fundProfileId="fund-alpha" service={service} />);
+    await userEvent.setup().click(await screen.findByRole("button", { name: "Retry NAV trend" }));
+    expect(await screen.findByRole("img", { name: /Ledger NAV from 2026-10-31/ })).toBeInTheDocument();
+  });
+
+  it("the cash ladder comparison loads only when asked for", async () => {
+    const service = vi.fn(async () => comparison({ subject: "Portfolio cash ladder" }));
+    renderWithRouter(<CashLadderPeriodComparison scenario="base" minimumCash={250} fundAccountId="acct-1" service={service} />);
+    expect(service).not.toHaveBeenCalled();
+    await userEvent.setup().click(screen.getByRole("button", { name: "Vs end of last month" }));
+    expect(await screen.findByRole("table", { name: "Cash ladder vs end of last month" })).toBeInTheDocument();
+    expect(service).toHaveBeenCalledWith({ scenario: "base", minimumCash: 250, fundAccountId: "acct-1" }, expect.anything());
+  });
+
+  it("attribution compares the selected run's month with the month before", async () => {
+    const service = vi.fn(async () => comparison({ subject: "Period Strategy" }));
+    const { rerender } = renderWithRouter(<RunAttributionPeriodComparison runId={null} service={service} />);
+    expect(service).not.toHaveBeenCalled();
+    rerender(<RunAttributionPeriodComparison runId="run-7" service={service} />);
+    expect(await screen.findByRole("table", { name: "P&L by symbol vs prior month" })).toBeInTheDocument();
+    expect(service).toHaveBeenCalledWith("run-7", null, expect.anything());
+  });
+});

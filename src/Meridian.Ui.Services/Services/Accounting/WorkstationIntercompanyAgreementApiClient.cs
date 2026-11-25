@@ -5,7 +5,7 @@ using Meridian.Contracts.FundStructure;
 namespace Meridian.Ui.Services.Services.Accounting;
 
 /// <summary>Agreement commands use the authenticated server identity and authority.</summary>
-public interface IWorkstationIntercompanyAgreementApiClient
+public partial interface IWorkstationIntercompanyAgreementApiClient
 {
     Task<ApiResponse<IntercompanyAgreementListDto>> ListAsync(IntercompanyAgreementQueryDto query, CancellationToken ct = default);
     Task<ApiResponse<IntercompanyAgreementDetailDto>> GetAsync(Guid agreementId, DateOnly asOf, CancellationToken ct = default);
@@ -13,7 +13,7 @@ public interface IWorkstationIntercompanyAgreementApiClient
     Task<ApiResponse<IntercompanyAgreementCommandResultDto>> ExecuteAsync(string action, IntercompanyAgreementCommandDto command, CancellationToken ct = default);
 }
 
-public sealed class WorkstationIntercompanyAgreementApiClient(ApiClientService apiClient) : IWorkstationIntercompanyAgreementApiClient
+public sealed partial class WorkstationIntercompanyAgreementApiClient(ApiClientService apiClient) : IWorkstationIntercompanyAgreementApiClient
 {
     public Task<ApiResponse<IntercompanyAgreementListDto>> ListAsync(IntercompanyAgreementQueryDto query, CancellationToken ct = default)
     {

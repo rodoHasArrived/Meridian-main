@@ -184,9 +184,12 @@ public sealed class OnboardingShadowModeTests
         report.Lines.Single(line => line.Kind == "Balance").Should().Match<OnboardingOpeningBalanceLineDto>(line =>
             line.Status == "Break" && line.Difference == 5m && line.IncumbentAmount == 95m);
         report.Lines.Single(line => line.Kind == "Nav").Status.Should().Be("Missing", "an empty incumbent amount is never zero");
-        report.Lines.Single(line => line.Kind == "Position").Status.Should().Be("Missing");
+        // This pack supplies no positions, so Position is out of its scope: it is left to a complementary
+        // opening source and reported as an uncovered kind rather than a missing line.
+        report.Lines.Should().NotContain(line => line.Kind == "Position");
+        report.UncoveredKinds.Should().Contain("Position");
         report.BreakCount.Should().Be(1);
-        report.MissingCount.Should().Be(2);
+        report.MissingCount.Should().Be(1);
         workspace.Readiness.Blockers.Should().Contain(blocker => blocker.Contains("opening-balance difference", StringComparison.Ordinal));
         (await service.GetOpeningReportAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId))
             .Should().BeEquivalentTo(report);
@@ -238,14 +241,20 @@ public sealed class OnboardingShadowModeTests
         workspace.Readiness.Opening!.Lines.Should().NotBeEmpty().And.OnlyContain(line => line.Status == "Matched",
             "these omissions occur on both sides or only in source completeness, outside the present matched rows");
         workspace.Readiness.Opening.IsReconciled.Should().BeFalse();
-        workspace.Readiness.MissingSources.Should().Contain(source => source.Message.StartsWith("Opening ", StringComparison.Ordinal));
+        // A kind that no source supplies (here NAV, absent on both sides) is an uncovered kind; the other gaps
+        // are opening missing-source requirements.
+        if (gap == "kind")
+            workspace.Readiness.Opening.UncoveredKinds.Should().Equal("Nav");
+        else
+            workspace.Readiness.MissingSources.Should().Contain(source => source.Message.StartsWith("Opening ", StringComparison.Ordinal));
 
         workspace = await ReviewCleanPeriodsAsync(fixture, service, workspace);
 
         workspace.Readiness.Periods.Should().OnlyContain(period => period.IsClean);
         workspace.Readiness.ApprovedReviewers.Should().Be(1);
         workspace.Readiness.IsReady.Should().BeFalse();
-        workspace.Readiness.Blockers.Should().Contain(blocker => blocker.Contains("missing opening source", StringComparison.Ordinal));
+        workspace.Readiness.Blockers.Should().Contain(blocker => blocker.Contains(
+            gap == "kind" ? "opening source covering Nav" : "missing opening source", StringComparison.Ordinal));
         var certify = () => service.IssueCertificateAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
             new(workspace.Version), Fixture.Owner);
         await certify.Should().ThrowAsync<OnboardingValidationException>();
@@ -395,6 +404,183 @@ public sealed class OnboardingShadowModeTests
                 return candidate;
         }
         throw new FileNotFoundException(fileName);
+    }
+
+    private const string OpeningIban = "DE89370400440532013000";
+
+    /// <summary>A camt.053 statement whose only balance is the opening booked balance on the workspace start date.</summary>
+    private static ImportOnboardingOpeningBalancesRequestDto CashStatementRequest(int version, decimal amount = 100m)
+    {
+        var xml = $"""
+            <?xml version="1.0" encoding="UTF-8"?>
+            <Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">
+              <BkToCstmrStmt>
+                <GrpHdr><MsgId>OPENING-1</MsgId><CreDtTm>2026-01-31T23:59:00</CreDtTm></GrpHdr>
+                <Stmt>
+                  <Id>STMT-OPENING</Id>
+                  <Acct><Id><IBAN>{OpeningIban}</IBAN></Id><Ccy>USD</Ccy></Acct>
+                  <Bal>
+                    <Tp><CdOrPrtry><Cd>OPBD</Cd></CdOrPrtry></Tp>
+                    <Amt Ccy="USD">{amount.ToString(System.Globalization.CultureInfo.InvariantCulture)}</Amt>
+                    <CdtDbtInd>CRDT</CdtDbtInd>
+                    <Dt><Dt>2026-01-31</Dt></Dt>
+                  </Bal>
+                </Stmt>
+              </BkToCstmrStmt>
+            </Document>
+            """;
+        return new(version, OnboardingOpeningSourceKinds.StatementOpening, "bank-map", "mapping-v1",
+            [new(OpeningIban, Fixture.Account)], "opening.xml", Convert.ToBase64String(Encoding.UTF8.GetBytes(xml)));
+    }
+
+    [Fact]
+    public async Task OpeningSources_CashOnlyStatementCombinesWithAdministratorPack_ToReachCertification()
+    {
+        using var fixture = new Fixture();
+        var harness = new Harness(fixture);
+        var service = harness.Service();
+        var workspace = await service.CreateAsync(fixture.Request(), Fixture.Owner);
+        workspace = await service.DesignateShadowAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            new(workspace.Version, "Bank cash plus administrator positions and NAV."), Fixture.Owner);
+
+        // A cash-only statement compares only Balance: no NAV or Position line is reported as missing.
+        workspace = await service.ImportOpeningBalancesAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            CashStatementRequest(workspace.Version), Fixture.Owner);
+        var cashOnly = workspace.Readiness.Opening!;
+        cashOnly.Lines.Should().ContainSingle().Which.Should().Match<OnboardingOpeningBalanceLineDto>(line =>
+            line.Kind == "Balance" && line.Status == "Matched" && line.SourceKind == OnboardingOpeningSourceKinds.StatementOpening);
+        cashOnly.UncoveredKinds.Should().Equal("Position", "Nav");
+        cashOnly.IsReconciled.Should().BeFalse();
+        workspace.Comparisons.Single().OpeningKinds.Should().Equal("Balance");
+        workspace.Readiness.Blockers.Should().Contain(blocker => blocker.Contains("opening source covering Position, Nav", StringComparison.Ordinal));
+
+        // The administrator pack supplies the complementary kinds; together the sources reconcile.
+        workspace = await service.ImportOpeningBalancesAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            harness.AdminPackRequest(workspace.Version, Pack("NAV,ADMIN-001,USD,,,,100.00,2026-01-31",
+                "POSITION,ADMIN-001,USD,security-a,10,,,2026-01-31")), Fixture.Owner);
+        var combined = workspace.Readiness.Opening!;
+        combined.IsReconciled.Should().BeTrue();
+        combined.UncoveredKinds.Should().BeNull();
+        combined.Sources!.Select(source => source.SourceKind).Should().Equal(
+            OnboardingOpeningSourceKinds.StatementOpening, OnboardingOpeningSourceKinds.AdministratorPack);
+        combined.Sources!.Last().Kinds.Should().Equal("Position", "Nav");
+        combined.Lines.Should().HaveCount(3).And.OnlyContain(line => line.Status == "Matched");
+
+        // Re-importing the statement keeps a per-source lineage: the pack's rows are not marked as disappeared.
+        workspace = await service.ImportOpeningBalancesAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            CashStatementRequest(workspace.Version), Fixture.Owner);
+        workspace.Comparisons.Last().Differences.Should().BeEmpty();
+        workspace.Readiness.Opening!.IsReconciled.Should().BeTrue();
+
+        workspace = await ReviewCleanPeriodsAsync(fixture, service, workspace);
+        workspace.Readiness.IsReady.Should().BeTrue();
+        var certificate = await service.IssueCertificateAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            new(workspace.Version), Fixture.Owner);
+        certificate.Content.Opening.Sources.Should().HaveCount(2);
+
+        var restarted = harness.Service();
+        foreach (var run in workspace.Comparisons.Where(run => run.IsOpening))
+            (await restarted.ReplayComparisonAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId, run.ComparisonId))!
+                .ContentHash.Should().Be(run.ContentHash);
+    }
+
+    [Fact]
+    public async Task OpeningSources_PackDroppingCashToABankStatement_DoesNotCarryItsOldCashBreakForward()
+    {
+        using var fixture = new Fixture();
+        var harness = new Harness(fixture);
+        var service = harness.Service();
+        var workspace = await service.CreateAsync(fixture.Request(), Fixture.Owner);
+        workspace = await service.DesignateShadowAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            new(workspace.Version, "Move cash evidence to the bank."), Fixture.Owner);
+        workspace = await service.ImportOpeningBalancesAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            harness.AdminPackRequest(workspace.Version, Pack("CASH,ADMIN-001,USD,,,,97.00,2026-01-31",
+                "NAV,ADMIN-001,USD,,,,100.00,2026-01-31", "POSITION,ADMIN-001,USD,security-a,10,,,2026-01-31")), Fixture.Owner);
+        workspace.Readiness.Opening!.BreakCount.Should().Be(1);
+
+        // Cash now comes from a matching bank statement; the pack is re-imported without cash.
+        workspace = await service.ImportOpeningBalancesAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            CashStatementRequest(workspace.Version), Fixture.Owner);
+        workspace = await service.ImportOpeningBalancesAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            harness.AdminPackRequest(workspace.Version, Pack("NAV,ADMIN-001,USD,,,,100.00,2026-01-31",
+                "POSITION,ADMIN-001,USD,security-a,10,,,2026-01-31")), Fixture.Owner);
+
+        workspace.Comparisons.Last().Differences.Should().NotContain(row => row.Kind == "Balance");
+        var opening = workspace.Readiness.Opening!;
+        opening.Lines.Should().HaveCount(3).And.OnlyContain(line => line.Status == "Matched");
+        opening.IsReconciled.Should().BeTrue();
+        var restarted = harness.Service();
+        foreach (var run in workspace.Comparisons)
+            (await restarted.ReplayComparisonAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId, run.ComparisonId))!
+                .ContentHash.Should().Be(run.ContentHash);
+    }
+
+    [Fact]
+    public async Task OpeningBreak_IsExplainableThroughItsOpeningComparison()
+    {
+        using var fixture = new Fixture();
+        var harness = new Harness(fixture);
+        var service = harness.Service();
+        var workspace = await service.CreateAsync(fixture.Request(), Fixture.Owner);
+        workspace = await service.DesignateShadowAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            new(workspace.Version, "Trial."), Fixture.Owner);
+        workspace = await service.ImportOpeningBalancesAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            harness.AdminPackRequest(workspace.Version, Pack("CASH,ADMIN-001,USD,,,,97.00,2026-01-31",
+                "NAV,ADMIN-001,USD,,,,100.00,2026-01-31", "POSITION,ADMIN-001,USD,security-a,10,,,2026-01-31")), Fixture.Owner);
+        var line = workspace.Readiness.Opening!.Lines.Single(item => item.Kind == "Balance");
+        line.Status.Should().Be("Break");
+        line.ComparisonId.Should().Be(workspace.Comparisons.Single(run => run.IsOpening).ComparisonId);
+
+        workspace = await service.ExplainDifferenceAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId, line.DifferenceKey,
+            new(workspace.Version, line.ComparisonId!, OnboardingDifferenceClassifications.Treatment,
+                "Administrator nets an unsettled fee against opening cash.", ["evidence:fee-netting"]), Fixture.Owner);
+
+        var opening = workspace.Readiness.Opening!;
+        opening.Lines.Single(item => item.Kind == "Balance").Should().Match<OnboardingOpeningBalanceLineDto>(item =>
+            item.Status == "Explained" && item.Classification == OnboardingDifferenceClassifications.Treatment);
+        opening.IsReconciled.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ShadowDesignation_IsExclusivePerLedgerBook_EvenWhenTheServicePreCheckIsBypassed()
+    {
+        using var fixture = new Fixture();
+        var harness = new Harness(fixture);
+        var service = harness.Service();
+        var first = await service.CreateAsync(fixture.Request() with { Name = "First trial" }, Fixture.Owner);
+        var second = await service.CreateAsync(fixture.Request() with { Name = "Second trial" }, Fixture.Owner);
+        first = await service.DesignateShadowAsync(Fixture.Tenant, Fixture.Company, first.WorkspaceId,
+            new(first.Version, "First."), Fixture.Owner);
+
+        // Simulate the losing side of a race: it read the book before the first designation was saved.
+        var store = new FileOnboardingWorkspaceStore(fixture.StorePath);
+        var stale = second with
+        {
+            Version = second.Version + 1,
+            ShadowDesignation = new(OnboardingShadowStates.Shadow, second.Scope.LedgerBookId, Fixture.Owner,
+                Fixture.Now, "Concurrent.")
+        };
+        var save = () => store.SaveAsync(stale, second.Version);
+        await save.Should().ThrowAsync<OnboardingConcurrencyException>().WithMessage("*already holds this ledger book*");
+
+        // Concurrent designations through separate service instances: exactly one wins.
+        var third = await service.CreateAsync(fixture.Request() with { Name = "Third trial" }, Fixture.Owner);
+        await service.WithdrawShadowAsync(Fixture.Tenant, Fixture.Company, first.WorkspaceId,
+            new((await service.GetAsync(Fixture.Tenant, Fixture.Company, first.WorkspaceId))!.Version, "Restart."), Fixture.Owner);
+        var attempts = new[] { second, third }.Select(async workspace =>
+        {
+            try
+            {
+                await harness.Service().DesignateShadowAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+                    new(workspace.Version, "Race."), Fixture.Owner);
+                return true;
+            }
+            catch (Exception ex) when (ex is OnboardingConcurrencyException or OnboardingValidationException)
+            {
+                return false;
+            }
+        });
+        (await Task.WhenAll(attempts)).Count(won => won).Should().Be(1);
     }
 
     private sealed class Harness(Fixture fixture)

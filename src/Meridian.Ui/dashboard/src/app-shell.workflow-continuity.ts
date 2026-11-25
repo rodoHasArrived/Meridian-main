@@ -138,8 +138,8 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
         id: "close",
         label: "Close",
         description: "Review period-close blockers, approvals, and close-support tasks.",
-        href: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
-        matchPath: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity
+        href: WORKSTATION_ROUTE_CATALOG.accountingClose,
+        matchPath: WORKSTATION_ROUTE_CATALOG.accountingClose
       },
       {
         id: "reconciliation",
@@ -158,7 +158,7 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
       {
         id: "reports",
         label: "Reports",
-        description: "Review governed report outputs affected by finance exceptions.",
+        description: "Review report outputs affected by finance exceptions.",
         href: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
         matchPath: WORKSTATION_ROUTE_CATALOG.reportingReportPacks
       },
@@ -172,7 +172,7 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
       {
         id: "data-health",
         label: "Data Health",
-        description: "Check provider data quality and import posture after finance work is triaged.",
+        description: "Check provider data quality and import status after finance work is triaged.",
         href: WORKSTATION_ROUTE_CATALOG.dataProviders,
         matchPath: WORKSTATION_ROUTE_CATALOG.dataProviders
       }
@@ -221,7 +221,7 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
       {
         id: "evidence-review",
         label: "Evidence review",
-        description: "Package lineage, stale evidence, and packet completeness for governed review.",
+        description: "Package lineage, stale evidence, and packet completeness for review.",
         href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
         matchPath: WORKSTATION_ROUTE_CATALOG.reportingEvidence
       }
@@ -249,7 +249,7 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
       {
         id: "portfolio-exposure",
         label: "Exposure",
-        description: "Review household positions, account sync, cash, buying power, and risk posture.",
+        description: "Review household positions, account sync, cash, buying power, and risk status.",
         href: WORKSTATION_ROUTE_CATALOG.portfolio,
         matchPath: WORKSTATION_ROUTE_CATALOG.portfolio
       },
@@ -263,7 +263,7 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
       {
         id: "report-packs",
         label: "Report packs",
-        description: "Review governed output targets, evidence readiness, and export posture.",
+        description: "Review output targets, evidence readiness, and export status.",
         href: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
         matchPath: WORKSTATION_ROUTE_CATALOG.reportingReportPacks
       }
@@ -312,9 +312,9 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
       {
         id: "close-support",
         label: "Close Support",
-        description: "Review close checklists, period locks, governed reopen evidence, and retained close packages.",
-        href: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
-        matchPath: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity
+        description: "Review close checklists, period locks, reopen evidence, and retained close packages.",
+        href: WORKSTATION_ROUTE_CATALOG.accountingClose,
+        matchPath: WORKSTATION_ROUTE_CATALOG.accountingClose
       }
     ]
   }
@@ -328,7 +328,7 @@ export function resolvePrimaryOperatorWorkflowStepId(pathname: string): PrimaryO
   }
 
   if (route.startsWith(WORKSTATION_ROUTE_CATALOG.accountingApprovals)
-    || route.startsWith(WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity)) {
+    || route.startsWith(WORKSTATION_ROUTE_CATALOG.accountingClose)) {
     return "approve";
   }
 
@@ -441,6 +441,8 @@ function scoreWorkflowStepRouteMatch(
   }
 
   const matchPath = candidate.pathname;
+  if (pathname === "/today") pathname = "/";
+  if (pathname === "/accounting/operations-continuity") pathname = "/accounting/close";
   if (pathname === matchPath) {
     return 1000 + matchPath.length + (candidateHash ? 2000 : 0);
   }

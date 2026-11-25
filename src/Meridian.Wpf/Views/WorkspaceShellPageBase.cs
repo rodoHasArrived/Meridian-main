@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
@@ -12,7 +13,7 @@ namespace Meridian.Wpf.Views;
 /// <summary>
 /// Binds derived pages to the  workspace shell definition.
 /// </summary>
-public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
+public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page, IPageRefreshTarget
     where TStateProvider : class, IWorkspaceShellStateProvider
     where TViewModel : WorkspaceShellViewModelBase
 {
@@ -21,6 +22,9 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
     private readonly WorkspaceLayoutManager _layoutManager = new();
     private readonly TStateProvider _stateProvider;
     private WorkspaceShellState? _lastState;
+    private MeridianDockingManager? _refreshDockManager;
+    private IRelayCommand? _refreshCommand;
+    private IAsyncRelayCommand? _resetLayoutCommand;
 
     protected WorkspaceShellPageBase(
         NavigationService navigationService,
@@ -36,6 +40,70 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
 
     protected TViewModel ViewModel { get; }
 
+    /// <summary>
+    /// The shell Refresh control (toolbar button and F5) reloads the workspace shell and every
+    /// docked page in place instead of rebuilding the shell by re-navigation.
+    /// </summary>
+    public ICommand RefreshCommand => _refreshCommand ??= new RelayCommand(RefreshWorkspaceInPlace);
+
+    /// <summary>
+    /// Runs the shell page's own reload path (hero, queues, context strip). Docked pages are
+    /// reloaded separately through <see cref="PageRefreshResolver.RefreshAllInPlace"/>.
+    /// </summary>
+    protected virtual Task RefreshShellInPlaceAsync() => Task.CompletedTask;
+
+    /// <summary>
+    /// Bound to the workspace command bar's "Reset layout" entry. After confirmation it restores
+    /// this workspace's default panes and saves them for the current workspace and fund context,
+    /// so a broken arrangement does not come back on restart. Other workspaces are not touched.
+    /// </summary>
+    public ICommand ResetLayoutCommand => _resetLayoutCommand ??= new AsyncRelayCommand(ConfirmAndResetDockLayoutAsync);
+
+    private async Task ConfirmAndResetDockLayoutAsync()
+    {
+        if (_refreshDockManager is not { } dockManager)
+        {
+            return;
+        }
+
+        var workspaceName = ViewModel.WorkspaceDefinition.DisplayName;
+        var choice = MessageBox.Show(
+            $"Reset {workspaceName} panes to the default arrangement?\n\nYour other workspaces keep their layouts.",
+            "Reset layout",
+            MessageBoxButton.OKCancel,
+            MessageBoxImage.Question,
+            MessageBoxResult.Cancel);
+        if (choice != MessageBoxResult.OK)
+        {
+            return;
+        }
+
+        var saved = await ResetDockLayoutAsync(dockManager).ConfigureAwait(true);
+        Meridian.Wpf.Services.NotificationService.Instance.ShowNotification(
+            saved ? "Default layout restored" : "Default layout not saved",
+            saved
+                ? $"{workspaceName} panes are back to their default arrangement."
+                : $"{workspaceName} panes are back to default for now, but the layout couldn't be saved. It may revert on restart.",
+            saved ? NotificationType.Success : NotificationType.Warning);
+    }
+
+    /// <summary>
+    /// Restores the default panes and persists them for this workspace and layout scope.
+    /// Returns false when the replacement layout could not be saved.
+    /// </summary>
+    protected async Task<bool> ResetDockLayoutAsync(MeridianDockingManager dockManager)
+    {
+        ArgumentNullException.ThrowIfNull(dockManager);
+        await LoadDefaultDockLayoutAsync(dockManager).ConfigureAwait(true);
+        return await SaveDockLayoutAsync(dockManager).ConfigureAwait(true);
+    }
+
+    private void RefreshWorkspaceInPlace()
+    {
+        DispatchRefresh(RefreshShellInPlaceAsync);
+        PageRefreshResolver.RefreshAllInPlace(_refreshDockManager?.GetOpenPageContents());
+    }
+
     private void OnAttentionPrimaryActionRequested(object? sender, string pageTag)
         => NavigateToRegisteredPage(pageTag);
 
@@ -48,6 +116,7 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
     protected async Task RestoreDockLayoutAsync(MeridianDockingManager dockManager)
     {
         ArgumentNullException.ThrowIfNull(dockManager);
+        _refreshDockManager = dockManager;
 
         try
         {
@@ -76,14 +145,15 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
         }
         catch (Exception ex)
         {
-            WpfLoggingService.Instance.LogError($"[{GetType().Name}] Failed to restore dock layout: {ex.Message}");
+            WpfLoggingService.Instance.LogError("[{Page}] Failed to restore dock layout: {Error}", ex,
+                ("Page", GetType().Name), ("Error", ex.Message));
             var state = await _stateProvider.GetStateAsync().ConfigureAwait(true);
             _lastState = state;
             LoadDefaultDocking(dockManager, state);
         }
     }
 
-    protected async Task SaveDockLayoutAsync(MeridianDockingManager dockManager)
+    protected async Task<bool> SaveDockLayoutAsync(MeridianDockingManager dockManager)
     {
         ArgumentNullException.ThrowIfNull(dockManager);
 
@@ -98,16 +168,20 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
             await _workspaceService
                 .SaveWorkspaceLayoutStateForContextAsync(state.WorkspaceId, layout, state.LayoutScopeKey)
                 .ConfigureAwait(true);
+            return true;
         }
         catch (Exception ex)
         {
-            WpfLoggingService.Instance.LogError($"[{GetType().Name}] Failed to save dock layout: {ex.Message}");
+            WpfLoggingService.Instance.LogError("[{Page}] Failed to save dock layout: {Error}", ex,
+                ("Page", GetType().Name), ("Error", ex.Message));
+            return false;
         }
     }
 
     protected async Task LoadDefaultDockLayoutAsync(MeridianDockingManager dockManager)
     {
         ArgumentNullException.ThrowIfNull(dockManager);
+        _refreshDockManager = dockManager;
 
         var state = await _stateProvider.GetStateAsync().ConfigureAwait(true);
         _lastState = state;
@@ -123,6 +197,7 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
     protected void OpenWorkspacePage(MeridianDockingManager dockManager, string pageTag, PaneDropAction action, object? parameter = null)
     {
         ArgumentNullException.ThrowIfNull(dockManager);
+        _refreshDockManager = dockManager;
 
         try
         {
@@ -135,7 +210,8 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
         }
         catch (Exception ex)
         {
-            WpfLoggingService.Instance.LogError($"[{GetType().Name}] Failed to open '{pageTag}': {ex.Message}");
+            WpfLoggingService.Instance.LogError("[{Page}] Failed to open '{PageTag}': {Error}", ex,
+                ("Page", GetType().Name), ("PageTag", pageTag), ("Error", ex.Message));
             dockManager.LoadPage(
                 BuildPageKey(pageTag, parameter),
                 ShellNavigationCatalog.GetPageTitle(pageTag),

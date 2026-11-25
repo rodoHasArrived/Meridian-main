@@ -55,6 +55,16 @@ Use this module when a backtesting contract must be shared across runtime and st
 
 ## API / contract notes
 
+- `BacktestInputCoverage.SourceMix` retains counts of replayed bars by effective symbol and observed
+  source. `ToResolvedRealismDescriptor()` includes the optional `SourceMixHash` for completed-run
+  identity. Canonical serialization omits this field when replay evidence is unavailable.
+- `BacktestRequest.CorporateActionMode` is an additive init-only option. `Legacy` preserves the
+  existing stored/manual action paths and fingerprints. `RawPricesWithCanonicalEvents` bypasses
+  those mapped paths and uses frozen canonical USD equity dividend/split terms, with ex-date
+  receivables and pay-date settlement. It cannot be combined with explicit `PopulateAssetEventsFromSecurityMaster`.
+  Snapshot `DividendReceivable` and result `CanonicalCorporateActions` are init-only additions;
+  existing positional constructors and deconstruction shapes remain unchanged. Completed-run
+  recording uses `ToResolvedRealismDescriptor()` to include the source snapshot hash.
 - `BacktestRequest.ApplyStoredCorporateActions` defaults to true. Hosts with Security Master
   queries capture confirmed actions as `AssetEvents` automatically and replay raw prices; set it
   false for reviewed manual economics or legacy adjusted-price research. Its new execution-realism

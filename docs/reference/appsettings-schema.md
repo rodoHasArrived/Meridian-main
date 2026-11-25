@@ -27,7 +27,7 @@ Use this page when you need to map configuration sections to high-impact operati
 | Section | Why it matters | Typical env override path |
 |---|---|---|
 | `DataSource` / `DataSources` | Chooses live/offline provider routing and failover posture. | `MDC_DATASOURCE` |
-| `Backfill` | Controls historical import behavior, retry policy, and scheduling. | Explicit aliases such as `MDC_BACKFILL_ENABLED`, `MDC_BACKFILL_PROVIDER`, `MDC_BACKFILL_FROM`, and `MDC_BACKFILL_TO`. |
+| `Backfill` | Controls historical import, retry policy, scheduling, and [shared provider budgets](../operators/provider-backfill-operations.md#provider-administrator-budgets). | Explicit aliases such as `MDC_BACKFILL_ENABLED`, `MDC_BACKFILL_PROVIDER`, `MDC_BACKFILL_FROM`, and `MDC_BACKFILL_TO`. |
 | `Storage` | Controls retention, partitioning, and storage pressure behavior. | `MDC_STORAGE_NAMING`, `MDC_STORAGE_PARTITION`, `MDC_STORAGE_RETENTION_DAYS`, `MDC_STORAGE_MAX_MB`. |
 | `Compress` | Top-level JSONL gzip setting; this is not `Storage.CompressOutput`. | `MDC_COMPRESS`. |
 | `TenantScopeEnforcement` | Defaults to `fail-closed`; retained-data readiness must pass before serving scoped work. Explicit `deployment-boundary` is temporary single-company migration compatibility. Requires restart. | `MERIDIAN_TENANT_SCOPE_ENFORCEMENT` |
@@ -73,6 +73,16 @@ shutdown and are disposed by the host. The compatibility option does not enable 
 and `Tracing.Enabled` alone does not add pipeline metrics instrumentation.
 
 ## Security and Mutation Guardrails
+
+### Required paper bond settlement
+
+Set `PaperTrading:Gateway:RequireBondAccruedInterest` to `true` in the host configuration for
+supported bond demonstrations. The hosted execution gateway rejects face-value fills when
+shared bond analytics cannot supply reconciled clean/dirty prices and accrued interest for
+the exact security and settlement date. Zero accrued interest is valid. The default is `false`,
+preserving legacy clean-only fallback; existing retained fills replay without recalculation.
+This setting does not enable canonical bond paper accounting, short-side settlement treatment,
+or live trading. See the [LOT evidence packet](../testing/evidence/next-work-20261029/bond-lot-golden-case.md).
 
 Before upgrading existing installations, follow the [tenant cutover and backfill runbook](../operators/fund-structure-tenant-backfill.md).
 Unattributed records cause an explicit startup refusal with remediation, rather than an apparently

@@ -17,7 +17,8 @@ public sealed record ExecutionJournalEntry(
     BrokerageActivityCursorDto? ActivityCursor = null, JournalOpeningEvidence? Opening = null,
     string? ReportingAssetClass = null, DateTimeOffset? ReconciledThrough = null,
     BrokerageActivityEventDto? Activity = null, OrderModification? Modification = null, Guid? AttemptId = null,
-    Guid? PaperBookId = null);
+    Guid? PaperBookId = null,
+    OrderSubmissionAuthorityRecord? Authority = null);
 
 public sealed record JournalOpeningEvidence(bool IsComplete, bool IsFlat, DateTimeOffset ObservedAt, string Source);
 public sealed record JournalAttribution(string? StrategyId, string? RunId, string? Tag, decimal GrossRealizedPnl, decimal? NetRealizedPnl);
@@ -111,6 +112,38 @@ public sealed class ExecutionJournal : IAsyncDisposable
         await _wal.AppendAsync(Serialize(entry), "ExecutionJournalV1", ct).ConfigureAwait(false);
         _entries.Add(entry);
         _hashes.Add(Key(entry), ContentHash(entry));
+    }
+
+    internal async Task<IReadOnlyList<ExecutionJournalEntry>?> ClaimPaperSubmissionAsync(
+        ExecutionJournalEntry intent, CancellationToken ct)
+    {
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await InitializeLockedAsync(ct).ConfigureAwait(false);
+            var retained = _entries.Where(entry => entry.Scope == intent.Scope &&
+                string.Equals(entry.OrderId, intent.OrderId, StringComparison.OrdinalIgnoreCase)).ToArray();
+            if (intent.Authority?.Origin == OrderCommandOrigin.OperatorTicket && retained.Length > 0)
+                return retained;
+            var originalTicket = retained.FirstOrDefault(entry => entry.Kind == "Intent" &&
+                entry.Authority?.Origin == OrderCommandOrigin.OperatorTicket);
+            if (originalTicket is not null &&
+                (intent.Authority?.Origin != OrderCommandOrigin.EscalationRelease ||
+                 OriginalAuthority(intent.Authority).CorrelationId != originalTicket.Authority!.CorrelationId ||
+                 intent.AccountId != originalTicket.AccountId))
+                return retained;
+
+            await AppendRetainedLockedAsync(intent, ct).ConfigureAwait(false);
+            return null;
+        }
+        finally { _gate.Release(); }
+    }
+
+    internal static OrderSubmissionAuthorityRecord OriginalAuthority(OrderSubmissionAuthorityRecord authority)
+    {
+        while (authority.Origin == OrderCommandOrigin.EscalationRelease && authority.ReleasedFrom is { } parked)
+            authority = parked;
+        return authority;
     }
 
     public async Task<IReadOnlyList<ExecutionJournalEntry>> ReadAsync(Guid? accountId = null, CancellationToken ct = default)
@@ -350,7 +383,7 @@ public sealed class ExecutionJournal : IAsyncDisposable
             ? windowFills.Sum(fill => (fill.Price - fill.Reference!.Price) * fill.Quantity * (fill.Report.Side == OrderSide.Buy ? 1m : -1m)) : null;
         var economicOrders = orders.Where(order => order.FilledQuantity > 0m).ToArray();
         economicsComplete &= economicOrders.Length > 0;
-        var supportedEconomics = economicOrders.All(order => order.Events.Any(entry => entry.Kind == "Dispatch" && entry.ReportingAssetClass == "USD_US_EQUITY"));
+        var supportedEconomics = economicOrders.All(order => order.Events.Any(entry => entry.Kind == "Dispatch" && entry.ReportingAssetClass == ExecutionReportingAssetClasses.UsdUsEquity));
         if (!supportedEconomics)
             slippage = null;
         // An initial holding or unknown history cannot be reconstructed from executions alone.

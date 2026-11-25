@@ -1,7 +1,11 @@
+import { ChartEvidenceMark, ChartEvidenceView, type ChartEvidence } from "@/components/charts/chart-evidence";
+import { PageHeading } from "@/components/ui/page-heading";
+import { RunComparisonOverlayCharts, RunCompareTray } from "@/screens/strategy-screen.comparison";
 import { Histogram } from "@/components/charts";
 import { CompareToggle } from "@/components/charts/SelectionCompare";
 import { Sparkline } from "@/components/charts/Sparkline";
 import { StrategyRunParityPanel } from "./strategy-screen.parity";
+import { StrategyReplayProvenance } from "./strategy-screen.replay-provenance";
 import { BiasDisclosurePanel } from "@/components/meridian/bias-disclosure-panel";
 import { DetailFields } from "@/components/meridian/detail-pane";
 import { DetailRail } from "@/components/meridian/detail-rail";
@@ -9,6 +13,8 @@ import { EntityLink } from "@/components/meridian/entity-inspector";
 import { QuantNotebook } from "@/components/meridian/quant-notebook";
 import { useQuantNotebookViewModel } from "@/components/meridian/quant-notebook.view-model";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { KpiProvider } from "@/lib/kpi-context";
+import { workspaceKpiIds } from "@/lib/kpi-registry";
 import { StrategyRobustness } from "@/components/meridian/strategy-robustness";
 import { tableColumnsWithExport, TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -244,19 +250,27 @@ export function resolveStrategyRouteView(pathname: string): StrategyRouteViewId 
 const strategyRouteViewCopy: Record<StrategyRouteViewId, { title: string; description: string }> = {
   overview: {
     title: "Strategy overview",
-    description: "Review strategy posture, then open the focused builder, lab, run, and promotion workspaces."
+    description: "Review recent strategy runs and open the one you want to work on."
   },
   promotions: {
     title: "Promotion review",
-    description: "Retained runs, comparison evidence, and paper-promotion review."
+    description: "Compare saved runs and decide which to promote to paper trading."
   },
   lab: {
     title: "Strategy Lab",
-    description: "PlotTool workstation: scatter analysis, notebooks, and statistics."
+    description: "Explore run results with charts, notebooks, and statistics."
   }
 };
 
-export function StrategyScreen({ data, fundAccountId }: StrategyScreenProps) {
+export function StrategyScreen(props: StrategyScreenProps) {
+  return (
+    <KpiProvider models={{ strategy: props.data }}>
+      <StrategyScreenContent {...props} />
+    </KpiProvider>
+  );
+}
+
+function StrategyScreenContent({ data, fundAccountId }: StrategyScreenProps) {
   const vm = useStrategyRunLibraryViewModel(data);
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
@@ -510,17 +524,12 @@ export function StrategyScreen({ data, fundAccountId }: StrategyScreenProps) {
         aria-label="Strategy workspace context"
         className="flex flex-wrap items-end justify-between gap-3"
       >
-        <div className="min-w-0">
-          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
-            {routeCopy.title}
-          </h2>
-          <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
-            {routeCopy.description}
-          </p>
-        </div>
+        <PageHeading title={routeCopy.title} purpose={routeCopy.description} descriptionKey={`strategy:${routeCopy.title}`} />
       </section>
 
-      <StatStrip metrics={data.metrics.map(metric => ({ ...metric, basis: metric.basis ?? "Retained strategy run summaries", source: metric.source ?? "Authorized Strategy workspace run population" }))} label="Strategy headline metrics" source="Strategy workspace" figureSource="strategy" />
+      <KpiProvider models={{ strategy: { ...data, metrics: data.metrics.map(metric => ({ ...metric, basis: metric.basis ?? "Retained strategy run summaries", source: metric.source ?? "Authorized Strategy workspace run population" })) } }}>
+        <StatStrip ids={workspaceKpiIds("strategy", data.metrics)} label="Strategy headline metrics" source="Strategy workspace" figureSource="strategy" />
+      </KpiProvider>
       {vm.plotTool.analyticsEvidenceStatus === "Illustrative" ? <p role="status" className="border-l-2 border-warning px-3 py-2 text-xs">Illustrative PlotTool analytics · simulated observations demonstrate the interface and are not retained market evidence.</p> : null}
 
       {routeView === "overview" ? <StrategyOverviewHub vm={vm} /> : null}
@@ -584,6 +593,7 @@ export function StrategyScreen({ data, fundAccountId }: StrategyScreenProps) {
         <CardContent className="space-y-4">
           {showRuns ? (
           <>
+          <RunCompareTray selectedRuns={vm.selectedRuns} notice={vm.selectionNotice} onRemove={vm.toggleRun} onClear={vm.clearRunSelection} />
           <div className="flex flex-col gap-3 rounded-lg border border-border/70 bg-secondary/25 px-4 py-3 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="eyebrow-label">Selection</div>
@@ -713,7 +723,7 @@ export function StrategyScreen({ data, fundAccountId }: StrategyScreenProps) {
                 <form
                   className="flex flex-wrap items-center gap-3"
                   onSubmit={(e) => { e.preventDefault(); void vm.confirmPromotion(); }}
-                  aria-label="Governed Paper promotion approval"
+                  aria-label="Paper promotion approval"
                   noValidate
                 >
                   <label
@@ -735,7 +745,7 @@ export function StrategyScreen({ data, fundAccountId }: StrategyScreenProps) {
                       {vm.promotionApprovalForm.acknowledgementDisabledReason ? (
                         <span
                           id={vm.promotionApprovalForm.acknowledgementDisabledReasonId ?? undefined}
-                          className="rounded-sm border border-warning/30 bg-warning/10 px-2 py-1 text-[11px] leading-4 text-warning"
+                          className="rounded-sm border border-warning/30 bg-warning/10 px-2 py-1 text-xs leading-4 text-warning"
                         >
                           {vm.promotionApprovalForm.acknowledgementDisabledReason}
                         </span>
@@ -899,6 +909,7 @@ export function StrategyScreen({ data, fundAccountId }: StrategyScreenProps) {
             <CardDescription>Shared comparison evidence returned by the workstation API.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <RunComparisonOverlayCharts overlay={vm.comparisonOverlay} loading={vm.comparisonCurvesLoading} />
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
               <TableWorkbench workbenchId="strategy-comparison"
                 columns={tableColumnsWithExport(comparisonColumns, { strategy: row => row.strategyName, mode: row => row.modeText, status: row => row.statusText, "net-pnl": row => row.netPnlText, return: row => row.totalReturnText, drawdown: row => row.maxDrawdownText, sharpe: row => row.sharpeRatioText, fills: row => row.fillCountText })}
@@ -1142,6 +1153,11 @@ export function StrategyScreen({ data, fundAccountId }: StrategyScreenProps) {
 
             <StrategyRunParityPanel accountId={fundAccountId} runId={vm.selectedRunDetail.runId} />
 
+            {vm.selectedRunDetail.modeBadgeVariant === "research" ? (
+              <StrategyReplayProvenance evidence={vm.selectedRunDetail.replayProvenance}
+                receipt={vm.selectedRunProvenance} loading={vm.selectedRunDetail.replayEvidenceLoading} />
+            ) : null}
+
             <section className="mt-4 rounded-md border border-border/70 bg-secondary/20 px-4 py-3">
               <div className={eyebrowClassName(vm.selectedRunDetail.acceptanceCriteriaLabel)}>{vm.selectedRunDetail.acceptanceCriteriaLabel}</div>
               {vm.selectedRunDetail.acceptanceCriteriaStatus === "ready" ? (
@@ -1200,7 +1216,7 @@ export function StrategyScreen({ data, fundAccountId }: StrategyScreenProps) {
                         />
                         <span className="min-w-0">
                           <span className="block text-sm font-medium text-foreground">{item.label}</span>
-                          <span className="block font-mono text-[11px] text-muted-foreground">{item.checklistId}</span>
+                          <span className="block font-mono text-xs text-muted-foreground">{item.checklistId}</span>
                           <span className="mt-1 block text-xs text-muted-foreground">
                             {item.status === "Ready"
                               ? `Ready - decided by ${item.decidedBy} at ${item.decidedAt}.`
@@ -1209,12 +1225,12 @@ export function StrategyScreen({ data, fundAccountId }: StrategyScreenProps) {
                                 : item.blocker ?? "Review is required before this item can be ready."}
                           </span>
                           {item.evidenceReference ? (
-                            <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">
+                            <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">
                               Evidence: {item.evidenceReference}
                             </span>
                           ) : null}
                           {item.auditReference ? (
-                            <span className="block break-all font-mono text-[11px] text-muted-foreground">
+                            <span className="block break-all font-mono text-xs text-muted-foreground">
                               Audit: {item.auditReference}
                             </span>
                           ) : null}
@@ -1473,11 +1489,7 @@ function PlotToolWorkspacePanel({
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="plottool-chart-shell">
-              <PlotToolScatterChart
-                chart={vm.scatterChart}
-              />
-            </div>
+            <PlotToolScatterChart chart={vm.scatterChart} trendLabel={vm.legendItems.find((item) => item.id === "trend")?.detail} />
             {vm.scatterChart.points.length > 0 ? (
               <details className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
                 <summary className="cursor-pointer text-sm font-semibold text-foreground">
@@ -1604,7 +1616,7 @@ function SelectedPlotStudyDetail({
       </div>
       <div className="body">
         <h3 className="text-sm font-semibold text-foreground">{detail.title}</h3>
-        <p className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{detail.subtitle}</p>
+        <p className="mt-1 break-words font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
         <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.description}</p>
         <DetailFields fields={detail.fields} className="mt-3" />
       </div>
@@ -1651,25 +1663,9 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
               <div className="font-mono uppercase tracking-[0.14em] text-foreground">Residual distribution</div>
               <p className="mt-2 leading-5">{vm.distributionSummary}</p>
             </div>
-            <div className="h-[180px] w-full">
-              <Histogram
-                ariaLabel={vm.distributionChart.ariaLabel}
-                bins={vm.distributionChart.bars.map((bar, index) => ({
-                  x0: index,
-                  x1: index + 1,
-                  count: bar.heightPercent
-                }))}
-                signed={false}
-                showMean={false}
-                valueFmt={(value) => String(Math.round(value))}
-                countFmt={(count) => `${Math.round(count)}%`}
-              />
-            </div>
-            <ul className="sr-only">
-              {vm.distributionChart.bars.map((bar) => (
-                <li key={bar.id}>{bar.ariaLabel}</li>
-              ))}
-            </ul>
+            {vm.distributionChart.bars.length > 0 ? (
+              <PlotToolDistributionChart chart={vm.distributionChart} />
+            ) : <p className="text-xs text-muted-foreground">Distribution values unavailable.</p>}
             <p className="text-xs leading-5 text-muted-foreground">{vm.distributionFootnote}</p>
           </CardContent>
         </Card>
@@ -1677,7 +1673,7 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
         <Card className="border-border/70 bg-background/35">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Regression frame</CardTitle>
-            <CardDescription>OLS summary anchored to run evidence and operator review posture.</CardDescription>
+            <CardDescription>OLS summary anchored to run evidence and operator review status.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-lg border border-border/70 bg-secondary/20 px-4 py-4 text-center font-mono text-lg text-foreground">
@@ -1739,10 +1735,41 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
   );
 }
 
+function PlotToolDistributionChart({ chart }: { chart: StrategyPlotStatisticsState["distributionChart"] }) {
+  const evidence: ChartEvidence[] = chart.bars.map((bar, index) => ({
+    id: bar.id,
+    label: `Illustrative bucket ${index + 1}`,
+    values: [{ series: "Residual distribution", value: bar.heightPercent, unit: "%", basis: "Preview bucket height with a 4% display floor." }],
+    sourceDetail: "Retained residual observations and timestamps are unavailable."
+  }));
+  return (
+    <>
+      <p className="text-xs text-warning">Illustrative chart · retained residual proof unavailable</p>
+      <ChartEvidenceView label={chart.ariaLabel} evidence={evidence}>
+        {(inspection) => (
+          <div className="h-[180px] w-full">
+            <Histogram
+              bins={chart.bars.map((bar, index) => ({ x0: index, x1: index + 1, count: bar.heightPercent }))}
+              signed={false}
+              showMean={false}
+              valueFmt={(value) => String(Math.round(value))}
+              countFmt={(count) => `${Math.round(count)}%`}
+              ariaLabel={chart.ariaLabel}
+              inspection={inspection}
+            />
+          </div>
+        )}
+      </ChartEvidenceView>
+    </>
+  );
+}
+
 function PlotToolScatterChart({
-  chart
+  chart,
+  trendLabel
 }: {
   chart: StrategyPlotScatterChartState;
+  trendLabel?: string;
 }) {
   const hasObservations = chart.points.length > 0;
 
@@ -1756,7 +1783,7 @@ function PlotToolScatterChart({
         <ChartScatter className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
         <div className="mt-3 font-semibold text-foreground">No PlotTool observations yet</div>
         <p className="mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
-          Connect a governed Strategy analytics source to load retained notebooks, scatter observations, and statistical evidence.
+          Connect an approved Strategy analytics source to load retained notebooks, scatter observations, and statistical evidence.
         </p>
         <Button asChild variant="outline" size="sm" className="mt-4">
           <Link to="/settings/providers" aria-label="Review provider connections for PlotTool">
@@ -1767,111 +1794,156 @@ function PlotToolScatterChart({
     );
   }
 
+  const basis = "Illustrative plot position supplied by the PlotTool preview.";
+  const observations: ChartEvidence[] = chart.points.map((point, index) => ({
+    id: point.id,
+    label: `Illustrative observation ${index + 1}`,
+    values: [
+      { series: "Horizontal position", value: point.x, unit: "SVG units", basis },
+      { series: "Vertical position", value: point.y, unit: "SVG units", basis }
+    ],
+    sourceDetail: "Retained observation values and timestamps are unavailable."
+  }));
+  observations.push({
+    id: "plottool-marker",
+    label: "Current marker",
+    values: [{ series: "Marker label", value: chart.marker.labelText, unit: null, basis: "Values supplied for the illustrative marker label." }],
+    sourceDetail: "Retained observation values and timestamps are unavailable."
+  });
+  if (trendLabel) {
+    observations.push({
+      id: "plottool-fit",
+      label: "Illustrative OLS overlay",
+      values: [{ series: "OLS overlay", value: trendLabel, unit: null, basis: "Preset illustration supplied with the preview." }]
+    });
+  }
+
   return (
-    <svg
-      viewBox={chart.viewBox}
-      className="h-[320px] w-full"
-      role="img"
-      aria-labelledby={chart.titleId}
-      aria-describedby={chart.descriptionId}
-    >
-      <title id={chart.titleId}>{chart.title}</title>
-      <desc id={chart.descriptionId}>{chart.description}</desc>
-      <g>
-        {chart.gridLines.map((line) => (
-          <line
-            key={line.id}
-            x1={line.x1}
-            y1={line.y1}
-            x2={line.x2}
-            y2={line.y2}
-            stroke={line.stroke}
-            strokeWidth={line.strokeWidth}
-            strokeDasharray={line.strokeDasharray}
-            opacity={line.opacity}
-          />
-        ))}
-      </g>
-      <g fill="var(--fg-muted)" fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)" fontSize="10">
-        {chart.yTicks.map((tick) => (
-          <text key={`y-${tick.value}`} x="44" y={tick.value} textAnchor="end">
-            {tick.label}
-          </text>
-        ))}
-        {chart.xTicks.map((tick) => (
-          <text key={`x-${tick.value}`} x={tick.value + 20} y="304" textAnchor="middle">
-            {tick.label}
-          </text>
-        ))}
-        <text x="330" y="318" textAnchor="middle">{chart.xAxisLabel}</text>
-        <text x="16" y="170" textAnchor="middle" transform="rotate(-90 16 170)">{chart.yAxisLabel}</text>
-      </g>
-      {hasObservations ? (
-        <>
-          <polyline
-            fill="none"
-            stroke={chart.trendLine.stroke}
-            strokeWidth={chart.trendLine.strokeWidth}
-            strokeDasharray={chart.trendLine.strokeDasharray}
-            points={chart.trendLine.points}
-          />
-          <line
-            x1={chart.marker.verticalGuide.x1}
-            y1={chart.marker.verticalGuide.y1}
-            x2={chart.marker.verticalGuide.x2}
-            y2={chart.marker.verticalGuide.y2}
-            stroke={chart.marker.verticalGuide.stroke}
-            strokeWidth={chart.marker.verticalGuide.strokeWidth}
-            strokeDasharray={chart.marker.verticalGuide.strokeDasharray}
-            opacity={chart.marker.verticalGuide.opacity}
-          />
-          <line
-            x1={chart.marker.horizontalGuide.x1}
-            y1={chart.marker.horizontalGuide.y1}
-            x2={chart.marker.horizontalGuide.x2}
-            y2={chart.marker.horizontalGuide.y2}
-            stroke={chart.marker.horizontalGuide.stroke}
-            strokeWidth={chart.marker.horizontalGuide.strokeWidth}
-            strokeDasharray={chart.marker.horizontalGuide.strokeDasharray}
-            opacity={chart.marker.horizontalGuide.opacity}
-          />
-        </>
-      ) : null}
-      {chart.points.map((point) => (
-        <circle
-          key={point.id}
-          cx={point.x}
-          cy={point.y}
-          r={point.radius}
-          fill={point.fill}
-          fillOpacity={point.fillOpacity}
-        />
-      ))}
-      {hasObservations ? (
-        <>
-          <circle
-            cx={chart.marker.x}
-            cy={chart.marker.y}
-            r={chart.marker.radius}
-            fill={chart.marker.fill}
-            stroke={chart.marker.stroke}
-            strokeWidth={chart.marker.strokeWidth}
-          />
-          <rect
-            x={chart.marker.labelX}
-            y={chart.marker.labelY}
-            width={chart.marker.labelWidth}
-            height={chart.marker.labelHeight}
-            rx={chart.marker.labelRadius}
-            fill={chart.marker.labelFill}
-            stroke={chart.marker.labelStroke}
-          />
-          <text x={chart.marker.labelTextX} y={chart.marker.labelTextY} fill={chart.marker.labelStroke} fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)" fontSize="10">
-            {chart.marker.labelText}
-          </text>
-        </>
-      ) : null}
-    </svg>
+    <>
+      <p className="text-xs text-warning">Illustrative chart · retained market observation proof unavailable</p>
+      <ChartEvidenceView label="PlotTool scatter observations" evidence={observations} initialIndex={chart.points.length}>
+        {(inspection) => (
+          <div className="plottool-chart-shell">
+            <svg
+              viewBox={chart.viewBox}
+              className="h-[320px] w-full"
+              role="group"
+              aria-labelledby={chart.titleId}
+              aria-describedby={`${chart.descriptionId} ${inspection.hintId}`}
+            >
+              <title id={chart.titleId}>{chart.title}</title>
+              <desc id={chart.descriptionId}>{chart.description}</desc>
+              <g>
+                {chart.gridLines.map((line) => (
+                  <line
+                    key={line.id}
+                    x1={line.x1}
+                    y1={line.y1}
+                    x2={line.x2}
+                    y2={line.y2}
+                    stroke={line.stroke}
+                    strokeWidth={line.strokeWidth}
+                    strokeDasharray={line.strokeDasharray}
+                    opacity={line.opacity}
+                  />
+                ))}
+              </g>
+              <g fill="var(--fg-muted)" fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)" fontSize="10">
+                {chart.yTicks.map((tick) => (
+                  <text key={`y-${tick.value}`} x="44" y={tick.value} textAnchor="end">
+                    {tick.label}
+                  </text>
+                ))}
+                {chart.xTicks.map((tick) => (
+                  <text key={`x-${tick.value}`} x={tick.value + 20} y="304" textAnchor="middle">
+                    {tick.label}
+                  </text>
+                ))}
+                <text x="330" y="318" textAnchor="middle">{chart.xAxisLabel}</text>
+                <text x="16" y="170" textAnchor="middle" transform="rotate(-90 16 170)">{chart.yAxisLabel}</text>
+              </g>
+              {hasObservations ? (
+                <>
+                  <polyline
+                    fill="none"
+                    stroke={chart.trendLine.stroke}
+                    strokeWidth={chart.trendLine.strokeWidth}
+                    strokeDasharray={chart.trendLine.strokeDasharray}
+                    points={chart.trendLine.points}
+                  />
+                  <line
+                    x1={chart.marker.verticalGuide.x1}
+                    y1={chart.marker.verticalGuide.y1}
+                    x2={chart.marker.verticalGuide.x2}
+                    y2={chart.marker.verticalGuide.y2}
+                    stroke={chart.marker.verticalGuide.stroke}
+                    strokeWidth={chart.marker.verticalGuide.strokeWidth}
+                    strokeDasharray={chart.marker.verticalGuide.strokeDasharray}
+                    opacity={chart.marker.verticalGuide.opacity}
+                  />
+                  <line
+                    x1={chart.marker.horizontalGuide.x1}
+                    y1={chart.marker.horizontalGuide.y1}
+                    x2={chart.marker.horizontalGuide.x2}
+                    y2={chart.marker.horizontalGuide.y2}
+                    stroke={chart.marker.horizontalGuide.stroke}
+                    strokeWidth={chart.marker.horizontalGuide.strokeWidth}
+                    strokeDasharray={chart.marker.horizontalGuide.strokeDasharray}
+                    opacity={chart.marker.horizontalGuide.opacity}
+                  />
+                </>
+              ) : null}
+              {chart.points.map((point) => (
+                <circle
+                  key={point.id}
+                  cx={point.x}
+                  cy={point.y}
+                  r={point.radius}
+                  fill={point.fill}
+                  fillOpacity={point.fillOpacity}
+                />
+              ))}
+              {hasObservations ? (
+                <>
+                  <circle
+                    cx={chart.marker.x}
+                    cy={chart.marker.y}
+                    r={chart.marker.radius}
+                    fill={chart.marker.fill}
+                    stroke={chart.marker.stroke}
+                    strokeWidth={chart.marker.strokeWidth}
+                  />
+                  <rect
+                    x={chart.marker.labelX}
+                    y={chart.marker.labelY}
+                    width={chart.marker.labelWidth}
+                    height={chart.marker.labelHeight}
+                    rx={chart.marker.labelRadius}
+                    fill={chart.marker.labelFill}
+                    stroke={chart.marker.labelStroke}
+                  />
+                  <text x={chart.marker.labelTextX} y={chart.marker.labelTextY} fill={chart.marker.labelStroke} fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)" fontSize="10">
+                    {chart.marker.labelText}
+                  </text>
+                </>
+              ) : null}
+              {chart.points.map((point, index) => (
+                <ChartEvidenceMark key={point.id} inspection={inspection} index={index} geometry={{ x: point.x, y: point.y }} />
+              ))}
+              <ChartEvidenceMark
+                inspection={inspection}
+                index={chart.points.length}
+                geometry={{ x: chart.marker.labelX, y: chart.marker.labelY, width: chart.marker.labelWidth, height: chart.marker.labelHeight }}
+                point={chart.marker}
+              />
+              {trendLabel ? (
+                <ChartEvidenceMark inspection={inspection} index={chart.points.length + 1} geometry={{ x: 564, y: 54 }} />
+              ) : null}
+            </svg>
+          </div>
+        )}
+      </ChartEvidenceView>
+    </>
   );
 }
 
@@ -1880,7 +1952,7 @@ function PlotToolLegendItem({ item }: { item: StrategyPlotLegendItem }) {
     <div className="plottool-legend-card">
       <div className="flex items-center gap-2 text-xs text-foreground">
         <span className={cn("h-2.5 w-2.5 rounded-full", plotLegendToneClass[item.tone])} aria-hidden="true" />
-        <span className={cn("", usesTrackedCaps(item.label) && "font-mono uppercase tracking-[0.14em]")}>{item.label}</span>
+        <span className={cn("", usesTrackedCaps(item.label) && "type-label--caps")}>{item.label}</span>
       </div>
       <div className="mt-1 text-xs text-muted-foreground">{item.detail}</div>
     </div>

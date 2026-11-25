@@ -1,6 +1,15 @@
 import { type KeyboardEvent, type RefObject, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { applyDensity as applyDensityToElement, isDensity, type Density } from "@/lib/density";
+import {
+  applyDensity as applyDensityToElement,
+  DENSITY_STORAGE_KEY,
+  isDensity,
+  readEffectiveDensity,
+  readStoredDensity,
+  writeStoredDensity,
+  type Density
+} from "@/lib/density";
+import { onOperatorPreferencesApplied } from "@/lib/operator-preference-events";
 
 export type { Density };
 
@@ -74,6 +83,10 @@ export function DensityToggle({
     if (isControlled) {
       return controlled;
     }
+    if (persist === DENSITY_STORAGE_KEY) {
+      // Show the density on screen, which may be a restored layout's session density.
+      return readEffectiveDensity();
+    }
     if (persist) {
       try {
         const saved = localStorage.getItem(persist);
@@ -96,12 +109,23 @@ export function DensityToggle({
     if (!isControlled) {
       setInternal(next);
     }
-    if (persist) {
+    if (persist === DENSITY_STORAGE_KEY) {
+      writeStoredDensity(next);
+    } else if (persist) {
       try { localStorage.setItem(persist, next); }
       catch { /* Applying a view preference does not require persistence. */ }
     }
     onChange?.(next);
   };
+
+  // The workstation density can change under a mounted control when the operator's preferences
+  // load from the host; re-read the store so the selection matches what is applied.
+  useEffect(() => {
+    if (isControlled || persist !== DENSITY_STORAGE_KEY) {
+      return undefined;
+    }
+    return onOperatorPreferencesApplied(() => setInternal(readStoredDensity()));
+  }, [isControlled, persist]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>, current: Density) => {
     const index = LEVELS.findIndex((level) => level.value === current);
@@ -149,7 +173,7 @@ export function DensityToggle({
             className={cn(
               "inline-flex min-h-6 flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-button)] font-medium leading-none transition-colors",
               "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]",
-              size === "sm" ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs",
+              size === "sm" ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-xs",
               active
                 ? "bg-background font-semibold text-foreground shadow-[inset_0_0_0_1px_hsl(var(--border))]"
                 : "bg-transparent text-muted-foreground hover:bg-secondary hover:text-foreground"

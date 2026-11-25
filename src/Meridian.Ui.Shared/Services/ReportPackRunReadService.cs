@@ -248,7 +248,7 @@ public sealed partial class ReportPackRunReadService
         var portfolioCuts = BuildPortfolioReportingCuts(workflowRecords);
         var livePortfolioViews = BuildPortfolioReportingLiveViews(portfolioCuts);
         var crossFundConsolidations = BuildCrossFundConsolidations(portfolioCuts);
-        var pnlSlices = BuildPortfolioReportingPnlSlices(portfolioCuts);
+        var pnlSlices = BuildPortfolioReportingPnlSlices(portfolioCuts, BuildPriorReportedPnl(workflowRecords));
         var analyticsRows = BuildPortfolioReportingAnalyticsRows(portfolioCuts);
         var reportWriterDatasetSources = BuildReportWriterDatasetSources(
             portfolioCuts,
@@ -399,12 +399,13 @@ public sealed partial class ReportPackRunReadService
         IReadOnlyList<ReportPackWorkflowRecordDto> workflowRecords)
     {
         var cuts = new List<PortfolioReportingCutDto>();
-        foreach (var group in workflowRecords
-                     .Where(static record => record.LineProvenance is { Count: > 0 })
-                     .GroupBy(static record => string.IsNullOrWhiteSpace(record.FundProfileId) ? "unknown-fund" : record.FundProfileId.Trim(), StringComparer.OrdinalIgnoreCase)
+        // Only the latest published or restated version of each report counts, and only the latest
+        // reported period: drafts, superseded versions and earlier periods are not added in.
+        foreach (var group in SelectReportedRecords(workflowRecords)
+                     .GroupBy(FundKey, StringComparer.OrdinalIgnoreCase)
                      .OrderBy(static group => group.Key, StringComparer.OrdinalIgnoreCase))
         {
-            var records = group
+            var records = SplitReportedPeriods(group.ToArray()).Current
                 .OrderByDescending(static record => record.UpdatedAt)
                 .ThenBy(static record => record.ReportId)
                 .ToArray();
@@ -557,8 +558,9 @@ public sealed partial class ReportPackRunReadService
         ];
     }
 
-    private static IReadOnlyList<PortfolioReportingPnlSliceDto> BuildPortfolioReportingPnlSlices(
-        IReadOnlyList<PortfolioReportingCutDto> portfolioCuts)
+    internal static IReadOnlyList<PortfolioReportingPnlSliceDto> BuildPortfolioReportingPnlSlices(
+        IReadOnlyList<PortfolioReportingCutDto> portfolioCuts,
+        (decimal TotalPnl, int SourceCount, IReadOnlyList<string> Periods) prior)
     {
         if (portfolioCuts.Count == 0)
         {
@@ -573,10 +575,10 @@ public sealed partial class ReportPackRunReadService
         var sourceCount = portfolioCuts.Sum(static cut => cut.SourceCount);
         return
         [
-            BuildPortfolioReportingPnlSlice(PortfolioReportingPnlSlicePeriodDto.Daily, endDate, endDate, realizedPnl, unrealizedPnl, totalPnl, sourceCount, asOf),
-            BuildPortfolioReportingPnlSlice(PortfolioReportingPnlSlicePeriodDto.Weekly, endDate.AddDays(-6), endDate, realizedPnl, unrealizedPnl, totalPnl, sourceCount, asOf),
-            BuildPortfolioReportingPnlSlice(PortfolioReportingPnlSlicePeriodDto.Monthly, new DateOnly(endDate.Year, endDate.Month, 1), endDate, realizedPnl, unrealizedPnl, totalPnl, sourceCount, asOf),
-            BuildPortfolioReportingPnlSlice(PortfolioReportingPnlSlicePeriodDto.Yearly, new DateOnly(endDate.Year, 1, 1), endDate, realizedPnl, unrealizedPnl, totalPnl, sourceCount, asOf)
+            BuildPortfolioReportingPnlSlice(PortfolioReportingPnlSlicePeriodDto.Daily, endDate, endDate, realizedPnl, unrealizedPnl, totalPnl, sourceCount, asOf, prior),
+            BuildPortfolioReportingPnlSlice(PortfolioReportingPnlSlicePeriodDto.Weekly, endDate.AddDays(-6), endDate, realizedPnl, unrealizedPnl, totalPnl, sourceCount, asOf, prior),
+            BuildPortfolioReportingPnlSlice(PortfolioReportingPnlSlicePeriodDto.Monthly, new DateOnly(endDate.Year, endDate.Month, 1), endDate, realizedPnl, unrealizedPnl, totalPnl, sourceCount, asOf, prior),
+            BuildPortfolioReportingPnlSlice(PortfolioReportingPnlSlicePeriodDto.Yearly, new DateOnly(endDate.Year, 1, 1), endDate, realizedPnl, unrealizedPnl, totalPnl, sourceCount, asOf, prior)
         ];
     }
 
@@ -588,7 +590,8 @@ public sealed partial class ReportPackRunReadService
         decimal unrealizedPnl,
         decimal totalPnl,
         int sourceCount,
-        DateTimeOffset asOf) =>
+        DateTimeOffset asOf,
+        (decimal TotalPnl, int SourceCount, IReadOnlyList<string> Periods) prior) =>
         new(
             SliceId: $"reporting-pnl:{period.ToString().ToLowerInvariant()}:{endDate:yyyyMMdd}",
             Period: period,
@@ -599,14 +602,20 @@ public sealed partial class ReportPackRunReadService
             RealizedPnl: realizedPnl,
             UnrealizedPnl: unrealizedPnl,
             TotalPnl: totalPnl,
-            PriorTotalPnl: 0m,
-            PnlChange: totalPnl,
+            // The baseline is the previous published report period; with none, prior is zero and the
+            // readiness text and the "no-prior" tag say there is nothing to compare with.
+            PriorTotalPnl: prior.SourceCount > 0 ? prior.TotalPnl : 0m,
+            PnlChange: PeriodChange.Change(totalPnl, prior.SourceCount > 0 ? prior.TotalPnl : 0m),
             SourceCount: sourceCount,
             AsOf: asOf,
             Route: "/api/workstation/reporting",
-            ReadinessSummary: $"Retained {period} P&L slice is derived from {sourceCount} report-pack portfolio provenance line(s).",
-            Tags: ["retained-report-pack", "portfolio-reporting", period.ToString()],
-            VersionStamp: $"pnl-slice:{period}:{asOf.UtcDateTime:yyyyMMddHHmmss}");
+            ReadinessSummary: prior.SourceCount > 0
+                ? $"Retained {period} P&L slice is derived from {sourceCount} published report-pack portfolio provenance line(s), compared with the previous published period ({string.Join(", ", prior.Periods)}, {prior.SourceCount} line(s))."
+                : $"Retained {period} P&L slice is derived from {sourceCount} published report-pack portfolio provenance line(s). No prior published report version is available for comparison.",
+            Tags: prior.SourceCount > 0
+                ? ["retained-report-pack", "portfolio-reporting", period.ToString()]
+                : ["retained-report-pack", "portfolio-reporting", period.ToString(), "no-prior"],
+            VersionStamp: $"pnl-slice:{period}:{asOf.UtcDateTime:yyyyMMddHHmmss}:prior-{prior.SourceCount}");
 
     internal static IReadOnlyList<PortfolioReportingAnalyticsRowDto> BuildPortfolioReportingAnalyticsRows(
         IReadOnlyList<PortfolioReportingCutDto> portfolioCuts)

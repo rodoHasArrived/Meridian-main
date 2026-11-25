@@ -257,7 +257,7 @@ public sealed class SpecializedProjectionGoldenTests : IClassFixture<SecurityMas
             SecurityIdentifierKind.InternalCode.ToString(),
             IdentifierValue(securityId),
             common.RootElement.Clone(),
-            terms.RootElement.Clone(),
+            SecurityTermsEnvelope.StampDeclaredFormat(terms.RootElement.Clone()),
             JsonSerializer.SerializeToElement(new { sourceSystem = "integration-test", updatedBy = "specialized-golden-fixture" }),
             Version,
             effectiveFrom,

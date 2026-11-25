@@ -32,8 +32,8 @@ Declared public members:
 | <code>public AutomatedJournalApproval Approve(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:67](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L67) |  |
 | <code>public AutomatedJournalApproval Reject(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt;? evidenceLinks = null) =&gt; …;</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:80](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L80) |  |
 | <code>public JournalEntry ToJournalEntry();</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:93](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L93) |  |
-| <code>public AutomatedJournalApproval PostTo(Ledger ledger, string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks);</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:115](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L115) |  |
-| <code>public AutomatedJournalApproval MarkPosted(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:138](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L138) | Records the governed posted transition after a posting target has durably accepted the journal. Callers must persist first; this method performs no ledger mutation. |
+| <code>public AutomatedJournalApproval PostTo(Ledger ledger, string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks);</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:118](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L118) |  |
+| <code>public AutomatedJournalApproval MarkPosted(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:141](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L141) | Records the governed posted transition after a posting target has durably accepted the journal. Callers must persist first; this method performs no ledger mutation. |
 
 ## AutomatedJournalApprovalEvent
 
@@ -85,9 +85,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal TotalDebits =&gt; …;</code> | [src/Meridian.Ledger/AutomatedJournalDraft.cs:13](../../../../src/Meridian.Ledger/AutomatedJournalDraft.cs#L13) | Total debits in the projected journal draft. |
-| <code>public decimal TotalCredits =&gt; …;</code> | [src/Meridian.Ledger/AutomatedJournalDraft.cs:16](../../../../src/Meridian.Ledger/AutomatedJournalDraft.cs#L16) | Total credits in the projected journal draft. |
-| <code>public bool IsBalanced =&gt; …;</code> | [src/Meridian.Ledger/AutomatedJournalDraft.cs:19](../../../../src/Meridian.Ledger/AutomatedJournalDraft.cs#L19) | True when total debits equal total credits. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyDictionary&lt;int, string&gt;? LineMemos { get; init; }</code> | [src/Meridian.Ledger/AutomatedJournalDraft.cs:13](../../../../src/Meridian.Ledger/AutomatedJournalDraft.cs#L13) |  |
+| <code>public decimal TotalDebits =&gt; …;</code> | [src/Meridian.Ledger/AutomatedJournalDraft.cs:16](../../../../src/Meridian.Ledger/AutomatedJournalDraft.cs#L16) | Total debits in the projected journal draft. |
+| <code>public decimal TotalCredits =&gt; …;</code> | [src/Meridian.Ledger/AutomatedJournalDraft.cs:19](../../../../src/Meridian.Ledger/AutomatedJournalDraft.cs#L19) | Total credits in the projected journal draft. |
+| <code>public bool IsBalanced =&gt; …;</code> | [src/Meridian.Ledger/AutomatedJournalDraft.cs:22](../../../../src/Meridian.Ledger/AutomatedJournalDraft.cs#L22) | True when total debits equal total credits. |
 
 ## AutomatedJournalDraftProjector
 
@@ -204,8 +205,9 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static BuiltInLedgerReportBinaryRenderer Instance { get; } = new ();</code> | [src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs:14](../../../../src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs#L14) |  |
-| <code>public byte[] RenderWorkbook(LedgerFinancialReportPack reportPack);</code> | [src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs:16](../../../../src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs#L16) |  |
-| <code>public byte[] RenderPdf(LedgerFinancialReportPack reportPack);</code> | [src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs:34](../../../../src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs#L34) |  |
+| <code>public byte[] RenderWorkbook(LedgerFinancialReportPack reportPack) =&gt; …;</code> | [src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs:16](../../../../src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs#L16) |  |
+| <code>public byte[] RenderWorkbook(IReadOnlyList&lt;LedgerReportTable&gt; tables);</code> | [src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs:20](../../../../src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs#L20) | Renders exact text cells from shared report datasets without coercing decimals to floating point. |
+| <code>public byte[] RenderPdf(LedgerFinancialReportPack reportPack);</code> | [src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs:38](../../../../src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs#L38) |  |
 
 ## CanonicalCorporateActionLotReport
 

@@ -86,13 +86,21 @@ public sealed partial class OnboardingWorkspaceService
         if (unmapped.Count > 0)
             throw new OnboardingValidationException(
                 $"Map every incumbent account to a selected financial account: {string.Join(", ", unmapped.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).Take(10))}.");
-        if (incumbent.Count == 0)
-            throw new OnboardingValidationException("No incumbent opening rows map to the selected financial accounts.");
+        // A source only compares the kinds it supplies (a bank statement or GL supplies cash balances only); the
+        // other required kinds must come from a complementary opening source rather than read as missing here.
+        var openingKinds = workspace.Criteria.RequiredKinds
+            .Where(kind => incumbent.Values.Any(row => row.Key.Kind == kind)).ToArray();
+        if (openingKinds.Length == 0)
+            throw new OnboardingValidationException(
+                $"The incumbent opening source supplies none of the required kinds ({string.Join(", ", workspace.Criteria.RequiredKinds)}).");
+        foreach (var key in incumbent.Where(row => !openingKinds.Contains(row.Value.Key.Kind, StringComparer.Ordinal))
+                     .Select(row => row.Key).ToArray())
+            incumbent.Remove(key);
 
         var snapshots = state.Snapshots.Select(snapshot => snapshot with { MappingVersion = request.MappingVersion })
             .Append(incumbentSnapshot).ToArray();
         var meridian = new Dictionary<string, OnboardingObservationDto>(StringComparer.Ordinal);
-        foreach (var row in state.Observations)
+        foreach (var row in state.Observations.Where(row => openingKinds.Contains(row.Kind, StringComparer.Ordinal)))
         {
             if (!meridian.TryAdd(DifferenceKey(row), row))
                 throw new OnboardingValidationException(
@@ -123,13 +131,13 @@ public sealed partial class OnboardingWorkspaceService
         var capture = new OnboardingSourceCaptureDto(snapshots, observations, state.MissingSources, null);
         var compareRequest = new CaptureOnboardingComparisonRequestDto(request.ExpectedVersion, asOf,
             OpeningProviderPrefix + request.SourceKind, document.SourceId, request.MappingProfileId, request.MappingVersion, request.Notes);
-        capture = ValidateCapture(workspace, compareRequest, capture);
+        capture = ValidateCapture(workspace, compareRequest, capture, openingKinds);
         var next = Advance(workspace, true);
         var comparison = BuildComparison(workspace, compareRequest, capture, actorId, Guid.NewGuid().ToString("N"),
-            _clock.GetUtcNow(), next.DataRevision, isOpening: true, openingSourceKind: request.SourceKind);
+            _clock.GetUtcNow(), next.DataRevision, isOpening: true, openingSourceKind: request.SourceKind, openingKinds: openingKinds);
         next = next with { Comparisons = [.. workspace.Comparisons, comparison] };
         next = AppendAudit(next, "OpeningBalancesImported", actorId, comparison.ComparisonId,
-            $"{request.SourceKind} {incumbentSnapshot.ContentHash}", _clock.GetUtcNow());
+            $"{request.SourceKind} [{string.Join(",", openingKinds)}] {incumbentSnapshot.ContentHash}", _clock.GetUtcNow());
         return await SaveAsync(next, workspace.Version, ct);
     }
 
@@ -393,39 +401,72 @@ public sealed partial class OnboardingWorkspaceService
             clean);
     }
 
+    /// <summary>The latest opening comparison of each incumbent source kind; complementary sources combine.</summary>
+    private static IReadOnlyList<OnboardingComparisonDto> LatestOpeningRuns(OnboardingWorkspaceDto workspace)
+        => workspace.Comparisons.Where(item => item.IsOpening)
+            .GroupBy(item => item.OpeningSourceKind ?? "", StringComparer.Ordinal)
+            .Select(group => group.MaxBy(item => item.Sequence)!)
+            .OrderBy(item => item.Sequence).ToArray();
+
+    /// <summary>Kinds a run is accountable for. Legacy opening comparisons claimed every required kind.</summary>
+    private static IReadOnlyList<string> ClaimedKinds(OnboardingWorkspaceDto workspace, OnboardingComparisonDto run)
+        => run.OpeningKinds ?? workspace.Criteria.RequiredKinds;
+
+    /// <summary>Required kinds that no opening source covers completely for every selected account.</summary>
+    private static IReadOnlyList<string> UncoveredOpeningKinds(
+        OnboardingWorkspaceDto workspace, IReadOnlyList<OnboardingComparisonDto> runs)
+        => workspace.Criteria.RequiredKinds.Where(kind => workspace.Scope.AccountIds.Any(account => !runs.Any(run =>
+        {
+            if (!ClaimedKinds(workspace, run).Contains(kind, StringComparer.Ordinal))
+                return false;
+            var rows = run.Inputs.Observations.Where(row => row.AccountId == account && row.Kind == kind).ToArray();
+            return rows.Length > 0 && rows.All(row => row.MeridianAmount.HasValue && row.ExternalAmount.HasValue
+                && string.IsNullOrWhiteSpace(row.MissingReason));
+        }))).ToArray();
+
     private static OnboardingOpeningBalanceReportDto? BuildOpeningReport(OnboardingWorkspaceDto workspace)
     {
-        var run = workspace.Comparisons.Where(item => item.IsOpening).MaxBy(item => item.Sequence);
-        if (run is null)
+        var runs = LatestOpeningRuns(workspace);
+        if (runs.Count == 0)
             return null;
-        var differences = run.Differences.ToDictionary(row => row.DifferenceKey, StringComparer.Ordinal);
         var lines = new List<OnboardingOpeningBalanceLineDto>();
-        var seen = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var row in run.Inputs.Observations)
+        foreach (var run in runs)
         {
-            var key = DifferenceKey(row);
-            seen.Add(key);
-            differences.TryGetValue(key, out var difference);
-            lines.Add(OpeningLine(workspace, run, key, row.Kind, row.AccountId, row.Currency, row.InstrumentId,
-                row.MeridianAmount, row.ExternalAmount, difference, row.MissingReason));
+            var differences = run.Differences.ToDictionary(row => row.DifferenceKey, StringComparer.Ordinal);
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var row in run.Inputs.Observations)
+            {
+                var key = DifferenceKey(row);
+                seen.Add(key);
+                differences.TryGetValue(key, out var difference);
+                lines.Add(OpeningLine(workspace, run, key, row.Kind, row.AccountId, row.Currency, row.InstrumentId,
+                    row.MeridianAmount, row.ExternalAmount, difference, row.MissingReason));
+            }
+            foreach (var row in run.Differences.Where(item => !seen.Contains(item.DifferenceKey)))
+                lines.Add(OpeningLine(workspace, run, row.DifferenceKey, row.Kind, row.AccountId, row.Currency, row.InstrumentId,
+                    row.MeridianAmount, row.ExternalAmount, row, row.MissingReason));
         }
-        foreach (var row in run.Differences.Where(item => !seen.Contains(item.DifferenceKey)))
-            lines.Add(OpeningLine(workspace, run, row.DifferenceKey, row.Kind, row.AccountId, row.Currency, row.InstrumentId,
-                row.MeridianAmount, row.ExternalAmount, row, row.MissingReason));
         lines = lines.OrderBy(line => line.Kind, StringComparer.Ordinal).ThenBy(line => line.AccountId, StringComparer.Ordinal)
-            .ThenBy(line => line.InstrumentId, StringComparer.Ordinal).ThenBy(line => line.Currency, StringComparer.Ordinal).ToList();
-        var incumbent = run.Inputs.Snapshots.LastOrDefault(snapshot => snapshot.SourceKind == "IncumbentOpening");
+            .ThenBy(line => line.InstrumentId, StringComparer.Ordinal).ThenBy(line => line.Currency, StringComparer.Ordinal)
+            .ThenBy(line => line.SourceKind, StringComparer.Ordinal).ToList();
+        var latest = runs[^1];
+        var incumbent = latest.Inputs.Snapshots.LastOrDefault(snapshot => snapshot.SourceKind == "IncumbentOpening");
         var matched = lines.Count(line => line.Status == "Matched");
         var explained = lines.Count(line => line.Status == "Explained");
         var breaks = lines.Count(line => line.Status == "Break");
         var missing = lines.Count(line => line.Status == "Missing");
-        var complete = run.Inputs.MissingSources.Count == 0
-            && Coverage(workspace, run.Inputs) >= workspace.Criteria.MinimumCoveragePercent
-            && Hash(run.Criteria) == Hash(workspace.Criteria);
-        return new(run.ComparisonId, run.OpeningSourceKind ?? "", run.AsOfDate, incumbent?.ContentHash ?? "",
-            matched, explained, breaks, missing, complete && lines.Count > 0 && breaks == 0 && missing == 0, lines,
-            run.Inputs.Snapshots.SelectMany(snapshot => snapshot.EvidenceIds.Append(snapshot.SnapshotId))
-                .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray());
+        var uncovered = UncoveredOpeningKinds(workspace, runs);
+        var complete = uncovered.Count == 0
+            && runs.All(run => run.Inputs.MissingSources.Count == 0 && Hash(run.Criteria) == Hash(workspace.Criteria));
+        var sources = runs.Select(run => new OnboardingOpeningSourceSummaryDto(run.OpeningSourceKind ?? "", run.ComparisonId,
+            run.Inputs.Snapshots.LastOrDefault(snapshot => snapshot.SourceKind == "IncumbentOpening")?.ContentHash ?? "",
+            ClaimedKinds(workspace, run).ToArray(), run.CapturedAtUtc)).ToArray();
+        return new(latest.ComparisonId, string.Join("+", sources.Select(source => source.SourceKind)), latest.AsOfDate,
+            incumbent?.ContentHash ?? "", matched, explained, breaks, missing,
+            complete && lines.Count > 0 && breaks == 0 && missing == 0, lines,
+            runs.SelectMany(run => run.Inputs.Snapshots).SelectMany(snapshot => snapshot.EvidenceIds.Append(snapshot.SnapshotId))
+                .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray(),
+            sources, uncovered.Count > 0 ? uncovered : null);
     }
 
     private static OnboardingOpeningBalanceLineDto OpeningLine(
@@ -440,7 +481,8 @@ public sealed partial class OnboardingWorkspaceService
             : explanation is not null ? "Explained" : "Break";
         return new(key, kind, accountId, currency, instrumentId, meridian, incumbent,
             meridian.HasValue && incumbent.HasValue ? meridian - incumbent : null, tolerance, status,
-            explanation?.Classification, status == "Missing" ? missingReason ?? "A comparison amount is missing." : null);
+            explanation?.Classification, status == "Missing" ? missingReason ?? "A comparison amount is missing." : null,
+            run.ComparisonId, run.OpeningSourceKind);
     }
 
     private static IReadOnlyList<T>? NullIfEmpty<T>(IReadOnlyList<T>? values) => values is { Count: > 0 } ? values : null;

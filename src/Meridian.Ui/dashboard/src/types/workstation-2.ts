@@ -739,7 +739,8 @@ export type EvidenceDocumentLinkKind =
   | "Fund"
   | "StatementRun"
   | "StatementImport"
-  | "IntercompanyAgreement";
+  | "IntercompanyAgreement"
+  | "LegalEntity";
 
 export type EvidenceDocumentReviewStatus = "Unreviewed" | "NeedsReview" | "Accepted" | "Rejected";
 
@@ -1231,7 +1232,7 @@ export type ProviderCredentialSource =
 export type ProviderVerificationState = "NotRequired" | "NotVerified" | "Verified" | "Failed" | "Stale";
 export type ProviderContinuityHealth = "Unknown" | "Healthy" | "Warning" | "Degraded" | "Blocked";
 export type ProviderReadinessStatus = "Ready" | "Review" | "Degraded" | "Blocked" | "Unknown";
-export type ProviderReadinessEvidenceKind = "Credential" | "Connection" | "Validation" | "Degradation" | "Plaid" | "Routing";
+export type ProviderReadinessEvidenceKind = "Credential" | "Connection" | "Validation" | "Degradation" | "Plaid" | "Routing" | "Unknown";
 export type ProviderCredentialInputKind = "Text" | "Password" | "Url";
 
 export interface ProviderCredentialFieldMetadata {
@@ -1271,6 +1272,7 @@ export interface ProviderConnectionRow {
   actionHref: string;
   credentialFields?: ProviderCredentialFieldMetadata[] | null;
   environmentOptions?: ProviderEnvironmentOption[] | null;
+  rotationDueAt?: string | null;
 }
 
 export interface ProviderCredentialUpsertRequest {
@@ -1299,6 +1301,12 @@ export interface ProviderCredentialVerificationResult {
   lastError: string | null;
   externalAccountId: string | null;
   warnings: string[];
+}
+
+export interface ProviderCredentialDraftResult {
+  providerId: string;
+  status: "Verified" | "Rejected" | "Unavailable";
+  message: string;
 }
 
 export interface ProviderReadinessSummary {
@@ -1413,6 +1421,7 @@ export interface DimensionMappingProfile {
 
 /** Server-owned close decision. Missing or incomplete contributors always block. */
 export interface CloseReadinessProjection {
+  intercompanyAdvisories?: import("./intercompany-obligations").IntercompanyObligationMonitor | null;
   scope: { fundProfileId: string | null; ledgerBookId: string | null; fundAccountId: string | null; entityId: string | null; periodId: string | null };
   evaluatedAtUtc: string;
   status: string;

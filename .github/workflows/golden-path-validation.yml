@@ -15,10 +15,8 @@ on:
       - "src/Meridian.Ui.Shared/**"
       - "src/Meridian.Ui/dashboard/package.json"
       - "src/Meridian.Ui/dashboard/src/screens/**"
-      - "src/Meridian.Wpf/**"
       - "tests/Meridian.Tests/Application/Commands/LedgerCliCommandTests.cs"
       - "tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs"
-      - "tests/Meridian.Wpf.Tests/**"
       - "tests/scripts/test_golden_path_validation_workflow.py"
       - "tests/scripts/test_generate_dk1_pilot_parity_packet.py"
       - "tests/scripts/test_prepare_dk1_operator_signoff.py"
@@ -38,10 +36,8 @@ on:
       - "src/Meridian.Ui.Shared/**"
       - "src/Meridian.Ui/dashboard/package.json"
       - "src/Meridian.Ui/dashboard/src/screens/**"
-      - "src/Meridian.Wpf/**"
       - "tests/Meridian.Tests/Application/Commands/LedgerCliCommandTests.cs"
       - "tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs"
-      - "tests/Meridian.Wpf.Tests/**"
       - "tests/scripts/test_golden_path_validation_workflow.py"
       - "tests/scripts/test_generate_dk1_pilot_parity_packet.py"
       - "tests/scripts/test_prepare_dk1_operator_signoff.py"
@@ -60,7 +56,6 @@ env:
   DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
   DOTNET_NOLOGO: "true"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
-  DOTNET_VERSION: '10.0.x'
   NODE_VERSION: 24
   MERIDIAN_DISABLE_DOCKER_TESTS: "true"
 
@@ -90,8 +85,13 @@ jobs:
       - name: Run browser W4 acceptance parity
         run: npm --prefix src/Meridian.Ui/dashboard run test:w4
 
+  # Windows Desktop Build runs the whole WPF suite, Category=W4Acceptance included, on every
+  # change to WPF or any project it compiles against (a test there keeps that path list
+  # complete). Repeating the subset here on a second Windows runner for PRs and main pushes
+  # only added queue time, so this job now produces the dedicated evidence on manual runs.
   wpf-w4-acceptance:
     name: WPF W4 Acceptance
+    if: github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
     timeout-minutes: 30
 
@@ -105,7 +105,7 @@ jobs:
       - name: Set up .NET SDK
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          global-json-file: global.json
 
       - name: Restore WPF test project
         run: dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
@@ -137,7 +137,7 @@ jobs:
       - name: Set up .NET SDK
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          global-json-file: global.json
 
       - name: Set up Python
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
@@ -199,6 +199,7 @@ jobs:
     steps:
       - name: Require all golden path evidence
         env:
+          EVENT_NAME: ${{ github.event_name }}
           BROWSER_RESULT: ${{ needs.browser-w4-parity.result }}
           WPF_RESULT: ${{ needs.wpf-w4-acceptance.result }}
           PILOT_RESULT: ${{ needs.pilot-harness.result }}
@@ -212,8 +213,20 @@ jobs:
               "WPF W4 Acceptance": os.environ.get("WPF_RESULT", ""),
               "Pilot Acceptance Harness": os.environ.get("PILOT_RESULT", ""),
           }
+          # WPF W4 evidence is owned by Windows Desktop Build except on manual runs, where
+          # this workflow must produce it. Only that exact skip is accepted.
+          event_name = os.environ.get("EVENT_NAME", "")
+          if not event_name:
+              print("::error::The triggering event is unknown, so the WPF W4 owner cannot be decided.")
+              sys.exit(1)
+          manual = event_name == "workflow_dispatch"
+          expected = {name: "success" for name in results}
+          if not manual:
+              expected["WPF W4 Acceptance"] = "skipped"
           for name, result in results.items():
               print(f"{name}: {result or 'unknown'}")
-          if any(result != "success" for result in results.values()):
+          if not manual and results["WPF W4 Acceptance"] == "skipped":
+              print("WPF W4 Acceptance: covered by Windows Desktop Build on this event.")
+          if any(results[name] != expected[name] for name in results):
               print("::error::Every golden path evidence job must succeed.")
               sys.exit(1)

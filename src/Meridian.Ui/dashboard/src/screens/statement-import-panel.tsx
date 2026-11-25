@@ -1,6 +1,7 @@
+import { StatementImportRows, StatementImportOutcomes } from "./statement-import-rows";
 import { ArrowRight, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,7 +31,15 @@ export interface StatementImportPanelProps extends UseStatementImportPanelOption
 
 export function StatementImportPanel(options: StatementImportPanelProps = {}) {
   const viewModel = useStatementImportPanelViewModel(options);
-  const [sourceMode, setSourceMode] = useState("file");
+  const [search] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const sourceMode = search.get("sourceMode") === "scheduled" ? "scheduled" : "file";
+  const setSourceMode = (mode: string) => {
+    const next = new URLSearchParams(search);
+    if (mode === "file") next.delete("sourceMode"); else next.set("sourceMode", "scheduled");
+    navigate({ pathname: location.pathname, search: next.toString(), hash: location.hash });
+  };
 
   return (
     <section className="flex flex-col gap-4" aria-label="Import statement">
@@ -42,6 +51,7 @@ export function StatementImportPanel(options: StatementImportPanelProps = {}) {
         </p>
       </PanelSurface>
 
+      <Link className="text-sm text-primary underline" to={{ pathname: "/data/import/start", search: search.toString() }}>Choose another import type</Link>
       <h2 className="sr-only">Statement import workflow</h2>
       {viewModel.loadError ? (
         <ErrorBanner title="Statement connector library failed to load" error={viewModel.loadError} />
@@ -56,6 +66,8 @@ export function StatementImportPanel(options: StatementImportPanelProps = {}) {
         ]}
       >
         <TabPanel>
+          {viewModel.commitBusy ? <p role="status">Committing the reviewed import. Source, scope, mapping, and row decisions are locked until the result is known.</p> : null}
+          <fieldset disabled={viewModel.commitBusy} className="min-w-0"><legend className="sr-only">Reviewed statement import</legend>
           <div className="flex flex-col gap-4">
             <SourceSection viewModel={viewModel} />
             {viewModel.previewError ? (
@@ -68,9 +80,11 @@ export function StatementImportPanel(options: StatementImportPanelProps = {}) {
                 onSelectKind={viewModel.selectKind}
               />
             ) : null}
+            {viewModel.preview ? <StatementImportRows key={viewModel.preview.reviewId ?? "legacy"} preview={viewModel.preview} decisions={viewModel.rowDispositions} onChange={viewModel.setRowDisposition} disabled={viewModel.commitBusy || viewModel.previewBusy} /> : null}
             <ProfileEditorSection viewModel={viewModel} />
             <CommitSection viewModel={viewModel} />
           </div>
+          </fieldset>
         </TabPanel>
         <TabPanel>
           {sourceMode === "scheduled" && viewModel.loading ? (
@@ -191,7 +205,7 @@ function SourceSection({ viewModel }: { viewModel: StatementImportPanelViewModel
                     type="button"
                     className={cn(
                       "inline-flex items-center gap-1.5 rounded-[2px] border border-primary/40 bg-primary/10 px-2.5 py-1",
-                      "font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-primary transition-colors",
+                      "font-mono text-xs font-semibold uppercase tracking-[0.14em] text-primary transition-colors",
                       "hover:bg-primary/20 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                     )}
                     aria-label={`Apply suggested profile ${suggestion.displayName}, score ${Math.round(suggestion.score * 100)} percent`}
@@ -561,6 +575,7 @@ function CommitResultPanel({ viewModel }: { viewModel: StatementImportPanelViewM
           title="Duplicate statement detected"
           detail={`This statement was already imported as run ${result.runId}. No new records were committed. ${result.nextAction}`}
         />
+        <StatementImportOutcomes key={result.reviewId ?? result.runId} result={result} />
         <TrustedCloseHandoff result={result} />
         <CommitResultActions result={result} />
       </PanelSurface>
@@ -576,16 +591,16 @@ function CommitResultPanel({ viewModel }: { viewModel: StatementImportPanelViewM
       />
       <dl className="grid gap-2 text-xs sm:grid-cols-2">
         <div>
-          <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Retained source</dt>
+          <dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">Retained source</dt>
           <dd className="font-mono">{result.retainedSourcePath}</dd>
         </div>
         <div>
-          <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Retained canonical</dt>
+          <dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">Retained canonical</dt>
           <dd className="font-mono">{result.retainedCanonicalPath}</dd>
         </div>
         {result.evidenceVaultIdentity ? (
           <div>
-            <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Evidence vault</dt>
+            <dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">Evidence vault</dt>
             <dd className="font-mono">{result.evidenceVaultIdentity.vaultId}</dd>
           </div>
         ) : null}
@@ -597,6 +612,7 @@ function CommitResultPanel({ viewModel }: { viewModel: StatementImportPanelViewM
           ))}
         </ul>
       ) : null}
+      <StatementImportOutcomes key={result.reviewId ?? result.runId} result={result} />
       <CommitCaseLinks result={result} />
       <TrustedCloseHandoff result={result} />
       <CommitResultActions result={result} />
@@ -627,7 +643,7 @@ function TrustedCloseHandoff({ result }: { result: StatementImportPanelViewModel
   return (
     <div
       className="flex flex-col gap-3 rounded-[2px] border border-success/40 bg-success/5 p-3"
-      aria-label="Trusted close handoff"
+      aria-label="Trusted close next step"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -651,19 +667,19 @@ function TrustedCloseHandoff({ result }: { result: StatementImportPanelViewModel
       </div>
       <dl className="grid gap-2 text-xs sm:grid-cols-2" aria-label="Trusted close scope">
         <div className="min-w-0">
-          <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Fund profile</dt>
+          <dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">Fund profile</dt>
           <dd className="break-all font-mono text-foreground">{scope.fundProfileId}</dd>
         </div>
         <div className="min-w-0">
-          <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Ledger book</dt>
+          <dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">Ledger book</dt>
           <dd className="break-all font-mono text-foreground">{scope.ledgerBookId}</dd>
         </div>
         <div className="min-w-0">
-          <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Accounting period</dt>
+          <dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">Accounting period</dt>
           <dd className="break-all font-mono text-foreground">{scope.accountingPeriodId}</dd>
         </div>
         <div className="min-w-0">
-          <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">As of</dt>
+          <dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">As of</dt>
           <dd className="font-mono text-foreground">{scope.asOfDate}</dd>
         </div>
       </dl>
@@ -682,7 +698,7 @@ function CommitCaseLinks({ result }: { result: StatementImportPanelViewModel["co
 
   return (
     <div className="flex flex-col gap-2" aria-label="Statement import reconciliation cases">
-      <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+      <span className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         Reconciliation cases
       </span>
       <ul className="grid gap-2 sm:grid-cols-2">
@@ -695,7 +711,7 @@ function CommitCaseLinks({ result }: { result: StatementImportPanelViewModel["co
               <span className="min-w-[10rem] flex-1 truncate font-medium text-foreground">{caseLink.label}</span>
               <Button asChild variant="outline" size="sm">
                 <Link to={caseLink.route}>
-                  <span className="max-w-[14rem] truncate font-mono text-[11px]">{caseLink.caseId}</span>
+                  <span className="max-w-[14rem] truncate font-mono text-xs">{caseLink.caseId}</span>
                   <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
               </Button>

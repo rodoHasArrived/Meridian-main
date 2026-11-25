@@ -48,7 +48,8 @@ export interface CalibrationProfileDetailViewModel {
 }
 
 export interface CalibrationSummaryRefreshCommandViewModel {
-  label: string;
+  /** The summary reloads with the header Refresh; this retry command shows only after a failed load. */
+  visible: boolean; label: string;
   ariaLabel: string;
   disabled: boolean;
   disabledReason: string | null;
@@ -156,17 +157,12 @@ function buildCalibrationSummaryRefreshCommand(
   errorText: string | null
 ): CalibrationSummaryRefreshCommandViewModel {
   if (loading) {
-    return {
-      label: "Refreshing...",
-      ariaLabel: "Calibration summary refresh is already running",
-      disabled: true,
-      disabledReason: "Calibration summary refresh is already running."
-    };
+    return { visible: false, label: "Loading...", ariaLabel: "Calibration summary is already loading", disabled: true,
+      disabledReason: "Calibration summary is already loading." };
   }
 
   return {
-    label: errorText ? "Retry calibration summary" : "Refresh calibration",
-    ariaLabel: errorText ? "Retry calibration summary load" : "Refresh calibration summary",
+    visible: Boolean(errorText), label: "Retry calibration summary", ariaLabel: "Retry calibration summary load",
     disabled: false,
     disabledReason: null
   };

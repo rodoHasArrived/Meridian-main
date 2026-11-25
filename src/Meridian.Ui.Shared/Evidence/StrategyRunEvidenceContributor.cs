@@ -1,7 +1,11 @@
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
+using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Meridian.Identity.Auth;
 using Meridian.Strategies.Services;
+using Meridian.Strategies.Live.Designer;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Http;
@@ -54,6 +58,10 @@ public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
             // a cross-tenant strategy-run existence oracle.
             return Empty($"Strategy run '{context.Subject.SubjectId}' was not found.");
         }
+        if (run.Summary.StrategyVersionSha256 is not null &&
+            (_services.GetService<IHttpContextAccessor>()?.HttpContext is not { } request ||
+             !await EvidenceEndpoints.CanViewStrategyEvidenceAccountAsync(request, run.Summary.FundAccountId, ct).ConfigureAwait(false)))
+            return Empty($"Strategy run '{context.Subject.SubjectId}' was not found.");
 
         var nodes = new List<EvidenceNodeDto>();
         var edges = new List<EvidenceEdgeDto>();
@@ -78,6 +86,9 @@ public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
                     generatedAt: generatedAt)
             ]));
         required.Add(detailId);
+
+        await AddDesignerEvidenceAsync(context, runService, scope, run, nodes, edges, detailId)
+            .ConfigureAwait(false);
 
         AddLinkedNode(
             nodes,
@@ -242,6 +253,87 @@ public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
             packet.GeneratedAt);
 
         return new EvidenceContribution(nodes, edges, [], required, packet.Warnings);
+    }
+
+    private async Task AddDesignerEvidenceAsync(
+        EvidenceContributionContext context, StrategyRunReadService readService, StrategyRunReadScope? scope,
+        StrategyRunDetail run, List<EvidenceNodeDto> nodes, List<EvidenceEdgeDto> edges, string detailId)
+    {
+        if (!run.Parameters.ContainsKey(DesignerDocumentLiveSource.DesignerDocumentParameterKey))
+            return;
+
+        var subject = context.Subject;
+        var version = run.Summary.StrategyVersionSha256;
+        var simulated = !string.Equals(run.Summary.DataProvenanceToken, "real", StringComparison.OrdinalIgnoreCase);
+        var provenance = simulated ? "Simulated" : "Verified input provenance";
+        AddLinkedNode(nodes, edges, null, subject, detailId, "designer-version", "strategy-version",
+            version is null || simulated ? EvidenceStatusDto.ReviewRequired : EvidenceStatusDto.Ready,
+            version is null ? "Version unrecorded" : $"{provenance} · Strategy version {version}",
+            "StrategyRunStore", run.Summary.LastUpdatedAt);
+        if (version is null || scope is null || run.Summary.FundAccountId is not { } accountId)
+            return;
+
+        AddLinkedNode(nodes, edges, null, subject, detailId, "designer-inputs", "retained-replay-inputs",
+            EvidenceStatusDto.Ready,
+            $"{provenance} · Draft {run.Parameters.GetValueOrDefault(DesignerStrategyVersion.DraftRevisionKey)} · " +
+            $"Replay {run.Parameters.GetValueOrDefault(DesignerStrategyVersion.DataSnapshotKey)}",
+            "StrategyRunStore", run.Summary.StartedAt);
+
+        var ct = context.CancellationToken;
+        var targetRunId = run.Summary.Mode == StrategyRunMode.Paper
+            ? run.Summary.RunId : run.Summary.Identity?.PromotionTargetRunId;
+        if (string.IsNullOrWhiteSpace(targetRunId))
+            return;
+
+        var paper = targetRunId == run.Summary.RunId ? run :
+            await readService.GetRunDetailAsync(targetRunId, scope, ct).ConfigureAwait(false);
+        if (paper is null || paper.Summary.Mode != StrategyRunMode.Paper || paper.Summary.FundAccountId != accountId ||
+            paper.Summary.StrategyVersionSha256 != version ||
+            (run.Summary.Mode == StrategyRunMode.Backtest && paper.Summary.ParentRunId != run.Summary.RunId))
+            return;
+
+        var promotion = paper.Promotion ?? paper.Summary.Promotion;
+        var paperId = NodeId(subject, "designer-paper");
+        AddLinkedNode(nodes, edges, null, subject, detailId, "designer-paper", "paper-review",
+            promotion?.ApprovedBy is null ? EvidenceStatusDto.ReviewRequired : EvidenceStatusDto.Ready,
+            $"{provenance} · Paper run {targetRunId}" +
+            (promotion?.ApprovedBy is { } reviewer ? $" · Reviewed by {reviewer} · Audit {promotion.AuditReference}" : ""),
+            "StrategyRunStore", paper.Summary.LastUpdatedAt);
+
+        if (_services.GetService<IOperationalCaseHistoryStore>() is { } history)
+        {
+            var orders = await new PaperOrderEvidenceReader(history).ReadForRunAsync(targetRunId, accountId, version, ct)
+                .ConfigureAwait(false);
+            foreach (var order in orders)
+            {
+                var state = order.Admission?.IntentStatus ?? OrderIntentStatus.ReconciliationRequired;
+                var orderKey = $"paper-order-{order.IntentId:N}";
+                AddLinkedNode(nodes, edges, null, subject, paperId, orderKey, "paper-order-intent",
+                    state == OrderIntentStatus.ReconciliationRequired ? EvidenceStatusDto.ReviewRequired : EvidenceStatusDto.Ready,
+                    $"Simulated · Intent {order.IntentId:D} · Order {order.OrderId} · {state} · {order.Admission?.OrderState?.Status}",
+                    "OrderManagementSystem", order.Admission?.OrderState?.LastUpdatedAt);
+                foreach (var handoff in order.Handoffs)
+                {
+                    var fill = handoff.Fill;
+                    AddLinkedNode(nodes, edges, null, subject, NodeId(subject, orderKey), $"paper-fill-{fill.FillId:N}",
+                        "simulated-accounting-handoff", EvidenceStatusDto.Ready,
+                        FormattableString.Invariant($"Simulated · Fill {fill.FillId:D} · {fill.FilledQuantity} {fill.Symbol} at {fill.FillPrice} · Cost {fill.Commission} · Accounting handoff {handoff.ReceiptSha256}"),
+                        "OrderManagementSystem", fill.OccurredAt);
+                }
+            }
+        }
+
+        if (_services.GetService<ExecutionAuditTrailService>() is { } audit)
+        {
+            var sessionId = PaperSessionPersistenceService.GetStrategyRunSessionId(targetRunId);
+            var latest = (await audit.GetAllAsync(ct).ConfigureAwait(false))
+                .LastOrDefault(entry => entry.CorrelationId == sessionId && entry.Action == "VerifyReplay");
+            AddLinkedNode(nodes, edges, null, subject, paperId, "paper-reconciliation", "paper-reconciliation",
+                latest?.Outcome == "Completed" ? EvidenceStatusDto.Ready : EvidenceStatusDto.ReviewRequired,
+                latest?.Message is { } message ? $"Simulated · {message} · Audit {latest.AuditId}"
+                    : "Simulated · Retained session reconciliation is pending.",
+                "PaperSessionPersistenceService", latest?.OccurredAt);
+        }
     }
 
     private static EvidenceContribution Empty(string warning)

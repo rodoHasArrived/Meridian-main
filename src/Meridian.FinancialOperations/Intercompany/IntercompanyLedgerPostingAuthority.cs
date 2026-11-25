@@ -13,9 +13,50 @@ public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAccountingAr
     IntercompanyAccountingArrangementService service, IIntercompanyAccountBindingStore bindings,
     IAccountingConfigurationStore configuration, ILedgerJournalStore journals, IFundProfileTenancyRegistry owners,
     ILegacyIntercompanyAttributionStore? legacyAttributions = null,
-    IConsolidationFxAuthority? fxAuthority = null)
+    IConsolidationFxAuthority? fxAuthority = null,
+    IIntercompanyRateFixingStore? fixings = null)
     : ILedgerPostingAuthority, ILedgerBookControlPreflight
 {
+    /// <summary>
+    /// Re-resolves every retained accrual slice under current profile and legal authority. The posted lines
+    /// carry only the revision of the posting date, so an earlier slice whose revision was since retired,
+    /// superseded or re-pinned would otherwise post on authority that no longer covers its days.
+    /// </summary>
+    public async Task VerifyAccrualAuthorityAsync(string tenantId, IntercompanyAccrualEvidenceDto evidence, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(evidence);
+        foreach (var slice in evidence.Computation.Slices)
+            foreach (var day in new[] { slice.From, slice.To.AddDays(-1) }.Distinct())
+            {
+                ResolvedIntercompanyAccountingArrangementDto current;
+                try
+                {
+                    current = await service.ResolveApprovedRevisionAsync(tenantId, evidence.AccountingArrangementId,
+                        slice.AccountingArrangementRevisionId, new DateTimeOffset(day.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero), ct).ConfigureAwait(false);
+                }
+                catch (Exception error) when (error is InvalidOperationException or KeyNotFoundException)
+                {
+                    throw new InvalidOperationException($"The profile authority retained for {day:yyyy-MM-dd} no longer applies. Recompute the accrual before review or posting.", error);
+                }
+                if (current.TemplateKind != IntercompanyAccountingTemplateKindDto.LoanInterest
+                    || current.CanonicalAgreementId != evidence.AgreementId
+                    || current.LegalRevision.AgreementVersion != slice.AgreementVersion
+                    || !string.Equals(current.LegalRevision.PayloadHash, slice.AgreementPayloadHash, StringComparison.Ordinal))
+                    throw new InvalidOperationException($"The legal revision retained for {day:yyyy-MM-dd} no longer applies. Recompute the accrual before review or posting.");
+            }
+        // A fixing corrected and re-approved after drafting changes the rate those days should carry.
+        foreach (var pin in evidence.Computation.Slices.Select(slice => slice.Fixing).OfType<IntercompanyAccrualFixingPinDto>()
+            .DistinctBy(pin => pin.FixingId))
+        {
+            if (fixings is null)
+                throw new InvalidOperationException("Floating-rate accrual needs the reviewed rate-fixing authority, which is unavailable.");
+            var current = await fixings.GetAsync(tenantId, pin.FixingId, ct).ConfigureAwait(false);
+            if (current?.Approved is not { } approved || approved.RateFraction != pin.IndexRate
+                || !string.Equals(approved.ValueDigest, pin.ValueDigest, StringComparison.Ordinal))
+                throw new InvalidOperationException($"The approved {pin.IndexReference} fixing for {pin.FixingDate:yyyy-MM-dd} changed after drafting. Recompute the accrual before review or posting.");
+        }
+    }
+
     public string ControlName => "intercompany";
 
     public async Task<IAsyncDisposable> AcquireAsync(IReadOnlyList<LedgerPostingAuthorityContext> contexts, CancellationToken ct = default)
@@ -77,7 +118,7 @@ public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAccountingAr
                                 ?? DateOnly.FromDateTime(originals[0].Entry.Timestamp.UtcDateTime);
                             context.Decisions.Add(new("IntercompanyAgreement", "HistoricalIntercompanyReversal", true,
                                 "An exact retained source inverse uses the original agreement effective date.",
-                                $"{originalId:D}:{retainedOriginalEffectiveDate:yyyy-MM-dd}"));
+                                FormattableString.Invariant($"{originalId:D}:{retainedOriginalEffectiveDate:yyyy-MM-dd}")));
                         }
                     }
                     if (!retainedInverse)
@@ -250,6 +291,34 @@ public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAccountingAr
             return new(decisions, new Lease(leases));
         }
         catch { await new Lease(leases).DisposeAsync().ConfigureAwait(false); throw; }
+    }
+
+    /// <summary>
+    /// Re-resolves every retained fee slice under current profile and legal authority before review or posting, so
+    /// a revision retired, superseded or re-pinned after drafting stops the fee draft.
+    /// </summary>
+    public async Task VerifyFeeAccrualAuthorityAsync(string tenantId, IntercompanyFeeAccrualEvidenceDto evidence, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(evidence);
+        foreach (var slice in evidence.Computation.Slices)
+            foreach (var day in new[] { slice.From, slice.To.AddDays(-1) }.Distinct())
+            {
+                ResolvedIntercompanyAccountingArrangementDto current;
+                try
+                {
+                    current = await service.ResolveApprovedRevisionAsync(tenantId, evidence.AccountingArrangementId,
+                        slice.AccountingArrangementRevisionId, new DateTimeOffset(day.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero), ct).ConfigureAwait(false);
+                }
+                catch (Exception error) when (error is InvalidOperationException or KeyNotFoundException)
+                {
+                    throw new InvalidOperationException($"The management-fee profile authority retained for {day:yyyy-MM-dd} no longer applies. Recompute the fee before review or posting.", error);
+                }
+                if (current.TemplateKind != IntercompanyAccountingTemplateKindDto.ManagementFee
+                    || current.CanonicalAgreementId != evidence.AgreementId
+                    || current.LegalRevision.AgreementVersion != slice.AgreementVersion
+                    || !string.Equals(current.LegalRevision.PayloadHash, slice.AgreementPayloadHash, StringComparison.Ordinal))
+                    throw new InvalidOperationException($"The legal revision retained for {day:yyyy-MM-dd} no longer applies. Recompute the fee before review or posting.");
+            }
     }
 
     private static bool IsExactIntercompanyInverse(JournalEntry inverse, JournalEntry original)

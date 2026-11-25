@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Backtesting.BacktestingServiceCollectionExtensions</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting/BacktestingServiceCollectionExtensions.cs:23](../../../../src/Meridian.Backtesting/BacktestingServiceCollectionExtensions.cs#L23).
+Source: [src/Meridian.Backtesting/BacktestingServiceCollectionExtensions.cs:24](../../../../src/Meridian.Backtesting/BacktestingServiceCollectionExtensions.cs#L24).
 
 Extensions for registering the Meridian backtesting engine with a host&#x27;s DI container.
 
@@ -22,7 +22,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IServiceCollection AddMeridianBacktesting(this IServiceCollection services);</code> | [src/Meridian.Backtesting/BacktestingServiceCollectionExtensions.cs:33](../../../../src/Meridian.Backtesting/BacktestingServiceCollectionExtensions.cs#L33) | Registers the backtesting preflight service and the per-request engine factory. |
+| <code>public static IServiceCollection AddMeridianBacktesting(this IServiceCollection services);</code> | [src/Meridian.Backtesting/BacktestingServiceCollectionExtensions.cs:34](../../../../src/Meridian.Backtesting/BacktestingServiceCollectionExtensions.cs#L34) | Registers the backtesting preflight service and the per-request engine factory. |
 
 ## BacktestPreflightService
 
@@ -59,7 +59,7 @@ public sealed record BacktestStudioRunHandle(string RunId, string EngineRunHandl
 
 Qualified name: <code>Meridian.Backtesting.BacktestStudioRunOrchestrator</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:15](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L15).
+Source: [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:16](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L16).
 
 Coordinates Backtest Studio runs across multiple engines while persisting them through the shared strategy-run model.
 
@@ -71,12 +71,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public BacktestStudioRunOrchestrator(IStrategyRepository repository, IEnumerable&lt;IBacktestStudioEngine&gt; engines, ILogger&lt;BacktestStudioRunOrchestrator&gt; logger);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:24](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L24) |  |
-| <code>public async Task&lt;BacktestStudioRunHandle&gt; StartAsync(BacktestStudioRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:39](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L39) | Starts a Backtest Studio run, records the initial shared run entry, and monitors completion in the background. |
-| <code>public Task&lt;BacktestStudioRunStatus&gt; GetStatusAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:106](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L106) | Returns the current status for a previously started Backtest Studio run. |
-| <code>public Task&lt;BacktestResult&gt; GetCanonicalResultAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:118](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L118) | Returns the canonical result for a previously started Backtest Studio run. |
-| <code>public Task CancelAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:130](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L130) | Requests cancellation for a previously started Backtest Studio run. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:139](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L139) |  |
+| <code>public BacktestStudioRunOrchestrator(IStrategyRepository repository, IEnumerable&lt;IBacktestStudioEngine&gt; engines, ILogger&lt;BacktestStudioRunOrchestrator&gt; logger, StrategyArtifactRegistry? artifacts = null);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:26](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L26) |  |
+| <code>public async Task&lt;BacktestStudioRunHandle&gt; StartAsync(BacktestStudioRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:43](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L43) | Starts a Backtest Studio run, records the initial shared run entry, and monitors completion in the background. |
+| <code>public Task&lt;BacktestStudioRunStatus&gt; GetStatusAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:119](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L119) | Returns the current status for a previously started Backtest Studio run. |
+| <code>public Task&lt;BacktestResult&gt; GetCanonicalResultAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:131](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L131) | Returns the canonical result for a previously started Backtest Studio run. |
+| <code>public Task CancelAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:143](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L143) | Requests cancellation for a previously started Backtest Studio run. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:152](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L152) |  |
 
 ## BacktestStudioRunRequest
 
@@ -266,7 +266,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Backtesting.Engine.BacktestEngine</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting/Engine/BacktestEngine.cs:20](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L20).
+Source: [src/Meridian.Backtesting/Engine/BacktestEngine.cs:24](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L24).
 
 Core backtesting engine. Drives a multi-symbol chronological merge over locally-stored JSONL data, dispatches events to the strategy, processes fills, and records cash flows.
 
@@ -278,9 +278,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public BacktestEngine(ILogger&lt;BacktestEngine&gt; logger, StorageCatalogService catalogService, ISecurityMasterQueryService? securityMasterQueryService = null, ICorporateActionAdjustmentService? corporateActionAdjustment = null, IBacktestPreflightService? backtestPreflightService = null) : this(logger, catalogService, (ISecurityTradingParametersQueryService?) securityMasterQueryService, corporateActionAdjustment, backtestPreflightService, securityMasterQueryService);</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:30](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L30) | Retains the aggregate-query constructor used by compiled consumers. |
-| <code>public IBacktestAssetEventSource? AssetEventSource { get; init; }</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:45](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L45) | Optional authoritative action source; aggregate-query callers also receive the built-in bridge. |
-| <code>public async Task&lt;BacktestResult&gt; RunAsync(BacktestRequest request, IBacktestStrategy strategy, IProgress&lt;BacktestProgressEvent&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:54](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L54) | Runs a complete backtest, replaying all events in the requested date/symbol range. |
+| <code>public BacktestEngine(ILogger&lt;BacktestEngine&gt; logger, StorageCatalogService catalogService, ISecurityMasterQueryService? securityMasterQueryService = null, ICorporateActionAdjustmentService? corporateActionAdjustment = null, IBacktestPreflightService? backtestPreflightService = null) : this(logger, catalogService, (ISecurityTradingParametersQueryService?) securityMasterQueryService, corporateActionAdjustment, backtestPreflightService, securityMasterQueryService);</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:34](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L34) | Retains the aggregate-query constructor used by compiled consumers. |
+| <code>public ISecurityCorporateActionsQueryService? CanonicalCorporateActionQueries { get; init; }</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:49](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L49) | Optional canonical settlement query port; ignored by legacy replay and existing mapped event sources. |
+| <code>public IBacktestAssetEventSource? AssetEventSource { get; init; }</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:52](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L52) | Optional authoritative action source; aggregate-query callers also receive the built-in bridge. |
+| <code>public ILedgerJournalLogFactory? LedgerJournals { get; init; }</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:58](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L58) | Optional durable journal store. When set, runs whose request names a BacktestRequest.LedgerJournalScopeId write every posted journal to it as they go. |
+| <code>public async Task&lt;BacktestResult&gt; RunAsync(BacktestRequest request, IBacktestStrategy strategy, IProgress&lt;BacktestProgressEvent&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:67](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L67) | Runs a complete backtest, replaying all events in the requested date/symbol range. |
 
 ## IBacktestAssetEventSource
 
@@ -439,11 +441,29 @@ Declared public members:
 | <code>public IBacktestStrategy Instantiate(Type strategyType);</code> | [src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs:29](../../../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs#L29) | Creates an instance of the strategy type using its default constructor. |
 | <code>public IReadOnlyList&lt;StrategyParameterInfo&gt; GetParameters(Type strategyType) =&gt; …;</code> | [src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs:37](../../../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs#L37) | Returns &#91;StrategyParameter&#93;-decorated properties on the strategy type. |
 
+## FillRejectedException
+
+Qualified name: <code>Meridian.Backtesting.Portfolio.FillRejectedException</code>. Kind: `class`.
+
+Source: [src/Meridian.Backtesting/Portfolio/FillRejectedException.cs:9](../../../../src/Meridian.Backtesting/Portfolio/FillRejectedException.cs#L9).
+
+The simulated account refused a fill before changing any portfolio state (short selling or margin not permitted, or a fill canonical raw-price replay cannot represent). The engine discards such a fill and continues the run. Any other failure while applying a fill may leave the portfolio partly updated, so it is not caught and ends the run.
+
+```csharp
+public sealed class FillRejectedException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FillRejectedException(string message) : base(message);</code> | [src/Meridian.Backtesting/Portfolio/FillRejectedException.cs:11](../../../../src/Meridian.Backtesting/Portfolio/FillRejectedException.cs#L11) |  |
+
 ## FixedCommissionModel
 
 Qualified name: <code>Meridian.Backtesting.Portfolio.FixedCommissionModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:10](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L10).
+Source: [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:12](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L12).
 
 Fixed commission per order regardless of size.
 
@@ -455,13 +475,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal Calculate(string symbol, long quantity, decimal fillPrice) =&gt; …;</code> | [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:12](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L12) |  |
+| <code>public decimal Calculate(string symbol, long quantity, decimal fillPrice) =&gt; …;</code> | [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:14](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L14) |  |
 
 ## ICommissionModel
 
 Qualified name: <code>Meridian.Backtesting.Portfolio.ICommissionModel</code>. Kind: `interface`.
 
-Source: [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:4](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L4).
+Source: [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:6](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L6).
 
 Computes total brokerage commission for the executed portion of one order.
 
@@ -473,13 +493,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>decimal Calculate(string symbol, long quantity, decimal fillPrice);</code> | [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:6](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L6) |  |
+| <code>decimal Calculate(string symbol, long quantity, decimal fillPrice);</code> | [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:8](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L8) |  |
 
 ## PercentageCommissionModel
 
 Qualified name: <code>Meridian.Backtesting.Portfolio.PercentageCommissionModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:29](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L29).
+Source: [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:31](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L31).
 
 Percentage-of-notional commission model.
 
@@ -491,13 +511,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal Calculate(string symbol, long quantity, decimal fillPrice);</code> | [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:33](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L33) |  |
+| <code>public decimal Calculate(string symbol, long quantity, decimal fillPrice);</code> | [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:35](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L35) |  |
 
 ## PerShareCommissionModel
 
 Qualified name: <code>Meridian.Backtesting.Portfolio.PerShareCommissionModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:16](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L16).
+Source: [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:18](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L18).
 
 Per-share commission with optional minimum and maximum.
 
@@ -509,7 +529,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal Calculate(string symbol, long quantity, decimal fillPrice);</code> | [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:21](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L21) |  |
+| <code>public decimal Calculate(string symbol, long quantity, decimal fillPrice);</code> | [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:23](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L23) |  |
 
 ## SecurityMasterAssetEventSource
 
@@ -535,7 +555,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Backtesting.SecurityMasterBacktestAssetEventSource</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting/SecurityMasterBacktestAssetEventSource.cs:10](../../../../src/Meridian.Backtesting/SecurityMasterBacktestAssetEventSource.cs#L10).
+Source: [src/Meridian.Backtesting/SecurityMasterBacktestAssetEventSource.cs:11](../../../../src/Meridian.Backtesting/SecurityMasterBacktestAssetEventSource.cs#L11).
 
 Bridges the governed Security Master ingest pipeline to simulation. Provider proposals and announcements cannot grant accounting authority; only confirmed effective actions are consumed. This is an economic cutoff, not a reconstruction of historical transaction visibility.
 
@@ -547,9 +567,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Task&lt;IReadOnlyList&lt;AssetEvent&gt;&gt; GetAssetEventsAsync(IReadOnlyCollection&lt;string&gt; symbols, DateOnly from, DateOnly to, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Backtesting/SecurityMasterBacktestAssetEventSource.cs:15](../../../../src/Meridian.Backtesting/SecurityMasterBacktestAssetEventSource.cs#L15) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;AssetEvent&gt;&gt; LoadAsync(IReadOnlyCollection&lt;string&gt; symbols, DateOnly from, DateOnly through, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/SecurityMasterBacktestAssetEventSource.cs:19](../../../../src/Meridian.Backtesting/SecurityMasterBacktestAssetEventSource.cs#L19) |  |
-| <code>public static IReadOnlyList&lt;AssetEvent&gt; Merge(IReadOnlyList&lt;AssetEvent&gt; stored, IReadOnlyList&lt;AssetEvent&gt; supplied);</code> | [src/Meridian.Backtesting/SecurityMasterBacktestAssetEventSource.cs:94](../../../../src/Meridian.Backtesting/SecurityMasterBacktestAssetEventSource.cs#L94) | Deduplicates identical economics and refuses ambiguous stored/manual instructions. |
+| <code>public Task&lt;IReadOnlyList&lt;AssetEvent&gt;&gt; GetAssetEventsAsync(IReadOnlyCollection&lt;string&gt; symbols, DateOnly from, DateOnly to, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Backtesting/SecurityMasterBacktestAssetEventSource.cs:16](../../../../src/Meridian.Backtesting/SecurityMasterBacktestAssetEventSource.cs#L16) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;AssetEvent&gt;&gt; LoadAsync(IReadOnlyCollection&lt;string&gt; symbols, DateOnly from, DateOnly through, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/SecurityMasterBacktestAssetEventSource.cs:20](../../../../src/Meridian.Backtesting/SecurityMasterBacktestAssetEventSource.cs#L20) |  |
+| <code>public static IReadOnlyList&lt;AssetEvent&gt; Merge(IReadOnlyList&lt;AssetEvent&gt; stored, IReadOnlyList&lt;AssetEvent&gt; supplied);</code> | [src/Meridian.Backtesting/SecurityMasterBacktestAssetEventSource.cs:96](../../../../src/Meridian.Backtesting/SecurityMasterBacktestAssetEventSource.cs#L96) | Deduplicates identical economics and refuses ambiguous stored/manual instructions. |
 
 ## IWalkForwardService
 

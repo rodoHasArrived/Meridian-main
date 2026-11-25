@@ -43,6 +43,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
     private readonly ITradeFillLedgerPostingTarget _postingTarget;
     private readonly bool _requireCurrentAccountingEvidence;
     private readonly IChartOfAccounts _chartOfAccounts = StandardChartOfAccounts.Instance;
+    private readonly IAutomatedTradeFillAccountingService? _automatedAccounting;
     private readonly Ledger.Ledger? _projectionLedger;
     private readonly Channel<PendingTradeFillPosting> _channel;
     private readonly ITradeFillPostingStore _postingStore;
@@ -50,6 +51,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
     private readonly string _postingScope;
     private readonly TradeFillPostingScopeIdentity _scopeIdentity;
     private readonly TaskCompletionSource _recoveryLoaded = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource _initialReplayCompleted = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly Task _processingTask;
     private readonly CancellationTokenSource _cts = new();
     private readonly ILogger<LedgerPostingConsumer> _logger;
@@ -110,22 +112,56 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
         bool requireSecurityMasterPostingGate = true,
         TimeSpan? drainTimeout = null,
         TimeSpan? cancellationTimeout = null)
-        : this(postingTarget, logger, postingStore, postingContext, false, projectionLedger,
+        : this(postingTarget, logger, postingStore, postingContext, false, null, projectionLedger,
             channelCapacity, securityValidationGate, requireSecurityMasterPostingGate,
             drainTimeout, cancellationTimeout)
     {
     }
 
-    /// <summary>
-    /// Creates a consumer with explicit admission policy. Production composition requires current
-    /// evidence on newly accepted fills; recovery still reads exact retained legacy events.
-    /// </summary>
+    /// <summary>Preserves current evidence admission for native paper fills and retained replay.</summary>
     public LedgerPostingConsumer(
         ITradeFillLedgerPostingTarget postingTarget,
         ILogger<LedgerPostingConsumer> logger,
         ITradeFillPostingStore postingStore,
         TradeFillLedgerPostingContext postingContext,
         bool requireCurrentAccountingEvidence,
+        Ledger.Ledger? projectionLedger = null,
+        int channelCapacity = 10_000,
+        ISecurityValidationGateService? securityValidationGate = null,
+        bool requireSecurityMasterPostingGate = true,
+        TimeSpan? drainTimeout = null,
+        TimeSpan? cancellationTimeout = null)
+        : this(postingTarget, logger, postingStore, postingContext, requireCurrentAccountingEvidence, null,
+            projectionLedger, channelCapacity, securityValidationGate, requireSecurityMasterPostingGate,
+            drainTimeout, cancellationTimeout)
+    {
+    }
+
+    /// <summary>Adds the opt-in adapter without adding an ambiguous native constructor overload.</summary>
+    public static LedgerPostingConsumer CreateWithAccountingAdapter(
+        ITradeFillLedgerPostingTarget postingTarget,
+        ILogger<LedgerPostingConsumer> logger,
+        ITradeFillPostingStore postingStore,
+        TradeFillLedgerPostingContext postingContext,
+        IAutomatedTradeFillAccountingService? automatedAccounting,
+        bool requireCurrentAccountingEvidence = false,
+        Ledger.Ledger? projectionLedger = null,
+        int channelCapacity = 10_000,
+        ISecurityValidationGateService? securityValidationGate = null,
+        bool requireSecurityMasterPostingGate = true,
+        TimeSpan? drainTimeout = null,
+        TimeSpan? cancellationTimeout = null)
+        => new(postingTarget, logger, postingStore, postingContext, requireCurrentAccountingEvidence,
+            automatedAccounting, projectionLedger, channelCapacity, securityValidationGate,
+            requireSecurityMasterPostingGate, drainTimeout, cancellationTimeout);
+
+    private LedgerPostingConsumer(
+        ITradeFillLedgerPostingTarget postingTarget,
+        ILogger<LedgerPostingConsumer> logger,
+        ITradeFillPostingStore postingStore,
+        TradeFillLedgerPostingContext postingContext,
+        bool requireCurrentAccountingEvidence,
+        IAutomatedTradeFillAccountingService? automatedAccounting,
         Ledger.Ledger? projectionLedger = null,
         int channelCapacity = 10_000,
         ISecurityValidationGateService? securityValidationGate = null,
@@ -164,6 +200,11 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
                 nameof(postingContext));
         }
 
+        if (postingContext.AccountingProtocolVersion == 2 && automatedAccounting is null)
+            throw new InvalidOperationException("Canonical fill accounting requires its authorized automatic accounting service.");
+        if (postingContext.AccountingProtocolVersion == 1 && automatedAccounting is not null)
+            throw new InvalidOperationException("An automatic accounting service cannot reinterpret a legacy posting scope.");
+        _automatedAccounting = automatedAccounting;
         _postingTarget = postingTarget;
         _requireCurrentAccountingEvidence = requireCurrentAccountingEvidence;
         _projectionLedger = projectionLedger;
@@ -258,7 +299,12 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
             .AcceptAsync(tradeEvent, CancellationToken.None)
             .ConfigureAwait(false);
         if (!acceptance.ShouldEnqueue)
+        {
+            if (acceptance.WasAlreadyPosted && _postingContext.AccountingProtocolVersion == 2
+                && await _automatedAccounting!.TryRecoverCompletedAsync(tradeEvent, _postingContext, CancellationToken.None).ConfigureAwait(false) is null)
+                throw new InvalidDataException("The remembered posted fill has no complete, matching authoritative accounting receipts.");
             return;
+        }
 
         var posting = acceptance.Posting
             ?? throw new InvalidOperationException("A newly accepted trade fill is missing its durable posting envelope.");
@@ -287,6 +333,25 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
                     $"LedgerPostingConsumer is disposed; durable fill {tradeEvent.FillId} for {tradeEvent.Symbol} will replay on restart.");
             }
         }
+    }
+
+    /// <summary>Completes retained accounting effects before the host hydrates its paper projection.</summary>
+    internal async Task RecoverBeforeHostStartupAsync(IReadOnlyList<TradeExecutedEvent> fallback, CancellationToken ct)
+    {
+        await _initialReplayCompleted.Task.WaitAsync(ct).ConfigureAwait(false);
+        foreach (var fill in fallback)
+        {
+            var acceptance = await _postingStore.AcceptAsync(fill, ct).ConfigureAwait(false);
+            if (acceptance.WasAlreadyPosted)
+            {
+                if (await _automatedAccounting!.TryRecoverCompletedAsync(fill, _postingContext, ct).ConfigureAwait(false) is null)
+                    throw new InvalidDataException("A retained startup fill has no complete authoritative receipts.");
+            }
+            else if (acceptance.Posting is { } posting)
+                await ProcessPostingAsync(posting, ct).ConfigureAwait(false);
+        }
+        if ((await _postingStore.LoadPendingAsync(ct).ConfigureAwait(false)).Count != 0)
+            throw new InvalidOperationException("Canonical paper startup is blocked by unresolved retained fill accounting; review its posting failure evidence.");
     }
 
     /// <summary>
@@ -447,6 +512,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
                 await ProcessPostingAsync(posting, ct).ConfigureAwait(false);
             }
 
+            _initialReplayCompleted.TrySetResult();
             await foreach (var posting in _channel.Reader.ReadAllAsync(ct).ConfigureAwait(false))
             {
                 await ProcessPostingAsync(posting, ct).ConfigureAwait(false);
@@ -474,6 +540,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
             }
 
             _recoveryLoaded.TrySetException(ex);
+            _initialReplayCompleted.TrySetException(ex);
             throw;
         }
     }
@@ -555,6 +622,14 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
                 throw new OperationCanceledException("Ledger posting consumer is shutting down.", ct);
         }
 
+        if (_postingContext.AccountingProtocolVersion == 2
+            && await _automatedAccounting!.TryRecoverCompletedAsync(evt, _postingContext, ct).ConfigureAwait(false) is { } recovered)
+        {
+            foreach (var entry in recovered)
+                UpdateProjection(entry, evt.FillId);
+            return LedgerPostingAttempt.Success;
+        }
+
         var securityGate = await EvaluateSecurityMasterPostingGateAsync(evt, ct).ConfigureAwait(false);
         if (!securityGate.CanPost)
         {
@@ -564,6 +639,16 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
                 evt.Symbol,
                 securityGate.Reason);
             return LedgerPostingAttempt.Failed(securityGate.Reason);
+        }
+
+        if (_postingContext.AccountingProtocolVersion == 2)
+        {
+            var committed = await _automatedAccounting!.PostAsync(evt, _postingContext,
+                securityGate.SecurityId ?? throw new InvalidDataException("A canonical fill requires a Security Master identity."), ct)
+                .ConfigureAwait(false);
+            foreach (var entry in committed)
+                UpdateProjection(entry, evt.FillId);
+            return LedgerPostingAttempt.Success;
         }
 
         var expectedJournals = BuildCanonicalJournals(evt, securityGate);
@@ -762,10 +847,56 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
             }
         }
 
+        if (evidence.AccruedInterest != 0m || evidence.AccruedInterestRelieved != 0m)
+            journals.Add(BuildAccruedInterestJournal(evt, securityGate, evidence, accountId));
+
         var charges = evt.Commission + evidence.Fees + evidence.SlippageCost;
         if (charges > 0m)
             journals.Add(BuildCommissionJournal(evt, securityGate, charges));
         return journals;
+    }
+
+    /// <summary>
+    /// Posts the bond accrued interest a face-value fill settled on top of its clean
+    /// consideration: a purchase debits Accrued Interest Receivable; a sale relieves the
+    /// purchased receivable and books the rest as coupon income earned while held.
+    /// </summary>
+    private JournalEntry BuildAccruedInterestJournal(
+        TradeExecutedEvent evt,
+        LedgerPostingSecurityGateResult securityGate,
+        TradeFillAccountingEvidence evidence,
+        string? accountId)
+    {
+        if (!evt.UsesFaceValuePercentageOfPar || evidence.SettlesVariationMargin
+            || evidence.AccruedInterest <= 0m || evidence.AccruedInterestRelieved < 0m
+            || (evt.Side == Sdk.OrderSide.Buy && evidence.AccruedInterestRelieved != 0m))
+            throw new InvalidDataException($"Fill '{evt.FillId:D}' has inconsistent bond accrued-interest evidence.");
+
+        const string activityType = "trade-accrued-interest";
+        var cashAccount = _chartOfAccounts.Resolve(LedgerAccountRole.Cash, accountId);
+        var receivable = LedgerAccounts.AccruedInterestReceivable(evt.Symbol, accountId);
+        var lines = new List<(LedgerAccount Account, decimal Debit, decimal Credit)>();
+        if (evt.Side == Sdk.OrderSide.Buy)
+        {
+            lines.Add((receivable, evidence.AccruedInterest, 0m));
+            lines.Add((cashAccount, 0m, evidence.AccruedInterest));
+        }
+        else
+        {
+            var income = evidence.AccruedInterest - evidence.AccruedInterestRelieved;
+            var couponIncome = _chartOfAccounts.Resolve(LedgerAccountRole.CouponIncome, accountId);
+            lines.Add((cashAccount, evidence.AccruedInterest, 0m));
+            if (evidence.AccruedInterestRelieved > 0m)
+                lines.Add((receivable, 0m, evidence.AccruedInterestRelieved));
+            if (income > 0m)
+                lines.Add((couponIncome, 0m, income));
+            else if (income < 0m)
+                lines.Add((couponIncome, -income, 0m));
+        }
+
+        return CreateJournal(evt, securityGate, activityType,
+            CreateDeterministicGuid(evt.FillId, activityType, "journal"),
+            FormattableString.Invariant($"Accrued interest on {evt.Side} {evt.FilledQuantity} {evt.Symbol}"), lines);
     }
 
     private static void ValidateLegExecutionValue(TradeExecutedEvent evt, SecurityTradePosting leg)
@@ -1074,18 +1205,13 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
 
         if (string.Equals(activityType, TradeFillActivityType, StringComparison.Ordinal))
         {
-            // Trade-identity tags for statement reconciliation: the journal→custodian-transaction
-            // projection reads these opt-in tags so the posted trade exact-matches a statement row
-            // instead of degrading to the candidate stage. The canonical fill id is the only
-            // transaction-granular identity the execution report carries (order ids repeat across
-            // partial fills) and it is content-derived, so replay stamps the same value. No
-            // `settlementDate` is stamped — the execution report carries no settlement date, and
-            // estimating T+n conventions is a policy decision this consumer must not make; the
-            // projection then defaults settlement to the trade date. The commission journal is
-            // deliberately left untagged: a share quantity does not apply to a fee movement, and a
-            // fabricated fee FITID could never equal a custodian's.
+            // Preserve the original local identity tag for exact journal replay. The statement
+            // projection reads the broker activity ID when the provider supplied it for this fill.
+            // Order IDs recur across partial fills. Settlement dates require existing evidence.
             tags[ReconciliationQuantityTag] = FormatDecimal(evt.FilledQuantity);
             tags[ReconciliationExternalTransactionIdTag] = evt.FillId.ToString("D");
+            if (NormalizeOptional(evt.BrokerActivityId) is { } brokerActivityId)
+                tags["brokerActivityId"] = brokerActivityId;
         }
 
         if (NormalizeOptional(evt.RunId) is { } runId)

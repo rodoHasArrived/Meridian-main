@@ -24,12 +24,14 @@ import type {
   MetricsDiff,
   ParameterDiff,
   PositionDiffEntry,
+  ProviderProvenanceReceipt,
   PromotionDecisionResult,
   PromotionEvaluationResult,
   PromotionRecord,
   StrategyRunAcceptanceChecklistItem,
   StrategyRunEvidenceLoop,
   StrategyRunRecord,
+  StrategyRunReplayProvenance,
   StrategyRunReviewPacket,
   StrategyPlotToolPayload,
   StrategyWorkspaceResponse,
@@ -38,6 +40,13 @@ import type {
 } from "@/types";
 import { formatCount as formatCountValue, formatDecimal, formatMoney, formatNumber, formatRatioAsPercent as formatRatioAsPercentValue } from "@/lib/format";
 import { defaultGetRunEquityCurve } from "@/screens/strategy-screen.equity-paths.view-model";
+import {
+  buildRunComparisonOverlay, buildSelectionText, buildStrategyCommandStates, describeRunSelectionRefusal, RUN_COMPARE_MAX, toggleRunSelection,
+  type RunCurveInput
+} from "@/screens/strategy-screen.comparison.view-model";
+
+/** Badge text of the analytics panel when no analytics source is connected. */
+export const PLOT_TOOL_NOT_CONNECTED_LABEL = "Not connected";
 
 export type StrategyCommand = "compare" | "diff" | "history";
 export type StrategyPlotToolView = "workspace" | "statistics";
@@ -301,6 +310,8 @@ export interface StrategyRunDetailState {
   closeButtonLabel: string;
   closeButtonAriaLabel: string;
   biasDisclosure: import("@/types/workstation-6").BiasDisclosure | null;
+  replayProvenance: StrategyRunReplayProvenance | null;
+  replayEvidenceLoading: boolean;
   acceptanceCriteriaLabel: string;
   acceptanceCriteria: string[];
   acceptanceCriteriaStatus: StrategyRunEvidenceLoadStatus;
@@ -733,10 +744,17 @@ export function useStrategyRunLibraryViewModel(
 ) {
   const [selectedRun, setSelectedRun] = useState<StrategyRunRecord | null>(null);
   const [selectedRunEvidenceLoop, setSelectedRunEvidenceLoop] = useState<StrategyRunEvidenceLoop | null>(null);
+  const [selectedRunReplayProvenance, setSelectedRunReplayProvenance] = useState<StrategyRunReplayProvenance | null>(null);
+  const [selectedRunProvenance, setSelectedRunProvenance] = useState<ProviderProvenanceReceipt | null>(null);
   const [selectedRunAcceptanceChecklist, setSelectedRunAcceptanceChecklist] = useState<StrategyRunAcceptanceChecklistItem[]>([]);
   const [selectedRunEvidenceStatus, setSelectedRunEvidenceStatus] = useState<StrategyRunEvidenceLoadStatus>("idle");
   const [inspectedRunId, setInspectedRunId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  // Why the last run was not added to the comparison (the selection is full), until it changes.
+  const [selectionNotice, setSelectionNotice] = useState<string | null>(null);
+  // The selected runs' equity curves, loaded after a compare, for the overlay charts (UX Phase E).
+  const [comparisonCurves, setComparisonCurves] = useState<RunCurveInput[] | null>(null);
+  const [comparisonCurvesLoading, setComparisonCurvesLoading] = useState(false);
   const [comparison, setComparison] = useState<RunComparisonRow[]>([]);
   const [selectedComparisonRowId, setSelectedComparisonRowId] = useState<string | null>(null);
   const [runDiff, setRunDiff] = useState<RunDiff | null>(null);
@@ -762,7 +780,8 @@ export function useStrategyRunLibraryViewModel(
   const reviewPacketRequestId = useRef(0);
 
   const metrics = data?.metrics ?? [];
-  const runs = data?.runs ?? [];
+  // Stable while the payload is unchanged, so the callbacks that read it are not rebuilt each render.
+  const runs = useMemo(() => data?.runs ?? [], [data?.runs]);
 
   const state = useMemo(
     () => buildStrategyRunLibraryState({
@@ -773,6 +792,7 @@ export function useStrategyRunLibraryViewModel(
       inspectedRunId,
       selectedRun,
       selectedRunEvidenceLoop,
+      selectedRunReplayProvenance,
       selectedRunAcceptanceChecklist,
       selectedRunEvidenceStatus,
       comparison,
@@ -815,6 +835,7 @@ export function useStrategyRunLibraryViewModel(
       inspectedRunId,
       selectedRun,
       selectedRunEvidenceLoop,
+      selectedRunReplayProvenance,
       selectedRunAcceptanceChecklist,
       selectedRunEvidenceStatus,
       activePlotToolView,
@@ -828,6 +849,15 @@ export function useStrategyRunLibraryViewModel(
   );
 
   const toggleRun = useCallback((runId: string) => {
+    // A full selection refuses another run with a message; it never drops one silently.
+    const refusal = describeRunSelectionRefusal(selectedIds, runId, runs.find((run) => run.id === runId)?.strategyName ?? runId);
+    if (refusal) {
+      setSelectionNotice(refusal);
+      return;
+    }
+    setSelectionNotice(null);
+    setComparisonCurves(null);
+    setComparisonCurvesLoading(false);
     runScopedCommandRequestId.current += 1;
     promotionRequestId.current += 1;
     setInspectedRunId(runId);
@@ -846,13 +876,15 @@ export function useStrategyRunLibraryViewModel(
     setPromotionAcknowledged(false);
     setActionError(null);
     setActiveCommand((current) => current === "history" ? current : null);
-  }, []);
+  }, [runs, selectedIds]);
 
   const openRunDetail = useCallback((run: StrategyRunRecord) => {
     const requestId = reviewPacketRequestId.current + 1;
     reviewPacketRequestId.current = requestId;
     setSelectedRun(run);
+    setSelectedRunProvenance(null);
     setSelectedRunEvidenceLoop(null);
+    setSelectedRunReplayProvenance(null);
     setSelectedRunAcceptanceChecklist([]);
     setSelectedRunEvidenceStatus("loading");
 
@@ -863,7 +895,9 @@ export function useStrategyRunLibraryViewModel(
         }
 
         const evidenceLoop = packet.run.evidenceLoop ?? null;
+        setSelectedRunProvenance(packet.run.providerProvenance ?? null);
         setSelectedRunEvidenceLoop(evidenceLoop);
+        setSelectedRunReplayProvenance(packet.run.replayProvenance ?? null);
         setSelectedRunAcceptanceChecklist(packet.run.acceptanceChecklist ?? []);
         setSelectedRunEvidenceStatus("ready");
       })
@@ -892,7 +926,9 @@ export function useStrategyRunLibraryViewModel(
   const closeRunDetail = useCallback(() => {
     reviewPacketRequestId.current += 1;
     setSelectedRun(null);
+    setSelectedRunProvenance(null);
     setSelectedRunEvidenceLoop(null);
+    setSelectedRunReplayProvenance(null);
     setSelectedRunAcceptanceChecklist([]);
     setSelectedRunEvidenceStatus("idle");
   }, []);
@@ -901,13 +937,9 @@ export function useStrategyRunLibraryViewModel(
     if (!shouldCloseRunDetailForKey(key)) {
       return false;
     }
-    reviewPacketRequestId.current += 1;
-    setSelectedRun(null);
-    setSelectedRunEvidenceLoop(null);
-    setSelectedRunAcceptanceChecklist([]);
-    setSelectedRunEvidenceStatus("idle");
+    closeRunDetail();
     return true;
-  }, []);
+  }, [closeRunDetail]);
 
   const selectPlotToolViewForKey = useCallback((key: string) => {
     const nextView = nextPlotToolViewForKey(activePlotToolView, key);
@@ -937,8 +969,8 @@ export function useStrategyRunLibraryViewModel(
   }, [services]);
 
   const compareSelectedRuns = useCallback(async () => {
-    if (selectedIds.length !== 2) {
-      setActionError("Select exactly two runs before comparing.");
+    if (selectedIds.length < 2 || selectedIds.length > RUN_COMPARE_MAX) {
+      setActionError(`Select two to ${RUN_COMPARE_MAX} runs before comparing.`);
       return;
     }
 
@@ -961,6 +993,25 @@ export function useStrategyRunLibraryViewModel(
       setSelectedDiffParameterKey(null);
       setComparisonLoaded(true);
       setRunDiffLoaded(false);
+      // Overlay charts: each selected run's retained equity curve. A run whose curve fails is named
+      // beside the charts; the others still draw.
+      const getCurve = services.getRunEquityCurve;
+      if (getCurve) {
+        setComparisonCurvesLoading(true);
+        void Promise.allSettled(requestedRunIds.map((runId) => getCurve(runId))).then((results) => {
+          if (runScopedCommandRequestId.current !== requestId) return;
+          setComparisonCurves(results.map((result, index) => {
+            const runId = requestedRunIds[index]!;
+            const label = runs.find((run) => run.id === runId)?.strategyName ?? runId;
+            return result.status === "fulfilled" && Array.isArray(result.value?.points)
+              ? { runId, label, points: result.value.points, error: null }
+              : { runId, label, points: null, error: result.status === "rejected" && result.reason instanceof Error ? result.reason.message : "Equity curve unavailable." };
+          }));
+          setComparisonCurvesLoading(false);
+        });
+      } else {
+        setComparisonCurves(null);
+      }
     } catch (err) {
       if (runScopedCommandRequestId.current !== requestId) {
         return;
@@ -972,7 +1023,7 @@ export function useStrategyRunLibraryViewModel(
         setActiveCommand(null);
       }
     }
-  }, [selectedIds, services]);
+  }, [runs, selectedIds, services]);
 
   const diffSelectedRuns = useCallback(async () => {
     if (selectedIds.length !== 2) {
@@ -1070,7 +1121,7 @@ export function useStrategyRunLibraryViewModel(
       }
 
       if (!decision.success || !decision.newRunId) {
-        throw new Error(decision.reason || "The governed promotion approval did not retain a Paper target run.");
+        throw new Error(decision.reason || "The promotion approval did not retain a Paper target run.");
       }
 
       setPromotionDecision(decision);
@@ -1080,7 +1131,7 @@ export function useStrategyRunLibraryViewModel(
         return;
       }
 
-      setPromoteError(err instanceof Error ? err.message : "Governed Paper promotion approval failed.");
+      setPromoteError(err instanceof Error ? err.message : "Paper promotion approval failed.");
       setPromoteState("evaluated");
     } finally {
       promotionApprovalInFlightRef.current = false;
@@ -1108,8 +1159,20 @@ export function useStrategyRunLibraryViewModel(
     setPromotionAcknowledged(checked);
   }, []);
 
+  const clearRunSelection = useCallback(() => {
+    runScopedCommandRequestId.current += 1;
+    setSelectedIds([]); setSelectionNotice(null); setComparison([]); setComparisonLoaded(false);
+    setComparisonCurves(null); setComparisonCurvesLoading(false); setRunDiff(null); setRunDiffLoaded(false);
+  }, []);
+  const comparisonOverlay = useMemo(() => comparisonCurves ? buildRunComparisonOverlay(comparisonCurves) : null, [comparisonCurves]);
+
   return {
     ...state,
+    selectionNotice,
+    comparisonOverlay,
+    comparisonCurvesLoading,
+    clearRunSelection,
+    selectedRunProvenance,
     toggleRun,
     openRunDetail,
     closeRunDetail,
@@ -1142,6 +1205,7 @@ export function buildStrategyRunLibraryState({
   inspectedRunId,
   selectedRun,
   selectedRunEvidenceLoop = null,
+  selectedRunReplayProvenance = null,
   selectedRunAcceptanceChecklist = [],
   selectedRunEvidenceStatus = "idle",
   comparison,
@@ -1171,6 +1235,7 @@ export function buildStrategyRunLibraryState({
   inspectedRunId?: string | null;
   selectedRun: StrategyRunRecord | null;
   selectedRunEvidenceLoop?: StrategyRunEvidenceLoop | null;
+  selectedRunReplayProvenance?: StrategyRunReplayProvenance | null;
   selectedRunAcceptanceChecklist?: StrategyRunAcceptanceChecklistItem[];
   selectedRunEvidenceStatus?: StrategyRunEvidenceLoadStatus;
   comparison: RunComparisonRow[];
@@ -1201,6 +1266,7 @@ export function buildStrategyRunLibraryState({
     ? runs.find((run) => run.id === resolvedInspectedRunId) ?? null
     : null;
   const hasTwoRuns = selectedIds.length === 2;
+  const canCompareSelection = selectedIds.length >= 2 && selectedIds.length <= RUN_COMPARE_MAX;
   const hasOneBacktestRun = selectedIds.length === 1 &&
     selectedRuns[0]?.mode === "backtest" &&
     selectedRuns[0]?.status === "Completed";
@@ -1287,7 +1353,8 @@ export function buildStrategyRunLibraryState({
           selectedRun,
           selectedRunEvidenceLoop,
           selectedRunEvidenceStatus,
-          selectedRunAcceptanceChecklist)
+          selectedRunAcceptanceChecklist,
+          selectedRunReplayProvenance)
       : null,
     comparison,
     comparisonTable,
@@ -1310,7 +1377,7 @@ export function buildStrategyRunLibraryState({
     showPromotionHistoryPanel: promotionHistoryLoaded || promotionHistory.length > 0,
     activeCommand,
     actionError,
-    canCompare: hasTwoRuns && !busy,
+    canCompare: canCompareSelection && !busy,
     canDiff: hasTwoRuns && !busy,
     canLoadPromotionHistory: !busy,
     canPromote: hasOneBacktestRun && !busy && !promoteBusy && promoteState !== "done",
@@ -1328,9 +1395,11 @@ export function buildStrategyRunLibraryState({
     selectionText: buildSelectionText(selectedRuns),
     selectionDetail: hasTwoRuns
       ? "Ready to compare or diff the selected run pair."
-      : hasOneBacktestRun
-        ? "Select Promote to Paper to evaluate this run for paper trading."
-        : "Select two runs to enable compare and diff commands.",
+      : canCompareSelection
+        ? `Ready to compare ${selectedIds.length} runs. Diff compares exactly two.`
+        : hasOneBacktestRun
+          ? "Select Promote to Paper to evaluate this run for paper trading."
+          : `Select two to ${RUN_COMPARE_MAX} runs to compare; diff needs exactly two.`,
     evidenceAction: buildStrategyEvidenceAction(selectedRuns[0] ?? runs[0] ?? null),
     compareButtonLabel: commandStates.compare.label,
     diffButtonLabel: commandStates.diff.label,
@@ -1439,8 +1508,8 @@ export function buildPromotionPanelState({
       title: `Paper promotion approved - target run ${promotionDecision.newRunId}`,
       targetRunId: promotionDecision.newRunId,
       detail: `${promotionDecision.reason} Durable promotion ${promotionDecision.promotionId ?? "record"} is retained with audit ${promotionDecision.auditReference ?? "pending"}.`,
-      actionLabel: "Open governed Trading record",
-      actionAriaLabel: `Open governed Trading promotion record for target run ${promotionDecision.newRunId}`,
+      actionLabel: "Open Trading record",
+      actionAriaLabel: `Open Trading promotion record for target run ${promotionDecision.newRunId}`,
       actionHref: appendRouteQuery(`${workspacePath("trading")}#promotion-gate-panel`, {
         runId: promotionDecision.newRunId
       })
@@ -1455,98 +1524,6 @@ export function buildPromotionPanelState({
     approval,
     showApprovalForm: (promoteState === "evaluated" || promoteState === "approving") && promotionEval?.isEligible === true,
     showIneligibleDismiss: promoteState === "evaluated" && promotionEval?.isEligible === false
-  };
-}
-
-export function buildStrategyCommandStates({
-  selectedRuns,
-  hasTwoRuns,
-  hasOneBacktestRun,
-  busy,
-  activeCommand,
-  promoteState,
-  promoteBusy
-}: {
-  selectedRuns: StrategyRunRecord[];
-  hasTwoRuns: boolean;
-  hasOneBacktestRun: boolean;
-  busy: boolean;
-  activeCommand: StrategyCommand | null;
-  promoteState: PromoteState;
-  promoteBusy: boolean;
-}): {
-  promotionHistory: StrategyCommandState;
-  compare: StrategyCommandState;
-  diff: StrategyCommandState;
-  promote: StrategyCommandState;
-} {
-  const pairLabel = selectedRuns.length === 2
-    ? `${formatText(selectedRuns[0].strategyName)} and ${formatText(selectedRuns[1].strategyName)}`
-    : null;
-  const selectedRun = selectedRuns[0] ?? null;
-  const pairDisabledReason = busy
-    ? "Wait for the current Strategy command to finish."
-    : hasTwoRuns
-      ? null
-      : `Select exactly two runs before using this command. ${selectedRuns.length} selected.`;
-  const promoteLabel = promoteState === "evaluating"
-    ? "Evaluating..."
-    : promoteState === "approving"
-      ? "Approving promotion..."
-      : promoteState === "done"
-        ? "Promotion approved"
-        : "Promote to Paper";
-  const promoteDisabledReason = busy
-    ? "Wait for the current Strategy command to finish."
-    : promoteBusy
-      ? "Paper-promotion workflow is already running."
-      : promoteState === "done"
-        ? "A durable Paper promotion was already approved for this run."
-        : hasOneBacktestRun
-          ? null
-          : selectedRuns.length === 1
-            ? "Select one completed backtest run before promoting to paper."
-            : `Select one completed backtest run before promoting to paper. ${selectedRuns.length} selected.`;
-
-  return {
-    promotionHistory: {
-      label: activeCommand === "history" ? "Loading history..." : "Promotion history",
-      ariaLabel: activeCommand === "history" ? "Promotion history: loading" : "Promotion history",
-      disabled: busy,
-      disabledReason: busy ? "Wait for the current Strategy command to finish." : null,
-      busy: activeCommand === "history"
-    },
-    compare: {
-      label: activeCommand === "compare" ? "Comparing..." : "Compare 2 runs",
-      ariaLabel: activeCommand === "compare"
-        ? `Comparing selected runs: ${pairLabel ?? "current selection"}`
-        : pairLabel
-          ? `Compare 2 runs: ${pairLabel}`
-          : "Compare 2 runs unavailable",
-      disabled: !hasTwoRuns || busy,
-      disabledReason: pairDisabledReason,
-      busy: activeCommand === "compare"
-    },
-    diff: {
-      label: activeCommand === "diff" ? "Diffing..." : "Diff 2 runs",
-      ariaLabel: activeCommand === "diff"
-        ? `Diffing selected runs: ${pairLabel ?? "current selection"}`
-        : pairLabel
-          ? `Diff 2 runs: ${pairLabel}`
-          : "Diff 2 runs unavailable",
-      disabled: !hasTwoRuns || busy,
-      disabledReason: pairDisabledReason,
-      busy: activeCommand === "diff"
-    },
-    promote: {
-      label: promoteLabel,
-      ariaLabel: selectedRun
-        ? `${promoteLabel}: evaluate ${formatText(selectedRun.strategyName)} for paper trading`
-        : `${promoteLabel} unavailable`,
-      disabled: !hasOneBacktestRun || busy || promoteBusy || promoteState === "done",
-      disabledReason: promoteDisabledReason,
-      busy: promoteBusy
-    }
   };
 }
 
@@ -1597,10 +1574,10 @@ export function buildPromotionApprovalForm({
     acknowledged
   });
   const acknowledgementDisabledReason = isApproving
-    ? "Governed promotion approval is already running; wait before changing acknowledgement."
+    ? "Promotion approval is already running; wait before changing acknowledgement."
     : null;
   const cancelDisabledReason = isApproving
-    ? "Governed promotion approval is already running; wait for the durable decision before closing review."
+    ? "Promotion approval is already running; wait for the durable decision before closing review."
     : null;
   const acknowledgementDisabledReasonId = acknowledgementDisabledReason
     ? "promote-paper-approval-acknowledgement-disabled-reason"
@@ -1619,7 +1596,7 @@ export function buildPromotionApprovalForm({
     submitLabel: isApproving ? "Approving Paper promotion..." : "Approve Paper promotion",
     submitAriaLabel: disabledReason
       ? `Approve Paper promotion unavailable: ${disabledReason}`
-      : "Approve governed Paper promotion from selected strategy run",
+      : "Approve Paper promotion from selected strategy run",
     cancelLabel: "Cancel",
     cancelAriaLabel: cancelDisabledReason ?? "Cancel Paper promotion review",
     cancelDisabled: isApproving,
@@ -1637,7 +1614,7 @@ function buildPromotionApprovalFormDisabledReason({
   acknowledged: boolean;
 }): string | null {
   if (promoteState === "approving") {
-    return "Governed promotion approval is already running.";
+    return "Promotion approval is already running.";
   }
 
   if (promoteState !== "evaluated") {
@@ -1645,7 +1622,7 @@ function buildPromotionApprovalFormDisabledReason({
   }
 
   if (!eligible) {
-    return "The selected strategy run is not eligible for governed Paper promotion.";
+    return "The selected strategy run is not eligible for Paper promotion.";
   }
 
   if (!acknowledged) {
@@ -1809,7 +1786,7 @@ function buildPlotToolStateFromApiOrFallback(
         analyticsEvidenceStatus: status === "Unavailable" ? "Unavailable" : "Unverified",
         studies: Array.isArray(plotToolFromApi.studies) ? plotToolFromApi.studies as StrategyPlotStudyItem[] : [],
         workspace: { ...empty.workspace, title: "Statistical observations unavailable", description: detail,
-          studyTableEmptyText: detail, statusBadgeLabel: "ANALYTICS UNAVAILABLE", metaItems: ["Statistical evidence unavailable"] },
+          studyTableEmptyText: detail, statusBadgeLabel: "Analytics unavailable", metaItems: ["Statistical evidence unavailable"] },
         statistics: { ...empty.statistics, title: "Statistical evidence unavailable", description: detail }
       };
     }
@@ -1839,16 +1816,16 @@ function buildEmptyPlotToolState(): StrategyPlotToolState {
     analyticsEvidenceStatus: "Unavailable",
     studies: [],
     workspace: {
-      eyebrow: "Strategy · PlotTool",
-      title: "PlotTool catalog not connected",
-      description: "Strategy analytics are not connected. Connect a strategy analytics source to inspect notebooks, scatter analysis, or statistics.",
-      statusBadgeLabel: "NOT CONNECTED",
+      eyebrow: "Strategy · Analytics",
+      title: "Strategy analytics not connected",
+      description: "Connect a strategy analytics source to inspect notebooks, scatter analysis, or statistics.",
+      statusBadgeLabel: PLOT_TOOL_NOT_CONNECTED_LABEL,
       statusBadgeVariant: "outline",
       expression: "Strategy analytics not connected",
       toolbarPills: ["No catalog", "No samples", "No overlay", "No diff"],
       notebookToolbarAriaLabel: "Strategy notebook filters",
       notebookToolbarItems: [],
-      studyTableEmptyText: "No retained PlotTool studies are available. Connect a governed PlotTool catalog before selecting notebooks.",
+      studyTableEmptyText: "No retained PlotTool studies are available. Connect an approved PlotTool catalog before selecting notebooks.",
       studyTableCaption: "PlotTool notebooks are available after the Strategy endpoint returns retained studies.",
       selectedStudyEmptyText: "No PlotTool study is selected.",
       metaItems: ["Catalog not connected", "0 obs"],
@@ -1888,12 +1865,12 @@ function buildEmptyPlotToolState(): StrategyPlotToolState {
         }
       ],
       consoleTitle: "Expression editor unavailable",
-      consoleBody: "Connect a governed formula catalog before authoring or previewing PlotTool expressions here.",
+      consoleBody: "Connect an approved formula catalog before authoring or previewing PlotTool expressions here.",
       overlayTitle: "Meridian overlays",
       overlayItems: [
         "Notebook coverage: no retained PlotTool studies.",
-        "Evidence posture: unavailable until strategy analytics are connected.",
-        "Diff posture: unavailable until strategy analytics are connected."
+        "Evidence status: unavailable until strategy analytics are connected.",
+        "Diff status: unavailable until strategy analytics are connected."
       ]
     },
     statistics: {
@@ -1971,7 +1948,7 @@ export function buildPlotToolState({
     { id: "return", label: "Total return", value: formatRatioAsPercentValue(parsedReturn, STRATEGY_SIGNED_RETURN), benchmark: "Run linked" },
     { id: "sharpe", label: "Sharpe ratio", value: formatNullableNumber(parsedSharpe, 3), benchmark: "Operator review" },
     { id: "drawdown", label: "Max drawdown", value: formatRatioAsPercentValue(maxDrawdown, STRATEGY_SIGNED_RETURN), benchmark: "Distribution tail" },
-    { id: "promotion", label: "Promotion state", value: promotionCue, benchmark: "Strategy posture" },
+    { id: "promotion", label: "Promotion state", value: promotionCue, benchmark: "Strategy status" },
     { id: "evidence", label: "Evidence pack", value: evidenceCue, benchmark: "Ledger / audit" }
   ];
   const sampleRows = plotToolSampleRows;
@@ -2038,9 +2015,9 @@ export function buildPlotToolState({
       studySummary: [
         { id: "primary", label: "Primary notebook", value: studyName },
         { id: "companion", label: "Pair target", value: companionName ?? "Select a second run" },
-        { id: "promotion", label: "Promotion posture", value: promotionCue },
+        { id: "promotion", label: "Promotion status", value: promotionCue },
         { id: "evidence", label: "Evidence pack", value: evidenceCue },
-        { id: "diff", label: "Diff posture", value: diffCue },
+        { id: "diff", label: "Diff status", value: diffCue },
         { id: "refresh", label: "Last refresh", value: formatText(activeRun?.lastUpdated ?? latestObservation.timestamp) }
       ],
       legendItems: [
@@ -2076,19 +2053,19 @@ export function buildPlotToolState({
           id: "review",
           label: "Review queue",
           value: reviewMetric,
-          detail: promotionCue === "Unavailable" ? "Promotion posture pending." : promotionCue,
+          detail: promotionCue === "Unavailable" ? "Promotion status pending." : promotionCue,
           tone: reviewMetric === "0" ? "success" : "warning"
         }
       ],
       consoleTitle: "Expression editor",
       consoleBody: companionName
-        ? `Meridian is staging ${chartStudyLabel} for comparison. Pair evidence, diff results, and promotion posture stay aligned with the selected run pair.`
+        ? `Meridian is staging ${chartStudyLabel} for comparison. Pair evidence, diff results, and promotion status stay aligned with the selected run pair.`
         : "Select a second run to promote this notebook into pair analysis. Strategy keeps compare, diff, and promotion evidence attached to the PlotTool console.",
       overlayTitle: "Meridian overlays",
       overlayItems: [
         `Notebook coverage: ${runs.length} retained ${runs.length === 1 ? "study" : "studies"} in Strategy.`,
-        `Evidence posture: ${evidenceCue}`,
-        `Diff posture: ${diffCue}`
+        `Evidence status: ${evidenceCue}`,
+        `Diff status: ${diffCue}`
       ]
     },
     statistics: {
@@ -2349,7 +2326,7 @@ export function buildComparisonDetail(
     eyebrow: "Comparison evidence",
     title: row.strategyName,
     subtitle: row.runId,
-    description: `${row.statusText} ${row.modeText} run with ${row.promotionStateText.toLowerCase()} posture.`,
+    description: `${row.statusText} ${row.modeText} run with ${row.promotionStateText.toLowerCase()} promotion status.`,
     statusLabel: row.statusText,
     statusVariant: row.statusBadgeVariant,
     fields: [
@@ -2814,7 +2791,8 @@ export function buildRunDetail(
   run: StrategyRunRecord,
   evidenceLoop: StrategyRunEvidenceLoop | null = null,
   evidenceStatus: StrategyRunEvidenceLoadStatus = "idle",
-  acceptanceChecklist: StrategyRunAcceptanceChecklistItem[] = []
+  acceptanceChecklist: StrategyRunAcceptanceChecklistItem[] = [],
+  replayProvenance: StrategyRunReplayProvenance | null = null
 ): StrategyRunDetailState {
   const title = formatText(run.strategyName);
   const modeLabel = formatText(run.mode).toUpperCase();
@@ -2865,6 +2843,8 @@ export function buildRunDetail(
     closeButtonLabel: "Close",
     closeButtonAriaLabel: `Close ${title} run detail`,
     biasDisclosure: run.biasDisclosure ?? null,
+    replayProvenance,
+    replayEvidenceLoading: evidenceStatus === "loading",
     acceptanceCriteriaLabel: "Operator acceptance requirements",
     acceptanceCriteria,
     acceptanceCriteriaStatus,
@@ -2931,28 +2911,10 @@ function resolveInspectedRunId(
   return selectedRuns[0]?.id ?? runs[0]?.id ?? null;
 }
 
-export function toggleRunSelection(currentIds: string[], runId: string): string[] {
-  if (currentIds.includes(runId)) {
-    return currentIds.filter((id) => id !== runId);
-  }
-
-  return [...currentIds, runId].slice(-2);
-}
+export { buildStrategyCommandStates, RUN_COMPARE_MAX, toggleRunSelection } from "@/screens/strategy-screen.comparison.view-model";
 
 export function shouldCloseRunDetailForKey(key: string): boolean {
   return key === "Escape" || key === "Esc";
-}
-
-function buildSelectionText(selectedRuns: StrategyRunRecord[]): string {
-  if (selectedRuns.length === 0) {
-    return "No runs selected";
-  }
-
-  if (selectedRuns.length === 1) {
-    return `Selected ${selectedRuns[0].strategyName}`;
-  }
-
-  return `${selectedRuns[0].strategyName} vs ${selectedRuns[1].strategyName}`;
 }
 
 function buildPlotExpression(
@@ -3060,16 +3022,14 @@ function ensurePlotToolWorkspaceChartState(workspace: StrategyPlotWorkspaceState
 }
 
 function ensurePlotToolStatisticsChartState(statistics: StrategyPlotStatisticsState): StrategyPlotStatisticsState {
-  if (statistics.distributionChart) {
-    return statistics;
-  }
-
   const distributionBars = statistics.distributionBars ?? [];
 
   return {
     ...statistics,
     distributionBars,
-    distributionChart: buildPlotToolDistributionChartState(distributionBars)
+    distributionChart: statistics.distributionChart ?? buildPlotToolDistributionChartState(distributionBars),
+    momentsTable: statistics.momentsTable ?? buildPlotToolMomentsTable(statistics.moments ?? []),
+    sampleTable: statistics.sampleTable ?? buildPlotToolSampleTable(statistics.sampleRows ?? [])
   };
 }
 

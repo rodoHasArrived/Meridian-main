@@ -2,17 +2,37 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-20
+**Reviewed:** 2026-11-14
 **Scope:** the six evidence-gated P0 rows in the
 [production-readiness tracker](../product/implementation-todo-list.md) — what evidence exists,
 what an agent can still generate, and exactly which decisions and activations require a human.
 The `PRD-015` recovery evidence gate is shared with the recovery portion of open P1 row `PRD-111`.
 
-The release-gate snapshot shows 12 of 18 P0 rows implementation-complete, 6 evidence-gated, and
-0 production-certified. This ledger is the working surface for closing the 6: it records hosted
+The tracker retains 14 of 21 P0 rows historically implementation-complete, 6 evidence-gated,
+1 implementation-in-progress (`PRD-002`), and 0 production-certified. This ledger is the working surface for closing the 6: it records hosted
 evidence as it is minted (run links, artifacts, dates), keeps the remaining human actions
 explicit, and must be refreshed whenever a hosted run creates or invalidates evidence. It does
 not change the tracker's release-gate semantics; the tracker stays authoritative for row state.
+
+## First-Release Train And Scope
+
+The release coordinator is `Desktop Installer Release`. Its reusable certification dependency
+owns PostgreSQL/zero-skip, dependency, recovery-drill and documentation evidence; the coordinator
+also runs published-host smoke and signed installer lifecycle certification at the event SHA.
+It emits the completed evidence bundle and `release-candidate-evidence.json` only after upstream
+jobs and the six-row P0 checker pass; failures retain upstream receipts and readiness summaries,
+without a certified candidate JSON or completed bundle upload.
+Follow [Deployment and Packaging Operations](../operators/deployment-packaging.md#one-commit-candidate-train)
+for rehearsal, signing activation and the green-`main` `v0.1.0-rc.2` tag procedure.
+
+The bounded first envelope is **Windows 11 x64 only** for numeric version `0.1.0`, including
+release candidates, under [ADR-019's scope amendment](../adr/019-production-support-matrix-and-deployment-posture.md#first-release-architecture-scope-2026-11-14)
+and `DEC-PRD014-FIRST-ENVELOPE-001`. Later versions retain native x64 and ARM64 requirements.
+The bounded MSIX policy maps `0.1.0-rc.N` to `0.1.0.N` (`N=1..65534`) and stable `0.1.0`
+to `0.1.0.65535`, preserving an installable RC-to-stable upgrade path.
+Historical dual-architecture rehearsal receipts remain historical evidence. Missing signing,
+recovery-objective acceptance or required-check activation remains a blocker; wiring this train
+does not manufacture those decisions or close `PRD-002`.
 
 ## Ledger
 
@@ -20,7 +40,7 @@ not change the tracker's release-gate semantics; the tracker stays authoritative
 | --- | --- | --- | --- | --- |
 | `PRD-000` | Core-team approval of ADR-019/ADR-020; clean installed publish/start/update/rollback receipts from the release commit | ADR-019 and ADR-020 are complete and implementation-linked; posture guard, lifecycle control plane, and receipts have focused proof | **Signed 2026-10-20** (`DEC-PRD000-SUPPORT-MATRIX-001`); ADR-019 now also requires and implements a non-Windows platform fail-closed | **Signed-tag receipts** from a release-candidate tag run: `v0.1.0-rc.1` (pushed 2026-10-21 on `c51c5d8d`) failed closed at eligibility and its tree's `verify-docs` lane is red, so the receipts come from `v0.1.0-rc.2` on a green `main` head once the signing secrets exist (see [PRD-014 activation](#prd-014-signing-secret-and-arm64-runner-activation)) |
 | `PRD-013` | Successful `web-workstation`/`win-x64` hosted `Publish Smoke` run attached to the release commit | Workflow starts the exact published artifact with required auth and dedicated PostgreSQL, then fetches startup/health/shell/assets. Eight hosted attempts drove out the full defect chain (publish contract, PostgreSQL discovery, elevated initdb ACLs, exit mutex affinity, unbounded pg_ctl pipe drain, first-boot budgets, lifecycle-bridge DI); every fix is receipt-evidenced | **First green run exists:** [run #15 / 30347353295](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30347353295) on candidate `d64506650` (2026-07-28) — publish, install, supervised dedicated-database startup, and all endpoint probes passed | Re-dispatch on the frozen release commit and keep that run link here |
-| `PRD-014` | Protected signing secret, native Windows ARM64 runner, prior release artifact, green tag workflow | Installer release creates SHA-256 checksums, SPDX SBOMs, GitHub attestations; tag release blocks on N-1 install/launch/update/repair/rollback/uninstall receipts for x64 and ARM64 | `v0.1.0-rc.1` pushed 2026-10-21 on `c51c5d8d` (merge of PR #3239); [tag run 39630903593](https://github.com/rodoHasArrived/Meridian-main/actions/runs/39630903593) failed closed at eligibility with `signing-secrets-unavailable` (both signing secrets empty); nothing built or published. `c51c5d8d`'s own `Meridian CI` is red on `verify-docs` (source-hash drift), so that tag cannot certify even with secrets | **Provision `MDC_SIGNING_CERT_PFX_BASE64` / `MDC_SIGNING_CERT_PASSWORD` in `desktop-release-signing`, then cut `v0.1.0-rc.2` from a green `main` head (green again since `6c961c09`)** (see [PRD-014 activation](#prd-014-signing-secret-and-arm64-runner-activation)) |
+| `PRD-014` | Protected signing secret, native lifecycle receipts for the declared envelope, successful predecessor lookup, green tag workflow | Installer release creates SHA-256 checksums, SPDX SBOMs, GitHub attestations; tag release blocks on install/launch/update/repair/rollback/uninstall receipts for every supported architecture (x64 only for v0.1.0; first-release N-1 may be explicitly not applicable) | `v0.1.0-rc.1` pushed 2026-10-21 on `c51c5d8d` (merge of PR #3239); [tag run 39630903593](https://github.com/rodoHasArrived/Meridian-main/actions/runs/39630903593) failed closed at eligibility with `signing-secrets-unavailable` (both signing secrets empty); nothing built or published. `c51c5d8d`'s own `Meridian CI` is red on `verify-docs` (source-hash drift), so that tag cannot certify even with secrets | **Provision `MDC_SIGNING_CERT_PFX_BASE64` / `MDC_SIGNING_CERT_PASSWORD` in `desktop-release-signing`, then cut `v0.1.0-rc.2` from a green `main` head (green again since `6c961c09`)** (see [PRD-014 activation](#prd-014-signing-secret-and-arm64-runner-activation)) |
 | `PRD-015` | Dated release-commit `production-recovery-drill-*` artifact, bound verification/reconciliation/acceptance evidence, and a separate independently evaluated receipt with `objectiveStatus: proven` under RPO 3600s/RTO 7200s | Schema-version-2 producer separates `backupDurationSeconds`/`restoreDurationSeconds` from objective measurements and records verified-point/loss milestones. The standalone validator recomputes point age and declared-loss-to-acceptance time; automation supplies no reconciliation or operator acceptance. | Green candidate archive round-trip receipts exist, including [first all-green certification run #19 / 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407) on `b3bd557876523b81a2791f4bfd814647035f389a`. Historical receipts prove archive operations/state probes only; no accepted recovery-objective evidence is recorded. | **Complete recovery and record operations-owner acceptance/review** on the frozen release commit; the row stays evidence-gated (see [PRD-015 review](#prd-015-recovery-drill-operator-review)) |
 | `PRD-016` | Green hosted `Production Certification` run on the release commit; repository administrator activates it as a required release check | The workflow runs deterministic PostgreSQL integrations with Cobertura coverage, a zero-skip TRX gate, post-test schema capture, and NuGet/npm scans. Candidate `b3bd557876523b81a2791f4bfd814647035f389a` completed the ordered harness repair without narrowing either integration filter | **First all-green candidate run:** [#19 / 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407) on 2026-08-05 — `Meridian.Tests` 781/0/0, Direct Lending 7/0/0, zero-skip aggregate 788/0/0 with `certifiable: true`, and all four jobs green. The successful post-test schema capture produced header-only table and migration-ledger inventories after teardown, proving cleanup rather than substantive migrated-schema coverage | Re-dispatch on the frozen release commit, then **required-check activation** by a repository administrator (see [PRD-016 activation](#prd-016-required-check-activation)) |
 | `PRD-017` | Local docs/hash validators and the hosted documentation evidence job green on the final candidate commit | `run-docs-automation.py --profile core` plus drift rejection runs inside `Production Certification` | The same-commit documentation job passed in [run #19 / 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407) on candidate `b3bd557876523b81a2791f4bfd814647035f389a` | None beyond keeping the frozen release commit drift-free (agent-runnable; commands below) |
@@ -143,9 +163,12 @@ drain/flush ordering, and lifecycle receipts.
    (base64 PFX) and `MDC_SIGNING_CERT_PASSWORD`. The workflow only releases the password on
    `refs/tags/v*`; store both as repository or environment secrets protected by a tag ruleset
    so only release tags can read them.
-2. ~~Register a native Windows ARM64 self-hosted runner.~~ **No longer required (2026-08-19).**
-   The repository is public, so the GitHub-hosted `windows-11-arm` label is available at no cost;
-   the ARM64 certification leg now targets it directly.
+2. **First-envelope scope decision (2026-11-14):** v0.1.0 and its release candidates support
+   Windows x64 only. ARM64 is formally excluded by the ADR-019 amendment and
+   `DEC-PRD014-FIRST-ENVELOPE-001`, rather than accepted through emulation or a packaging-only
+   check. Later releases retain native x64 and ARM64 certification. Historical ARM64 rehearsals
+   used the hosted `windows-11-arm` label; current capacity and same-commit signed lifecycle
+   evidence are still required before a later envelope can claim ARM64 support.
 3. ~~Ensure the prior (N-1) release artifact is available.~~ **No longer required for the first
    release (2026-08-19).** The lane derives first-release mode from repository state: when no
    published predecessor exists, the update and rollback legs are recorded as `not-applicable`

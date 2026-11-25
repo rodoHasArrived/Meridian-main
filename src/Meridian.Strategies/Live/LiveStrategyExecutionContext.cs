@@ -88,24 +88,61 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
             },
             StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// Signed market value from what <see cref="Meridian.Execution.Sdk.IPosition"/> exposes: open cost plus unrealised
+    /// P&amp;L equals quantity × multiplier × mark for an ordinary position. A variation-margin
+    /// position reports only its unsettled change as unrealised, so this approximates its exposure.
+    /// </summary>
+    private static decimal SignedMarketValue(Meridian.Execution.Sdk.IPosition position)
+    {
+        var (quantity, multiplier) = position is ExecutionPosition execution
+            ? (execution.ExactQuantity, execution.ContractMultiplier)
+            : ((decimal)position.Quantity, 1m);
+        return (quantity * multiplier * position.AverageCostBasis) + position.UnrealizedPnl;
+    }
+
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, FinancialAccountSnapshot> Accounts
     {
         get
         {
             var positions = Positions;
+            var longMarketValue = 0m;
+            var shortMarketValue = 0m;
+            var holdsShort = false;
+            foreach (var position in _portfolio.Positions.Values)
+            {
+                var value = SignedMarketValue(position);
+                if (position.Quantity < 0)
+                {
+                    holdsShort = true;
+                    shortMarketValue += value;
+                }
+                else
+                {
+                    longMarketValue += value;
+                }
+            }
+
+            var cash = _portfolio.Cash;
             var snapshot = new FinancialAccountSnapshot(
                 AccountId: _defaultAccountId,
                 DisplayName: "Live Session Account",
                 Kind: FinancialAccountKind.Brokerage,
                 Institution: Gateway.BrokerName,
-                Cash: _portfolio.Cash,
-                MarginBalance: 0m,
-                LongMarketValue: 0m,
-                ShortMarketValue: 0m,
+                Cash: cash,
+                MarginBalance: Math.Min(0m, cash),
+                LongMarketValue: longMarketValue,
+                ShortMarketValue: shortMarketValue,
                 Equity: _portfolio.PortfolioValue,
                 Positions: positions,
-                Rules: new FinancialAccountRules(AllowMargin: false, AllowShortSelling: false));
+                // The order gateway publishes no short-selling or margin capability, so infer
+                // what the state proves: margin-aware portfolios report buying power above cash,
+                // and an account holding a short evidently permits short selling. Otherwise stay
+                // conservative and report the capability as unavailable.
+                Rules: new FinancialAccountRules(
+                    AllowMargin: _portfolio.BuyingPower > cash,
+                    AllowShortSelling: holdsShort));
             return new Dictionary<string, FinancialAccountSnapshot>(StringComparer.OrdinalIgnoreCase)
             {
                 [_defaultAccountId] = snapshot

@@ -1,12 +1,13 @@
 import { exportTableQuery } from "@/lib/table-workbench";
 import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
-import { RefreshCcw, Search, ShieldAlert } from "lucide-react";
+import { Search, ShieldAlert } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { CorporateActionCalendarPanel } from "@/screens/corporate-action-calendar";
 import { ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -41,7 +42,7 @@ const queueColumns: TableWorkbenchColumn<CorporateActionInboxRowModel>[] = [
           <Badge variant={row.tone === "warning" ? "warning" : "outline"}>{row.actionType}</Badge>
           <span className="font-mono font-semibold text-foreground">{row.ticker}</span>
         </span>
-        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.securityId}</span>
+        <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">{row.securityId}</span>
       </span>
     )
   },
@@ -63,7 +64,7 @@ const queueColumns: TableWorkbenchColumn<CorporateActionInboxRowModel>[] = [
     render: (row) => (
       <span className="block">
         <span className="block text-foreground">{row.statusLabel}</span>
-        <span className="block max-w-48 truncate font-mono text-[11px] text-muted-foreground" title={row.caseIdLabel}>
+        <span className="block max-w-48 truncate font-mono text-xs text-muted-foreground" title={row.caseIdLabel}>
           {row.caseIdLabel}
         </span>
       </span>
@@ -87,7 +88,7 @@ const queueColumns: TableWorkbenchColumn<CorporateActionInboxRowModel>[] = [
     render: (row) => (
       <span className="block">
         <Badge variant={row.tone === "warning" ? "warning" : "outline"}>{row.conflictLabel}</Badge>
-        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.versionLabel}</span>
+        <span className="mt-1 block font-mono text-xs text-muted-foreground">{row.versionLabel}</span>
       </span>
     )
   },
@@ -267,7 +268,7 @@ function LotPreview({ rows }: { rows: CorporateActionLotPreview[] }) {
 
 function JournalPreview({ rows }: { rows: CorporateActionJournalPreview[] }) {
   if (rows.length === 0) {
-    return <UnavailableState title="Journal preview unavailable" reason="No balanced, versioned journal projection was supplied. Accepting the canonical fact does not post accounting." />;
+    return <UnavailableState title="Journal preview unavailable" reason="No balanced, versioned journal preview was supplied. Accepting the canonical fact does not post accounting." />;
   }
   return (
     <div className="overflow-x-auto">
@@ -547,17 +548,7 @@ export function CorporateActionInboxRegion({ panel }: { panel: CorporateActionIn
             </div>
             <div className="flex flex-wrap gap-2">
               <Button type="button" variant="outline" size="sm" disabled disabledReason={panel.bulkAcceptDisabledReason}>Bulk accept</Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => void panel.refresh()}
-                disabled={panel.loading}
-                aria-label="Refresh corporate action case queue"
-              >
-                <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-                <span className="ml-1.5">{panel.loading ? "Refreshing…" : "Refresh"}</span>
-              </Button>
+              <PanelReload reload={() => panel.pendingAcceptance || panel.acceptingKey ? undefined : panel.refresh()} failed={Boolean(panel.error)} busy={panel.loading} what="corporate action case queue" />
             </div>
           </div>
           <ToolbarStrip

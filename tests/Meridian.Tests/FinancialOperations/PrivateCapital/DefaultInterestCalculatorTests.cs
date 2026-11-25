@@ -40,6 +40,22 @@ public sealed class DefaultInterestCalculatorTests
         interest.Should().Be(Math.Round(1_000_000m * 0.10m * 21m / 365m, 2, MidpointRounding.ToEven));
     }
 
+    [Theory]
+    [InlineData("JPY", 0)]
+    [InlineData("BHD", 3)]
+    [InlineData("USD", 2)]
+    public void SimpleInterest_RoundsToTheCurrencysMinorUnits(string currency, int decimals)
+    {
+        // 1,234,567 x 7.3% x 17/365 = 4,197.6... in any currency; only the precision differs.
+        var exact = 1_234_567m * 0.073m * 17m / 365m;
+
+        var interest = DefaultInterestCalculator.ComputeSimpleInterest(
+            1_234_567m, 0.073m, new DateOnly(2026, 4, 10), new DateOnly(2026, 4, 27),
+            DefaultInterestConvention.Actual365Fixed, currency);
+
+        interest.Should().Be(Math.Round(exact, decimals, MidpointRounding.AwayFromZero));
+    }
+
     [Fact]
     public void DefaultDetected_AfterGracePeriod()
     {

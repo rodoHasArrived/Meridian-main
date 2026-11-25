@@ -73,6 +73,7 @@ const fixtureProfiles: StatementMappingProfile[] = [
 ];
 
 const fixturePreview: StatementImportPreview = {
+  reviewId: "review-synthetic-1",
   connectorId: "generic-csv",
   connectorDisplayName: "Generic CSV",
   profileId: "builtin-generic",
@@ -606,4 +607,82 @@ describe("useStatementImportPanelViewModel", () => {
     expect(result.current.commitOutcome).toBeNull();
     expect(result.current.commitError?.summary).toContain("Blocking parse errors remain.");
   });
+});
+
+describe("retained import review decisions", () => {
+  it("blocks a changed scope before the debounced preview and sends the retained row reason", async () => {
+    const services = makeServices();
+    const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    fillCommitForm(result);
+    act(() => result.current.selectFile(makeFile()));
+    await waitFor(() => expect(result.current.canCommit).toBe(true));
+    act(() => result.current.setRowDisposition({ rowId: "row-1", disposition: "Exclude", reason: "" }, "row-1"));
+    expect(result.current.canCommit).toBe(false);
+    act(() => result.current.setRowDisposition({ rowId: "row-1", disposition: "Exclude", reason: "Duplicate source record" }, "row-1"));
+    await act(() => result.current.commit());
+    expect(services.commitImport).toHaveBeenCalledWith(expect.objectContaining({
+      reviewId: "review-synthetic-1", rowDispositions: [{ rowId: "row-1", disposition: "Exclude", reason: "Duplicate source record" }]
+    }));
+    act(() => result.current.updateCommitForm("externalAccountId", "OTHER"));
+    expect(result.current.canCommit).toBe(false);
+    expect(result.current.commitDisabledReason).not.toBeNull();
+    await act(() => result.current.commit());
+    expect(services.commitImport).toHaveBeenCalledOnce();
+    await waitFor(() => expect(result.current.previewBusy).toBe(false));
+  });
+
+  it("does not submit an unretained legacy preview", async () => {
+    const services = makeServices({ previewImport: vi.fn(async () => ({ ...fixturePreview, reviewId: null })) });
+    const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    fillCommitForm(result);
+    act(() => result.current.selectFile(makeFile()));
+    await waitFor(() => expect(result.current.preview).not.toBeNull());
+    expect(result.current.canCommit).toBe(false);
+    await act(() => result.current.commit());
+    expect(services.commitImport).not.toHaveBeenCalled();
+  });
+});
+
+it("refreshes the retained preview when an active mapping is saved under the same id", async () => {
+  const services = makeServices();
+  const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
+  await waitFor(() => expect(result.current.loading).toBe(false));
+  fillCommitForm(result);
+  act(() => { result.current.selectProfile("custom-ibkr"); result.current.selectFile(makeFile()); });
+  await waitFor(() => expect(result.current.canCommit).toBe(true));
+  act(() => result.current.editProfile("custom-ibkr"));
+  act(() => result.current.updateProfileDraft({ notes: "Reviewed changed mapping" }));
+  await act(() => result.current.saveProfileDraft());
+  expect(result.current.canCommit).toBe(false);
+  await waitFor(() => expect(services.previewImport).toHaveBeenCalledTimes(2));
+  await waitFor(() => expect(result.current.canCommit).toBe(true));
+});
+
+it("locks source, scope and row decisions while a reviewed commit is pending", async () => {
+  let complete!: (value: StatementImportCommitResult) => void;
+  const services = makeServices({ commitImport: vi.fn(() => new Promise<StatementImportCommitResult>((resolve) => { complete = resolve; })) });
+  const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
+  await waitFor(() => expect(result.current.loading).toBe(false));
+  fillCommitForm(result);
+  const source = makeFile();
+  act(() => result.current.selectFile(source));
+  await waitFor(() => expect(result.current.canCommit).toBe(true));
+  let pending!: Promise<void>;
+  act(() => { pending = result.current.commit(); });
+  act(() => {
+    result.current.selectFile(makeFile("different.csv"));
+    result.current.selectProfile("custom-ibkr");
+    result.current.selectConnector("ofx");
+    result.current.updateCommitForm("externalAccountId", "OTHER");
+    result.current.setRowDisposition({ rowId: "row-1", disposition: "Exclude", reason: "late change" }, "row-1");
+  });
+  expect(result.current.selectedFile).toBe(source);
+  expect(result.current.selectedProfileId).toBe("");
+  expect(result.current.selectedConnectorId).toBe("");
+  expect(result.current.commitForm.externalAccountId).toBe("U-100");
+  expect(result.current.rowDispositions).toEqual({});
+  await act(async () => { complete(fixtureCommitResult); await pending; });
+  expect(result.current.commitResult?.runId).toBe(fixtureCommitResult.runId);
 });

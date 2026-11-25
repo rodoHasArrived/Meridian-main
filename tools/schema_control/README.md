@@ -40,6 +40,11 @@ $baselineSha = git rev-parse --verify 'origin/main^{commit}'
 # Fast checks that do not need PostgreSQL.
 python build/scripts/schema-control.py inventory --base-ref $baselineSha
 
+# Refresh source-derived contracts/dependencies/docs using the retained physical catalog.
+# Also runs in the maintained generation catalog and hosted PR repair.
+python build/scripts/generate-contract-manifest.py
+python build/scripts/generate-contract-manifest.py --check
+
 # Scaffold a migration with the next available ordinal and refresh the reservation table.
 python build/scripts/schema-control.py new-migration --migration-set ledger --name example
 
@@ -69,6 +74,11 @@ unique container and `build/schema-control/runs/<run-id>/candidate`, including c
 the same checkout or different Git worktrees. It waits for a successful PostgreSQL query through
 the mapped host port before invoking the existing `verify` or `snapshot` command.
 
+The source-only generator does not connect to PostgreSQL or change the retained catalog,
+migration manifest, policy report, or reviewed module hashes. Its database documentation describes
+that retained catalog alongside current source contracts; it cannot establish physical schema
+freshness. SQL changes still require `local` verification and reviewed snapshot promotion.
+
 Run directories are retained on success, failure, and cancellation. They contain `run.json`
 (lifecycle, resource identity, exit status, and cleanup result), `docker.log`, `verification.log`,
 `postgres.log`, and any generated candidate manifests and reports. The command prints the exact
@@ -95,11 +105,18 @@ is generated from that register and the SQL files on disk.
 
 `new-migration --migration-set <id> --name <snake_case_name>` selects the next ordinal after the
 highest file ordinal, skips reservations, writes a SQL scaffold, and refreshes the documentation
-table. Add `--ordinal N` to request a particular free number. Occupied numbers and reserved numbers
+table. Add `--ordinal N` to request a particular free number. Occupied, reserved, and retired numbers
 are always refused, including the historical duplicate Ledger ordinal `008`.
 Generated repository-relative paths use forward slashes on Windows and Unix. Externally supplied
 reservation-register and blueprint paths still reject backslashes, parent traversal, and paths
 outside the repository.
+
+A migration set may also list `retired` ordinals (`{"ordinal": N, "reason": "..."}`): numbers that
+were skipped or withdrawn and must never be reused. Validation reports a SQL file at a retired
+ordinal as `migration-ordinal-retired`, `new-migration` skips retired numbers and refuses them for
+`--ordinal N`, and the generated block lists them. Security Master `061` and `063` are retired. At
+runtime the shared migration runner enforces the same rule for ordinal-tracked sets: it refuses to
+start when an unapplied script's ordinal is below the highest applied ordinal.
 
 Reservations are pending plans. To implement a reserved migration, remove its pending claim from
 the register before scaffolding that number. Move remaining reservations when delivery sequencing

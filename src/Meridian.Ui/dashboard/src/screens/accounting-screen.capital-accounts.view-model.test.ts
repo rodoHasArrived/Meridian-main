@@ -697,7 +697,7 @@ describe("capital account rollforward proof", () => {
     expect(rollforward.verdict).toBe("tied");
     expect(rollforward.verdictLabel).toBe("Ties");
     expect(rollforward.unsupportedReason).toBeUndefined();
-    expect(rollforward.openingDerivation).toContain("derived by the capital-account projection");
+    expect(rollforward.openingDerivation).toContain("derived by the capital-account summary");
   });
 
   it("reports the out-by amount when the stated ending is not explained by the movements", () => {

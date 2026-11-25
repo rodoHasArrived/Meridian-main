@@ -50,7 +50,7 @@ export function bulkTriageDraftProblem(draft: BulkTriageDraft, selectedCount: nu
 export function buildBulkCaseworkRequest(
   draft: BulkTriageDraft,
   breakIds: readonly string[],
-  options: { operationId: string; dryRun: boolean; operator: string | null }
+  options: { operationId: string; dryRun: boolean; operator: string | null; previewBulkActionId?: string }
 ): ReconciliationBulkCaseworkRequest {
   const commandId = `${options.operationId}:${options.dryRun ? "dry-run" : "execute"}`;
   const reason = draft.reason.trim() || null;
@@ -67,7 +67,8 @@ export function buildBulkCaseworkRequest(
     dryRun: options.dryRun,
     // The dry run reports every case; the execute applies the passed set atomically.
     allowPartialSuccess: options.dryRun,
-    maxCaseCount: BULK_TRIAGE_MAX_BREAKS
+    maxCaseCount: BULK_TRIAGE_MAX_BREAKS,
+    ...(options.previewBulkActionId ? { previewBulkActionId: options.previewBulkActionId } : {})
   };
   switch (draft.kind) {
     case "assign":
@@ -93,9 +94,9 @@ export interface BulkTriagePreview {
 }
 
 export function summarizeBulkDryRun(kind: BulkTriageKind, result: ReconciliationBulkCaseworkResult): BulkTriagePreview {
-  const passedIds = result.results.filter((entry) => entry.wouldSucceed).map((entry) => entry.breakId);
+  const passedIds = result.results.filter((entry) => entry.wouldSucceed && !entry.error).map((entry) => entry.breakId);
   const blocked = result.results
-    .filter((entry) => !entry.wouldSucceed)
+    .filter((entry) => !entry.wouldSucceed || entry.error)
     .map((entry) => ({ breakId: entry.breakId, error: entry.error?.trim() || "The case failed validation." }));
   const done = BULK_TRIAGE_LABELS[kind].done;
   const total = result.results.length;

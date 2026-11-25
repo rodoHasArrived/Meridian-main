@@ -378,7 +378,8 @@ public sealed partial class SecurityMasterViewModel
                 return;
             }
 
-            _loggingService.LogError($"Security Master instrument passport load failed for {securityId}", ex);
+            _loggingService.LogError("Security Master instrument passport load failed for {SecurityId}", ex,
+                ("SecurityId", securityId.ToString()));
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 if (!CanCommitSelectedSecurityLoad(securityId, loadRevision, loadToken))
@@ -471,7 +472,7 @@ public sealed partial class SecurityMasterViewModel
             new SecurityMasterPresentationField("Primary provider", primaryProvider is null ? "Unavailable" : $"{primaryProvider.Provider} {primaryProvider.MappingKind} {primaryProvider.Symbol}"),
             new SecurityMasterPresentationField("Pricing", $"{passport.Pricing.Status}: {passport.Pricing.Summary}"),
             new SecurityMasterPresentationField("Usage", passport.Usage.Summary),
-            new SecurityMasterPresentationField("Retrieved", FormatHelpers.FormatUtcTimestamp(passport.RetrievedAtUtc))
+            new SecurityMasterPresentationField("Retrieved", FormatHelpers.FormatDisplayTimestamp(passport.RetrievedAtUtc))
         };
 
         if (passport.OperatingModel is { } operatingModel)
@@ -696,7 +697,7 @@ public sealed partial class SecurityMasterViewModel
             new SecurityMasterPresentationField("Contract multiplier", SecurityMasterPresentation.FormatNullableDecimal(readModel.ContractMultiplier)),
             new SecurityMasterPresentationField("Current factor", SecurityMasterPresentation.FormatNullableDecimal(readModel.CurrentFactor)),
             new SecurityMasterPresentationField("Current factor date", SecurityMasterPresentation.FormatNullableDate(readModel.CurrentFactorDate)),
-            new SecurityMasterPresentationField("As of", FormatHelpers.FormatUtcTimestamp(readModel.AsOfUtc)),
+            new SecurityMasterPresentationField("As of", FormatHelpers.FormatDisplayTimestamp(readModel.AsOfUtc)),
             new SecurityMasterPresentationField("Face value", readModel.UsesFaceValue ? "Uses face value" : "Quantity only"),
             new SecurityMasterPresentationField("Factor-adjusted exposure", readModel.SupportsFactorAdjustedExposure ? "Supported" : "Unavailable"),
             new SecurityMasterPresentationField("Resolved ID required", readModel.RequiresResolvedSecurityId ? "Required" : "Not required")

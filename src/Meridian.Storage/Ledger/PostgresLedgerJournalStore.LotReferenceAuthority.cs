@@ -58,6 +58,11 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException("Acquisition/disposal reference authority must match the complete authoritative ledger-book and period scope.");
         if (command.AcquisitionLot?.Acquisition is { } acquisition && security.Currency != acquisition.AcquisitionCurrency)
             throw new LedgerValidationException("Acquisition reference authority currency must match the retained acquisition currency.");
+        if (command.AcquisitionLot?.Acquisition is { } basisAcquisition
+            && !LotQuantityBasisRules.Permits(security.AssetClass, basisAcquisition.QuantityBasis))
+            throw new LedgerValidationException(
+                $"Acquisition quantity basis {basisAcquisition.QuantityBasis} is not valid for Security Master asset class "
+                + $"'{security.AssetClass}': only face-value classes are booked by face.");
         if (command.AcquisitionLot?.Acquisition?.BondIncome is { } adoptedIncome)
         {
             try
@@ -91,5 +96,9 @@ public sealed partial class PostgresLedgerJournalStore
             await authority.RequireAcquisitionPolicyAsync(book.LedgerBookId, command.AcquisitionLot.AcquiredDate,
                 adoptedIncome, command.AcquisitionLot.Acquisition.TransactionCostBasis, ct).ConfigureAwait(false);
         }
+        if (command.Journal.PostingCommand?.ActionOrigin == Meridian.Contracts.Workstation.OperationsActionOriginDto.AuthorizedSystem
+            && (!SecurityAssetClassCatalog.TryGet(security.AssetClass, out var descriptor) || !descriptor.SupportsEquityClassification
+                || security.AssetClass != descriptor.AssetClass || security.Currency != "USD"))
+            throw new LedgerValidationException("Automatic fill grants authorize USD cash equities only.");
     }
 }

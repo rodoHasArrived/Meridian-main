@@ -1,6 +1,10 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, ArrowRight, CalendarDays, Gauge, GitBranch, ListChecks, Lock, RefreshCcw, Workflow } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { CaseInspector } from "@/screens/case-inspector";
+import { Tabs, TabPanel } from "@/components/ui/tabs";
+import { CLOSE_HUB_TABS, closeHubTabFromSearch, updateWorkstationSearch } from "@/lib/workstation-close-routing";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogCloseButton } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,10 +19,16 @@ import {
   submitOperationsContinuityApproval
 } from "@/lib/api";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
+import { useFundScopeNarrowingContext } from "@/lib/operating-scope/fund-scope-context";
+import { eyebrowClassName } from "@/design-system/label-case";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { OperationsSystemDetails, reconciliationLaneColumns, closeCockpitLaneColumns } from "@/screens/operations-continuity-screen.workstream-columns";
+import { statusBadgeVariant, statusPanelClass } from "@/design-system/status-styles";
+import { closeCalendarColumns } from "@/screens/operations-continuity-screen.close-calendar-columns";
 import {
   buildReopenWorkflowFormDisabledReason,
   formatApprovalDecisionCommandError,
@@ -34,9 +44,7 @@ import {
   type FinancialOperationsCommandSpineRow,
   type FinancialOperationsOperatorQueueRow,
   type OperationsAccountingRecordEvidenceRow,
-  type OperationsContinuityCloseCalendarRow,
   type OperationsContinuityCloseCockpitApprovalRow,
-  type OperationsContinuityCloseCockpitLaneRow,
   type OperationsContinuityCloseCockpitWorkflowRow,
   type OperationsContinuityBreakCaseRow,
   type OperationsContinuityBlockerRow,
@@ -45,14 +53,11 @@ import {
   type OperationsContinuityEvidencePackageRow,
   type OperationsContinuityGateRow,
   type OperationsContinuityNavSupportPackageRow,
-  type OperationsContinuityReconciliationLaneRow,
   type OperationsReviewedAutomationArtifactRow,
   type OperationsContinuityTimelineRow,
   type OperationsContinuityWorkflowApprovalRow,
   type OperationsContinuityWorkflowRow
 } from "@/screens/operations-continuity-screen.view-model";
-import { eyebrowClassName } from "@/design-system/label-case";
-import { statusBadgeVariant, statusPanelClass } from "@/design-system/status-styles";
 
 const workflowColumns: DenseDataTableColumn<OperationsContinuityWorkflowRow>[] = [
   {
@@ -61,7 +66,7 @@ const workflowColumns: DenseDataTableColumn<OperationsContinuityWorkflowRow>[] =
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.title}</span>
-        <span className="mt-1 block break-words font-mono text-[11px] text-muted-foreground">{row.subtitle}</span>
+        <span className="mt-1 block break-words font-mono text-xs text-muted-foreground">{row.subtitle}</span>
       </span>
     )
   },
@@ -158,10 +163,11 @@ const operationalDashboardColumns: DenseDataTableColumn<OperationsContinuityDash
     id: "metric",
     label: "Metric",
     render: (row) => (
-      <span className="block min-w-0">
+      <div className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.label}</span>
         <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.detail}</span>
-      </span>
+        <OperationsSystemDetails fields={row.technicalDetails} />
+      </div>
     )
   },
   {
@@ -189,61 +195,6 @@ const operationalDashboardColumns: DenseDataTableColumn<OperationsContinuityDash
     label: "Route",
     render: (row) => row.routeHref ? (
       <Link className="text-xs" to={row.routeHref} aria-label={`Open operational dashboard metric ${row.label}`}>
-        {row.routeLabel}
-      </Link>
-    ) : (
-      <span className="text-xs text-muted-foreground">{row.routeLabel}</span>
-    )
-  }
-];
-
-const closeCalendarColumns: DenseDataTableColumn<OperationsContinuityCloseCalendarRow>[] = [
-  {
-    id: "scope",
-    label: "Scope",
-    render: (row) => (
-      <span className="block min-w-0">
-        <span className="block font-semibold text-foreground">{row.periodLabel}</span>
-        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.taskLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "status",
-    label: "Status",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-        <span className="mt-1 block text-muted-foreground">{row.dueLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "readiness",
-    label: "Readiness",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <Badge variant={statusBadgeVariant(row.readinessTone)}>{row.readinessLabel}</Badge>
-        <span className="mt-1 block text-muted-foreground">{row.ownerLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "controls",
-    label: "Controls",
-    render: (row) => (
-      <span className="block text-xs leading-5 text-muted-foreground">
-        <span className="block text-foreground">{row.blockerLabel}</span>
-        <span className="block">{row.checklistLabel}</span>
-        <span className="block">{row.approvalLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "route",
-    label: "Route",
-    render: (row) => row.routeHref ? (
-      <Link className="text-xs" to={row.routeHref} aria-label={`Open close calendar workflow ${row.periodLabel}`}>
         {row.routeLabel}
       </Link>
     ) : (
@@ -363,6 +314,7 @@ const financialOperationsQueueColumns: DenseDataTableColumn<FinancialOperationsO
         <span className={eyebrowClassName(row.kindLabel)}>{row.kindLabel}</span>
         <span className="mt-1 block font-semibold text-foreground">{row.title}</span>
         <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.detail}</span>
+        <OperationsSystemDetails fields={row.technicalDetails} />
         {row.technicalCode ? (
           <TechnicalDetails label="System details" className="mt-2" contentClassName="py-2">
             <p className="font-mono text-xs text-muted-foreground">Rule code: {row.technicalCode}</p>
@@ -414,10 +366,11 @@ function buildWorkflowApprovalHistoryColumns({
       id: "approval",
       label: "Approval",
       render: (row) => (
-        <span className="block min-w-0">
-          <span className="block font-mono text-xs font-semibold text-foreground">{row.id}</span>
+        <div className="block min-w-0">
+          <span className="block text-xs font-semibold text-foreground">Workflow approval</span>
           <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.rationale}</span>
-        </span>
+          <OperationsSystemDetails fields={[{ label: "Approval ID", value: row.id }]} />
+        </div>
       )
     },
     {
@@ -625,10 +578,11 @@ function buildBreakCaseColumns({
       id: "case",
       label: "Break",
       render: (row) => (
-        <span className="block min-w-0">
+        <div className="block min-w-0">
           <span className="block break-words font-mono text-xs font-semibold text-foreground">{row.caseLabel}</span>
           <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.categoryLabel}</span>
-        </span>
+          <OperationsSystemDetails fields={row.technicalDetails} />
+        </div>
       )
     },
     {
@@ -840,106 +794,12 @@ function buildChecklistColumns({
   ];
 }
 
-const reconciliationLaneColumns: DenseDataTableColumn<OperationsContinuityReconciliationLaneRow>[] = [
-  {
-    id: "lane",
-    label: "Lane",
-    render: (row) => (
-      <span className="block min-w-0">
-        <span className="block font-semibold text-foreground">{row.label}</span>
-        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.summary}</span>
-      </span>
-    )
-  },
-  {
-    id: "status",
-    label: "Status",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-        <span className="mt-1 block text-muted-foreground">{row.breakCountLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "evidence",
-    label: "Evidence",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <span className="block text-muted-foreground">{row.evidenceLabel}</span>
-        {row.evidenceHref ? (
-          <Link to={row.evidenceHref} aria-label={`Open retained evidence for reconciliation lane ${row.label}`}>
-            {row.evidenceRouteLabel}
-          </Link>
-        ) : (
-          <span className="block text-muted-foreground">{row.evidenceRouteLabel}</span>
-        )}
-      </span>
-    )
-  },
-  {
-    id: "actions",
-    label: "Actions",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <span className="block text-foreground">{row.requiredActionsLabel}</span>
-        {row.routeHref ? (
-          <Link className="link-subtle mt-1 inline-flex" to={row.routeHref} aria-label={`Open reconciliation lane: ${row.label}`}>
-            {row.routeLabel}
-          </Link>
-        ) : (
-          <span className="mt-1 block text-muted-foreground">{row.routeLabel}</span>
-        )}
-      </span>
-    )
-  }
-];
-
-const closeCockpitLaneColumns: DenseDataTableColumn<OperationsContinuityCloseCockpitLaneRow>[] = [
-  {
-    id: "lane",
-    label: "Lane",
-    render: (row) => (
-      <span className="block min-w-0">
-        <span className="block font-semibold text-foreground">{row.label}</span>
-        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.summary}</span>
-      </span>
-    )
-  },
-  {
-    id: "status",
-    label: "Status",
-    render: (row) => <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-  },
-  {
-    id: "evidence",
-    label: "Evidence",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <span className="block text-muted-foreground">{row.evidenceLabel}</span>
-        {row.routeHref ? (
-          <Link to={row.routeHref} aria-label={`Open private-capital close cockpit lane: ${row.label}`}>
-            {row.routeLabel}
-          </Link>
-        ) : (
-          <span className="block text-muted-foreground">{row.routeLabel}</span>
-        )}
-      </span>
-    )
-  },
-  {
-    id: "actions",
-    label: "Required actions",
-    render: (row) => <span className="text-xs leading-5 text-muted-foreground">{row.requiredActionsLabel}</span>
-  }
-];
-
 const closeCockpitWorkflowColumns: DenseDataTableColumn<OperationsContinuityCloseCockpitWorkflowRow>[] = [
   {
     id: "workflow",
     label: "Workflow",
     render: (row) => (
-      <span className="block min-w-0">
+      <div className="block min-w-0">
         {row.workflowHref ? (
           <Link to={row.workflowHref} aria-label={`Open private-capital close workflow ${row.periodLabel}`}>
             {row.periodLabel}
@@ -947,8 +807,8 @@ const closeCockpitWorkflowColumns: DenseDataTableColumn<OperationsContinuityClos
         ) : (
           <span className="block font-semibold text-foreground">{row.periodLabel}</span>
         )}
-        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.id}</span>
-      </span>
+        <OperationsSystemDetails fields={row.technicalDetails} />
+      </div>
     )
   },
   {
@@ -989,10 +849,10 @@ const closeCockpitApprovalColumns: DenseDataTableColumn<OperationsContinuityClos
     id: "approval",
     label: "Approval",
     render: (row) => (
-      <span className="block min-w-0">
+      <div className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.workflowLabel}</span>
-        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.id}</span>
-      </span>
+        <OperationsSystemDetails fields={row.technicalDetails} />
+      </div>
     )
   },
   {
@@ -1161,20 +1021,33 @@ const timelineColumns: DenseDataTableColumn<OperationsContinuityTimelineRow>[] =
   }
 ];
 
-export function OperationsContinuityScreen() {
+export function OperationsContinuityScreen({ closeHub = false }: { closeHub?: boolean } = {}) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const activeCloseTab = closeHubTabFromSearch(location.search);
+  const selectCloseTab = (tab: string) => navigate({ search: updateWorkstationSearch(location.search, "closeTab", tab), hash: location.hash });
   const [searchParams] = useSearchParams();
+  const scopeFund = searchParams.get("fundProfileId");
+  const scopeBook = searchParams.get("ledgerBookId");
+  const scopeAccount = searchParams.get("fundAccountId");
+  const scopeEntity = searchParams.get("entityId");
+  const scopePeriod = searchParams.get("periodId");
   const closeScope = useMemo(() => ({
-    fundProfileId: searchParams.get("fundProfileId"), ledgerBookId: searchParams.get("ledgerBookId"),
-    fundAccountId: searchParams.get("fundAccountId"), entityId: searchParams.get("entityId"),
-    periodId: searchParams.get("periodId")
-  }), [searchParams]);
+    fundProfileId: scopeFund, ledgerBookId: scopeBook,
+    fundAccountId: scopeAccount, entityId: scopeEntity, periodId: scopePeriod
+  }), [scopeFund, scopeBook, scopeAccount, scopeEntity, scopePeriod]);
   const vm = useOperationsContinuityScreenViewModel(undefined, closeScope, {
     initialWorkflowId: searchParams.get("workflowId"),
     filters: {
+      fundAccountId: searchParams.get("recordScope") === "1" ? closeScope.fundAccountId ?? undefined : undefined,
       ledgerBookId: searchParams.get("ledgerBookId") ?? undefined,
       periodId: searchParams.get("periodId") ?? undefined
     }
-  });
+  }, useFundScopeNarrowingContext());
+  useOnGlobalRefresh(vm.refresh);
+  const [confirmation, setConfirmation] = useState<{ kind: "publish" | "reopen"; row?: FinancialOperationsCommandSpineRow; workflowId: string; version: number; scope: string } | null>(null);
+  const scopeIdentity = JSON.stringify(closeScope);
+  useEffect(() => { setConfirmation(null); }, [scopeIdentity, vm.selectedWorkflowId]);
   const [breakCommand, setBreakCommand] = useState<{
     pending: { breakId: string; kind: BreakCommandKind } | null;
     message: string | null;
@@ -1231,7 +1104,7 @@ export function OperationsContinuityScreen() {
             expectedVersion: row.expectedWorkflowVersion,
             actor: "browser-operator",
             owner: row.assignmentOwner,
-            rationale: `Assigned break ${row.caseLabel} from Operations Continuity exception management.`,
+            rationale: `Assigned break ${row.id} from Operations Continuity exception management.`,
             escalationLevel: row.assignmentEscalationLevel,
             escalationReason: row.assignmentEscalationReason,
             dueDate: row.assignmentDueDate,
@@ -1242,7 +1115,7 @@ export function OperationsContinuityScreen() {
             expectedVersion: row.expectedWorkflowVersion,
             actor: "browser-operator",
             resolutionStatus: row.resolutionStatus,
-            rationale: `Resolved break ${row.caseLabel} after retained evidence review.`,
+            rationale: `Resolved break ${row.id} after retained evidence review.`,
             correlationId: `browser-break-resolve:${row.id}`,
             evidenceLinks: row.resolutionEvidenceLinks,
             actionOrigin: "HumanOperator"
@@ -1311,9 +1184,12 @@ export function OperationsContinuityScreen() {
   const breakCaseColumns = useMemo(
     () => buildBreakCaseColumns({
       pendingBreakCommand: breakCommand.pending,
-      onRunCommand: (row, kind) => { void runBreakCommand(row, kind); }
+      onRunCommand: (row, kind) => {
+        if (closeHub && kind === "resolve") navigate({ search: updateWorkstationSearch(updateWorkstationSearch(location.search, "closeTab", "blockers"), "reconciliationBreak", row.id), hash: location.hash });
+        else void runBreakCommand(row, kind);
+      }
     }),
-    [breakCommand.pending, runBreakCommand]
+    [breakCommand.pending, runBreakCommand, closeHub, navigate, location.search, location.hash]
   );
 
   const submitApprovalCommand = useCallback(async (row: FinancialOperationsCommandSpineRow) => {
@@ -1430,7 +1306,7 @@ export function OperationsContinuityScreen() {
     }
   }, [vm.refresh]);
 
-  const closeWorkflowCommandHandler = useCallback(async (row: FinancialOperationsCommandSpineRow) => {
+  const closeWorkflowCommandHandler = useCallback(async (row: FinancialOperationsCommandSpineRow, rationale: string) => {
     if (
       !row.workflowId ||
       row.expectedWorkflowVersion === null ||
@@ -1451,7 +1327,7 @@ export function OperationsContinuityScreen() {
       const result = await closeOperationsContinuityWorkflow(row.workflowId, {
         expectedVersion: row.expectedWorkflowVersion,
         actor: "browser-operator",
-        rationale: `Published ${row.stageLabel} close package from Operations Continuity command spine.`,
+        rationale,
         reportPackId: row.closeWorkflowReportPackId,
         correlationId: `browser-close-package:${row.id}`,
         evidenceLinks: row.closeWorkflowEvidenceLinks,
@@ -1512,7 +1388,7 @@ export function OperationsContinuityScreen() {
 
       setReopenWorkflowCommand({
         pending: false,
-        message: result.message?.trim() || "Governed reopen retained through shared operations command.",
+        message: result.message?.trim() || "Period reopen retained through shared operations command.",
         error: null
       });
       await vm.refresh();
@@ -1526,20 +1402,24 @@ export function OperationsContinuityScreen() {
   }, [reopenWorkflowForm, vm.closeGovernance, vm.refresh]);
 
   const reopenWorkflowDisabledReason = reopenWorkflowCommand.pending
-    ? "Wait for the active governed reopen command to finish."
+    ? "Wait for the active period reopen command to finish."
     : vm.closeGovernance.reopenWorkflowDisabledReason ?? buildReopenWorkflowFormDisabledReason(reopenWorkflowForm);
 
   const financialOperationsCommandSpineColumns = useMemo(
     () => buildFinancialOperationsCommandSpineColumns({
       pendingStageId: approvalSubmitCommand.pendingStageId ?? closeWorkflowCommand.pendingStageId,
       onSubmitApproval: (row) => { void submitApprovalCommand(row); },
-      onCloseWorkflow: (row) => { void closeWorkflowCommandHandler(row); }
+      onCloseWorkflow: (row) => {
+        if (!row.workflowId || row.expectedWorkflowVersion === null) return;
+        setConfirmation({ kind: "publish", row, workflowId: row.workflowId, version: row.expectedWorkflowVersion, scope: scopeIdentity });
+      }
     }),
     [
       approvalSubmitCommand.pendingStageId,
       closeWorkflowCommand.pendingStageId,
       submitApprovalCommand,
-      closeWorkflowCommandHandler
+      closeWorkflowCommandHandler,
+      scopeIdentity
     ]
   );
 
@@ -1558,118 +1438,16 @@ export function OperationsContinuityScreen() {
     (field) => ["Workflow", "Fund account", "Version", "Security Master", "Report pack", "Close package", "Latest audit"].includes(field.label)
   ) ?? [];
 
-  return (
-    <div className="space-y-6">
-      <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
-
-      <section
-        role="region"
-        aria-label="Operations continuity control strip"
-        className="panel-surface-strong flex flex-wrap items-start justify-between gap-4 px-4 py-4"
-      >
-        <div className="min-w-0">
-          <div className="eyebrow-label">Accounting operations</div>
-          <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
-            {vm.title}
-          </h2>
-          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">{vm.subtitle}</p>
-          {vm.errorText ? (
-            <p role="alert" className="mt-3 inline-flex items-center gap-2 rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
-              <AlertTriangle className="h-4 w-4" aria-hidden="true" />
-              {vm.errorText}
-            </p>
-          ) : null}
-        </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <Badge variant="outline">{vm.workflowsSummaryLabel}</Badge>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => void vm.refresh()}
-            busy={vm.reloadBusy}
-            busyLabel={vm.reloadLabel}
-            disabled={vm.reloadDisabled}
-            disabledReason={vm.reloadDisabledReason}
-            aria-label={vm.reloadAriaLabel}
-          >
-            <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-            {vm.reloadLabel}
-          </Button>
-        </div>
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-[1fr_0.75fr]">
-        <Card className="panel-surface">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Workflow className="h-5 w-5 text-primary" aria-hidden="true" />
-              Workflows
-            </CardTitle>
-            <CardDescription>Select a workflow to inspect close-lane gates, blockers, next action, and timeline.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DenseDataTable
-              columns={workflowColumns}
-              rows={vm.workflows}
-              getRowId={(row) => row.id}
-              getRowAriaLabel={(row) => row.ariaLabel}
-              getRowSelectAriaLabel={(row) => `Open ${row.ariaLabel}`}
-              getRowAriaControls={(row) => row.detailPanelId}
-              getRowAriaExpanded={(row) => row.expanded}
-              getRowClassName={(row) => row.rowClassName}
-              onRowSelect={(row) => vm.selectWorkflow(row.id)}
-              selectedRowId={vm.selectedWorkflowId}
-              emptyText={vm.workflowsEmptyText}
-              ariaLabel={vm.workflowsTableLabel}
-              caption={vm.workflowsTableCaption}
-            />
-          </CardContent>
-        </Card>
-
-        <Card
-          className={cn("border", statusPanelClass(vm.nextAction.statusTone))}
-          role="region"
-          aria-label="Recommended next action"
-        >
-          <CardHeader>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <ArrowRight className="h-5 w-5 text-primary" aria-hidden="true" />
-                  Next action
-                </CardTitle>
-                <CardDescription>{vm.nextAction.detail}</CardDescription>
-              </div>
-              <Badge variant={statusBadgeVariant(vm.nextAction.statusTone)}>
-                {vm.nextAction.statusLabel}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <p className="font-semibold text-foreground">{vm.nextAction.title}</p>
-              {vm.nextAction.disabledReason ? (
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.nextAction.disabledReason}</p>
-              ) : null}
-            </div>
-            {vm.nextAction.href ? (
-              <Button asChild disabled={vm.nextAction.disabled} disabledReason={vm.nextAction.disabledReason}>
-                <Link to={vm.nextAction.href} aria-label={vm.nextAction.ariaLabel}>
-                  {vm.nextAction.label}
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
-              </Button>
-            ) : (
-              <Button type="button" disabled disabledReason={vm.nextAction.disabledReason}>
-                {vm.nextAction.label}
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-      </section>
-
-      {vm.selectedDetail ? (
+  const currentPublicationRow = confirmation?.kind === "publish" ? vm.commandSpine.rows.find((row) => row.id === confirmation.row?.id) : null;
+  const confirmationCurrentVersion = confirmation?.kind === "publish" ? currentPublicationRow?.expectedWorkflowVersion : vm.closeGovernance.expectedWorkflowVersion;
+  const publicationEvidenceChanged = confirmation?.kind === "publish" && JSON.stringify([
+    confirmation.row?.closeWorkflowReportPackId, confirmation.row?.closeWorkflowEvidenceLinks, confirmation.row?.closeWorkflowChecklistControlApprovals
+  ]) !== JSON.stringify([
+    currentPublicationRow?.closeWorkflowReportPackId, currentPublicationRow?.closeWorkflowEvidenceLinks, currentPublicationRow?.closeWorkflowChecklistControlApprovals
+  ]);
+  const confirmationStale = confirmation !== null && (confirmation.version !== confirmationCurrentVersion || confirmation.scope !== scopeIdentity || confirmation.workflowId !== vm.selectedWorkflowId || publicationEvidenceChanged);
+  const closeSections = {
+board: <>{vm.selectedDetail ? (
         <section className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
           <div className={cn("rounded-lg border", statusPanelClass(vm.selectedDetail.statusTone))}>
             <EntitySummary
@@ -1725,9 +1503,7 @@ export function OperationsContinuityScreen() {
           </Card>
         </section>
       ) : null}
-
-      <section className="grid gap-4">
-        <Card className={cn("border", statusPanelClass(vm.dashboard.statusTone))}>
+<section className="grid gap-4"><Card className={cn("border", statusPanelClass(vm.dashboard.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -1736,6 +1512,7 @@ export function OperationsContinuityScreen() {
                   {vm.dashboard.title}
                 </CardTitle>
                 <CardDescription>{vm.dashboard.summaryLabel}</CardDescription>
+                <OperationsSystemDetails fields={vm.dashboard.technicalDetails} label="Dashboard source details" />
               </div>
               <Badge variant={statusBadgeVariant(vm.dashboard.statusTone)}>
                 {vm.dashboard.statusLabel}
@@ -1763,7 +1540,7 @@ export function OperationsContinuityScreen() {
             />
           </CardContent>
         </Card>
-        <Card className={cn("border", statusPanelClass(vm.closeCalendar.statusTone))}>
+<Card className={cn("border", statusPanelClass(vm.closeCalendar.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -1807,126 +1584,8 @@ export function OperationsContinuityScreen() {
               ariaLabel="Operations continuity close calendar"
             />
           </CardContent>
-        </Card>
-        <Card className={cn("border", statusPanelClass(vm.commandSpine.statusTone))}>
-          <CardHeader>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <GitBranch className="h-5 w-5 text-primary" aria-hidden="true" />
-                  {vm.commandSpine.title}
-                </CardTitle>
-                <CardDescription>{vm.commandSpine.summaryLabel}</CardDescription>
-              </div>
-              <Badge variant={statusBadgeVariant(vm.commandSpine.statusTone)}>
-                {vm.commandSpine.statusLabel}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {approvalSubmitCommand.error ? (
-              <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
-                {approvalSubmitCommand.error}
-              </p>
-            ) : null}
-            {approvalSubmitCommand.message ? (
-              <p role="status" className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
-                {approvalSubmitCommand.message}
-              </p>
-            ) : null}
-            {closeWorkflowCommand.error ? (
-              <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
-                {closeWorkflowCommand.error}
-              </p>
-            ) : null}
-            {closeWorkflowCommand.message ? (
-              <p role="status" className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
-                {closeWorkflowCommand.message}
-              </p>
-            ) : null}
-            <DenseDataTable
-              columns={financialOperationsCommandSpineColumns}
-              rows={vm.commandSpine.rows}
-              getRowId={(row) => row.id}
-              getRowAriaLabel={(row) => row.ariaLabel}
-              emptyText={vm.commandSpine.emptyText}
-              ariaLabel="Financial Operations command spine"
-            />
-          </CardContent>
-        </Card>
-        <Card className="panel-surface">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
-              {vm.workflowApprovalHistoryLabel}
-            </CardTitle>
-            <CardDescription>Source-owned approval submissions, reviewer decisions, and retained approval evidence for the selected workflow.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {approvalDecisionCommand.error ? (
-              <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
-                {approvalDecisionCommand.error}
-              </p>
-            ) : null}
-            {approvalDecisionCommand.message ? (
-              <p role="status" className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
-                {approvalDecisionCommand.message}
-              </p>
-            ) : null}
-            <DenseDataTable
-              columns={workflowApprovalHistoryDecisionColumns}
-              rows={vm.workflowApprovalHistory}
-              getRowId={(row) => row.id}
-              getRowAriaLabel={(row) => row.ariaLabel}
-              emptyText={vm.workflowApprovalHistoryEmptyText}
-              ariaLabel="Operations continuity workflow approval history"
-            />
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="grid gap-4">
-        <Card className={cn("border", statusPanelClass(vm.reviewedAutomation.statusTone))}>
-          <CardHeader>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Workflow className="h-5 w-5 text-primary" aria-hidden="true" />
-                  {vm.reviewedAutomation.title}
-                </CardTitle>
-                <CardDescription>{vm.reviewedAutomation.summaryLabel}</CardDescription>
-              </div>
-              <Badge variant={statusBadgeVariant(vm.reviewedAutomation.statusTone)}>
-                {vm.reviewedAutomation.statusLabel}
-              </Badge>
-            </div>
-            <div
-              role="list"
-              aria-label="Reviewed automation summary"
-              className="grid gap-2 pt-3 text-xs text-muted-foreground sm:grid-cols-2 xl:grid-cols-3"
-            >
-              <span role="listitem">{vm.reviewedAutomation.stageLabel}</span>
-              <span role="listitem">{vm.reviewedAutomation.reviewLabel}</span>
-              <span role="listitem">{vm.reviewedAutomation.evidenceLabel}</span>
-              <span role="listitem">Allowed: {vm.reviewedAutomation.allowedUseCasesLabel}</span>
-              <span role="listitem">Prohibited: {vm.reviewedAutomation.prohibitedActionsLabel}</span>
-              <span role="listitem">{vm.reviewedAutomation.requiredActionsLabel}</span>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <DenseDataTable
-              columns={reviewedAutomationArtifactColumns}
-              rows={vm.reviewedAutomation.artifacts}
-              getRowId={(row) => row.id}
-              getRowAriaLabel={(row) => row.ariaLabel}
-              emptyText={vm.reviewedAutomation.artifactsEmptyText}
-              ariaLabel="Reviewed automation output queue"
-            />
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="grid gap-4">
+        </Card></section>
+<section className="grid gap-4">
         <Card className={cn("border", statusPanelClass(vm.financialOperationsQueue.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1954,30 +1613,7 @@ export function OperationsContinuityScreen() {
           </CardContent>
         </Card>
       </section>
-
-      <section className="grid gap-4">
-        <Card className="panel-surface">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
-              {vm.evidencePackagesLabel}
-            </CardTitle>
-            <CardDescription>Shared package posture for accounting records, report packs, close manifests, and audit support.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DenseDataTable
-              columns={evidencePackageColumns}
-              rows={vm.evidencePackages}
-              getRowId={(row) => row.id}
-              getRowAriaLabel={(row) => row.ariaLabel}
-              emptyText={vm.evidencePackagesEmptyText}
-              ariaLabel="Operations continuity evidence packages"
-            />
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="grid gap-4">
+<section className="grid gap-4">
         <Card className={cn("border", statusPanelClass(vm.closeCockpit.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -2015,6 +1651,7 @@ export function OperationsContinuityScreen() {
             ) : null}
           </CardHeader>
           <CardContent className="space-y-4">
+            <OperationsSystemDetails fields={vm.closeCockpit.technicalDetails} label="Close scope system details" />
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/70 bg-background/60 px-3 py-3">
               <div className="min-w-0 text-xs leading-5 text-muted-foreground">
                 <p className="font-semibold text-foreground">{vm.closeCockpit.nextActionLabel}</p>
@@ -2040,14 +1677,14 @@ export function OperationsContinuityScreen() {
 
             <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-foreground">Cockpit lanes</h3>
+                <h3 className="text-sm font-semibold text-foreground">Cockpit workstreams</h3>
                 <DenseDataTable
                   columns={closeCockpitLaneColumns}
                   rows={vm.closeCockpit.lanes}
                   getRowId={(row) => row.id}
                   getRowAriaLabel={(row) => row.ariaLabel}
                   emptyText={vm.closeCockpit.lanesEmptyText}
-                  ariaLabel="Private-capital close cockpit lanes"
+                  ariaLabel="Private-capital close cockpit workstreams"
                 />
               </div>
               <div className="space-y-2">
@@ -2097,10 +1734,8 @@ export function OperationsContinuityScreen() {
             </div>
           </CardContent>
         </Card>
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-2">
-        <Card className="panel-surface">
+      </section></>,
+blockers: <><section className="grid gap-4"><Card className="panel-surface">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-primary" aria-hidden="true" />
@@ -2119,14 +1754,13 @@ export function OperationsContinuityScreen() {
             />
           </CardContent>
         </Card>
-
-        <Card className="panel-surface xl:col-span-2">
+<Card className="panel-surface xl:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
               {vm.reconciliationLanesLabel}
             </CardTitle>
-            <CardDescription>Shared reconciliation coverage for cash, position, trade, income, MBS factor, bank, and GL support lanes.</CardDescription>
+            <CardDescription>Shared reconciliation coverage for cash, position, trade, income, MBS factor, bank, and GL support workstreams.</CardDescription>
           </CardHeader>
           <CardContent>
             <DenseDataTable
@@ -2135,18 +1769,17 @@ export function OperationsContinuityScreen() {
               getRowId={(row) => row.id}
               getRowAriaLabel={(row) => row.ariaLabel}
               emptyText={vm.reconciliationLanesEmptyText}
-              ariaLabel="Operations continuity reconciliation lane coverage"
+              ariaLabel="Operations continuity reconciliation workstream coverage"
             />
           </CardContent>
         </Card>
-
-        <Card className="panel-surface">
+<Card className="panel-surface">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-primary" aria-hidden="true" />
               {vm.breakCasesLabel}
             </CardTitle>
-            <CardDescription>Source-owned reconciliation breaks with retained owner, due-date, escalation, variance, and evidence posture.</CardDescription>
+            <CardDescription>Source-owned reconciliation breaks with retained owner, due-date, escalation, variance, and evidence status.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {breakCommand.error ? (
@@ -2166,11 +1799,14 @@ export function OperationsContinuityScreen() {
               getRowAriaLabel={(row) => row.ariaLabel}
               emptyText={vm.breakCasesEmptyText}
               ariaLabel="Operations continuity break assignment and escalation"
+              selectedRowId={searchParams.get("reconciliationBreak")}
+              onRowSelect={(row) => navigate({ search: updateWorkstationSearch(updateWorkstationSearch(location.search, "closeTab", "blockers"), "reconciliationBreak", row.id), hash: location.hash })}
+              getRowSelectAriaLabel={(row) => `Open ${row.caseLabel} case`}
             />
+            {searchParams.get("reconciliationBreak") ? <CaseInspector key={searchParams.get("reconciliationBreak")} caseId={searchParams.get("reconciliationBreak")!} onChanged={() => void vm.refresh()} /> : null}
           </CardContent>
-        </Card>
-
-        <Card className="panel-surface">
+        </Card></section></>,
+checklist: <><section className="grid gap-4"><Card className="panel-surface">
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -2217,48 +1853,83 @@ export function OperationsContinuityScreen() {
               ariaLabel="Operations continuity close checklist"
             />
           </CardContent>
-        </Card>
-      </section>
-
-      <section className="grid gap-4">
-        <Card className={cn("border", statusPanelClass(vm.accountingRecordSummary.statusTone))}>
+        </Card></section></>,
+approvals: <><section className="grid gap-4"><Card className={cn("border", statusPanelClass(vm.commandSpine.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
-                  {vm.accountingRecordLabel}
+                  <GitBranch className="h-5 w-5 text-primary" aria-hidden="true" />
+                  {vm.commandSpine.title}
                 </CardTitle>
-                <CardDescription>{vm.accountingRecordSummary.summaryLabel}</CardDescription>
+                <CardDescription>{vm.commandSpine.summaryLabel}</CardDescription>
               </div>
-              <Badge variant={statusBadgeVariant(vm.accountingRecordSummary.statusTone)}>
-                {vm.accountingRecordSummary.statusLabel}
+              <Badge variant={statusBadgeVariant(vm.commandSpine.statusTone)}>
+                {vm.commandSpine.statusLabel}
               </Badge>
             </div>
-            <div
-              role="list"
-              aria-label="Accounting record evidence summary"
-              className="grid gap-2 pt-3 text-xs text-muted-foreground sm:grid-cols-2"
-            >
-              <span role="listitem">{vm.accountingRecordSummary.recordIdLabel}</span>
-              <span role="listitem">{vm.accountingRecordSummary.evidenceLabel}</span>
-              <span role="listitem">{vm.accountingRecordSummary.auditPackLabel}</span>
-              <span role="listitem">{vm.accountingRecordSummary.auditPackTimingLabel}</span>
-            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
+            {approvalSubmitCommand.error ? (
+              <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+                {approvalSubmitCommand.error}
+              </p>
+            ) : null}
+            {approvalSubmitCommand.message ? (
+              <p role="status" className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
+                {approvalSubmitCommand.message}
+              </p>
+            ) : null}
+            {closeWorkflowCommand.error ? (
+              <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+                {closeWorkflowCommand.error}
+              </p>
+            ) : null}
+            {closeWorkflowCommand.message ? (
+              <p role="status" className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
+                {closeWorkflowCommand.message}
+              </p>
+            ) : null}
             <DenseDataTable
-              columns={accountingRecordColumns}
-              rows={vm.accountingRecordEvidence}
+              columns={financialOperationsCommandSpineColumns}
+              rows={vm.commandSpine.rows}
               getRowId={(row) => row.id}
               getRowAriaLabel={(row) => row.ariaLabel}
-              emptyText={vm.accountingRecordEmptyText}
-              ariaLabel="Operations continuity accounting record evidence"
+              emptyText={vm.commandSpine.emptyText}
+              ariaLabel="Financial Operations command spine"
             />
           </CardContent>
         </Card>
-
-        <Card className={cn("border", statusPanelClass(vm.closeGovernance.statusTone))}>
+<Card className="panel-surface">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
+              {vm.workflowApprovalHistoryLabel}
+            </CardTitle>
+            <CardDescription>Source-owned approval submissions, reviewer decisions, and retained approval evidence for the selected workflow.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {approvalDecisionCommand.error ? (
+              <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+                {approvalDecisionCommand.error}
+              </p>
+            ) : null}
+            {approvalDecisionCommand.message ? (
+              <p role="status" className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
+                {approvalDecisionCommand.message}
+              </p>
+            ) : null}
+            <DenseDataTable
+              columns={workflowApprovalHistoryDecisionColumns}
+              rows={vm.workflowApprovalHistory}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              emptyText={vm.workflowApprovalHistoryEmptyText}
+              ariaLabel="Operations continuity workflow approval history"
+            />
+          </CardContent>
+        </Card></section>
+<section className="grid gap-4"><Card className={cn("border", statusPanelClass(vm.closeGovernance.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -2322,11 +1993,13 @@ export function OperationsContinuityScreen() {
               </p>
             ) : null}
             <form
-              aria-label="Governed period reopen command"
+              aria-label="Period reopen command"
               className="border-t border-border/60 pt-4"
               onSubmit={(event) => {
                 event.preventDefault();
-                void reopenWorkflowCommandHandler();
+                if (vm.closeGovernance.workflowId && vm.closeGovernance.expectedWorkflowVersion !== null) {
+                  setConfirmation({ kind: "reopen", workflowId: vm.closeGovernance.workflowId, version: vm.closeGovernance.expectedWorkflowVersion, scope: scopeIdentity });
+                }
               }}
             >
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -2380,13 +2053,12 @@ export function OperationsContinuityScreen() {
             </form>
           </CardContent>
         </Card>
-
-        <Card className={cn("border", statusPanelClass(vm.closePackage.statusTone))}>
+<Card className={cn("border", statusPanelClass(vm.closePackage.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <CardTitle>{vm.closePackage.title}</CardTitle>
-                <CardDescription>Governed close publication from the shared operations-continuity workflow.</CardDescription>
+                <CardDescription>Close publication from the shared operations-continuity workflow.</CardDescription>
               </div>
               <Badge variant={statusBadgeVariant(vm.closePackage.statusTone)}>{vm.closePackage.statusLabel}</Badge>
             </div>
@@ -2440,10 +2112,106 @@ export function OperationsContinuityScreen() {
               </div>
             </dl>
           </CardContent>
+        </Card></section></>,
+evidence: <><section className="grid gap-4">
+        <Card className={cn("border", statusPanelClass(vm.reviewedAutomation.statusTone))}>
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Workflow className="h-5 w-5 text-primary" aria-hidden="true" />
+                  {vm.reviewedAutomation.title}
+                </CardTitle>
+                <CardDescription>{vm.reviewedAutomation.summaryLabel}</CardDescription>
+              </div>
+              <Badge variant={statusBadgeVariant(vm.reviewedAutomation.statusTone)}>
+                {vm.reviewedAutomation.statusLabel}
+              </Badge>
+            </div>
+            <div
+              role="list"
+              aria-label="Reviewed automation summary"
+              className="grid gap-2 pt-3 text-xs text-muted-foreground sm:grid-cols-2 xl:grid-cols-3"
+            >
+              <span role="listitem">{vm.reviewedAutomation.stageLabel}</span>
+              <span role="listitem">{vm.reviewedAutomation.reviewLabel}</span>
+              <span role="listitem">{vm.reviewedAutomation.evidenceLabel}</span>
+              <span role="listitem">Allowed: {vm.reviewedAutomation.allowedUseCasesLabel}</span>
+              <span role="listitem">Prohibited: {vm.reviewedAutomation.prohibitedActionsLabel}</span>
+              <span role="listitem">{vm.reviewedAutomation.requiredActionsLabel}</span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <DenseDataTable
+              columns={reviewedAutomationArtifactColumns}
+              rows={vm.reviewedAutomation.artifacts}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              emptyText={vm.reviewedAutomation.artifactsEmptyText}
+              ariaLabel="Reviewed automation output queue"
+            />
+          </CardContent>
         </Card>
       </section>
-
-      <section className="grid gap-4">
+<section className="grid gap-4">
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
+              {vm.evidencePackagesLabel}
+            </CardTitle>
+            <CardDescription>Shared package status for accounting records, report packs, close manifests, and audit support.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DenseDataTable
+              columns={evidencePackageColumns}
+              rows={vm.evidencePackages}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              emptyText={vm.evidencePackagesEmptyText}
+              ariaLabel="Operations continuity evidence packages"
+            />
+          </CardContent>
+        </Card>
+      </section>
+<section className="grid gap-4"><Card className={cn("border", statusPanelClass(vm.accountingRecordSummary.statusTone))}>
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
+                  {vm.accountingRecordLabel}
+                </CardTitle>
+                <CardDescription>{vm.accountingRecordSummary.summaryLabel}</CardDescription>
+              </div>
+              <Badge variant={statusBadgeVariant(vm.accountingRecordSummary.statusTone)}>
+                {vm.accountingRecordSummary.statusLabel}
+              </Badge>
+            </div>
+            <div
+              role="list"
+              aria-label="Accounting record evidence summary"
+              className="grid gap-2 pt-3 text-xs text-muted-foreground sm:grid-cols-2"
+            >
+              <span role="listitem">{vm.accountingRecordSummary.recordDisplayLabel}</span>
+              <span role="listitem">{vm.accountingRecordSummary.evidenceLabel}</span>
+              <span role="listitem">{vm.accountingRecordSummary.auditPackLabel}</span>
+              <span role="listitem">{vm.accountingRecordSummary.auditPackTimingLabel}</span>
+            </div>
+            <OperationsSystemDetails fields={vm.accountingRecordSummary.technicalDetails} label="Accounting record system details" />
+          </CardHeader>
+          <CardContent>
+            <DenseDataTable
+              columns={accountingRecordColumns}
+              rows={vm.accountingRecordEvidence}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              emptyText={vm.accountingRecordEmptyText}
+              ariaLabel="Operations continuity accounting record evidence"
+            />
+          </CardContent>
+        </Card></section>
+<section className="grid gap-4">
         <Card className="panel-surface">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -2463,7 +2231,172 @@ export function OperationsContinuityScreen() {
             />
           </CardContent>
         </Card>
+      </section></>
+};
+
+  return <div className="space-y-6">
+<span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
+<section
+        role="region"
+        aria-label="Operations continuity control strip"
+        className="panel-surface-strong flex flex-wrap items-start justify-between gap-4 px-4 py-4"
+      >
+        <div className="min-w-0">
+          <div className="eyebrow-label">Accounting operations</div>
+          <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
+            {closeHub ? "Close" : vm.title}
+          </h2>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">{vm.subtitle}</p>
+          {vm.errorText ? (
+            <p role="alert" className="mt-3 inline-flex items-center gap-2 rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
+              <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+              {vm.errorText}
+            </p>
+          ) : null}
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <Badge variant="outline">{vm.workflowsSummaryLabel}</Badge>
+          {closeHub ? <Button asChild variant="outline" size="sm"><Link to={{ pathname: "/accounting/workflow", search: location.search, hash: "#close-command-center" }}>Valuation and period operations</Link></Button> : null}
+          {vm.errorText ? <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void vm.refresh()}
+            busy={vm.reloadBusy}
+            busyLabel={vm.reloadLabel}
+            disabled={vm.reloadDisabled}
+            disabledReason={vm.reloadDisabledReason}
+            aria-label={vm.reloadAriaLabel}
+          >
+            <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+            {vm.reloadLabel}
+          </Button> : null}
+        </div>
       </section>
+<section className="grid gap-4 xl:grid-cols-[1fr_0.75fr]">
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Workflow className="h-5 w-5 text-primary" aria-hidden="true" />
+              Workflows
+            </CardTitle>
+            <CardDescription>Select a workflow to inspect close-workstream gates, blockers, next action, and timeline.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {vm.workflowsFundScopeNote && !vm.loading && !vm.errorText ? (
+              <p role="status" aria-label="Operations continuity fund scope" data-narrowing={vm.workflowsFundScopeStatus} className="mb-2 text-xs text-muted-foreground">{vm.workflowsFundScopeNote}</p>
+            ) : null}
+            <DenseDataTable
+              columns={workflowColumns}
+              rows={vm.workflows}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              getRowSelectAriaLabel={(row) => `Open ${row.ariaLabel}`}
+              getRowAriaControls={(row) => row.detailPanelId}
+              getRowAriaExpanded={(row) => row.expanded}
+              getRowClassName={(row) => row.rowClassName}
+              onRowSelect={(row) => { vm.selectWorkflow(row.id); navigate({ search: updateWorkstationSearch(updateWorkstationSearch(location.search, "reconciliationBreak", null), "workflowId", row.id), hash: location.hash }); }}
+              selectedRowId={vm.selectedWorkflowId}
+              emptyText={vm.workflowsEmptyText}
+              ariaLabel={vm.workflowsTableLabel}
+              caption={vm.workflowsTableCaption}
+            />
+          </CardContent>
+        </Card>
+
+        <Card
+          className={cn("border", statusPanelClass(vm.nextAction.statusTone))}
+          role="region"
+          aria-label="Recommended next action"
+        >
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <ArrowRight className="h-5 w-5 text-primary" aria-hidden="true" />
+                  Next action
+                </CardTitle>
+                <CardDescription>{vm.nextAction.detail}</CardDescription>
+              </div>
+              <Badge variant={statusBadgeVariant(vm.nextAction.statusTone)}>
+                {vm.nextAction.statusLabel}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="font-semibold text-foreground">{vm.nextAction.title}</p>
+              {vm.nextAction.disabledReason ? (
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.nextAction.disabledReason}</p>
+              ) : null}
+            </div>
+            {vm.nextAction.href ? (
+              <Button asChild disabled={vm.nextAction.disabled} disabledReason={vm.nextAction.disabledReason}>
+                <Link to={vm.nextAction.href} aria-label={vm.nextAction.ariaLabel}>
+                  {vm.nextAction.label}
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </Button>
+            ) : (
+              <Button type="button" disabled disabledReason={vm.nextAction.disabledReason}>
+                {vm.nextAction.label}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      </section>
+{closeHub ? <Tabs value={activeCloseTab} onValueChange={selectCloseTab} tabs={CLOSE_HUB_TABS.map((id) => ({ id, label: id.charAt(0).toUpperCase() + id.slice(1) }))} aria-label="Close workspace views">
+<TabPanel>{activeCloseTab === "board" ? closeSections.board : null}</TabPanel>
+<TabPanel>{activeCloseTab === "blockers" ? closeSections.blockers : null}</TabPanel>
+<TabPanel>{activeCloseTab === "checklist" ? closeSections.checklist : null}</TabPanel>
+<TabPanel>{activeCloseTab === "approvals" ? closeSections.approvals : null}</TabPanel>
+<TabPanel>{activeCloseTab === "evidence" ? closeSections.evidence : null}</TabPanel>
+</Tabs> : <>{Object.entries(closeSections).map(([id, content]) => <section key={id}>{content}</section>)}</>}
+<Dialog open={confirmation !== null} onOpenChange={(open) => { if (!open) setConfirmation(null); }}>
+  <DialogContent aria-labelledby="close-command-title" aria-describedby="close-command-description">
+    <DialogCloseButton onClick={() => setConfirmation(null)} />
+    <DialogHeader>
+      <DialogTitle id="close-command-title">{confirmation?.kind === "reopen" ? "Confirm period reopen" : "Confirm close publication"}</DialogTitle>
+      <DialogDescription id="close-command-description">{confirmation?.kind === "reopen" ? "Reopen this locked period using the incident, approval reference, justification and impact summary entered below." : "Publish the retained close package and its reviewed evidence for this workflow."}</DialogDescription>
+    </DialogHeader>
+    <dl className="grid gap-2 text-sm">
+      <div><dt>Workflow</dt><dd className="break-all font-mono">{confirmation?.workflowId}</dd></div>
+      <div><dt>Entity</dt><dd>{closeScope.entityId ?? "Not recorded"}</dd></div>
+      <div><dt>Book</dt><dd>{closeScope.ledgerBookId ?? "Not recorded"}</dd></div>
+      <div><dt>Period</dt><dd>{closeScope.periodId ?? "Not recorded"}</dd></div>
+      <div><dt>Expected version</dt><dd>{confirmation?.version}</dd></div>
+    </dl>
+    {confirmation?.kind === "reopen" ? <p className="mt-4 text-sm">{reopenWorkflowForm.justification}</p> : null}
+    {confirmationStale ? <p role="alert" className="mt-3 text-sm text-danger">The selected workflow changed. Cancel and review its latest evidence before continuing.</p> : null}
+    <CloseConfirmationControls kind={confirmation?.kind ?? "publish"} stale={confirmationStale}
+      onCancel={() => setConfirmation(null)} onConfirm={(reason) => {
+        if (!confirmation || confirmationStale) return;
+        const pending = confirmation;
+        setConfirmation(null);
+        if (pending.kind === "publish" && pending.row) void closeWorkflowCommandHandler(pending.row, reason);
+        else void reopenWorkflowCommandHandler();
+      }} />
+  </DialogContent>
+</Dialog>
+</div>;
+}
+
+
+/** Keep reason keystrokes local so a dense close workspace does not redraw every table. */
+function CloseConfirmationControls({ kind, stale, onCancel, onConfirm }: {
+  kind: "publish" | "reopen";
+  stale: boolean;
+  onCancel: () => void;
+  onConfirm: (reason: string) => void;
+}) {
+  const [reason, setReason] = useState("");
+  const missing = kind === "publish" && !reason.trim();
+  return <>
+    {kind === "publish" ? <div className="mt-4 space-y-1.5"><Label htmlFor="close-publication-reason">Reason</Label><Input id="close-publication-reason" value={reason} onChange={(event) => setReason(event.target.value)} /></div> : null}
+    <div className="mt-5 flex justify-end gap-2">
+      <Button variant="outline" onClick={onCancel}>Cancel</Button>
+      <Button disabled={stale || missing} disabledReason={stale ? "Review the latest workflow first." : missing ? "Enter a reason for publication." : null}
+        onClick={() => { if (!stale && !missing) onConfirm(reason.trim()); }}>{kind === "reopen" ? "Confirm reopen" : "Confirm publication"}</Button>
     </div>
-  );
+  </>;
 }

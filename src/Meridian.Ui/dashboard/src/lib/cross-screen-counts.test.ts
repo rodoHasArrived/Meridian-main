@@ -7,7 +7,9 @@ import {
   countOpenBreaks,
   countOpenOrders,
   countProviderHealth,
+  capHealthyOnStaleEvidence,
   formatProviderHealth,
+  resolveProviderStatus,
   selectCrossScreenCounts
 } from "@/lib/cross-screen-counts";
 import { buildAccountingReconciliationContinuityStatus } from "@/screens/accounting-screen.workflow-continuity";
@@ -17,6 +19,8 @@ import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
 // The same fixture the server's CrossScreenCountDefinitionsTests reads, so both count the same way.
 interface CountFixture {
   providerHealth: { name: string; statuses: string[]; healthy: number; total: number }[];
+  providerStatus: { name: string; listed: string; readiness: string | null; status: string }[];
+  providerEvidenceStaleness: { name: string; status: string; now: string; observedAt: (string | null)[]; capped: string }[];
   openBreaks: { name: string; statuses: string[]; open: number }[];
   openOrders: { name: string; statuses: string[]; open: number }[];
 }
@@ -34,6 +38,14 @@ const shared: WorkstationCrossScreenCounts = {
 describe("cross-screen count definitions (shared with the server)", () => {
   it.each(fixture.providerHealth)("provider health: $name", ({ statuses, healthy, total }) => {
     expect(countProviderHealth(statuses.map((status) => ({ status })))).toEqual({ healthy, total });
+  });
+
+  it.each(fixture.providerStatus)("provider status: $name", ({ listed, readiness, status }) => {
+    expect(resolveProviderStatus(listed, readiness)).toBe(status);
+  });
+
+  it.each(fixture.providerEvidenceStaleness)("provider evidence staleness: $name", ({ status, now, observedAt, capped }) => {
+    expect(capHealthyOnStaleEvidence(status, observedAt, Date.parse(now))).toBe(capped);
   });
 
   it.each(fixture.openBreaks)("open breaks: $name", ({ statuses, open }) => {
@@ -92,7 +104,7 @@ describe("applyCrossScreenCounts", () => {
     ];
     const applied = applyCrossScreenCounts(metrics, { openOrders: 2, providers: { healthy: 1, total: 4 }, openBreaks: null });
     expect(applied[0]).toMatchObject({ value: "2", delta: "" });
-    expect(applied[1]).toMatchObject({ value: "1/4", delta: "", tone: "warning" });
+    expect(applied[1]).toMatchObject({ value: "1 of 4 providers", delta: "", tone: "warning" });
     // Cards that are not cross-screen counts are left alone.
     expect(applied[2]).toEqual(metrics[2]);
   });

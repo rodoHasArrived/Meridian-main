@@ -45,7 +45,7 @@ public sealed class AccountingWorkspaceShellSmokeTests
         xaml.Should().Contain("AccountingHeroActionTitleText");
         xaml.Should().Contain("AccountingHeroPrimaryActionButton");
         xaml.Should().Contain("IsCompact=\"True\"");
-        xaml.Should().Contain("Text=\"Accounting\"");
+        xaml.Should().Contain("Text=\"Accounting Workspace\"");
         xaml.Should().Contain("Accounting work queues for operations, accounting, reconciliation, reporting, and audit review.");
         xaml.Should().Contain("AutomationProperties.AutomationId=\"FinancialOperationsWorkflowCheckpoint\"");
         xaml.Should().Contain("FinancialOperationsWorkflowStatusText");

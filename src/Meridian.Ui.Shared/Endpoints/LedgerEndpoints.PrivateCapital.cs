@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Text.Json;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Reporting;
@@ -9,6 +10,7 @@ using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Identity.Auth;
 using Meridian.Ledger;
 using Meridian.Reporting;
+using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -41,6 +43,19 @@ public static partial class LedgerEndpoints
                 return Results.Json(workbench, json);
             })
                 .ConfigureAwait(false)).WithName("GetPrivateCapitalWorkbench"));
+
+        CapitalRead(app.MapPost(UiApiRoutes.LedgerPrivateCapitalUnitRegisterPreview, async (
+            Guid ledgerBookId, PreviewPrivateCapitalUnitRegisterRequest request, HttpContext context) =>
+            await ExecutePrivateCapitalAsync(context, ledgerBookId, false, async (scope, service, actor) =>
+            {
+                var journal = ResolveJournalStore(context);
+                var vault = context.RequestServices.GetService<IEvidenceArtifactStore>();
+                if (journal is not IAtomicLedgerPeriodCloseStore close || vault is null)
+                    return PrivateCapitalUnavailable("The unit register requires an Evidence Vault and a retained hard-close authority.");
+                return Results.Json(await PrivateCapitalUnitRegisterPreview.BuildAsync(vault, journal, close,
+                    scope, request, context.RequestAborted).ConfigureAwait(false), json);
+            }).ConfigureAwait(false)).WithName("PreviewPrivateCapitalUnitRegister")
+            .DeclareNonMutating("Reconciles a reviewed unit register to the retained hard-close journal."));
 
         CapitalMutation(app.MapPost(PrivateCapitalRoute + "/commitments", async (
             Guid ledgerBookId, CreatePrivateCapitalCommitmentRequest request, HttpContext context) =>

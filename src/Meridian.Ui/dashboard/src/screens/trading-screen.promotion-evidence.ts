@@ -21,7 +21,12 @@ export interface PromotionGateForm {
   manualOverrideId: string;
   evidenceReferences: string;
   approvalChecklist: string[];
+  liveSymbols?: string;
+  liveNotional?: string;
+  liveExpiry?: string;
 }
+
+export type LiveAuthorizationField = "liveSymbols" | "liveNotional" | "liveExpiry";
 
 export const emptyPromotionGateForm: PromotionGateForm = {
   runId: "",
@@ -106,6 +111,14 @@ export function validatePromotionApproval(
     return `${liveTarget ? "Live" : "Paper"} promotion evidence references are invalid: ${invalidEvidence.join(", ")}.`;
   }
 
+  if (liveTarget && !evaluation.strategyArtifactId) {
+    return "Review a Paper run with retained strategy revision evidence.";
+  }
+
+  if (liveTarget && !buildLiveAuthorization(form, evaluation)) {
+    return "Enter authorized symbols, a positive USD order ceiling, and a future expiry.";
+  }
+
   return null;
 }
 
@@ -135,7 +148,28 @@ export function buildPromotionApprovalRequest(
     approvalChecklist: approvalChecklist.length > 0 ? approvalChecklist : undefined,
     evidenceReferences: evidenceReferences.length > 0 ? evidenceReferences : undefined,
     reviewNotes: trimmedForm.reviewNotes || undefined,
-    manualOverrideId: trimmedForm.manualOverrideId || undefined
+    manualOverrideId: trimmedForm.manualOverrideId || undefined,
+    ...(isLivePromotionTarget(evaluation) && evaluation
+      ? { liveAuthorization: buildLiveAuthorization(form, evaluation) }
+      : {})
+  };
+}
+
+function buildLiveAuthorization(
+  form: PromotionGateForm, evaluation: PromotionEvaluationResult
+): ApprovePromotionRequest["liveAuthorization"] {
+  const symbols = form.liveSymbols?.split(/[,\s]+/).filter(Boolean).map((symbol) => symbol.toUpperCase()) ?? [];
+  const limit = Number(form.liveNotional);
+  const expiry = Date.parse(form.liveExpiry ?? "");
+  if (!evaluation.strategyArtifactId || symbols.length === 0 || !Number.isFinite(limit) || limit <= 0
+    || !Number.isFinite(expiry) || expiry <= Date.now()) return undefined;
+
+  return {
+    expectedStrategyArtifactId: evaluation.strategyArtifactId,
+    allowedSymbols: [...new Set(symbols)],
+    maxOrderNotional: limit,
+    currency: "USD",
+    expiresAt: new Date(expiry).toISOString()
   };
 }
 
@@ -328,9 +362,9 @@ export function buildPromotionApprovalChecklist(
       },
       {
         id: "governed-reporting",
-        label: "Governed reporting",
+        label: "Reporting",
         status: evidenceStatus("GOVERNED_REPORTING_REVIEWED"),
-        description: "Governed report-pack evidence supports the live readiness decision"
+        description: "Report-pack evidence supports the live readiness decision"
       },
       {
         id: "governance-signoff",
@@ -342,13 +376,13 @@ export function buildPromotionApprovalChecklist(
         id: "exception-handling",
         label: "Exception handling",
         status: evidenceStatus("EXCEPTION_HANDLING_REVIEWED"),
-        description: "Open exceptions and escalation posture have been reviewed"
+        description: "Open exceptions and escalation status have been reviewed"
       },
       {
         id: "rollback-kill-switch",
         label: "Rollback/kill-switch",
         status: evidenceStatus("ROLLBACK_KILL_SWITCH_REVIEWED"),
-        description: "Rollback and kill-switch posture are ready before live operation"
+        description: "Rollback and kill-switch are ready before live operation"
       },
       {
         id: "audit-retention",

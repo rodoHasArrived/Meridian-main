@@ -5,6 +5,7 @@ import { PreparerDraftCheckPanel } from "./preparer-draft-check-panel";
 import * as api from "@/lib/preparer-draft-check-api";
 import * as common from "@/lib/single-principal-attestation-api";
 import { ApiError } from "@/lib/api-errors";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import type { PreparerReceipt } from "@/lib/single-principal-attestation-api";
 
 vi.mock("@/lib/preparer-draft-check-api", async importOriginal => ({
@@ -122,7 +123,7 @@ describe("retained calculation preparer check", () => {
     await ready(); fill(); fireEvent.click(screen.getByRole("button", { name: "Attest my non-postable draft check" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Refresh the declaration and retained run");
     expect(screen.queryByRole("button", { name: "Retry same draft command" })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Refresh draft check" }));
+    fireEvent.click(screen.getByRole("button", { name: "Retry loading draft check" }));
     await ready();
     expect(screen.getByLabelText("Draft-check reason")).toHaveValue("");
     expect(screen.getByRole("checkbox", { name: target.confirmation })).not.toBeChecked();
@@ -167,5 +168,17 @@ describe("retained calculation preparer check", () => {
     expect(screen.getByText(/Exact revision/)).toHaveTextContent(next.revision);
     fill(); fireEvent.click(screen.getByRole("button", { name: "Attest my non-postable draft check" }));
     await waitFor(() => expect(api.recordPreparerDraftCheck).toHaveBeenCalledWith(expect.objectContaining({ subjectId: next.subjectId, subjectRevision: next.revision })));
+  });
+  it("keeps the typed reason and confirmation when the header refresh fires, then reloads once nothing is in progress", async () => {
+    const view = render(<GlobalRefreshProvider sequence={0}><PreparerDraftCheckPanel securityId={security} runId={run} /></GlobalRefreshProvider>);
+    await ready(); fill();
+    view.rerender(<GlobalRefreshProvider sequence={1}><PreparerDraftCheckPanel securityId={security} runId={run} /></GlobalRefreshProvider>);
+    expect(screen.getByLabelText("Draft-check reason")).toHaveValue("Inspected exact retained calculation");
+    expect(screen.getByRole("checkbox", { name: target.confirmation })).toBeChecked();
+    expect(api.getPreparerDraftSnapshot).toHaveBeenCalledTimes(1);
+    fireEvent.change(screen.getByLabelText("Draft-check reason"), { target: { value: "" } });
+    fireEvent.click(screen.getByRole("checkbox", { name: target.confirmation }));
+    view.rerender(<GlobalRefreshProvider sequence={2}><PreparerDraftCheckPanel securityId={security} runId={run} /></GlobalRefreshProvider>);
+    await waitFor(() => expect(api.getPreparerDraftSnapshot).toHaveBeenCalledTimes(2));
   });
 });

@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { buildAppShellViewState, type AppShellWorkspacePayload } from "@/app-shell.view-model";
 import { buildWorkstationStatusItems } from "@/components/meridian/workstation-status-bar";
+import { countAttention } from "@/lib/attention-items";
 import { buildWorkspaceAttentionCounts } from "@/lib/daily-control-tower";
+import type { OperatorTriageItem } from "@/lib/operator-inbox-triage";
 import type { DataWorkspaceResponse, SessionInfo, SystemOverviewResponse, TradingWorkspaceResponse } from "@/types";
 
 const session = (environment: SessionInfo["environment"]): SessionInfo => ({
@@ -135,7 +137,7 @@ describe("app shell attention state", () => {
       tone: "review",
       value: "1 warning",
       href: "/data/providers",
-      actionLabel: "Open provider posture"
+      actionLabel: "Open provider health"
     });
   });
 
@@ -153,6 +155,50 @@ describe("app shell attention state", () => {
     const { attention } = build({ payload: { ...emptyPayload, session: session("live"), data: providers("Healthy") } });
 
     expect(attention.clear).toBe(true);
+  });
+
+  it("counts the shared inbox in the same list the sidebar counts, by the one rule", () => {
+    const inboxItem = (workItemId: string, overrides: Partial<OperatorTriageItem> = {}): OperatorTriageItem => ({
+      workItemId, label: workItemId, detail: "", workspace: "Accounting", targetRoute: "/accounting/reconciliation", kind: null,
+      tone: "Warning", createdAt: "2026-05-14T09:00:00Z", ownerId: null, dueAt: null, version: 1, sourceVersion: 1,
+      acknowledgedAt: null, snoozedUntil: null,
+      capabilities: { canAssign: true, canAcknowledge: true, canSnooze: true, canUnsnooze: true, disabledReason: null },
+      activity: [],
+      ...overrides
+    });
+    const inboxItems = [
+      inboxItem("cash-break"),
+      inboxItem("note", { tone: "Info" }),
+      inboxItem("snoozed", { snoozedUntil: new Date(Date.now() + 60 * 60 * 1000).toISOString() })
+    ];
+    const shell = build({ payload: { ...emptyPayload, trading: tradingWithWorkItems, data: providers("Warning") }, inboxItems });
+    const { attention } = shell;
+
+    // Three workspace signals plus the one inbox item that needs attention; the informational
+    // and the snoozed item are listed but not counted.
+    expect(attention.items).toHaveLength(6);
+    expect(countAttention(attention.items).total).toBe(4);
+    expect(countAttention(attention.items)).toEqual(buildWorkspaceAttentionCounts(shell.workflowContinuity, inboxItems));
+    expect(attention.title).toBe("Brokerage sync failed");
+    expect(attention.moreCount + 1).toBe(4);
+    expect(attention.signals[0]).toMatchObject({ value: "Brokerage sync failed · 3 more", tone: "blocked" });
+  });
+
+  it("leads with a shared-inbox blocker when no workspace signal is as severe", () => {
+    const blocker: OperatorTriageItem = {
+      workItemId: "cash-break", label: "Cash break triage", detail: "Needs an owner.", workspace: "Accounting",
+      targetRoute: "/accounting/reconciliation", kind: null, tone: "Critical", createdAt: "2026-05-14T09:00:00Z",
+      ownerId: null, dueAt: null, version: 1, sourceVersion: 1, acknowledgedAt: null, snoozedUntil: null,
+      capabilities: { canAssign: true, canAcknowledge: true, canSnooze: false, canUnsnooze: false, disabledReason: null },
+      activity: []
+    };
+    const { attention } = build({ inboxItems: [blocker] });
+
+    expect(attention.clear).toBe(false);
+    expect(attention.tone).toBe("blocked");
+    expect(attention.title).toBe("Cash break triage");
+    expect(attention.moreCount).toBe(0);
+    expect(attention.signals[0]).toMatchObject({ id: "decisions", href: "/accounting/reconciliation", actionLabel: "Open in workspace" });
   });
 
   it("leads with the worst queued decision and counts the rest", () => {

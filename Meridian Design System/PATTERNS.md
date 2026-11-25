@@ -175,6 +175,18 @@ use the full indicator for provider links and run telemetry. Flat by default —
 | Entity / ownership structure (nodes + %-edges) | **OwnershipGraph** — layered top-down; `TreeView` for flat hierarchies without percentages |
 | Any of the above in a titled, toolbar'd frame | wrap in **ChartCard** |
 
+### Decision chart evidence
+
+Pair decision charts with the browser workstation's `ChartEvidenceView`. Build the plotted mark and
+inspector entry from the same observation. Keep the series, signed plotted value, unit, calculation
+basis, timestamp or as-of, and a link to the source record or inputs together. Use the source's units
+and timestamps. Show missing provenance explicitly and label illustrative data at the chart.
+
+Pointer inspection, tap, and keyboard focus select the same entry. The plot has one tab stop, with
+Left and Right Arrow to move and Home and End to jump. The adjacent point slider supports inspection
+independently of the plot. Keep the entry visible while users reach its proof link. Identify live
+points by source identity so refreshed data cannot move an inspected value to another record.
+
 ---
 
 ## Layout

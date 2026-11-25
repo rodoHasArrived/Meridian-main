@@ -1,4 +1,5 @@
 import { buildOperatorFocusCandidate, type OperatorFocusCandidate } from "@/app-shell.operator-focus";
+import { providerHistoryHref } from "@/lib/provider-history-link";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import type { DataBackfillRecord, DataProviderRecord, DataWorkspaceResponse } from "@/types";
 
@@ -42,9 +43,11 @@ function buildOperatorFocusCandidateFromProvider(
     id: `provider:${provider.provider}`,
     label: `${provider.provider} provider ${provider.status.toLowerCase()}`,
     detail: provider.recommendedAction ?? provider.note,
-    route: WORKSTATION_ROUTE_CATALOG.dataProviders,
+    // With a provider id the item opens that provider's retained verification history (failed and
+    // passed probes over time); without one it falls back to the provider trust list.
+    route: provider.providerId ? providerHistoryHref(provider.providerId) : WORKSTATION_ROUTE_CATALOG.dataProviders,
     workspaceLabel: "Data",
-    actionLabel: "Open provider trust",
+    actionLabel: provider.providerId ? "Open provider history" : "Open provider trust",
     tone: provider.status === "Degraded" || provider.status === "Blocked" ? "blocked" : "review",
     sourcePriority: 15,
     sourceIndex: index

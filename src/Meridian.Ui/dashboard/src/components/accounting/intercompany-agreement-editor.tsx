@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { FormGrid, FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import type { AgreementDraft, AgreementType } from "@/types/intercompany-agreements";
+import { initialStructuredTerms, IntercompanyStructuredTermsEditor } from "./intercompany-structured-terms-editor";
+import type { AgreementDraft, AgreementType, StructuredAgreementTerms } from "@/types/intercompany-agreements";
 
 export const agreementTypes: readonly AgreementType[] = ["Loan", "ManagementFee", "CostShare", "CashSweep", "Guarantee", "Other"];
 export const typeLabel = (value: string) => value.replace(/([a-z])([A-Z])/g, "$1 $2");
@@ -28,6 +29,9 @@ interface Props {
 export function IntercompanyAgreementEditor({ initial, fixedIdentity, busy, onSave, onCancel }: Props) {
   const id = useId();
   const [selectedType, setSelectedType] = useState(initial.agreementType);
+  const [structured, setStructured] = useState<StructuredAgreementTerms | null>(initial.terms?.structuredTerms ?? null);
+  const [partyOneId, setPartyOneId] = useState(initial.partyOneId);
+  const [partyTwoId, setPartyTwoId] = useState(initial.partyTwoId);
   const [validationError, setValidationError] = useState<string | null>(null);
   function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -51,9 +55,9 @@ export function IntercompanyAgreementEditor({ initial, fixedIdentity, busy, onSa
         partyOneRole: fixedIdentity ? initial.partyOneRole : type === "Other" ? text("partyOneRole") || roles[type][0] : roles[type][0],
         partyTwoRole: fixedIdentity ? initial.partyTwoRole : type === "Other" ? text("partyTwoRole") || roles[type][1] : roles[type][1],
         currency: fixedIdentity ? initial.currency : text("currency").toUpperCase(), effectiveFrom: text("effectiveFrom"), effectiveTo: text("effectiveTo") || null,
-        purpose: text("purpose"), terms: { fixedAnnualRate: rate || null, rateDescription: text("rateDescription"),
+        purpose: text("purpose"), terms: { ...(structured ? { structuredTerms: structured } : {}), fixedAnnualRate: structured ? null : rate || null, rateDescription: text("rateDescription"),
           scheduleDescription: text("scheduleDescription"), allocationDescription: text("allocationDescription"),
-          settlementDays: settlement ? Number(settlement) : null, notes: text("notes") },
+          settlementDays: structured ? null : settlement ? Number(settlement) : null, notes: text("notes") },
         evidence: [...(text("evidenceReference") ? [{ reference: text("evidenceReference"), artifactId: text("artifactId") || null }] : []), ...initial.evidence?.slice(1) ?? []] };
     onSave(next, text("rationale"));
   }
@@ -65,22 +69,24 @@ export function IntercompanyAgreementEditor({ initial, fixedIdentity, busy, onSa
       <FormGrid columns={3}>
         <Field label="Agreement code" name="code" required defaultValue={initial.code} disabled={fixedIdentity} />
         <Field label="Agreement name" name="name" required defaultValue={initial.name} />
-        <FormRow label="Agreement type" labelFor={`${id}-type`}><Select id={`${id}-type`} name="agreementType" value={selectedType} onChange={event => setSelectedType(event.target.value as AgreementType)} disabled={fixedIdentity}>{agreementTypes.map(type => <option key={type} value={type}>{typeLabel(type)}</option>)}</Select></FormRow>
-        <Field label="First legal entity" name="partyOneId" required defaultValue={initial.partyOneId} disabled={fixedIdentity} />
-        <Field label="Second legal entity" name="partyTwoId" required defaultValue={initial.partyTwoId} disabled={fixedIdentity} />
+        <FormRow label="Agreement type" labelFor={`${id}-type`}><Select id={`${id}-type`} name="agreementType" value={selectedType} onChange={event => { setSelectedType(event.target.value as AgreementType); setStructured(null); }} disabled={fixedIdentity}>{agreementTypes.map(type => <option key={type} value={type}>{typeLabel(type)}</option>)}</Select></FormRow>
+        <Field label="First legal entity" name="partyOneId" required defaultValue={initial.partyOneId} onChange={event => setPartyOneId(event.target.value)} disabled={fixedIdentity} />
+        <Field label="Second legal entity" name="partyTwoId" required defaultValue={initial.partyTwoId} onChange={event => setPartyTwoId(event.target.value)} disabled={fixedIdentity} />
         <Field label="Agreement currency" name="currency" maxLength={3} required defaultValue={initial.currency} disabled={fixedIdentity} hint="Declared three-letter transaction currency." />
         {selectedType === "Other" ? <><Field label="First party role" name="partyOneRole" required defaultValue={initial.partyOneRole} disabled={fixedIdentity} />
           <Field label="Second party role" name="partyTwoRole" required defaultValue={initial.partyTwoRole} disabled={fixedIdentity} /></> : null}
         <Field label="Effective from" name="effectiveFrom" type="date" required readOnly={initial.action === "Amend"} defaultValue={initial.effectiveFrom} hint={initial.action === "Amend" ? "Choose the intended effective date in the as-of filter before drafting an amendment." : undefined} />
         <Field label="Effective to (exclusive)" name="effectiveTo" type="date" defaultValue={initial.effectiveTo ?? ""} />
-        <Field label="Annual fixed rate (fraction)" name="fixedAnnualRate" inputMode="decimal" pattern="-?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)" defaultValue={initial.terms?.fixedAnnualRate ?? ""} hint="0.05 means 5%. Descriptive terms do not accrue journals." />
-        <Field label="Settlement days" name="settlementDays" type="number" min="0" step="1" defaultValue={initial.terms?.settlementDays ?? ""} hint="Calendar days." />
+        <Field label="Annual fixed rate (fraction)" name="fixedAnnualRate" disabled={structured !== null} inputMode="decimal" pattern="-?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)" defaultValue={initial.terms?.fixedAnnualRate ?? ""} hint="0.05 means 5%. Descriptive terms do not accrue journals." />
+        <Field label="Settlement days" name="settlementDays" disabled={structured !== null} type="number" min="0" step="1" defaultValue={initial.terms?.settlementDays ?? ""} hint="Calendar days." />
         <Field label="Rate description" name="rateDescription" defaultValue={initial.terms?.rateDescription ?? ""} />
         <Field label="Schedule description" name="scheduleDescription" defaultValue={initial.terms?.scheduleDescription ?? ""} />
         <Field label="Allocation description" name="allocationDescription" defaultValue={initial.terms?.allocationDescription ?? ""} />
         <Field label="Purpose" name="purpose" defaultValue={initial.purpose ?? ""} />
         <Field label="Terms notes" name="notes" defaultValue={initial.terms?.notes ?? ""} />
       </FormGrid>
+      {["Loan", "ManagementFee", "CostShare", "Guarantee"].includes(selectedType) ? <FormRow label="Legal terms format" labelFor={`${id}-format`}><Select id={`${id}-format`} value={structured ? "StructuredV1" : "Unstructured"} disabled={busy} onChange={event => setStructured(event.target.value === "StructuredV1" ? initialStructuredTerms(selectedType, initial.effectiveFrom, initial.effectiveTo) : null)}><option value="Unstructured">Unstructured retained terms</option><option value="StructuredV1">Structured declarations v1</option></Select></FormRow> : null}
+      {structured ? <IntercompanyStructuredTermsEditor type={selectedType} value={structured} onChange={setStructured} partyOneId={partyOneId} partyTwoId={partyTwoId} busy={busy} /> : null}
       <p className="text-sm text-muted-foreground">Party roles: {fixedIdentity ? `${initial.partyOneRole} and ${initial.partyTwoRole}` : roles[selectedType].map(typeLabel).join(" and ")}. {fixedIdentity ? "Approved party identities, roles, type and currency remain fixed." : "These roles follow the selected agreement type."}</p>
     </>}
     <FormGrid columns={3}>

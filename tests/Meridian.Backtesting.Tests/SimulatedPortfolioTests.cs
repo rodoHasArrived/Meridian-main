@@ -50,6 +50,51 @@ public sealed class SimulatedPortfolioTests
     }
 
     [Fact]
+    public void AccrueDailyInterest_BorrowFeeTakingCashNegative_ChargesMarginInterestFromTheNextDay()
+    {
+        // 3.65 p.a. margin = 1% per day; -36.5 p.a. rebate = a 10% per day borrow fee.
+        var portfolio = new SimulatedPortfolio(50m, new FixedCommissionModel(), 3.65, -36.5);
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", -10, 100m, 0m, DateTimeOffset.UtcNow));
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "QQQ", 10, 100m, 0m, DateTimeOffset.UtcNow));
+        portfolio.UpdateLastPrice("SPY", 100m);
+        portfolio.Cash.Should().Be(50m);
+        portfolio.MarginBalance.Should().Be(0m);
+
+        portfolio.AccrueDailyInterest(new DateOnly(2024, 1, 8));
+
+        portfolio.Cash.Should().BeApproximately(-50m, 0.00000000001m);
+        portfolio.MarginBalance.Should().Be(portfolio.Cash, "a borrow fee that overdraws the account creates a margin debit");
+
+        portfolio.AccrueDailyInterest(new DateOnly(2024, 1, 9));
+
+        var snapshot = portfolio.TakeSnapshot(DateTimeOffset.UtcNow, new DateOnly(2024, 1, 9));
+        snapshot.DayCashFlows.OfType<MarginInterestCashFlow>().Should().ContainSingle()
+            .Which.Amount.Should().BeApproximately(-0.5m, 0.00000000001m);
+        portfolio.Cash.Should().BeApproximately(-150.5m, 0.00000000001m);
+        portfolio.MarginBalance.Should().Be(portfolio.Cash);
+    }
+
+    [Fact]
+    public void AccrueDailyInterest_RebateLiftingCashPositive_StopsMarginInterest()
+    {
+        var portfolio = new SimulatedPortfolio(50m, new FixedCommissionModel(), 3.65, 36.5);
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", -10, 100m, 0m, DateTimeOffset.UtcNow));
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "QQQ", 11, 100m, 0m, DateTimeOffset.UtcNow));
+        portfolio.UpdateLastPrice("SPY", 100m);
+        portfolio.MarginBalance.Should().Be(-50m);
+
+        portfolio.AccrueDailyInterest(new DateOnly(2024, 1, 8));
+
+        // Day one: 1% interest on the -50 debit, then a +100 rebate clears it.
+        portfolio.Cash.Should().BeApproximately(49.5m, 0.00000000001m);
+        portfolio.MarginBalance.Should().Be(0m);
+
+        portfolio.AccrueDailyInterest(new DateOnly(2024, 1, 9));
+
+        portfolio.Cash.Should().BeApproximately(149.5m, 0.00000000001m, "no interest is owed once the debit is repaid");
+    }
+
+    [Fact]
     public void ProcessFill_CommissionCashFlows_ReconcileToActualCashChange()
     {
         var portfolio = CreatePortfolio();
@@ -106,6 +151,28 @@ public sealed class SimulatedPortfolioTests
             positions.Should().NotContainKey("SPY");
         else
             positions["SPY"].Quantity.Should().Be(expectedRemaining);
+    }
+
+    [Fact]
+    public void ProcessFill_AccountRefusals_AreFillRejectedExceptionsRaisedBeforeAnyStateChanges()
+    {
+        // The engine discards only FillRejectedException and lets every other failure end the run,
+        // because a later failure may leave the portfolio half-updated. That contract holds only if
+        // every refusal is raised before cash or positions move.
+        var portfolio = CreateLongOnlyPortfolio();
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", 100L, 50m, 0m, DateTimeOffset.UtcNow, "long-only"));
+        var cash = portfolio.Cash;
+
+        var shortSell = () => portfolio.ProcessFill(
+            new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", -150L, 55m, 0m, DateTimeOffset.UtcNow, "long-only"));
+        var marginBuy = () => portfolio.ProcessFill(
+            new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "QQQ", 1_000L, 400m, 0m, DateTimeOffset.UtcNow, "long-only"));
+
+        shortSell.Should().Throw<FillRejectedException>().WithMessage("*short selling*");
+        marginBuy.Should().Throw<FillRejectedException>().WithMessage("*margin*");
+        portfolio.Cash.Should().Be(cash);
+        portfolio.GetCurrentPositions().Keys.Should().BeEquivalentTo(["SPY"]);
+        portfolio.GetCurrentPositions()["SPY"].Quantity.Should().Be(100);
     }
 
     private static SimulatedPortfolio CreateLongOnlyPortfolio()

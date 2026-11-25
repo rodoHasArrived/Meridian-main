@@ -290,7 +290,7 @@ public sealed class SecurityIdentifierHistoryPostgresTests(SecurityMasterDatabas
 
     private static SecurityProjectionRecord Projection(Guid id, long version, params SecurityIdentifierDto[] identifiers)
         => SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Equity",
-            JsonSerializer.SerializeToElement(new { schemaVersion = 1, classification = "Common", shareClass = "A" })) with
+            SecurityTermsEnvelope.StampDeclaredFormat(JsonSerializer.SerializeToElement(new { schemaVersion = 1, classification = "Common", shareClass = "A" }))) with
         {
             SecurityId = id,
             PrimaryIdentifierKind = "Ticker",

@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 namespace Meridian.Ui.Services;
 
 /// <summary>
-/// Default no-op credential service for the shared UI services layer.
-/// Hosts with real credential storage implement
-/// <see cref="Contracts.ICredentialService"/> (see <c>Meridian.Wpf.Services.CredentialService</c>);
-/// shared code holding only this default gets no-op behaviour.
+/// No-op <see cref="Contracts.ICredentialService"/> used as a test base and a fallback only.
+/// It stores nothing and never refreshes a token. Hosts with real credential storage supply
+/// their own implementation (see <c>Meridian.Wpf.Services.CredentialService</c>), and shared
+/// services such as <see cref="OAuthRefreshService"/> must be given that implementation.
 /// </summary>
-public class CredentialService
+public class CredentialService : Contracts.ICredentialService
 {
     private static readonly Lazy<CredentialService> _instance = new(() => new CredentialService());
 
@@ -21,6 +21,9 @@ public class CredentialService
     public const string OAuthTokenResource = "oauth_token";
 
     public static CredentialService Instance => _instance.Value;
+
+    /// <inheritdoc />
+    public virtual string OAuthTokenResourcePrefix => OAuthTokenResource;
 
     public event EventHandler<CredentialExpirationEventArgs>? CredentialExpiring;
 

@@ -203,7 +203,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
 
     private string _statusText = "Select a fund-linked context to load accounting configuration.";
 
-    private string _activeFundText = "No fund selected";
+    private string _activeFundText = Meridian.Wpf.Copy.WorkspaceCopyCatalog.Scope.NoneSelected;
 
     private string _storagePostureText = "Storage has not been inspected.";
 
@@ -234,6 +234,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
     private string _chartAccountName = "Operating Cash";
 
     private string _chartAccountType = "Asset";
+    private string _chartAccountCode = string.Empty;
 
     private string _chartAccountParentPath = "Assets:Cash";
 
@@ -475,7 +476,9 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         IAccountingAuditIntegrityApiClient? auditIntegrityClient = null,
         IFactorPaydownApiClient? factorPaydownClient = null,
         IWorkstationEntityConsolidationApiClient? entityConsolidationClient = null,
-        IWorkstationManualJournalApiClient? manualJournalApiClient = null)
+        IWorkstationManualJournalApiClient? manualJournalApiClient = null,
+        IWorkstationOnboardingApiClient? onboardingClient = null,
+        PrivateCapitalUnitRegisterViewModel? unitRegister = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _authenticationSession = authenticationSession;
@@ -483,6 +486,10 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         AuditChainIntegrity = new AuditChainIntegrityViewModel(auditIntegrityClient);
         FactorPaydown = new FactorPaydownViewModel(factorPaydownClient);
         EntityConsolidation = new EntityConsolidationViewModel(entityConsolidationClient);
+        AttachEntityConsolidationSessionReset();
+        ShadowOnboarding = new OnboardingShadowWorkspace(onboardingClient);
+        UnitRegister = unitRegister;
+        AttachShadowOnboardingSessionReset();
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _manualJournalEntryWorkbenchService = manualJournalApiClient ?? manualJournalEntryWorkbenchService ?? throw new ArgumentNullException(nameof(manualJournalEntryWorkbenchService));
         _capitalAccountWorkbenchService = capitalAccountWorkbenchService;
@@ -777,6 +784,8 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
             if (SetProperty(ref _chartAccountNodeId, value))
             {
                 NotifyChartAccountSaveStateChanged();
+                OnPropertyChanged(nameof(ChartAccountCode));
+                OnPropertyChanged(nameof(IsChartAccountCodeReadOnly));
             }
         }
     }
@@ -816,6 +825,21 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
             }
         }
     }
+
+    public string ChartAccountCode
+    {
+        get => RetainedChartAccountCode ?? _chartAccountCode;
+        set
+        {
+            if (!IsChartAccountCodeReadOnly)
+                SetProperty(ref _chartAccountCode, value ?? string.Empty);
+        }
+    }
+
+    public bool IsChartAccountCodeReadOnly => RetainedChartAccountCode is not null;
+
+    private string? RetainedChartAccountCode => _configuration?.ChartOfAccounts
+        .FirstOrDefault(node => string.Equals(node.NodeId, ChartAccountNodeId.Trim(), StringComparison.OrdinalIgnoreCase))?.AccountCode;
 
     public string ChartAccountParentPath
     {
@@ -1761,7 +1785,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         _selectedDraft = null;
         _newManualJournalDraftId = Guid.NewGuid();
         _newManualJournalDraftTimestamp = DateTimeOffset.UtcNow;
-        ActiveFundText = "No fund selected";
+        ActiveFundText = Meridian.Wpf.Copy.WorkspaceCopyCatalog.Scope.NoneSelected;
         ConfigurationStatusText = "Locked";
         ConfigurationDetailText = "Select a fund-linked context before configuring chart accounts, templates, rules, or manual journal entries.";
         RulesStudioStatusText = "Locked";

@@ -91,4 +91,46 @@ public sealed class StandardChartOfAccountsTests
         balance.Single(row => row.Key.AccountType == LedgerAccountType.Equity).Value.Should().Be(1_000m);
         ledger.Journal.Should().OnlyContain(journal => journal.IsBalanced);
     }
+
+    [Fact]
+    public void TryGetRegistered_EveryResolvedAccount_IsRecognisedAsItsRole()
+    {
+        foreach (var role in Enum.GetValues<LedgerAccountRole>())
+        {
+            var symbol = role is LedgerAccountRole.Securities or LedgerAccountRole.ShortSecuritiesPayable
+                or LedgerAccountRole.FuturesMtmSettlement or LedgerAccountRole.DividendReceivable
+                or LedgerAccountRole.AccruedInterestReceivable ? "AAPL" : null;
+            var account = _chart.Resolve(role, "broker-1", symbol);
+
+            _chart.TryGetRegistered(account, out var registered).Should().BeTrue(role.ToString());
+            _chart.GetDefinition(registered).Should().Be(_chart.GetDefinition(role), role.ToString());
+            var reference = _chart.GetPostingReference(account);
+            reference.Should().NotBeNull();
+            StandardChartOfAccounts.Instance.ResolveCode(reference!.AccountCode!, "broker-1", symbol).Should().Be(account);
+        }
+    }
+
+    [Theory]
+    [InlineData("7999")]
+    [InlineData("not-registered")]
+    public void ResolveCode_DoesNotInferAnAccountFromItsCode(string code)
+    {
+        var resolve = () => StandardChartOfAccounts.Instance.ResolveCode(code);
+        resolve.Should().Throw<ArgumentException>().WithParameterName("code");
+    }
+
+    [Fact]
+    public void TryGetRegistered_DoesNotGuessFromNamesOrScopes()
+    {
+        _chart.TryGetRegistered(new LedgerAccount("Assets:Cash", LedgerAccountType.Asset), out _).Should().BeFalse();
+        _chart.TryGetRegistered(new LedgerAccount("Cash", LedgerAccountType.Liability), out _).Should().BeFalse();
+        // Instrument accounts need their symbol; unscoped roles refuse one.
+        _chart.TryGetRegistered(new LedgerAccount("Securities", LedgerAccountType.Asset), out _).Should().BeFalse();
+        _chart.TryGetRegistered(new LedgerAccount("Cash", LedgerAccountType.Asset, Symbol: "AAPL"), out _).Should().BeFalse();
+        // Only the canonical scope Resolve produces is registered.
+        _chart.TryGetRegistered(new LedgerAccount("Securities", LedgerAccountType.Asset, Symbol: "aapl"), out _).Should().BeFalse();
+        _chart.TryGetRegistered(new LedgerAccount("Cash", LedgerAccountType.Asset, FinancialAccountId: " broker-1"), out _).Should().BeFalse();
+        // Loan roles are registered only with the loan they belong to.
+        _chart.TryGetRegistered(_chart.GetDefinition(LedgerAccountRole.LoanPrincipal), out _).Should().BeFalse();
+    }
 }

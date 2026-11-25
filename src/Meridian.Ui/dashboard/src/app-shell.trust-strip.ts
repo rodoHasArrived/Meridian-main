@@ -163,7 +163,7 @@ export function buildTrustStripState({
     : null;
 
   return {
-    ariaLabel: "Workstation build, environment, provenance, and provider posture",
+    ariaLabel: "Workstation build, environment, provenance, and provider health",
     // Follows the session itself, not the workspace bootstrap: the session card this badge
     // replaced showed PAPER/LIVE as soon as the session resolved, so a known environment is
     // never hidden behind LOADING while workspace data is still arriving.
@@ -225,8 +225,8 @@ function buildProviderTrustStripItem({
 }): AppShellTrustStripItem {
   if (!data && sharedProviders) {
     // Routes that do not load the Data workspace show the same count the Data screen shows.
-    const value = `${sharedProviders.healthy}/${sharedProviders.total} healthy`;
-    const detail = `${formatCount(sharedProviders.healthy, "provider")} healthy of ${sharedProviders.total} listed in Data provider posture.`;
+    const value = `${sharedProviders.healthy} of ${sharedProviders.total} healthy`;
+    const detail = `${formatCount(sharedProviders.healthy, "provider")} healthy of ${sharedProviders.total} listed in Data providers.`;
     return {
       id: "providers",
       label: "Providers",
@@ -235,7 +235,7 @@ function buildProviderTrustStripItem({
       tone: sharedProviders.total > 0 && sharedProviders.healthy === sharedProviders.total ? "ready" : "review",
       ariaLabel: `Providers ${value}. ${detail}`,
       href: WORKSTATION_ROUTE_CATALOG.dataProviders,
-      actionLabel: "Open provider posture"
+      actionLabel: "Open provider health"
     };
   }
 
@@ -245,9 +245,9 @@ function buildProviderTrustStripItem({
         id: "providers",
         label: "Providers",
         value: "Pending",
-        detail: "Provider posture has not loaded yet.",
+        detail: "Provider health has not loaded yet.",
         tone: "pending",
-        ariaLabel: "Providers Pending. Provider posture has not loaded yet.",
+        ariaLabel: "Providers Pending. Provider health has not loaded yet.",
         href: null,
         actionLabel: null
       };
@@ -257,8 +257,8 @@ function buildProviderTrustStripItem({
     const detail = dataWorkspaceError
       ? `Data workspace failed: ${dataWorkspaceError}`
       : failed
-        ? "Workspace bootstrap failed before provider posture loaded."
-        : "Provider posture is unavailable in the loaded workspace data.";
+        ? "Workspace bootstrap failed before provider health loaded."
+        : "Provider health is unavailable in the loaded workspace data.";
     return {
       id: "providers",
       label: "Providers",
@@ -269,7 +269,7 @@ function buildProviderTrustStripItem({
       href: failed
         ? WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage
         : WORKSTATION_ROUTE_CATALOG.dataProviders,
-      actionLabel: failed ? "Open diagnostics" : "Open provider posture"
+      actionLabel: failed ? "Open diagnostics" : "Open provider health"
     };
   }
 
@@ -300,16 +300,16 @@ function buildProviderTrustStripItem({
         ? `${warning} warning`
         : unverified > 0
           ? `${unverified} unverified`
-        : `${healthy}/${providers.length} healthy`;
+        : `${healthy} of ${providers.length} healthy`;
   const detail = blocked > 0
     ? `${formatCount(blocked, "provider")} blocked; restore provider connectivity before relying on workstation data.`
     : degraded > 0
-      ? `${formatCount(degraded, "provider")} degraded; open Data provider posture before trading decisions.`
+      ? `${formatCount(degraded, "provider")} degraded; open Data providers before trading decisions.`
       : warning > 0
         ? `${formatCount(warning, "provider")} warning; review provider trust before relying on fresh data.`
         : unverified > 0
           ? `${formatCount(unverified, "provider")} has unverified health; inspect provider evidence before relying on fresh data.`
-        : `${formatCount(healthy, "provider")} healthy in the loaded data posture.`;
+        : `${formatCount(healthy, "provider")} healthy in the loaded provider data.`;
   const needsAction = blocked > 0 || degraded > 0 || warning > 0 || unverified > 0;
   const tone: AppShellTrustStripTone = blocked > 0 || degraded > 0
     ? "blocked"
@@ -327,10 +327,33 @@ function buildProviderTrustStripItem({
     href: needsAction
       ? WORKSTATION_ROUTE_CATALOG.dataProviders
       : null,
-    actionLabel: needsAction ? "Open provider posture" : null
+    actionLabel: needsAction ? "Open provider health" : null
   };
 }
 
 function formatCount(count: number, singular: string, plural = `${singular}s`): string {
   return pluralizeCount(count, singular, { plural });
+}
+
+/** The workstation-wide freshness fact the status bar starts from; see `resolveShellFreshness`. */
+export interface AppShellFreshness {
+  tone: "ready" | "review" | "blocked" | "unknown";
+  value: string | null;
+}
+
+const SHELL_FRESHNESS_ITEMS = ["source", "providers"] as const;
+const SHELL_TONE_RANK: Record<AppShellTrustStripTone, number> = { pending: 0, ready: 1, review: 2, blocked: 3 };
+
+/**
+ * The freshness of the sources every screen depends on, judged by the same items the masthead
+ * pill shows: data provenance and provider health (which already caps a provider whose evidence
+ * is stale). The status bar starts from this and a page can only make it worse, so the footer
+ * cannot say "up to date" while the pill above it says a source needs review.
+ */
+export function resolveShellFreshness(state: Pick<AppShellTrustStripState, "items">): AppShellFreshness {
+  const items = state.items.filter((item) => (SHELL_FRESHNESS_ITEMS as readonly string[]).includes(item.id));
+  if (items.length === 0) return { tone: "unknown", value: null };
+  const worst = items.reduce((current, item) => SHELL_TONE_RANK[item.tone] > SHELL_TONE_RANK[current.tone] ? item : current);
+  if (worst.tone === "pending") return { tone: "unknown", value: null };
+  return { tone: worst.tone, value: worst.tone === "ready" ? null : `${worst.label} ${worst.value}` };
 }

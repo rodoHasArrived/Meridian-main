@@ -348,8 +348,8 @@ export function buildCapitalAccountRollforward(
     currency: account.currency,
     movements,
     openingDerivation: itemised
-      ? "Opening is derived by the capital-account projection from the subledger's running net activity; it is not a separately stated opening balance."
-      : "Opening is set by the capital-account projection with no subledger entries behind it; it is not a separately stated opening balance.",
+      ? "Opening is derived by the capital-account summary from the subledger's running net activity; it is not a separately stated opening balance."
+      : "Opening is set by the capital-account summary with no subledger entries behind it; it is not a separately stated opening balance.",
     ...(itemised ? {} : { unsupportedReason: CAPITAL_ACCOUNT_ROLLFORWARD_NOT_ITEMISED_REASON }),
     verdict,
     verdictLabel: verdict === "out"

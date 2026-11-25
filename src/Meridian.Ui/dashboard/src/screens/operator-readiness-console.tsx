@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { GateRail, ReadinessPanel, SeverityBadge } from "@/components/operations";
-import { MetricCard } from "@/components/data/concrete";
+import { MetricTile } from "@/components/data/concrete";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import {
   useOperatorReadinessConsoleViewModel,
   type ReadinessConsolePanel,
@@ -109,6 +110,7 @@ export function OperatorReadinessConsole({
     reporting,
     fundAccountId
   });
+  useOnGlobalRefresh(() => { if (!vm.inboxRefreshDisabled) void vm.refreshInbox(); });
 
   return (
     <div className="space-y-6">
@@ -120,7 +122,7 @@ export function OperatorReadinessConsole({
         className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
       >
         <div className="min-w-0">
-          <div className="eyebrow-label">Trading readiness</div>
+          <div className="eyebrow-label">Operational readiness</div>
           <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
             {vm.title}
           </h2>
@@ -175,20 +177,6 @@ export function OperatorReadinessConsole({
               <Button asChild variant="outline" size="sm">
                 <Link to="/reporting/report-packs">Report packs</Link>
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => void vm.refreshInbox()}
-                disabled={vm.inboxRefreshDisabled}
-                disabledReason={vm.inboxRefreshDisabledReason}
-                busy={vm.inboxRefreshBusy}
-                busyLabel={vm.inboxRefreshLabel}
-                aria-label={vm.inboxRefreshAriaLabel}
-              >
-                <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-                {vm.inboxRefreshLabel}
-              </Button>
             </>
           )}
         >
@@ -233,7 +221,7 @@ export function OperatorReadinessConsole({
                   <span className="text-sm font-semibold">{source.label}</span>
                   <SeverityBadge status={toSeverity(source.level)} label={source.status} aria-label={source.statusAriaLabel} />
                 </div>
-                <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{source.endpoint}</p>
+                <p className="mt-1 break-all font-mono text-xs text-muted-foreground">{source.endpoint}</p>
               </div>
             ))}
           </div>
@@ -261,7 +249,7 @@ export function OperatorReadinessConsole({
             aria-describedby={metric.detailId}
             className="grid gap-2"
           >
-            <MetricCard
+            <MetricTile
               label={metric.label}
               value={metric.value}
               delta={metric.delta}
@@ -362,7 +350,7 @@ function SelectedWorkItemDetail({
           <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.detail}</p>
         </div>
         <TechnicalDetails label="Audit details" className="mt-3">
-          <p className="break-words font-mono text-[11px] text-muted-foreground">{detail.meta}</p>
+          <p className="break-words font-mono text-xs text-muted-foreground">{detail.meta}</p>
           <DetailFieldList fields={detail.fields} />
         </TechnicalDetails>
         {detail.action ? (
@@ -419,7 +407,7 @@ function PrimaryNextAction({ action }: { action: ReadinessConsoleNextAction }) {
           <div className="mt-1 text-sm font-semibold text-foreground">{action.title}</div>
           <p className="mt-1 text-xs leading-5 text-foreground/80">{action.detail}</p>
           <TechnicalDetails label="Action context" className="mt-2">
-            <p className="break-words font-mono text-[11px] text-muted-foreground">{action.meta}</p>
+            <p className="break-words font-mono text-xs text-muted-foreground">{action.meta}</p>
           </TechnicalDetails>
         </div>
         {actionButton}
@@ -505,7 +493,7 @@ function SelectedEvidenceDetail({
           <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.detail}</p>
         </div>
         <TechnicalDetails label="Audit details" className="mt-3">
-          <p className="break-words font-mono text-[11px] text-muted-foreground">{detail.meta}</p>
+          <p className="break-words font-mono text-xs text-muted-foreground">{detail.meta}</p>
           <DetailFieldList fields={detail.fields} />
         </TechnicalDetails>
         {detail.action ? (

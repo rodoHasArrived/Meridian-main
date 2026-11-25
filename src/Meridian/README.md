@@ -6,7 +6,7 @@ module_id: SRC-HOST
 path: src/Meridian
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-27
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian
@@ -18,6 +18,12 @@ Shared workstation composition owns optional daily reconciliation and scheduled 
 draft preparation. These workers retain the ordinary tenant, period and approval controls.
 
 `UiServer` paper composition registers `IOrderGateway` as a read-only view over the OMS paper `IExecutionGateway` (no second paper simulator). The optional StockSharp gateway no longer registers placeholder account-catalog, portfolio or activity sync adapters; the runtime surface reports those as missing.
+
+The opt-in canonical fill-accounting host mode uses a distinct v2 handoff partition, the shared
+durable journal/lot store, and exact operator-delegated synthetic posting authority. It never
+creates a book implicitly or enables a live account. Required chart/policy/security services must
+be available before the v2 consumer starts; legacy handoffs keep their existing replay path.
+Accounting reconciliation and general-ledger interchange reuse the same shared API/service graph.
 
 The browser host can compose the Alpaca brokerage execution portfolio. `BrokeragePortfolioState`
 projects broker observations for the existing portfolio and position-tracker consumers; mandatory
@@ -51,7 +57,10 @@ and process-host concerns isolated from domain and application logic.
 
 ## Important workflows
 
-The browser host passes the shared equity session policy, operational journal, quote source and instrument coverage source into its OMS. This is the same admission/retention path used by the execution service registrations. Read-only shared-host compositions leave execution workers dormant when no gateway is registered. See [execution workflows](../../docs/engineering/execution-workflows.md).
+`DemoWorkspaceCli` preserves saved validation profiles and their audit entries in the isolated
+`appsettings.demo.json` when reopening a seeded workspace.
+
+The browser host passes the shared equity session policy, operational journal, quote source and instrument coverage source into its OMS. This is the same admission/retention path used by the execution service registrations. `UiServer` composes the OMS through `OrderManagementSystemFactory` (`HostedWorkstation`), which requires the risk validator, portfolio state and OMS options and wires paper-session persistence and the strategy-run authority source. Read-only shared-host compositions leave execution workers dormant when no gateway is registered. See [execution workflows](../../docs/engineering/execution-workflows.md).
 
 `UiServer` invokes Application's shared `DatabaseStartupPlan` before its existing optional reporting
 migration gate and before starting hosted services. It retains its successful-readiness cache,

@@ -32,7 +32,7 @@ public sealed class ProviderValidationProfileMutationTests
     {
         var config = new AppConfig();
         var first = ProviderValidationEndpoints.ApplyProfile(config, "polygon",
-            new(new(StaleToleranceDays: 30), "Thinly traded research universe"), "researcher");
+            new(new(StaleToleranceDays: 30), "Thinly traded research universe", ConfirmLoosening: true), "researcher");
         var next = ProviderValidationEndpoints.ApplyProfile(first.Config, "polygon",
             new(new(StaleToleranceDays: 5)), "desk");
         next.Config.DataRoot.Should().Be(config.DataRoot);
@@ -100,14 +100,73 @@ public sealed class ProviderValidationProfileMutationTests
                 new ProviderValidationProfileRequest(new(StaleToleranceDays: 30)));
             refused.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             (await File.ReadAllTextAsync(store.ConfigPath)).Should().Be(before);
-            var saved = await client.PutAsJsonAsync("/api/providers/polygon/validation-profile",
+            var unconfirmed = await client.PutAsJsonAsync("/api/providers/polygon/validation-profile",
                 new ProviderValidationProfileRequest(new(StaleToleranceDays: 30), "Thinly traded symbols"));
+            unconfirmed.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            (await File.ReadAllTextAsync(store.ConfigPath)).Should().Be(before);
+            var saved = await client.PutAsJsonAsync("/api/providers/polygon/validation-profile",
+                new ProviderValidationProfileRequest(new(StaleToleranceDays: 30), "Thinly traded symbols", ConfirmLoosening: true));
             saved.StatusCode.Should().Be(HttpStatusCode.OK, await saved.Content.ReadAsStringAsync());
             var audit = store.Load().Backfill!.ValidationProfileAudit!.Single();
             audit.Actor.Should().Be("profile-test-operator");
             audit.Reason.Should().Be("Thinly traded symbols");
             audit.Before.StaleToleranceDays.Should().Be(10);
             audit.After.StaleToleranceDays.Should().Be(30);
+        }
+        finally { await app.DisposeAsync(); Directory.Delete(directory, true); }
+    }
+
+    [Fact]
+    public async Task Endpoint_DetectsStaleRevisionAndRequiresConfirmationForRelaxingReset()
+    {
+        var (app, store, directory) = await CreateApp(UserPermission.ManageProviders | UserPermission.ModifyConfig, true);
+        const string path = "/api/providers/polygon/validation-profile";
+        try
+        {
+            using var client = app.GetTestClient();
+            var initial = await client.GetFromJsonAsync<JsonElement>(path);
+            var initialRevision = initial.GetProperty("revision").GetString();
+            var tighten = await client.PutAsJsonAsync(path, new ProviderValidationProfileRequest(
+                new(StaleToleranceDays: 4), ExpectedRevision: initialRevision));
+            tighten.StatusCode.Should().Be(HttpStatusCode.OK, await tighten.Content.ReadAsStringAsync());
+            var tightened = await client.GetFromJsonAsync<JsonElement>(path);
+            var revision = tightened.GetProperty("revision").GetString();
+
+            var stale = await client.PutAsJsonAsync(path, new ProviderValidationProfileRequest(
+                new(StaleToleranceDays: 3), ExpectedRevision: initialRevision));
+            stale.StatusCode.Should().Be(HttpStatusCode.Conflict);
+            var refused = await client.PutAsJsonAsync(path, new ProviderValidationProfileRequest(
+                Reason: "Restore policy", ResetToDefault: true, ExpectedRevision: revision));
+            refused.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            var reset = await client.PutAsJsonAsync(path, new ProviderValidationProfileRequest(
+                Reason: "Restore policy", ConfirmLoosening: true, ResetToDefault: true, ExpectedRevision: revision));
+            reset.StatusCode.Should().Be(HttpStatusCode.OK, await reset.Content.ReadAsStringAsync());
+
+            store.Load().Backfill!.ValidationProfiles.Should().BeEmpty();
+            var persisted = await client.GetFromJsonAsync<JsonElement>(path);
+            persisted.GetProperty("isOverride").GetBoolean().Should().BeFalse();
+            persisted.GetProperty("profile").GetProperty("staleToleranceDays").GetInt32().Should().Be(10);
+            var audit = persisted.GetProperty("audit")[0];
+            audit.GetProperty("resetToDefault").GetBoolean().Should().BeTrue();
+            audit.GetProperty("before").GetProperty("staleToleranceDays").GetInt32().Should().Be(4);
+            audit.GetProperty("after").GetProperty("staleToleranceDays").GetInt32().Should().Be(10);
+        }
+        finally { await app.DisposeAsync(); Directory.Delete(directory, true); }
+    }
+
+    [Fact]
+    public async Task Endpoint_DataViewerCanReadTheDefaultWithoutWriteAuthority()
+    {
+        var (app, _, directory) = await CreateApp(UserPermission.ViewHistoricalData, true);
+        try
+        {
+            using var client = app.GetTestClient();
+            var profile = await client.GetFromJsonAsync<JsonElement>("/api/providers/polygon/validation-profile");
+            profile.GetProperty("canEdit").GetBoolean().Should().BeFalse();
+            profile.GetProperty("defaultProfile").GetProperty("staleToleranceDays").GetInt32().Should().Be(10);
+            var refused = await client.PutAsJsonAsync("/api/providers/polygon/validation-profile",
+                new ProviderValidationProfileRequest(new(StaleToleranceDays: 5)));
+            refused.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         }
         finally { await app.DisposeAsync(); Directory.Delete(directory, true); }
     }

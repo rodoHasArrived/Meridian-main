@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-11-09 (added the bounded-context, platform, process-isolation, worker, and smoke-stub projects missing from the source table)
+**Reviewed:** 2026-11-18
 
 Meridian uses a standard repository layout organized around source projects,
 tests, automation, docs, design-system assets, and generated artifacts.
@@ -33,6 +33,7 @@ tests, automation, docs, design-system assets, and generated artifacts.
 | `src/Meridian.Instruments/` | Active source code | Instrument economics, Security Master-keyed Asset Operations, cash-flow projections, and factor-paydown projections |
 | `src/Meridian.ReferenceData/` | Active source code | Asset-class/instrument-kind mapping, profile catalog contracts, and seeded approved asset-profile templates |
 | `src/Meridian.Reporting/` | Active source code | Governed report packs, report-writer grid rendering, saved filters, formulas, lineage, publication, restatement, and report generation |
+| `src/Meridian.Reporting.ReadModels/` | Active source code | Leaf reporting read models shared by both workstations (income comparisons, report access evaluation, journal-backed tax projections, partners-capital reads, ledger-population replay); extracted from `Meridian.Ui.Shared` with type forwarding and no UI or host references |
 | `src/Meridian.FSharp*/` | Active source code | F# domain models, operations, direct-lending, trading, and functional workflow support |
 | `src/Meridian.QuantScript/` | Active source code | QuantScript parsing, compilation, and charting support |
 | `src/Meridian.Mcp*/` | Active source code | MCP hosts and tool surfaces |
@@ -56,7 +57,8 @@ tests, automation, docs, design-system assets, and generated artifacts.
 `Meridian.sln`. It holds two things:
 
 - `dashboard/` - the browser workstation source (npm/Vite).
-- `wwwroot/workstation/` - the tracked bundle the dashboard build writes.
+- `wwwroot/workstation/` - the bundle the dashboard build writes. It is gitignored; CI builds it
+  from `dashboard/`.
 
 The `src/Meridian/` host serves that bundle. `Meridian.csproj` links `..\Meridian.Ui\wwwroot\**`
 as content and copies it beside the executable; `UiServer.cs` and `WorkstationAssetTree.cs` in
@@ -123,8 +125,8 @@ entry, and `tests/Meridian.DesignModules.Tests` in the same change.
   sidecars such as `*.bak`, `*.backup-*`, `*.pid`, and `*.exitcode`.
 - Safe to consolidate: duplicate generated indexes, stale one-off reports, and
   documentation that repeats command lists already covered by `docs/HELP.md`.
-- Needs review: tracked generated API metadata, tracked workstation bundles,
-  archived code, and agent/skill prompt copies.
+- Needs review: tracked generated API metadata, archived code, and agent/skill prompt copies.
+  The workstation bundle is not tracked; it is a gitignored build output.
 - Should retain: active source, tests, CI workflows, canonical docs, design-system
   assets, and archive material with traceability value.
 
@@ -143,6 +145,23 @@ evidence paths and needs an owner decision:
 - `tests/Meridian.Execution.Tests/` and `tests/Meridian.Storage.Tests/` intentionally hold no
   sources: they compile focused slices of `tests/Meridian.Tests/` through
   `ExecutionTestSources.props` and `StorageCoreTestSources.props` (see below).
+- The design-system bundles (`_ds_bundle.js`, `_preview_jsx.js`, `api/project-compatibility.json`,
+  the standalone reconciliation HTML) are committed on purpose: `npm run build:check` and
+  `release:check` in the Design System Package workflow verify them against source. Turning them
+  into CI artifacts means changing that package contract first, so it goes with the rename.
+- `docs/testing/evidence/` holds about 9 MB of raw logs and archives in older packets. The
+  no-new-raw-evidence ratchet (`build/scripts/ci/check-evidence-footprint.py`) stops new ones.
+  Shrinking the existing ones means moving packets that are not checksum-pinned to CI artifacts or
+  `archive/`, then running `--tighten-baseline`.
+- Code-level follow-ups, which need a compiler and tests rather than a layout change:
+  sync-over-async bridges in `src/` (for example `StoredProviderCredentialResolver`,
+  `LedgerPostingConsumer`, and the identity stores that block on `AtomicFileWriter`); unscoped
+  `[Obsolete]` overloads that have no removal version yet; `Console.Write` in Application
+  services (for example `SymbolManagementService`) rather than only in `Commands/`; and the
+  dashboard view-model and `dev-fixtures.ts` monoliths tracked by the
+  [god-file burn-down plan](../engineering/plans/god-file-burn-down-plan.md). The SecurityMaster
+  `Compatibility/` shims are still used: `AddSecurityMasterContractAdapters` bridges them and
+  `SecurityMasterContractAdapterTests` covers them.
 
 ## Focused storage and execution tests
 

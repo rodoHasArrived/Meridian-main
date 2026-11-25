@@ -88,7 +88,7 @@ describe("WorkstationTopbar", () => {
     const summary = screen.getByText("PAPER").closest("summary");
     expect(summary).not.toHaveAttribute("aria-label");
     expect(summary).toHaveAccessibleName(expect.stringMatching(/^PAPER\s*SEEDED.*not real market or account data/));
-    expect(summary).toHaveAccessibleDescription(expect.stringMatching(/^Environment, provenance, and provider posture\./));
+    expect(summary).toHaveAccessibleDescription(expect.stringMatching(/^Environment, provenance, and provider health\./));
     await userEvent.click(screen.getByText("PAPER"));
     expect(screen.getByRole("link", { name: "Mode Paper Open settings." })).toHaveAttribute("href", "/settings");
     expect(screen.getByText("Provider")).toBeInTheDocument();

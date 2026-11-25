@@ -698,7 +698,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Identity.LoginAttemptResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Identity/Application/LoginSessionService.cs:443](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L443).
+Source: [src/Meridian.Identity/Application/LoginSessionService.cs:464](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L464).
 
 ```csharp
 public sealed record LoginAttemptResult(LoginAttemptStatus Status, string? Token, int RemainingAttempts, TimeSpan? RetryAfter)
@@ -708,15 +708,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static LoginAttemptResult Succeeded(string token) =&gt; …;</code> | [src/Meridian.Identity/Application/LoginSessionService.cs:449](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L449) |  |
-| <code>public static LoginAttemptResult Invalid(int remainingAttempts) =&gt; …;</code> | [src/Meridian.Identity/Application/LoginSessionService.cs:450](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L450) |  |
-| <code>public static LoginAttemptResult Locked(TimeSpan retryAfter) =&gt; …;</code> | [src/Meridian.Identity/Application/LoginSessionService.cs:451](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L451) |  |
+| <code>public static LoginAttemptResult Succeeded(string token) =&gt; …;</code> | [src/Meridian.Identity/Application/LoginSessionService.cs:470](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L470) |  |
+| <code>public static LoginAttemptResult Invalid(int remainingAttempts) =&gt; …;</code> | [src/Meridian.Identity/Application/LoginSessionService.cs:471](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L471) |  |
+| <code>public static LoginAttemptResult Locked(TimeSpan retryAfter) =&gt; …;</code> | [src/Meridian.Identity/Application/LoginSessionService.cs:472](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L472) |  |
 
 ## LoginAttemptStatus
 
 Qualified name: <code>Meridian.Identity.LoginAttemptStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.Identity/Application/LoginSessionService.cs:436](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L436).
+Source: [src/Meridian.Identity/Application/LoginSessionService.cs:457](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L457).
 
 ```csharp
 public enum LoginAttemptStatus
@@ -726,9 +726,9 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Succeeded</code> | [src/Meridian.Identity/Application/LoginSessionService.cs:438](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L438) |  |
-| <code>InvalidCredentials</code> | [src/Meridian.Identity/Application/LoginSessionService.cs:439](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L439) |  |
-| <code>LockedOut</code> | [src/Meridian.Identity/Application/LoginSessionService.cs:440](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L440) |  |
+| <code>Succeeded</code> | [src/Meridian.Identity/Application/LoginSessionService.cs:459](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L459) |  |
+| <code>InvalidCredentials</code> | [src/Meridian.Identity/Application/LoginSessionService.cs:460](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L460) |  |
+| <code>LockedOut</code> | [src/Meridian.Identity/Application/LoginSessionService.cs:461](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L461) |  |
 
 ## LoginSessionService
 
@@ -762,7 +762,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Identity.LoginSessionStoreOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Identity/Application/LoginSessionService.cs:431](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L431).
+Source: [src/Meridian.Identity/Application/LoginSessionService.cs:452](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L452).
 
 ```csharp
 public sealed record LoginSessionStoreOptions(string? Path = null)
@@ -772,7 +772,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string PathEnvironmentVariable = &quot;MDC_SESSION_STORE_PATH&quot;;</code> | [src/Meridian.Identity/Application/LoginSessionService.cs:433](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L433) |  |
+| <code>public const string PathEnvironmentVariable = &quot;MDC_SESSION_STORE_PATH&quot;;</code> | [src/Meridian.Identity/Application/LoginSessionService.cs:454](../../../../src/Meridian.Identity/Application/LoginSessionService.cs#L454) |  |
 
 ## PasswordHashing
 
@@ -799,7 +799,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Identity.PostgresScopedAccessAssignmentStore</code>. Kind: `class`.
 
-Source: [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:165](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L165).
+Source: [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:178](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L178).
 
 Stores scoped access assignments in PostgreSQL using the configured identity schema.
 
@@ -811,12 +811,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PostgresScopedAccessAssignmentStore(ScopedAccessStoreOptions options);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:174](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L174) |  |
-| <code>public Task EnsureMigratedAsync(CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:179](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L179) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;UserAccessAssignmentDto&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:201](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L201) |  |
-| <code>public async Task&lt;UserAccessAssignmentDto?&gt; GetAsync(Guid assignmentId, CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:216](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L216) |  |
-| <code>public async Task&lt;UserAccessAssignmentDto&gt; CreateAsync(UserAccessAssignmentDto assignment, CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:226](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L226) |  |
-| <code>public async Task&lt;UserAccessAssignmentDto&gt; ReplaceAsync(UserAccessAssignmentDto assignment, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:241](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L241) |  |
+| <code>public PostgresScopedAccessAssignmentStore(ScopedAccessStoreOptions options);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:187](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L187) |  |
+| <code>public Task EnsureMigratedAsync(CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:192](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L192) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;UserAccessAssignmentDto&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:214](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L214) |  |
+| <code>public async Task&lt;UserAccessAssignmentDto?&gt; GetAsync(Guid assignmentId, CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:229](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L229) |  |
+| <code>public async Task&lt;UserAccessAssignmentDto&gt; CreateAsync(UserAccessAssignmentDto assignment, CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:239](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L239) |  |
+| <code>public async Task&lt;UserAccessAssignmentDto&gt; ReplaceAsync(UserAccessAssignmentDto assignment, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:254](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L254) |  |
 
 ## ScopedAccessService
 

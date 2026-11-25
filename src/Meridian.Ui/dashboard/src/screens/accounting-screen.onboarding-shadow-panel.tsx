@@ -24,11 +24,24 @@ const SOURCE_LABELS: Record<OnboardingOpeningSourceKind, string> = {
   GlTrialBalance: "Retained GL trial balance"
 };
 
+const SOURCE_SHORT_LABELS: Record<OnboardingOpeningSourceKind, string> = {
+  StatementOpening: "Bank statement",
+  AdministratorPack: "Administrator pack",
+  GlTrialBalance: "GL trial balance"
+};
+
+/** A difference the owner can explain: a period difference or an opening-balance break. */
+interface ExplainableDifference {
+  comparisonId: string; differenceKey: string; label: string; formLabel: string; kind: string;
+  accountId: string; instrumentId: string | null; meridianAmount: number | null; externalAmount: number | null;
+}
+
 const OPENING_COLUMNS: DenseDataTableColumn<OnboardingOpeningBalanceLine>[] = [
   { id: "kind", label: "Kind", rowHeader: true, render: line => line.kind },
   { id: "account", label: "Account", className: "break-all", render: line => line.accountId },
   { id: "instrument", label: "Instrument", render: line => line.instrumentId ?? "—" },
   { id: "currency", label: "Currency", render: line => line.currency },
+  { id: "source", label: "Source", render: line => line.sourceKind ? SOURCE_SHORT_LABELS[line.sourceKind as OnboardingOpeningSourceKind] ?? line.sourceKind : "—" },
   { id: "meridian", label: "Meridian", numeric: true, render: line => amount(line.meridianAmount) },
   { id: "incumbent", label: "Incumbent", numeric: true, render: line => amount(line.incumbentAmount) },
   { id: "difference", label: "Difference", numeric: true, render: line => amount(line.difference) },
@@ -106,6 +119,20 @@ export function OnboardingShadowPanel({ workspace, onChanged }: { workspace: Onb
   const periods = readiness.periods ?? [];
   const certificates = workspace.certificates ?? [];
   const inShadow = designation?.state === "Shadow";
+  // Missing lines are coverage gaps the server refuses to explain; only numeric breaks are explainable.
+  const explainable: ExplainableDifference[] = [
+    ...(opening?.lines ?? []).filter(line => line.status === "Break" && line.comparisonId && line.difference != null).map(line => ({
+      comparisonId: line.comparisonId!, differenceKey: line.differenceKey, label: "Opening", kind: line.kind,
+      formLabel: `Explain opening ${line.kind} difference${line.sourceKind ? ` (${SOURCE_SHORT_LABELS[line.sourceKind as OnboardingOpeningSourceKind] ?? line.sourceKind})` : ""}${line.instrumentId ? ` for ${line.instrumentId}` : ""}`,
+      accountId: line.accountId, instrumentId: line.instrumentId, meridianAmount: line.meridianAmount, externalAmount: line.incumbentAmount
+    })),
+    ...readiness.unresolvedDifferences.filter(item => item.difference.difference != null).map(item => ({
+      comparisonId: item.comparisonId, differenceKey: item.difference.differenceKey, label: item.asOfDate, kind: item.difference.kind,
+      formLabel: `Explain ${item.difference.kind} difference on ${item.asOfDate}`,
+      accountId: item.difference.accountId, instrumentId: item.difference.instrumentId,
+      meridianAmount: item.difference.meridianAmount, externalAmount: item.difference.externalAmount
+    }))
+  ];
 
   async function importOpening(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -145,7 +172,7 @@ export function OnboardingShadowPanel({ workspace, onChanged }: { workspace: Onb
     </form> : null}
 
     {inShadow ? <form aria-label="Import incumbent opening balances" className="space-y-3" onSubmit={event => void importOpening(event)}>
-      <p className="text-sm text-muted-foreground">Load the incumbent's opening state for {workspace.scope.startDate}. Rows are compared side by side with Meridian's records; an empty amount is missing, never zero.</p>
+      <p className="text-sm text-muted-foreground">Load the incumbent's opening state for {workspace.scope.startDate}. Rows are compared side by side with Meridian's records; an empty amount is missing, never zero. Sources combine: a bank statement or GL trial balance covers cash balances only, so add an administrator pack for positions and NAV. Re-importing a source replaces only that source.</p>
       <FormGrid columns={2}>
         <Field label="Opening source">{id => <Select id={id} value={sourceKind} onChange={event => setSourceKind(event.target.value as OnboardingOpeningSourceKind)}>
           {ONBOARDING_OPENING_SOURCE_KINDS.map(kind => <option key={kind} value={kind}>{SOURCE_LABELS[kind]}</option>)}
@@ -166,7 +193,12 @@ export function OnboardingShadowPanel({ workspace, onChanged }: { workspace: Onb
 
     {opening ? <section className="space-y-2" aria-label="Opening-balance reconciliation">
       <StatusBanner tone={opening.isReconciled ? "success" : "warning"} title={opening.isReconciled ? "Opening balances reconciled" : "Opening balances not reconciled"}
-        detail={`${opening.matchedCount} matched · ${opening.explainedCount} explained · ${opening.breakCount} breaks · ${opening.missingCount} missing · source ${opening.sourceKind} ${opening.sourceContentHash.slice(0, 12)}`} />
+        detail={`${opening.matchedCount} matched · ${opening.explainedCount} explained · ${opening.breakCount} breaks · ${opening.missingCount} missing`} />
+      {opening.uncoveredKinds?.length ? <StatusBanner tone="warning" title="Opening kinds not yet covered"
+        detail={`No incumbent opening source covers ${opening.uncoveredKinds.join(", ")} for every selected account. Import a source that supplies ${opening.uncoveredKinds.length === 1 ? "it" : "them"}.`} /> : null}
+      {opening.sources?.length ? <ul className="list-disc space-y-1 pl-5 text-xs" aria-label="Opening sources">{opening.sources.map(source =>
+        <li key={source.comparisonId}>{SOURCE_SHORT_LABELS[source.sourceKind as OnboardingOpeningSourceKind] ?? source.sourceKind} · {source.kinds.join(", ")} · <span className="break-all">{source.sourceContentHash.slice(0, 12)}</span></li>)}
+      </ul> : null}
       <DenseDataTable ariaLabel="Opening balance lines" columns={OPENING_COLUMNS} rows={opening.lines}
         getRowId={line => line.differenceKey} emptyText="No opening lines were compared." />
     </section> : null}
@@ -174,20 +206,20 @@ export function OnboardingShadowPanel({ workspace, onChanged }: { workspace: Onb
     {periods.length ? <DenseDataTable ariaLabel="Parallel-run period agreement" columns={PERIOD_COLUMNS} rows={periods}
       getRowId={period => period.comparisonId} emptyText="No required periods have been compared." /> : null}
 
-    {inShadow && readiness.unresolvedDifferences.length ? <TechnicalDetails label="Explain parallel-run differences"
-      description="Classify each difference with retained evidence. A Meridian error never clears; a timing difference lapses after its expected reversal date; any change in the compared amounts needs a new explanation.">
-      {readiness.unresolvedDifferences.filter(item => item.difference.difference != null).map(item =>
-        <form key={`${item.comparisonId}-${item.difference.differenceKey}`} className="mb-4 space-y-2"
-          aria-label={`Explain ${item.difference.kind} difference on ${item.asOfDate}`} onSubmit={event => {
+    {inShadow && explainable.length ? <TechnicalDetails label="Explain parallel-run differences"
+      description="Classify each opening break or period difference with retained evidence. A Meridian error never clears; a timing difference lapses after its expected reversal date; any change in the compared amounts needs a new explanation.">
+      {explainable.map(item =>
+        <form key={`${item.comparisonId}-${item.differenceKey}`} className="mb-4 space-y-2"
+          aria-label={item.formLabel} onSubmit={event => {
             event.preventDefault(); const data = new FormData(event.currentTarget);
             const classification = field(data, "classification") as OnboardingDifferenceClassification;
-            void mutate(signal => api.explainOnboardingDifference(workspace.workspaceId, item.difference.differenceKey, {
+            void mutate(signal => api.explainOnboardingDifference(workspace.workspaceId, item.differenceKey, {
               expectedVersion: workspace.version, comparisonId: item.comparisonId, classification,
               notes: field(data, "explanationNotes"), evidenceIds: list(field(data, "explanationEvidence")),
               expectedReversalDate: classification === "Timing" ? field(data, "expectedReversalDate") || null : null
             }, { signal }), "Difference explanation retained.");
           }}>
-          <p className="text-sm">{item.asOfDate} · {item.difference.kind} · {item.difference.accountId} {item.difference.instrumentId ?? ""} · Meridian {amount(item.difference.meridianAmount)} vs incumbent {amount(item.difference.externalAmount)}</p>
+          <p className="text-sm">{item.label} · {item.kind} · {item.accountId} {item.instrumentId ?? ""} · Meridian {amount(item.meridianAmount)} vs incumbent {amount(item.externalAmount)}</p>
           <FormGrid columns={2}>
             <Field label="Classification">{id => <Select id={id} name="classification" defaultValue="Timing">
               {ONBOARDING_DIFFERENCE_CLASSIFICATIONS.map(kind => <option key={kind} value={kind}>{kind}</option>)}

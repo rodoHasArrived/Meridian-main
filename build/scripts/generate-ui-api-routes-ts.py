@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Generate the dashboard UiApiRoutes mirror from the C# contracts source.
 
-Run with --check to verify the committed mirror matches the contracts source
-without rewriting it (CI drift gate); exits 1 when regeneration is needed.
+Run with --check to verify a local generated mirror matches the contracts source
+without rewriting it; exits 1 when generation or regeneration is needed.
 """
 
 from __future__ import annotations

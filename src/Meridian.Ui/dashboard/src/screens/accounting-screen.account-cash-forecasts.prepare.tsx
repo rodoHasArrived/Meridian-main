@@ -68,7 +68,7 @@ export function RetainedForecastPreparation({ source, history, onPrepare, onCanc
     <div>
       <h3 className="text-sm font-semibold">Prepare from retained inputs</h3>
       <p className="mt-1 text-sm text-muted-foreground">Reuse the selected forecast's reviewed observations, cash flows and dated FX. Their amounts, dates and evidence remain unchanged. The server rechecks the sources before capture.</p>
-      <p className="mt-1 text-xs text-muted-foreground">New observations or revised source data still require a reviewed source handoff. Missing closing cash can support a forecast but prevents cash reconciliation certification.</p>
+      <p className="mt-1 text-xs text-muted-foreground">New observations or revised source data still require a reviewed source file. Missing closing cash can support a forecast but prevents cash reconciliation certification.</p>
     </div>
     <FormGrid columns={2}>
       <FormRow label="Cash period start" labelFor={`${id}-start`}><Input id={`${id}-start`} type="date" required value={periodStart} onChange={event => setPeriodStart(event.target.value)} /></FormRow>

@@ -73,7 +73,7 @@ internal sealed class PaperTradingGatewayTradingParameters
         return rounded;
     }
 
-    public async Task<(string AssetClass, SecurityLotUnitKind UnitKind, decimal Multiplier)?> ResolveLotConventionAsync(
+    public async Task<(string AssetClass, SecurityLotUnitKind UnitKind, decimal Multiplier, Guid SecurityId)?> ResolveLotConventionAsync(
         string symbol, CancellationToken ct)
     {
         if (_securityIdentity is null)
@@ -83,7 +83,7 @@ internal sealed class PaperTradingGatewayTradingParameters
         if (detail is null)
             return null;
         var (unitKind, multiplier) = LotQuantity.UnitFor(detail.AssetClass, detail.AssetSpecificTerms);
-        return (detail.AssetClass, unitKind, multiplier);
+        return (detail.AssetClass, unitKind, multiplier, detail.SecurityId);
     }
 
     private async Task<TradingParametersDto?> TryGetTradingParamsAsync(string symbol, CancellationToken ct)

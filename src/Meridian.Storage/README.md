@@ -6,13 +6,29 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.Storage
 
+The backfill status store exposes a legacy summary only for a raw snapshot written without a
+provenance receipt. Reads of retained results continue to enforce tenant visibility.
+
+The `Meridian.Storage` assembly owns storage primitives and does not depend on Ledger or Reporting.
+Business adapters whose source remains under `Ledger/`, `Reporting/`, Security Master and other
+business folders compile through linked items in `Meridian.Storage.Accounting`. The workflow
+notes below cover these retained source paths; they do not move business ownership back into
+Storage primitives.
+
 Position snapshots preserve reviewed preparation lineages alongside economic-state history.
 Historical reads still exclude lineage effective after their requested date.
+
+`IInstrumentPositionProjectionStore.GetBookAsync` enumerates retained holdings begun by an observation
+date, including expired holdings with potentially unpaid receipts. Its in-memory and PostgreSQL
+implementations bound economic-state history by that date and isolate the exact book; PostgreSQL
+uses a repeatable-read transaction. The shared receipt source separately verifies canonical book
+ownership and accepted projection evidence before deriving amounts. These source paths compile in
+`Meridian.Storage.Accounting`. See [book receipt operations](../../docs/operators/book-receipt-queue.md).
 
 `FileBondMarketDataStore` retains host-local typed bond market observations in hashed tenant
 partitions with process-wide file leases, atomic publication, content validation and immutable
@@ -66,6 +82,14 @@ PostgreSQL supplies authority leases through financial commit; file stores provi
 parity without a production or cross-process fencing claim. Migration keeps old journal/evidence
 bytes and refuses unresolved history. See [the operator procedure](../../docs/operators/intercompany-entity-controls.md).
 
+`PostgresIntercompanyBalanceConfirmationStore` (ledger migration `073`, rewrite and truncate refused)
+and `FileIntercompanyBalanceConfirmationStore` retain every confirmation version append-only under
+an expected-version check. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
+`PostgresIntercompanyAccrualScheduleStore` (ledger migration `076`, rewrite and truncate refused) and
+`FileIntercompanyAccrualScheduleStore` retain accrual-schedule versions append-only and tenant-scoped. See
+[opt-in accrual schedules](../../docs/domain/intercompany-agreements.md#opt-in-accrual-schedules).
+
 Entity lifecycle history uses immutable tenant-bound timeline revisions and authority leases.
 Ledger migration 061 initializes existing books in `LegacyWarning` and stamps new books
 `Enforced` at insertion. Activation recomputes migration preflight while holding its authority
@@ -73,6 +97,10 @@ leases and retains an immutable receipt. Every booked append, including ambient 
 and atomic lot posting, requires a matching posting-authority scope retained through commit.
 Controlled-close authorizations bind an approved draft's economics, evidence and version;
 they permit no edits to posted journals. Unmapped historical periods retain explicit warnings.
+
+`JsonlStorageSink.AppendAsync` acknowledges an event once it is buffered: a failed size-triggered
+flush is logged and left for `FlushAsync` or the periodic flush to retry and report, so a caller
+that retries failed appends cannot write the same event twice.
 
 JSONL and Parquet sinks retire empty partition buffers after successful flushes. Admission and
 retirement share the buffer lock, so a producer holding an evicted buffer retries admission to
@@ -149,9 +177,33 @@ reads remain stable under entity authority locks; sorted shared agreement leases
 the ledger store's owned commit. Explicit references require that authority, while unsupported
 caller-owned append paths refuse them. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
+`PostgresIntercompanyRateFixingStore` (fund-structure migration `009`, rewrite and truncate refused)
+and `FileIntercompanyRateFixingStore` retain every fixing version append-only and tenant-scoped under
+an expected-version check. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
 `LedgerOpenLotProjection` uses shared successor quote validation without rounding retained basis.
 The exception still requires unit-successor lineage, an originating atomic mutation batch and a
 retained basis adjustment; ordinary acquisitions retain exact quantity/price/basis checks.
+
+`StorageCatalogService` publishes content-addressed immutable revisions containing the complete
+manifest and directory indexes. Its current manifest remains compatible with catalog readers and
+pins the exact retained revision digest. Publication compares the retained current generation under
+a cross-process file lease; stale publishers fail explicitly. Restart verifies the referenced bytes
+and ignores loose `_index.json` compatibility exports and unpublished candidates. Legacy migration
+retains only the surviving complete catalog; corruption or missing revisions require recovery.
+Mutations commit a complete generation before one in-memory publication, and file/metadata getters
+return detached snapshots. Integrity verification is bound to the generation it inspected.
+Compatibility exports rewrite only directories affected by a mutation. Root scans use the same
+empty directory identity as updates and rebuilds; trailing root separators preserve containment checks.
+
+`DataLineageService` and `MetadataTagService` fence read-modify-replace across instances and processes,
+reload retained state under that lease, and publish only after durable persistence. Corrupt,
+unsupported, incomplete or missing previously observed snapshots fail closed instead of erasing
+history. Contention and cancellation do not publish unfinished writes. Focused synthetic coverage
+lives in `StorageCatalogServiceTests`, `DataLineageServiceTests`, and `MetadataTagServiceTests`.
+The catalog and provider-manifest/replay fixtures run in `tests/Meridian.Tests`; metadata, lineage,
+and catalog-sink fixtures run in `tests/Meridian.Storage.Tests`. Shared compile ownership includes
+both metadata/lineage partial files, so discovery does not split their fixture state across assemblies.
 
 `FileProviderIntegrationManifestStore` stores identity decisions under each sync run's
 `identity-decisions` directory. Entity locking protects append-only retention: identical retries
@@ -209,6 +261,19 @@ from upgrade attestations. See the [migration procedure](../../docs/operators/se
 
 `BackfillStatusStore` keeps a verified coverage sidecar (`_status/backfill-symbol-coverage.json`, atomic write): per symbol, granularity, provider and feed, the session ranges whose bars were written. Backfill resume reads only this sidecar; the date-only checkpoint and bar-count sidecars remain for status surfaces and are not evidence for skipping. An unreadable or newer-format coverage file is treated as no coverage. `BackfillCoverageMath` owns the range merge and missing-range arithmetic.
 
+Fresh fetches reset status checkpoints for the requested granularity and retain verified coverage
+and batch receipts.
+
+For a batch interrupted between sink confirmation and receipt publication, the durable dedup
+ledger can confirm each exact versioned row while its entry is retained. Replay discovers
+market-data files using the storage catalog's reserved-directory exclusions.
+
+Each durable historical response has a content-addressed batch receipt. It records the request,
+actual provider, row count, hash, and observed sessions. An identified exchange calendar supplies
+expected sessions. Incomplete intervals can resume around already verified sessions, including
+interior holes. Backtests retain the consumed revision links and expose incomplete or unknown
+coverage in the run disclosure.
+
 `JsonlBackfillBarWriter` gives every granularity its own file prefix (`bar_4hour`, `bar_weekly`, `bar_monthly` alongside the existing ones) and throws for an unknown granularity instead of writing it as `bar_daily`.
 
 `SharedStorageCoordinationStore` accepts an optional `TimeProvider` for lease expiry and takeover decisions (system clock by default).
@@ -265,6 +330,19 @@ or deletes prior records. Repeating a command with identical reviewed inputs ret
 outcome after restart; changed inputs under the same command identity conflict. Focused coverage
 is in `PrivateCapitalRecordServiceTests`, `PrivateCapitalRecordAuthorityTests`,
 `PrivateCapitalRecordEndpointTests` and `PostgresPrivateCapitalRecordStoreTests`.
+
+`WriteAheadLog` treats a failed write or flush as a fault on the active segment, not on the log:
+the next append, flush, commit or delayed-flush tick abandons that handle, opens a new segment and
+rewrites the records not yet confirmed flushed. A record can therefore appear in both segments, and
+replay stays at-least-once. New WAL segments fsync their header and directory entry (except in
+`NoSync`), and `JsonlStorageSink` fsyncs the directory of a newly created day file, and the parents
+of directories created for it, at the first durability barrier.
+
+WAL record types containing `|` or a line break, and payloads containing a raw line break, are
+refused before they are written, because recovery could not parse them back. `RepairAsync` holds
+the truncate lock, and every segment listing sorts ordinally. `AtomicFileWriter.AppendAsync`
+serializes appends to one path within the process, so concurrent copy-on-write appends keep
+every line.
 
 `JsonlAppendWriter` appends lines to an append-only JSONL log in place and fsyncs them, truncating a
 torn final line first; `JsonlStorageSink` uses the same torn-tail repair for its day files. Use it
@@ -504,6 +582,8 @@ locks through commit. Missing or stale authority refuses the new posting. Exact 
 precedes this guard; omitting the optional fingerprint field preserves historical receipts.
 Position status matches `Active` using ordinal case-insensitive equality, consistent with candidate
 validation. Inactive or other statuses still refuse new acquisition/disposal postings without writes.
+An acquisition booked with a `Face` quantity basis is refused unless the locked security's catalog
+lot unit is `FaceValue` (`LotQuantityBasisRules`); a face-value class may still be booked by units.
 See [the posting contract](../../docs/reference/ledger-journal-store.md#acquisition-and-disposal-reference-authority).
 
 Atomic lot commands bind explicit direction to their immutable acquisition facts. Historical
@@ -635,10 +715,25 @@ the actor.
 
 Security Master migration `042_security_master_terms_format_column.sql` promotes the terms-payload
 family to a queryable `securities.terms_format` column (ADR-024). The backfill never rewrites the
-payload: a declared `termsFormat` wins and an untagged row is classified by the same shape rule
-`SecurityTermsEnvelope.ResolveFormat` applies on read. `PostgresSecurityMasterStore` derives the
-column from the stored payload on every upsert and refuses an unknown declared format before the
-column's check constraint does.
+payload: a declared `termsFormat` wins and an untagged row was classified by the historical shape
+rule, now kept only in `SecurityTermsLegacyEventClassifier` for decoding untagged event history.
+`PostgresSecurityMasterStore` derives the column from the stored payload's declared `termsFormat` on
+every upsert and refuses an untagged payload or an unknown declared format before the check
+constraints do (ADR-024 amendment 2026-11-13 step 5).
+Migration `068_security_master_terms_format_backfill.sql` (ADR-024 amendment 2026-11-13, proposed,
+requires human schema/storage review) rewrites current state only: it adds `termsFormat`, copied
+from `terms_format`, to every untagged flat and custom-profile `asset_specific_terms` document. No
+other member changes; it never adds `assetClassTermsVersion` and leaves `version`, `schema_version`
+and `terms_format` alone. Before writing anything it refuses an untagged row that classifies as
+economic, a row whose column disagrees with the 042 shape rule, and a non-object document; it then
+verifies that no untagged row remains and adds `ck_securities_terms_format_declared` (`NOT VALID`,
+then `VALIDATE`), which refuses any row whose `termsFormat` is missing or differs from the column.
+`security_events` stays append-only and untouched. `SecurityMasterSnapshotRegenerationService`
+re-serializes retained snapshots through the replay decoder. It has no invocation surface yet;
+running it is deferred to a follow-up. The runner gates an upgrade on
+`SecurityMasterOptions.TermsFormatBackfillLegacyWritersRetired`, an `ACCESS EXCLUSIVE NOWAIT`
+lock on `securities` (so open readers are refused as well as writers), and a raised command timeout above one million rows. See the
+[migration procedure](../../docs/operators/security-master-governed-edit-rollout.md#terms-format-backfill-migration-068).
 Migration `048_security_master_listing_mic.sql` adds the nullable `securities.listing_mic` column
 (ISO 10383) beside the free-text `exchange_code`, which is left unchanged. A well-formed
 `commonTerms.primaryListingMic` wins; otherwise `exchange_code` resolves through the bundled
@@ -931,6 +1026,11 @@ retain the current version with a null price, deriving their canonical price at 
 journal and retained wash-sale deferrals. They do not invent a source execution quote. History replays
 an explicit retained quote exactly, while old unversioned batches keep the legacy allocator.
 Unsupported versions or inconsistent retained economics block reporting.
+
+Migration `V_ledger_082__external_gl_posting.sql` retains scoped mapping revisions, immutable
+packages, decisions and receipt observations. Approval atomically reserves a journal at the
+external destination and enqueues it. Worker leases fence receipt writes. Hard close checks
+required external-GL coverage under the existing period lock.
 
 `PostgresLedgerJournalStore.GetPeriodLockOwnerAsync` reads the retained close actor under the same
 tenant guard as the period. Recurring journal generation consumes the existing PostgreSQL period
@@ -1498,7 +1598,10 @@ Canonical `AssetAccounting.*` commands use the stricter evidence contract: opera
 string links are navigation only, and storage requires complete typed retained identity, SHA-256,
 source reference, accepted reviewer, UTC review/retention timestamps, effective date, positive
 version, retained-by actor, and subject scope before append.
-The durable aggregate remains `JournalEntry` with balanced child `LedgerEntry` rows. Candidate
+The durable aggregate remains `JournalEntry` with balanced child `LedgerEntry` rows. `LedgerDurableBalanceRule`
+applies the journal seal's rule (at least two legs, stored debits and credits exactly equal at 10
+decimal places) before an append opens its transaction, so an entry that only balances within the
+in-memory tolerance is refused with a validation error naming the journal and the residual. Candidate
 journals, Asset Operations economic state, projection events, and balance snapshots are not accepted
 as alternate accounting facts.
 Retained journal aggregates are sealed at the posting transaction's deferred boundary. Parent and
@@ -1506,6 +1609,13 @@ leg inserts share a transaction-scoped per-entry lock, and initial legs require 
 marker owned by the parent transaction. A racing or later child therefore fails closed even from a
 repeatable-read snapshot that cannot observe a newly committed seal. Migration backfill holds both
 journal tables against writers until validation, sealing, and trigger installation complete.
+
+Periods of one ledger book may overlap, for example an adjustment period. Because the period guard
+inspects only the period a posting names, `PostgresLedgerJournalStore` also rejects an append whose
+posting date falls inside a different hard-closed period of the same book, after taking the
+audit-head write lock. An open overlapping period therefore cannot add activity to dates a hard
+close has finalized; date the entry outside the closed range or use a governed reopen. Legacy
+periods without a ledger book are not compared.
 
 Ledger period close writes also fail closed for reviewed automation. `PostgresLedgerBookService`
 rejects assistant or automation-origin close requests before saving the period status, period-close
@@ -1562,10 +1672,20 @@ connection so production journal reads stay explicitly scoped. Account and line-
 first identify matching journal entries, then rehydrate every retained leg for those entries, so
 durable scoped reads do not return unbalanced partial journals to close, reporting, reconciliation,
 or export consumers.
+The `PostgresLedgerJournalStore.TenantReads.cs` partial keeps caller resolution, read predicates,
+and unscoped-read refusal together. It shares the existing store fields and preserves both
+deployment-boundary and fail-closed tenant enforcement.
 `LedgerJournalEntryQuery.SourceEventId` also filters the existing indexed
 `journal_entries.source_event_id` column, allowing a book/event proof chain to find its immutable
 journal without scanning unrelated metadata. No projection-event-to-journal link table, alternate
 schema, or new route is introduced.
+`LedgerJournalEntryQuery.FillId` and `.OrderId` find postings by the execution identifiers their
+metadata recorded: `fillId` exactly, and an order through the `source.orderId` tag or, for a GUID
+identifier, the `orderId` field. Migration `V_ledger_075` adds partial expression indexes on exactly
+those three metadata expressions (only postings that recorded the identifier are indexed), so the
+lookup does not scan unrelated metadata; callers still bound it by book (the execution-lineage route
+always does). The filter SQL and the index expressions must stay textually identical for the planner
+to use them.
 Approved typed posting commands stamp command, approval, source-event, Security Master, book
 position, projection model/run/event, and selected rule-pack/rule identities into normalized journal
 metadata while retaining typed evidence and line dimensions. Conflicting pre-existing command-owned
@@ -1760,6 +1880,52 @@ authority.
 
 `ScheduledArchiveMaintenanceService` computes its "executions today" window in UTC.
 
+### Synthetic fill authority and historical accounting exports
+
+Ledger migrations 069–071 retain operator-delegated synthetic fill authority, the immutable policy
+snapshot used after restart, and a shared unique fee identity across automatic fills and reviewed
+reconciliation corrections. The write boundary validates exact authority, typed USD economics and
+scope in the posting transaction. Fee uniqueness is independent of run/draft/fill identities, so
+competing handoffs cannot double-book an expense. Exact receipt recovery remains idempotent; linked
+human reversal/rebook flows retain their separate correction lineage.
+
+`GeneralLedgerExportBuilder` freezes one `general-ledger.v1` journal-line dataset into a ZIP of
+CSV, exact text-cell XLSX, typed-decimal Parquet, symbol P&L CSV/JSON, and an agreement/evidence
+manifest. Every artifact is hashed; the snapshot digest binds book, period/version, ordered lines,
+retained disposal history, historical open positions and any selected approved marks/reference data.
+Legacy currency detail remains explicitly `book-base-currency-only`; transaction currency is never
+invented. The bounded export accepts at most 100,000 journal lines/history rows and refuses decimal
+values that cannot be encoded exactly. CSV neutralizes formula-looking text; XLSX retains source
+text in inline-string cells so neither formulas nor floating-point coercion alter it.
+
+`ILedgerOpenPositionReportingSnapshotSource` is an opt-in reporting capture. PostgreSQL reads full
+immutable lot after-snapshots in the journal's repeatable-read transaction, restoring historical
+quantity **and basis**; it does not substitute the current basis used by the quantity-only historical
+helper. An explicit query `EffectiveTo`/`OccurredTo` also cuts the lot versions at that exact
+effective date/UTC occurrence time; an admitted mutation cannot depend on an excluded prior state.
+Missing, discontinuous or retrodated mutation chains block unrealized P&L explicitly.
+Inventory coverage failures are scoped to their financial account and symbol. Canonical historical
+acquisition accounts establish lot-carrying roles; typed, source-backed dividend receivables and
+Direct Lending subledger assets retain their independent accounting roles. Unknown instrument
+assets still block their own scope, so renamed journal-only equities cannot masquerade as zero lots.
+Native cash-dividend preparer receipts explain only their exact retained USD receivable role and
+source binding; this classification does not convert preparer attestation into independent approval.
+`GeneralLedgerSymbolPnlBuilder` reconciles canonical disposal proceeds/basis and booked/economic
+realized results. Unrealized v1 supports long unit common equity with same-currency basis, historical
+instrument currency identity and an independently approved per-unit close snapshot. Other asset,
+multiplier or FX cases remain unavailable with reasons, never fabricated zeroes. Exports do not
+certify close or tax finality, post journals, or claim compatibility with a named external GL.
+
+Automatic fill accounting has a separate, explicitly delegated system origin. Ledger migration 069
+retains operator-activated grants for one tenant, financial account, USD book, open period, policy
+version, accounting-mapping revision, and synthetic source mode. The journal append transaction
+locks and rechecks the retained grant and mapping revision; revocation blocks new appends while
+exact retained replay remains available. Ordinary fills require atomic canonical-lot publication;
+only commission and identified fee journals use the journal-only path. Assistant origins and
+human approval workflows retain their existing guards. Grants are never activated at startup.
+Focused proof is `AutomatedPostingGrantTests`, including PostgreSQL-backed activation, revocation,
+restart, tenant isolation, stale mapping, and replay scenarios.
+
 ## Diagrams
 
 The storage module participates in the repository-level `DIA-ASSURANCE-LOOP` in
@@ -1838,6 +2004,15 @@ ordinary lifecycle transitions cannot replace the preparation link or relax sour
 <!-- source-todos:begin module=SRC-STORAGE -->
 - No registry-backed TODOs are open for this module.
 <!-- source-todos:end -->
+
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+`PostgresManualJournalEntryDraftStore` (ledger migration 077) keeps manual journal drafts keyed by fund, tenant,
+company and journal ID exactly as the file store does, retaining each complete draft so server-held intercompany
+fields round-trip unchanged; batch saves are one transaction. The same migration holds the command receipts that
+serialize journal commands across hosts; completed receipts cannot be rewritten or removed.
+`PostgresIntercompanyConfirmationClosePolicyStore` (ledger migration 078) and `FileIntercompanyConfirmationClosePolicyStore`
+retain append-only confirmation close-policy versions; the database refuses update, delete and truncate.
 
 ## Validation
 

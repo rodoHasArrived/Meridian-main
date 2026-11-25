@@ -64,9 +64,33 @@ describe("authorized operator triage", () => {
 
   it("My items uses the authenticated actor rather than the workspace label", async () => {
     const user = userEvent.setup(); await mount();
-    await user.click(screen.getByRole("checkbox", { name: "My items" }));
+    await user.selectOptions(screen.getByRole("combobox", { name: "Owner" }), "mine");
     expect(screen.getByRole("row", { name: "Report review" })).toBeInTheDocument();
     expect(screen.queryByRole("row", { name: "Cash variance" })).not.toBeInTheDocument();
+  });
+
+  it("shows only items nobody owns yet under Unassigned", async () => {
+    const user = userEvent.setup(); await mount();
+    await user.selectOptions(screen.getByRole("combobox", { name: "Owner" }), "unassigned");
+    expect(screen.getByRole("row", { name: "Cash variance" })).toBeInTheDocument();
+    expect(screen.queryByRole("row", { name: "Report review" })).not.toBeInTheDocument();
+    await user.selectOptions(screen.getByRole("combobox", { name: "Owner" }), "all");
+    expect(screen.getByRole("row", { name: "Report review" })).toBeInTheDocument();
+  });
+
+  it("opens the reviewed acknowledge and snooze dialogs from the queue keys", async () => {
+    const user = userEvent.setup(); await mount();
+    // The first row (the blocker) is selected; it can be acknowledged but never snoozed.
+    const grid = screen.getByRole("treegrid", { name: "Authorized ranked operator queue" });
+    grid.querySelector<HTMLElement>("tr[aria-selected=\"true\"]")?.focus();
+    await user.keyboard("s");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await user.keyboard("c");
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveTextContent("Acknowledge item");
+    // Same reviewed dialog as the button: no reason, no command.
+    expect(within(dialog).getByRole("button", { name: "Apply triage action" })).toBeDisabled();
+    expect(commandOperatorTriage).not.toHaveBeenCalled();
   });
 
   it("requires a reason and sends authoritative versions for assignment, then refreshes", async () => {
@@ -133,7 +157,8 @@ describe("authorized operator triage", () => {
     await act(async () => confirm({ status: "Applied", workItemId: blocked.workItemId, replayed: false }));
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     await waitFor(() => expect(screen.getByRole("button", { name: "Acknowledge" })).toBeEnabled());
-    expect(screen.getByRole("button", { name: "Refresh inbox" })).toBeEnabled();
+    // The inbox reloads with the header Refresh; it has no refresh button of its own.
+    expect(screen.queryByRole("button", { name: /refresh inbox/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Retry same command" })).not.toBeInTheDocument();
   });
 
@@ -179,14 +204,56 @@ describe("authorized operator triage", () => {
   it("reports bulk per-item refusals instead of optimistic all-success", async () => {
     const user = userEvent.setup(); await mount("account-1");
     vi.mocked(bulkAssignOperatorTriage).mockResolvedValue({ results: [{ status: "Applied", workItemId: blocked.workItemId, replayed: false }, { status: "Conflict", workItemId: review.workItemId, error: "Source version changed", replayed: false }] });
-    await user.click(screen.getByRole("checkbox", { name: "Select Cash variance for assignment" }));
-    await user.click(screen.getByRole("checkbox", { name: "Select Report review for assignment" }));
+    await user.click(screen.getByRole("checkbox", { name: "Select Cash variance for bulk actions" }));
+    await user.click(screen.getByRole("checkbox", { name: "Select Report review for bulk actions" }));
     await user.click(screen.getByRole("button", { name: "Assign 2 selected" }));
     await user.type(screen.getByLabelText("Assignee operator ID"), "reviewer");
     await user.type(screen.getByLabelText("Reason"), "Desk allocation");
     await user.click(screen.getByRole("button", { name: "Apply triage action" }));
     expect(await screen.findByText(/1 applied; 1 not applied: review-2: Source version changed/)).toBeInTheDocument();
     expect(bulkAssignOperatorTriage).toHaveBeenCalledWith(expect.objectContaining({ fundAccountId: "account-1", items: [{ workItemId: "critical-1", expectedVersion: 2, expectedSourceVersion: 4 }, { workItemId: "review-2", expectedVersion: 2, expectedSourceVersion: 4 }] }), expect.any(Object));
+  });
+
+  it("acknowledges in bulk with a confirmation per item, one command per item, and per-item results", async () => {
+    const user = userEvent.setup(); await mount();
+    vi.mocked(commandOperatorTriage)
+      .mockResolvedValueOnce({ status: "Applied", workItemId: blocked.workItemId, replayed: false })
+      .mockRejectedValueOnce(new Error("connection interrupted"));
+    await user.click(screen.getByRole("checkbox", { name: "Select Cash variance for bulk actions" }));
+    await user.click(screen.getByRole("checkbox", { name: "Select Report review for bulk actions" }));
+    await user.click(screen.getByRole("button", { name: "Acknowledge…" }));
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("2 of 2 selected items confirmed")).toBeInTheDocument();
+    expect(within(dialog).getByRole("checkbox", { name: "Confirm Cash variance" })).toBeChecked();
+    await user.type(within(dialog).getByLabelText("Reason"), "Seen at stand-up");
+    await user.click(within(dialog).getByRole("button", { name: "Apply triage action" }));
+    expect(await screen.findByRole("list", { name: "Bulk action results" })).toHaveTextContent("Cash variance: applied");
+    expect(screen.getByRole("list", { name: "Bulk action results" })).toHaveTextContent("Report review: outcome unconfirmed · connection interrupted");
+    expect(screen.getByText(/Acknowledge: 1 of 2 applied, 1 unconfirmed/)).toBeInTheDocument();
+    expect(commandOperatorTriage).toHaveBeenCalledTimes(2);
+    const [firstId, firstCommand] = vi.mocked(commandOperatorTriage).mock.calls[0]!;
+    const [, secondCommand] = vi.mocked(commandOperatorTriage).mock.calls[1]!;
+    expect(firstId).toBe("critical-1");
+    expect(firstCommand).toMatchObject({ action: "Acknowledge", reason: "Seen at stand-up", expectedVersion: 2, expectedSourceVersion: 4 });
+    expect(firstCommand.commandId).toMatch(/:0$/);
+    expect(secondCommand.commandId).toMatch(/:1$/);
+  });
+
+  it("sends only the items the operator confirmed and skips blockers when snoozing in bulk", async () => {
+    const user = userEvent.setup(); await mount();
+    vi.mocked(commandOperatorTriage).mockResolvedValue({ status: "Applied", workItemId: review.workItemId, replayed: false });
+    await user.click(screen.getByRole("checkbox", { name: "Select Cash variance for bulk actions" }));
+    await user.click(screen.getByRole("checkbox", { name: "Select Report review for bulk actions" }));
+    await user.click(screen.getByRole("button", { name: "Snooze…" }));
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText(/Cash variance · skipped: Blocked items remain visible\./)).toBeInTheDocument();
+    expect(within(dialog).queryByRole("checkbox", { name: "Confirm Cash variance" })).not.toBeInTheDocument();
+    await user.type(within(dialog).getByLabelText("Reason"), "Waiting on vendor");
+    await user.click(within(dialog).getByRole("button", { name: "Apply triage action" }));
+    await screen.findByRole("list", { name: "Bulk action results" });
+    expect(commandOperatorTriage).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(commandOperatorTriage).mock.calls[0]![0]).toBe("review-2");
+    expect(vi.mocked(commandOperatorTriage).mock.calls[0]![1]).toMatchObject({ action: "Snooze", snoozedUntil: expect.any(String) });
   });
 
   it("keeps unavailable storage read-only and distinguishes a failed inbox from empty work", async () => {

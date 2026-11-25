@@ -2,11 +2,16 @@
 
 # `security-master-contracts` data objects - page 2 of 8
 
-Objects 81-160 of 577. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 607. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_CorporateActionConflictMutationResultDto["CorporateActionConflictMutationResultDto"] {
+        +CorporateActionProcessingCaseDto Case
+        +CorporateActionConflictDto Conflict
+        +bool Replayed
+    }
     class Meridian_Contracts_SecurityMaster_CorporateActionConflictResolutionResultDto["CorporateActionConflictResolutionResultDto"] {
         +CorporateActionProcessingCaseDto Case
         +CorporateActionConflictDto Conflict
@@ -272,6 +277,12 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_CorporateActionRestatementEvaluationStates["CorporateActionRestatementEvaluationStates"] {
     }
+    class Meridian_Contracts_SecurityMaster_CorporateActionRetainedSourceEvidenceDto["CorporateActionRetainedSourceEvidenceDto"] {
+        +string ProviderEventType
+        +string RawPayloadJson
+        +string RawPayloadSha256
+        +string Schema
+    }
     class Meridian_Contracts_SecurityMaster_CorporateActionScopeMismatchException["CorporateActionScopeMismatchException"] {
     }
     class Meridian_Contracts_SecurityMaster_CorporateActionSourceConflictException["CorporateActionSourceConflictException"] {
@@ -419,19 +430,7 @@ classDiagram
         +IReadOnlyList~DayCountReferencePeriod~ ReferencePeriods
         +DateOnly? TerminationDate
     }
-    class Meridian_Contracts_SecurityMaster_DayCountReferencePeriod["DayCountReferencePeriod"] {
-        +DateOnly End
-        +DateOnly Start
-    }
-    class Meridian_Contracts_SecurityMaster_DeactivateSecurityRequest["DeactivateSecurityRequest"] {
-        +DateTimeOffset EffectiveTo
-        +long ExpectedVersion
-        +string? Reason
-        +Guid SecurityId
-        +string? SourceRecordId
-        +string SourceSystem
-        +string UpdatedBy
-    }
+    Meridian_Contracts_SecurityMaster_CorporateActionConflictMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionConflictResolutionResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionDeadlineEvidenceDto --> Meridian_Contracts_SecurityMaster_CorporateActionElectionDeadlineDto
     Meridian_Contracts_SecurityMaster_CorporateActionDeadlineHistoryDto --> Meridian_Contracts_SecurityMaster_CorporateActionElectionDeadlineDto
@@ -439,6 +438,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_CorporateActionDeadlineImportResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionEvidenceMutationResultDto
     Meridian_Contracts_SecurityMaster_CorporateActionDeadlineImportRowDto --> Meridian_Contracts_SecurityMaster_CorporateActionElectionDeadlineDto
     Meridian_Contracts_SecurityMaster_CorporateActionDownstreamAuthorityRequiredException --> Meridian_Contracts_SecurityMaster_CorporateActionOperationException
+    Meridian_Contracts_SecurityMaster_CorporateActionDto --> Meridian_Contracts_SecurityMaster_CorporateActionRetainedSourceEvidenceDto
     Meridian_Contracts_SecurityMaster_CorporateActionDurableInboxDto --> Meridian_Contracts_SecurityMaster_CorporateActionDurableInboxEntryDto
     Meridian_Contracts_SecurityMaster_CorporateActionDurableInboxDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionDurableInboxEntryDto --> Meridian_Contracts_SecurityMaster_CorporateActionElectionCalendarDto
@@ -480,5 +480,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_DataQualityRuleViolationDto --> Meridian_Contracts_SecurityMaster_DataQualityRuleSeverity
     Meridian_Contracts_SecurityMaster_DataVendorEntitlementDto --> Meridian_Contracts_SecurityMaster_DataVendorDataType
     Meridian_Contracts_SecurityMaster_DataVendorEntitlementDto --> Meridian_Contracts_SecurityMaster_DataVendorEntitlementStatus
-    Meridian_Contracts_SecurityMaster_DayCountPeriodContext --> Meridian_Contracts_SecurityMaster_DayCountReferencePeriod
 ```

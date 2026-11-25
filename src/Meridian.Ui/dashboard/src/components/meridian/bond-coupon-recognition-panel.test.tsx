@@ -13,7 +13,7 @@ describe("BondCouponRecognitionPanel", () => {
     const preview = vi.fn(async (_book: string, _account: string, request: BondCouponRecognitionRequest) => response(request));
     const prepare = vi.fn(async (_book: string, _account: string, body: { request: BondCouponRecognitionRequest; expectedFingerprint: string }) => ({ preparation: { preview: response(body.request) }, projection: { spine: { eventId: "canonical-income", currency: "USD", eventKind: "Income" }, wasReplay: false } }));
     const { container } = render(<BondCouponRecognitionPanel bookId="book" accountId="account" lotId="lot" throughDate="2026-11-12" onLockChange={vi.fn()} preview={preview} prepare={prepare} />);
-    fireEvent.click(screen.getByText("Coupon accrual and collection for governed review"));
+    fireEvent.click(screen.getByText("Coupon accrual and collection for accounting review"));
     fireEvent.change(screen.getByLabelText("Coupon accounting period ID"), { target: { value: "period" } });
     fireEvent.click(screen.getByRole("button", { name: "Preview coupon recognition" })); await screen.findByRole("region", { name: "Coupon recognition preview" });
     expect(preview.mock.calls[0][2].cashAllocations).toEqual([]); expect(screen.getByText("InterestPayable")).toBeInTheDocument();
@@ -42,7 +42,7 @@ describe("BondCouponRecognitionPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Preview coupon recognition" })); await screen.findByRole("region", { name: "Coupon recognition preview" });
     fireEvent.click(screen.getByRole("checkbox", { name: /I reviewed the coupon accrual/ })); fireEvent.click(screen.getByRole("button", { name: "Prepare for review" })); await screen.findByRole("alert");
     expect(screen.getByLabelText("Coupon accounting period ID")).toBeDisabled();
-    fireEvent.click(screen.getByRole("button", { name: "Retry same coupon preparation" })); await screen.findByText("Coupon Income source prepared for governed review");
+    fireEvent.click(screen.getByRole("button", { name: "Retry same coupon preparation" })); await screen.findByText("Coupon Income source prepared for accounting review");
     expect(prepare.mock.calls[1][2]).toEqual(prepare.mock.calls[0][2]);
   });
 });

@@ -1128,7 +1128,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         ? "Packet unavailable"
         : $"SM-{SelectedTrustSnapshot.Security.SecurityId.ToString()[..8].ToUpperInvariant()}-V{SelectedTrustSnapshot.EconomicDefinition.Version}";
 
-    public string PrintGeneratedAtText => FormatHelpers.FormatUtcTimestamp(SelectedTrustSnapshot?.RetrievedAtUtc, "Not generated");
+    public string PrintGeneratedAtText => FormatHelpers.FormatDisplayTimestamp(SelectedTrustSnapshot?.RetrievedAtUtc, "Not generated");
 
     public string PrintDistributionText => SelectedTrustSnapshot?.DownstreamImpact.IsScoped == true
         ? $"Deliver to {SelectedTrustSnapshot.DownstreamImpact.FundProfileId} packet queue"
@@ -1380,7 +1380,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
                 ? string.Empty
                 : $" - {reason}";
             var asOfText = asOf.HasValue
-                ? $" - {FormatHelpers.FormatUtcTimestamp(asOf.Value)}"
+                ? $" - {FormatHelpers.FormatDisplayTimestamp(asOf.Value)}"
                 : string.Empty;
 
             return $"Source {sourceSystem}{sourceRecordText} - updated by {updatedBy}{asOfText}{reasonText}";
@@ -1406,7 +1406,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             {
                 return _selectedTradingParameters is null
                     ? "Trading-parameter coverage could not be confirmed."
-                    : $"Trading parameters complete as of {FormatHelpers.FormatUtcTimestamp(_selectedTradingParameters.AsOf)}.";
+                    : $"Trading parameters complete as of {FormatHelpers.FormatDisplayTimestamp(_selectedTradingParameters.AsOf)}.";
             }
 
             return $"Trading parameters incomplete: missing {string.Join(", ", missingTradingFields)}.";
@@ -1427,7 +1427,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         {
             if (_latestHistoryEvent is not null)
             {
-                return $"{_latestHistoryEvent.EventType} - v{_latestHistoryEvent.StreamVersion} - {FormatHelpers.FormatUtcTimestamp(_latestHistoryEvent.EventTimestamp)} by {_latestHistoryEvent.Actor}";
+                return $"{_latestHistoryEvent.EventType} - v{_latestHistoryEvent.StreamVersion} - {FormatHelpers.FormatDisplayTimestamp(_latestHistoryEvent.EventTimestamp)} by {_latestHistoryEvent.Actor}";
             }
 
             if (string.IsNullOrWhiteSpace(HistoryText) || HistoryText == "(no history)")
@@ -1471,7 +1471,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
     public string SelectedConflictDetectedText => SelectedConflictEntry is null
         ? "Detection time appears after a conflict is selected."
-        : $"Detected {FormatHelpers.FormatUtcTimestamp(SelectedConflictEntry.Conflict.DetectedAt)} - {SelectedConflictEntry.Conflict.ConflictKind}";
+        : $"Detected {FormatHelpers.FormatDisplayTimestamp(SelectedConflictEntry.Conflict.DetectedAt)} - {SelectedConflictEntry.Conflict.ConflictKind}";
 
     public string AcceptPrimaryConflictLabel => SelectedConflictEntry is null
         ? "Accept A"
@@ -1844,7 +1844,8 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         }
         catch (Exception ex)
         {
-            _loggingService.LogError($"Navigation parameter handling failed: {parameter}", ex);
+            _loggingService.LogError("Navigation parameter handling failed: {Parameter}", ex,
+                ("Parameter", parameter?.ToString() ?? string.Empty));
         }
     }
 

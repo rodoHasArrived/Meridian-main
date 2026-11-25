@@ -194,16 +194,15 @@ export function AccountingSystemReconciliationPanel({
 
   return (
     <Card id="external-gl-reconciliation" className="panel-surface scroll-mt-6" role="region" aria-label="External GL reconciliation">
-      <CardHeader>
+      <CardHeader className="px-3 py-1">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <div className="eyebrow-label eyebrow-label--sentence">External GL reconciliation</div>
-            <CardTitle className="mt-2 flex items-center gap-2 text-base">
+            <CardTitle className="flex items-center gap-2 text-base">
               <BookCheck className="h-4 w-4 text-primary" aria-hidden="true" />
               {activeProvider ? presentExternalGlProviderEvidenceLabel(activeProvider.displayName) : "External GL evidence"}
             </CardTitle>
-            <CardDescription className="mt-2">
-              External accounting-system records are imported as read-only evidence against Meridian-owned ledger truth; posting back to the external GL remains disabled.
+            <CardDescription className="mt-1">
+              Imported provider records are reconciliation evidence for Meridian's ledger.
             </CardDescription>
             {selectedCompanyLabel ? (
               <div className="mt-2 text-xs text-muted-foreground">
@@ -214,6 +213,7 @@ export function AccountingSystemReconciliationPanel({
           <div className="flex flex-wrap items-center gap-2">
             {activeProvider ? <Badge variant="success">{presentExternalGlProviderStatus(activeProvider.statusLabel)}</Badge> : null}
             {quickBooksProvider && quickBooksProvider !== activeProvider ? <Badge variant="outline">{presentExternalGlProviderStatus(quickBooksProvider.statusLabel)}</Badge> : null}
+            <Button asChild size="sm" variant="outline"><a href="#external-gl-posting">Review journal posting</a></Button>
             <Button size="sm" variant="outline" onClick={onRefresh} disabled={loading} busy={loading} busyLabel="Refreshing GL evidence">
               <RefreshCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} aria-hidden="true" />
               Refresh
@@ -221,7 +221,7 @@ export function AccountingSystemReconciliationPanel({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 p-3">
         {error ? (
           <StatusBanner tone="danger" role="alert" title={error} />
         ) : null}
@@ -238,7 +238,7 @@ export function AccountingSystemReconciliationPanel({
               sourceDescription="All authorized External GL provider capabilities in the current catalog snapshot."
               completePopulation={!loading && !error} rows={providers} getRowId={(provider) => provider.providerId}
               getSearchText={(provider) => `${provider.displayName} ${provider.state} ${provider.connection?.statusLabel ?? ""}`}
-              ariaLabel="External GL provider import posture" emptyText="No External GL providers are available."
+              ariaLabel="External GL provider import status" emptyText="No External GL providers are available."
               columns={[
                 { id: "provider", label: "Provider", render: (provider) => presentExternalGlProviderName(provider.displayName), exportValue: (provider) => provider.displayName },
                 { id: "state", label: "State", render: (provider) => <DesignSystemStatus status={provider.state === "Available" ? "ready" : provider.state === "Planned" ? "info" : "action"}>{presentExternalGlState(provider.state)}</DesignSystemStatus>, exportValue: (provider) => provider.state },
@@ -369,7 +369,7 @@ export function AccountingSystemReconciliationPanel({
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <div className="font-semibold text-foreground">Posting/export</div>
-                  <div className="mt-1 text-[11px] text-muted-foreground">
+                  <div className="mt-1 text-xs text-muted-foreground">
                     {selectedMappingProfile ? `Mapping: ${selectedMappingProfile.displayName}` : "Mapping profile required"}
                   </div>
                 </div>
@@ -429,7 +429,7 @@ export function AccountingSystemReconciliationPanel({
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="text-xs font-semibold text-foreground">Guarded export package</div>
-                      <div className="mt-1 text-[11px] text-muted-foreground">
+                      <div className="mt-1 text-xs text-muted-foreground">
                         {formatExternalGlPeriodRange(exportPackage.periodStart, exportPackage.periodEnd)}
                       </div>
                     </div>
@@ -437,7 +437,7 @@ export function AccountingSystemReconciliationPanel({
                       {exportPackage.postingEnabled ? "Posting enabled" : "Posting disabled"}
                     </Badge>
                   </div>
-                  <p className="mt-2 text-[11px] leading-4 text-muted-foreground">{exportPackage.postingDisabledReason}</p>
+                  <p className="mt-2 text-xs leading-4 text-muted-foreground">{exportPackage.postingDisabledReason}</p>
                   <div className="mt-2 grid gap-2">
                     <AccountingValue label="Certification" value={presentExternalGlState(exportPackage.certification?.state, "Not certified")} />
                     <AccountingValue label="Evidence" value={String(exportPackage.evidenceLinks.length)} />
@@ -452,7 +452,7 @@ export function AccountingSystemReconciliationPanel({
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="text-xs font-semibold text-muted-foreground">Retained package history</div>
-                    <div className="mt-1 text-[11px] text-muted-foreground">
+                    <div className="mt-1 text-xs text-muted-foreground">
                       {exportPackages.length} retained package{exportPackages.length === 1 ? "" : "s"} for the selected provider, fund, and ledger book.
                     </div>
                   </div>
@@ -465,7 +465,7 @@ export function AccountingSystemReconciliationPanel({
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
                             <div className="font-semibold text-foreground">Guarded export package</div>
-                            <div className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+                            <div className="mt-0.5 font-mono text-xs text-muted-foreground">
                               {formatExternalGlPeriodRange(packageRow.periodStart, packageRow.periodEnd)} | Created {formatExternalGlTimestamp(packageRow.createdAtUtc)}
                             </div>
                           </div>
@@ -586,7 +586,7 @@ function AccountingSystemEvidencePackageRow({
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="truncate text-xs font-semibold text-foreground">{evidencePackage.label}</div>
-          <div className="mt-1 text-[11px] text-muted-foreground">
+          <div className="mt-1 text-xs text-muted-foreground">
             {evidencePackage.evidenceReferenceCount} retained evidence item{evidencePackage.evidenceReferenceCount === 1 ? "" : "s"}
           </div>
         </div>
@@ -595,13 +595,13 @@ function AccountingSystemEvidencePackageRow({
         </Badge>
       </div>
       {requiredActions.length > 0 ? (
-        <ul className="mt-2 list-disc space-y-1 pl-4 text-[11px] leading-4 text-muted-foreground">
+        <ul className="mt-2 list-disc space-y-1 pl-4 text-xs leading-4 text-muted-foreground">
           {requiredActions.map((action) => (
             <li key={action}>{action}</li>
           ))}
         </ul>
       ) : evidencePackage.evidenceReferenceCount > 0 ? (
-        <p className="mt-2 text-[11px] leading-4 text-muted-foreground">Evidence is retained and ready for operator review.</p>
+        <p className="mt-2 text-xs leading-4 text-muted-foreground">Evidence is retained and ready for operator review.</p>
       ) : null}
       <TechnicalDetails label="Evidence package technical details" className="mt-2">
         <dl className="text-xs">

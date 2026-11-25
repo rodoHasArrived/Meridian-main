@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { ChartCard } from "@/components/charts/ChartCard";
 import { SegmentedLineChart } from "@/components/charts/SegmentedLineChart";
 import { Button } from "@/components/ui/button";
@@ -49,9 +50,10 @@ export function CloseChecklistHistoryChart({ workflowId, workflowVersion }: { wo
     );
     return () => controller.abort();
   }, [key, retry, workflowId]);
+  useOnGlobalRefresh(() => setRetry((value) => value + 1));
   return active?.history ? <CloseChecklistHistoryView history={active.history} /> : <section aria-label="Retained close task history" className="space-y-2">
     <h3 className="text-sm font-semibold">Close task burndown</h3>
     <p role="status" className="text-xs text-muted-foreground">{active?.failed ? "Retained checklist history is unavailable. Current task states remain available; no earlier completion history is inferred." : "Loading retained checklist history…"}</p>
-    {active?.failed ? <Button size="sm" variant="outline" onClick={() => setRetry((value) => value + 1)}>Retry close task history</Button> : null}
+    {active?.failed ? <Button size="sm" variant="outline" onClick={() => setRetry((value) => value + 1)} aria-label="Retry loading close task history">Retry</Button> : null}
   </section>;
 }

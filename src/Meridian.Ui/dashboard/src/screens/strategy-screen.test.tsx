@@ -9,10 +9,10 @@ import type { PromotionEvaluationResult, PromotionRecord, StrategyRunReviewPacke
 
 const twoRuns: StrategyWorkspaceResponse = {
   metrics: [
-    { id: "1", label: "Runs", value: "24", delta: "+8%", tone: "success" },
-    { id: "2", label: "Queued", value: "3", delta: "0%", tone: "default" },
-    { id: "3", label: "Needs Review", value: "2", delta: "-1%", tone: "warning" },
-    { id: "4", label: "Promotions", value: "5", delta: "+2%", tone: "default" }
+    { id: "runs", label: "Runs", value: "24", delta: "+8%", tone: "success" },
+    { id: "queued", label: "Queued", value: "3", delta: "0%", tone: "default" },
+    { id: "review", label: "Needs Review", value: "2", delta: "-1%", tone: "warning" },
+    { id: "promotions", label: "Promotions", value: "5", delta: "+2%", tone: "default" }
   ],
   runs: [
     {
@@ -201,6 +201,47 @@ describe("StrategyScreen", () => {
     expect(api.getRunReviewPacket).toHaveBeenCalledWith("run-1");
   });
 
+  it("shows replayed bar counts, verified revisions and the provider receipt together", async () => {
+    const packet = buildRunReviewPacket();
+    vi.mocked(api.getRunReviewPacket).mockResolvedValue({ ...packet, run: {
+      ...packet.run,
+      replayProvenance: {
+        sourceMix: [{ symbol: "SPY", source: "ALPACA", bars: 120 }],
+        completedInputHashSha256: "completed-input-fingerprint",
+        revisions: [{ revisionId: "verified-2024", contentHash: "content-2024", servingProvider: "alpaca", instrument: "SPY", granularity: "daily" }]
+      },
+      providerProvenance: {
+        schemaVersion: 1,
+        receiptId: "research-run-receipt",
+        capability: "ResearchReplay",
+        routingDecision: "Local replay",
+        providers: [],
+        fallbackChain: [],
+        fallbackOccurred: false,
+        validationProfile: { version: "research-replay/v1" },
+        request: { symbols: ["SPY"], withheldSymbolCount: 0, usesDiscoveredUniverse: false },
+        startedUtc: "2026-08-03T11:00:00Z",
+        completedUtc: "2026-08-03T12:00:00Z",
+        dataSemantics: "Simulated research results"
+      }
+    } });
+    const user = userEvent.setup();
+    renderWithRouter(<StrategyScreen data={{ ...twoRuns, runs: twoRuns.runs.map((run) => ({ ...run, mode: "backtest" })) }} />);
+
+    await user.click(screen.getAllByRole("button", { name: /open/i })[0]);
+
+    const provenance = within(screen.getByRole("region", { name: "Replay data sources" }));
+    const sources = await provenance.findByRole("table", { name: "Replayed bars by source" });
+    expect(sources).toHaveTextContent("SPY");
+    expect(sources).toHaveTextContent("ALPACA");
+    expect(sources).toHaveTextContent("120");
+    await user.click(provenance.getByText("Replay fingerprints and revisions"));
+    expect(provenance.getByText("completed-input-fingerprint")).toBeVisible();
+    expect(provenance.getByRole("table", { name: "Verified backfill revisions" })).toHaveTextContent("verified-2024");
+    await user.click(provenance.getByText("Provider provenance", { exact: false }));
+    expect(provenance.getByRole("button", { name: "Export JSON sidecar" })).toBeVisible();
+  });
+
   it("closes the run detail dialog with Escape", async () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyScreen data={twoRuns} />);
@@ -224,8 +265,8 @@ describe("StrategyScreen", () => {
     renderWithRouter(<StrategyScreen data={twoRuns} />, { initialEntries: ["/strategy/lab"] });
 
     expect(screen.getByText("PlotTool workstation")).toBeInTheDocument();
-    expect(screen.getAllByText("PlotTool catalog not connected").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText("No retained PlotTool studies are available. Connect a governed PlotTool catalog before selecting notebooks.")).toBeInTheDocument();
+    expect(screen.getAllByText("Strategy analytics not connected").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("No retained PlotTool studies are available. Connect an approved PlotTool catalog before selecting notebooks.")).toBeInTheDocument();
     expect(screen.getByRole("status", { name: "PlotTool scatter observations unavailable" }))
       .toHaveTextContent("No PlotTool observations yet");
     expect(screen.getByRole("link", { name: "Review provider connections for PlotTool" }))
@@ -241,15 +282,19 @@ describe("StrategyScreen", () => {
     expect(screen.getByLabelText("PlotTool study brief")).toBeInTheDocument();
     expect(screen.getByText("Strategy notebooks")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Selected PlotTool study detail for Mean Reversion FX" })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "Mean Reversion FX vs Index Momentum scatter" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Mean Reversion FX vs Index Momentum scatter" })).toBeInTheDocument();
     expect(screen.getByText(/Spread \(bps\) against 3m implied vol/)).toBeInTheDocument();
     expect(screen.getByLabelText("PlotTool chart legend")).toBeInTheDocument();
     expect(screen.getAllByText("Current marker").length).toBeGreaterThan(0);
     expect(screen.getByText("Meridian overlays")).toBeInTheDocument();
-    expect(screen.getByText("View observation table").closest("details")).not.toHaveAttribute("open");
-    await user.click(screen.getByText("View observation table"));
-    expect(screen.getByText("View observation table").closest("details")).toHaveAttribute("open");
-    expect(screen.getByRole("table", { name: "PlotTool scatter observations" })).toBeInTheDocument();
+    const inspector = screen.getByRole("table", { name: "PlotTool scatter observations chart data" });
+    expect(inspector).toHaveTextContent("Current marker");
+    expect(screen.getByText(/Illustrative chart · retained market observation proof unavailable/)).toBeInTheDocument();
+    const marker = screen.getByRole("button", { name: /Current marker.*88.40, 73.80/ });
+    await user.click(marker);
+    await user.keyboard("{Home}");
+    expect(inspector).toHaveTextContent("Illustrative observation 1");
+    expect(inspector).toHaveTextContent("SVG units");
   });
 
   it("links PlotTool notebook rows to the selected study detail panel", async () => {
@@ -285,13 +330,10 @@ describe("StrategyScreen", () => {
     await user.click(screen.getByRole("tab", { name: "Statistics" }));
 
     expect(screen.getByText("Distribution profile")).toBeInTheDocument();
-    expect(screen.getByText("Residual distribution")).toBeInTheDocument();
-    // The label sits on the chart svg itself, not on a wrapping role="img" div, so there is
-    // exactly one image with this name and it is not nested inside another image.
-    const distributionCharts = screen.getAllByRole("img", { name: "PlotTool residual distribution chart" });
-    expect(distributionCharts).toHaveLength(1);
-    expect(distributionCharts[0].tagName.toLowerCase()).toBe("svg");
-    expect(distributionCharts[0].parentElement?.closest('[role="img"]')).toBeNull();
+    expect(screen.getAllByText("Residual distribution").length).toBeGreaterThan(0);
+    expect(screen.getByRole("table", { name: "PlotTool residual distribution chart chart data" })).toBeInTheDocument();
+    const distributionChart = screen.getByRole("img", { name: "PlotTool residual distribution chart" });
+    expect(distributionChart.parentElement?.closest('[role="img"]')).toBeNull();
     expect(screen.getByText("Regression frame")).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "PlotTool moments table" })).toBeInTheDocument();
     expect(screen.getByText("PlotTool moments for the active strategy pair.")).toBeInTheDocument();
@@ -360,7 +402,7 @@ describe("StrategyScreen", () => {
     const disabledCompare = screen.getByRole("button", { name: /compare 2 runs unavailable/i });
     const disabledDiff = screen.getByRole("button", { name: /diff 2 runs unavailable/i });
     expect(disabledCompare).toBeDisabled();
-    expect(disabledCompare).toHaveAttribute("title", "Select exactly two runs before using this command. 0 selected.");
+    expect(disabledCompare).toHaveAttribute("title", "Select two to 4 runs before comparing. 0 selected.");
     expect(disabledDiff).toBeDisabled();
     expect(disabledDiff).toHaveAttribute("title", "Select exactly two runs before using this command. 0 selected.");
     expect(screen.getByText("No runs selected")).toBeInTheDocument();
@@ -369,9 +411,49 @@ describe("StrategyScreen", () => {
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
 
-    expect(screen.getByRole("button", { name: /compare 2 runs: mean reversion fx and index momentum/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /compare 2 runs: mean reversion fx, index momentum/i })).toBeEnabled();
     expect(screen.getByRole("button", { name: /diff 2 runs: mean reversion fx and index momentum/i })).toBeEnabled();
     expect(screen.getByText("Mean Reversion FX vs Index Momentum")).toBeInTheDocument();
+  });
+
+  it("compares up to four runs with overlaid curves and refuses a fifth with a message", async () => {
+    const fiveRuns: StrategyWorkspaceResponse = {
+      ...twoRuns,
+      runs: [1, 2, 3, 4, 5].map((index) => ({ ...twoRuns.runs[0]!, id: `run-${index}`, strategyName: `Strategy ${index}`, sharpe: `${index}` }))
+    };
+    vi.spyOn(api, "compareRuns").mockResolvedValue([]);
+    const equity = (runId: string, values: number[]) => ({
+      runId, initialEquity: values[0]!, finalEquity: values.at(-1)!, maxDrawdown: 0, maxDrawdownPercent: 0, maxDrawdownRecoveryDays: 0, sharpeRatio: 0, sortinoRatio: 0,
+      points: values.map((totalEquity, day) => ({ date: `2026-01-0${day + 1}T00:00:00Z`, totalEquity, cash: 0, dailyReturn: 0, drawdownFromPeak: 0, drawdownFromPeakPercent: 0 }))
+    });
+    vi.spyOn(api, "getRunEquityCurve").mockImplementation(async (runId: string) => {
+      if (runId === "run-3") throw new Error("Curve not retained");
+      return equity(runId, [100, 110, 105]);
+    });
+
+    const user = userEvent.setup();
+    renderWithRouter(<StrategyScreen data={fiveRuns} />);
+    const checkbox = (name: string) => screen.getByRole("checkbox", { name: new RegExp(`^(Select|Remove) ${name} for compare and diff$`) });
+    for (const index of [1, 2, 3, 4]) await user.click(checkbox(`Strategy ${index}`));
+    await user.click(checkbox("Strategy 5"));
+
+    const tray = screen.getByRole("region", { name: "Runs selected for comparison" });
+    expect(tray).toHaveTextContent("4 of 4 selected");
+    expect(within(tray).getByRole("status")).toHaveTextContent("Compare holds 4 runs. Remove one from the selection to add Strategy 5.");
+    expect(within(tray).queryByText("Strategy 5")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /diff 2 runs unavailable/i })).toBeDisabled();
+
+    await user.click(screen.getByRole("button", { name: /^compare 4 runs: strategy 1, strategy 2, strategy 3, strategy 4$/i }));
+    expect(api.compareRuns).toHaveBeenCalledWith(["run-1", "run-2", "run-3", "run-4"]);
+    const curves = await screen.findByRole("region", { name: "Compared run curves" });
+    expect(curves).toHaveAttribute("data-chart-table", "strategy-run-overlay");
+    expect(curves).toHaveTextContent("Not drawn: Strategy 3: equity curve unavailable.");
+    expect(within(curves).getByRole("img", { name: "Equity of the compared runs, rebased to 100" })).toBeInTheDocument();
+    expect(within(curves).getByRole("img", { name: "Drawdown of the compared runs, percent from peak" })).toBeInTheDocument();
+
+    await user.click(within(tray).getByRole("button", { name: "Remove Strategy 1 from the comparison" }));
+    expect(tray).toHaveTextContent("3 of 4 selected");
+    expect(screen.queryByRole("region", { name: "Compared run curves" })).not.toBeInTheDocument();
   });
 
   it("calls compareRuns API and renders a comparison table cell", async () => {
@@ -815,7 +897,7 @@ describe("StrategyScreen", () => {
     );
 
     await user.click(acknowledgement);
-    approveButton = screen.getByRole("button", { name: "Approve governed Paper promotion from selected strategy run" });
+    approveButton = screen.getByRole("button", { name: "Approve Paper promotion from selected strategy run" });
     await user.click(approveButton);
 
     await waitFor(() => {
@@ -837,7 +919,7 @@ describe("StrategyScreen", () => {
     });
     expect(screen.getByText("Paper promotion approved - target run paper-run-1")).toBeInTheDocument();
     expect(screen.getByRole("button", {
-      name: "Open governed Trading promotion record for target run paper-run-1"
+      name: "Open Trading promotion record for target run paper-run-1"
     })).toBeInTheDocument();
   });
 
@@ -870,7 +952,7 @@ describe("StrategyScreen", () => {
       name: "I reviewed the four canonical promotion checks and the exact retained Evidence Vault source."
     });
     await user.click(acknowledgement);
-    await user.click(screen.getByRole("button", { name: "Approve governed Paper promotion from selected strategy run" }));
+    await user.click(screen.getByRole("button", { name: "Approve Paper promotion from selected strategy run" }));
 
     await waitFor(() => {
       expect(api.approvePromotion).toHaveBeenCalledTimes(1);
@@ -878,19 +960,19 @@ describe("StrategyScreen", () => {
     expect(acknowledgement).toBeDisabled();
     expect(acknowledgement).toHaveAttribute(
       "title",
-      "Governed promotion approval is already running; wait before changing acknowledgement."
+      "Promotion approval is already running; wait before changing acknowledgement."
     );
     expect(acknowledgement).toHaveAttribute(
       "aria-describedby",
       "promote-paper-approval-acknowledgement-disabled-reason"
     );
     expect(acknowledgement).toHaveAccessibleDescription(
-      "Governed promotion approval is already running; wait before changing acknowledgement."
+      "Promotion approval is already running; wait before changing acknowledgement."
     );
-    expect(screen.getByRole("button", { name: /Approve Paper promotion unavailable: Governed promotion approval is already running/i }))
+    expect(screen.getByRole("button", { name: /Approve Paper promotion unavailable: Promotion approval is already running/i }))
       .toHaveTextContent("Approving Paper promotion...");
     expect(screen.getByRole("button", {
-      name: "Governed promotion approval is already running; wait for the durable decision before closing review."
+      name: "Promotion approval is already running; wait for the durable decision before closing review."
     })).toBeDisabled();
 
     await act(async () => {

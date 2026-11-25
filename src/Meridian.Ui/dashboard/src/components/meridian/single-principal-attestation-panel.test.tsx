@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SinglePrincipalAttestationPanel } from "./single-principal-attestation-panel";
 import * as api from "@/lib/single-principal-attestation-api";
 import { ApiError } from "@/lib/api-errors";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import type { AttestationSubject, AttestationWorkspace, PreparerReceipt } from "@/lib/single-principal-attestation-api";
 
 vi.mock("@/lib/single-principal-attestation-api", async (importOriginal) => ({
@@ -128,12 +129,14 @@ describe("single-principal evidence acknowledgment", () => {
 
   it("requires refresh and fresh confirmation after a definite version conflict", async () => {
     vi.mocked(api.recordPreparerAttestation).mockRejectedValueOnce(new ApiError({ path: "/attestations", status: 409, detail: "Source changed" }));
-    render(<SinglePrincipalAttestationPanel vaultId="vault-1" documentId="document-1" />);
+    const view = render(<GlobalRefreshProvider sequence={0}><SinglePrincipalAttestationPanel vaultId="vault-1" documentId="document-1" /></GlobalRefreshProvider>);
     await loaded(); confirm();
+    expect(screen.queryByRole("button", { name: /Refresh attestation|Retry loading attestation/ })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Attest evidence inspection" }));
     await screen.findByText(/Refresh the current policy and evidence/);
     expect(screen.queryByRole("button", { name: "Retry same command" })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Refresh attestation" }));
+    expect(screen.getByRole("button", { name: "Retry loading attestation" })).toBeEnabled();
+    view.rerender(<GlobalRefreshProvider sequence={1}><SinglePrincipalAttestationPanel vaultId="vault-1" documentId="document-1" /></GlobalRefreshProvider>);
     await loaded();
     expect(screen.getByRole("checkbox")).not.toBeChecked();
   });
@@ -206,5 +209,13 @@ describe("single-principal evidence acknowledgment", () => {
     const { container } = render(<SinglePrincipalAttestationPanel vaultId="vault-1" documentId="document-1" />);
     await loaded();
     expect((await axe(container)).violations).toEqual([]);
+  });
+  it("keeps the typed reason and confirmation when the header refresh fires", async () => {
+    const view = render(<GlobalRefreshProvider sequence={0}><SinglePrincipalAttestationPanel vaultId="vault-1" documentId="document-1" /></GlobalRefreshProvider>);
+    await loaded(); confirm();
+    view.rerender(<GlobalRefreshProvider sequence={1}><SinglePrincipalAttestationPanel vaultId="vault-1" documentId="document-1" /></GlobalRefreshProvider>);
+    expect(screen.getByLabelText("Attestation reason")).toHaveValue("Inspected original retained bytes");
+    expect(screen.getByRole("checkbox")).toBeChecked();
+    expect(api.getAttestationSubject).toHaveBeenCalledTimes(1);
   });
 });

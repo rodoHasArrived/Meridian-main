@@ -54,11 +54,11 @@ function inject(): void {
   border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
 .stm{width:100%;border-collapse:separate;border-spacing:0;font-family:var(--font-data,monospace);font-size:12px;}
 .stm thead th{padding:9px 14px;white-space:nowrap;background:var(--bg-medium,#EBE8E1);
-  font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;
+  font-family:var(--font-body,inherit);font-size:0.75rem;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;color:var(--text-muted,#606870);
   border-bottom:1px solid var(--border-color,#D2CDC3);text-align:right;}
 .stm thead th.stm--l{text-align:left;}
-.stm__section td{padding:10px 14px 5px;font-family:var(--font-body,inherit);font-size:10px;font-weight:600;
+.stm__section td{padding:10px 14px 5px;font-family:var(--font-body,inherit);font-size:0.75rem;font-weight:600;
   font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-secondary,#535C65);
   border-top:1px solid var(--border-color,#D2CDC3);}
 .stm__section--first td{border-top:none;}
@@ -69,7 +69,7 @@ function inject(): void {
 .stm__sub td{padding:10px 14px;font-weight:600;border-top:1px solid var(--border-color,#D2CDC3);
   background:var(--card-surface-raised,#FCFBF8);}
 .stm__sub td.stm--l{font-family:var(--font-body,inherit);font-variant:all-small-caps;letter-spacing:.03em;
-  font-size:11px;color:var(--text-primary,#20252B);}
+  font-size:0.75rem;color:var(--text-primary,#20252B);}
 .stm__sub td.stm--num{text-align:right;}
 .stm__total td{padding:10px 14px;font-weight:600;background:var(--bg-medium,#EBE8E1);
   border-top:2px solid var(--border-strong,#AAA49A);

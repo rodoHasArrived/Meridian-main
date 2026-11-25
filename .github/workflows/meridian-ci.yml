@@ -10,8 +10,6 @@ on:
       integration-receipt-sha256:
         value: ${{ jobs.integration-gate.outputs.receipt-sha256 }}
   pull_request:
-    branches:
-      - main
   push:
     branches:
       - main
@@ -34,17 +32,101 @@ env:
   MERIDIAN_DISABLE_DOCKER_TESTS: "true"
 
 jobs:
+  changes:
+    name: changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      dotnet: ${{ steps.detect.outputs.dotnet }}
+    steps:
+      - name: Check out complete PR history
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          # Inspect the complete diff locally, including deletions and both sides
+          # of renames. No PR-files API limit can silently omit changed code.
+          fetch-depth: 0
+          # The detector compares path names only, so history needs commits and trees but
+          # no file contents beyond this revision. The integration lane waits here; verify-dotnet
+          # repeats this classification in-job and quality-gate requires the two to agree.
+          filter: blob:none
+
+      - name: Detect .NET changes
+        id: detect
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            python3 build/scripts/ci/detect-dotnet-changes.py \
+              --base "$BASE_SHA" --head "$HEAD_SHA" --github-output "$GITHUB_OUTPUT"
+          else
+            # Main, merge queues, manual and reusable release gates always run .NET.
+            echo "dotnet=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  # One job per lane. Every job is a fresh wait for a hosted runner, and measured PR runs spent
+  # far longer queued than executing, so each lane runs, checks its own roster and reports its
+  # verdict in a single job instead of a builder -> shard -> verdict chain. The roster checks
+  # are unchanged: they read this job's own summary as shard 1 of 1. To shard again, restore a
+  # shard matrix and a downstream verdict job together (see .github/workflows/README.md).
   verify-dotnet:
     name: verify-dotnet
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 50
+    outputs:
+      dotnet-required: ${{ steps.changes.outputs.dotnet }}
     env:
       # Build shared projects once, then overlap two isolated test processes.
       # Local runs remain sequential unless explicitly configured.
       MERIDIAN_CI_TEST_MAX_PARALLEL: "2"
+      MERIDIAN_CI_DOTNET_SHARD: 1/1
+      npm_config_prefer_offline: "true"
 
     steps:
+      # The same classification as the changes job, made here so the lane does not queue
+      # behind it. quality-gate fails if the two decisions ever differ.
+      - name: Check out PR history for change detection
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          filter: blob:none
+          path: .ci-change-detection
+
+      - name: Detect .NET changes
+        id: changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            (cd .ci-change-detection &&
+              python3 build/scripts/ci/detect-dotnet-changes.py \
+                --base "$BASE_SHA" --head "$HEAD_SHA" --github-output "$GITHUB_OUTPUT")
+            rm -rf .ci-change-detection
+          else
+            # Main, merge queues, manual and reusable release gates always run .NET.
+            echo "dotnet=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Report docs-only skip
+        if: steps.changes.outputs.dotnet != 'true'
+        run: |
+          echo "Docs-only PR: .NET lane intentionally skipped." | tee -a "$GITHUB_STEP_SUMMARY"
+
       - name: Check out repository
+        if: steps.changes.outputs.dotnet == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -52,17 +134,31 @@ jobs:
           fetch-depth: 1
 
       - name: Set up .NET SDK
+        if: steps.changes.outputs.dotnet == 'true'
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           global-json-file: global.json
 
+      # The host embeds the workstation bundle at MSBuild evaluation time. The lane builds and
+      # validates it from the lockfile itself (ensure-workstation-assets.py), so .NET neither
+      # waits for the browser verdict nor for a separate bundle job.
+      - name: Set up Node.js
+        if: steps.changes.outputs.dotnet == 'true'
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
+
       - name: Set up Python
+        if: steps.changes.outputs.dotnet == 'true'
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
 
       - name: Cache NuGet packages
         id: nuget
+        if: steps.changes.outputs.dotnet == 'true'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
@@ -71,30 +167,53 @@ jobs:
             ${{ runner.os }}-nuget-v1-
 
       - name: Run .NET lane
+        if: steps.changes.outputs.dotnet == 'true'
         env:
           MERIDIAN_DEPENDENCY_CACHE_HIT: ${{ steps.nuget.outputs.cache-hit || 'false' }}
         run: bash scripts/ci.sh --lane verify-dotnet
 
+      # The lane's exit code is not enough: this proves it ran the complete default roster
+      # exactly once, for one commit, with no failing entry.
+      - name: Require the complete roster
+        if: always() && steps.changes.outputs.dotnet == 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/dotnet-shards/shard-1
+          if [[ -d artifacts/test-results/dotnet ]]; then
+            cp -R artifacts/test-results/dotnet artifacts/dotnet-shards/shard-1/
+          fi
+          python build/scripts/ci/merge-dotnet-shard-summaries.py \
+            --shards-dir artifacts/dotnet-shards \
+            --expected-shards 1 \
+            --json-output artifacts/test-results/dotnet/ci-dotnet-test-summary.json \
+            --summary-output artifacts/test-results/dotnet/ci-dotnet-test-summary.md \
+            --github-step-summary "$GITHUB_STEP_SUMMARY"
+
+      # Release promotion requires this exact evidence name for the lane.
       - name: Upload .NET lane artifacts
-        if: always()
+        if: always() && steps.changes.outputs.dotnet == 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: meridian-ci-dotnet-${{ github.run_number }}-${{ github.run_attempt }}
           path: |
             artifacts/build-logs/
+            artifacts/dotnet-shards/
             artifacts/test-results/dotnet/
             artifacts/ci-summary/
           if-no-files-found: ignore
           compression-level: 1
           retention-days: 14
 
+  # The browser lane always runs: no change classification may skip it. Lint, the strict
+  # typecheck and the production bundle run here with the complete test-file roster.
   verify-browser:
     name: verify-browser
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     env:
       # Reuse cached tarballs; npm still fetches missing packages and enforces the lockfile.
       npm_config_prefer_offline: "true"
+      MERIDIAN_CI_BROWSER_SHARD: 1/1
 
     steps:
       - name: Check out repository
@@ -122,6 +241,22 @@ jobs:
           MERIDIAN_DEPENDENCY_CACHE_HIT: ${{ steps.node.outputs.cache-hit || 'false' }}
         run: bash scripts/ci.sh --lane verify-browser
 
+      # The lane's exit code is not enough: this proves it ran every dashboard test file in
+      # this checkout exactly once, for one commit, with no failure.
+      - name: Require every dashboard test file
+        if: always()
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/browser-shards/shard-1/artifacts/test-results
+          if [[ -d artifacts/test-results/browser ]]; then
+            cp -R artifacts/test-results/browser artifacts/browser-shards/shard-1/artifacts/test-results/
+          fi
+          node src/Meridian.Ui/dashboard/scripts/merge-vitest-shards.mjs \
+            --shards-dir artifacts/browser-shards \
+            --expected-shards 1 \
+            --output-dir artifacts/test-results/browser
+
+      # Release promotion requires this exact evidence name for the lane.
       - name: Upload browser lane artifacts
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -129,6 +264,7 @@ jobs:
           name: meridian-ci-browser-${{ github.run_number }}-${{ github.run_attempt }}
           path: |
             src/Meridian.Ui/wwwroot/workstation/
+            artifacts/browser-shards/
             artifacts/test-results/browser/
             artifacts/build-logs/
             artifacts/ci-summary/
@@ -147,7 +283,7 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ github.sha }}
-          fetch-depth: 1
+          fetch-depth: 2
 
       - name: Set up Python
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
@@ -259,6 +395,7 @@ jobs:
     name: quality-gate
     runs-on: ubuntu-latest
     needs:
+      - changes
       - verify-dotnet
       - verify-browser
       - verify-docs
@@ -268,27 +405,50 @@ jobs:
 
     steps:
       - name: Evaluate Meridian CI lanes
+        env:
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          DOTNET_REQUIRED: ${{ needs.changes.outputs.dotnet }}
+          DOTNET_LANE_DECISION: ${{ needs.verify-dotnet.outputs.dotnet-required }}
+          DOTNET_RESULT: ${{ needs.verify-dotnet.result }}
+          BROWSER_RESULT: ${{ needs.verify-browser.result }}
+          DOCS_RESULT: ${{ needs.verify-docs.result }}
+          WORKFLOWS_RESULT: ${{ needs.verify-workflows.result }}
         shell: bash
         run: |
           set -euo pipefail
           declare -A results=(
-            ["verify-dotnet"]="${{ needs.verify-dotnet.result }}"
-            ["verify-browser"]="${{ needs.verify-browser.result }}"
-            ["verify-docs"]="${{ needs.verify-docs.result }}"
-            ["verify-workflows"]="${{ needs.verify-workflows.result }}"
+            ["changes"]="$CHANGES_RESULT"
+            ["verify-dotnet"]="$DOTNET_RESULT"
+            ["verify-browser"]="$BROWSER_RESULT"
+            ["verify-docs"]="$DOCS_RESULT"
+            ["verify-workflows"]="$WORKFLOWS_RESULT"
           )
 
           failed=0
+          if [[ "$DOTNET_REQUIRED" != "true" && "$DOTNET_REQUIRED" != "false" ]]; then
+            echo "Change detection did not produce a valid .NET decision." >&2
+            failed=1
+          fi
+          # verify-dotnet classifies the change itself so it does not queue behind changes.
+          # Both must reach the same decision, or a docs-only skip could hide a .NET change.
+          if [[ "$DOTNET_LANE_DECISION" != "$DOTNET_REQUIRED" ]]; then
+            echo "verify-dotnet decided dotnet=${DOTNET_LANE_DECISION:-<none>} but changes decided dotnet=${DOTNET_REQUIRED:-<none>}." >&2
+            failed=1
+          fi
           {
             echo "### Meridian CI quality gate"
             echo ""
             echo "| Lane | Result |"
             echo "| --- | --- |"
-            for lane in verify-dotnet verify-browser verify-docs verify-workflows; do
+            for lane in changes verify-dotnet verify-browser verify-docs verify-workflows; do
               result="${results[$lane]}"
               echo "| \`$lane\` | \`$result\` |"
               if [[ "$result" != "success" ]]; then
                 failed=1
+              fi
+              if [[ "$lane" == "verify-dotnet" && "$result" == "success" &&
+                    "$CHANGES_RESULT" == "success" && "$DOTNET_REQUIRED" == "false" ]]; then
+                echo "Docs-only PR: .NET lane steps intentionally skipped." >> "$GITHUB_STEP_SUMMARY"
               fi
             done
           } >> "$GITHUB_STEP_SUMMARY"
@@ -298,10 +458,15 @@ jobs:
             exit 1
           fi
 
-          echo "All Meridian CI lanes passed."
+          echo "All required Meridian CI lanes passed."
 
+  # Shares the .NET lane's change classification: a pull request that changes only
+  # recognized documentation cannot alter these tests, so it does not spend their runner.
+  # Main, merge queues, manual runs and release callers always classify as requiring them.
   service-backed-integrations:
     name: service-backed-integrations
+    needs: changes
+    if: needs.changes.outputs.dotnet == 'true'
     uses: ./.github/workflows/service-backed-integrations.yml
     with:
       artifact-name: meridian-ci-integrations
@@ -309,7 +474,7 @@ jobs:
   integration-gate:
     name: integration-gate
     runs-on: ubuntu-latest
-    needs: service-backed-integrations
+    needs: [changes, service-backed-integrations]
     if: always()
     timeout-minutes: 5
     outputs:
@@ -319,6 +484,8 @@ jobs:
     steps:
       - name: Evaluate service-backed integration evidence
         env:
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          DOTNET_REQUIRED: ${{ needs.changes.outputs.dotnet }}
           INTEGRATION_RESULT: ${{ needs.service-backed-integrations.result }}
         run: |
           set -euo pipefail
@@ -327,6 +494,11 @@ jobs:
             echo ""
             echo "Service-backed integrations: ${INTEGRATION_RESULT}"
           } >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$INTEGRATION_RESULT" == "skipped" && "$CHANGES_RESULT" == "success" &&
+                "$DOTNET_REQUIRED" == "false" ]]; then
+            echo "Docs-only PR: service-backed integrations intentionally skipped." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           if [[ "$INTEGRATION_RESULT" != "success" ]]; then
             echo "Service-backed integrations did not pass. Inspect the integration job and evidence."
             exit 1

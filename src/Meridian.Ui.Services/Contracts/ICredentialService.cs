@@ -12,6 +12,12 @@ namespace Meridian.Ui.Services.Contracts;
 /// </summary>
 public interface ICredentialService
 {
+    /// <summary>
+    /// Resource-name prefix under which this host stores OAuth tokens. A token for provider
+    /// <c>x</c> is stored as <c>{OAuthTokenResourcePrefix}.x</c>.
+    /// </summary>
+    string OAuthTokenResourcePrefix { get; }
+
     event EventHandler<CredentialExpirationEventArgs>? CredentialExpiring;
     IReadOnlyList<CredentialWithMetadata> GetAllCredentialsWithMetadata();
     Task<OAuthRefreshResult> RefreshOAuthTokenAsync(string providerId, CancellationToken ct = default);

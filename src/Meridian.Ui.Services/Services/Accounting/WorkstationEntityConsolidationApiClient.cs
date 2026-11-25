@@ -6,7 +6,7 @@ using Meridian.Contracts.Ledger;
 namespace Meridian.Ui.Services.Services.Accounting;
 
 /// <summary>Shared governed entity and consolidation projections; no workstation calculations.</summary>
-public interface IWorkstationEntityConsolidationApiClient
+public partial interface IWorkstationEntityConsolidationApiClient
 {
     Task<OrganizationStructureGraphDto> GetStructureAsync(CancellationToken ct = default);
     Task<EntityTimelineDto> GetTimelineAsync(Guid organizationId, Guid entityId, DateTimeOffset asOf, CancellationToken ct = default);
@@ -15,7 +15,7 @@ public interface IWorkstationEntityConsolidationApiClient
     Task<ConsolidationViewDto> CreateDraftsAsync(ConsolidationRequestDto request, CancellationToken ct = default);
 }
 
-public sealed class WorkstationEntityConsolidationApiClient(ApiClientService api) : IWorkstationEntityConsolidationApiClient
+public sealed partial class WorkstationEntityConsolidationApiClient(ApiClientService api) : IWorkstationEntityConsolidationApiClient
 {
     public async Task<OrganizationStructureGraphDto> GetStructureAsync(CancellationToken ct = default)
         => Unwrap(await api.GetWithResponseAsync<OrganizationStructureGraphDto>("/api/fund-structure/graph?activeOnly=false", ct).ConfigureAwait(false));

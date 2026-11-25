@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LocalDateText } from "@/components/ui/local-date-text";
@@ -14,8 +15,18 @@ import { getAccrualSchedules, previewAccrualSchedule, configureAccrualSchedule, 
 import type { RecurringJournalScope } from "@/lib/api/recurring-journals.api";
 import { RetainedEvidenceFields, emptyRetainedEvidence, retainedEvidenceReference } from "@/components/accounting/retained-evidence-fields";
 import { RecurringJournalQueue } from "@/components/accounting/RecurringJournalQueue";
+import type { PanelLoadStatus } from "@/lib/combined-load-state";
 
-interface Props { scope: RecurringJournalScope | null; availableDraftIds: string[]; onSelectDraft: (id: string) => void; onDraftsGenerated?: () => Promise<void> | void }
+interface Props {
+  scope: RecurringJournalScope | null; availableDraftIds: string[]; onSelectDraft: (id: string) => void; onDraftsGenerated?: () => Promise<void> | void;
+  /**
+   * When the page shows one combined notice for every journal-automation read, the schedules and
+   * the recurring queue report their load status upward and leave failure notices and Retry to it.
+   */
+  quietFailure?: boolean;
+  onLoadStatus?: (status: PanelLoadStatus) => void;
+  onQueueLoadStatus?: (status: PanelLoadStatus) => void;
+}
 const initial = { fundAccountId: "", scheduleId: "", description: "", currency: "", cadence: "Monthly" as AccrualCadence,
   anchorDate: "", endsOn: "", amount: "", debitAccount: "", debitAccountType: "Expense" as AccrualAccountType,
   creditAccount: "", creditAccountType: "Liability" as AccrualAccountType, expectedScheduleVersion: 0, expectedTemplateVersion: 0 };
@@ -32,7 +43,7 @@ const occurrenceColumns: DenseDataTableColumn<AccrualOccurrence>[] = [
 export function AccrualScheduleWorkbench(props: Props) {
   return <AccrualScopeWorkbench key={JSON.stringify(props.scope)} {...props} />;
 }
-function AccrualScopeWorkbench({ scope, availableDraftIds, onSelectDraft, onDraftsGenerated }: Props) {
+function AccrualScopeWorkbench({ scope, availableDraftIds, onSelectDraft, onDraftsGenerated, quietFailure = false, onLoadStatus, onQueueLoadStatus }: Props) {
   const id = useId();
   const [registry, setRegistry] = useState<AccrualScheduleRegistry | null>(null);
   const [form, setForm] = useState(initial);
@@ -41,6 +52,7 @@ function AccrualScopeWorkbench({ scope, availableDraftIds, onSelectDraft, onDraf
   const [confirmed, setConfirmed] = useState(false);
   const [saved, setSaved] = useState<{ scheduleId: string; version: number } | null>(null);
   const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [uncertain, setUncertain] = useState(false);
@@ -52,7 +64,7 @@ function AccrualScopeWorkbench({ scope, availableDraftIds, onSelectDraft, onDraf
     : busy === "preview" ? "Wait for the accrual schedule preview to finish."
     : busy === "save" ? "Wait for the reviewed accrual schedule to be retained."
     : busy === "run" ? "Wait for due occurrence processing and the journal workbench refresh to finish." : null;
-  const permissionReason = !registry ? "Refresh retained schedules to load current permissions and definitions."
+  const permissionReason = !registry ? "Retry loading retained schedules for current permissions and definitions."
     : !canConfigure ? "Schedule management permission is required to configure accrual schedules or generate due drafts." : null;
   const recoveryReason = uncertain ? "Retry the same accrual schedule to recover the unconfirmed save before changing inputs or generating drafts." : null;
   const previewDisabledReason = busyReason ?? permissionReason ?? recoveryReason;
@@ -66,12 +78,17 @@ function AccrualScopeWorkbench({ scope, availableDraftIds, onSelectDraft, onDraf
   const entityId = scope?.entityId;
   const load = useCallback(async () => {
     if (!fundProfileId || !ledgerBookId || !entityId || controller.current) return;
-    const request = new AbortController(); controller.current = request; setBusy("load"); setError(""); setRegistry(null);
-    try { const result = await getAccrualSchedules({ fundProfileId, ledgerBookId, entityId }, { signal: request.signal }); if (!request.signal.aborted) setRegistry(result); }
-    catch (cause) { if (!request.signal.aborted) setError(describeApiError(cause, "Accrual schedule registry unavailable.").summary); }
+    const request = new AbortController(); controller.current = request; setBusy("load");
+    try { const result = await getAccrualSchedules({ fundProfileId, ledgerBookId, entityId }, { signal: request.signal }); if (!request.signal.aborted) { setRegistry(result); setLoadError(""); } }
+    catch (cause) { if (!request.signal.aborted) { setRegistry(null); setLoadError(describeApiError(cause, "Accrual schedule registry unavailable.").summary); } }
     finally { if (controller.current === request) { controller.current = null; setBusy(null); } }
   }, [fundProfileId, ledgerBookId, entityId]);
-  useEffect(() => { void load(); return () => { controller.current?.abort(); controller.current = null; }; }, [load]);
+  useEffect(() => { setRegistry(null); setError(""); setLoadError(""); void load(); return () => { controller.current?.abort(); controller.current = null; }; }, [load]);
+  const loadState: PanelLoadStatus["state"] = !scope ? "idle" : busy === "load" ? "loading" : loadError ? "failed" : registry ? "ready" : "loading";
+  const scheduleCount = registry?.schedules.length ?? null;
+  useEffect(() => {
+    onLoadStatus?.({ state: loadState, count: scheduleCount, error: loadError || null, retry: () => { void load(); } });
+  }, [onLoadStatus, loadState, scheduleCount, loadError, load]);
   function edit<K extends keyof typeof initial>(key: K, value: typeof initial[K]) {
     controller.current?.abort(); controller.current = null; setBusy(null);
     setForm(current => ({ ...current, [key]: value })); setPreview(null); setSaved(null); setConfirmed(false); setError("");
@@ -122,8 +139,8 @@ function AccrualScopeWorkbench({ scope, availableDraftIds, onSelectDraft, onDraf
     <CardHeader><CardTitle>Accrual schedules</CardTitle><CardDescription>Configure reviewed fixed accrual amounts on a cadence. Each due occurrence becomes a retained journal draft for human approval. Interest calculations and effective-yield lot amortization use their own preparation workflows.</CardDescription></CardHeader>
     <CardContent className="space-y-4">
       {!scope ? <p role="status">Select a fund, ledger book and entity to configure accrual schedules.</p> : <>
-        {!registry ? <p role="status">{busy === "load" ? "Loading schedule permissions and definitions…" : "Schedule authority unavailable. Retry to load permissions and retained definitions."}</p> : !canConfigure ? <p role="status">Read only: ManageLedgerReports permission is required to configure schedules or generate due drafts.</p> : null}
-        <Button type="button" variant="outline" disabled={busy !== null} disabledReason={busyReason} onClick={() => { if (!uncertain) { setPreview(null); setConfirmed(false); setSaved(null); } void load(); }}>Refresh retained schedules</Button>
+        {!registry && !(quietFailure && loadError) ? <p role="status">{busy === "load" ? "Loading schedule permissions and definitions…" : "Schedule authority unavailable. Retry to load permissions and retained definitions."}</p> : !canConfigure ? <p role="status">Read only: ManageLedgerReports permission is required to configure schedules or generate due drafts.</p> : null}
+        <PanelReload reload={() => { if (busy === null) void load(); }} failed={!registry && busy !== "load" && !quietFailure} busy={busy !== null} what="retained schedules" />
         {registry?.schedules.map(row => <article key={row.scheduleId} className="rounded border border-border p-3 text-sm"><p className="break-all font-semibold">{row.scheduleId} · v{row.version}</p><p>{row.description} · {row.cadence} · <LocalDateText value={row.anchorDate} /> to <LocalDateText value={row.endsOn} fallback="No end date" /> · {row.currency}</p>{row.fundAccountId ? <details className="my-2"><summary>Retained account scope</summary><Input aria-label={`Retained fund-account identity for ${row.scheduleId}`} readOnly value={row.fundAccountId} /></details> : null}<Button type="button" variant="outline" disabled={!!generateDisabledReason} disabledReason={generateDisabledReason} onClick={() => void run(row.scheduleId, row.version)}>Generate due drafts for {row.scheduleId}</Button></article>)}
         {registry?.schedules.length === 0 ? <p role="status">No retained accrual schedules for this scope.</p> : null}
         <details><summary className="cursor-pointer font-semibold">Configure a new accrual schedule</summary>
@@ -154,9 +171,10 @@ function AccrualScopeWorkbench({ scope, availableDraftIds, onSelectDraft, onDraf
           <Button type="button" disabled={!!retainDisabledReason} disabledReason={retainDisabledReason} onClick={() => void save()}>{uncertain ? "Retry same accrual schedule" : "Retain accrual schedule"}</Button>
           {saved ? <Button type="button" disabled={!!generateDisabledReason} disabledReason={generateDisabledReason} onClick={() => void run(saved.scheduleId, saved.version)}>Generate due accrual drafts</Button> : null}
         </section> : null}
-        <RecurringJournalQueue key={queueVersion} scope={scope} availableDraftIds={availableDraftIds} onSelectDraft={onSelectDraft} />
+        <RecurringJournalQueue key={queueVersion} scope={scope} availableDraftIds={availableDraftIds} onSelectDraft={onSelectDraft} quietFailure={quietFailure} onLoadStatus={onQueueLoadStatus} />
       </>}
       {message ? <p role="status" className="text-sm text-muted-foreground">{message}</p> : null}
+      {loadError && !quietFailure ? <p role="alert" className="text-sm text-danger">{loadError}</p> : null}
       {error ? <p role="alert" className="text-sm text-danger">{error}</p> : null}
     </CardContent>
   </Card>;

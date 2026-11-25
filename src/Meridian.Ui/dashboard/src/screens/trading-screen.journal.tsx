@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { OrderLedgerPostings } from "@/components/meridian/order-ledger-postings";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getJournal, getJournalOrder, getJournalSummary, type JournalOrder, type JournalSummary } from "@/lib/api/execution-workflows.api";
 import { formatCurrency, formatTimestamp } from "@/lib/format";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
@@ -23,17 +25,20 @@ export function ExecutionJournalPanel({ accountId }: { accountId?: string | null
   const [error, setError] = useState<string | null>(null); const [loading, setLoading] = useState(false);
   const [revision, setRevision] = useState(0);
   const refresh = useCallback(() => setRevision((value) => value + 1), []);
+  const loadedRevision = useRef(0);
   useEffect(() => {
     const linkedOrderId = linked.get("orderId");
-    setOrders([]); setSummary(null); setLinkedOrder(null); setError(null);
-    setSelected(linkedOrderId ? { orderId: linkedOrderId, attemptId: linked.get("attemptId") ?? undefined, fromLink: true } : null);
-    if (!accountId) return;
+    // A reload of the same scope keeps the rows and the inspected order until fresh evidence arrives.
+    const reloadOnly = loadedRevision.current !== revision; loadedRevision.current = revision; setError(null);
+    if (!reloadOnly) { setOrders([]); setSummary(null); setLinkedOrder(null); setLoadedAccount(null); }
+    if (!reloadOnly) setSelected(linkedOrderId ? { orderId: linkedOrderId, attemptId: linked.get("attemptId") ?? undefined, fromLink: true } : null);
+    if (!accountId) { setLoading(false); return; }
     const controller = new AbortController(); setLoading(true);
     const timer = window.setTimeout(() => {
       const range = { from: from ? new Date(`${from}T00:00:00Z`).toISOString() : undefined, to: to ? new Date(`${to}T00:00:00Z`).toISOString() : undefined };
       void Promise.all([getJournal(accountId, { symbol, strategy, tag, status, ...range }, { signal: controller.signal }), getJournalSummary(accountId, { signal: controller.signal }, range)])
         .then(([next, totals]) => { if (!controller.signal.aborted) { setOrders(next); setSummary(totals); setLoadedAccount(accountId); } })
-        .catch((reason: unknown) => { if (!controller.signal.aborted) setError(reason instanceof Error ? reason.message : "Journal evidence is unavailable."); })
+        .catch((reason: unknown) => { if (!controller.signal.aborted) { setOrders([]); setSummary(null); setError(reason instanceof Error ? reason.message : "Journal evidence is unavailable."); } })
         .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     }, 200);
     return () => { controller.abort(); window.clearTimeout(timer); };
@@ -49,12 +54,14 @@ export function ExecutionJournalPanel({ accountId }: { accountId?: string | null
     }).catch(() => { /* List errors remain visible; a missing deep link grants no authority. */ });
     return () => controller.abort();
   }, [accountId, selected, selectedInList]);
+  if (!accountId) {
+    return <section aria-label="Operational trade journal" aria-busy="false" className="border-y border-border px-4 py-2 text-sm text-muted-foreground">Select an account to see its journal</section>;
+  }
   const totals = loadedAccount === accountId ? summary : null;
   const detail = selectedInList ?? (selected && linkedOrder?.accountId.toLowerCase() === accountId?.toLowerCase()
     && linkedOrder && matchesSelection(linkedOrder, selected) ? linkedOrder : null);
   return <section aria-label="Operational trade journal" aria-busy={loading} className="panel-surface space-y-3 rounded-lg border border-border p-4">
-    <div className="flex items-center justify-between gap-3"><div><h3 className="font-semibold">Trade journal</h3><p className="text-xs text-muted-foreground">Retained execution evidence and FIFO operational attribution. Accounting posting remains separate.</p></div><Button size="sm" variant="outline" onClick={refresh} disabled={loading || !accountId}>Refresh journal</Button></div>
-    {!accountId ? <p>Select an execution account to inspect its journal.</p> : <>
+    <div className="flex items-center justify-between gap-3"><div><h3 className="font-semibold">Trade journal</h3><p className="text-xs text-muted-foreground">Retained execution evidence and FIFO operational attribution. Accounting posting remains separate.</p></div><PanelReload reload={refresh} failed={error !== null} busy={loading} what="the trade journal" /></div>
       <div className="grid gap-2 md:grid-cols-3"><label className="text-xs">Symbol<Input value={symbol} onChange={(event) => setSymbol(event.target.value)} /></label><label className="text-xs">Strategy or run<Input value={strategy} onChange={(event) => setStrategy(event.target.value)} /></label><label className="text-xs">Tag<Input value={tag} onChange={(event) => setTag(event.target.value)} /></label></div>
       <div className="grid gap-2 md:grid-cols-3">
         <label className="text-xs">From date (UTC)<Input type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></label>
@@ -84,7 +91,6 @@ export function ExecutionJournalPanel({ accountId }: { accountId?: string | null
         ]}
       />
       {!loading && !error && visibleOrders.length === 0 ? <p className="text-xs">No retained orders match these filters. This does not establish complete historical coverage.</p> : null}
-      {detail ? <section aria-label={`Order ${detail.orderId} history`} className="border-t border-border pt-3"><h4 className="text-sm font-semibold">Order evidence: {detail.orderId}</h4><p className="break-all text-xs">Scope: {detail.scope} · Run: {detail.runId ?? "Unattributed"}</p><ol className="mt-2 space-y-2 text-xs">{detail.events.map((event) => <li key={event.eventId}><strong>{event.kind}</strong> · {formatTimestamp(new Date(event.recordedAt))}{event.report ? <p>Broker identity {event.report.gatewayOrderId ?? "unknown"}; predecessor {event.report.replacesOrderId ?? "none"}; cumulative fill {event.report.filledQuantity}; price {event.report.fillPrice ?? "unknown"}; commission {money(event.report.commission)}; fees {money(event.report.fees)}</p> : null}{event.activityFill ? <p>Provider fill {event.activityFill.fillId}: {event.activityFill.quantity} at {event.activityFill.price}; commission {money(event.activityFill.commission)}</p> : null}{event.detail ? <p>{event.detail}</p> : null}</li>)}</ol></section> : null}
-    </>}
+      {detail ? <section aria-label={`Order ${detail.orderId} history`} className="border-t border-border pt-3"><h4 className="text-sm font-semibold">Order evidence: {detail.orderId}</h4><p className="break-all text-xs">Scope: {detail.scope} · Run: {detail.runId ?? "Unattributed"}</p><ol className="mt-2 space-y-2 text-xs">{detail.events.map((event) => <li key={event.eventId}><strong>{event.kind}</strong> · {formatTimestamp(new Date(event.recordedAt))}{event.report ? <p>Broker identity {event.report.gatewayOrderId ?? "unknown"}; predecessor {event.report.replacesOrderId ?? "none"}; cumulative fill {event.report.filledQuantity}; price {event.report.fillPrice ?? "unknown"}; commission {money(event.report.commission)}; fees {money(event.report.fees)}</p> : null}{event.activityFill ? <p>Provider fill {event.activityFill.fillId}: {event.activityFill.quantity} at {event.activityFill.price}; commission {money(event.activityFill.commission)}</p> : null}{event.detail ? <p>{event.detail}</p> : null}</li>)}</ol><OrderLedgerPostings order={detail} /></section> : null}
   </section>;
 }

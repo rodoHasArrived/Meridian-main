@@ -17,7 +17,8 @@ public sealed partial class PostgresLedgerJournalStore :
     ILedgerEntityControlJournalValidation,
     Meridian.Contracts.Accounting.Lots.IOpenLotBackfillStore,
     ILedgerPostingIdentityCollisionLookup,
-    IIntercompanyAgreementJournalValidation
+    IIntercompanyAgreementJournalValidation,
+    IAutomatedPostingGrantStore
 {
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
     private readonly LedgerJournalStoreOptions _options;
@@ -68,9 +69,6 @@ public sealed partial class PostgresLedgerJournalStore :
         _intercompanyAgreementAuthority = intercompanyAgreementAuthority;
     }
 
-    // SEC-005 slice 4c-ii: the caller's tenant for the current ambient scope, or null (fail-open).
-    private string? ResolveCallerTenant() => _tenantAccessor?.ResolveCallerTenant();
-
     public async Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
     {
         RequireWriteTenant();
@@ -96,6 +94,8 @@ public sealed partial class PostgresLedgerJournalStore :
         {
             throw new LedgerValidationException($"Journal entry '{entry.Entry.JournalEntryId}' is not balanced.");
         }
+
+        LedgerDurableBalanceRule.Ensure(entry.Entry);
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
@@ -130,6 +130,12 @@ public sealed partial class PostgresLedgerJournalStore :
     {
         if (entry.PostingCommand?.LotAmortization?.BondIncome is not null)
             throw new LedgerValidationException("Bond income carrying-value journals require the atomic journal/lot posting boundary.");
+        if (entry.PostingCommand is
+            {
+                ActionOrigin: Meridian.Contracts.Workstation.OperationsActionOriginDto.AuthorizedSystem,
+                SourceEventType: "execution.trade-fill"
+            })
+            throw new LedgerValidationException("Automatic fills require the atomic journal/lot posting boundary.");
         if (entry.PostingCommand?.LotCapitalReturn is not null
             || entry.Entry.Metadata.Tags?.ContainsKey(Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturn.JournalFingerprintTag) == true)
             throw new LedgerValidationException("Capital-return journals require the atomic journal/lot posting boundary.");
@@ -206,6 +212,8 @@ public sealed partial class PostgresLedgerJournalStore :
             throw new LedgerValidationException($"Journal entry '{entry.Entry.JournalEntryId}' is not balanced.");
         }
 
+        LedgerDurableBalanceRule.Ensure(entry.Entry);
+
         var entitlementBookId = await AcquireAppendEntitlementBookAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         if (await TryResolveCommittedReplayAsync(connection, transaction, entry, ct).ConfigureAwait(false))
             return;
@@ -243,14 +251,25 @@ public sealed partial class PostgresLedgerJournalStore :
         else
             LedgerPeriodPostingGuard.Validate(entry, period);
         await ValidateJournalBasisAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
+        await ValidateAutomatedPostingGrantAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        await ValidateThreeWayFeeCorrectionOwnerAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         entry = RetainPostingAuthorityDecision(transaction, entry, period);
         await ValidateAndRecordCouponRecognitionAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         var auditHead = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
+        await ValidatePostingDateNotHardClosedElsewhereAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
         await ValidateOpeningCutoverAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
         await ValidateAgreementReversalNotAlreadyPostedAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await ValidateCurrentConsolidationSourcesAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await ValidateAndRecordCapitalPostingAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
-        await InsertJournalEntryAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        try
+        {
+            await InsertJournalEntryAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        }
+        catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.UniqueViolation
+            && exception.ConstraintName == "ux_journal_entries_fee_economic_identity")
+        {
+            throw new LedgerValidationException("This broker fee already has a posted economic effect in the selected account/book; review the competing handoff or correction.");
+        }
         await InsertJournalLegsAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await AppendIntercompanyProposalsAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await AppendLedgerAuditAsync(connection, transaction, auditHead, "journal", entry.Entry.JournalEntryId, 1,
@@ -285,6 +304,9 @@ public sealed partial class PostgresLedgerJournalStore :
             && !query.AggregateId.HasValue
             && !query.JournalEntryId.HasValue
             && !query.SourceEventId.HasValue
+            && !query.SourceJournalEntryId.HasValue
+            && !query.FillId.HasValue
+            && string.IsNullOrWhiteSpace(query.OrderId)
             && string.IsNullOrWhiteSpace(query.AccountName)
             && !query.OccurredFrom.HasValue
             && !query.OccurredTo.HasValue
@@ -318,9 +340,19 @@ public sealed partial class PostgresLedgerJournalStore :
             command.Parameters.AddWithValue("journal_entry_id", query.JournalEntryId.Value);
         }
 
+        if (!string.IsNullOrEmpty(query.JournalEntryIdPrefix))
+        {
+            command.Parameters.AddWithValue("journal_entry_id_prefix", query.JournalEntryIdPrefix.ToLowerInvariant());
+        }
+
         if (query.SourceEventId.HasValue)
         {
             command.Parameters.AddWithValue("source_event_id", query.SourceEventId.Value);
+        }
+
+        if (query.SourceJournalEntryId.HasValue)
+        {
+            command.Parameters.AddWithValue("source_journal_entry_id", query.SourceJournalEntryId.Value);
         }
 
         if (query.EffectiveFrom.HasValue)
@@ -382,6 +414,13 @@ public sealed partial class PostgresLedgerJournalStore :
         {
             command.CommandText += " and jl_filter.dimensions @> cast(@line_dimensions as jsonb)";
             command.Parameters.AddWithValue("line_dimensions", lineDimensionsJson);
+        }
+
+        var (executionSql, executionParameters) = BuildExecutionLineageFilter(query);
+        command.CommandText += executionSql;
+        foreach (var (name, value) in executionParameters)
+        {
+            command.Parameters.AddWithValue(name, value);
         }
 
         command.CommandText += ") order by je.occurred_at, je.global_sequence, jl.line_no;";
@@ -622,12 +661,21 @@ public sealed partial class PostgresLedgerJournalStore :
         // Hard-close relies on the shared period-row lock for exclusion. ReadCommitted gives the
         // balance recheck a fresh snapshot after any earlier append that held the row lock commits;
         // using one transaction-wide snapshot here could otherwise hide that just-completed append.
-        var isolationLevel = requireClosedTemporaryAccounts
+        var finalizing = string.Equals(period.Status, "HardClosed", StringComparison.Ordinal);
+        var isolationLevel = finalizing
             ? IsolationLevel.ReadCommitted
             : IsolationLevel.Serializable;
         await using var transaction = await connection.BeginTransactionAsync(isolationLevel, ct).ConfigureAwait(false);
 
         await EnsureBookWriteAuthorityAsync(connection, transaction, period.LedgerBookId, ct).ConfigureAwait(false);
+        if (finalizing && period.LedgerBookId is { } bookId)
+        {
+            // The book lock also serializes required-policy changes when no policy row exists yet.
+            await using var lockBook = new NpgsqlCommand(
+                $"select 1 from {Qualified("ledger_books")} where ledger_book_id = @book for share", connection, transaction);
+            lockBook.Parameters.AddWithValue("book", bookId);
+            await lockBook.ExecuteScalarAsync(ct).ConfigureAwait(false);
+        }
         await EnsureTenantRowAsync(connection, transaction, "accounting_periods", "period_id", period.PeriodId, true, ct).ConfigureAwait(false);
         var current = await LoadPeriodAsync(
                 connection,
@@ -691,6 +739,14 @@ public sealed partial class PostgresLedgerJournalStore :
 
             await RejectPopulatedPeriodBookMoveAsync(connection, transaction, current, period, ct)
                 .ConfigureAwait(false);
+
+            // A permitted period move has an empty journal population under the period lock.
+            if (finalizing && current.LedgerBookId is { } confirmationBook
+                && confirmationBook == period.LedgerBookId)
+            {
+                await RequireExternalGlConfirmationAsync(connection, transaction, confirmationBook, current.PeriodId, ct)
+                    .ConfigureAwait(false);
+            }
 
             if (requireClosedTemporaryAccounts)
             {
@@ -1270,7 +1326,9 @@ public sealed partial class PostgresLedgerJournalStore :
                     functional_currency,
                     transaction_debit,
                     transaction_credit,
-                    fx_rate_to_functional)
+                    fx_rate_to_functional,
+                    memo,
+                    chart_account)
                 values (
                     @entry_id,
                     @journal_entry_id,
@@ -1301,7 +1359,9 @@ public sealed partial class PostgresLedgerJournalStore :
                     @functional_currency,
                     @transaction_debit,
                     @transaction_credit,
-                    @fx_rate_to_functional);
+                    @fx_rate_to_functional,
+                    @memo,
+                    cast(@chart_account as jsonb));
                 """;
             command.Parameters.AddWithValue("entry_id", leg.EntryId);
             command.Parameters.AddWithValue("journal_entry_id", leg.JournalEntryId);
@@ -1333,6 +1393,10 @@ public sealed partial class PostgresLedgerJournalStore :
             command.Parameters.AddWithValue("transaction_debit", (object?)leg.Currency?.TransactionDebit ?? DBNull.Value);
             command.Parameters.AddWithValue("transaction_credit", (object?)leg.Currency?.TransactionCredit ?? DBNull.Value);
             command.Parameters.AddWithValue("fx_rate_to_functional", (object?)leg.Currency?.FxRateToFunctional ?? DBNull.Value);
+            command.Parameters.AddWithValue("memo", (object?)leg.Memo ?? DBNull.Value);
+            command.Parameters.AddWithValue("chart_account", leg.ChartAccount is { } chartAccount
+                ? JsonSerializer.Serialize(chartAccount, JsonOptions)
+                : (object)DBNull.Value);
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
     }
@@ -1375,7 +1439,9 @@ public sealed partial class PostgresLedgerJournalStore :
                    jl.functional_currency,
                    jl.transaction_debit,
                    jl.transaction_credit,
-                   jl.fx_rate_to_functional
+                   jl.fx_rate_to_functional,
+                   jl.memo,
+                   jl.chart_account::text
             from {Qualified("journal_entries")} je
             join {Qualified("journal_legs")} jl on jl.journal_entry_id = je.journal_entry_id
             """ + "\n";
@@ -1437,7 +1503,11 @@ public sealed partial class PostgresLedgerJournalStore :
                 reader.GetDecimal(25),
                 reader.GetString(26),
                 reader.IsDBNull(28) ? null : DeserializeLineDimensions(reader.GetString(28)),
-                ReadLegCurrency(reader, 29, 30, 31, 32, 33)));
+                ReadLegCurrency(reader, 29, 30, 31, 32, 33))
+            {
+                Memo = reader.IsDBNull(34) ? null : reader.GetString(34),
+                ChartAccount = reader.IsDBNull(35) ? null : DeserializeChartAccount(reader.GetString(35))
+            });
         }
 
         if (current is not null)
@@ -1854,55 +1924,6 @@ public sealed partial class PostgresLedgerJournalStore :
     private string Qualified(string table) => $"{ValidateIdentifier(_options.SchemaName, nameof(_options.SchemaName))}.{ValidateIdentifier(table, nameof(table))}";
 
     private static string ForUpdateClause(bool enabled) => enabled ? "for update" : string.Empty;
-
-    // SEC-005 slice 4c-ii, tightened for W9-GOV-008 criterion 2: append the tenant predicate (and bind
-    // its parameter) to a read command. Under the deployment-boundary posture a tenantless caller adds
-    // nothing, so every row passes — identical behavior under one-company-per-deployment. Under the
-    // fail-closed posture that caller is refused instead, and the clause itself no longer serves
-    // unattributed rows. The column expression is table-qualified by the caller.
-    private void ApplyTenantReadFilter(NpgsqlCommand command, string tenantColumnExpression, string? callerTenantId)
-    {
-        RejectUnscopedRead(callerTenantId, "ledger records");
-
-        if (!TenantReadPredicate.ShouldFilter(callerTenantId))
-        {
-            return;
-        }
-
-        command.CommandText += TenantReadPredicate.FilterClause(tenantColumnExpression, _tenantScope.Mode);
-        command.Parameters.AddWithValue(
-            TenantReadPredicate.ParameterName,
-            TenantReadPredicate.NormalizeParameter(callerTenantId!));
-    }
-
-    // SEC-005 slice 4c-ii: scope a journal-entry read (which has no period join in its main query) by
-    // the tenant stamped on the entry's accounting period, via an EXISTS subquery.
-    private void ApplyTenantPeriodReadFilter(NpgsqlCommand command, string periodIdColumnExpression, string? callerTenantId)
-    {
-        RejectUnscopedRead(callerTenantId, "ledger journal entries");
-
-        if (!TenantReadPredicate.ShouldFilter(callerTenantId))
-        {
-            return;
-        }
-
-        command.CommandText += TenantReadPredicate.PeriodExistsClause(
-            Qualified("accounting_periods"), periodIdColumnExpression, _tenantScope.Mode);
-        command.Parameters.AddWithValue(
-            TenantReadPredicate.ParameterName,
-            TenantReadPredicate.NormalizeParameter(callerTenantId!));
-    }
-
-    // Rejected, not emptied: an empty result set is indistinguishable from a genuinely empty ledger,
-    // both to the caller and to whoever reads the support ticket it produces. A background job that
-    // holds retained authority declares it through FundScopeTenantAuthority rather than being exempt.
-    private void RejectUnscopedRead(string? callerTenantId, string readDescription)
-    {
-        if (TenantReadPredicate.ShouldRejectRead(callerTenantId, _tenantScope.Mode))
-        {
-            throw new TenantScopeRejectedException(readDescription);
-        }
-    }
 
     private static InvalidOperationException PeriodVersionConflict(Guid periodId, long expectedVersion, long actualVersion)
         => new($"Ledger period version conflict for {periodId}. Expected {expectedVersion}, actual {actualVersion}.");

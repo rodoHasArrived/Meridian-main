@@ -6,10 +6,17 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.Strategies
+
+Book receipt observations reuse `IReconciliationBreakQueueRepository` for assignment and disposition.
+Its dedicated reversal command reopens only a closed `BookReceipt` exception in the exact scope and
+book, with retained source identities, version/idempotency checks and audit evidence. Backdated
+observations and retained close freezes cannot bypass governed casework; ordinary operator-only
+approval, resolution and sign-off rules remain unchanged. See
+[book receipt operations](../../docs/operators/book-receipt-queue.md).
 
 Scoped paper/live run ledger reads use an optional `IStrategyRunLedgerSource` to rebuild from
 posted journals with the exact retained run identity. The source authorizes the financial account
@@ -40,9 +47,18 @@ P&L financing decomposition is provisional. Continuity and comparison reads expo
 review warning/incomplete cash-flow coverage. No shared account charge is assigned to every run.
 Legacy and backtest results with no coverage declaration retain an unassessed null status.
 
+A live session books a strategy fill only at the price the execution report states. A fill report
+with no price books nothing, matching the paper ledger; a non-positive price fails the run closed.
+The session never substitutes the last market price, the limit price, or zero.
+
 Live strategy-run cash flows scale the quoted fill price by the report's `LotMultiplier` (stamped by the
 OMS), so a run's retained cash-flow history reconciles with the paper portfolio for multiplied contracts;
 face-value fills keep their par scaling.
+
+Three-way accounting observations reuse the existing durable reconciliation case queue. Stable
+source-subject identities retain case age across comparison runs in the same exact owner/account/
+book/period scope. Observation updates preserve prior evidence and governed case disposition;
+source agreement never substitutes for an operator's resolution or approval.
 
 SLA calculation anchors to OccurrenceFirstObservedAt, resolves named business and holiday calendars, retains fractional hours and resolves timezone boundaries separately for each date. Unknown names, missing coverage and ambiguous/nonexistent shift boundaries are refused. Source clearing leaves casework SLA and approval obligations intact.
 
@@ -86,6 +102,16 @@ Comparisons require immutable evidence of available internal populations and ide
 Run receipts and observation metadata commit in the queue's integrity-checked atomic snapshot and
 survive restart. Failed, partial, older, ambiguous or differently scoped comparisons cannot clear
 prior observations. Source clearing leaves casework disposition, approval and close blockers intact.
+Split and merge classifications require a confirmed transaction group from the newer completed run
+and unique business subjects from the immediately preceding comparable run. A split links one
+statement subject to multiple ledger records. A merge links all proven prior subjects to the same
+ledger record. The audit retains the group, compared run, exact amounts, and affected case IDs.
+
+Reviewed bulk execution checks the durable dry-run receipt, authenticated scope and action,
+all eligible rows, and their exact versions under the queue mutation lease. Supersession also binds
+the successor's version. The lease admits one execution per preview and returns an exact prior
+execution receipt on replay. A stale row blocks the entire reviewed batch.
+
 Create, save, and legacy rekey intake enforce the same simulation-provenance gate. Saves cannot
 remove a retained non-real mark by changing source labels, and rekeys preserve the strongest
 explicit provenance from both records. Create retries compare normalized provenance with the
@@ -94,6 +120,12 @@ New rekeys bind the original admitted request hash in their audit event, preserv
 after restart even when the retained record contributes a stronger provenance mark.
 
 ## Purpose
+
+Browser casework uses reviewed versions for single decisions and per-case bulk previews/execution.
+The repository checks supplied versions while holding its mutation lease and returns the current
+case on conflict. Existing unversioned legacy review/resolve/bulk adapters retain their historical
+behavior; they do not provide stale-review protection. Queue/detail API projections expose command
+form availability from shared lifecycle validation, while every submitted command is revalidated.
 
 Strategies owns strategy lifecycle, run storage, promotion records, strategy read services, and
 strategy-facing reconciliation governance.
@@ -113,6 +145,30 @@ policy outcome names and legacy cell kinds remain compatibility inputs.
   promotion support services.
 
 ## Important workflows
+
+### Strategy-run order authority
+
+`LiveStrategyRunSession` submits each order under typed strategy-run authority: the run id and the
+run's retained fund account. A run without a fund account (paper only) keeps the untyped path.
+`StrategyRunAuthoritySource` gives the OMS read-only access to the run record and its approved live
+promotion, so a live order routes only for an active run that an approved live promotion targets.
+The OMS asks at preflight and again at dispatch, inside its pre-trade gate. The run record is read
+every time; an approved live promotion found for a run is remembered, because promotion history is
+append-only, so the promotion file is not re-read for every order. The active live grant also
+binds the exact executable artifact, account, expiry, and exposure limits. Dispatch checks the
+grant and its withdrawal state. Scoped Designer paper review retains the saved version and
+backtest input hashes with a dedicated paper session.
+
+New scoped Designer backtests retain a `sa1-` strategy artifact before their first run record.
+The artifact binds the tenant/company-scoped strategy identity, executable design and execution
+realism; the v6 run hash additionally retains the saved draft revision, data snapshot, historical
+window, evidence and account. Activation checks the artifact against the current exact scoped
+draft and the retained Designer version without dropping the dedicated paper-session controls.
+Paper review, the child run and each claimed order carry the same artifact. Missing, altered,
+foreign or conflicting identities defer execution. Earlier runs and null-artifact intent hashes
+retain their original representation. Simulated Designer evidence remains refused by ordinary
+promotion, and paper fills do not gain canonical posting authority. Focused proof:
+`ScopedDesignerArtifactTests` and `DesignerPaperRehearsalTests`.
 
 ### Shared SMA reference and retained comparison
 
@@ -158,6 +214,11 @@ parameterless store remains an explicit in-memory compatibility seam for
 isolated tests; browser and WPF production composition and the desktop fallback use the same
 data-root-backed durable history store.
 
+Completed native backtests expose replayed bar counts, verified backfill revisions, and a source-bound
+completion fingerprint in Strategy run detail. Research completion records bind the mix in their input
+hash. Runs admitted before replay keep their lifecycle input hash and derive the completion fingerprint
+from retained results. Run comparison discloses different mixes and unavailable evidence.
+
 Completed run journals now use the content-addressed `JsonlStrategyRunLedgerArchive` under
 `DataRoot/strategies/run-ledgers`. The lifecycle snapshot retains the exact SHA-256 and journal
 count; an exact run-detail read verifies the archive and replays the ledger invariants before
@@ -189,9 +250,13 @@ See `src/Meridian.FSharp.Trading/README.md` for transition semantics.
 The live engine and lifecycle manager enforce one active instance per strategy, including launches
 with different parameters or execution modes. Controls bind to that instance's exact run ID;
 a newer deferred run cannot replace its history. Engine-owned operator stop uses the session's
-shutdown path: close outbound order admission, drain admitted execution reports, wake an idle feed,
+shutdown path: close outbound order admission, wait (bounded by
+`LiveTradingEngineOptions.StopFillDrainTimeout`) until every fill the OMS already accepted for the
+run's orders has reached the session, drain admitted execution reports, wake an idle feed,
 finish callbacks and cleanup, build metrics, and retain a verified completion receipt. The session
 records `StopRequested` as `live-trading-engine` after fills drain; the manager delegates to it.
+When the engine has already retained `Failed` for an undeliverable fill, the session adopts that
+single terminal instead of appending another `Failed` or a recovery warning over it.
 Concurrent stop callers share that work; cancellation ends a caller's wait while shutdown continues.
 Paused engine sessions resume the same run. New runs launch through the engine after the prior session ends.
 The engine records `Activated` after promotion, `Suspended` on host shutdown, and `Recovered`
@@ -269,6 +334,14 @@ vocabulary.
 replaying an isolated journal snapshot, optionally bounded by an as-of timestamp. The full journal,
 account and running-balance endpoints consume that same retained accounting source; a missing
 ledger remains unavailable instead of becoming an empty success.
+`StrategyRunReadService.GetAttributionPeriodComparisonAsync` compares a run's per-symbol P&L for
+one calendar month with the month before (`PeriodComparisonDto`), as the change in cumulative
+realized plus unrealized P&L between month ends from the run's daily snapshots. A run without
+snapshots, or one that starts after the prior month, is reported as unavailable. Snapshot P&L is
+before commissions. A symbol closed mid-month counts its closed lots' realized result, not its last
+mark. Commissions (from fills, dated UTC), margin interest, short rebates and cash interest (from the
+daily cash flows) are their own lines. The total, Net P&L, is the change in run equity over the
+month; what the lines do not explain (dividends, corporate-action cash, rounding) is shown as Other.
 Promotion requires an explicitly successful completed lifecycle; an end timestamp and qualifying
 metrics on a failed or cancelled attempt never establish eligibility. `PromotionReadiness.isTerminal`
 continues to classify terminal lifecycle states independently of eligibility.

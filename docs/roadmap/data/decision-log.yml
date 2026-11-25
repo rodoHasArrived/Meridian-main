@@ -23,14 +23,29 @@ decisions:
       - W2-TRD-001
   - id: DEC-UI-LANE-002
     title: Browser workstation active and WPF product work deferred
-    status: accepted
+    status: superseded
     decided_on: 2026-07-05
     owner_lane: Workstation Shell and UX
-    summary: Browser workstation work remains the active operator UI lane. WPF product/UI work is deferred until explicitly reactivated; existing WPF shell code, compatibility, tests, and release workflows remain retained support surfaces, and shared contracts/API/read models must stay client-neutral where existing WPF consumers depend on them.
+    summary: Superseded by DEC-UI-LANE-003, which records the 2026-07-06 WPF reactivation. Browser workstation work remains the active operator UI lane. WPF product/UI work is deferred until explicitly reactivated; existing WPF shell code, compatibility, tests, and release workflows remain retained support surfaces, and shared contracts/API/read models must stay client-neutral where existing WPF consumers depend on them.
     related_roadmap_items:
       - W5X-FINOPS-001
       - W5X-FREX-001
       - W7-LIVE-001
+  - id: DEC-UI-LANE-003
+    title: Browser and WPF desktop workstations are active co-equal UI lanes
+    status: accepted
+    decided_on: 2026-07-06
+    owner_lane: Workstation Shell and UX
+    summary: >-
+      Recorded on 2026-11-25 to close a gap in this log. The WPF desktop workstation was reactivated
+      on 2026-07-06 as a co-equal UI lane alongside the browser workstation, as already stated in
+      the W8-WPF-PARITY-001 status detail, program-state.yml (active_ui_lane) and CLAUDE.md. The
+      immediate WPF focus is web-UI parity over shared contracts and read models
+      (docs/engineering/plans/wpf-web-ui-alignment-plan.md); neither client forks product state.
+      This entry supersedes DEC-UI-LANE-002 and adopts no new scope beyond the recorded reactivation.
+    related_roadmap_items:
+      - W8-WPF-PARITY-001
+      - W8-UX-CONSOL-001
   - id: DEC-UI-CONSOLIDATION-001
     title: Consolidate browser screens by deepening host screens behind charter roots
     status: accepted
@@ -178,6 +193,25 @@ decisions:
     related_roadmap_items:
       - W7-LIVE-001
 
+
+  - id: DEC-PRD014-FIRST-ENVELOPE-001
+    title: Bound v0.1.0 and its release candidates to Windows x64
+    status: accepted
+    decided_on: 2026-11-14
+    owner_lane: Runtime Host and Architecture
+    summary: >-
+      The owner requested a one-commit v0.1.0 release train and authorized either securing native
+      ARM64 capacity or formally scoping ARM64 out of the first envelope. The implementation
+      selects the bounded scope-out: Windows 11 x64 only for numeric version 0.1.0, including its
+      release candidates. ADR-019 records this amendment to DEC-PRD000-SUPPORT-MATRIX-001;
+      historical x64 and ARM64 receipts retain their original scope. Later versions retain the
+      native x64 and ARM64 certification requirement. No arbitrary architecture-skip input is
+      introduced. Protected signing, installed lifecycle, PostgreSQL zero-skip certification,
+      publish smoke, recovery acceptance, required-check activation and same-commit documentation
+      remain required. This decision does not provision secrets, certify a commit, accept a
+      recovery drill, close PRD-002 or authorize bypass of repository protections.
+    related_roadmap_items:
+      - W7-LIVE-001
 
   - id: DEC-FUND-OPERATIONS-DIRECTION-001
     title: Register bounded fund-operations functionality as planned W12 direction
@@ -345,3 +379,172 @@ decisions:
       - W14-ATTEST-001
       - W11-COVER-001
       - W11-PASSPORT-001
+  - id: DEC-IC-ACCRUAL-001
+    title: Bring governed intercompany loan-interest accrual into scope; register W12-ICACCRUAL-001
+    status: accepted
+    decided_on: 2026-11-14
+    owner_lane: Accounting and Ledger
+    summary: >-
+      Recorded on the repository owner's instruction of 2026-11-14. The intercompany agreement
+      registry and the P1-P5 intercompany plan stated that interest and fees are not calculated and
+      that loan-interest mirroring is outside the implementation. This decision brings one case into
+      scope: fixed-rate simple interest on an intercompany loan, calculated from approved structured
+      terms under rule intercompany-accrual-v1 (ADR-028), with principal read from posted journals of
+      the approved Loan profile. The computed amount is retained as a source-side draft in ordinary
+      journal review, and its counterpart arrives through the existing counterpart proposal pipeline
+      after the source posts; nothing posts automatically. A separately reviewed LoanInterest
+      accounting-profile template carries the interest income and expense mapping, and each accrual
+      pins the agreement version, profile revision and computation evidence. Fees, floating rates,
+      compounding, scheduled runs and operator screens are not brought into scope. W12-ICACCRUAL-001
+      is registered as in_progress with yellow health under active implementation. The decision
+      changes no existing row's rank, status, dependency or acceptance, weakens no review, posting
+      or authorization control, and grants no release authority.
+    related_roadmap_items:
+      - W12-ICACCRUAL-001
+      - W12-ICAGREE-001
+      - W12-ICPAIR-001
+  - id: DEC-IC-CONFIRM-001
+    title: Bring advisory reciprocal intercompany balance confirmation into scope; register W12-ICCONFIRM-001
+    status: accepted
+    decided_on: 2026-11-17
+    owner_lane: Accounting and Ledger
+    summary: >-
+      Recorded on the repository owner's instruction of 2026-11-17, which chose the advisory slice of the
+      reciprocal balance confirmation proposal. For each approved accounting profile and as-of date, both
+      sides' posted due-to/due-from balances are pinned from the shared balance schedule; each side confirms
+      or disputes through its own book, the same person cannot confirm both sides, unbalanced pairs cannot be
+      confirmed, and disputes are resolved with a reason by someone other than the disputer. History is
+      append-only on durable storage. Confirmation status joins the existing intercompany close advisory and
+      never changes close eligibility. Opt-in, policy-governed close blocking is not brought into scope and
+      needs its own decision. Cross-company pairs within one tenant are not supported in this slice.
+      W12-ICCONFIRM-001 is registered as in_progress with yellow health under active implementation. The
+      decision changes no existing row's rank, status, dependency or acceptance, weakens no review, posting or
+      authorization control, and grants no release authority.
+    related_roadmap_items:
+      - W12-ICCONFIRM-001
+      - W12-ICPAIR-001
+      - W10-SEAM-001
+  - id: DEC-IC-FLOAT-001
+    title: Bring floating-rate intercompany loan interest into scope under rule intercompany-accrual-v2; register W12-ICFLOAT-001
+    status: accepted
+    decided_on: 2026-11-17
+    owner_lane: Accounting and Ledger
+    summary: >-
+      Recorded on the repository owner's instruction of 2026-11-17, which chose floating rates as the first
+      slice of the broader-terms proposal. Floating loans now declare a fixing lag, and simple interest is
+      calculated under the new rule intercompany-accrual-v2 (ADR-028 extension): each schedule period uses the
+      approved fixing of its declared index observed that many business days before the period starts, plus
+      the declared spread. Fixings are retained append-only and tenant-scoped, and a value sets rates only
+      after a second person approves it; a correction replaces it only on its own approval, and a draft whose
+      pinned fixing changed is stopped before review or posting. A missing fixing refuses the whole window and
+      is never inferred or fetched. Rule intercompany-accrual-v1 is unchanged for fixed-rate windows. Fees,
+      compounding, in-arrears or averaged rates, floors and caps, and scheduled runs are not brought into scope.
+      W12-ICFLOAT-001 is registered as in_progress with yellow health under active implementation. The decision
+      changes no existing row's rank, status, dependency or acceptance, weakens no review, posting or
+      authorization control, and grants no release authority.
+    related_roadmap_items:
+      - W12-ICFLOAT-001
+      - W12-ICACCRUAL-001
+      - W12-ICAGREE-001
+  - id: DEC-IC-FEE-001
+    title: Bring fixed intercompany management fees into scope under rule intercompany-fee-v1; register W12-ICFEE-001
+    status: accepted
+    decided_on: 2026-11-17
+    owner_lane: Accounting and Ledger
+    summary: >-
+      Recorded on the repository owner's instruction of 2026-11-17, which chose fixed management fees as the
+      first fee slice (ADR-029). Fixed management-fee terms now declare whether the amount covers each schedule
+      period or one year (per annum also declares a day count); without that declaration no fee is calculated.
+      Rule intercompany-fee-v1 prorates per-period fees by covered days and per-annum fees by the declared day
+      count, cuts at revision and period boundaries and rounds once. Direction comes from the agreement's declared
+      service-provider and recipient roles. The source side is a draft in ordinary review under the existing
+      ManagementFee profile, its counterpart arrives through the existing proposal pipeline, and nothing posts
+      automatically. Percentage fees, loan commitment or utilisation fees and scheduled runs are not brought into
+      scope. W12-ICFEE-001 is registered as in_progress with yellow health under active implementation. The
+      decision changes no existing row's rank, status, dependency or acceptance, weakens no review, posting or
+      authorization control, and grants no release authority.
+    related_roadmap_items:
+      - W12-ICFEE-001
+      - W12-ICACCRUAL-001
+      - W12-ICAGREE-001
+  - id: DEC-IC-COMPOUND-001
+    title: Bring periodic compounding of intercompany interest into scope under rule intercompany-accrual-v3; register W12-ICCOMPOUND-001
+    status: accepted
+    decided_on: 2026-11-17
+    owner_lane: Accounting and Ledger
+    summary: >-
+      Recorded on the repository owner's instruction of 2026-11-17, which chose compounding as the next slice of
+      the broader-terms proposal (ADR-030). A loan whose compounding frequency equals its schedule frequency now
+      accrues each period on posted principal plus the accrued interest posted on the loan-interest profile at the
+      period start, net of settlements and reversals. A window is refused unless posted, unreversed accruals cover
+      every earlier day, and one request stays inside one period, so nothing compounds on unposted interest. The
+      facts read are retained and re-checked before review or posting. No capitalisation journal is introduced.
+      Simple interest under intercompany-accrual-v1 is unchanged. Daily compounding and mismatched frequencies are
+      not brought into scope. W12-ICCOMPOUND-001 is registered as in_progress with yellow health under active
+      implementation. The decision changes no existing row's rank, status, dependency or acceptance, weakens no
+      review, posting or authorization control, and grants no release authority.
+    related_roadmap_items:
+      - W12-ICCOMPOUND-001
+      - W12-ICACCRUAL-001
+  - id: DEC-IC-SCHEDULE-001
+    title: Bring opt-in, reviewed intercompany accrual schedules into scope; register W12-ICSCHEDULE-001
+    status: accepted
+    decided_on: 2026-11-17
+    owner_lane: Accounting and Ledger
+    summary: >-
+      Recorded on the repository owner's instruction of 2026-11-17, which chose opt-in, reviewed schedules for
+      scheduled accrual runs (ADR-031). A schedule names one book, one approved loan-interest profile and its
+      principal profile; one person proposes it and another approves it, and it can be rejected or disabled with a
+      reason. A background runner drafts each completed period ending on or after approval through the ordinary
+      preview-then-draft path, never posts, never recomputes an existing draft, and reports refusals for retry.
+      Automatic accrual of unscheduled profiles and management-fee schedules are not brought into scope here.
+      W12-ICSCHEDULE-001 is registered as in_progress with yellow health under active implementation. The decision
+      changes no existing row's rank, status, dependency or acceptance, weakens no review, posting or authorization
+      control, and grants no release authority.
+    related_roadmap_items:
+      - W12-ICSCHEDULE-001
+      - W12-ICACCRUAL-001
+  - id: DEC-IC-CONFIRM-002
+    title: "Proposed: opt-in, policy-governed close blocking from intercompany balance confirmation (ADR-032)"
+    status: proposed
+    decided_on: 2026-11-18
+    owner_lane: Accounting and Ledger
+    summary: >-
+      Proposed under the owner-approved P1 plan of 2026-11-18 and awaiting the repository owner's acceptance.
+      Follows DEC-IC-CONFIRM-001, which kept confirmation advisory and required a separate decision for close
+      blocking. Without an approved policy, close readiness is unchanged. A ledger book may adopt one reviewed
+      confirmation close policy that names which confirmation findings block close: not-proposed,
+      awaiting-confirmation, disputed, balances-changed and resolved-awaiting-proposal. One person proposes it with a
+      reason and someone else approves it; it can be rejected or disabled with a reason, and versions are
+      append-only. While a policy is active, a listed finding at the close period end adds a blocking close-readiness
+      contributor, and confirmation balances that cannot be read make the close decision incomplete rather than
+      being ignored. The advisory list is unchanged. The decision weakens no review, posting or authorization
+      control and grants no release authority. Note added 2026-11-25: PR 3674 (2026-11-19) merged the
+      opt-in close-blocking implementation (IntercompanyConfirmationCloseGate) ahead of this decision.
+      It is off by default and blocks nothing until a book adopts an approved policy, so the code
+      does not act on an unaccepted decision; the owner still needs to accept or reject this entry.
+    related_roadmap_items:
+      - W12-ICCONFIRM-001
+      - W10-SEAM-001
+  - id: DEC-W13-STATUS-001
+    title: Record W13-STRAT-001, W13-OMS-001 and W10-CONSOL-001 as in progress
+    status: accepted
+    decided_on: 2026-11-25
+    owner_lane: Core Team
+    summary: >-
+      Proposed by the 2026-11-25 registry verification and accepted by the repository owner on
+      2026-11-25 after reviewing the design-document adaptation. DEC-TRADING-STRATEGY-DIRECTION-001
+      kept W13-STRAT-001 and W13-OMS-001 planned; bounded implementation has since merged (PRs 3644,
+      3686, 3708 and 3731: order command boundary, scoped Designer paper execution, governed strategy
+      versions and live order authority, Designer artifact binding and retained cancel-all evidence).
+      W10-CONSOL-001 likewise links about fifteen source and test entries. All three rows are recorded
+      as in_progress with in_progress evidence posture. build/scripts/docs/validate-design-document-adaptation.py
+      permits that posture for the W13 rows only while this decision is accepted and names them, and it
+      still rejects ready_for_acceptance, accepted or done. The decision adopts no delivery rank,
+      implementation completion, operator acceptance, live activation authority or release
+      certification; every reservation in DEC-TRADING-STRATEGY-DIRECTION-001 stays in force, and the
+      adapted bounded contexts keep stage planned until their outcomes are accepted.
+    related_roadmap_items:
+      - W13-STRAT-001
+      - W13-OMS-001
+      - W10-CONSOL-001

@@ -96,6 +96,14 @@ documents:
       - W10-RECON-004
       - W10-PERF-001
       - W10-CONSOL-001
+  - id: DOC-INVESTOR-PERFORMANCE-PACK
+    path: docs/engineering/blueprints/investor-performance-pack-blueprint.md
+    title: Investor performance and capital-statement pack blueprint
+    role: planning_interpretation
+    owner_lane: Accounting and Ledger
+    roadmap_items:
+      - W10-PERF-001
+      - W11-STAKE-001
   - id: DOC-OPEN-LOT-CONVERGENCE
     path: docs/engineering/blueprints/security-lot-convergence-blueprint.md
     title: Security-identified open-lot convergence blueprint
@@ -115,3 +123,46 @@ documents:
       - W12-ENTITY-001
       - W12-ICPAIR-001
       - W12-ICINCOME-001
+  - id: DOC-STRATEGY-ORDER-EXECUTION
+    path: docs/domain/strategy-order-execution.md
+    title: Strategy and order execution domain guide
+    role: planning_interpretation
+    owner_lane: Execution and Fund Accounts
+    roadmap_items:
+      - W13-STRAT-001
+      - W13-OMS-001
+  - id: DOC-ORDER-COMMAND-BOUNDARY
+    path: docs/engineering/blueprints/governed-order-command-boundary-blueprint.md
+    title: Governed order command boundary blueprint
+    role: planning_interpretation
+    owner_lane: Execution and Fund Accounts
+    roadmap_items:
+      - W13-OMS-001
+  - id: DOC-STRATEGY-ARTIFACT-IDENTITY
+    path: docs/engineering/blueprints/strategy-artifact-identity-blueprint.md
+    title: Strategy artifact identity blueprint
+    role: planning_interpretation
+    owner_lane: Strategy Analytics
+    roadmap_items:
+      - W13-STRAT-001
+  - id: DOC-EXTERNAL-GL-PROVIDERS
+    path: docs/operators/external-gl-providers.md
+    title: External GL providers operator guide
+    role: readable_status
+    owner_lane: Accounting and Ledger
+    roadmap_items:
+      - W12-EXTGL-001
+  - id: DOC-PROVIDER-CREDENTIALS
+    path: docs/operators/provider-credentials.md
+    title: Provider credentials and connection templates operator guide
+    role: readable_status
+    owner_lane: Data Confidence and Validation
+    roadmap_items:
+      - W1-DATA-PROVCFG-001
+  - id: DOC-WORKSTATION-UX-REVIEW-2026-11
+    path: docs/engineering/plans/web-workstation-ux-review-plan-2026-11.md
+    title: 2026-11 web workstation UX review plan
+    role: planning_interpretation
+    owner_lane: Workstation Shell and UX
+    roadmap_items:
+      - W8-UX-TRUST-001

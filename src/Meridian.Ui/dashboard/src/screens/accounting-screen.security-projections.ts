@@ -784,14 +784,14 @@ export function buildSecurityOpenLotReadModelViewState({
 
   return {
     securityId: displaySecurityId,
-    title: "Open lot read model",
+    title: "Open lot summary",
     description: `Open lots for ${displaySecurityId} stay tied to run, account, cost, quantity, and factor-adjusted exposure evidence.`,
-    summary: readModel?.summary ?? "Open lot read model is unavailable for the selected security.",
+    summary: readModel?.summary ?? "Open lot summary is unavailable for the selected security.",
     asOfLabel: readModel?.asOfUtc ? formatDateTimeLabel(readModel.asOfUtc) : "—",
-    tableLabel: `Open lot read model for ${displaySecurityId}`,
+    tableLabel: `Open lot summary for ${displaySecurityId}`,
     tableCaption: `Open lots for ${displaySecurityId}; select a row to inspect source, account, and exposure detail.`,
     detailPanelId: "security-open-lot-detail-panel",
-    toolbarAriaLabel: `Open lot posture for ${displaySecurityId}`,
+    toolbarAriaLabel: `Open lot status for ${displaySecurityId}`,
     toolbarItems: [
       { id: "lots", label: "Lots", value: String(lotCount), active: lotCount > 0 },
       { id: "long-term", label: "Long term", value: String(longTermCount) },
@@ -805,14 +805,14 @@ export function buildSecurityOpenLotReadModelViewState({
     detailEmptyTitle: "No open lot selected",
     detailEmptyText: "Select an open lot to inspect quantity model, cost, account scope, source record, and provenance.",
     detailEmptyAriaLabel: "No open lot selected",
-    loadingText: loading ? "Loading open lot read model..." : null,
+    loadingText: loading ? "Loading open lot summary..." : null,
     errorText,
     errorDetails: normalizedError?.details ?? [],
     hasRows: lotCount > 0,
     statusAnnouncement: errorText
-      ? `Open lot read model error: ${errorText}`
+      ? `Open lot summary error: ${errorText}`
       : loading
-        ? `Loading open lot read model for ${displaySecurityId}.`
+        ? `Loading open lot summary for ${displaySecurityId}.`
         : lotCount > 0
           ? `${lotCount} open ${lotCount === 1 ? "lot" : "lots"} loaded for ${displaySecurityId}.`
           : ""
@@ -1032,7 +1032,7 @@ export function buildInstrumentPassportViewState({
   const displaySecurityId = securityId ?? passport?.securityId ?? "selected security";
   const providerRows = buildInstrumentPassportProviderRows(passport);
   const trustTone = passport?.trustPosture?.tone?.trim() || "Unknown";
-  const trustSummary = passport?.trustPosture?.summary?.trim() || "Trust posture is unavailable.";
+  const trustSummary = passport?.trustPosture?.summary?.trim() || "Trust status is unavailable.";
   const identifierSummary = passport?.identifierSummary?.summary?.trim() || "Identifier summary is unavailable.";
   const usageSummary = passport?.usage?.summary?.trim() || "Downstream usage is unavailable.";
   const pricingStatus = passport?.pricing?.status?.trim() || "Unknown";
@@ -1132,7 +1132,7 @@ export function buildInstrumentPassportViewState({
         label: "Manual-change approval",
         value: approvalPosture
           ? `${approvalPosture.status}: ${approvalPosture.policyKey} via ${approvalPosture.gate}; ${approvalPosture.summary}`
-          : "Unavailable: operations approval policy posture is unavailable.",
+          : "Unavailable: operations approval policy status is unavailable.",
         tone: approvalPosture?.status?.toLowerCase() === "ready" ? "success" : "warning"
       },
       {
@@ -1142,8 +1142,8 @@ export function buildInstrumentPassportViewState({
       },
       ...referenceDataWorkbenchSections,
       {
-        label: "Operations handoff",
-        value: `${enabledHandoffs} enabled / ${totalHandoffs} total handoff(s).`,
+        label: "Operations next steps",
+        value: `${enabledHandoffs} enabled / ${totalHandoffs} total next step(s).`,
         tone: enabledHandoffs > 0 ? "success" : "warning"
       },
       {

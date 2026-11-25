@@ -202,11 +202,11 @@ describe("BrokerageRecoveryPanel", () => {
   });
 
   describe("inline account picker", () => {
-    function inShell(node: ReactNode, select = vi.fn(), openScopePicker = vi.fn()) {
+    function inShell(node: ReactNode, select = vi.fn(), openScopePicker = vi.fn(), options = [{ id: accountId, label: "Main fund" }]) {
       return render(
         <TestMemoryRouter>
           <ScopePickerOpenerProvider open={openScopePicker}>
-            <FundAccountScopeSelectionProvider value={{ options: [{ id: accountId, label: "Main fund" }], select }}>
+            <FundAccountScopeSelectionProvider value={{ options, select }}>
               {node}
             </FundAccountScopeSelectionProvider>
           </ScopePickerOpenerProvider>
@@ -228,6 +228,7 @@ describe("BrokerageRecoveryPanel", () => {
       const useAccount = screen.getByRole("button", { name: "Use account" });
       expect(useAccount).toBeDisabled();
       await user.type(screen.getByLabelText("Fund account"), "Main fund");
+      await user.keyboard("{Enter}");
       await user.click(useAccount);
       expect(select).toHaveBeenCalledWith(accountId);
       expect((await axe(container)).violations).toEqual([]);
@@ -236,9 +237,10 @@ describe("BrokerageRecoveryPanel", () => {
     it("refuses an id Trading cannot use instead of silently ignoring it", async () => {
       const user = userEvent.setup();
       const select = vi.fn();
-      inShell(panel(null, { fundAccountId: undefined, brokerageEnvironment: "paper" }), select);
+      inShell(panel(null, { fundAccountId: undefined, brokerageEnvironment: "paper" }), select, vi.fn(), [{ id: "not-a-guid", label: "Invalid retained account" }]);
 
-      await user.type(screen.getByLabelText("Fund account"), "not-a-guid");
+      await user.type(screen.getByLabelText("Fund account"), "Invalid retained");
+      await user.keyboard("{Enter}");
       await user.click(screen.getByRole("button", { name: "Use account" }));
       expect(select).not.toHaveBeenCalled();
       expect(screen.getByRole("alert")).toHaveTextContent("Not a fund account id.");
@@ -253,8 +255,7 @@ describe("BrokerageRecoveryPanel", () => {
       expect(openScopePicker).toHaveBeenCalledTimes(1);
     });
 
-    it("puts the picker in the setup row on routes like Orders", async () => {
-      const user = userEvent.setup();
+    it("points the setup row at the scope bar's account step on routes like Orders", () => {
       const select = vi.fn();
       inShell(panel(null, { fundAccountId: undefined, brokerageEnvironment: "paper", variant: "row", reviewHref: "/trading#brokerage-recovery" }), select);
 
@@ -262,20 +263,31 @@ describe("BrokerageRecoveryPanel", () => {
       expect(within(row).getByRole("status", { name: "Brokerage recovery readiness" }))
         .toHaveTextContent("No fund account in scope · brokerage recovery is checked per account; live trading stays off until one is chosen.");
       expect(row).not.toHaveTextContent("Live trading blocked");
-      await user.type(within(row).getByLabelText("Fund account"), accountId);
-      await user.click(within(row).getByRole("button", { name: "Use account" }));
-      expect(select).toHaveBeenCalledWith(accountId);
+      // The header scope bar carries the one account picker; the row has none of its own.
+      expect(row).toHaveTextContent("Choose the account in the scope bar above.");
+      expect(within(row).queryByRole("combobox")).not.toBeInTheDocument();
+      expect(within(row).queryByRole("button")).not.toBeInTheDocument();
+      expect(select).not.toHaveBeenCalled();
+    });
+
+    it("keeps a blocked Orders row blocked and never initiates recovery from it", () => {
+      const onRecover = vi.fn();
+      inShell(panel(null, { fundAccountId: undefined, brokerageEnvironment: "live", variant: "row", onRecover }), vi.fn());
+      expect(screen.getByRole("status", { name: "Brokerage recovery readiness" })).toHaveTextContent("Live trading blocked");
+      expect(screen.getByRole("region", { name: "Brokerage recovery" })).toHaveTextContent("Choose the account in the scope bar above.");
+      expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+      expect(onRecover).not.toHaveBeenCalled();
     });
 
     it.each([
       ["live", "live"],
       ["unknown", undefined]
-    ] as const)("keeps the %s environment blocking without an inline picker", (_, brokerageEnvironment) => {
+    ] as const)("keeps the %s environment blocking while offering account selection", (_, brokerageEnvironment) => {
       inShell(panel(null, { fundAccountId: undefined, brokerageEnvironment }));
 
       expect(screen.getByRole("status", { name: "Brokerage recovery readiness" })).toHaveTextContent("Live trading blocked");
-      expect(screen.queryByLabelText("Fund account")).not.toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Choose account" })).toBeInTheDocument();
+      expect(screen.getByRole("combobox", { name: "Fund account" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Use account" })).toBeDisabled();
     });
   });
 });

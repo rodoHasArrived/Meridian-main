@@ -6,6 +6,23 @@ function focusState(search: string, pathname = "/reporting", hash = "") {
   return buildRouteFocusState(pathname, search, hash, workspaceForPath(pathname));
 }
 
+describe("Amount passport route focus", () => {
+  it("keeps Ledger Explorer search and sort local to the table", () => {
+    const pathname = "/accounting/ledger";
+    const scope = "?ledgerBookId=book-a&periodId=period-a";
+    const initial = focusState(scope, pathname);
+    expect(focusState(`${scope}&ledgerSearch=Cash&ledgerSort=debit%3Adesc`, pathname)).toEqual(initial);
+    expect(focusState("?ledgerBookId=book-a&periodId=period-b&ledgerSearch=Cash", pathname).routeKey)
+      .not.toBe(initial.routeKey);
+  });
+
+  it.each(["/accounting/ledger", "/portfolio/brokerage-sync", "/reporting/runs/detail"])("leaves passport focus to the rail on %s", (pathname) => {
+    const scope = "?fundAccountId=account-a";
+    const hash = "#amount-passport?subjectKind=ledger-amount&subjectId=posting-a&tenantId=tenant-a";
+    expect(focusState(scope, pathname, hash)).toEqual(focusState(scope, pathname));
+  });
+});
+
 describe("reporting queue route focus", () => {
   it("keeps focus in the workbench when only its selected work item changes", () => {
     const initial = focusState("");
@@ -177,12 +194,12 @@ describe("market data tab route focus", () => {
 
 describe("reconciliation queue route focus", () => {
   const paths = ["/accounting/reconciliation", "/accounting/exceptions", "/accounting/reconciliation/", "/ACCOUNTING/EXCEPTIONS/"];
-  const localQuery = "reconciliationRun=run-a&reconciliationBreak=break-a&reconciliationSearch=cash&reconciliationStatus=Open&reconciliationSort=oldest";
+  const localQuery = "reconciliationRun=run-a&reconciliationBreak=break-a&reconciliationCompare=prior-a&reconciliationSearch=cash&reconciliationStatus=Open&reconciliationSort=oldest&reconciliationColumns=owner";
 
   it.each(paths)("keeps row selection and local controls focused on %s", (pathname) => {
     const initial = focusState("", pathname);
     expect(focusState(`?${localQuery}`, pathname).routeKey).toBe(initial.routeKey);
-    for (const key of ["reconciliationRun", "reconciliationBreak", "reconciliationSearch", "reconciliationStatus", "reconciliationSort"]) {
+    for (const key of ["reconciliationRun", "reconciliationBreak", "reconciliationCompare", "reconciliationSearch", "reconciliationStatus", "reconciliationSort", "reconciliationColumns"]) {
       expect(focusState(`?${key}=first`, pathname).routeKey).toBe(initial.routeKey);
       expect(focusState(`?${key}=second`, pathname).routeKey).toBe(initial.routeKey);
     }

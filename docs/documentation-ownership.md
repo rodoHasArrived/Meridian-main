@@ -18,9 +18,10 @@ remaining compatibility-lane cleanup.
 | Operator procedures | `docs/operators/` | Link to setup, provider, runbook, deployment, troubleshooting, and support procedures. |
 | Lookup material | `docs/reference/` | Keep APIs, environment variables, CLI flags, schemas, glossary, and matrices discoverable. |
 | Roadmap truth | `docs/roadmap/data/*.yml` | Validate and render; do not hand-author competing durable roadmap truth. |
+| Production readiness | `docs/roadmap/data/production-readiness.yml` | Edit structured gate fields and evidence; render `docs/product/implementation-todo-list.md`. |
 | Source-module truth | `docs/source/data/*.yml` and registered `src/**/README.md` | Update with source behavior, ownership, validation, TODO, and diagram changes. |
-| Generated output | `docs/generated/`, `docs/roadmap/generated/`, `docs/source/generated/`, `docs/ai/generated/`, `docs/ai/exports/`, `docs/reference/source-api/` | Update generators or inputs, not emitted files by hand. |
-| Automation-owned status output | `docs/status/` | Keep generated reports and compatibility artifacts at the paths consumed by tooling; do not create competing roadmap truth. |
+| Reviewed generated output | `docs/generated/`, `docs/roadmap/generated/`, `docs/source/generated/`, `docs/ai/generated/`, `docs/ai/exports/`, `docs/reference/source-api/` | Update generators or inputs; commit reviewable views behind freshness checks. Machine-only manifests are CI-produced. |
+| Automation-owned status output | `docs/status/` | Keep canonical paths for tools; declared mechanical reports are ignored and exported by CI. Reviewed health baselines and hybrid documents remain committed. |
 | Detailed supporting guidance | `docs/development/`, `docs/security/`, `docs/testing/`, `docs/integrations/`, and related specialist folders | Development holds active implementation, extension, testing, and tooling guides reached from Engineering. Link specialist material from its canonical owner and avoid duplicating entrypoint commands or product status. |
 | Transitional compatibility paths | `docs/operations/` and `docs/plans/` | Retain only when active code, tests, tooling, or strong links require the path; do not add new durable guidance. |
 | Historical or superseded material | `archive/docs/` | Preserve useful history with replacement links or explicit archive rationale. |
@@ -40,6 +41,9 @@ remaining compatibility-lane cleanup.
 
 - Do not keep two active docs claiming the same durable truth.
 - Prefer registry data and generated views for roadmap and source-module status.
+- Keep current status in bounded schema fields, decisions, evidence links, and PR references.
+  Detailed migration snapshots are linked context, not an alternative status registry. Load them
+  only when the task needs their detailed reservations or evidence history.
 - Prefer root shims for `README.md`, `AGENTS.md`, and `CLAUDE.md`; avoid long duplicated command catalogs.
 - Keep `docs/README.md` as the canonical documentation front door.
 - Keep AI workflow rules synchronized through `docs/ai/assistant-workflow-contract.md` and assistant-specific indexes.
@@ -79,6 +83,19 @@ Before adding or moving docs:
   supporting lane, or archive historical material under `archive/docs/`.
 - The validator still warns on missing lifecycle fields so legacy files can be cleaned up in batches instead of blocking unrelated slices.
 
+### Historical reviews and evidence placement
+
+Keep large dated review records and loose run/audit JSON snapshots under `archive/docs/`,
+with a brief pointer from the active owner when needed. Current design, remediation plans and
+registry status stay in their canonical lanes. The [archive index](../archive/docs/README.md)
+records retained review and measurement history; archival does not resolve a finding.
+
+Move related snapshot inputs, diagnostic policies and compressed reports together, preserve
+JSON bytes and evidence dates, and update reproduction commands. Keep current generator-owned
+reports at their tooling paths. Integrity-bound evidence packets require a separate coordinated
+migration of registered paths and navigation; do not split a packet or rewrite checksums merely
+to reduce the active documentation tree.
+
 ### Immutable evidence documents
 
 The structure validator expands only the exact Markdown entries listed by the registered
@@ -114,3 +131,7 @@ Synchronization with upstream `63e84bb978b5a8b8cffbce3820b6842aa907423f` retains
 upstream screenshots are included. All retained image bytes match the newest upstream version;
 the inventory's `upstreamSynchronization` section records their verified local LFS hashes
 without rewriting the original 338-image capture. Remote LFS upload remains a publication step.
+
+Generated delivery is defined file by file in [Generated output delivery](engineering/generated-output-delivery.md)
+and the maintained output policy. Regenerate with `python build/python/cli/buildctl.py regen --fix`;
+commit only reviewed views. The source-hash manifest is review evidence, not an actual-hash cache.

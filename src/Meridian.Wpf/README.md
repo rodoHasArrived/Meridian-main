@@ -6,10 +6,61 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Wpf
+
+Provider Accounting exposes host quota settings for Twelve Data and Alpha Vantage, adapter-managed
+FRED limits, and seven UTC days of retained throttling and rotation totals. Saved and running quotas
+appear together. A pending restart remains visible after a successful save.
+
+Protected production and packaged/customer configuration persistence uses the shared provider-secret
+scanner before writing either the primary file or last-known-good copy. Startup also refuses a
+secret-bearing or unparseable retained generation before creating backups, recovery receipts or
+replacement files. Reviewed migration and purge of both generations precedes retry; unflagged
+development keeps its existing invalid-configuration recovery behavior. Owned provider credentials
+remain in the protected vault. Windows persistence, refusal and purge/retry fixtures live in
+`DesktopConfigurationRecoveryServiceTests`.
+
+The existing agreement and entity controls expose native structured terms, date previews,
+external-review attestations, advisory obligations and reviewed legacy coverage successors.
+They consume shared APIs and preserve drafts on failed commands. WPF runtime verification requires
+Windows; cross-compilation alone does not establish that proof.
+
+`KeyboardShortcutService` reapplies the operator's saved shortcut overrides at startup
+(`App.xaml.cs` attaches the shared desktop shell preference store) and saves only differences from
+the defaults after `UpdateShortcut`, `SetShortcutEnabled`, `TryResetShortcut` or `ResetToDefaults`.
+Loading skips an override for an unknown action, an unparseable key or modifier, a collision with
+another shortcut, or a binding that would leave Start/Stop Collector, Toggle Connection or Delete
+Selected without Ctrl or Alt. Collisions are judged against the whole saved set, so a saved swap of
+two chords applies both halves; when two saved rebindings claim one chord the earlier entry keeps it.
+`KeyboardShortcutsPage` (backed by `KeyboardShortcutsViewModel`) is the in-app rebinding editor:
+each row captures a new key chord (bare modifier presses are ignored and global shortcuts are
+suspended while capturing), toggles the shortcut on or off, and resets it to its default. A chord
+that fails `IsBindingAllowed` or collides per `HasConflict` is refused with an inline reason before
+`UpdateShortcut` runs; a per-row reset is refused while another shortcut has been rebound onto that
+default chord. `KeyboardShortcutServicePersistenceTests`, `KeyboardShortcutServiceRebindingTests` and
+`KeyboardShortcutsViewModelTests` cover this on isolated instances and require Windows.
+
+The shell theme and density follow the operator's host preferences, the same set the browser
+workstation uses: `App.xaml.cs` starts `DesktopOperatorPreferenceSync` after the theme service is
+initialized (not in fixture mode) over `WpfDesktopPreferenceSurface`, which marshals host-applied
+theme changes onto the UI thread. It reports theme and density changes and shortcut override
+changes on separate events, so each save replaces only what changed. Shortcut overrides follow the
+operator too: host overrides are applied through `KeyboardShortcutService.ApplyOverrides` (entries
+it cannot apply are skipped) and written to the local desktop preferences, which stay the cache when
+the host cannot be reached. The Settings page Notifications card (`SettingsViewModel.Notifications.cs`)
+edits the live `NotificationService` settings: the pop-up switch, the five types and quiet hours
+(`HH:mm` in the display zone, applied once both times read). Each change applies at once and is
+saved with the operator's preferences, not the configuration file, so the configuration's
+`NotificationsEnabled` is no longer read into the page. **Send Test Notification** says when pop-ups
+are off or quiet hours hold them. Desktop timestamps that used to be
+labelled UTC now go through `FormatHelpers.FormatDisplayTimestamp` (or `DisplayTimestampConverter` in
+XAML) and follow the operator's display time zone: "UTC" when unset, otherwise the local time with a
+`UTC±hh:mm` label. Open screens pick up a changed zone on their next refresh. Unlabelled local
+clocks (such as console line prefixes) are unchanged. `WpfDesktopPreferenceSurfaceTests` require
+Windows.
 
 Settings workspace and Preferences include a shared activation-status banner reading the host's
 `GET /api/config/changes` contract. It refreshes on entry, every 15 seconds, on demand and after
@@ -19,6 +70,12 @@ unavailable. Desktop file saves are explicitly unverified by a host-only receipt
 for verification/restart through this desktop session. The banner never restarts the host or enables
 execution. `ConfigurationChangeStatusViewModelTests` covers shared impact projection, local-save
 honesty, failures, cancellation and superseded responses. Native rendering still requires Windows.
+
+Data Sources and Backfill Provider Settings save through the host and show activation evidence
+for each running surface. The activation panel lists pending paths before a supervised restart
+and refreshes when a new host session reports readiness. Symbol Mapping edits and CSV exchange use
+the host's canonical registry. Failed saves keep the source or mapping draft available for retry.
+Manage provider credentials under Settings. Alpaca feed changes apply across the host after restart.
 
 Ordinary desktop configuration saves strictly
 re-read the current file under the shared write lease and run the shared whole-document guard
@@ -109,6 +166,47 @@ comparison and advisory source-line drill-through. Server capabilities control m
 responses preserve local edits. The desktop surface does not maintain its own agreement store or
 posting authority. Native WPF interaction validation requires Windows; Linux checks do not establish
 native acceptance. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
+Fund Operations adds a Management fee tab (`Views/IntercompanyManagementFeeControl.xaml`) over the shared
+`IntercompanyManagementFeeWorkspace`; the agreement editor declares the fixed-fee basis. See
+[governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
+Fund Operations adds a Rate fixings tab (`Views/IntercompanyRateFixingsControl.xaml`) over the shared
+`IntercompanyRateFixingWorkspace`; the agreement editor declares the fixing lag and the Interest
+accrual tab shows each slice's fixing. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
+The Interest accrual tab shows a Compounded interest column for compounding loans. See
+[periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
+
+A Counterpart proposals tab (`Views/IntercompanyCounterpartProposalsControl.xaml`) binds the shared
+`IntercompanyCounterpartQueueWorkspace`: delivery records and aged booking breaks for a source
+book, retained source lines and provenance, delivery retry, explicit FX repricing with a
+before-and-after preview, and linking an existing counterpart journal. The source book and the
+existing counterpart book are chosen from lists rather than typed. Since 2026-11-18 the counterpart
+journal is also chosen from a list, as in the browser: the shared
+`/api/ledger/intercompany/proposals/{id}/counterpart-candidates` read returns only posted journals that
+the server's link check would accept, and linking re-checks the choice. "Open journal" on a delivery
+record opens the Fund Ledger Journal tab for that book's fund profile with the entry selected. The
+desktop holds no proposal state and never posts; the same Windows-only validation boundary applies.
+
+Fund Operations adds a Balance confirmation tab
+(`Views/IntercompanyBalanceConfirmationControl.xaml`) over the shared
+`IntercompanyBalanceConfirmationWorkspace`. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
+An Interest accrual tab (`Views/IntercompanyInterestAccrualControl.xaml`) binds the shared
+`IntercompanyInterestAccrualWorkspace`: preview the server-computed fixed-rate interest for a
+loan-interest profile, its loan principal profile and a window, review the slices, proposed lines
+and evidence, then create the source-book draft for ordinary journal review. The book and both
+profiles are chosen from lists. The desktop enters no rate, principal or amount and never posts;
+the same Windows-only validation boundary applies. The entity timeline on the consolidation page
+names a lifecycle state's successor entity, as the browser timeline does.
+
+An Accrual schedules tab (`Views/IntercompanyAccrualSchedulesControl.xaml`) binds the shared
+`IntercompanyAccrualScheduleWorkspace`: list a book's opt-in accrual schedules with their history,
+propose one for a LoanInterest profile and its same-agreement Loan principal profile, approve,
+reject or disable the exact version shown, preview due periods and run an active schedule now. A
+schedule only drafts for ordinary journal review; the desktop never posts, the proposer cannot
+approve, and the same Windows-only validation boundary applies.
 
 Security Master's Schedule Book evidence includes the shared typed declared call/put outcome,
 evaluation date, retained security version, window count, coded blockers and notice diagnostics.
@@ -234,20 +332,27 @@ command availability and retain the current editor values for an explicit retry.
 fields the operator filled in, because the vault treats a blank value as a deletion; rotating one secret
 keeps the other retained fields.
 
-The add-provider wizard requires explicit selection of an existing owned connection for managed
-credentials. It loads that connection's retained schema and uses its `connectionId` for status,
+The Add Provider wizard starts with the shared connection template catalog. An authorized operator can
+review reusable settings and the verification checklist, open the credential vault, test, and save a
+new connection. **Manage connection templates** saves an owned connection's portable settings and imports
+or exports versioned JSON. See [provider connection templates](../Meridian.Ui.Shared/README.md#provider-connection-templates).
+
+The existing connection path requires explicit selection of an owned connection for managed credentials.
+It loads that connection's retained schema and uses its `connectionId` for status,
 save, verification and confirmed removal. Ownership is rechecked before mutations; missing, changed,
 foreign or unavailable selections cannot fall back to provider-wide credentials. An empty owned
-connection list gives an onboarding/unavailable state without creating ownership. Connection changes
+connection list gives an onboarding/unavailable state. Connection changes
 clear secret editors, verification and save state, cancel old requests and ignore delayed responses.
 Only unchanged submitted secrets are cleared after a confirmed save, so newer edits survive and
-require another test. The credential editor does not create connections or activate subscriptions or
-runtime routing; those remain separate workflows. Credential-free providers show that no managed
+require another test. Subscriptions and runtime routing have separate activation workflows. Credential-free providers show that no managed
 credentials are required. The wizard and credential management use the service's vault field schema,
 not local catalog field names, and never read secrets back into editors or write environment variables.
 
 The desktop close publication guard also resolves the optional book-of-record guard lazily, so a shadow
-onboarding book cannot hard-close; the shadow onboarding panel itself is browser-only for now.
+onboarding book cannot hard-close. The Accounting Configure page's **Onboarding parallel run** tab
+(`Views/OnboardingShadowControl.xaml`) binds the shared `OnboardingShadowWorkspace` from
+`Meridian.Ui.Services`. Only the opening-file picker is in code-behind. Creating workspaces, criteria,
+comparison capture and reviews remain browser-only.
 
 Provider badges and selections join canonical IDs, including retained aliases. Credential management
 retains a selected connection's field schema when a status read finishes during or after verification,
@@ -332,6 +437,12 @@ scope fails before any provider rows are read.
 - `Shell/` and `Services/` - navigation, route, launch, and desktop service seams.
 
 ## Important workflows
+
+Desktop diagnostic logging uses named placeholders and string tuple properties through the
+shared `LoggingServiceBase` formatter. `LogWritten.Message` remains rendered for the Activity Log,
+while structured properties and exception objects remain available to subscribers. The focused
+cross-platform `LoggingServiceBaseTests` in `Meridian.Ui.Tests` cover that contract; native desktop
+compilation and interaction checks still require the Windows validation lane.
 
 Desktop startup asynchronously initializes `ConfigService` before constructing the host.
 Synchronous Strategy and Accounting DI factories consume its `ConfiguredDataRoot` snapshot;
@@ -562,6 +673,8 @@ fund-event, capital-account, investor, payment, and settlement references.
 Accounting composition supplies the complete Security Master store to the shared event spine
 for reviewed successor hash validation. Economic-date and retained-lot-label checks remain
 shared service rules, including when desktop composition runs independently.
+The module also registers the shared `IWorkstationFiscalYearCloseApiClient`; no WPF close-plan
+screen consumes it yet.
 Registration stays feature-owned in `Features/Accounting/AccountingFeatureModule.cs`; the
 desktop fallback stores configuration/audit state in `workstation/accounting/accounting-configuration.json`
 manual journal drafts in `workstation/accounting/manual-journal-drafts.json`, and retained migration
@@ -1154,6 +1267,18 @@ The desktop passport editor loads the asset-class registry definition and offers
 a choice list for vocabulary and convention terms, and the shared `SecurityAssetTermFormModel`
 pre-check; the free-text field path remains available.
 
+**Scope options (P4 parity, 2026-11-14).** The operating-context page (`Views/FundProfileSelectionPage.xaml`)
+has a Scope Options card with entity, fund and fund-account pickers fed by the shared
+`GET /api/workstation/scope-options` seam (`WorkstationScopeOptionsDto`), read through
+`Services/WorkstationScopeOptionsApiClient`. Picks narrow by the browser scope picker's rule
+(`Services/WorkstationScopeOptionsNarrowing`): an entity keeps the funds holding it and the accounts
+booked to it or held by those funds, a fund keeps its own accounts, and accounts with no stated
+fund or entity are left out of a narrowed list and counted in a note. On a 404 (a host older than
+the route) the client falls back to the in-process fund-structure graph and says that list is not
+filtered by grants; any other failure, 403 included, leaves the lists empty with a status message
+saying why. "Use Scope" selects the matching operating context (account, else fund, else entity)
+when the desktop context catalog has one; it does not create contexts or change the scope model.
+
 ## Security Master governance controls (2026-11)
 
 - **Desktop honours governed term amendments.** The desktop binds the `SecurityMasterWorkbench` configuration section and calls `AddSecurityMasterGovernanceRequirements`, which registers the shared requirements seam, `IGovernedTermAmendmentPolicy` over it, and the startup guard that refuses a configuration contradicting the governance profile ahead of the shell. When governed term amendments are required (`RequireGovernedTermAmendments` on, `GovernanceProfile` set to `Institutional`, or a production composition of the desktop's own service collection; once Institutional, the desktop stays Institutional until it restarts), `SecurityMasterEditViewModel` refuses a direct amendment with the shared guidance instead of bypassing the gate the web API enforces. The service enforces the requirement too, and the editor reports that refusal, so a desktop composed without the policy still cannot write directly.
@@ -1173,6 +1298,39 @@ persistence gate, under the state gate, so a reload cannot roll back a concurren
 viewer and corporate-action recording call routes built from `UiApiRoutes`;
 `DesktopClientRouteContractTests` fails on a desktop `/api/` literal the server does not map,
 apart from three listed exceptions (`/api/logs`, `/api/watchlists`, `/api/archive/health`).
+
+## One refresh control, plain shell copy (2026-11)
+
+The shell Refresh button and F5 are the one refresh control. Both reload the active page in place,
+with no extra Back entry: `PageRefreshResolver` finds the page's refresh command through
+`IPageRefreshTarget`, or by convention a public `RefreshCommand` on the view model, and executes
+it. Workspace shell pages are refresh targets that also reload their docked panes, and every
+visible split pane reloads with the active one. A page with no refresh command falls back to
+re-navigation. A view model whose refresh does more than re-read (for example plugin loading)
+implements `IPageRefreshOptOut`. Pages no longer carry a "Refresh" button bound to their main
+refresh command; a "Retry" button appears only in an error state. Sub-panel reload buttons
+("Refresh Statements", "Refresh Queue" and similar) are unchanged.
+
+Each of the seven workspace shells states one plain description and one title, held once in
+`Copy/WorkspaceCopyCatalog.cs`. The empty operating scope reads "All authorized scopes" where the
+page still shows everything the operator may see, and "No scope selected" where the page shows
+nothing until a scope is chosen (`WorkspaceCopyCatalog.Scope`). The position blotter shows the
+market value the execution source reports, and labels the cost column "Avg cost".
+
+## Prior-period comparisons and NAV trend (2026-11)
+
+The desktop shows the browser's Phase E comparisons from the same shared contracts.
+`ViewModels/Comparisons/PeriodComparisonSectionViewModel` loads a `PeriodComparisonDto` from a
+delegate and renders it through `PeriodComparisonProjection` (in `Meridian.Ui.Services`), with
+`Controls/PeriodComparisonPanel.xaml`: the windows compared, the table with material variances
+flagged, why it is empty, a retry after a failure, and the notes.
+- Fund Operations → Portfolio: NAV against a prior date (`NavBaselineDate`, empty means the end of
+  last month) and `NavTrendSectionViewModel` with `Controls/NavTrendPanel.xaml` (NAV and
+  long/short/gross exposure at the last 12 month-ends, with a table). Both read
+  `FundOperationsWorkspaceReadService` in process.
+- Run Risk: the run's last month against the month before (`AttributionComparison`).
+- Run Cash Flow: "Vs end of last month" loads the portfolio cash ladder comparison over the API
+  (`PeriodComparisonApiClient`), because its providers are composed only in the host.
 
 ## Diagrams
 
@@ -1224,6 +1382,13 @@ behavior into view models. Do not duplicate product logic that belongs in shared
 When telemetry, latency, order-flow, or preview data is unavailable, show an explicit unmeasured or
 unavailable state rather than seeded sample numbers or plausible-looking derived metrics.
 Use `Controls/EmptyStatePanel` for reusable missing-data states; it supports title, explanation, severity, and up to two actions for provider setup, import, selection, freshness, reconciliation, reporting, and fixture-data recovery paths.
+
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+The Balance confirmation tab includes the book's confirmation close policy (ADR-032) through
+`IntercompanyBalanceConfirmationWorkspace.ClosePolicy`: choose the findings that block close, propose with a reason,
+and approve, reject or disable. The close-readiness advisory text points to the separate `intercompany-confirmation`
+requirement when a policy applies.
 
 ## Related docs
 

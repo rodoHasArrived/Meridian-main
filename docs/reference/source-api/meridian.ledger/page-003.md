@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerAccountingExpectation
+
+Qualified name: <code>Meridian.Ledger.LedgerAccountingExpectation</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/LedgerAccountingCompleteness.cs:23](../../../../src/Meridian.Ledger/LedgerAccountingCompleteness.cs#L23).
+
+One retained source event and the exact originating journal purposes required by its policy. A fill may require both &quot;trade-fill&quot; and &quot;commission&quot;. Journal legs are never counted as entries. Sources with no accounting consequence use an empty list, explicitly, rather than being omitted.
+
+```csharp
+public sealed record LedgerAccountingExpectation(LedgerAccountingScope Scope, LedgerAccountingSourceKind SourceKind, string SourceId, IReadOnlyList<string> RequiredPostingKeys);
+```
+
 ## LedgerAccountingJournalObservation
 
 Qualified name: <code>Meridian.Ledger.LedgerAccountingJournalObservation</code>. Kind: `record`.
@@ -113,6 +125,8 @@ Enum declarations:
 | <code>LoanRestructuringLoss</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:45](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L45) |  |
 | <code>MarginLoanPayable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:46](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L46) |  |
 | <code>ShortSaleCollateralReceivable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:47](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L47) |  |
+| <code>DividendReceivable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:48](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L48) |  |
+| <code>AccruedInterestReceivable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:49](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L49) |  |
 
 ## LedgerAccounts
 
@@ -414,8 +428,9 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public decimal NetCashFlow =&gt; …;</code> | [src/Meridian.Ledger/LedgerCashFlowStatement.cs:41](../../../../src/Meridian.Ledger/LedgerCashFlowStatement.cs#L41) | Sum of operating, investing, and financing cash flows. |
-| <code>public decimal ReconciliationVariance =&gt; …;</code> | [src/Meridian.Ledger/LedgerCashFlowStatement.cs:44](../../../../src/Meridian.Ledger/LedgerCashFlowStatement.cs#L44) | Difference between the roll-forward and the observed ending cash. Zero when reconciled. |
-| <code>public bool IsReconciled =&gt; …;</code> | [src/Meridian.Ledger/LedgerCashFlowStatement.cs:47](../../../../src/Meridian.Ledger/LedgerCashFlowStatement.cs#L47) | True when the statement ties beginning cash plus net flow to ending cash. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)] public decimal ExchangeRateEffects { get; init; }</code> | [src/Meridian.Ledger/LedgerCashFlowStatement.cs:45](../../../../src/Meridian.Ledger/LedgerCashFlowStatement.cs#L45) | Functional cash carrying-value changes with no transaction-currency cash flow. |
+| <code>public decimal ReconciliationVariance =&gt; …;</code> | [src/Meridian.Ledger/LedgerCashFlowStatement.cs:48](../../../../src/Meridian.Ledger/LedgerCashFlowStatement.cs#L48) | Difference between the roll-forward and the observed ending cash. Zero when reconciled. |
+| <code>public bool IsReconciled =&gt; …;</code> | [src/Meridian.Ledger/LedgerCashFlowStatement.cs:51](../../../../src/Meridian.Ledger/LedgerCashFlowStatement.cs#L51) | True when the statement ties beginning cash plus net flow to ending cash. |
 
 ## LedgerChartBalance
 
@@ -427,6 +442,36 @@ Direct and rolled-up balances for a chart-of-accounts node.
 
 ```csharp
 public sealed record LedgerChartBalance(LedgerAccount Account, string Path, string? ParentPath, decimal DirectBalance, decimal AggregateBalance);
+```
+
+## LedgerChartCodeAssignments
+
+Qualified name: <code>Meridian.Ledger.LedgerChartCodeAssignments</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/LedgerChartCodeAssignments.cs:6](../../../../src/Meridian.Ledger/LedgerChartCodeAssignments.cs#L6).
+
+Protects retained account codes when replacing a scoped chart.
+
+```csharp
+public static class LedgerChartCodeAssignments
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void RequireUnchanged(IReadOnlyList&lt;ChartOfAccountsNodeDto&gt; retained, IReadOnlyList&lt;ChartOfAccountsNodeDto&gt; proposed);</code> | [src/Meridian.Ledger/LedgerChartCodeAssignments.cs:9](../../../../src/Meridian.Ledger/LedgerChartCodeAssignments.cs#L9) | Requires an already assigned code to remain on the same node. |
+
+## LedgerChartCodeConflictException
+
+Qualified name: <code>Meridian.Ledger.LedgerChartCodeConflictException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/LedgerChartCodeAssignments.cs:30](../../../../src/Meridian.Ledger/LedgerChartCodeAssignments.cs#L30).
+
+Reports that a chart replacement would lose a retained code assignment.
+
+```csharp
+public sealed class LedgerChartCodeConflictException(string message) : InvalidOperationException(message);
 ```
 
 ## LedgerCurrencyExposure
@@ -466,6 +511,25 @@ Declared public members:
 | <code>public IReadOnlyDictionary&lt;LedgerAccount, decimal&gt; TranslatedTrialBalance =&gt; …;</code> | [src/Meridian.Ledger/LedgerCurrencyTranslation.cs:11](../../../../src/Meridian.Ledger/LedgerCurrencyTranslation.cs#L11) | Translated trial balance keyed by original ledger account. |
 | <code>public decimal Total(LedgerAccountType accountType) =&gt; …;</code> | [src/Meridian.Ledger/LedgerCurrencyTranslation.cs:15](../../../../src/Meridian.Ledger/LedgerCurrencyTranslation.cs#L15) | Total translated balance for the supplied account type. |
 
+## LedgerDimensionMapper
+
+Qualified name: <code>Meridian.Ledger.LedgerDimensionMapper</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/LedgerDimensionMapper.cs:11](../../../../src/Meridian.Ledger/LedgerDimensionMapper.cs#L11).
+
+Field-for-field conversion between the core LedgerLineDimensionSet and the contract LedgerDimensionSetDto. The two records are structurally identical; this keeps the mapping in one place so automated journal drafts can carry per-line dimensional scope across the core/contract boundary without drift.
+
+```csharp
+public static class LedgerDimensionMapper
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static LedgerDimensionSetDto? ToDto(LedgerLineDimensionSet? dimensions);</code> | [src/Meridian.Ledger/LedgerDimensionMapper.cs:13](../../../../src/Meridian.Ledger/LedgerDimensionMapper.cs#L13) |  |
+| <code>public static LedgerLineDimensionSet? ToDomain(LedgerDimensionSetDto? dimensions);</code> | [src/Meridian.Ledger/LedgerDimensionMapper.cs:49](../../../../src/Meridian.Ledger/LedgerDimensionMapper.cs#L49) |  |
+
 ## LedgerDimensionScope
 
 Qualified name: <code>Meridian.Ledger.LedgerDimensionScope</code>. Kind: `class`.
@@ -488,7 +552,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ledger.LedgerEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Ledger/LedgerEntry.cs:7](../../../../src/Meridian.Ledger/LedgerEntry.cs#L7).
+Source: [src/Meridian.Ledger/LedgerEntry.cs:9](../../../../src/Meridian.Ledger/LedgerEntry.cs#L9).
 
 One line in a JournalEntry representing a debit or credit to a specific account. Exactly one of Debit or Credit must be non-zero; neither may be negative.
 
@@ -500,16 +564,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Guid EntryId { get; private init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:10](../../../../src/Meridian.Ledger/LedgerEntry.cs#L10) | Unique identifier for this ledger line. |
-| <code>public Guid JournalEntryId { get; private init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:13](../../../../src/Meridian.Ledger/LedgerEntry.cs#L13) | The journal entry this line belongs to. |
-| <code>public DateTimeOffset Timestamp { get; private init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:16](../../../../src/Meridian.Ledger/LedgerEntry.cs#L16) | When the underlying economic event occurred (replay / simulated time). |
-| <code>public LedgerAccount Account { get; private init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:19](../../../../src/Meridian.Ledger/LedgerEntry.cs#L19) | Account being debited or credited. |
-| <code>public decimal Debit { get; private init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:22](../../../../src/Meridian.Ledger/LedgerEntry.cs#L22) | Non-negative debit amount; must be zero when Credit is non-zero. |
-| <code>public decimal Credit { get; private init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:25](../../../../src/Meridian.Ledger/LedgerEntry.cs#L25) | Non-negative credit amount; must be zero when Debit is non-zero. |
-| <code>public string Description { get; private init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:28](../../../../src/Meridian.Ledger/LedgerEntry.cs#L28) | Human-readable description of the economic event. |
-| <code>public LedgerLineDimensionSet? Dimensions { get; private init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:31](../../../../src/Meridian.Ledger/LedgerEntry.cs#L31) | Optional dimensional accounting scope for this specific ledger line. |
-| <code>public LedgerEntryCurrency? Currency { get; private init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:38](../../../../src/Meridian.Ledger/LedgerEntry.cs#L38) | Optional transaction-currency detail. When present, Debit / Credit remain the functional (base) amounts and this carries the original currency, transaction amounts, and FX rate. When null the leg is currency-blind (legacy behavior). |
-| <code>public LedgerEntry(Guid entryId, Guid journalEntryId, DateTimeOffset timestamp, LedgerAccount account, decimal debit, decimal credit, string description, LedgerLineDimensionSet? dimensions = null, LedgerEntryCurrency? currency = null);</code> | [src/Meridian.Ledger/LedgerEntry.cs:48](../../../../src/Meridian.Ledger/LedgerEntry.cs#L48) | Initializes a new LedgerEntry with validation. |
+| <code>public Guid EntryId { get; private init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:12](../../../../src/Meridian.Ledger/LedgerEntry.cs#L12) | Unique identifier for this ledger line. |
+| <code>public Guid JournalEntryId { get; private init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:15](../../../../src/Meridian.Ledger/LedgerEntry.cs#L15) | The journal entry this line belongs to. |
+| <code>public DateTimeOffset Timestamp { get; private init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:18](../../../../src/Meridian.Ledger/LedgerEntry.cs#L18) | When the underlying economic event occurred (replay / simulated time). |
+| <code>public LedgerAccount Account { get; private init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:21](../../../../src/Meridian.Ledger/LedgerEntry.cs#L21) | Account being debited or credited. |
+| <code>public decimal Debit { get; private init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:24](../../../../src/Meridian.Ledger/LedgerEntry.cs#L24) | Non-negative debit amount; must be zero when Credit is non-zero. |
+| <code>public decimal Credit { get; private init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:27](../../../../src/Meridian.Ledger/LedgerEntry.cs#L27) | Non-negative credit amount; must be zero when Debit is non-zero. |
+| <code>public string Description { get; private init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:30](../../../../src/Meridian.Ledger/LedgerEntry.cs#L30) | Human-readable description of the economic event. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? Memo { get; init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:34](../../../../src/Meridian.Ledger/LedgerEntry.cs#L34) | Optional source or preparer description specific to this line. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public LedgerAccountChartReference? ChartAccount { get; init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:38](../../../../src/Meridian.Ledger/LedgerEntry.cs#L38) | The chart node and revision used to resolve this posting&#x27;s account. |
+| <code>public LedgerLineDimensionSet? Dimensions { get; private init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:41](../../../../src/Meridian.Ledger/LedgerEntry.cs#L41) | Optional dimensional accounting scope for this specific ledger line. |
+| <code>public LedgerEntryCurrency? Currency { get; private init; }</code> | [src/Meridian.Ledger/LedgerEntry.cs:48](../../../../src/Meridian.Ledger/LedgerEntry.cs#L48) | Optional transaction-currency detail. When present, Debit / Credit remain the functional (base) amounts and this carries the original currency, transaction amounts, and FX rate. When null the leg is currency-blind (legacy behavior). |
+| <code>public LedgerEntry(Guid entryId, Guid journalEntryId, DateTimeOffset timestamp, LedgerAccount account, decimal debit, decimal credit, string description, LedgerLineDimensionSet? dimensions = null, LedgerEntryCurrency? currency = null);</code> | [src/Meridian.Ledger/LedgerEntry.cs:58](../../../../src/Meridian.Ledger/LedgerEntry.cs#L58) | Initializes a new LedgerEntry with validation. |
 
 ## LedgerEntryCurrency
 
@@ -556,13 +622,14 @@ Declared public members:
 | <code>public LedgerReportPackLifecycleStatus Status { get; init; } = LedgerReportPackLifecycleStatus.Draft;</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:14](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L14) |  |
 | <code>public IReadOnlyList&lt;LedgerReportPackLifecycleEvent&gt; LifecycleEvents { get; init; } = [];</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:16](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L16) |  |
 | <code>public IReadOnlyList&lt;LedgerReportLineProvenance&gt; LineProvenance { get; init; } = [];</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:18](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L18) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;LedgerReportPreparerAttestation&gt;? PreparerAttestations { get; init; }</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:21](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L21) |  |
-| <code>public IReadOnlyList&lt;LedgerReportPackRestatement&gt; Restatements { get; init; } = [];</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:23](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L23) |  |
-| <code>public LedgerFinancialReportPack Validate(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:25](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L25) |  |
-| <code>public LedgerFinancialReportPack Approve(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:28](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L28) |  |
-| <code>public LedgerFinancialReportPack Publish(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:31](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L31) |  |
-| <code>public LedgerFinancialReportPack Archive(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:34](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L34) |  |
-| <code>public LedgerFinancialReportPack Restate(string restatementId, string reason, string approvedBy, DateTimeOffset approvedAtUtc, IReadOnlyList&lt;string&gt; changedLineKeys, IReadOnlyList&lt;string&gt; evidenceLinks);</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:37](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L37) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public LedgerStatementControlPack? StatementControl { get; init; }</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:21](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L21) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;LedgerReportPreparerAttestation&gt;? PreparerAttestations { get; init; }</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:24](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L24) |  |
+| <code>public IReadOnlyList&lt;LedgerReportPackRestatement&gt; Restatements { get; init; } = [];</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:26](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L26) |  |
+| <code>public LedgerFinancialReportPack Validate(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:28](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L28) |  |
+| <code>public LedgerFinancialReportPack Approve(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:31](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L31) |  |
+| <code>public LedgerFinancialReportPack Publish(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:34](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L34) |  |
+| <code>public LedgerFinancialReportPack Archive(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:37](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L37) |  |
+| <code>public LedgerFinancialReportPack Restate(string restatementId, string reason, string approvedBy, DateTimeOffset approvedAtUtc, IReadOnlyList&lt;string&gt; changedLineKeys, IReadOnlyList&lt;string&gt; evidenceLinks);</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:40](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L40) |  |
 
 ## LedgerFinancialStatementBuilder
 
@@ -582,7 +649,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static LedgerFinancialStatements Build(IReadOnlyLedger ledger, ChartOfAccounts? chart = null, string? financialAccountId = null, LedgerLineDimensionSet? lineDimensions = null);</code> | [src/Meridian.Ledger/LedgerFinancialStatementBuilder.cs:13](../../../../src/Meridian.Ledger/LedgerFinancialStatementBuilder.cs#L13) | Builds trial-balance, income-statement, and balance-sheet rows from the current ledger state. |
 | <code>public static LedgerFinancialStatements BuildAsOf(IReadOnlyLedger ledger, DateTimeOffset asOf, ChartOfAccounts? chart = null, string? financialAccountId = null, LedgerLineDimensionSet? lineDimensions = null);</code> | [src/Meridian.Ledger/LedgerFinancialStatementBuilder.cs:31](../../../../src/Meridian.Ledger/LedgerFinancialStatementBuilder.cs#L31) | Builds trial-balance, income-statement, and balance-sheet rows as of a point in time. |
-| <code>public static LedgerFinancialStatements BuildForPeriod(IReadOnlyLedger ledger, DateTimeOffset periodStart, DateTimeOffset asOf, ChartOfAccounts? chart = null, string? financialAccountId = null, LedgerLineDimensionSet? lineDimensions = null);</code> | [src/Meridian.Ledger/LedgerFinancialStatementBuilder.cs:52](../../../../src/Meridian.Ledger/LedgerFinancialStatementBuilder.cs#L52) | Builds the point-in-time statements as of asOf and augments them with a statement of cash flows and a statement of changes in partners&#x27; capital derived from the journal activity over (periodStart, asOf&#93;. |
+| <code>public static LedgerFinancialStatements BuildForPeriod(IReadOnlyLedger ledger, DateTimeOffset periodStart, DateTimeOffset asOf, ChartOfAccounts? chart = null, string? financialAccountId = null, LedgerLineDimensionSet? lineDimensions = null) =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialStatementBuilder.cs:52](../../../../src/Meridian.Ledger/LedgerFinancialStatementBuilder.cs#L52) | Builds the point-in-time statements as of asOf and augments them with a statement of cash flows and a statement of changes in partners&#x27; capital derived from the journal activity over (periodStart, asOf&#93;. |
 
 Source: [src/Meridian.Ledger/LedgerFinancialStatementBuilder.IncomeStatement.cs:3](../../../../src/Meridian.Ledger/LedgerFinancialStatementBuilder.IncomeStatement.cs#L3).
 
@@ -612,8 +679,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal EndingEquity =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialStatements.cs:21](../../../../src/Meridian.Ledger/LedgerFinancialStatements.cs#L21) | Equity after closing current-period net income to retained earnings. |
-| <code>public decimal AccountingEquationVariance =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialStatements.cs:27](../../../../src/Meridian.Ledger/LedgerFinancialStatements.cs#L27) | Difference between assets and liabilities plus ending equity. A balanced statement has a zero variance. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public LedgerIncomeStatement? PeriodIncome { get; init; }</code> | [src/Meridian.Ledger/LedgerFinancialStatements.cs:21](../../../../src/Meridian.Ledger/LedgerFinancialStatements.cs#L21) |  |
+| <code>public decimal EndingEquity =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialStatements.cs:24](../../../../src/Meridian.Ledger/LedgerFinancialStatements.cs#L24) | Equity after closing current-period net income to retained earnings. |
+| <code>public decimal AccountingEquationVariance =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialStatements.cs:30](../../../../src/Meridian.Ledger/LedgerFinancialStatements.cs#L30) | Difference between assets and liabilities plus ending equity. A balanced statement has a zero variance. |
 
 ## LedgerIncomeStatement
 
@@ -626,6 +694,43 @@ Income earned and expenses incurred over (PeriodStart, AsOf&#93;, excluding tran
 ```csharp
 public sealed record LedgerIncomeStatement(DateTimeOffset PeriodStart, DateTimeOffset AsOf, IReadOnlyList<LedgerChartBalance> Rows, decimal TotalRevenue, decimal TotalExpenses, decimal NetIncome);
 ```
+
+## LedgerInventoryAccountRole
+
+Qualified name: <code>Meridian.Ledger.LedgerInventoryAccountRole</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs:7](../../../../src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs#L7).
+
+```csharp
+public enum LedgerInventoryAccountRole
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>NotInventory</code> | [src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs:9](../../../../src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs#L9) |  |
+| <code>LotCarrying</code> | [src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs:10](../../../../src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs#L10) |  |
+| <code>KnownNonLotAsset</code> | [src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs:11](../../../../src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs#L11) |  |
+| <code>UnknownInstrumentAsset</code> | [src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs:12](../../../../src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs#L12) |  |
+
+## LedgerInventoryAccountRoleClassifier
+
+Qualified name: <code>Meridian.Ledger.LedgerInventoryAccountRoleClassifier</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs:19](../../../../src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs#L19).
+
+Separates share inventory from source-proven receivables and loan subledgers. Unknown instrument assets remain unresolved; changing an account caption never authorizes missing-lot coverage.
+
+```csharp
+public static class LedgerInventoryAccountRoleClassifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static LedgerInventoryAccountRole Classify(LedgerEntry line, JournalEntryMetadata metadata, IReadOnlySet&lt;LedgerAccount&gt; historicalLotAccounts);</code> | [src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs:21](../../../../src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs#L21) |  |
 
 ## LedgerJournalReversal
 
@@ -714,17 +819,45 @@ Declared public members:
 | <code>public decimal AllocationComponentsVariance =&gt; …;</code> | [src/Meridian.Ledger/LedgerPartnersCapitalStatement.cs:74](../../../../src/Meridian.Ledger/LedgerPartnersCapitalStatement.cs#L74) | Difference between the aggregate AllocatedResult and its income/expense/fee decomposition. Zero when the breakout ties to the net allocated result. |
 | <code>public bool IsReconciled =&gt; …;</code> | [src/Meridian.Ledger/LedgerPartnersCapitalStatement.cs:78](../../../../src/Meridian.Ledger/LedgerPartnersCapitalStatement.cs#L78) | True when the aggregate roll-forward ties to ending capital. |
 
+## LedgerPolicy
+
+Qualified name: <code>Meridian.Ledger.LedgerPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/LedgerPolicy.cs:9](../../../../src/Meridian.Ledger/LedgerPolicy.cs#L9).
+
+Posting rules bound to a Ledger at construction. A bound ledger accepts only accounts registered in Chart and only lines that carry explicit currency detail in FunctionalCurrency. Unknown accounts and missing or mismatched currencies are hard errors; nothing is inferred from an account name, number or symbol.
+
+```csharp
+public sealed record LedgerPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerPolicy(IChartOfAccounts chart, string functionalCurrency);</code> | [src/Meridian.Ledger/LedgerPolicy.cs:11](../../../../src/Meridian.Ledger/LedgerPolicy.cs#L11) |  |
+| <code>public IChartOfAccounts Chart { get; }</code> | [src/Meridian.Ledger/LedgerPolicy.cs:26](../../../../src/Meridian.Ledger/LedgerPolicy.cs#L26) | The only registry of accounts this ledger may post to. |
+| <code>public string FunctionalCurrency { get; }</code> | [src/Meridian.Ledger/LedgerPolicy.cs:29](../../../../src/Meridian.Ledger/LedgerPolicy.cs#L29) | The ISO 4217 currency every line&#x27;s functional amounts are stated in. |
+| <code>public static LedgerPolicy Trading(string functionalCurrency = &quot;USD&quot;, IChartOfAccounts? chart = null) =&gt; …;</code> | [src/Meridian.Ledger/LedgerPolicy.cs:35](../../../../src/Meridian.Ledger/LedgerPolicy.cs#L35) | The policy used by the trading paths (backtest, paper, execution posting): the standard posting chart in the given functional currency. |
+| <code>public LedgerEntryCurrency FunctionalAmount(decimal debit, decimal credit) =&gt; …;</code> | [src/Meridian.Ledger/LedgerPolicy.cs:39](../../../../src/Meridian.Ledger/LedgerPolicy.cs#L39) | Currency detail for an amount already stated in the functional currency. |
+
 ## LedgerQuery
 
 Qualified name: <code>Meridian.Ledger.LedgerQuery</code>. Kind: `record`.
 
-Source: [src/Meridian.Ledger/LedgerQuery.cs:6](../../../../src/Meridian.Ledger/LedgerQuery.cs#L6).
+Source: [src/Meridian.Ledger/LedgerQuery.cs:7](../../../../src/Meridian.Ledger/LedgerQuery.cs#L7).
 
-Structured ledger query for filtering journal entries by time range and audit metadata.
+Structured ledger query for filtering journal entries by time range and audit metadata. RunId matches entries tagged with StrategyRunIdTag (exact, case-sensitive).
 
 ```csharp
-public sealed record LedgerQuery(DateTimeOffset? From = null, DateTimeOffset? To = null, string? DescriptionContains = null, string? ActivityType = null, string? Symbol = null, Guid? SecurityId = null, Guid? OrderId = null, Guid? FillId = null, string? ProjectId = null, string? LedgerBook = null, LedgerViewKind? LedgerView = null, string? ScenarioId = null, string? StrategyId = null, string? FinancialAccountId = null, string? CounterpartyAccountId = null, string? Institution = null, LedgerAccountType? AccountType = null, DateOnly? EffectiveDate = null, string? IdempotencyKey = null, string? FundEventId = null, string? FundEventType = null, string? CapitalAccountId = null, string? InvestorId = null, string? PaymentIntentId = null, string? SettlementReference = null, LedgerLineDimensionSet? LineDimensions = null);
+public sealed record LedgerQuery(DateTimeOffset? From = null, DateTimeOffset? To = null, string? DescriptionContains = null, string? ActivityType = null, string? Symbol = null, Guid? SecurityId = null, Guid? OrderId = null, Guid? FillId = null, string? ProjectId = null, string? LedgerBook = null, LedgerViewKind? LedgerView = null, string? ScenarioId = null, string? StrategyId = null, string? FinancialAccountId = null, string? CounterpartyAccountId = null, string? Institution = null, LedgerAccountType? AccountType = null, DateOnly? EffectiveDate = null, string? IdempotencyKey = null, string? FundEventId = null, string? FundEventType = null, string? CapitalAccountId = null, string? InvestorId = null, string? PaymentIntentId = null, string? SettlementReference = null, LedgerLineDimensionSet? LineDimensions = null, string? RunId = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string StrategyRunIdTag = &quot;strategy.runId&quot;;</code> | [src/Meridian.Ledger/LedgerQuery.cs:41](../../../../src/Meridian.Ledger/LedgerQuery.cs#L41) | Journal tag carrying the strategy run that produced an entry. Trade-fill posting stamps it on attributed fills; RunId filters on it. The run stays a tag rather than a metadata field so retained journals keep comparing equal on replay. |
 
 ## LedgerReportExportFormat
 
@@ -795,7 +928,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static LedgerFinancialReportPack Build(IReadOnlyLedger ledger, LedgerReportPackRequest request, ChartOfAccounts? chart = null, string? financialAccountId = null, IReadOnlyList&lt;LedgerTaxLotReliefProjection&gt;? taxLotReliefProjections = null, IReadOnlyList&lt;CanonicalCorporateActionLotReport&gt;? corporateActionLotReports = null);</code> | [src/Meridian.Ledger/LedgerReportPackBuilder.cs:16](../../../../src/Meridian.Ledger/LedgerReportPackBuilder.cs#L16) |  |
+| <code>public static LedgerFinancialReportPack Build(IReadOnlyLedger ledger, LedgerReportPackRequest request, ChartOfAccounts? chart = null, string? financialAccountId = null, IReadOnlyList&lt;LedgerTaxLotReliefProjection&gt;? taxLotReliefProjections = null, IReadOnlyList&lt;CanonicalCorporateActionLotReport&gt;? corporateActionLotReports = null, LedgerStatementControlPack? priorStatementControl = null);</code> | [src/Meridian.Ledger/LedgerReportPackBuilder.cs:16](../../../../src/Meridian.Ledger/LedgerReportPackBuilder.cs#L16) |  |
 
 ## LedgerReportPackLifecycleEvent
 
@@ -864,6 +997,7 @@ Declared public members:
 | <code>public IReadOnlyList&lt;string&gt; ReconciliationEvidenceLinks { get; }</code> | [src/Meridian.Ledger/LedgerReportPackRequest.cs:89](../../../../src/Meridian.Ledger/LedgerReportPackRequest.cs#L89) |  |
 | <code>public IReadOnlyList&lt;string&gt; ApprovalEvidenceLinks { get; }</code> | [src/Meridian.Ledger/LedgerReportPackRequest.cs:91](../../../../src/Meridian.Ledger/LedgerReportPackRequest.cs#L91) |  |
 | <code>public LedgerLineDimensionSet? LineDimensions { get; }</code> | [src/Meridian.Ledger/LedgerReportPackRequest.cs:93](../../../../src/Meridian.Ledger/LedgerReportPackRequest.cs#L93) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public LedgerStatementControlDefinition? StatementControl { get; init; }</code> | [src/Meridian.Ledger/LedgerReportPackRequest.cs:96](../../../../src/Meridian.Ledger/LedgerReportPackRequest.cs#L96) |  |
 
 ## LedgerReportPackRestatement
 
@@ -968,130 +1102,3 @@ Declared public members:
 | <code>public DateTimeOffset CreatedAtUtc { get; }</code> | [src/Meridian.Ledger/LedgerReportSchedule.cs:86](../../../../src/Meridian.Ledger/LedgerReportSchedule.cs#L86) |  |
 | <code>public DateOnly? EndsOn { get; }</code> | [src/Meridian.Ledger/LedgerReportSchedule.cs:88](../../../../src/Meridian.Ledger/LedgerReportSchedule.cs#L88) |  |
 | <code>public LedgerLineDimensionSet? LineDimensions { get; }</code> | [src/Meridian.Ledger/LedgerReportSchedule.cs:90](../../../../src/Meridian.Ledger/LedgerReportSchedule.cs#L90) |  |
-
-## LedgerReportScheduledExport
-
-Qualified name: <code>Meridian.Ledger.LedgerReportScheduledExport</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/LedgerReportScheduledExport.cs:6](../../../../src/Meridian.Ledger/LedgerReportScheduledExport.cs#L6).
-
-One scheduled export occurrence for a period-bounded ledger report.
-
-```csharp
-public sealed record LedgerReportScheduledExport(LedgerReportSchedule Schedule, string ReportId, string PeriodId, DateOnly PeriodStart, DateOnly PeriodEnd, DateTimeOffset AsOf, DateTimeOffset DueAtUtc, IReadOnlyList<LedgerReportExportFormat> Formats, IReadOnlyList<string> Recipients)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerReportPackRequest ToReportPackRequest(string generatedBy, DateTimeOffset generatedAtUtc, LockedAccountingPeriod? lockedPeriod = null);</code> | [src/Meridian.Ledger/LedgerReportScheduledExport.cs:17](../../../../src/Meridian.Ledger/LedgerReportScheduledExport.cs#L17) |  |
-
-## LedgerReportScheduleFrequency
-
-Qualified name: <code>Meridian.Ledger.LedgerReportScheduleFrequency</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ledger/LedgerReportScheduleFrequency.cs:6](../../../../src/Meridian.Ledger/LedgerReportScheduleFrequency.cs#L6).
-
-Calendar cadence for scheduled ledger report exports.
-
-```csharp
-public enum LedgerReportScheduleFrequency
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Monthly</code> | [src/Meridian.Ledger/LedgerReportScheduleFrequency.cs:8](../../../../src/Meridian.Ledger/LedgerReportScheduleFrequency.cs#L8) |  |
-| <code>Quarterly</code> | [src/Meridian.Ledger/LedgerReportScheduleFrequency.cs:9](../../../../src/Meridian.Ledger/LedgerReportScheduleFrequency.cs#L9) |  |
-| <code>Annually</code> | [src/Meridian.Ledger/LedgerReportScheduleFrequency.cs:10](../../../../src/Meridian.Ledger/LedgerReportScheduleFrequency.cs#L10) |  |
-
-## LedgerReportSchedulePlanner
-
-Qualified name: <code>Meridian.Ledger.LedgerReportSchedulePlanner</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/LedgerReportSchedulePlanner.cs:6](../../../../src/Meridian.Ledger/LedgerReportSchedulePlanner.cs#L6).
-
-Projects recurring ledger report schedules into concrete export occurrences.
-
-```csharp
-public static class LedgerReportSchedulePlanner
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;LedgerReportScheduledExport&gt; Project(LedgerReportSchedule schedule, int occurrenceCount);</code> | [src/Meridian.Ledger/LedgerReportSchedulePlanner.cs:8](../../../../src/Meridian.Ledger/LedgerReportSchedulePlanner.cs#L8) |  |
-| <code>public static LedgerReportPeriod PeriodStartingOn(LedgerReportScheduleFrequency frequency, DateOnly periodStart);</code> | [src/Meridian.Ledger/LedgerReportSchedulePlanner.cs:40](../../../../src/Meridian.Ledger/LedgerReportSchedulePlanner.cs#L40) | Returns the reporting period of the given cadence that starts on periodStart. This is the single definition of period boundaries and period identifiers; both Project and the governed reporting scheduler advance through it. |
-
-## LedgerReportTable
-
-Qualified name: <code>Meridian.Ledger.LedgerReportTable</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/LedgerReportPresentation.cs:6](../../../../src/Meridian.Ledger/LedgerReportPresentation.cs#L6).
-
-A titled, tabular section of a financial report, shared by every renderer.
-
-```csharp
-public sealed record LedgerReportTable(string Title, IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyList<string>> Rows);
-```
-
-## LedgerScheduledReportExportPackageBuilder
-
-Qualified name: <code>Meridian.Ledger.LedgerScheduledReportExportPackageBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/LedgerScheduledReportExportPackageBuilder.cs:12](../../../../src/Meridian.Ledger/LedgerScheduledReportExportPackageBuilder.cs#L12).
-
-Builds export-delivery artifacts for a scheduled ledger report occurrence.
-
-```csharp
-public static class LedgerScheduledReportExportPackageBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;LedgerReportPackArtifact&gt; Build(LedgerFinancialReportPack reportPack, LedgerReportScheduledExport scheduledExport, ILedgerReportBinaryRenderer? binaryRenderer = null);</code> | [src/Meridian.Ledger/LedgerScheduledReportExportPackageBuilder.cs:14](../../../../src/Meridian.Ledger/LedgerScheduledReportExportPackageBuilder.cs#L14) |  |
-
-## LedgerSnapshot
-
-Qualified name: <code>Meridian.Ledger.LedgerSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/LedgerSnapshot.cs:6](../../../../src/Meridian.Ledger/LedgerSnapshot.cs#L6).
-
-Point-in-time view of ledger balances and posting counts.
-
-```csharp
-public sealed record LedgerSnapshot(DateTimeOffset Timestamp, IReadOnlyDictionary<LedgerAccount, decimal> Balances, int JournalEntryCount, int LedgerEntryCount);
-```
-
-## LedgerTaxLot
-
-Qualified name: <code>Meridian.Ledger.LedgerTaxLot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/LedgerTaxLot.cs:8](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L8).
-
-Open ledger tax lot available for realized-gain relief.
-
-```csharp
-public sealed record LedgerTaxLot : IUnitizedLot
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerTaxLot(string lotId, DateOnly acquiredDate, decimal quantity, decimal unitCost, Guid? securityId = null, DateOnly? holdingPeriodStartDate = null, decimal? costBasis = null);</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:13](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L13) |  |
-| <code>public string LotId { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:47](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L47) |  |
-| <code>public DateOnly AcquiredDate { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:49](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L49) |  |
-| <code>public decimal Quantity { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:51](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L51) |  |
-| <code>public decimal UnitCost { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:59](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L59) | Monetary cost per recorded quantity unit for realized-gain relief: quantity times unit cost is the implied whole-lot basis. For face-value lots this is cost per dollar of face when Multiplier is one, or cost per hundred of face when the multiplier is 100. A market quote must be converted to this monetary convention before relief. |
-| <code>public required SecurityLotUnitKind UnitKind { get; init; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:66](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L66) | What one unit of Quantity measures. Must be supplied explicitly; face-denominated debt lots (bonds, CDs, bills, loans, structured credit) carry SecurityLotUnitKind.FaceValue. Their Multiplier states the face carried by one recorded quantity unit. |
-| <code>public required decimal Multiplier { get; init; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:75](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L75) | Positive contract multiplier scaling one unit to economic exposure. Supply 1 for unscaled units. |
-| <code>public decimal? CostBasis { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:89](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L89) | Exact current basis of the whole lot, when it is known rather than implied by Quantity times UnitCost. Lot-discrete relief that consumes the entire lot relieves this amount exactly, so a governed current basis carrying fractional cents is not re-derived through a rounded unit cost. |
-| <code>public Guid? SecurityId { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:97](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L97) | Optional Security Master identity for this lot. When present, the relief engine can be fed day-count, factor, and corporate-action basis adjustments sourced from the master (see LedgerTaxLotBasisAdjustment), linking cost-basis accounting to authoritative reference data instead of relying on quantity/unit-cost alone. |
-| <code>public DateOnly? HoldingPeriodStartDate { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:105](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L105) | Holding-period start carried onto this lot by a prior wash sale, when one applied. Under IRC §1223(3) a replacement lot inherits the disallowed sale&#x27;s holding period, so a lot that absorbed a wash sale starts its clock before it was actually acquired. Null for a lot whose holding period simply starts at AcquiredDate. |
-| <code>public DateOnly HoldingPeriodStart =&gt; …;</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:111](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L111) | The date the lot&#x27;s holding period actually starts: HoldingPeriodStartDate when a wash sale extended it, otherwise AcquiredDate. |

@@ -20,7 +20,7 @@ export const DESIGN_SYSTEM_VIEWPORTS = [
 ];
 export const DESIGN_SYSTEM_ROUTES = [
   { path: "accounting/reconciliation", label: "Reconciliation", ready: "Reconciliation break queue" },
-  { path: "portfolio", label: "Portfolio", ready: "Execution-linked holdings" },
+  { path: "portfolio", label: "Portfolio", ready: "Holdings" },
   { path: "trading", label: "Trading", ready: "Trading" }
 ];
 

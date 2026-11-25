@@ -7,15 +7,15 @@ const settingsTasks = [
   {
     id: "preferences",
     title: "Personalize my workstation",
-    description: "Choose theme and information density for this browser.",
+    description: "Choose theme and information density; they follow you across browsers and the desktop app.",
     href: WORKSTATION_ROUTE_CATALOG.settingsPreferences,
     actionLabel: "Open Preferences",
-    status: "Browser preferences"
+    status: "Operator preferences"
   },
   {
     id: "access",
     title: "Review access and authority",
-    description: "Check authentication posture and manage scoped grants with audit evidence.",
+    description: "Check authentication status and manage scoped grants with audit evidence.",
     href: WORKSTATION_ROUTE_CATALOG.settingsAccess,
     actionLabel: "Open Access",
     status: "Scoped authority"
@@ -23,10 +23,10 @@ const settingsTasks = [
   {
     id: "accounting-systems",
     title: "Configure accounting systems",
-    description: "Manage external ledger connections and governed accounting configuration.",
+    description: "Manage external ledger connections and controlled accounting configuration.",
     href: WORKSTATION_ROUTE_CATALOG.settingsAccountingSystems,
     actionLabel: "Open Accounting Systems",
-    status: "Governed configuration"
+    status: "Controlled configuration"
   },
   {
     id: "providers",
@@ -56,13 +56,13 @@ export function SettingsTaskChooser({ viewModel }: { viewModel: SettingsScreenVi
     providers: {
       status: providerReady ? "ready" : "review", state: providerReady ? "Verified" : connections.length > 0 ? "Review connections" : "Setup needed",
       detail: connections.length > 0
-        ? `${connections.filter((row) => row.readinessLabel === "Ready").length} of ${connections.length} loaded connections ready. ${connections.find((row) => row.readinessLabel !== "Ready")?.recommendedAction ?? "Current verification evidence is available."}`
+        ? `${connections.filter((row) => row.readinessLabel === "Ready").length} of ${connections.length} provider connections pass setup checks. ${connections.find((row) => row.readinessLabel !== "Ready")?.recommendedAction ?? "Current verification evidence is available."}`
         : "No verified provider evidence is loaded. Open Provider Connections to configure or inspect a connection."
     },
     "accounting-systems": {
       status: accountingReady ? "ready" : "review", state: accountingReady ? "Verified" : "Review setup",
       detail: accounting.length > 0
-        ? `${accounting.filter((row) => row.readinessLabel === "Ready").length} of ${accounting.length} loaded accounting connections ready.`
+        ? `${accounting.filter((row) => row.readinessLabel === "Ready").length} of ${accounting.length} accounting connections pass setup checks.`
         : "Accounting connection evidence is not loaded here. Review systems and mappings if this workspace uses external accounting."
     },
     access: {
@@ -81,7 +81,7 @@ export function SettingsTaskChooser({ viewModel }: { viewModel: SettingsScreenVi
         <h2 className="text-sm font-semibold text-foreground">Setup checklist</h2>
         <Link className="text-xs text-foreground underline decoration-dotted underline-offset-4" to={WORKSTATION_ROUTE_CATALOG.settingsDiagnostics}>Review diagnostic exceptions</Link>
       </div>
-      <p className="text-xs text-muted-foreground">Completion reflects loaded evidence. A configured connection does not establish live readiness.</p>
+      <p className="text-xs text-muted-foreground">A step counts as done only once it has been verified; saving a connection does not verify it.</p>
       <ol className="divide-y divide-border border-y border-border">
         {settingsTasks.filter((item) => item.id !== "diagnostics").map((item) => {
           const check = checks[item.id as keyof typeof checks];

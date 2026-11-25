@@ -57,13 +57,13 @@ SURFACES = [
         "stripped before the line is ever persisted",
     ),
     (
-        Path("src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs"),
+        Path("src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.LedgerAndPortfolio.cs"),
         "AddDimensionFilters",
         "properties",
         "the explorer's report filters -- a dimension missing here cannot be filtered on",
     ),
     (
-        Path("src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs"),
+        Path("src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.LedgerAndPortfolio.cs"),
         "BuildDimensionFields",
         "properties",
         "the explorer's record detail -- a dimension missing here is invisible to operators",

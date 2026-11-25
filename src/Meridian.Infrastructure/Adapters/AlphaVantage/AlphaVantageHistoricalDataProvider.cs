@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AlphaVantageQuotaConfig = Meridian.Core.Config.AlphaVantageQuotaConfig;
 using Meridian.Core.Exceptions;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
@@ -20,8 +21,8 @@ namespace Meridian.Infrastructure.Adapters.AlphaVantage;
 /// Free tier: 25 requests/day (severely limited), 5 calls/minute.
 /// Extends BaseHistoricalDataProvider for common functionality.
 /// </summary>
-[DataSource("alphavantage", "Alpha Vantage (free tier)", DataSourceType.Historical, DataSourceCategory.Free,
-    Priority = 25, Description = "Free tier historical OHLCV data via Alpha Vantage API")]
+[DataSource("alphavantage", "Alpha Vantage", DataSourceType.Historical, DataSourceCategory.Free,
+    Priority = 25, Description = "Historical OHLCV data via Alpha Vantage API")]
 [ImplementsAdr("ADR-001", "Alpha Vantage historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
@@ -34,18 +35,22 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
     private const string ApiBaseUrl = "https://www.alphavantage.co/query";
 
     private readonly string? _apiKey;
+    private readonly RateLimiterRegistry _rateLimiterRegistry;
+    private readonly RequestBudgetConfiguration? _quotaBudget;
+
+    protected override RateLimiter RequestRateLimiter => string.IsNullOrWhiteSpace(_apiKey)
+        ? RateLimiter
+        : _rateLimiterRegistry.GetOrCreate(Name, _apiKey, "api-requests", _quotaBudget!);
 
     public override string Name => "alphavantage";
-    public override string DisplayName => "Alpha Vantage (free tier)";
-    public override string Description => "US equities with unique intraday historical data support. Limited free tier (25 req/day).";
+    public override string DisplayName => "Alpha Vantage";
+    public override string Description => "US equities with unique intraday historical data support. Default free profile: 25 requests/day.";
     protected override string HttpClientName => HttpClientNames.AlphaVantageHistorical;
 
     public override int Priority => RuntimeOptions?.Priority ?? Meridian.Core.Config.BackfillProviderCatalog.AlphaVantagePriority; // Lower priority due to very limited free tier
-    public override TimeSpan RateLimitDelay => RuntimeOptions?.Requests is { } requests
-        ? TimeSpan.FromTicks((RuntimeOptions.Window ?? RateLimitWindow).Ticks / requests)
-        : TimeSpan.FromSeconds(12); // 5 requests/minute = 12 seconds between requests
-    public override int MaxRequestsPerWindow => RuntimeOptions?.Requests ?? Meridian.Core.Config.BackfillProviderCatalog.AlphaVantagePerMinute;
-    public override TimeSpan RateLimitWindow => RuntimeOptions?.Window ?? TimeSpan.FromMinutes(1);
+    public override TimeSpan RateLimitDelay => _quotaBudget?.MinimumDelay ?? TimeSpan.FromSeconds(12);
+    public override int MaxRequestsPerWindow => _quotaBudget?.Maximum ?? 5;
+    public override TimeSpan RateLimitWindow => TimeSpan.FromMinutes(1);
 
     /// <summary>
     /// Alpha Vantage supports adjusted bars with intraday historical data (key differentiator).
@@ -60,10 +65,14 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
     /// </summary>
     public static IReadOnlyList<string> SupportedIntervals => new[] { "1min", "5min", "15min", "30min", "60min" };
 
-    public AlphaVantageHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null)
-        : base(httpClient, log, runtimeOptions: runtimeOptions)
+    public AlphaVantageHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null,
+        RateLimiterRegistry? rateLimiterRegistry = null, AlphaVantageQuotaConfig? quotaConfig = null,
+        BackfillProviderRuntimeOptions? runtimeOptions = null)
+        : base(httpClient, log, timeProvider: rateLimiterRegistry?.TimeProvider, runtimeOptions: runtimeOptions)
     {
         _apiKey = apiKey ?? Environment.GetEnvironmentVariable("ALPHA_VANTAGE_API_KEY");
+        _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
+        _quotaBudget = ProviderQuotaBudgets.AlphaVantage(quotaConfig, runtimeOptions);
 
         // Add custom User-Agent
         if (!Http.DefaultRequestHeaders.Contains("User-Agent"))
@@ -137,10 +146,8 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
             if (IsRateLimitResponse(json))
             {
                 Log.Warning("Alpha Vantage rate limit hit for {Symbol}. Message in response.", symbol);
-                throw new RateLimitException(
-                    $"Alpha Vantage rate limit exceeded for {symbol}. Please wait before retrying.",
-                    provider: Name,
-                    symbol: symbol);
+                throw CreateRateLimitException(
+                    $"Alpha Vantage rate limit exceeded for {symbol}. Please wait before retrying.", symbol);
             }
 
             if (json.Contains("\"Error Message\""))
@@ -205,10 +212,7 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
             // Alpha Vantage returns 200 OK with error/rate limit messages in body
             if (IsRateLimitResponse(json))
             {
-                throw new RateLimitException(
-                    $"Alpha Vantage rate limit exceeded for {symbol}",
-                    provider: Name,
-                    symbol: symbol);
+                throw CreateRateLimitException($"Alpha Vantage rate limit exceeded for {symbol}", symbol);
             }
 
             if (json.Contains("\"Error Message\""))

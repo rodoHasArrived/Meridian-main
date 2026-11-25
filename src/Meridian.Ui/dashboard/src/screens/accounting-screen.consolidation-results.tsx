@@ -59,7 +59,7 @@ export function ConsolidationResults({ view }: { view: ConsolidationView }) {
         <span className="text-xs text-muted-foreground">Ownership effective {view.request.asOf} · {view.entityIds.length} entities</span>
       </div>
       <p className="text-sm text-muted-foreground">{view.scopeLimitation}</p>
-      {view.ruleVersion ? <p className="text-xs text-muted-foreground">v1 retains the two-entity, one-currency rule. v2 uses stable account roles across direct wholly owned entities; v3 adds governed trial-balance translation and reserve; v4 also eliminates matched revenue and expense. Investment/equity elimination is outside these treatment versions.</p> : null}
+      {view.ruleVersion ? <p className="text-xs text-muted-foreground">v1 retains the two-entity, one-currency rule. v2 uses stable account roles across direct wholly owned entities; v3 adds controlled trial-balance translation and reserve; v4 also eliminates matched revenue and expense. Investment/equity elimination is outside these treatment versions.</p> : null}
       {view.blockers.length > 0 ? (
         <div role="alert" className="rounded border border-warning/40 bg-warning/10 p-3 text-sm">
           <p className="font-semibold">Elimination drafts are blocked</p>

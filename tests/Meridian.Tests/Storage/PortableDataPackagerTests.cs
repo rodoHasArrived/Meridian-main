@@ -334,6 +334,46 @@ public class PortableDataPackagerTests : TempDirectoryTestBase
     }
 
     [Fact]
+    public async Task ImportPackageAsync_IntoDestinationWithDifferentFile_RefusesUnlessMergeAndNeverOverwrites()
+    {
+        await CreateTestJsonlFileAsync("AAPL/Trade/2026-01-03.jsonl", new[]
+        {
+            new { Timestamp = "2026-01-03T10:00:00Z", Symbol = "AAPL", Price = 185.50m, Size = 100 }
+        });
+        var createResult = await _packager.CreatePackageAsync(new PackageOptions
+        {
+            Name = "overwrite-test",
+            OutputDirectory = TestOutputDir,
+            VerifyChecksums = true
+        });
+        createResult.Success.Should().BeTrue();
+
+        var extractDir = Path.Combine(TestOutputDir, "live");
+        (await _packager.ImportPackageAsync(createResult.PackagePath!, extractDir)).Success.Should().BeTrue();
+
+        // Re-importing the same package is a no-op: identical files are already present.
+        var reimport = await _packager.ImportPackageAsync(createResult.PackagePath!, extractDir);
+        reimport.Success.Should().BeTrue();
+        reimport.FilesExtracted.Should().Be(0);
+
+        // Live data diverges from the package.
+        var liveFile = Directory.GetFiles(extractDir, "2026-01-03.jsonl", SearchOption.AllDirectories).Single();
+        const string liveContent = "{\"live\":true}\n";
+        await File.WriteAllTextAsync(liveFile, liveContent);
+
+        var refused = await _packager.ImportPackageAsync(createResult.PackagePath!, extractDir);
+        refused.Success.Should().BeFalse();
+        refused.Error.Should().Contain("overwrite");
+        (await File.ReadAllTextAsync(liveFile)).Should().Be(liveContent);
+
+        var merged = await _packager.ImportPackageAsync(
+            createResult.PackagePath!, extractDir, validateChecksums: true, mergeWithExisting: true);
+        merged.Success.Should().BeTrue();
+        (await File.ReadAllTextAsync(liveFile)).Should().Be(liveContent, "a merge keeps existing files");
+        Directory.GetDirectories(extractDir, ".meridian-import-*").Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task ImportPackageAsync_WithPathTraversalEntry_ShouldRejectPackage()
     {
         var packagePath = Path.Combine(TestOutputDir, "path-traversal.zip");

@@ -20,7 +20,7 @@ parts, each deployed to every node before the next one's gates are checked:
 Success means that every node, WPF desktops included, runs 5a before 5b-2's first declaring write,
 that every gate below returned its expected result in each environment, and that each result is in
 the deployment change record. The source design is the
-[extensibility review](../architecture/security-master-extensibility-review.md) (priority 5,
+[extensibility review](../../archive/docs/architecture/security-master-extensibility-review.md) (priority 5,
 increment 5), with [ADR-024](../adr/024-terms-payload-format-and-version-policy.md#applications)
 and [ADR-025](../adr/025-contractual-schedule-kernel.md#applications).
 
@@ -82,7 +82,7 @@ This source change does not establish that the fleet rollout has occurred.
 
 Run AQ1 (stored securities) and AQ2 (retained amortization instruction snapshots) exactly as
 written in the
-[5a-0 resolution pass](../architecture/security-master-extensibility-review.md#resolution-pass--2026-10-28-priority-5-increment-5a-0-amortization-refuses-declared-schedule-conventions)
+[5a-0 resolution pass](../../archive/docs/architecture/security-master-extensibility-review.md#resolution-pass--2026-10-28-priority-5-increment-5a-0-amortization-refuses-declared-schedule-conventions)
 of the extensibility review. Both are expected to find nothing. Record the counts, the database
 and schemas, the timestamp and the operator. A hit is remediated before the deploy, while the
 running build can still read and reverse it. 5a is built on 5a-0, so these results also cover 5a.

@@ -122,11 +122,6 @@
                     </StackPanel>
                     <StackPanel Grid.Column="1" HorizontalAlignment="Right">
                         <WrapPanel HorizontalAlignment="Right">
-                            <Button Content="Refresh"
-                                    Command="{Binding RefreshCommand}"
-                                    Style="{StaticResource PrimaryButtonStyle}"
-                                    AutomationProperties.AutomationId="OperationsContinuityRefreshButton"
-                                    Margin="0,0,8,8" />
                             <Button Content="Open record release"
                                     Command="{Binding OpenPageCommand}"
                                     CommandParameter="OperationsRecordRelease"

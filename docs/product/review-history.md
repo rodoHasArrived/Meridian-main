@@ -53,7 +53,7 @@ finding into implementation work.
   lifecycle axes, change-since-review and per-class gate policies now exist in the browser
   workstation's TypeScript modules, so the remaining gap is promoting them into the shared
   contract seam, and the two documents' competing navigation models are left as an open decision
-- [Adversarial Program Review (2026-08-25)](adversarial-program-review-2026-08-25.md) —
+- [Adversarial Program Review (2026-08-25, archived)](../../archive/docs/product/adversarial-program-review-2026-08-25.md) —
   independent whole-program adverse review; re-tests the 2026-08-24 open items against the 39
   commits landed since, then extends into cross-catalog consistency between the authorization
   model, the shared API surface, and the client surface. Findings are anchored at `e232ece1`;
@@ -149,6 +149,11 @@ finding into implementation work.
   governance, reconciliation matching, approvals, close evidence, backfill, marks, order
   lifecycle), anchored to a depth survey of declared-but-dead seams and sequenced around the
   W9 slate
+- [Settings & Preferences Configurability Brainstorm (2026-11-16)](settings-preferences-brainstorm-2026-11-16.md) —
+  inventory of browser, WPF, server-side, and file-only settings, seven ideas (server-side
+  operator preferences, shared browser/WPF preference contract, notifications panel, saved
+  shortcuts, workstation bundle export, searchable settings, versioned config profiles), and
+  guardrails keeping credentials and financial settings host-level
 
 ## Archived Product Material
 

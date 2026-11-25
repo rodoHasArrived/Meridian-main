@@ -14,6 +14,7 @@ export type AccountingWorkstream =
 export type GovernanceWorkstream = AccountingWorkstream;
 
 export type AccountingTaskModeId =
+  | "period-operations"
   | "close-cockpit"
   | "reconciliation-casework"
   | "external-gl-reconciliation"
@@ -59,19 +60,24 @@ export interface AccountingSectionVisibilityViewModel {
 type AccountingTaskModeDefinition = Omit<AccountingTaskModeViewModel, "workstream" | "ariaLabel">;
 
 const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTaskModeDefinition> = {
+  "period-operations": {
+    id: "period-operations", label: "Valuation and period operations", title: "Valuation and period operations",
+    description: "Configure and run governed daily valuation schedules, inspect retained batches and prepare period operations.",
+    routeLabel: "Valuation and period operations", href: "/accounting/workflow"
+  },
   "close-cockpit": {
     id: "close-cockpit",
-    label: "Close Cockpit",
-    title: "Close Cockpit",
-    description: "Daily close posture, blockers, owners, affected outputs, next actions, and retained proof stay first for Accounting operators.",
-    routeLabel: "Close Cockpit",
+    label: "Accounting today",
+    title: "Accounting today",
+    description: "Work accounting cases in the current scope, prepare the next period, or open Close to review its governed blockers and approvals.",
+    routeLabel: "Accounting today",
     href: WORKSTATION_ROUTE_CATALOG.accounting
   },
   "reconciliation-casework": {
     id: "reconciliation-casework",
     label: "Reconciliation Casework",
     title: "Reconciliation Casework",
-    description: "Statement runs, open breaks, owners, evidence, comments, and resolution actions stay grouped for case handling.",
+    description: "Work through reconciliation breaks and resolve each one with its supporting records.",
     routeLabel: "Reconciliation Casework",
     href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
   },
@@ -79,7 +85,7 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
     id: "external-gl-reconciliation",
     label: "External GL Reconciliation",
     title: "External GL Reconciliation",
-    description: "Provider imports, account mappings, tie-out evidence, and guarded export packages stay in one focused external-ledger workflow.",
+    description: "Tie the external general ledger out to Meridian and prepare exports.",
     routeLabel: "External GL Reconciliation",
     href: WORKSTATION_ROUTE_CATALOG.accountingExternalGlReconciliation
   },
@@ -87,23 +93,23 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
     id: "ledger-explorer",
     label: "Ledger Explorer",
     title: "Ledger Explorer",
-    description: "Posted-journal trial balance and P&L for the governed book of record, with strategy-run ledger drill-through kept alongside as an explicitly labelled simulation artifact.",
+    description: "Review the trial balance and P&L from posted journals; strategy-run ledgers are shown separately as simulations.",
     routeLabel: "Ledger Explorer",
     href: WORKSTATION_ROUTE_CATALOG.accountingLedger
   },
   "journal-entry": {
     id: "journal-entry",
-    label: "Journal Entry",
-    title: "Journal Entry",
+    label: "Journal entries",
+    title: "Journal entries",
     description: "Manual journal drafting, validation, evidence attachment, and approval submission stay in one governed task mode.",
-    routeLabel: "Journal Entry",
+    routeLabel: "Journal entries",
     href: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries
   },
   "capital-accounts": {
     id: "capital-accounts",
     label: "Capital Accounts",
     title: "Investor capital activity",
-    description: "Investor capital activity, allocation proof, statement lineage, and report-output readiness stay connected.",
+    description: "Review investor capital activity and the allocations behind each statement.",
     routeLabel: "Capital Accounts",
     href: WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts
   },
@@ -111,7 +117,7 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
     id: "exceptions",
     label: "Exceptions",
     title: "Exception review queue",
-    description: "Material accounting exceptions, ownership, evidence, and resolution actions stay in one focused review queue.",
+    description: "Review material accounting exceptions and resolve them.",
     routeLabel: "Exceptions",
     href: WORKSTATION_ROUTE_CATALOG.accountingExceptions
   },
@@ -119,7 +125,7 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
     id: "security-master",
     label: "Security Master",
     title: "Security record search",
-    description: "Search governed instrument identity, inspect conflicts, and review the evidence supporting each security record.",
+    description: "Look up a security, resolve identifier conflicts, and see what supports its record.",
     routeLabel: "Security Master",
     href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster
   },
@@ -127,7 +133,7 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
     id: "approvals",
     label: "Approvals",
     title: "Pending close approvals",
-    description: "Review exactly what is awaiting approval, why it is ready, its retained evidence, and the effect of each decision.",
+    description: "See what is waiting for your approval and what each decision will do.",
     routeLabel: "Approvals",
     href: WORKSTATION_ROUTE_CATALOG.accountingApprovals
   },
@@ -135,7 +141,7 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
     id: "configure",
     label: "Configure",
     title: "Ledger book setup",
-    description: "Set up ledger books and posting controls, verify readiness, and activate only configurations that pass governed checks.",
+    description: "Set up ledger books and posting rules, then activate them once they pass their checks.",
     routeLabel: "Configure",
     href: WORKSTATION_ROUTE_CATALOG.accountingConfigure
   },
@@ -143,7 +149,7 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
     id: "delivery-evidence",
     label: "Delivery Evidence",
     title: "Delivery Evidence",
-    description: "Accounting evidence routes into governed report packs, retained manifests, exports, and audit-ready output support.",
+    description: "See which accounting records feed each report pack and export.",
     routeLabel: "Delivery Evidence",
     href: WORKSTATION_ROUTE_CATALOG.reportingEvidence
   }
@@ -205,7 +211,7 @@ export function resolveAccountingWorkstream(pathname: string): AccountingWorkstr
 export function buildAccountingTaskMode(pathname: string): AccountingTaskModeViewModel {
   const normalizedPath = normalizeAccountingTaskModePath(pathname);
   const workstream = resolveAccountingWorkstream(normalizedPath);
-  const taskModeId = normalizedPath === WORKSTATION_ROUTE_CATALOG.accounting || normalizedPath === "/governance"
+  const taskModeId = normalizedPath === "/accounting/workflow" ? "period-operations" : normalizedPath === WORKSTATION_ROUTE_CATALOG.accounting || normalizedPath === "/governance"
     ? "close-cockpit"
     : accountingWorkstreamTaskModes[workstream];
 
@@ -219,7 +225,7 @@ export function buildAccountingSectionVisibility(
   const isCloseCockpitLanding = taskMode.id === "close-cockpit" && taskMode.workstream === "ledger";
   const visibility: AccountingSectionVisibilityViewModel = {
     showCloseCockpitLanding: isCloseCockpitLanding,
-    showWorkflowDetails: false,
+    showWorkflowDetails: taskMode.id === "period-operations",
     showMultiAssetCoverage: false,
     showExternalGl: taskMode.workstream === "external-gl",
     showConfiguration: taskMode.workstream === "configure",
@@ -229,7 +235,7 @@ export function buildAccountingSectionVisibility(
     showExceptionWorkbench: taskMode.workstream === "exceptions",
     showPosture: false,
     showReconciliation: taskMode.workstream === "reconciliation",
-    showLedgerExplorer: taskMode.workstream === "ledger" && !isCloseCockpitLanding,
+    showLedgerExplorer: taskMode.workstream === "ledger" && !isCloseCockpitLanding && taskMode.id !== "period-operations",
     showSecurityMaster: taskMode.workstream === "security-master",
     showReconciliationActions: taskMode.workstream === "reconciliation" || taskMode.workstream === "exceptions",
     showReporting: taskMode.workstream === "reporting"

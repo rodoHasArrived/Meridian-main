@@ -36,6 +36,16 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// refuses an unresolvable tenant, which the API exception handler reports as 403. A relationship
 /// that would name a fund or entity outside the visible set is dropped rather than disclosed.
 /// </para>
+/// <para>
+/// When an account's fund or entity is dropped that way, the account carries
+/// <see cref="WorkstationScopeAccountOptionDto.FundWithheld"/> or
+/// <see cref="WorkstationScopeAccountOptionDto.EntityWithheld"/> instead, so a client can say
+/// "not visible to you" rather than "none recorded". The flag discloses only that the account has
+/// an active fund or entity the caller cannot see: never its id, name, or anything else about it,
+/// and nothing about nodes not related to an account the caller may already see. It is false when
+/// the account has no such relationship, or when the relationship points at a node absent from the
+/// active structure (which no caller, an administrator included, could be shown).
+/// </para>
 /// </summary>
 public static partial class WorkstationEndpoints
 {
@@ -93,6 +103,9 @@ public static partial class WorkstationEndpoints
 
         var entityIds = graph.Entities.Select(static entity => entity.EntityId);
         var fundIds = graph.Funds.Select(static fund => fund.FundId);
+        // The active nodes an account's relationship can name; one outside these is not withheld.
+        var graphEntityIds = entityIds.Where(static id => id != Guid.Empty).ToHashSet();
+        var graphFundIds = fundIds.Where(static id => id != Guid.Empty).ToHashSet();
         var accountIds = graph.Accounts.Select(static account => account.AccountId);
 
         var visibleEntities = isAdmin
@@ -140,7 +153,9 @@ public static partial class WorkstationEndpoints
                 account.AccountId,
                 ScopeOptionLabel(account.DisplayName, account.AccountId),
                 account.FundId is { } fundId && visibleFunds.Contains(fundId) ? fundId : null,
-                account.EntityId is { } entityId && visibleEntities.Contains(entityId) ? entityId : null))
+                account.EntityId is { } entityId && visibleEntities.Contains(entityId) ? entityId : null,
+                FundWithheld: IsWithheldRelationship(account.FundId, graphFundIds, visibleFunds),
+                EntityWithheld: IsWithheldRelationship(account.EntityId, graphEntityIds, visibleEntities)))
             .OrderBy(static account => account.DisplayName, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static account => account.AccountId)
             .ToArray();
@@ -196,6 +211,13 @@ public static partial class WorkstationEndpoints
             UserPermission.ViewLedgerReports or UserPermission.ManageLedgerReports => scopeKind is AccessScopeKindDto.LegalEntity,
             _ => false
         };
+
+    /// <summary>
+    /// True when <paramref name="relatedId"/> names an active node the caller may not see: the
+    /// account has that relationship, but the node itself is withheld. See the class remarks.
+    /// </summary>
+    private static bool IsWithheldRelationship(Guid? relatedId, HashSet<Guid> activeIds, HashSet<Guid> visibleIds)
+        => relatedId is { } id && activeIds.Contains(id) && !visibleIds.Contains(id);
 
     private static string ScopeOptionLabel(string? name, Guid id)
         => string.IsNullOrWhiteSpace(name) ? id.ToString("D") : name.Trim();

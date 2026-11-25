@@ -18,6 +18,11 @@ carrying-basis relief and realized gain/loss do not become separate operating ca
 
 With short selling disabled, `SimulatedPortfolio` rejects any sell that would leave the position net short, including a sell larger than the current long (long 100, sell 150); it previously rejected only sells from a flat or short position.
 
+A refused fill throws `FillRejectedException` before any portfolio state changes (short selling
+or margin not permitted, or a fill canonical raw-price replay cannot represent, such as a short).
+The engine and delisting monitor discard only those fills and continue the run. Any other failure
+while applying a fill may leave the portfolio partly updated, so it ends the run instead.
+
 An annualised return too large for `decimal` (a 25% one-day gain compounds past it) is reported capped at 1e12 instead of aborting the metrics build. Walk-forward stitched out-of-sample total and annualised returns use the same cap.
 
 `MarketImpactFillModel` fills an all-or-none order completely or not at all; a limit order whose later slices cross the limit no longer returns a partial fill when partial fills are disallowed.
@@ -87,9 +92,11 @@ responsibilities, without reconstructing carrying value from rounded quotes or r
 
 The native engine resolves lot denomination from each available Security Master definition
 before replay. Fund definitions retain `Units` and equities retain `Shares`, both with multiplier
-1. Definitions requiring face, notional, commitment, currency, or contract pricing are refused
-until a compatible pricing model exists; replay cannot silently apply equity calculations to
-them. Legacy runs without a resolved security definition explicitly retain the symbol-only
+1. Bond definitions carry `FaceValue` lots with multiplier 1: quantity is face and prices stay a
+percentage of par, so cash, market value and P&L divide by 100 once (100,000 face at 101.25 moves
+$101,250). Backtests do not model accrued interest. Definitions requiring notional, commitment,
+currency, or contract pricing, or a face multiplier other than 1, are refused until a compatible
+pricing model exists; replay cannot silently apply equity calculations to them. Legacy runs without a resolved security definition explicitly retain the symbol-only
 equity assumption. Lot snapshots require explicit units and positive multipliers.
 
 Long sales and short covers use Ledger's `LotBasisRelief` allocator over the shared decimal
@@ -124,6 +131,40 @@ history and one Security Master query snapshot, and execute from that captured w
 sharing a source is captured before any of those plans is prepared. `BacktestRequest.To` is the economic cutoff for
 effective actions; it is not a transaction-time Security Master revision boundary. Only confirmed
 (or legacy confirmed-by-default), non-cancelled actions effective by that cutoff are eligible.
+
+`BacktestRequest.CorporateActionMode` defaults to `Legacy`, preserving the existing automatic stored
+action, explicit population, adjusted-price and supplied `AssetEvents` paths and their experiment identities.
+Opt-in `RawPricesWithCanonicalEvents` bypasses both mapped-action sources and cannot be combined with
+explicit `PopulateAssetEventsFromSecurityMaster`. It captures and validates the entire replay before
+strategy initialization: only historical
+bars explicitly stamped `IsAdjusted=false` are accepted. Adjusted, unknown-basis, and non-bar tape
+are rejected; this mode bypasses `AdjustForCorporateActions` rather than adjusting prices twice.
+It requires active mastered USD equities, fully funded long positions, and canonical cash dividends
+and splits. Manual `AssetEvents` are limited to fees. Other action treatments and splits producing
+fractional account-level entitlements fail explicitly.
+Pending orders crossing a split are refused; v1 does not infer broker order adjustment rules.
+
+Raw-mode dividends freeze held shares before ex-date trading, recognize receivable and income,
+and settle the frozen amount on pay date even after the shares are sold. Outstanding receivables
+are included in account/portfolio equity and snapshots without becoming spendable cash. Splits
+preserve aggregate basis and value; same-day splits precede dividend entitlement, whose terms
+are per post-split share. Missing dividend pay dates or non-USD/invalid terms are refused.
+
+`BacktestResult.CanonicalCorporateActions` retains one immutable effective-through action snapshot
+and content hash, with canonical source IDs and Security Master versions. Duplicate identical IDs
+collapse, conflicting duplicates fail, and amended/cancelled chains use the effective-state fold.
+`ToResolvedRealismDescriptor()` includes the snapshot hash for completed experiment identity;
+legacy descriptors omit the new fields. All existing positional constructors and deconstruction
+shapes are preserved through additive init-only properties. Agreeing economic observations retain
+their source IDs in the snapshot and execute only once; conflicting same-date/type terms and multiple
+same-day transformations are refused under the existing source policy. The snapshot provides repeatable
+source evidence, not transaction-time proof of the announcements known historically. No live or durable accounting
+book is posted by this simulation mode.
+
+Native replay counts the historical and aggregate bars it consumes by effective symbol and stamped
+source after filtering inputs and deduplicating verified rows. The input coverage retains counts and
+verified batch revisions. The resolved realism descriptor includes a stable digest of the source
+counts when bars were replayed.
 
 Portfolio asset events fan out to every brokerage account holding the source symbol. Whole-unit
 transformations apportion successor shares through exact FIFO entitlements. Fractional entitlements
@@ -206,12 +247,16 @@ See the [expanded objectives](../../docs/product/implementation-todo-list.md#exp
 Every native day-end snapshot reconciles as-of trial balance, per-account cash, long lot basis,
 short proceeds, and transfer clearing balances. Differences remain on
 `BacktestResult.LedgerIntegrityBreaks`; `BacktestRequest.FailOnLedgerIntegrityBreak` aborts with
-inspectable `LedgerIntegrityException.Breaks`. Comparisons use the shared ledger balance tolerance
+inspectable `LedgerIntegrityException.Breaks`. A run that completes with differences logs a warning
+and adds a `ledger-integrity-break` Warning item to its bias disclosure, so every surface that shows
+the result also shows that its books did not reconcile. Comparisons use the shared ledger balance tolerance
 and include residual accounts for closed positions. Return-of-capital distributions reduce each
 long lot/component's exact basis to zero before recognizing excess gain. `BasisReturned` stays
 separate from income in cash-flow evidence and symbol attribution; short payments remain expenses.
 
-Financing accrues on every calendar date using ACT/365 fixed. Sharpe, Sortino, rolling replay
+Financing accrues on every calendar date using ACT/365 fixed. Margin interest is charged on the
+debit carried into the day; short rebates and borrow fees then update that debit, so a fee that
+overdraws an account bears interest from the next day and a rebate that repays it stops interest. Sharpe, Sortino, rolling replay
 metrics, and stitched walk-forward metrics use the same 365-observation annualization because
 the native snapshot series includes weekends. Trade cash flows contain only consideration;
 commission cash flows carry fees separately, and their sum reconciles to the cash movement.

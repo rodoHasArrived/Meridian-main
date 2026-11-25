@@ -226,7 +226,7 @@ export function ReportingScheduleManagementPanel({
             <div className="min-w-0">
               <h4 className="text-sm font-semibold text-foreground">Schedule delivery</h4>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Save or update governed report-pack schedules with PDF/XLSX/CSV delivery targets.
+                Save or update report-pack schedules with PDF/XLSX/CSV delivery targets.
               </p>
             </div>
             <Badge variant="outline">{presentScheduleDeliveryMode(scheduleDraft.deliveryMode)}</Badge>
@@ -679,10 +679,10 @@ export function ReportingScheduleManagementPanel({
                   </dl>
                   {schedule.releaseHandoffs.length > 0 ? (
                     <section
-                      aria-label={`${schedule.id} release delivery handoff history`}
+                      aria-label={`${schedule.id} release delivery history`}
                       className="border-t border-border/60 px-3 py-3"
                     >
-                      <h5 className="text-xs font-semibold text-foreground">Release delivery handoff history</h5>
+                      <h5 className="text-xs font-semibold text-foreground">Release delivery history</h5>
                       <ul className="mt-2 space-y-2">
                         {schedule.releaseHandoffs.map((handoff) => (
                           <li

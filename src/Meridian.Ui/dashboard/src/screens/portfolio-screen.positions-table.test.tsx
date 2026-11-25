@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { renderWithRouter, TestMemoryRouter, waitForAsyncEffects } from "@/test/render";
 import { PortfolioScreen } from "@/screens/portfolio-screen";
 import * as api from "@/lib/api";
-import type { TradingWorkspaceResponse } from "@/types";
+import { readRecordWorkspaceContext } from "@/lib/record-workspace-context";
+import type { StrategyWorkspaceResponse, TradingWorkspaceResponse } from "@/types";
 
 function position(symbol: string, side: "Long" | "Short", current: boolean): TradingWorkspaceResponse["positions"][number] {
   return {
@@ -62,7 +63,7 @@ const trading: TradingWorkspaceResponse = {
 };
 
 function renderPortfolio(data = trading) {
-  return renderWithRouter(<PortfolioScreen trading={data} strategy={null} accounting={null} />, { initialEntries: ["/portfolio"] });
+  return renderWithRouter(<PortfolioScreen portfolio={portfolioFromTrading(data, null)} trading={data} strategy={null} accounting={null} />, { initialEntries: ["/portfolio"] });
 }
 
 function positionTable() {
@@ -78,6 +79,25 @@ describe("Portfolio Open positions controls", () => {
     vi.spyOn(api, "getFinancialRecordExplorer").mockRejectedValue(new Error("Explorer not configured in this fixture."));
   });
   afterEach(() => vi.restoreAllMocks());
+
+  it("restores only an unambiguous linked holding and carries its exact position into related work", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<PortfolioScreen portfolio={portfolioFromTrading(trading, null)} trading={trading} strategy={null} accounting={null} />, {
+      initialEntries: ["/portfolio?positionRef=symbol%3AMSFT%3ALong"]
+    });
+    expect(screen.getByText("The linked holding is unavailable in the current portfolio.")).toBeVisible();
+    expect(screen.queryByRole("region", { name: "Position identity" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("row", { name: "Inspect AAPL Short holding" }));
+    const identity = within(screen.getByRole("region", { name: "Position identity" }));
+    expect(identity.getByText("AAPL · Short", { selector: "strong" })).toBeVisible();
+    expect(identity.getByText("Mark current")).toBeVisible();
+    const asset = screen.getByRole("link", { name: "Open asset detail for AAPL" });
+    const href = new URL(asset.getAttribute("href")!, "https://meridian.local");
+    const carried = readRecordWorkspaceContext(href.search);
+    expect(carried?.origin).toBe("/portfolio?positionRef=symbol%3AAAPL%3AShort#portfolio-position-detail");
+    expect(carried?.record).toMatchObject({ kind: "position", asOf: "2026-10-28", status: "Open", trust: "Mark current" });
+  });
 
   it("combines symbol, side and server mark readiness filters and resets controls", async () => {
     const user = userEvent.setup();
@@ -136,11 +156,21 @@ describe("Portfolio Open positions controls", () => {
     await user.click(within(positionTable()).getByRole("row", { name: "Inspect AAPL Short holding" }));
     const evidence = screen.getByRole("link", { name: "Open asset detail for AAPL" });
     const href = evidence.getAttribute("href");
+    const originalRecord = readRecordWorkspaceContext(new URL(href!, "https://meridian.local").search)?.record;
     expect(positionTable().querySelector('[data-dense-row-id="aapl-short-1"]')).toHaveAttribute("aria-selected", "true");
     await user.type(screen.getByRole("searchbox", { name: "Search positions by symbol" }), "MSFT");
+    await user.tab(); // Flush the debounced query before following the retained record link.
     expect(screen.getByText("Selected holding is outside the current results.")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "AAPL holding detail" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Open asset detail for AAPL" })).toHaveAttribute("href", href);
+    await waitFor(() => {
+      const filteredHref = new URL(screen.getByRole("link", { name: "Open asset detail for AAPL" }).getAttribute("href")!, "https://meridian.local");
+      const filteredContext = readRecordWorkspaceContext(filteredHref.search);
+      expect(filteredContext?.record).toEqual(originalRecord);
+      const returnTo = new URL(filteredContext!.origin, "https://meridian.local");
+      expect(returnTo.searchParams.get("positionRef")).toBe("symbol:AAPL:Short");
+      expect(returnTo.searchParams.has("view")).toBe(true);
+      expect(returnTo.hash).toBe("#portfolio-position-detail");
+    });
     expect(positionIds()).toEqual(["msft-long-0", "msft-long-2"]);
     await user.click(screen.getByRole("button", { name: "Clear filters" }));
     expect(positionTable().querySelector('[data-dense-row-id="aapl-short-1"]')).toHaveAttribute("aria-selected", "true");
@@ -164,7 +194,7 @@ describe("Portfolio Open positions controls", () => {
     await user.type(screen.getByRole("searchbox", { name: "Search positions by symbol" }), "MSFT");
     await user.selectOptions(screen.getByRole("combobox", { name: "Mark readiness" }), "current");
     const refreshed = { ...trading, positions: [...trading.positions, position("MSFT", "Short", true)] };
-    rerender(<TestMemoryRouter initialEntries={["/portfolio"]}><PortfolioScreen trading={refreshed} strategy={null} accounting={null} /></TestMemoryRouter>);
+    rerender(<TestMemoryRouter initialEntries={["/portfolio"]}><PortfolioScreen portfolio={portfolioFromTrading(refreshed, null)} trading={refreshed} strategy={null} accounting={null} /></TestMemoryRouter>);
     expect(screen.getByRole("searchbox", { name: "Search positions by symbol" })).toHaveValue("MSFT");
     expect(screen.getByRole("combobox", { name: "Mark readiness" })).toHaveValue("current");
     expect(positionIds()).toEqual(["msft-long-2", "msft-short-4"]);
@@ -177,10 +207,18 @@ describe("Portfolio Open positions controls", () => {
     const { container } = renderPortfolio();
     await waitForAsyncEffects();
     await user.type(screen.getByRole("searchbox", { name: "Search positions by symbol" }), "MSFT");
+    await user.tab();
+    await waitForAsyncEffects();
     expect((await axe(container)).violations).toEqual([]);
     await user.clear(screen.getByRole("searchbox", { name: "Search positions by symbol" }));
     await user.type(screen.getByRole("searchbox", { name: "Search positions by symbol" }), "missing");
+    await user.tab();
+    await waitForAsyncEffects();
     expect(screen.getByText("No positions match these controls.")).toBeInTheDocument();
     expect((await axe(container)).violations).toEqual([]);
   });
 });
+
+function portfolioFromTrading(value: TradingWorkspaceResponse | null, strategyWorkspace: StrategyWorkspaceResponse | null) {
+  return value ? { metrics: [], positions: value.positions, risk: value.risk, brokerage: value.brokerage, runs: (strategyWorkspace?.runs ?? []).map(({ id, ...run }) => ({ ...run, runId: id, promotionState: run.promotionState ?? null })), cashFlow: null } : null;
+}

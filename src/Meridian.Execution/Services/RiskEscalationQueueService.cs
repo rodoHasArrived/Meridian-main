@@ -88,6 +88,11 @@ public sealed class RiskEscalationQueueService : IRiskEscalationQueue, IAsyncDis
     private readonly Lock _resolveLock = new();
     private readonly ConcurrentDictionary<Task, byte> _pendingAuditWrites = new();
 
+    // Typed authority the OMS stages for an order while its risk validation runs, keyed by client
+    // order id, so a park during that validation retains the authority in the same durable write
+    // as the entry itself.
+    private readonly ConcurrentDictionary<string, OrderSubmissionAuthorityRecord> _stagedAuthority = new(StringComparer.Ordinal);
+
     public RiskEscalationQueueService(
         ILogger<RiskEscalationQueueService> logger,
         ExecutionAuditTrailService? auditTrail = null,
@@ -140,7 +145,13 @@ public sealed class RiskEscalationQueueService : IRiskEscalationQueue, IAsyncDis
             CorrelationId: correlationId,
             ParkedAt: DateTimeOffset.UtcNow,
             Status: RiskEscalationStatus.PendingApproval,
-            SubmitterProvenance: "parked");
+            SubmitterProvenance: "parked",
+            // The authority the OMS staged for this order, persisted with the entry, so no window
+            // exists in which a parked typed order has no retained authority.
+            Authority: request.ClientOrderId is { } stagedOrderId
+                && _stagedAuthority.TryGetValue(stagedOrderId, out var stagedAuthority)
+                ? stagedAuthority
+                : null);
 
         lock (_resolveLock)
         {
@@ -294,6 +305,61 @@ public sealed class RiskEscalationQueueService : IRiskEscalationQueue, IAsyncDis
     /// <summary>Returns the entry with <paramref name="escalationId"/>, or null.</summary>
     public RiskEscalationEntry? TryGet(string escalationId) =>
         _entries.TryGetValue(escalationId, out var entry) ? entry : null;
+
+    /// <summary>
+    /// Stages the typed authority an order is being submitted under while its risk validation
+    /// runs. A park of that order (by client order id) during validation retains the authority in
+    /// the entry's own durable write. Dispose the result when validation ends.
+    /// </summary>
+    internal IDisposable StageAuthority(string clientOrderId, OrderSubmissionAuthorityRecord authority)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(clientOrderId);
+        ArgumentNullException.ThrowIfNull(authority);
+        _stagedAuthority[clientOrderId] = authority;
+        return new StagedAuthority(_stagedAuthority, clientOrderId, authority);
+    }
+
+    private sealed class StagedAuthority(
+        ConcurrentDictionary<string, OrderSubmissionAuthorityRecord> staged,
+        string clientOrderId,
+        OrderSubmissionAuthorityRecord authority) : IDisposable
+    {
+        public void Dispose() => staged.TryRemove(KeyValuePair.Create(clientOrderId, authority));
+    }
+
+    /// <summary>
+    /// Retains the typed authority a parked order was submitted under, so its release is judged
+    /// by that authority. Attaches once, only to a pending entry, and only when the snapshot can be
+    /// persisted; otherwise the entry is left unchanged and its release stays on the untyped path,
+    /// which refuses live orders.
+    /// </summary>
+    /// <returns>True when the authority is attached and durably retained.</returns>
+    public bool TryAttachAuthority(string escalationId, OrderSubmissionAuthorityRecord authority)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(escalationId);
+        ArgumentNullException.ThrowIfNull(authority);
+        lock (_resolveLock)
+        {
+            if (!_entries.TryGetValue(escalationId, out var entry)
+                || entry.Status != RiskEscalationStatus.PendingApproval
+                || entry.Authority is not null)
+            {
+                return false;
+            }
+
+            _entries[escalationId] = entry with { Authority = authority };
+            if (!TryPersistSnapshotLocked())
+            {
+                _entries[escalationId] = entry;
+                _logger.LogError(
+                    "Typed authority for escalation {EscalationId} was not retained: the snapshot could not be persisted",
+                    escalationId);
+                return false;
+            }
+
+            return true;
+        }
+    }
 
     /// <summary>
     /// Approves a pending escalation, arming a one-shot release of the parked order.
@@ -684,6 +750,7 @@ public sealed class RiskEscalationQueueService : IRiskEscalationQueue, IAsyncDis
     /// </summary>
     private static bool FingerprintMatches(OrderRequest parked, OrderRequest resubmitted) =>
         string.Equals(parked.ClientOrderId, resubmitted.ClientOrderId, StringComparison.OrdinalIgnoreCase) &&
+        parked.IntentId == resubmitted.IntentId &&
         string.Equals(parked.Symbol, resubmitted.Symbol, StringComparison.OrdinalIgnoreCase) &&
         parked.Side == resubmitted.Side &&
         parked.Type == resubmitted.Type &&

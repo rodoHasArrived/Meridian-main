@@ -9,6 +9,7 @@ import {
 import { Link, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,8 @@ import {
   validateGovernedReportingRun
 } from "@/lib/reporting-governance-api";
 import { secureReportingArtifactDownloadPath } from "@/lib/reporting-governance-routes";
+import { ReportReviewPanel } from "@/screens/report-review-panel";
+import type { ReportRunReview } from "@/lib/report-run-review-api";
 import { ReportingIncomeComparisonPanel } from "@/screens/reporting-income-comparison";
 import { ReportingRetainedAmountsPanel } from "@/screens/reporting-retained-amounts";
 import { projectParameterEntries } from "@/screens/report-run-governance-parameters";
@@ -134,6 +137,8 @@ export function ReportRunGovernanceScreen() {
   const mutationControllerRef = useRef<AbortController | null>(null);
 
   const refresh = useCallback(() => setRefreshSequence((current) => current + 1), []);
+  // Re-read on the header Refresh; a failed read offers "Retry authoritative load" below.
+  useOnGlobalRefresh(refresh);
 
   useEffect(() => {
     setSelectedArtifactIds(null);
@@ -146,7 +151,7 @@ export function ReportRunGovernanceScreen() {
       setLoadState({
         ...initialLoadState(),
         phase: "error",
-        error: "A governed report run identifier is required. No report data was requested."
+        error: "A report run identifier is required. No report data was requested."
       });
       return;
     }
@@ -176,7 +181,7 @@ export function ReportRunGovernanceScreen() {
           ...initialLoadState(),
           phase: "error",
           run: null,
-          error: describeFailure(runResult.reason, "The governed report run could not be loaded.")
+          error: describeFailure(runResult.reason, "The report run could not be loaded.")
         });
         return;
       }
@@ -209,6 +214,7 @@ export function ReportRunGovernanceScreen() {
 
   useEffect(() => () => mutationControllerRef.current?.abort(), []);
 
+  const [review, setReview] = useState<ReportRunReview | null>(null);
   const run = loadState.run;
   const releaseArtifacts = run?.release?.artifacts ?? [];
   const clientPackageArtifactGate = resolveClientPackageArtifactGate(run);
@@ -284,10 +290,10 @@ export function ReportRunGovernanceScreen() {
   };
 
   const onApprove = () => {
-    if (!run || !approveDecision.allowed || !approvalNote.trim()) return;
+    if (!run || !approveDecision.allowed || !approvalNote.trim() || review?.runId !== run.runId || review.version !== run.version) return;
     void runMutation(
       "Approve report run",
-      (signal) => approveGovernedReportingRun(run.runId, run.version, approvalNote.trim(), { signal }),
+      (signal) => approveGovernedReportingRun(run.runId, run.version, approvalNote.trim(), { signal }, review.reviewId),
       "The independent approval and decision note were retained."
     );
   };
@@ -297,7 +303,7 @@ export function ReportRunGovernanceScreen() {
     void runMutation(
       "Release report run",
       (signal) => releaseGovernedReportingRun(run.runId, run.version, { signal }),
-      "The immutable report package was released and is eligible for governed distribution."
+      "The immutable report package was released and is eligible for controlled distribution."
     );
   };
 
@@ -321,7 +327,7 @@ export function ReportRunGovernanceScreen() {
     void runMutation(
       "Approve restatement",
       (signal) => approveGovernedReportingRestatement(request.requestId, request.version, { signal }),
-      "The restatement was approved and a new independently governed draft revision was created."
+      "The restatement was approved and a new independently controlled draft revision was created."
     );
   };
 
@@ -428,7 +434,7 @@ export function ReportRunGovernanceScreen() {
       <StatusBanner
         role="alert"
         tone="warning"
-        title="Select a governed report run"
+        title="Select a report run"
         detail="Open this route with a retained runId. Meridian will not substitute a recent fixture or another report run."
       />
     );
@@ -438,7 +444,7 @@ export function ReportRunGovernanceScreen() {
     return (
       <Card className="panel-surface" role="status" aria-busy="true" aria-live="polite">
         <CardHeader>
-          <CardTitle>Loading governed report run</CardTitle>
+          <CardTitle>Loading report run</CardTitle>
           <CardDescription>Verifying immutable scope, snapshot, readiness, artifacts, and distribution evidence.</CardDescription>
         </CardHeader>
       </Card>
@@ -451,7 +457,7 @@ export function ReportRunGovernanceScreen() {
         <StatusBanner
           role="alert"
           tone="danger"
-          title="Governed report run unavailable"
+          title="Report run unavailable"
           detail={loadState.error ?? "No authoritative report run was returned."}
         />
         <Button type="button" size="sm" variant="outline" onClick={refresh}>Retry authoritative load</Button>
@@ -461,7 +467,7 @@ export function ReportRunGovernanceScreen() {
 
   return (
     <div className="space-y-4" aria-busy={loadState.phase === "loading" || isMutating}>
-      <RunHeader run={run} onRefresh={refresh} refreshing={loadState.phase === "loading"} />
+      <RunHeader run={run} />
 
       {mutation.phase !== "idle" ? (
         <StatusBanner
@@ -480,7 +486,7 @@ export function ReportRunGovernanceScreen() {
           title="One-time recipient link ready"
           detail={
             <span className="flex flex-wrap items-center gap-2">
-              <span>Expires {formatTimestamp(issuedGrant.expiresAtUtc)}. Share only with the governed audience.</span>
+              <span>Expires {formatTimestamp(issuedGrant.expiresAtUtc)}. Share only with the approved audience.</span>
               <a
                 className="font-semibold underline underline-offset-2"
                 href={issuedRecipientLink}
@@ -494,8 +500,11 @@ export function ReportRunGovernanceScreen() {
         />
       ) : null}
 
+      <ReportReviewPanel key={`review:${run.runId}`} runId={run.runId} version={run.version} onReview={setReview} />
+
       <LifecyclePanel
         run={run}
+        review={review?.runId === run.runId && review.version === run.version ? review : null}
         approvalNote={approvalNote}
         onApprovalNoteChange={setApprovalNote}
         decisions={{ validateDecision, submitDecision, approveDecision, releaseDecision }}
@@ -532,7 +541,7 @@ export function ReportRunGovernanceScreen() {
 
       <AuditPanel run={run} />
 
-      <ReportingIncomeComparisonPanel key={run.runId} currentRunId={run.runId} />
+      <ReportingIncomeComparisonPanel key={`income-comparison:${run.runId}`} currentRunId={run.runId} />
 
       <RestatementPanel
         run={run}
@@ -583,37 +592,19 @@ export function ReportRunGovernanceScreen() {
   );
 }
 
-function RunHeader({
-  run,
-  onRefresh,
-  refreshing
-}: {
-  run: GovernedReportingRun;
-  onRefresh: () => void;
-  refreshing: boolean;
-}) {
+function RunHeader({ run }: { run: GovernedReportingRun }) {
   return (
     <Card className="panel-surface">
       <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <CardTitle>Report Run Detail</CardTitle>
           <CardDescription>
-            Live governed revision {run.revision} of {run.templateId}; no workspace fixture or recent-run fallback is used.
+            Live revision {run.revision} of {run.templateId}; no workspace fixture or recent-run fallback is used.
           </CardDescription>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={governanceStateVariant(run.governanceState)}>{run.governanceState}</Badge>
           <Badge variant={executionStateVariant(run.executionState)}>{run.executionState}</Badge>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            busy={refreshing}
-            busyLabel="Refreshing…"
-            onClick={onRefresh}
-          >
-            Refresh retained state
-          </Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -634,6 +625,7 @@ function RunHeader({
 
 function LifecyclePanel({
   run,
+  review,
   approvalNote,
   onApprovalNoteChange,
   decisions,
@@ -644,6 +636,7 @@ function LifecyclePanel({
   onRelease
 }: {
   run: GovernedReportingRun;
+  review: ReportRunReview | null;
   approvalNote: string;
   onApprovalNoteChange: (value: string) => void;
   decisions: {
@@ -658,16 +651,15 @@ function LifecyclePanel({
   onApprove: () => void;
   onRelease: () => void;
 }) {
-  const approvalReason = !approvalNote.trim()
-    ? "Enter an approval decision note."
-    : decisions.approveDecision.reason;
+  const approvalReason = !review ? "Load the retained review evidence before approving."
+    : !approvalNote.trim() ? "Enter an approval decision note." : decisions.approveDecision.reason;
 
   return (
     <Card className="panel-surface">
       <CardHeader>
-        <CardTitle>Governed lifecycle</CardTitle>
+        <CardTitle>Report lifecycle</CardTitle>
         <CardDescription>
-          Available commands come only from the authenticated server projection. Missing commands remain disabled.
+          Available commands come only from the authenticated server. Missing commands remain disabled.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -726,11 +718,11 @@ function LifecyclePanel({
             <Button
               type="button"
               size="sm"
-              disabled={busy || !decisions.approveDecision.allowed || !approvalNote.trim()}
+              disabled={busy || !decisions.approveDecision.allowed || !approvalNote.trim() || !review}
               disabledReason={busy ? "Another reporting command is running." : approvalReason}
               onClick={onApprove}
             >
-              Approve independently
+              {review?.materialChangeCount === null || !review ? "Approve independently · materiality not assessed" : `Approve ${review.materialChangeCount} material line change${review.materialChangeCount === 1 ? "" : "s"}`}
             </Button>
           </div>
         </div>
@@ -800,7 +792,7 @@ function ParameterPanel({
             role="status"
             tone="warning"
             title="Normalized parameters unavailable"
-            detail="The server did not return an immutable normalized parameter projection. Values are not reconstructed from workspace state."
+            detail="The server did not return an immutable normalized parameter snapshot. Values are not reconstructed from workspace state."
           />
         )}
         <TechnicalDetails label="Parameter certification">
@@ -1046,7 +1038,7 @@ function AuditPanel({ run }: { run: GovernedReportingRun }) {
 {id:"field-5",label:"Note",exportValue:(entry)=>redactReportingCredentialText(entry.note ?? ""),render:(entry)=>{return <>
                       {entry.note ? redactReportingCredentialText(entry.note) : "No note"}
                     </>;}},
-{id:"field-6",label:"Hash",exportValue:(entry)=>entry.hash,render:(entry)=>{return <>{entry.hash}</>;}}]} getRowId={(entry)=>entry.eventId} getSearchText={(entry)=>[entry.aggregateVersion,entry.occurredAtUtc,entry.action,entry.authority.actorId,presentTransition(entry.fromGovernanceState, entry.toGovernanceState),redactReportingCredentialText(entry.note ?? ""),entry.hash].join(" ")} completePopulation sourceDescription="Complete authorized retained report snapshot for the selected run or series; text follows credential redaction." ariaLabel="Retained governed reporting audit events" caption="Retained governed reporting audit events" emptyText="No retained records returned." />
+{id:"field-6",label:"Hash",exportValue:(entry)=>entry.hash,render:(entry)=>{return <>{entry.hash}</>;}}]} getRowId={(entry)=>entry.eventId} getSearchText={(entry)=>[entry.aggregateVersion,entry.occurredAtUtc,entry.action,entry.authority.actorId,presentTransition(entry.fromGovernanceState, entry.toGovernanceState),redactReportingCredentialText(entry.note ?? ""),entry.hash].join(" ")} completePopulation sourceDescription="Complete authorized retained report snapshot for the selected run or series; text follows credential redaction." ariaLabel="Retained reporting audit events" caption="Retained reporting audit events" emptyText="No retained records returned." />
           </div>
         )}
       </CardContent>
@@ -1075,7 +1067,7 @@ function RestatementPanel({
 }) {
   const history = series.data;
   const requestDisabledReason = !reason.trim()
-    ? "Enter the business reason for a governed restatement."
+    ? "Enter the business reason for a restatement."
     : requestDecision.reason;
 
   return (
@@ -1108,7 +1100,7 @@ function RestatementPanel({
             disabledReason={busy ? "Another reporting command is running." : requestDisabledReason}
             onClick={onRequest}
           >
-            Request governed restatement
+            Request restatement
           </Button>
         </div>
 
@@ -1139,7 +1131,7 @@ function RestatementPanel({
                       </>;}},
 {id:"field-2",label:"Execution",exportValue:(revision)=>revision.executionState,render:(revision)=>{return <>{revision.executionState}</>;}},
 {id:"field-3",label:"Governance",exportValue:(revision)=>revision.governanceState,render:(revision)=>{return <>{revision.governanceState}</>;}},
-{id:"field-4",label:"Snapshot",exportValue:(revision)=>revision.snapshot.snapshotHash,render:(revision)=>{return <>{revision.snapshot.snapshotHash}</>;}}]} getRowId={(revision)=>revision.runId} getSearchText={(revision)=>[revision.revision,revision.runId,revision.executionState,revision.governanceState,revision.snapshot.snapshotHash].join(" ")} completePopulation sourceDescription="Complete authorized retained report snapshot for the selected run or series; text follows credential redaction." ariaLabel="Governed revisions in this report series" caption="Governed revisions in this report series" emptyText="No retained records returned." />
+{id:"field-4",label:"Snapshot",exportValue:(revision)=>revision.snapshot.snapshotHash,render:(revision)=>{return <>{revision.snapshot.snapshotHash}</>;}}]} getRowId={(revision)=>revision.runId} getSearchText={(revision)=>[revision.revision,revision.runId,revision.executionState,revision.governanceState,revision.snapshot.snapshotHash].join(" ")} completePopulation sourceDescription="Complete authorized retained report snapshot for the selected run or series; text follows credential redaction." ariaLabel="Revisions in this report series" caption="Revisions in this report series" emptyText="No retained records returned." />
             </div>
 
             {history.restatementRequests.length > 0 ? (
@@ -1406,7 +1398,7 @@ function DistributionPanel({
                 autoComplete="off"
               />
             </FormRow>
-            <FormRow label="Recipient principal" labelFor="secure-report-recipient-principal" hint="Optional; the server resolves the governed audience.">
+            <FormRow label="Recipient principal" labelFor="secure-report-recipient-principal" hint="Optional; the server resolves the approved audience.">
               <Input
                 id="secure-report-recipient-principal"
                 value={recipientPrincipalId}
@@ -1434,8 +1426,8 @@ function DistributionPanel({
               hint={selectedTransport?.requiresDestination
                 ? "Required by the selected transport."
                 : selectedTransport?.isExternal
-                  ? "Optional equality assertion; the server resolves the governed recipient destination."
-                  : "Optional for governed portal delivery."}
+                  ? "Optional equality assertion; the server resolves the approved recipient destination."
+                  : "Optional for portal delivery."}
             >
               <Input
                 id="secure-report-destination"
@@ -1751,14 +1743,14 @@ export function resolveServerAction(
     if (candidate.expectedVersion !== subject.version) {
       return {
         allowed: false,
-        reason: "The server action projection targets a different retained version. Refresh before continuing."
+        reason: "The server's allowed actions target a different retained version. Refresh before continuing."
       };
     }
 
     return {
       allowed: candidate.isAllowed,
       reason: candidate.isAllowed
-        ? "Authorized by the current server projection."
+        ? "Authorized by the current server state."
         : candidate.blockedReason?.trim()
           ? redactReportingCredentialText(candidate.blockedReason.trim())
           : "The server did not authorize this command."
@@ -1767,7 +1759,7 @@ export function resolveServerAction(
 
   return {
     allowed: false,
-    reason: "This command is absent from the server-owned allowed-action projection."
+    reason: "This command is absent from the server-owned allowed-action list."
   };
 }
 

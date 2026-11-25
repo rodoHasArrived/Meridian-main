@@ -125,6 +125,7 @@ public sealed class LedgerJournalInternalTransactionSource(
     private static readonly HashSet<string> TradeActivityTypes = new(StringComparer.OrdinalIgnoreCase)
     {
         "trade",
+        "execution.trade-fill",
         "buy",
         "sell",
         "short_sell",
@@ -135,6 +136,8 @@ public sealed class LedgerJournalInternalTransactionSource(
     {
         "fee",
         "commission",
+        "execution.trade-commission",
+        "execution.trade-fee",
     };
 
     /// <summary>Per-symbol instrument accounts whose movement marks the entry as a trade.</summary>
@@ -462,20 +465,24 @@ public sealed class LedgerJournalInternalTransactionSource(
 
     private static string? ResolveExternalTransactionId(JournalEntryMetadata metadata)
     {
+        if (metadata.Tags is { } source && source.TryGetValue("brokerActivityId", out var activityId)
+            && !string.IsNullOrWhiteSpace(activityId))
+            return activityId.Trim();
+
         if (!string.IsNullOrWhiteSpace(metadata.SettlementReference))
         {
             return metadata.SettlementReference;
         }
 
-        if (metadata.Tags is { } tags
-            && (tags.TryGetValue(ExternalTransactionIdTag, out var externalId)
-                || tags.TryGetValue(FitIdTag, out externalId))
-            && !string.IsNullOrWhiteSpace(externalId))
+        if (metadata.Tags is { } tags && tags.TryGetValue(ExternalTransactionIdTag, out var externalId)
+            && !string.IsNullOrWhiteSpace(externalId)
+            && !(metadata.FillId is { } fillId && Guid.TryParse(externalId, out var candidate) && candidate == fillId))
         {
             return externalId.Trim();
         }
 
-        return null;
+        return metadata.Tags is { } retained && retained.TryGetValue(FitIdTag, out var fitId)
+            && !string.IsNullOrWhiteSpace(fitId) ? fitId.Trim() : null;
     }
 
     private static decimal ResolveQuantity(JournalEntryMetadata metadata) =>

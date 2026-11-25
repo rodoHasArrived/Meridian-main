@@ -4,12 +4,25 @@
 # C# formatting is enforced with LF by .editorconfig and dotnet format.
 *.cs text eol=lf
 
-# Vite embeds SVG bytes and transforms HTML; keep tracked bundles identical on Windows.
+# Vite embeds SVG bytes and transforms HTML; keep generated bundles identical on Windows.
 *.svg text eol=lf
 src/Meridian.Ui/dashboard/index.html text eol=lf
 src/Meridian.Ui/wwwroot/workstation/*.html text eol=lf
 src/Meridian.Ui/wwwroot/workstation/assets/*.js text eol=lf
 src/Meridian.Ui/wwwroot/workstation/assets/*.css text eol=lf
+
+# Reviewed generated snapshots must be regenerated from merged inputs, not text-merged.
+# The built-in binary driver leaves concurrent changes conflicted for the explicit
+# generated merge resolver; it never accepts one parent's stale output silently.
+docs/roadmap/generated/* merge=binary
+docs/source/generated/* merge=binary
+docs/generated/repository-structure.md merge=binary
+docs/generated/workflow-command-reference.md merge=binary
+docs/generated/workflows-overview.md merge=binary
+# Accepted source/README review evidence, not a disposable hash cache. One file per
+# module: branches that review different modules never conflict, while concurrent
+# reviews of the same module still conflict for the reviewed-hash merger.
+docs/source/generated/source-hashes/* merge=binary
 
 # Retained visual evidence is stored outside ordinary Git blobs for new revisions.
 # Source diagrams (.mmd/.dot/.svg), Markdown and machine-readable manifests remain inspectable.

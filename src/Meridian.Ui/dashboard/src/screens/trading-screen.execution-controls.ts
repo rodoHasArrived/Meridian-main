@@ -1,3 +1,5 @@
+import { formatEnumLabel } from "@/lib/display-labels";
+import { formatTimestamp } from "@/lib/format";
 import type {
   ExecutionCircuitBreakerActivationResponse,
   ExecutionControlSnapshot,
@@ -13,13 +15,15 @@ export function buildExecutionControlsPanel(snapshot: ExecutionControlSnapshot):
   return {
     title: "Execution controls snapshot",
     breakerAction: { kind: breakerOpen ? "close-circuit-breaker" : "open-circuit-breaker" },
-    breakerActionLabel: breakerOpen ? "Reset breaker" : "Open breaker",
+    // The label states the effect first: an "Open breaker" button beside "Breaker closed" reads as
+    // a contradiction to anyone who does not think in circuit-breaker terms.
+    breakerActionLabel: breakerOpen ? "Resume trading (reset breaker)" : "Halt trading (open breaker)",
     breakerActionDisabled: false,
     breakerActionDisabledReason: null,
     breakerActionAriaLabel: breakerOpen
       ? "Reset the execution circuit breaker and allow order submission to resume"
       : "Open the execution circuit breaker to halt submission and cancel all open orders",
-    statusLabel: `Breaker ${breakerOpen ? "Open" : "Closed"}`,
+    statusLabel: breakerOpen ? "Trading halted · breaker open" : "Trading allowed · breaker closed",
     statusTone: breakerOpen ? "danger" : "success",
     ariaLabel: `Execution controls snapshot: breaker ${breakerOpen ? "open" : "closed"}, ${symbolLimitCount} symbol ${symbolLimitCount === 1 ? "limit" : "limits"}, ${overrideCount} active ${overrideCount === 1 ? "override" : "overrides"}.`,
     rows: [
@@ -41,7 +45,7 @@ export function buildExecutionControlsPanel(snapshot: ExecutionControlSnapshot):
       {
         id: "as-of",
         label: "As of",
-        value: snapshot.asOf
+        value: Number.isFinite(Date.parse(snapshot.asOf)) ? formatTimestamp(snapshot.asOf, { precision: "second" }) : "Unavailable"
       }
     ]
   };
@@ -62,7 +66,7 @@ function formatExecutionManualOverrides(overrides: ExecutionControlSnapshot["man
   }
 
   return overrides
-    .map((entry) => `${entry.kind}${entry.symbol ? ` (${entry.symbol})` : ""}`)
+    .map((entry) => `${formatEnumLabel(entry.kind)}${entry.symbol ? ` (${entry.symbol})` : ""}`)
     .join(", ");
 }
 

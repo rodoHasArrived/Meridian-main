@@ -99,11 +99,11 @@ export function SettingsAlpacaSection({ vm, alpacaForm }: SettingsAlpacaSectionP
                     <span className="pointer-events-none absolute inset-0 rounded-md peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40" aria-hidden="true" />
                     <span className="flex items-center justify-between gap-2">
                       <span className="font-semibold text-foreground">{option.label}</span>
-                      <span className={cn("rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase", environmentOptionClass[option.tone].badge)}>
+                      <span className={cn("rounded-sm border px-2 py-0.5 font-mono text-xs uppercase", environmentOptionClass[option.tone].badge)}>
                         {option.badgeLabel}
                       </span>
                     </span>
-                    <span id={option.descriptionId} className="text-[11px] font-normal leading-4 text-muted-foreground">
+                    <span id={option.descriptionId} className="text-xs font-normal leading-4 text-muted-foreground">
                       {option.description}
                     </span>
                   </label>
@@ -112,10 +112,10 @@ export function SettingsAlpacaSection({ vm, alpacaForm }: SettingsAlpacaSectionP
               <FieldSupportText
                 helpId={alpacaForm.fieldHelpIds.environment}
                 helpText={alpacaForm.environmentHelpText}
-                helpClassName="text-[11px] leading-4"
+                helpClassName="text-xs leading-4"
                 disabledReason={alpacaForm.environmentOptions[0]?.disabledReason}
                 disabledReasonId={alpacaForm.environmentOptions[0]?.disabledReasonId ?? undefined}
-                disabledReasonClassName="text-[11px] leading-4"
+                disabledReasonClassName="text-xs leading-4"
               />
               <TechnicalDetails
                 label="Service details"
@@ -177,7 +177,7 @@ export function SettingsAlpacaSection({ vm, alpacaForm }: SettingsAlpacaSectionP
                 {alpacaForm.requirements.map((requirement) => (
                   <span
                     key={requirement.id}
-                    className={cn("inline-flex items-center gap-2 rounded-sm border px-2 py-1 text-[11px] font-medium", requirementToneClass[requirement.tone])}
+                    className={cn("inline-flex items-center gap-2 rounded-sm border px-2 py-1 text-xs font-medium", requirementToneClass[requirement.tone])}
                   >
                     <span className="text-muted-foreground">{requirement.label}</span>
                     <span className="font-mono">{requirement.value}</span>
@@ -444,10 +444,10 @@ function AlpacaCredentialField({
       <FieldSupportText
         helpId={field.helpId}
         helpText={field.helpText}
-        helpClassName={cn("text-[11px] leading-4", field.error ? "text-danger" : "text-muted-foreground")}
+        helpClassName={cn("text-xs leading-4", field.error ? "text-danger" : "text-muted-foreground")}
         disabledReason={field.disabledReason}
         disabledReasonId={field.disabledReason ? disabledReasonId : undefined}
-        disabledReasonClassName="text-[11px] leading-4"
+        disabledReasonClassName="text-xs leading-4"
       />
     </label>
   );

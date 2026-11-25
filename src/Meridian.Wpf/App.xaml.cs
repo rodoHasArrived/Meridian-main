@@ -70,6 +70,48 @@ public partial class App : System.Windows.Application
     private ApiClientService? _apiClientService;
     private readonly CancellationTokenSource _startupCancellation = new();
     private bool _desktopActivated;
+    private DesktopOperatorPreferenceSync? _operatorPreferenceSync;
+    private WpfServices.WpfDesktopPreferenceSurface? _operatorPreferenceSurface;
+
+    /// <summary>
+    /// Applies the operator's host theme, density, desktop shortcut overrides and notification settings and saves desktop
+    /// changes back. A host that cannot be read leaves the desktop local for this run; nothing here
+    /// blocks startup.
+    /// </summary>
+    private void StartOperatorPreferenceSync(CancellationToken ct)
+    {
+        var apiClient = _apiClientService ?? ApiClientService.Instance;
+        _operatorPreferenceSurface = new WpfServices.WpfDesktopPreferenceSurface(
+            WpfServices.ThemeService.Instance,
+            SettingsConfigurationService.Instance,
+            WpfServices.KeyboardShortcutService.Instance,
+            WpfServices.NotificationService.Instance);
+        _operatorPreferenceSync = new DesktopOperatorPreferenceSync(
+            new OperatorPreferencesApiClient(apiClient),
+            _operatorPreferenceSurface);
+        _ = RunOperatorPreferenceSyncAsync(_operatorPreferenceSync, ct);
+    }
+
+    private static async Task RunOperatorPreferenceSyncAsync(DesktopOperatorPreferenceSync sync, CancellationToken ct)
+    {
+        try
+        {
+            await sync.StartAsync(ct).ConfigureAwait(false);
+            WpfServices.LoggingService.Instance.LogInfo(
+                "Operator preference sync started",
+                ("syncing", sync.IsSyncing ? "true" : "false"));
+        }
+        catch (OperationCanceledException)
+        {
+            // Startup was cancelled.
+        }
+        catch (Exception ex)
+        {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "Operator preference sync could not start; theme and density stay local for this run.",
+                ("error", ex.GetType().Name));
+        }
+    }
 
     /// <summary>
     /// Gets the service provider for dependency injection.
@@ -141,7 +183,7 @@ public partial class App : System.Windows.Application
         catch (Exception ex)
         {
             WpfServices.LoggingService.Instance.LogError(
-                $"Desktop launch ticket redemption failed: {ex.Message}");
+                "Desktop launch ticket redemption failed: {Error}", ex, ("Error", ex.Message));
             _launchArgs = e.Args
                 .Where(arg => !arg.StartsWith("--launch-ticket=", StringComparison.OrdinalIgnoreCase) &&
                               !arg.StartsWith("--host=", StringComparison.OrdinalIgnoreCase))
@@ -256,6 +298,7 @@ public partial class App : System.Windows.Application
                 WpfServices.NavigationService.Instance.SetServiceProvider(Services);
                 Services.GetRequiredService<WpfServices.ViewModelViewResolver>()
                     .LogMissingViewModels(Services.GetRequiredService<Meridian.Wpf.Shell.Services.IShellPageRegistry>());
+                StartOAuthRefresh();
 
                 mainWindow = Services.GetRequiredService<MainWindow>();
                 Current.MainWindow = mainWindow;
@@ -425,7 +468,15 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.ConfigService>(_ => WpfServices.ConfigService.Instance);
         services.AddSingleton<WpfServices.ThemeService>(_ => WpfServices.ThemeService.Instance);
         services.AddSingleton<WpfServices.NotificationService>(_ => WpfServices.NotificationService.Instance);
-        services.AddSingleton<WpfServices.KeyboardShortcutService>(_ => WpfServices.KeyboardShortcutService.Instance);
+        services.AddSingleton<WpfServices.KeyboardShortcutService>(_ =>
+        {
+            // Operator shortcut overrides live with the other desktop shell preferences so a
+            // rebinding or a disabled shortcut survives a restart.
+            var shortcuts = WpfServices.KeyboardShortcutService.Instance;
+            var settings = Meridian.Ui.Services.Services.SettingsConfigurationService.Instance;
+            shortcuts.AttachPreferenceStore(settings.GetShortcutOverrides(), settings.SetShortcutOverrides);
+            return shortcuts;
+        });
         services.AddSingleton<WpfServices.MessagingService>(_ => WpfServices.MessagingService.Instance);
         services.AddSingleton<WpfServices.ApiStatusService>();
         services.AddSingleton<IStatusService>(sp => sp.GetRequiredService<WpfServices.ApiStatusService>());
@@ -543,6 +594,10 @@ public partial class App : System.Windows.Application
         // ── Temporary legacy registrations not yet feature-owned ─────────────
         services.AddTransient<FundProfileSelectionPage>();
         services.AddTransient<Meridian.Wpf.ViewModels.FundProfileSelectionViewModel>();
+        // Scope picker reads the shared /api/workstation/scope-options seam (browser parity); on a
+        // 404 from an older host it falls back to the in-process fund-structure graph.
+        services.AddSingleton<WpfServices.IWorkstationScopeOptionsApiClient, WpfServices.WorkstationScopeOptionsApiClient>();
+        services.AddTransient<Meridian.Wpf.ViewModels.WorkstationScopeOptionsViewModel>();
 
         // ── Plugin loader service ────────────────────────────────────────────
         services.AddSingleton<Meridian.Infrastructure.DataSources.DataSourceRegistry>();
@@ -683,6 +738,14 @@ public partial class App : System.Windows.Application
             if (Current.MainWindow is MainWindow mainWindow)
             {
                 WpfServices.ThemeService.Instance.Initialize(mainWindow);
+
+                // The operator's theme and density come from the same host preferences the browser
+                // workstation uses, and desktop changes are saved back there. Fixture runs have no
+                // host session, so they stay local.
+                if (!_isFixtureMode)
+                {
+                    StartOperatorPreferenceSync(ct);
+                }
 
                 // Initialize system tray integration
                 var systemTrayService = Services.GetRequiredService<WpfServices.ISystemTrayService>();
@@ -957,6 +1020,10 @@ public partial class App : System.Windows.Application
         if (_desktopActivated)
             SafeOnExitAsync().GetAwaiter().GetResult();
         StopHostSafely();
+        _operatorPreferenceSync?.Dispose();
+        _operatorPreferenceSync = null;
+        _operatorPreferenceSurface?.Dispose();
+        _operatorPreferenceSurface = null;
         _apiClientService?.Dispose();
         _apiClientService = null;
         WpfServices.SingleInstanceService.Instance.Dispose();
@@ -966,8 +1033,52 @@ public partial class App : System.Windows.Application
     /// <summary>
     /// Performs async shutdown with proper exception handling.
     /// </summary>
+    private static Meridian.Ui.Services.OAuthRefreshService? _oauthRefreshService;
+
+    /// <summary>
+    /// Starts background OAuth token refresh against the DPAPI-backed credential store.
+    /// A failure here must not block the shell, so it is logged and startup continues.
+    /// </summary>
+    private static void StartOAuthRefresh()
+    {
+        try
+        {
+            var service = Services.GetRequiredService<Meridian.Ui.Services.OAuthRefreshService>();
+            service.Start();
+            _oauthRefreshService = service;
+        }
+        catch (Exception ex)
+        {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "OAuth token auto-refresh could not be started",
+                ("Error", ex.Message));
+        }
+    }
+
+    private static void StopOAuthRefresh()
+    {
+        var service = Interlocked.Exchange(ref _oauthRefreshService, null);
+        if (service is null)
+        {
+            return;
+        }
+
+        try
+        {
+            service.Dispose();
+        }
+        catch (Exception ex)
+        {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "Failed to stop OAuth token auto-refresh during shutdown",
+                ("Error", ex.Message));
+        }
+    }
+
     private static async Task SafeOnExitAsync(CancellationToken ct = default)
     {
+        StopOAuthRefresh();
+
         const int ShutdownTimeoutMs = 5000; // 5 second timeout for graceful shutdown
 
         try
@@ -1083,8 +1194,8 @@ public partial class App : System.Windows.Application
         catch (Exception ex)
         {
             WpfServices.LoggingService.Instance.LogError(
-                $"WPF shutdown service failed: {serviceName}",
-                ex);
+                "WPF shutdown service failed: {Service}",
+                ex, ("Service", serviceName));
         }
     }
 
@@ -1109,8 +1220,8 @@ public partial class App : System.Windows.Application
             catch (Exception ex)
             {
                 WpfServices.LoggingService.Instance.LogError(
-                    $"WPF shutdown service failed: {serviceName}",
-                    ex);
+                    "WPF shutdown service failed: {Service}",
+                    ex, ("Service", serviceName));
             }
         }, ct).ConfigureAwait(false);
     }

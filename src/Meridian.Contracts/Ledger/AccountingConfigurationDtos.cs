@@ -236,7 +236,12 @@ public sealed record ChartOfAccountsNodeDto(
     string? Symbol = null,
     string? FinancialAccountId = null,
     bool IsArchived = false,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IntercompanyAccountRoleDto? IntercompanyRole = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IntercompanyAccountRoleDto? IntercompanyRole = null)
+{
+    /// <summary>Stable posting code assigned to this node within its book's chart.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? AccountCode { get; init; }
+}
 
 public sealed record JournalEntryTemplateLineDto(
     string LineId,
@@ -868,6 +873,13 @@ public sealed record ManualJournalEntryDraftDto(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? IntercompanyRefreshRequestDigest { get; init; }
 
+    /// <summary>Server-retained loan-interest computation; see <see cref="IntercompanyAccrualEvidenceGuard"/>.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? IntercompanyAccrualEvidenceJson { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? IntercompanyAccrualEvidenceDigest { get; init; }
+
     /// <summary>Server-retained distribution terms and tiers used to recover an interrupted declaration.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? DistributionDeclarationJson { get; init; }
@@ -887,6 +899,20 @@ public sealed record ManualJournalEntryDraftDto(
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public PostedPostingRuleJournalCandidateResultDto? AssetAccountingPostingResult { get; init; }
+
+    /// <summary>Retained non-real origin of a draft; absent on legacy operator journals.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? DataProvenanceToken { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ThreeWayFeeCorrectionEvidenceDto? ThreeWayFeeCorrection { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool IsAdjustingEntry { get; init; }
+
+    /// <summary>Server-selected currency materialization; zero preserves retained legacy draft replay.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int CurrencyEvidenceVersion { get; init; }
 }
 
 public sealed record RuleDryRunRequestDto(

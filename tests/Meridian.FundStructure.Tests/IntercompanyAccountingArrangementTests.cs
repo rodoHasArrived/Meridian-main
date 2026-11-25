@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Meridian.FundStructure.Tests;
 
-public sealed class IntercompanyAccountingArrangementTests
+public sealed partial class IntercompanyAccountingArrangementTests
 {
     private static readonly DateTimeOffset Start = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset Cutoff = new(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);

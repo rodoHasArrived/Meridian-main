@@ -1,7 +1,11 @@
+import { humanizeIdentifiersInText } from "@/lib/display-labels";
 import { useState } from "react";
+import { resolveKpi } from "@/lib/kpi-registry";
 import { isBondAssetClass } from "@/lib/fixed-income-navigation";
 import { measureDisplayedPositionAmounts, type PositionValueMeasurement } from "@/lib/position-value-graphic";
-import { presentMarkFreshness, markFreshnessFields, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
+import { presentMarkFreshness, markFreshnessFields, markPriceField, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
+import { useLinkedRecordSelection } from "@/hooks/use-linked-record-selection";
+import { findUniqueRecord, positionRecordIdentity, positionReference, type RecordIdentity } from "@/lib/record-workspace-context";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
   buildMultiAssetCoverageGroups,
@@ -10,20 +14,22 @@ import {
   multiAssetStatusLabel,
   multiAssetStatusTone
 } from "./portfolio-screen.multi-asset-coverage";
-import { formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
+import { formatCount, formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
+import { buildHoldingsModel, holdingRowFigures, holdingsTotalLine, type HoldingFigure, type HoldingsTotalLine } from "@/lib/holdings-model";
 import { PORTFOLIO_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
   comparisonToneForPnl,
+  formatBrokeragePositionAmounts,
   formatCountLabel,
   formatDateTime,
-  formatNumber,
   formatRatioAsPercent,
+  nextBrokerageAccountKey,
+  numericPnlTone,
   pnlFieldTone,
   pnlTone,
   riskFieldTone,
   riskTone,
-  runStatusTone,
-  sumNumericStrings
+  runStatusTone
 } from "@/screens/portfolio-screen.presentation";
 import type {
   BrokerageConnectionStatus,
@@ -45,7 +51,8 @@ import type {
   StrategyRunContinuityWarningSeverity,
   TradingWorkspaceResponse
 } from "@/types";
-import { formatCount } from "@/lib/format";
+
+export { resolveBrokerageAccountFilterKeyCommand } from "@/screens/portfolio-screen.presentation";
 
 type PortfolioRiskState = TradingWorkspaceResponse["risk"];
 type PortfolioBrokerageStatus = TradingWorkspaceResponse["brokerage"];
@@ -65,10 +72,21 @@ type PortfolioSourceRun = {
 };
 
 export interface PortfolioPositionRow {
+  securityId?: string | null;
+  averagePriceExact?: string | null;
+  markPriceExact?: string | null;
+  unrealizedPnlExact?: string | null;
+  exposureExact?: string | null;
+  /** Display values from the shared holdings model; the `*Figure` fields carry reason and staleness. */
   marketValue: string;
+  marketValueFigure: HoldingFigure;
   currency: string | null;
+  currencyFigure: HoldingFigure;
   weight: string;
+  weightFigure: HoldingFigure;
   weightBasis: string | null;
+  /** Absolute exposure as a plain decimal; the screenshot check sums these against the headline. */
+  exposureAmount: string | null;
   exposureGraphic: PositionValueMeasurement | null;
   pnlGraphic: PositionValueMeasurement | null;
   markFreshness: MarkFreshnessPresentation;
@@ -148,6 +166,8 @@ export interface PortfolioBrokerageAccountRow {
 
 export interface PortfolioBrokeragePositionRow {
   markFreshness: MarkFreshnessPresentation;
+  amountPassports?: BrokerageHouseholdPosition["amountPassports"];
+  currency: string | null;
   id: string;
   accountLabel: string;
   accountKind: string;
@@ -314,7 +334,10 @@ interface PortfolioRunContinuityBlocker {
 }
 
 export interface PortfolioPositionDetail {
+  securityId?: string | null;
   id: string;
+  record: RecordIdentity;
+  linkedRef: string;
   title: string;
   subtitle: string;
   ariaLabel: string;
@@ -482,6 +505,7 @@ export interface PortfolioScreenViewModel {
   hasPositions: boolean;
   positionRows: PortfolioPositionRow[];
   positionListLabel: string;
+  holdingsTotal: HoldingsTotalLine;
   positionCountLabel: string;
   positionDetailId: string;
   selectedPositionChip: PortfolioHeaderChip;
@@ -510,15 +534,23 @@ export interface PortfolioScreenViewModel {
   openPositionCount: number;
 }
 
+/** Resolve display copy only from the retained run's exact identity. */
+export function resolveRetainedPortfolioRunLabel(
+  runId: string | undefined,
+  portfolio?: PortfolioWorkspaceResponse | null,
+  strategy?: StrategyWorkspaceResponse | null
+): string {
+  if (!runId) return "Retained run";
+  const portfolioRun = portfolio?.runs.find((run) => run.runId === runId);
+  const strategyRun = strategy?.runs.find((run) => run.id === runId);
+  const name = portfolioRun?.strategyName.trim() || strategyRun?.strategyName.trim();
+  if (name) return name;
+  return /^\d+$/.test(runId) ? `Run ${runId}` : "Retained run";
+}
+
 export function buildPortfolioExplorerPresentation(
   explorer: FinancialRecordExplorerDto | null,
-  {
-    sourceLabel,
-    runLabel
-  }: {
-    sourceLabel: string;
-    runLabel: string;
-  }
+  formatRunLabel: (runId: string) => string = (runId) => resolveRetainedPortfolioRunLabel(runId)
 ): FinancialRecordExplorerDto | null {
   if (!explorer) {
     return null;
@@ -532,15 +564,14 @@ export function buildPortfolioExplorerPresentation(
       .map((item) => item.value)
   ].join(" ");
   const usesDemoData = /\b(?:demo|fixture|no-host)\b/i.test(rawSourceCopy);
-  const operatorSourceLabel = usesDemoData ? "Demo portfolio data" : sourceLabel.trim() || "Portfolio records";
-  const operatorRunLabel = runLabel.trim() || "Linked strategy run";
+  const retainedSource = explorer.scopeItems.find((item) => item.label.trim().toLowerCase() === "source")?.value;
+  const operatorSourceLabel = usesDemoData ? "Demo portfolio data" : retainedSource?.trim() || "Retained portfolio records";
+  const retainedRunId = explorer.scopeItems.find((item) => /^(run|run id)$/i.test(item.label.trim()))?.value;
+  const operatorRunLabel = retainedRunId ? formatRunLabel(retainedRunId) : "Retained run";
   const presentFilter = (filter: FinancialRecordExplorerDto["filters"][number]) => {
     const filterKind = (filter.label || filter.filterId).trim().toLowerCase();
     if (filterKind === "source") {
       return { ...filter, value: operatorSourceLabel };
-    }
-    if (filterKind === "run" || filterKind === "run id") {
-      return { ...filter, value: operatorRunLabel };
     }
     return filter;
   };
@@ -548,16 +579,15 @@ export function buildPortfolioExplorerPresentation(
   return {
     ...explorer,
     description: "Explore retained account and aggregate position records.",
-    sourceState: usesDemoData
-      ? `Demo portfolio data and ${operatorRunLabel} evidence are ready for review.`
-      : `${operatorSourceLabel} records and ${operatorRunLabel} evidence are ready for review.`,
+    sourceState: explorer.isBlocked
+      ? retainedRunId && !/^\d+$/.test(retainedRunId) ? explorer.sourceState.replaceAll(retainedRunId, operatorRunLabel) : explorer.sourceState
+      : usesDemoData
+        ? `Demo portfolio data and ${operatorRunLabel} evidence are ready for review.`
+        : `${operatorSourceLabel} records and ${operatorRunLabel} evidence are ready for review.`,
     scopeItems: explorer.scopeItems.map((item) => {
       switch (item.label.trim().toLowerCase()) {
         case "source":
           return { ...item, value: operatorSourceLabel };
-        case "run":
-        case "run id":
-          return { ...item, value: operatorRunLabel };
         case "as of":
           return { ...item, value: formatDateTime(item.value) };
         default:
@@ -565,14 +595,7 @@ export function buildPortfolioExplorerPresentation(
       }
     }),
     filters: explorer.filters.map(presentFilter),
-    recordGraph: {
-      ...explorer.recordGraph,
-      nodes: explorer.recordGraph.nodes.map((node) =>
-        node.nodeType.trim().toLowerCase() === "run"
-          ? { ...node, label: operatorRunLabel }
-          : node
-      )
-    }
+    recordGraph: explorer.recordGraph
   };
 }
 
@@ -585,10 +608,12 @@ export function buildPortfolioScreenViewModel({
   brokeragePortfolio,
   multiAssetCoverage,
   selectedPositionId = null,
+  requestedPositionRef = null,
   selectedRunId = null,
   selectedRunContinuity = null,
   selectedRunDrillIn = null,
   selectedBrokeragePositionId = null,
+  requestedBrokeragePositionId = null,
   selectedBrokerageAccountKey = "all",
   pathname = WORKSTATION_ROUTE_CATALOG.portfolio,
   selectPosition = () => {},
@@ -604,10 +629,12 @@ export function buildPortfolioScreenViewModel({
   brokeragePortfolio?: BrokerageHouseholdPortfolio | null;
   multiAssetCoverage?: MultiAssetCoverageSummary | null;
   selectedPositionId?: string | null;
+  requestedPositionRef?: string | null;
   selectedRunId?: string | null;
   selectedRunContinuity?: StrategyRunContinuityDto | null;
   selectedRunDrillIn?: PortfolioRunDrillInData | null;
   selectedBrokeragePositionId?: string | null;
+  requestedBrokeragePositionId?: string | null;
   selectedBrokerageAccountKey?: string;
   pathname?: string;
   selectPosition?: (id: string) => void;
@@ -615,7 +642,7 @@ export function buildPortfolioScreenViewModel({
   selectBrokeragePosition?: (id: string) => void;
   selectBrokerageAccount?: (key: string) => void;
 }): PortfolioScreenViewModel {
-  const positions = portfolio?.positions ?? trading?.positions ?? [];
+  const positions = portfolio?.positions ?? [];
   const runs = portfolio
     ? portfolio.runs.map(toPortfolioRunRecord)
     : strategy?.runs ?? [];
@@ -637,12 +664,11 @@ export function buildPortfolioScreenViewModel({
   };
   const brokeragePositions = (brokeragePortfolio?.positions ?? [])
     .filter((position) => selectedBrokerageKey === "all" || position.fundAccountId === selectedBrokerageKey);
-  const selectedBrokerageStableId =
-    brokeragePositions.find((position) => brokeragePositionId(position) === selectedBrokeragePositionId) !== undefined
-      ? selectedBrokeragePositionId
-      : brokeragePositions.length > 0
-        ? brokeragePositionId(brokeragePositions[0])
-        : null;
+  const selectedBrokeragePositionRecord = brokeragePositions.find((position) => brokeragePositionId(position) === selectedBrokeragePositionId)
+    ?? (requestedBrokeragePositionId
+      ? findUniqueRecord(brokeragePositions, (position) => brokeragePositionId(position) === requestedBrokeragePositionId)
+      : brokeragePositions[0]);
+  const selectedBrokerageStableId = selectedBrokeragePositionRecord ? brokeragePositionId(selectedBrokeragePositionRecord) : null;
   const brokerageConnectionState = brokerageConnection?.state ?? "NotConfigured";
   const brokerageConnectionWarnings = [
     ...(brokerageConnection?.warnings ?? []),
@@ -655,12 +681,15 @@ export function buildPortfolioScreenViewModel({
     warningCount: brokerageWarningRows.length,
     connectionState: brokerageConnectionState
   });
-  const selectedId =
-    positions.find((p, index) => positionId(p.symbol, p.side, index) === selectedPositionId) !== undefined
-      ? selectedPositionId
-      : positions.length > 0
-        ? positionId(positions[0].symbol, positions[0].side, 0)
-        : null;
+  const positionKeys = positions.map((position, index) => ({
+    position,
+    id: positionId(position.symbol, position.side, index),
+    ref: positionReference(position)
+  }));
+  const selectedPositionKey = positionKeys.find((row) => row.id === selectedPositionId) ?? (requestedPositionRef
+    ? findUniqueRecord(positionKeys, (row) => row.ref === requestedPositionRef)
+    : positionKeys[0]);
+  const selectedId = selectedPositionKey?.id ?? null;
   const selectedRunStableId =
     runs.find((run) => run.id === selectedRunId) !== undefined
       ? selectedRunId
@@ -671,8 +700,10 @@ export function buildPortfolioScreenViewModel({
   const positionCurrencies = positions.map((position) => position.currency);
   const exposureGraphics = measureDisplayedPositionAmounts(positions.map((position) => position.exposure), positionCurrencies);
   const pnlGraphics = measureDisplayedPositionAmounts(positions.map((position) => position.unrealizedPnl), positionCurrencies);
-  const positionRows: PortfolioPositionRow[] = positions.map((p, index) => {
-    const id = positionId(p.symbol, p.side, index);
+  // One model feeds the table rows, the headline figures and the holding detail panel.
+  const holdings = buildHoldingsModel(portfolio);
+  const positionRows: PortfolioPositionRow[] = positionKeys.map(({ position: p, id }, index) => {
+    const holding = holdings.rows[index];
     const tone = pnlTone(p.unrealizedPnl);
     const isSelected = id === selectedId;
 
@@ -681,11 +712,13 @@ export function buildPortfolioScreenViewModel({
       symbol: p.symbol,
       side: p.side,
       quantity: p.quantity,
+      securityId: p.markFreshness?.securityId,
+      averagePriceExact: p.averagePriceExact,
+      markPriceExact: p.markPriceExact,
+      unrealizedPnlExact: p.unrealizedPnlExact,
+      exposureExact: p.exposureExact,
       avgPrice: p.averagePrice,
-      marketValue: p.marketValue && p.currency ? `${p.marketValue} ${p.currency}` : "Unavailable · currency or value not supplied",
-      currency: p.currency ?? null,
-      weight: p.weight && p.weightBasis ? p.weight : "Unavailable",
-      weightBasis: p.weightBasis ?? null,
+      ...holdingRowFigures(holding),
       markFreshness: presentMarkFreshness(p.markFreshness),
       markPrice: p.markPrice,
       dayPnl: p.dayPnl,
@@ -729,11 +762,18 @@ export function buildPortfolioScreenViewModel({
     };
   });
 
-  const totalExposure = sumNumericStrings(positions.map((p) => p.exposure));
-  const totalUnrealizedPnl = sumNumericStrings(positions.map((p) => p.unrealizedPnl));
+  const exposureKpi = holdings.totalExposure;
+  const unrealizedPnlKpi = holdings.totalUnrealizedPnl;
+  const positionCountKpi = holdings.openPositions;
+  const totalExposure = exposureKpi.value;
+  const totalUnrealizedPnl = unrealizedPnlKpi.value;
   const selectedRow = positionRows.find((row) => row.id === selectedId) ?? null;
-  const selectedPosition = selectedRow
-    ? buildSelectedPositionDetail(selectedRow, risk, brokerage)
+  const selectedPosition = selectedRow && selectedPositionKey
+    ? buildSelectedPositionDetail(
+      selectedRow, risk, brokerage,
+      positionRecordIdentity(selectedPositionKey.position, selectedRow.markFreshness),
+      selectedPositionKey.ref
+    )
     : null;
   const selectedRunRow = runRows.find((row) => row.id === selectedRunStableId) ?? null;
   const selectedContinuity = resolveSelectedRunContinuity(selectedRunRow, selectedRunContinuity);
@@ -755,30 +795,28 @@ export function buildPortfolioScreenViewModel({
   const selectedBrokerageAccount = selectedBrokerageAccountRecord
     ? buildSelectedBrokerageAccountDetail(selectedBrokerageAccountRecord, providerLabel)
     : buildAllBrokerageAccountsDetail(brokerageAccounts, brokeragePortfolio, providerLabel);
-  const selectedBrokeragePositionRecord =
-    brokeragePositions.find((position) => brokeragePositionId(position) === selectedBrokerageStableId) ?? null;
   const selectedBrokeragePosition = selectedBrokeragePositionRecord
     ? buildSelectedBrokeragePositionDetail(selectedBrokeragePositionRecord, brokerageAccounts, providerLabel)
     : null;
 
-  const fallbackStats = buildPortfolioFallbackMetrics({
-    openPositionCount: positions.length,
-    totalExposure,
-    totalUnrealizedPnl
-  });
+  const fallbackStats: MetricSnapshot[] = [
+    { ...exposureKpi, id: "portfolio-total-exposure" },
+    { ...unrealizedPnlKpi, id: "portfolio-unrealized-pnl" },
+    { ...resolveKpi("portfolio.cash", { portfolio }), id: "portfolio-cash" },
+    { ...positionCountKpi, id: "portfolio-open-positions" }
+  ];
   const cashVarianceLabel = cashFlow !== null ? formatPrefixedCurrency(cashFlow.netVariance, { maximumFractionDigits: 0 }) : null;
 
   return {
-    metricsFromTrading: portfolio == null && trading !== null,
+    metricsFromTrading: false,
     metricCards: portfolio?.metrics ?? trading?.metrics ?? [],
     multiAssetCoveragePanel: buildMultiAssetCoveragePanel(multiAssetCoverage),
-    positionSourceLabel: portfolio ? "Portfolio workspace" : trading ? "Trading workspace" : "Unavailable",
+    positionSourceLabel: portfolio ? "Portfolio workspace" : "Unavailable",
     fallbackStats,
     headerChips: buildPortfolioHeaderChips({
-      openPositionCount: positions.length,
+      positionCountValue: positionCountKpi.value,
       totalExposure,
       totalUnrealizedPnl,
-      hasPositions: positions.length > 0,
       cashVarianceLabel,
       brokeragePortfolio,
       providerLabel
@@ -788,6 +826,7 @@ export function buildPortfolioScreenViewModel({
       risk,
       brokerage,
       openPositionCount: positions.length,
+      positionCountValue: positionCountKpi.value,
       totalExposure,
       totalUnrealizedPnl,
       cashFlow,
@@ -827,7 +866,7 @@ export function buildPortfolioScreenViewModel({
     selectBrokeragePosition,
     brokerageEmptyText: brokeragePortfolio
       ? `No ${providerLabel} positions are available for the selected account.`
-      : `${providerLabel} portfolio sync has not produced a household projection yet.`,
+      : `${providerLabel} portfolio sync has not produced a household view yet.`,
     brokerageSetupAction: buildBrokerageSetupAction({
       connection: brokerageConnection,
       portfolio: brokeragePortfolio,
@@ -836,24 +875,21 @@ export function buildPortfolioScreenViewModel({
     hasPositions: positionRows.length > 0,
     positionRows,
     positionListLabel: "Open positions",
+    holdingsTotal: holdingsTotalLine(holdings),
     positionCountLabel: `${positionRows.length} position${positionRows.length === 1 ? "" : "s"}`,
     positionDetailId: "portfolio-position-detail",
     selectedPositionChip: { label: "Selected detail", value: selectedPosition?.title ?? "None" },
     runEvidenceChip: { label: "Run evidence", value: buildLinkedRunEvidenceLabel(runRows.length) },
     positionDetailEmptyTitle: "No holding selected",
-    positionEmptyText: trading
-      ? "No open positions in the active paper session. Positions appear here once an order fills."
-      : portfolio
-        ? "No holdings yet. Import a statement or holdings file, or connect a provider, and they appear here."
-        : "Portfolio workspace data unavailable.",
+    positionEmptyText: portfolio
+      ? "No holdings yet. Import a statement or holdings file, or connect a provider, and they appear here."
+      : "Portfolio workspace data unavailable.",
     // Only offered where there is a true next step: a loaded workspace with nothing in it yet, or a
     // paper session waiting on a fill. "Unavailable" is a failure to load, not an empty desk, so it
     // gets no button -- routing an operator elsewhere would just hide the problem.
-    positionEmptyAction: trading
-      ? { label: "Open the trading desk", route: WORKSTATION_ROUTE_CATALOG.trading }
-      : portfolio
-        ? { label: "Import a statement", route: WORKSTATION_ROUTE_CATALOG.accountingStatementImport }
-        : null,
+    positionEmptyAction: portfolio
+      ? { label: "Import a statement", route: WORKSTATION_ROUTE_CATALOG.accountingStatementImport }
+      : null,
     selectedPosition,
     selectPosition,
     hasRuns: runRows.length > 0,
@@ -1282,18 +1318,16 @@ function buildPortfolioRunTradeEvidenceRows(trades: RunFillSummary | null): Port
 }
 
 function buildPortfolioHeaderChips({
-  openPositionCount,
+  positionCountValue,
   totalExposure,
   totalUnrealizedPnl,
-  hasPositions,
   cashVarianceLabel,
   brokeragePortfolio,
   providerLabel
 }: {
-  openPositionCount: number;
-  totalExposure: number;
-  totalUnrealizedPnl: number;
-  hasPositions: boolean;
+  positionCountValue: string;
+  totalExposure: string;
+  totalUnrealizedPnl: string;
   cashVarianceLabel: string | null;
   brokeragePortfolio: BrokerageHouseholdPortfolio | null | undefined;
   providerLabel: string;
@@ -1301,13 +1335,11 @@ function buildPortfolioHeaderChips({
   const chips: PortfolioHeaderChip[] = [
     { label: `${providerLabel} equity`, value: brokeragePortfolio ? formatPrefixedCurrency(brokeragePortfolio.totalEquity, { maximumFractionDigits: 0 }) : "—" },
     { label: `${providerLabel} cash`, value: brokeragePortfolio ? formatPrefixedCurrency(brokeragePortfolio.totalCash, { maximumFractionDigits: 0 }) : "—" },
-    { label: "Open positions", value: String(openPositionCount) },
-    { label: "Exposure", value: hasPositions ? formatPrefixedCurrency(totalExposure, { maximumFractionDigits: 0 }) : "—" },
+    { label: "Open positions", value: positionCountValue },
+    { label: "Exposure", value: totalExposure },
     {
       label: "Unrealized P&L",
-      value: hasPositions
-        ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatPrefixedCurrency(totalUnrealizedPnl, { maximumFractionDigits: 0 })
-        : "—"
+      value: totalUnrealizedPnl
     }
   ];
 
@@ -1328,6 +1360,10 @@ export function usePortfolioScreenViewModel({
   multiAssetCoverage,
   selectedRunContinuity = null,
   selectedRunDrillIn = null,
+  requestedPositionRef = null,
+  requestedBrokerageAccount = null,
+  requestedBrokeragePositionId = null,
+  onBrokerageAccountChange,
   pathname = WORKSTATION_ROUTE_CATALOG.portfolio
 }: {
   portfolio?: PortfolioWorkspaceResponse | null;
@@ -1339,12 +1375,16 @@ export function usePortfolioScreenViewModel({
   multiAssetCoverage?: MultiAssetCoverageSummary | null;
   selectedRunContinuity?: StrategyRunContinuityDto | null;
   selectedRunDrillIn?: PortfolioRunDrillInData | null;
+  requestedPositionRef?: string | null;
+  requestedBrokerageAccount?: string | null;
+  requestedBrokeragePositionId?: string | null;
+  onBrokerageAccountChange?: (key: string) => void;
   pathname?: string;
 }): PortfolioScreenViewModel {
-  const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
+  const [selectedPositionId, setSelectedPositionId] = useLinkedRecordSelection(requestedPositionRef);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
-  const [selectedBrokeragePositionId, setSelectedBrokeragePositionId] = useState<string | null>(null);
-  const [selectedBrokerageAccountKey, setSelectedBrokerageAccountKey] = useState<string>("all");
+  const [selectedBrokeragePositionId, setSelectedBrokeragePositionId] = useLinkedRecordSelection(requestedBrokeragePositionId);
+  const [selectedBrokerageAccountKey, setSelectedBrokerageAccountKey] = useLinkedRecordSelection(requestedBrokerageAccount);
 
   return buildPortfolioScreenViewModel({
     portfolio,
@@ -1358,13 +1398,15 @@ export function usePortfolioScreenViewModel({
     selectedRunDrillIn,
     pathname,
     selectedPositionId,
+    requestedPositionRef,
     selectedRunId,
     selectedBrokeragePositionId,
-    selectedBrokerageAccountKey,
+    requestedBrokeragePositionId,
+    selectedBrokerageAccountKey: selectedBrokerageAccountKey ?? requestedBrokerageAccount ?? "all",
     selectPosition: setSelectedPositionId,
     selectRun: setSelectedRunId,
     selectBrokeragePosition: setSelectedBrokeragePositionId,
-    selectBrokerageAccount: setSelectedBrokerageAccountKey
+    selectBrokerageAccount: onBrokerageAccountChange ?? setSelectedBrokerageAccountKey
   });
 }
 
@@ -1511,51 +1553,6 @@ function toPortfolioRunRecord(run: PortfolioWorkspaceResponse["runs"][number]): 
   };
 }
 
-export function resolveBrokerageAccountFilterKeyCommand(
-  key: string
-): "next" | "previous" | "first" | "last" | null {
-  if (key === "ArrowRight" || key === "ArrowDown") {
-    return "next";
-  }
-
-  if (key === "ArrowLeft" || key === "ArrowUp") {
-    return "previous";
-  }
-
-  if (key === "Home") {
-    return "first";
-  }
-
-  if (key === "End") {
-    return "last";
-  }
-
-  return null;
-}
-
-function nextBrokerageAccountKey(
-  options: PortfolioBrokerageAccountOption[],
-  selectedKey: string,
-  direction: "next" | "previous" | "first" | "last"
-): string {
-  if (options.length === 0) {
-    return selectedKey;
-  }
-
-  if (direction === "first") {
-    return options[0].key;
-  }
-
-  if (direction === "last") {
-    return options[options.length - 1].key;
-  }
-
-  const selectedIndex = Math.max(0, options.findIndex((option) => option.key === selectedKey));
-  const offset = direction === "next" ? 1 : -1;
-  const nextIndex = (selectedIndex + offset + options.length) % options.length;
-  return options[nextIndex].key;
-}
-
 function toBrokerageAccountRow(
   account: BrokerageHouseholdAccount,
   selectedAccountKey: string
@@ -1632,7 +1629,7 @@ function buildSelectedBrokerageAccountDetail(
     title: kind,
     subtitle: `${providerLabel} / ${account.displayName}`,
     ariaLabel: `${kind} brokerage account detail`,
-    statusTitle: warningCount > 0 ? "Account sync warning" : "Account sync posture",
+    statusTitle: warningCount > 0 ? "Account sync warning" : "Account sync status",
     statusDetail: warningCount > 0
       ? account.warnings.join(" ")
       : `${kind} account is ${account.health.toLowerCase()} with ${formatCountLabel(account.positionCount, "position")} and ${formatCountLabel(account.cashTransactionCount, "cash transaction")} in the latest household snapshot.`,
@@ -1718,22 +1715,20 @@ function toBrokeragePositionRow(
   selectedId: string | null
 ): PortfolioBrokeragePositionRow {
   const account = accounts.find((candidate) => candidate.fundAccountId === position.fundAccountId);
-  const pnl = formatSignedCurrency(position.unrealizedPnl, { maximumFractionDigits: 0 });
+  const amounts = formatBrokeragePositionAmounts(position);
   const id = brokeragePositionId(position);
   const accountKind = accountKindLabel(position.accountKind);
   const accountLabel = account?.displayName ?? accountKind;
   return {
     id,
+    amountPassports: position.amountPassports,
+    currency: position.currency,
     accountLabel,
     accountKind,
     symbol: position.symbol,
-    quantity: formatNumber(position.quantity),
-    averagePrice: formatPrefixedCurrency(position.averageEntryPrice, { minimumFractionDigits: 2 }),
-    markPrice: formatPrefixedCurrency(position.marketPrice, { minimumFractionDigits: 2 }),
+    ...amounts,
     markFreshness: presentMarkFreshness(position.markFreshness),
-    marketValue: formatPrefixedCurrency(position.marketValue, { maximumFractionDigits: 0 }),
-    unrealizedPnl: pnl,
-    pnlTone: pnlTone(pnl),
+    pnlTone: pnlTone(amounts.unrealizedPnl),
     assetClass: position.assetClass,
     securityCoverage: position.security ? "Covered" : "Missing",
     rowClassName: position.security ? "bg-background/50" : "bg-warning/5",
@@ -1741,11 +1736,11 @@ function toBrokeragePositionRow(
     detailPanelId: "portfolio-brokerage-position-detail",
     expanded: id === selectedId,
     selectAriaLabel: `Inspect ${position.symbol} ${accountKind} live position`,
-    ariaLabel: `${position.symbol} ${accountKind} brokerage position: ${formatNumber(position.quantity)} shares, market value ${formatPrefixedCurrency(position.marketValue, { maximumFractionDigits: 0 })}, unrealized P&L ${pnl}`
+    ariaLabel: `${position.symbol} ${accountKind} brokerage position: ${amounts.quantity} units, market value ${amounts.marketValue}, unrealized P&L ${amounts.unrealizedPnl}`
   };
 }
 
-function brokeragePositionId(position: BrokerageHouseholdPosition): string {
+export function brokeragePositionId(position: BrokerageHouseholdPosition): string {
   return `${position.fundAccountId}-${position.symbol}-${position.positionId ?? "position"}`;
 }
 
@@ -1758,7 +1753,7 @@ function buildSelectedBrokeragePositionDetail(
   const account = accounts.find((candidate) => candidate.fundAccountId === position.fundAccountId);
   const accountKind = accountKindLabel(position.accountKind);
   const accountLabel = account?.displayName ?? accountKind;
-  const pnl = formatSignedCurrency(position.unrealizedPnl, { maximumFractionDigits: 0 });
+  const amounts = formatBrokeragePositionAmounts(position);
   const pnlStatusTone = numericPnlTone(position.unrealizedPnl);
   const coverageTone: PortfolioBrokeragePositionDetail["statusTone"] = position.security ? "success" : "warning";
   const statusTone = position.security ? pnlStatusTone : "warning";
@@ -1772,19 +1767,19 @@ function buildSelectedBrokeragePositionDetail(
     subtitle: `${providerLabel} / ${accountLabel} / ${position.assetClass}`,
     ariaLabel: `${position.symbol} brokerage position detail`,
     statusTitle: "Brokerage position inspector",
-    statusDetail: `${mark.label}: ${mark.reason} Recorded ${formatNumber(position.quantity)} ${position.symbol} shares in ${accountLabel} with ${formatPrefixedCurrency(position.marketValue, { maximumFractionDigits: 0 })} market value and ${pnl} unrealized P&L.`,
+    statusDetail: `${mark.label}: ${mark.reason} Recorded ${amounts.quantity} ${position.symbol} units in ${accountLabel} with ${amounts.marketValue} market value and ${amounts.unrealizedPnl} unrealized P&L.`,
     statusTone,
     statusBadgeLabel: coverageLabel,
     statusBadgeVariant,
     fields: [
       { label: "Account", value: accountLabel, tone: "default" },
       { label: "Account kind", value: accountKind, tone: "muted" },
-      { label: "Quantity", value: formatNumber(position.quantity), tone: "default" },
-      { label: "Average entry", value: formatPrefixedCurrency(position.averageEntryPrice, { minimumFractionDigits: 2 }), tone: "muted" },
-      { label: "Recorded mark price", value: formatPrefixedCurrency(position.marketPrice, { minimumFractionDigits: 2 }), tone: "muted" },
+      { label: "Quantity", value: amounts.quantity, tone: "default" },
+      { label: "Average entry", value: amounts.averagePrice, tone: "muted" },
+      markPriceField(amounts.markPrice, mark),
       ...markFreshnessFields(mark),
-      { label: "Market value", value: formatPrefixedCurrency(position.marketValue, { maximumFractionDigits: 0 }), tone: "default" },
-      { label: "Unrealized P&L", value: pnl, tone: pnlStatusTone },
+      { label: "Market value", value: amounts.marketValue, tone: "default" },
+      { label: "Unrealized P&L", value: amounts.unrealizedPnl, tone: amounts.unrealizedPnl === "—" ? "muted" : pnlStatusTone },
       { label: "Security coverage", value: coverageLabel, tone: coverageTone },
       { label: "Currency", value: position.currency ?? "Unavailable", tone: "muted" }
     ],
@@ -1931,6 +1926,7 @@ function buildWorkflowTaskPanel({
   risk,
   brokerage,
   openPositionCount,
+  positionCountValue,
   totalExposure,
   totalUnrealizedPnl,
   cashFlow,
@@ -1943,8 +1939,9 @@ function buildWorkflowTaskPanel({
   risk: PortfolioRiskState | null;
   brokerage: PortfolioBrokerageStatus | null;
   openPositionCount: number;
-  totalExposure: number;
-  totalUnrealizedPnl: number;
+  positionCountValue: string;
+  totalExposure: string;
+  totalUnrealizedPnl: string;
   cashFlow: GovernanceCashFlowSummary | null;
   cashVarianceLabel: string | null;
   selectedRunId: string | null;
@@ -1957,6 +1954,7 @@ function buildWorkflowTaskPanel({
       risk,
       brokerage,
       openPositionCount,
+      positionCountValue,
       totalExposure,
       totalUnrealizedPnl,
       cashFlow,
@@ -1989,14 +1987,14 @@ function buildWorkflowTaskPanel({
     : "Provider unavailable";
   const accountLabel = brokerage?.account ?? "Account unavailable";
   const selectedSummary = !hasPosture
-    ? "Portfolio workspace data is unavailable; refresh the workstation backend before accepting brokerage-sync posture."
+    ? "Portfolio workspace data is unavailable; refresh the workstation backend before accepting brokerage-sync status."
     : `${providerLabel} account ${accountLabel} is ${brokerage?.connection ?? "unavailable"} with order ingress ${brokerage?.orderIngress ?? "unknown"} and fill feed ${brokerage?.fillFeed ?? "unknown"}.`;
 
   return {
     regionLabel: "Brokerage sync task",
     eyebrow: "Portfolio workflow",
     title: "Brokerage sync review",
-    description: "Review account connection, execution feed health, exposure, and risk posture before accepting portfolio state.",
+    description: "Review account connection, execution feed health, exposure, and risk status before accepting portfolio state.",
     statusLabel,
     statusTone,
     selectedSummary,
@@ -2004,13 +2002,11 @@ function buildWorkflowTaskPanel({
     chips: [
       { label: "Provider", value: providerLabel },
       { label: "Account", value: accountLabel },
-      { label: "Positions", value: String(openPositionCount) },
-      { label: "Exposure", value: openPositionCount > 0 ? formatPrefixedCurrency(totalExposure, { maximumFractionDigits: 0 }) : "—" },
+      { label: "Positions", value: positionCountValue },
+      { label: "Exposure", value: totalExposure },
       {
         label: "Unrealized P&L",
-        value: openPositionCount > 0
-          ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatPrefixedCurrency(totalUnrealizedPnl, { maximumFractionDigits: 0 })
-          : "—"
+        value: totalUnrealizedPnl
       }
     ],
     statusRows: [
@@ -2023,7 +2019,7 @@ function buildWorkflowTaskPanel({
       { label: "Cash variance", value: cashVarianceLabel ?? "—", tone: cashVarianceLabel ? "warning" : "muted" },
       {
         label: "Guardrails",
-        value: risk?.activeGuardrails.length ? risk.activeGuardrails.join(" · ") : "No active guardrails",
+        value: risk?.activeGuardrails.length ? risk.activeGuardrails.map((guardrail) => humanizeIdentifiersInText(guardrail)).join(" · ") : "No active guardrails",
         tone: risk?.activeGuardrails.length ? "warning" : "success"
       }
     ],
@@ -2046,6 +2042,7 @@ function buildPortfolioReadinessTaskPanel({
   risk,
   brokerage,
   openPositionCount,
+  positionCountValue,
   totalExposure,
   totalUnrealizedPnl,
   cashFlow,
@@ -2057,8 +2054,9 @@ function buildPortfolioReadinessTaskPanel({
   risk: PortfolioRiskState | null;
   brokerage: PortfolioBrokerageStatus | null;
   openPositionCount: number;
-  totalExposure: number;
-  totalUnrealizedPnl: number;
+  positionCountValue: string;
+  totalExposure: string;
+  totalUnrealizedPnl: string;
   cashFlow: GovernanceCashFlowSummary | null;
   cashVarianceLabel: string | null;
   selectedRunId: string | null;
@@ -2091,15 +2089,15 @@ function buildPortfolioReadinessTaskPanel({
     : "Provider unavailable";
   const accountLabel = brokerage?.account ?? "Account unavailable";
   const selectedSummary = !hasPosture
-    ? "Portfolio posture is unavailable. Repair provider setup or refresh workstation data before accepting holdings."
+    ? "Portfolio status is unavailable. Repair provider setup or refresh workstation data before accepting holdings."
     : continuityBlockers.length > 0
-      ? `${providerLabel} account ${accountLabel} is the current portfolio source. Resolve ${formatCountLabel(continuityBlockers.length, "selected-run continuity blocker")} before accepting the portfolio-to-ledger handoff.`
+      ? `${providerLabel} account ${accountLabel} is the current portfolio source. Resolve ${formatCountLabel(continuityBlockers.length, "selected-run continuity blocker")} before accepting the portfolio into the ledger.`
     : `${providerLabel} account ${accountLabel} is the current portfolio source. Review brokerage sync, trading readiness, cash variance, and linked run evidence before accepting holdings.`;
 
   return {
-    regionLabel: "Portfolio readiness handoff",
+    regionLabel: "Portfolio readiness review",
     eyebrow: "Portfolio readiness",
-    title: "Portfolio acceptance handoff",
+    title: "Portfolio acceptance review",
     description: "Review brokerage sync, paper readiness, cash variance, and linked run evidence before accepting portfolio state.",
     statusLabel,
     statusTone,
@@ -2108,13 +2106,11 @@ function buildPortfolioReadinessTaskPanel({
     chips: [
       { label: "Provider", value: providerLabel },
       { label: "Account", value: accountLabel },
-      { label: "Positions", value: String(openPositionCount) },
-      { label: "Exposure", value: openPositionCount > 0 ? formatPrefixedCurrency(totalExposure, { maximumFractionDigits: 0 }) : "—" },
+      { label: "Positions", value: positionCountValue },
+      { label: "Exposure", value: totalExposure },
       {
         label: "Unrealized P&L",
-        value: openPositionCount > 0
-          ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatPrefixedCurrency(totalUnrealizedPnl, { maximumFractionDigits: 0 })
-          : "—"
+        value: totalUnrealizedPnl
       }
     ],
     statusRows: [
@@ -2127,7 +2123,7 @@ function buildPortfolioReadinessTaskPanel({
       { label: "Cash variance", value: cashVarianceLabel ?? "—", tone: hasCashVariance ? "warning" : "success" },
       {
         label: "Guardrails",
-        value: risk?.activeGuardrails.length ? risk.activeGuardrails.join(" · ") : "No active guardrails",
+        value: risk?.activeGuardrails.length ? risk.activeGuardrails.map((guardrail) => humanizeIdentifiersInText(guardrail)).join(" · ") : "No active guardrails",
         tone: risk?.activeGuardrails.length ? "warning" : "success"
       }
     ],
@@ -2168,7 +2164,7 @@ function buildPortfolioReadinessActions({
       label: "Repair provider setup",
       href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
       ariaLabel: "Repair Alpaca provider setup from Portfolio readiness",
-      detail: "Verify credentials and connection posture before accepting portfolio state.",
+      detail: "Verify credentials and connection status before accepting portfolio state.",
       detailId: portfolioWorkflowTaskActionDetailId("readiness", "provider-setup"),
       variant: "default"
     });
@@ -2232,7 +2228,7 @@ function buildWorkflowTaskActions({
       label: "Repair provider setup",
       href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
       ariaLabel: `Repair ${providerSetupTarget} from brokerage sync review`,
-      detail: "Verify credentials and connection posture before accepting brokerage-sync state.",
+      detail: "Verify credentials and connection status before accepting brokerage-sync state.",
       detailId: portfolioWorkflowTaskActionDetailId("brokerage-sync", "provider-setup"),
       variant: "default"
     });
@@ -2306,12 +2302,6 @@ function distinctNormalizedValues(values: string[]): string[] {
   return [...new Set(values.map((value) => value.trim()).filter((value) => value.length > 0))].sort();
 }
 
-function numericPnlTone(value: number): "success" | "danger" | "default" {
-  if (value > 0) return "success";
-  if (value < 0) return "danger";
-  return "default";
-}
-
 function modeBadgeVariant(mode: string): "paper" | "live" | "outline" {
   if (mode === "paper") return "paper";
   if (mode === "live") return "live";
@@ -2321,15 +2311,20 @@ function modeBadgeVariant(mode: string): "paper" | "live" | "outline" {
 function buildSelectedPositionDetail(
   position: PortfolioPositionRow,
   risk: PortfolioRiskState | null,
-  brokerage: PortfolioBrokerageStatus | null
+  brokerage: PortfolioBrokerageStatus | null,
+  record: RecordIdentity,
+  linkedRef: string
 ): PortfolioPositionDetail {
   const statusTone = position.markFreshness.reviewRequired ? "warning" : riskTone(risk?.state, position.pnlTone);
   const guardrailSummary = risk?.activeGuardrails.length
-    ? risk.activeGuardrails.join(" · ")
+    ? risk.activeGuardrails.map((guardrail) => humanizeIdentifiersInText(guardrail)).join(" · ")
     : "No active guardrails";
 
   return {
     id: position.id,
+    securityId: position.securityId,
+    record,
+    linkedRef,
     title: position.symbol,
     subtitle: `${position.side} · ${position.quantity} shares`,
     ariaLabel: `${position.symbol} holding detail`,
@@ -2340,9 +2335,16 @@ function buildSelectedPositionDetail(
     fields: [
       { label: "Side", value: position.side, tone: "default" },
       { label: "Quantity", value: position.quantity, tone: "default" },
+      { label: "Currency", value: position.currencyFigure.display, tone: "muted" },
       { label: "Average price", value: position.avgPrice, tone: "muted" },
-      { label: "Recorded mark price", value: position.markPrice, tone: "muted" },
+      markPriceField(position.markPrice, position.markFreshness),
       ...markFreshnessFields(position.markFreshness),
+      {
+        label: "Market value",
+        value: position.marketValueFigure.staleLabel ? `${position.marketValue} (${position.marketValueFigure.staleLabel})` : position.marketValue,
+        tone: position.marketValueFigure.stale ? "warning" : "default"
+      },
+      { label: "Weight", value: position.weight, tone: "muted" },
       { label: "Exposure", value: position.exposure, tone: "default" },
       { label: "Day P&L", value: position.dayPnl, tone: pnlFieldTone(position.dayPnl) },
       { label: "Unrealized P&L", value: position.unrealizedPnl, tone: pnlFieldTone(position.unrealizedPnl) },
@@ -2473,8 +2475,8 @@ function buildRunContinuityBlockers(continuity: StrategyRunContinuityDto | null)
 
   const blockers: PortfolioRunContinuityBlocker[] = [];
   const status = continuity.continuityStatus;
-  addMissingContinuityBlocker(blockers, !status.hasPortfolio, "missing-portfolio", "Portfolio coverage", "Portfolio read model is missing for the selected run.", "danger");
-  addMissingContinuityBlocker(blockers, !status.hasLedger, "missing-ledger", "Ledger coverage", "Ledger read model is missing for the selected run.", "danger");
+  addMissingContinuityBlocker(blockers, !status.hasPortfolio, "missing-portfolio", "Portfolio coverage", "Portfolio data is missing for the selected run.", "danger");
+  addMissingContinuityBlocker(blockers, !status.hasLedger, "missing-ledger", "Ledger coverage", "Ledger data is missing for the selected run.", "danger");
   addMissingContinuityBlocker(blockers, !status.hasCashFlow, "missing-cash-flow", "Cash-flow coverage", "Cash-flow digest is missing for the selected run.", "warning");
   addMissingContinuityBlocker(blockers, !status.hasReconciliation, "missing-reconciliation", "Reconciliation coverage", "Reconciliation summary is missing for the selected run.", "warning");
   addMissingContinuityBlocker(blockers, status.openReconciliationBreaks > 0, "open-reconciliation-breaks", "Open reconciliation breaks", `${formatCountLabel(status.openReconciliationBreaks, "reconciliation break")} remain open for the selected run.`, "warning");

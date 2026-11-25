@@ -54,8 +54,12 @@ and a completed paper strategy run on the Strategy desk — rather than an empty
 lives in its own root (`{dataRoot}/demo-workspace`), never mixes with real data, carries `Seeded`
 provenance on every record, and is removed by `--reset-demo`. Re-open it later with `--demo`.
 
-You need the .NET SDK pinned by [global.json](global.json) and Git. Node.js is **not** required to
-see the workstation: the browser bundle is tracked in the repository.
+You need the .NET SDK pinned by [global.json](global.json) and Git. The browser bundle is not in the
+repository, so before the first source launch either build it with Node.js
+(`npm --prefix src/Meridian.Ui/dashboard ci --include=optional`, then
+`npm --prefix src/Meridian.Ui/dashboard run build`) or restore that revision's CI browser artifact.
+Published and installed layouts already include it. See
+[the workstation bundle](docs/start/README.md#the-workstation-bundle-the-demo-serves).
 
 ### Running against your own data
 
@@ -206,13 +210,14 @@ For Vite alone, use `npm --prefix src/Meridian.Ui/dashboard run dev` and start a
 API host separately. Vite proxies `/api` to `MERIDIAN_API_BASE_URL`, or
 `http://localhost:8080` by default.
 
-When dashboard source changes, regenerate and commit the tracked bundle:
+When dashboard source changes, rebuild the bundle:
 
 ```bash
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
 
-CI checks that `src/Meridian.Ui/wwwroot/workstation/` matches the dashboard source.
+`src/Meridian.Ui/wwwroot/workstation/` is gitignored. CI builds it from the dashboard source in the
+browser lane and passes it to later jobs as an artifact.
 See [Start Here](docs/start/README.md#the-workstation-bundle-the-demo-serves) for the bundle contract.
 
 ### MCP server
@@ -243,7 +248,7 @@ Use the smallest lane that covers your change during development:
 | Change | Focused command |
 | --- | --- |
 | Documentation and generated-doc contracts | `bash scripts/ci.sh --lane verify-docs` |
-| Browser source and tracked bundle | `bash scripts/ci.sh --lane verify-browser` |
+| Browser source and built bundle | `bash scripts/ci.sh --lane verify-browser` |
 | .NET source and tests | `bash scripts/ci.sh --lane verify-dotnet` |
 | Workflow and lane contracts | `bash scripts/ci.sh --lane verify-workflows` |
 
@@ -253,7 +258,8 @@ lane, Level 2 should add targeted invariant tests (the full aggregate `bash scri
 recommended), and Level 3 or build/CI-tooling changes should run it when practical. State which
 checks ran and which did not.
 
-Contribute through a `codex/<short-task-name>` branch and a pull request targeting `main`.
+Contribute through a `codex/<short-task-name>` or `claude/<short-task-name>` branch and a pull
+request targeting `main`.
 The hosted `Meridian CI / quality-gate` remains the authoritative merge result.
 See [Engineering](docs/engineering/README.md#buildtestrun) for desktop and release validation,
 build isolation, and hosted validation when local tooling is unavailable.

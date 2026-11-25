@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { vi } from "vitest";
 import * as api from "@/lib/api";
+import * as templateApi from "@/lib/api/provider-connection-templates.api";
 import * as dataOpsApi from "@/lib/api/data-operations-assurance.api";
 import * as plaidLink from "@/lib/plaid-link";
 import * as tableApi from "@/lib/table-workbench";
@@ -27,10 +28,10 @@ import type {
 
 const data: DataWorkspaceResponse = {
   metrics: [
-    { id: "m1", label: "Providers Healthy", value: "4", delta: "0", tone: "success" },
-    { id: "m2", label: "Backfills Running", value: "2", delta: "+1", tone: "default" },
-    { id: "m3", label: "Exports Ready", value: "3", delta: "+1", tone: "success" },
-    { id: "m4", label: "Needs Review", value: "1", delta: "+1", tone: "warning" }
+    { id: "providers", label: "Providers Healthy", value: "4", delta: "0", tone: "success" },
+    { id: "backfills", label: "Backfills Running", value: "2", delta: "+1", tone: "default" },
+    { id: "exports", label: "Exports Ready", value: "3", delta: "+1", tone: "success" },
+    { id: "review", label: "Needs Review", value: "1", delta: "+1", tone: "warning" }
   ],
   providers: [
     {
@@ -506,7 +507,7 @@ describe("DataScreen", () => {
     expect(screen.getByText(/1 provider blocks dependent workflows/i)).toBeInTheDocument();
     expect(screen.getByText(/Next action: Repair Plaid credentials/i)).toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Provider health" })).toBeInTheDocument();
-    expect(screen.getByRole("columnheader", { name: "Credential posture" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Credential status" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Trust / last good" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Next Action" })).toBeInTheDocument();
     const plaidRow = screen.getByRole("row", { name: /Inspect provider Plaid/i });
@@ -636,6 +637,56 @@ describe("DataScreen", () => {
     expect(screen.getByRole("button", { name: "Provider verification unavailable for Polygon.io" })).toBeDisabled();
   });
 
+  it("reviews the template before opening the vault and requires a test before saving", async () => {
+    const user = userEvent.setup();
+    const draft = {
+      setupId: "synthetic-draft", providerKind: "tiingo", environment: "production",
+      credentialFields: [{ name: "ApiKey", label: "API key", required: true, inputKind: "Password" as const }]
+    };
+    const catalogue = vi.spyOn(templateApi, "listConnectionTemplates").mockResolvedValue([
+      {
+        template: { name: "Historical equities", connectionMode: "ReadOnly" }, revision: "example-revision",
+        isBuiltIn: true, requiresExternalAccount: false,
+        reviewRows: [{ field: "Required capabilities", value: "Historical Bars" }],
+        verificationChecks: ["Check sample price adjustments."]
+      }
+    ]);
+    const begin = vi.spyOn(templateApi, "beginTemplateSetup").mockResolvedValue(draft);
+    const vault = vi.spyOn(templateApi, "putTemplateSetupCredentials").mockResolvedValue({} as Awaited<ReturnType<typeof templateApi.putTemplateSetupCredentials>>);
+    const test = vi.spyOn(templateApi, "testTemplateSetup").mockResolvedValue({ canSave: true, detail: "The provider returned a sample." });
+    const saved = vi.spyOn(templateApi, "saveTemplateSetup").mockResolvedValue({
+      connectionId: "new-connection", displayName: "Historical equities", providerKind: "tiingo"
+    });
+
+    try {
+      renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/providers"] });
+      await user.click(screen.getByRole("button", { name: "Add a provider connection" }));
+      const dialog = screen.getByRole("dialog", { name: "Add provider connection" });
+      expect(within(dialog).queryByLabelText(/API key/i)).toBeNull();
+      const useTemplate = within(dialog).getByRole("button", { name: "Use template" });
+      await waitFor(() => expect(useTemplate).toBeEnabled());
+      await user.click(useTemplate);
+      expect(within(dialog).getByRole("row", { name: /Required capabilities.*Historical Bars/ })).toBeInTheDocument();
+      expect(within(dialog).getByText("Check sample price adjustments.")).toBeVisible();
+      expect(begin).not.toHaveBeenCalled();
+      await user.click(within(dialog).getByRole("button", { name: "Continue to vault" }));
+      const key = await within(dialog).findByLabelText("API key (required)");
+      expect(key).toHaveAttribute("type", "password");
+      const save = within(dialog).getByRole("button", { name: "Save connection" });
+      expect(save).toBeDisabled();
+      await user.type(key, "synthetic-provider-key");
+      await user.click(within(dialog).getByRole("button", { name: "Test connection" }));
+      await waitFor(() => expect(save).toBeEnabled());
+      expect(key).toHaveValue("");
+      expect(vault).toHaveBeenCalledWith(draft, { ApiKey: "synthetic-provider-key" }, expect.any(AbortSignal));
+      expect(test).toHaveBeenCalledWith(draft.setupId, expect.any(AbortSignal));
+      await user.click(save);
+      expect(await within(dialog).findByRole("heading", { name: "Historical equities saved" })).toBeVisible();
+    } finally {
+      for (const mock of [catalogue, begin, vault, test, saved]) mock.mockRestore();
+    }
+  });
+
   it("clears provider credentials after setup and suppresses browser autocomplete", async () => {
     const user = userEvent.setup();
 
@@ -661,6 +712,7 @@ describe("DataScreen", () => {
     );
 
     await user.click(screen.getByRole("button", { name: /configure a new data provider/i }));
+    await user.click(screen.getByRole("button", { name: "Configure manually" }));
 
     expect(screen.getByRole("region", { name: "Yahoo Finance setup summary" })).toHaveTextContent("No key needed");
     expect(screen.getByRole("region", { name: "Yahoo Finance setup summary" })).toHaveTextContent("Preview a historical backfill");
@@ -740,6 +792,7 @@ describe("DataScreen", () => {
     renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/providers"] });
 
     await user.click(screen.getByRole("button", { name: /configure a new data provider/i }));
+    await user.click(screen.getByRole("button", { name: "Configure manually" }));
     await user.selectOptions(screen.getByLabelText("Select provider type"), "plaid");
 
     const clientId = screen.getByLabelText("Plaid client ID");
@@ -858,6 +911,7 @@ describe("DataScreen", () => {
     renderWithRouter(<DataScreen data={data} session={session} />, { initialEntries: ["/data/providers"] });
 
     await user.click(screen.getByRole("button", { name: /configure a new data provider/i }));
+    await user.click(screen.getByRole("button", { name: "Configure manually" }));
     await user.selectOptions(screen.getByLabelText("Select provider type"), "plaid");
     await user.type(screen.getByLabelText("Plaid client ID"), "client-sandbox-123");
     await user.type(screen.getByLabelText("Plaid secret"), "secret-sandbox-456");
@@ -942,6 +996,7 @@ describe("DataScreen", () => {
     renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/providers"] });
 
     await user.click(screen.getByRole("button", { name: /configure a new data provider/i }));
+    await user.click(screen.getByRole("button", { name: "Configure manually" }));
     await user.selectOptions(screen.getByLabelText("Select provider type"), "alpaca");
     await user.type(screen.getByLabelText("Provider API key"), "key-123");
     await user.type(screen.getByLabelText("Provider API secret"), "secret-456");
@@ -969,6 +1024,40 @@ describe("DataScreen", () => {
     expect(screen.getByText("Selected Backfill")).toBeInTheDocument();
     expect(screen.getByText(/Replay is currently advancing/)).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Backfill route focus" })).not.toBeInTheDocument();
+  });
+
+  it("counts Providers healthy over the same in-use providers its health cards show", () => {
+    const yahooConnection: ProviderConnectionRow = { ...polygonConnection, providerId: "yahoo", displayName: "Yahoo Finance", health: "Warning" };
+    renderWithRouter(
+      <DataScreen data={data} providerConnections={[polygonConnection, yahooConnection]} providerReadiness={providerReadiness} />,
+      { initialEntries: ["/data"] }
+    );
+
+    // Plaid is known only from the readiness catalog: available to set up, not in use, so it has
+    // no health card and does not count. Polygon and Yahoo are in use.
+    const overview = screen.getByRole("region", { name: "Provider health overview" });
+    const cards = within(overview).getAllByRole("article");
+    expect(cards.map((card) => card.getAttribute("aria-label"))).toEqual(["Polygon.io health", "Yahoo Finance health"]);
+    // Whatever each card's status (stale evidence caps a healthy one at review), the figure is a
+    // count of these cards.
+    const healthyCards = cards.filter((card) => within(card).queryByText("Healthy")).length;
+    expect(within(screen.getByLabelText("Data headline metrics")).getByText(`${healthyCards} of ${cards.length} providers`)).toBeInTheDocument();
+  });
+
+  it("never lets a ready readiness row hide a listed warning, nor a healthy listing hide blocked readiness", () => {
+    const blockedPolygon: ProviderReadinessSummary = {
+      ...providerReadiness,
+      providers: providerReadiness.providers.map((row) => row.providerId === "polygon" ? { ...row, status: "Blocked" } : row)
+    };
+    expect(blockedPolygon.providers.some((row) => row.providerId === "polygon")).toBe(true);
+    renderWithRouter(
+      <DataScreen data={data} providerConnections={[polygonConnection]} providerReadiness={blockedPolygon} />,
+      { initialEntries: ["/data"] }
+    );
+
+    const card = within(screen.getByRole("region", { name: "Provider health overview" })).getByRole("article", { name: "Polygon.io health" });
+    expect(within(card).getByText("Blocked")).toBeInTheDocument();
+    expect(within(screen.getByLabelText("Data headline metrics")).getByText("0 of 1 provider")).toBeInTheDocument();
   });
 
   it("leads Data with provider health before repair work and keeps focused tools available", async () => {
@@ -1163,6 +1252,57 @@ describe("DataScreen", () => {
       expect(previewStatus).toHaveTextContent("2024-01-01 to 2024-01-31");
     });
     expect(screen.getByText("Preview is ready. Review the summary before running.")).toBeInTheDocument();
+    expect(screen.getByText("Limit unavailable")).toBeInTheDocument();
+    expect(screen.queryByText("Estimated duration")).not.toBeInTheDocument();
+  });
+
+  it("shows observed quota and submits an over-budget plan with explicit throttling", async () => {
+    const user = userEvent.setup();
+    const quota = {
+      expectedRequests: 5,
+      requestsPerWindow: 5,
+      windowSeconds: 60,
+      observedRemainingRequests: 2,
+      observedAt: "2024-01-31T10:00:00Z",
+      resetAt: null,
+      backfillRequestsPerWindow: 4,
+      backfillRemainingRequests: 1,
+      reservedHeadroomPercent: 20,
+      maxConcurrentRequests: 1,
+      estimatedDurationSeconds: 65,
+      exceedsBudget: true,
+      uncertainty: "Pagination and retries can increase usage."
+    };
+    vi.spyOn(api, "previewBackfill").mockResolvedValueOnce({
+      provider: "polygon", providerDisplayName: "Polygon", from: "2024-01-01", to: "2024-01-31",
+      totalDays: 31, estimatedTradingDays: 21, symbols: [], estimatedDurationSeconds: 65, notes: [], quota
+    });
+    const submit = vi.spyOn(api, "submitBackfill").mockResolvedValueOnce({
+      executionId: "admission-1", status: "Queued", provider: "polygon", scheduledAt: "2024-01-31T10:00:00Z", quota
+    });
+    vi.spyOn(api, "getBackfillExecutionHistory").mockResolvedValue({
+      executions: [], total: 0, autoRemediation: { total: 0, withReason: 0, lastOutcome: null, defaultProvider: "stooq" },
+      timestamp: "2024-01-31T10:00:00Z"
+    });
+
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/backfills"] });
+    await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
+    await user.type(screen.getByRole("textbox", { name: "Backfill symbols" }), "AAPL");
+    await user.click(screen.getByRole("button", { name: "Preview backfill request" }));
+    const quotaPanel = await screen.findByRole("region", { name: "Provider quota" });
+    expect(quotaPanel).toHaveTextContent("Expected requests");
+    expect(quotaPanel).toHaveTextContent("5 requests / 1 min");
+    expect(quotaPanel).toHaveTextContent("Observed remaining2 requests");
+    expect(quotaPanel).toHaveTextContent("20% headroom target");
+    expect(quotaPanel).toHaveTextContent("Pagination and retries can increase usage.");
+    expect(screen.getByRole("checkbox", { name: "Schedule for later" })).toBeEnabled();
+    await user.click(screen.getByRole("button", { name: "Queue with throttling" }));
+    expect(submit).toHaveBeenCalledWith(expect.objectContaining({
+      provider: "polygon", symbols: ["AAPL"], executionPolicy: "queued", scheduledAt: null,
+      from: "2024-01-01", to: "2024-01-31", submissionId: expect.any(String)
+    }));
+    expect(await screen.findByText("Queued · polygon")).toBeInTheDocument();
+    expect(screen.getByText("Requests are paced to the shared provider budget.")).toBeInTheDocument();
   });
 
   it("locks backfill request fields while preview is pending", async () => {

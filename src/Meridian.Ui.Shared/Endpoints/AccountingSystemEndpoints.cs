@@ -501,6 +501,7 @@ public static class AccountingSystemEndpoints
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var trustedRequest = request with
             {
+                Actor = ResolveMutationActor(context, request.Actor),
                 TenantId = tenantContext.TenantId,
                 CompanyId = tenantContext.CompanyId,
                 ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
@@ -509,6 +510,10 @@ public static class AccountingSystemEndpoints
             {
                 var result = await service.UpsertMappingProfileAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return EndpointHelpers.Forbidden();
             }
             catch (ArgumentException ex)
             {

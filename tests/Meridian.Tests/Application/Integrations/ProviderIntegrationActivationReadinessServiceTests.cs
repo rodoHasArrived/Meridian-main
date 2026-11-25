@@ -115,7 +115,7 @@ public sealed class ProviderIntegrationActivationReadinessServiceTests : IDispos
             approvedBy: "controller@example.com",
             approvedAt: DateTimeOffset.Parse("2026-06-16T13:00:00Z"));
         var connection = CreateConnection(manifest, [ProviderCapabilityKindDto.Positions], "approval-evidence-1");
-        var service = await CreateServiceAsync(manifest, connection);
+        var service = await CreateServiceAsync(manifest, connection, retainCompleteSource: true);
 
         var readiness = await service.EvaluateAsync(
             manifestId: manifest.ManifestId,
@@ -132,13 +132,16 @@ public sealed class ProviderIntegrationActivationReadinessServiceTests : IDispos
 
     private async Task<ProviderIntegrationActivationReadinessService> CreateServiceAsync(
         ProviderIntegrationManifestDto manifest,
-        ProviderConnectionDto? connection = null)
+        ProviderConnectionDto? connection = null,
+        bool retainCompleteSource = false)
     {
         var store = new FileProviderIntegrationManifestStore(testRoot);
         await store.SaveManifestAsync(manifest);
         if (connection is not null)
         {
             await store.SaveConnectionAsync(connection);
+            if (retainCompleteSource)
+                await ProviderIntegrationCompletionFixture.RetainEmptySourceAsync(store, manifest, connection);
         }
 
         return new ProviderIntegrationActivationReadinessService(store);

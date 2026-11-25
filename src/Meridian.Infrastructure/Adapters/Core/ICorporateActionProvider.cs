@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Contracts.SecurityMaster;
@@ -5,15 +6,14 @@ using Meridian.Contracts.SecurityMaster;
 namespace Meridian.Infrastructure.Adapters.Core;
 
 /// <summary>
-/// Provider-agnostic interface for fetching corporate action history (dividends and stock
-/// splits) from a data source and merging it into the Security Master event store.
+/// Provider-agnostic interface for fetching corporate-action observations for staged review.
 /// </summary>
 /// <remarks>
 /// <para>
 /// Implementations should be decorated with <see cref="DataSourceAttribute"/> so they
-/// are discoverable via the attribute-based provider registry (ADR-005).  The Security
-/// Master aggregates results from all registered implementations with last-writer-wins
-/// conflict resolution keyed by <c>(securityId, ex_date, corporateActionType)</c>.
+/// are discoverable via the attribute-based provider registry (ADR-005). Native provider event
+/// identity and version preserve independent observations and their amendment chains. Agreement
+/// between providers is term evidence and does not authorize accounting acceptance.
 /// </para>
 /// <para>
 /// Coverage-aware callers use <see cref="FetchWithOutcomeAsync"/> to distinguish an empty
@@ -89,4 +89,17 @@ public sealed record CorporateActionCommand(
     DateTimeOffset? ObservedAtUtc = null,
     string? EvidenceHash = null,
     string? EvidenceReference = null,
-    CorporateActionProviderReleaseStatusDto ReleaseStatus = CorporateActionProviderReleaseStatusDto.ReviewOnly);
+    CorporateActionProviderReleaseStatusDto ReleaseStatus = CorporateActionProviderReleaseStatusDto.ReviewOnly)
+{
+    /// <summary>Type-specific economic terms, separate from retained provider evidence.</summary>
+    public JsonElement? Payload { get; init; }
+
+    public decimal? DistributionRatio { get; init; }
+
+    public decimal? ExchangeRatio { get; init; }
+
+    public CorporateActionRetainedSourceEvidenceDto? SourceEvidence { get; init; }
+
+    /// <summary>When true, an omitted upstream currency must remain unknown through staging.</summary>
+    public bool PreserveUnknownCurrency { get; init; }
+}

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useId, useState } from "react";
+import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { useRequestLifecycle } from "@/hooks/use-request-lifecycle";
@@ -23,13 +25,13 @@ export function SymbolMappingEditor({ api = symbolMappingApi, onChanged }: { api
   const [message, setMessage] = useState<string | null>(null);
   const { status, start, succeed, fail, finish } = useRequestLifecycle({ operation: "symbol-mapping-editor", failureMessage: "The symbol mapping operation failed. Refresh before retrying an uncertain write." });
   const resetReview = useCallback(() => { setReviewed(false); setArchivesConfirmed(false); setSeriesConfirmed(false); setReason(""); }, []);
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (keepReview = false) => {
     const request = start({ busyMode: "drop" });
     if (!request) return;
     try {
       const [nextMappings, nextRollout] = await Promise.all([api.list({ signal: request.signal }), api.rollout({ signal: request.signal })]);
       if (!request.isCurrent()) return;
-      setMappings(nextMappings); setRollout(nextRollout); resetReview(); succeed(request);
+      setMappings(nextMappings); setRollout(nextRollout); if (!keepReview) resetReview(); succeed(request);
     } catch (error) { if (request.isCurrent()) { setRollout(null); fail(request, error); } }
     finally { finish(request); }
   }, [api, start, succeed, fail, finish, resetReview]);
@@ -51,6 +53,8 @@ export function SymbolMappingEditor({ api = symbolMappingApi, onChanged }: { api
   }
   const selected = rollout?.providers.find(row => row.provider === provider);
   const busy = status.inFlight;
+  // The header Refresh is not a deliberate local click: it waits while a review or removal confirmation is in progress.
+  useOnGlobalRefresh(() => { if (!reviewed && !archivesConfirmed && !seriesConfirmed && !reason && !deleteConfirmed) void refresh(true); });
   const available = rollout !== null && !busy;
   const existing = mappings.some(row => row.canonicalSymbol === draft.canonicalSymbol.trim().toUpperCase());
   function selectMapping(symbol: string) {
@@ -61,7 +65,7 @@ export function SymbolMappingEditor({ api = symbolMappingApi, onChanged }: { api
   return <div className="grid gap-4 rounded-md border p-4" aria-label="Symbol mapping editor">
     <div className="flex flex-wrap items-center justify-between gap-2">
       <h3 className="font-semibold">Edit provider symbol mappings</h3>
-      <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => void refresh()}>Refresh mapping evidence</Button>
+      {status.error ? <Button type="button" variant="outline" size="sm" disabled={busy} aria-label="Retry loading mapping evidence" onClick={() => void refresh()}>Retry</Button> : null}
     </div>
     <p className="text-sm text-muted-foreground">Mapping edits update registry aliases for future requests. Review comparison evidence before promoting each provider. Existing archives retain their original symbols and provenance.</p>
     {status.error ? <StatusBanner tone="danger" title="Mapping change unavailable" detail={status.error} /> : null}
@@ -71,9 +75,9 @@ export function SymbolMappingEditor({ api = symbolMappingApi, onChanged }: { api
       <fieldset disabled={!available} className="grid gap-3">
         <legend className="text-sm font-semibold">1. Correct aliases</legend>
         <label className="grid gap-1 text-sm" htmlFor={`${id}-existing`}>Existing mapping
-          <select id={`${id}-existing`} className="rounded-md border bg-background p-2" value={existing ? draft.canonicalSymbol : ""} onChange={event => selectMapping(event.currentTarget.value)}>
+          <Select id={`${id}-existing`} value={existing ? draft.canonicalSymbol : ""} onChange={event => selectMapping(event.currentTarget.value)}>
             <option value="">New mapping</option>{mappings.map(row => <option key={row.canonicalSymbol} value={row.canonicalSymbol}>{row.canonicalSymbol}</option>)}
-          </select>
+          </Select>
         </label>
         <label className="grid gap-1 text-sm" htmlFor={`${id}-canonical`}>Canonical symbol
           <Input id={`${id}-canonical`} required value={draft.canonicalSymbol} onChange={event => selectMapping(event.currentTarget.value.toUpperCase())} />
@@ -98,9 +102,9 @@ export function SymbolMappingEditor({ api = symbolMappingApi, onChanged }: { api
     <fieldset disabled={!available} className="grid gap-3 rounded-md border p-3">
       <legend className="text-sm font-semibold">2. Compare → Canonical rollout</legend>
       <label className="grid gap-1 text-sm" htmlFor={`${id}-provider`}>Rollout provider
-        <select id={`${id}-provider`} className="rounded-md border bg-background p-2" value={provider} onChange={event => { setProvider(event.currentTarget.value); resetReview(); }}>
+        <Select id={`${id}-provider`} value={provider} onChange={event => { setProvider(event.currentTarget.value); resetReview(); }}>
           {providerFields.map(([field, name]) => <option key={field} value={field.replace("Symbol", "")}>{name}</option>)}
-        </select>
+        </Select>
       </label>
       {selected ? <>
         <p className="text-sm">Active: <strong>{selected.activeMode ?? "Unavailable"}</strong> · Saved: <strong>{selected.savedMode}</strong>{selected.pendingRestart ? " · Pending host restart" : ""}</p>

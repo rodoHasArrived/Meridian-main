@@ -153,6 +153,10 @@ public sealed class SymbolStorageViewModelTests
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\SymbolStoragePage.xaml"));
         var codeBehind = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\SymbolStoragePage.xaml.cs"));
 
+        // The shell Refresh reloads this page; the page keeps a Retry only inside its error panel.
+        xaml.Should().NotContain("SymbolStorageRefreshButton");
+        xaml.Should().Contain("SymbolStorageRetryButton");
+        xaml.Should().Contain("Content=\"Retry\"");
         xaml.Should().Contain("Command=\"{Binding RefreshCommand}\"");
         xaml.Should().Contain("IsEnabled=\"{Binding CanRefresh}\"");
         xaml.Should().Contain("{Binding TotalSizeText}");

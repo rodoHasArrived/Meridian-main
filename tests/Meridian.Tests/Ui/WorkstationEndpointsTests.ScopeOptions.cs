@@ -43,6 +43,8 @@ public sealed partial class WorkstationEndpointsTests
         account.GetProperty("displayName").GetString().Should().Be("Account FIRST");
         account.GetProperty("fundId").GetGuid().Should().Be(first.FundId);
         account.GetProperty("entityId").GetGuid().Should().Be(first.EntityId);
+        account.GetProperty("fundWithheld").GetBoolean().Should().BeFalse("an administrator sees every fund");
+        account.GetProperty("entityWithheld").GetBoolean().Should().BeFalse("an administrator sees every entity");
         var fund = ScopeOption(options, "funds", "fundId", first.FundId);
         fund.GetProperty("name").GetString().Should().Be("Fund FIRST");
         fund.GetProperty("entityIds").EnumerateArray().Select(static id => id.GetGuid()).Should().Equal(first.EntityId);
@@ -66,6 +68,8 @@ public sealed partial class WorkstationEndpointsTests
         var account = ScopeOption(options, "accounts", "accountId", allowed.AccountId);
         account.GetProperty("fundId").GetGuid().Should().Be(allowed.FundId);
         account.GetProperty("entityId").GetGuid().Should().Be(allowed.EntityId);
+        account.GetProperty("fundWithheld").GetBoolean().Should().BeFalse();
+        account.GetProperty("entityWithheld").GetBoolean().Should().BeFalse();
     }
 
     [Fact]
@@ -88,6 +92,13 @@ public sealed partial class WorkstationEndpointsTests
         account.GetProperty("displayName").GetString().Should().Be("Account TRADING");
         account.GetProperty("fundId").ValueKind.Should().Be(JsonValueKind.Null, "the caller may not see the fund");
         account.GetProperty("entityId").ValueKind.Should().Be(JsonValueKind.Null, "the caller may not see the entity");
+        // The account does have a fund and an entity: say so, without naming either.
+        account.GetProperty("fundWithheld").GetBoolean().Should().BeTrue("the account has a fund the caller may not see");
+        account.GetProperty("entityWithheld").GetBoolean().Should().BeTrue("the account has an entity the caller may not see");
+        options.RootElement.GetRawText().Should().NotContain(branch.FundId.ToString("D"), "a withheld fund's id is never disclosed")
+            .And.NotContain(branch.EntityId.ToString("D"), "a withheld entity's id is never disclosed")
+            .And.NotContain("Fund TRADING", "a withheld fund's name is never disclosed")
+            .And.NotContain("Entity TRADING", "a withheld entity's name is never disclosed");
     }
 
     [Fact]
@@ -105,6 +116,10 @@ public sealed partial class WorkstationEndpointsTests
         options.RootElement.GetProperty("funds").GetArrayLength().Should().Be(0);
         options.RootElement.GetProperty("entities").GetArrayLength().Should().Be(0);
         ScopeOptionIds(options, "accounts", "accountId").Should().Equal(branch.AccountId);
+        var account = ScopeOption(options, "accounts", "accountId", branch.AccountId);
+        account.GetProperty("fundId").ValueKind.Should().Be(JsonValueKind.Null);
+        account.GetProperty("fundWithheld").GetBoolean().Should().BeTrue("the account's fund exists but is not disclosed");
+        account.GetProperty("entityWithheld").GetBoolean().Should().BeTrue("the account's entity exists but is not disclosed");
     }
 
     [Fact]
@@ -242,7 +257,33 @@ public sealed partial class WorkstationEndpointsTests
         account.GetProperty("displayName").GetString().Should().Be("Account");
         account.GetProperty("fundId").ValueKind.Should().Be(JsonValueKind.Null);
         account.GetProperty("entityId").ValueKind.Should().Be(JsonValueKind.Null);
+        account.GetProperty("fundWithheld").GetBoolean().Should().BeFalse("the flags default to false and are always written");
+        account.GetProperty("entityWithheld").GetBoolean().Should().BeFalse();
         document.RootElement.GetProperty("entities").GetArrayLength().Should().Be(0);
+    }
+
+    [Fact]
+    public void WorkstationScopeOptions_RoundTripTheWithheldFlagsAndReadAPayloadWithoutThem()
+    {
+        var accountId = Guid.NewGuid();
+        var jsonOptions = UiEndpoints.CreateEndpointJsonOptions();
+        var payload = new WorkstationScopeOptionsDto(
+            [],
+            [],
+            [new WorkstationScopeAccountOptionDto(accountId, "Account", FundId: null, EntityId: null, FundWithheld: true, EntityWithheld: true)]);
+
+        var roundTripped = JsonSerializer.Deserialize<WorkstationScopeOptionsDto>(
+            JsonSerializer.Serialize(payload, jsonOptions), jsonOptions);
+
+        roundTripped!.Accounts.Should().ContainSingle()
+            .Which.Should().Be(new WorkstationScopeAccountOptionDto(accountId, "Account", null, null, true, true));
+
+        // A payload from a host older than the flags still reads, with both false.
+        var legacy = JsonSerializer.Deserialize<WorkstationScopeOptionsDto>(
+            $$"""{"entities":[],"funds":[],"accounts":[{"accountId":"{{accountId}}","displayName":"Account","fundId":null,"entityId":null}]}""",
+            jsonOptions);
+        legacy!.Accounts.Should().ContainSingle()
+            .Which.Should().Be(new WorkstationScopeAccountOptionDto(accountId, "Account", null, null));
     }
 
     private static void AssertEmptyScopeOptions(JsonDocument options)

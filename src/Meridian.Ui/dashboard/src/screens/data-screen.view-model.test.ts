@@ -23,7 +23,9 @@ import {
   buildDataPresentationState,
   buildExportSection,
   formatProviderReasonLabel,
+  assessProviderEvidenceStaleness,
   buildProviderRow,
+  PROVIDER_EVIDENCE_STALE_AFTER_MS,
   buildProviderSection,
   buildPlaidInstitutionSearchState,
   buildProviderSetupDialogState,
@@ -531,7 +533,7 @@ describe("data-screen view model", () => {
     expect(importFocus).toMatchObject({
       ariaLabel: "Data import route focus",
       eyebrow: "File Intake",
-      title: "Governed file import"
+      title: "File import"
     });
   });
 
@@ -768,7 +770,7 @@ describe("data-screen view model", () => {
     expect(dialog.summaryItems).toEqual([
       { id: "provider", label: "Provider", value: "Polygon", tone: "default" },
       { id: "symbols", label: "Symbols", value: "None yet", tone: "warning" },
-      { id: "range", label: "Range", value: "Full available history", tone: "default" }
+      { id: "range", label: "Range", value: "Default date range", tone: "default" }
     ]);
     expect(dialog.providerOptions.map((provider) => provider.value)).toEqual(["polygon"]);
     expect(dialog.selectedProviderDetail).toContain("Polygon is configured for Streaming equities");
@@ -934,7 +936,7 @@ describe("data-screen view model", () => {
     expect(previewCard.rows).toContainEqual({ id: "symbols", label: "Symbols", value: "AAPL, MSFT" });
     expect(previewCard.rows).toContainEqual({ id: "bars", label: "Bars", value: "1,200" });
     expect(previewCard.rows).toContainEqual({ id: "range", label: "Range", value: "2024-01-01 to 2024-01-31" });
-    expect(previewCard.rows).toContainEqual({ id: "timing", label: "Timing", value: "5 sec est." });
+    expect(previewCard.rows).not.toContainEqual(expect.objectContaining({ id: "timing" }));
     expect(previewCard.ariaLabel).toContain("Status Preview only");
 
     const completedCard = buildBackfillResultCardState(completedBackfill, "result");
@@ -1313,6 +1315,12 @@ describe("data-screen view model", () => {
     );
 
     expect(providerSection.title).toBe("Provider Management");
+    // Loaded provider status is re-read by the header Refresh; Retry appears only while that evidence is missing.
+    expect(providerSection.commandActions.map((action) => action.id)).toEqual(["add", "diagnostics", "settings"]);
+    expect(buildProviderSection(providers, null, { providerConnections: null, onProviderRoutingRefresh: () => undefined }).commandActions[1])
+      .toMatchObject({ id: "refresh", label: "Retry", ariaLabel: "Retry loading provider status and routing evidence", disabled: false });
+    expect(buildProviderSection(providers, null, { providerConnections: null, providerRoutingRefreshing: true, onProviderRoutingRefresh: () => undefined }).commandActions[1])
+      .toMatchObject({ id: "refresh", label: "Retrying...", disabled: true, busy: true });
     expect(providerSection.providerOptions).toEqual([
       expect.objectContaining({
         value: "provider-row-polygon",
@@ -1413,7 +1421,37 @@ describe("data-screen view model", () => {
     });
   });
 
+  it("caps a provider reported healthy at review once its newest evidence is stale, and says why", () => {
+    const record: Parameters<typeof assessProviderEvidenceStaleness>[0] = { providerId: "polygon", displayName: "Polygon.io", workspaceProvider: null, readiness: null, routingConnection: null, bindings: [], trustSnapshot: null, connection: polygonConnection };
+    const fresh = Date.parse("2026-05-21T18:25:00Z");
+    const fiveMonthsOn = Date.parse("2026-11-14T00:00:00Z");
+
+    expect(assessProviderEvidenceStaleness(record, fresh)).toEqual({
+      latestEvidenceAt: "2026-05-20T18:25:00Z", stale: false, reason: null
+    });
+    expect(assessProviderEvidenceStaleness(record, fresh + PROVIDER_EVIDENCE_STALE_AFTER_MS)).toMatchObject({ stale: true });
+    expect(assessProviderEvidenceStaleness(record, fiveMonthsOn)).toMatchObject({
+      stale: true,
+      reason: "Last evidence May 20, 2026, 18:25 UTC (177 days ago). Health cannot be confirmed until the provider is verified again."
+    });
+    // No timestamped evidence at all is unknown, not stale: nothing here contradicts the reported status.
+    expect(assessProviderEvidenceStaleness({ ...record, connection: { ...polygonConnection, lastSuccessfulAt: null, lastVerifiedAt: null } }, fiveMonthsOn).stale).toBe(false);
+
+    const healthy = { ...record, connection: { ...polygonConnection, health: "Healthy" as const } };
+    const current = buildProviderRow(healthy, null, fresh);
+    const stale = buildProviderRow(healthy, null, fiveMonthsOn);
+    expect(current.status).toBe("Healthy");
+    expect(current.staleEvidenceReason).toBeNull();
+    expect(stale.status).toBe("Warning");
+    expect(stale.statusTone).toBe("warning");
+    expect(stale.reasonLabelText).toBe("Evidence is stale");
+    expect(stale.staleEvidenceReason).toContain("177 days ago");
+    expect(stale.recommendedActionText).toContain("Run verification to refresh it.");
+  });
+
   it("merges workspace and routing providers while normalizing trust and readiness coverage", () => {
+    vi.useFakeTimers({ now: Date.parse("2026-06-02T17:00:00Z"), toFake: ["Date"] });
+    try {
     const alpacaRoutingConnection: ProviderRoutingConnection = {
       ...polygonRoutingConnection,
       connectionId: "alpaca",
@@ -1446,8 +1484,14 @@ describe("data-screen view model", () => {
       label: "Trust score",
       value: "92% · Healthy"
     });
-    expect(providerSection.readinessSummary).toContain("Displayed posture: 2 ready / 0 review / 0 degraded / 1 blocked.");
+    // Polygon's readiness is Ready but its connection health is Warning: the row shows the worse
+    // of the two, as the server's provider list does, so readiness cannot hide the warning.
+    expect(providerSection.rows.find((row) => row.provider === "Polygon.io")?.status).toBe("Warning");
+    expect(providerSection.readinessSummary).toContain("Displayed status: 1 ready / 1 review / 0 degraded / 1 blocked.");
     expect(providerSection.readinessSummary).toContain("Shared readiness covers 2 of 3 displayed providers.");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("surfaces verification command state without mutating provider rows", () => {
@@ -2065,7 +2109,7 @@ describe("data-screen view model", () => {
 
     expect(exportSection.rows[0].statusVariant).toBe("paper");
     expect(exportSection.rows[0].rowClassName).toBe("bg-paper/5");
-    expect(exportSection.rows[0].actionText).toBe("Wait for the package writer to finish before handoff.");
+    expect(exportSection.rows[0].actionText).toBe("Wait for the package writer to finish before delivery.");
     expect(exportSection.rows[1].statusVariant).toBe("warning");
     expect(exportSection.rows[1].rowClassName).toBe("bg-warning/5");
     expect(exportSection.rows[1].actionText).toBe("Review export profile and target before report-pack use.");

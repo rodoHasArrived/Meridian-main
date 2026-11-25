@@ -73,6 +73,53 @@ Each phase ships on its own, behind the existing browser smoke tests and screens
   - Example: `"12345678901234.565"` now renders `12,345,678,901,234.57`, and `"1.005"` renders
     `1.01` (previously `1.00`).
 
+**Portfolio figure consistency (landed 2026-11-15, extends P1 and P3):** the Portfolio holdings
+table, headline figures and holding detail panel read one model (`lib/holdings-model.ts`). With no
+current price, Market value shows the last recorded value with a "Stale" marker and the price date;
+a value that does not exist shows "—" with the reason as a tooltip. The table has a Currency column
+and a total line that restates the headline. The screenshot script fails a page whose table rows do
+not sum to the headline Total exposure. The page heading is "Holdings". The WPF Portfolio surface
+does not have this presentation yet.
+
+**Say it once: trust, scope, refresh, headings and copy (landed 2026-11-15, dashboard source;
+P1, P4, C4, C6):**
+- Trust: headline figures carry one compact label with the full source on hover; unverified is a
+  style on the figure; the page trust row renders only when the page differs from the global state.
+- Scope: the header bar shrinks to "All authorized scopes" and lists only set fields; Today's scope
+  row is gone; Trading without an account shows one row instead of a picker box.
+- Refresh: the header Refresh reloads page-owned panels through `useOnGlobalRefresh`. The Today,
+  inbox, Trading readiness, execution evidence, Settings activation and close-history refresh
+  buttons are gone; "Retry" appears only in an error state. About forty sub-page panels (Data
+  regions, Reporting, corporate actions, watchlist and others) still have their own Refresh button
+  and remain to be moved.
+- Headings: one `PageHeading` on every overview; the inline "Hide" link is replaced by one
+  preference under Settings > Preferences.
+- Layout: Trading's overview leads with positions and orders, with readiness and session history
+  collapsed; Accounting's case workbench lost its heading-only band; Settings shows an unavailable
+  activation status below the checklist.
+- Copy: page purpose lines across the seven workspaces are one plain sentence each; the Portfolio
+  chart-method note is behind an information icon.
+- The WPF workstation does not have these changes yet.
+
+**Follow-ups (landed 2026-11-16, dashboard and WPF source; host bundle not rebuilt):**
+- Scope: Trading's account step is inside the header scope bar (`ScopeBarAccountPicker`); the
+  Trading recovery row has no picker.
+- Refresh: the remaining sub-page Refresh buttons are converted to `PanelReload` (header-driven
+  reload, "Retry" only after a failed load). Buttons that start new work are renamed for what they
+  do ("Run checks again", "Fetch latest prices", "Fetch latest chain", "Recalculate preview",
+  "Check command outcome"). A header-driven reload never discards operator input.
+- Copy: operator-visible strings written by the dashboard no longer use "posture", "governed",
+  "handoff", "workstream", "read model", "evidence route", or "projection" for a derived view.
+  Not changed: server-supplied text, wording sent to the server or stored in audit records,
+  genuine forecasts, page names, and the words "retained" and "authoritative".
+- WPF: shell Refresh and F5 reload the active page, docked panes and visible split panes in place
+  through `IPageRefreshTarget`; redundant page-level Refresh buttons are removed; the seven
+  workspace shells state one plain description and one title each; the empty scope reads "All
+  authorized scopes" or "No scope selected"; the position blotter shows market value. WPF is
+  compile-checked on Linux; its tests run on Windows CI only. Not ported to WPF: the compact trust
+  label, the overview layout order, a currency/weight holdings model, sub-panel Refresh buttons,
+  and the copy pass beyond the seven shell pages.
+
 **P1 first step (landed 2026-11-13):** the bottom status bar no longer repeats the
 masthead's worst issue ("Cash variance needs review +5 more"). It holds Sync and page Freshness
 only, so the trust strip is the one shell place that names the worst open issue.
@@ -116,6 +163,39 @@ items, which is a follow-up.
   still shows both.
 - The screenshot catalog now waits on `table[aria-label="Today queue"]` and on
   `data-today-inbox-state` reaching `ready` or `unavailable`.
+
+**P1 fifth step (landed 2026-11-15): one attention count.** This supersedes the fourth step's
+"the sidebar badge still counts workspace signals only".
+- Item type: `AttentionItem` in `lib/attention-items.ts`, with a source, severity (`blocked`,
+  `action`, `info`, `clear`), owner, due time and snoozed flag. `buildAttentionItems` builds the
+  list from the Control Tower's workspace signals and the shared operator inbox. A workspace signal
+  whose id is `work-item:<workItemId>` and the inbox item with that `workItemId` are one work item:
+  it is listed and counted once, as the inbox item.
+- Count rule, stated once (`needsAttention`, `ATTENTION_COUNT_RULE`): blocked + action, excluding
+  snoozed. The sidebar badges, the masthead pill's "N more" and Today's queue all count the list
+  with it. Per-source and per-workspace counts are filtered views, so they add up to the total; an
+  item with no known workspace counts in the total only.
+- The shell (`app.tsx`) reads the shared inbox once with `useOperatorTriageInbox` and passes the
+  same state to Today, so the badge and the queue cannot count different reads. While the inbox is
+  loading or unavailable, every surface counts workspace signals alone and Today says so.
+- Today's default view ("Needs attention") lists exactly the counted items, so the row count, the
+  toolbar's match count, the Source filter counts and the sidebar badge are the same number. "All
+  items" adds informational and snoozed rows. The help line about what the badges count, the
+  per-source summary line and the seeded read-only inbox notice are gone from the normal view; a
+  real loss of durable triage still raises its alert.
+- KPI denominators name their population through `formatCountOfTotal` ("1 of 2 providers",
+  "4 of 5 schedules", "0 of 1 close task"). Trading's risk cockpit labels its exposure figures
+  "· paper session" so they do not read as the Portfolio header's gross exposure over live holdings.
+- Provider health is one population and one status rule. The population is the providers in use
+  (metrics, a saved connection, a routing connection or a trust snapshot); a provider known only
+  from the readiness catalog is available to set up and is not counted. A provider's status is the
+  worse of its listed status and its readiness status (`ResolveProviderStatus` on the server,
+  `resolveProviderStatus` in the browser, both held to the shared fixture), and a provider is not
+  Healthy on evidence older than three days, on the server as on the page. The Data overview's
+  health cards and its "Providers healthy" figure read the same rows, and the server's Data payload
+  and cross-screen count apply the same rule, so Data, Settings and the trust strip agree.
+- Not done: the notification bell still counts unread notifications, which is a different
+  quantity from the attention count.
 
 **P3 `.toFixed()` burn-down (landed 2026-11-13):** `handRolledNumberFormatting` is at 0 (was
 72), so both formatter ratchets in the Phase 1 criteria are met.
@@ -185,6 +265,11 @@ items, which is a follow-up.
 - The picker prefers it and falls back to `/api/fund-structure/graph` on a 404 (older hosts). A
   trading-only operator now gets its accounts; the picker says "No entities or funds are visible to
   you" instead of naming fund-structure access, and "could not be loaded" when the read fails.
+- Withheld relationships (landed 2026-11-14, source): an account whose fund or entity exists but is
+  outside the caller's visible set carries `fundWithheld`/`entityWithheld` (additive, default
+  false; existence only, never the id or name). The picker, the inline account picker and narrowed
+  screens count those accounts apart from ones with no recorded fund ("2 whose fund is not visible
+  to you not shown") and never treat them as conflicts. They are still left out of a narrowed list.
 
 **P4 screens narrow by fund (landed 2026-11-14, dashboard source; host bundle not yet rebuilt):**
 - Shared rule (`lib/operating-scope/fund-scope-narrowing.ts`): a fund-account row is kept when the
@@ -207,6 +292,22 @@ items, which is a follow-up.
   (accounts with no recorded fund or entity are left out and counted), and flags a typed or
   scoped account the graph places outside the chosen fund or entity. It still lets the operator
   use it. Trading has no other per-account list to narrow.
+
+**P4 fund narrowing on more screens (landed 2026-11-14, dashboard source; host bundle not yet rebuilt):**
+- Accounting > Operations continuity (`/accounting/operations-continuity`): the workflow list is
+  narrowed by each workflow's `fundAccountId` with the shared rule, the "N workflows" count is taken
+  over the kept workflows, and the selected workflow, its detail and its close calendar/cockpit
+  reads follow the kept list. The shared status note sits above the list. The route keeps applying
+  `entityId` to its close-readiness read (`ACCOUNTING_ENTITY_ROUTES`); with the graph loaded, Fund
+  is applied as well. Both add the same `entityId` key, so the bar shows it once.
+- Accounting > Statement import (`/accounting/statement-import`): the saved statement fetch
+  schedules (Scheduled tab) are narrowed by each schedule's `fundAccountId`, with the same note.
+- Both routes are in `FUND_SCOPE_NARROWED_ROUTES`.
+- Not adopted: the reporting delivery history. A `ReportPackDeliveryAttempt` carries a report id,
+  distribution id and (on its package) a reporting run id, but no fund account, fund or entity, and
+  neither the distribution records nor the run projections in the same payload carry one. There is
+  no reliable key to place an attempt under a fund, so no mapping was invented and Reporting does
+  not narrow by fund. Adopting it needs the server to state the attempt's fund account or fund.
 
 **P3 one money formatter (landed 2026-11-14):** `formatMoney` in `@/lib/format` is the only
 money formatter.
@@ -259,13 +360,21 @@ money formatter.
   `components/meridian/workflow-context-disclosure.tsx` with its own stylesheet.
 
 **Remaining in Phase 1:**
-- P4: fund narrowing on more screens with fund-account rows. Candidates: the Operations Continuity
-  workflow list, the reporting delivery history and the statement fetch schedules. Each route is
-  added to `FUND_SCOPE_NARROWED_ROUTES` as its screen adopts the shared rule. Also open: rebuilding
-  the host bundle for the scope-option read, a WPF consumer of the same seam, inline account pickers
+- P4: fund narrowing on more screens with fund-account rows. The Operations Continuity workflow
+  list and the statement fetch schedules adopted the shared rule (above). The reporting delivery
+  history waits on a server-stated fund account or fund for each delivery attempt. Each further
+  route is added to `FUND_SCOPE_NARROWED_ROUTES` as its screen adopts the shared rule. Also open: rebuilding
+  the host bundle for the scope-option read, inline account pickers
   on other single-account screens as they are identified, and (if wanted) letting a trading,
   direct-lending or accounting grant at fund level disclose that fund's name, which no existing read
-  does today.
+  does today (until then such accounts are counted as "not visible to you", not placed). A fund's
+  `entityIds` carries no withheld marker yet; add one only if a consumer needs it.
+- P4 WPF consumer (landed 2026-11-14, source): the desktop operating-context page reads
+  `GET /api/workstation/scope-options` through `WorkstationScopeOptionsApiClient` and narrows entity,
+  fund and account pickers by the same rule as the browser picker, reporting failures and accounts
+  left out. Remaining for WPF: a persistent scope bar with period, saved defaults and screen-level
+  fund narrowing; the desktop's 404 fallback uses its in-process fund-structure graph. Tracked in
+  the [WPF alignment plan](wpf-web-ui-alignment-plan.md) parity matrix.
 - The triage "Due · UTC" and "Observed · UTC" labels (`triageDateLabel`) still use a fixed-UTC
   `Intl.DateTimeFormat` without a zone label. They are honest as headed; moving them to the
   display zone needs the headers renamed.
@@ -280,6 +389,40 @@ Acceptance criteria:
 - Every figures strip prints its scope, and "No scope selected" no longer appears.
 - Counts for the same item agree across screens in the seeded scenario, or carry an inline
   scope label that explains the difference.
+
+**Screenshot-review follow-ups 6–12 (landed 2026-11-15):**
+- *System narration (C4).* Method notes left the reading path: Portfolio's bar note, the two
+  execution-journey paragraphs and the journey's matching rules sit behind `TechnicalDetails`;
+  Orders states its price basis once. Wire values get display labels through
+  `@/lib/display-labels` (`formatEnumLabel`, `executionEventLabel`): "PartialFill ·
+  PartiallyFilled" reads "Partial fill · Partly filled". `@/lib/internal-copy` drops
+  self-describing fixture notes outside the mock-data build. Today's detail sentence is written,
+  not comma-joined (`describeFocus`).
+- *Status that cannot contradict itself (C1).* A provider reported healthy on evidence older than
+  `PROVIDER_EVIDENCE_STALE_AFTER_MS` (3 days) is capped at review with the reason shown. A mark
+  price names its source in the same cell ("… (recorded on the position, no observed mark)") and
+  the separate "No mark observed" row is gone. The breaker control reads "Halt trading (open
+  breaker)" with the state badge beside it.
+- *Detail rails (P2/V1).* `DetailRail` fields stack label above value and collapse to one column
+  below two 10rem columns; long values wrap instead of clipping. `formatCompactTimestamp`,
+  `compactTimestampLabel` and `<TimeText display="compact">` give "Jan 1 '26 00:00Z" with the full
+  timestamp on hover. `TableWorkbenchColumn.priority` drops "low" then "medium" columns while the table
+  overflows its frame, instead of scrolling; dropped columns stay in exports.
+- *One time format (P3).* The execution journey, the audit trail, Reporting exports and delivery
+  history and `triageDateLabel` go through `@/lib/format` in the display zone.
+- *Typography and controls (P9).* The typography-floor baseline is at 0. Disabled buttons use a
+  solid edge instead of a dashed one; opacity stays at 1 because dimming the whole button takes
+  the label below the asserted 4.5:1. Risk KPI tiles share one label casing.
+- *Table toolbars (P7).* Density follows the global setting (no per-table select); Export and Save
+  view share one "⋯" menu; search appears above `TABLE_SEARCH_MIN_ROWS` (10) rows; bulk actions
+  live in a selection bar that exists only while rows are selected.
+- *Error states.* `api-errors` drops empty and brace-only bodies; a 404 from the risk service
+  reads "Risk controls aren't available on this host" with Retry and a "What enables this" link;
+  `AsyncRegion` takes `errorSource` to render the shared `ErrorNotice`.
+- *New ratchets:* `pascalCaseRenderedText` and `isoTimestampsInJsx` in
+  `scripts/design-system-ratchets.mjs`, seeded with the existing occurrences.
+- *Still open:* mono/uppercase label clean-up outside the Risk tiles, the three-level action
+  hierarchy, compact row-status pills, and burning the two new ratchet baselines down.
 
 ### Phase 2: Structure and tables (P5–P8, ~4–6 weeks)
 

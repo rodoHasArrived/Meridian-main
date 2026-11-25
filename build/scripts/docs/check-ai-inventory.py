@@ -675,6 +675,7 @@ def check_catalog_drift(root: Path, inventory: Sequence[InventoryItem]) -> list[
     findings.extend(check_compact_assistant_guides(root))
     findings.extend(check_shared_project_context(root))
     findings.extend(check_skill_mirror(root))
+    findings.extend(check_plugin_mirror(root))
     findings.extend(check_ui_platform_policy(root))
     findings.extend(check_stale_operator_surface_language(root, inventory))
     findings.extend(check_missing_workflow_references(root))
@@ -890,6 +891,29 @@ def check_skill_mirror(root: Path) -> list[Finding]:
             message=(
                 f"{rel_path} differs from the canonical {_GUIDANCE.SKILL_SOURCE} package; edit the "
                 "canonical skill, then run python build/scripts/ai/generate-guidance.py --write."
+            ),
+        )
+        for rel_path in drift
+    ]
+
+
+def check_plugin_mirror(root: Path) -> list[Finding]:
+    """Report host plugin copies that no longer match their vendored snapshot under plugins/."""
+    try:
+        drift = _GUIDANCE.plugin_mirror_drift(root)
+    except (OSError, ValueError) as exc:
+        drift = [f"plugin mirrors ({exc})"]
+    return [
+        Finding(
+            severity="drift",
+            surface="claude",
+            kind="plugin-mirror",
+            name=Path(rel_path).name,
+            path=rel_path,
+            expected_doc="plugins/README.md",
+            message=(
+                f"{rel_path} differs from its vendored snapshot under plugins/; edit the snapshot, "
+                "then run python build/scripts/ai/generate-guidance.py --write."
             ),
         )
         for rel_path in drift

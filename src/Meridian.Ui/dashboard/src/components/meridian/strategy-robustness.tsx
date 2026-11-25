@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Select } from "@/components/ui/select";
 import { getRunSweeps } from "@/lib/api";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
@@ -42,15 +43,17 @@ export function StrategyRobustness() {
     const axes = numericAxes(group?.runs ?? []);
     setX(axes[0] ?? ""); setY(axes[1] ?? ""); setSlice(""); setSelection(null);
   };
-  const load = async () => {
+  // `keep` (the header refresh) re-reads without dropping the chosen experiment, axes or cell.
+  const load = async (keep = false) => {
     const requestRevision = ++revision.current;
-    setLoading(true); setError(null); setGroups([]); setSelection(null); setLoaded(false);
+    setLoading(true); setError(null); if (!keep) { setGroups([]); setSelection(null); setLoaded(false); }
     try {
       const results = await getRunSweeps(100);
       if (!Array.isArray(results)) throw new Error("Invalid experiment response.");
       if (revision.current !== requestRevision) return;
-      setGroups(results); chooseGroup(results[0]); setLoaded(true);
+      setGroups(results); if (!keep || !results.some(candidate => groupKey(candidate) === selectedGroup)) chooseGroup(results[0]); setLoaded(true);
     } catch (cause) {
+      if (revision.current === requestRevision && keep) { setGroups([]); setSelection(null); setLoaded(false); }
       if (revision.current === requestRevision) setError(cause instanceof Error ? cause.message : "Retained experiments could not be loaded.");
     } finally { if (revision.current === requestRevision) setLoading(false); }
   };
@@ -69,7 +72,7 @@ export function StrategyRobustness() {
       <CardDescription>Compare retained parameter results across one experiment. This is in-sample sensitivity; out-of-sample robustness requires separate walk-forward evidence.</CardDescription>
     </CardHeader>
     <CardContent className="space-y-4">
-      <Button onClick={() => void load()} disabled={loading}>{loading ? "Loading experiments…" : loaded ? "Refresh retained experiments" : "Load retained experiments"}</Button>
+      {loaded || loading || error !== null ? <PanelReload reload={() => load(loaded)} failed={error !== null} busy={loading} what="retained experiments" /> : <Button onClick={() => void load()}>Load retained experiments</Button>}
       {error ? <p role="alert">{error} Retry loading retained experiments.</p> : null}
       {loading ? <p role="status">Loading retained sweep evidence…</p> : null}
       {loaded && groups.length === 0 ? <p role="status">No retained sweep experiments are available in this scope. Run a parameter sweep before comparing its landscape.</p> : null}

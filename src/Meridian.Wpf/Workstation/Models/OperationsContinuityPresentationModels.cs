@@ -402,7 +402,7 @@ public static class OperationsContinuityMapper
     }
 
     public static string FormatTimestamp(DateTimeOffset value)
-        => $"{value.UtcDateTime:yyyy-MM-dd HH:mm} UTC";
+        => Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(value);
 
     internal static string Pluralize(int count, string singular)
         => count == 1 ? $"1 {singular}" : $"{count} {singular}s";

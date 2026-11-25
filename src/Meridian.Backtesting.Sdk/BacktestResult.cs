@@ -74,6 +74,10 @@ public sealed record BacktestEngineMetadata(
     string ResultKind = BacktestResultKinds.Full,
     IReadOnlyList<string>? CoverageWarnings = null)
 {
+    /// <summary>Null on legacy runs or engines that cannot assess native replay inputs.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BacktestInputCoverage? InputCoverage { get; init; }
+
     /// <summary>Null retains legacy/unassessed coverage; unavailable financing is never a measured zero.</summary>
     public string? FinancingCoverageStatus { get; init; }
 
@@ -114,4 +118,18 @@ public sealed record BacktestResult(
 {
     /// <summary>Day-end accounting differences retained for inspection; empty for a reconciled run.</summary>
     public IReadOnlyList<LedgerIntegrityBreak> LedgerIntegrityBreaks { get; init; } = [];
+
+    /// <summary>Frozen effective action terms for an explicit canonical settlement replay.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BacktestCanonicalActionSnapshot? CanonicalCorporateActions { get; init; }
+
+    /// <summary>Includes observed replay and action evidence in the completed experiment's identity.</summary>
+    public ExecutionRealismDescriptor ToResolvedRealismDescriptor() => Request.ToRealismDescriptor() with
+    {
+        CorporateActionSnapshotHash = CanonicalCorporateActions?.ContentHash,
+        SourceMixHash = EngineMetadata?.InputCoverage?.SourceMixHash
+    };
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; init; }
 }

@@ -1,10 +1,11 @@
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { formatNumber, formatCurrency } from "@/lib/format";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
-import { RefreshCw, ShieldAlert } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PanelSurface } from "@/components/ui/panel-surface";
@@ -54,10 +55,7 @@ export function MarginControlCenterScreen() {
             remain authoritative; this workspace never liquidates positions or changes orders.
           </p>
         </div>
-        <Button size="sm" variant="outline" onClick={() => void load()} busy={loading} busyLabel="Refreshing…">
-          <RefreshCw className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-          Refresh
-        </Button>
+        <PanelReload reload={() => load()} failed={error !== null} busy={loading} what="margin control data" />
       </PanelSurface>
 
       {error ? (
@@ -103,7 +101,7 @@ function SummaryCards({ data, loading }: { data: MarginControlCenter | null; loa
       {items.map(([label, value]) => (
         <Card key={label}>
           <CardContent className="p-4">
-            <p className={cn("text-[0.6875rem] font-medium text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</p>
+            <p className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</p>
             <p className="mt-2 font-mono text-xl font-semibold tabular-nums">{loading ? "—" : value ?? 0}</p>
           </CardContent>
         </Card>
@@ -142,7 +140,7 @@ function AlertPanel({ data }: { data: MarginControlCenter }) {
           <div key={`${alert.providerId}:${alert.accountId}:${alert.code}:${index}`} className="rounded-[2px] border border-border p-3 text-xs">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant={alert.severity === "Critical" ? "danger" : alert.severity === "Warning" ? "warning" : "outline"}>{alert.severity}</Badge>
-              <span className="font-mono text-[0.6875rem] text-muted-foreground">{alert.code}</span>
+              <span className="font-mono text-xs text-muted-foreground">{alert.code}</span>
               <span className="font-medium">{alert.providerId} · {alert.accountId}</span>
             </div>
             <p className="mt-2">{alert.message}</p>
@@ -239,7 +237,7 @@ function Comparison({ label, initial, maintenance, excess, currency }: { label: 
   return <div className="rounded-[2px] border border-border p-3"><p className="text-xs font-semibold">{label}</p><dl className="mt-2 grid grid-cols-3 gap-2 text-xs"><div><dt className="text-muted-foreground">Initial</dt><dd className="mt-1 font-mono">{money(initial, currency)}</dd></div><div><dt className="text-muted-foreground">Maintenance</dt><dd className="mt-1 font-mono">{money(maintenance, currency)}</dd></div><div><dt className="text-muted-foreground">Excess</dt><dd className="mt-1 font-mono">{money(excess, currency)}</dd></div></dl></div>;
 }
 
-function Metric({ label, value }: { label: string; value: string }) { return <div><p className={cn("text-[0.6875rem] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</p><p className="mt-1 font-mono text-sm font-semibold tabular-nums">{value}</p></div>; }
+function Metric({ label, value }: { label: string; value: string }) { return <div><p className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</p><p className="mt-1 font-mono text-sm font-semibold tabular-nums">{value}</p></div>; }
 function number(value: number) { return formatNumber(value, { maximumFractionDigits: 4 }); }
 function money(value: number | null | undefined, currency?: string) { return value == null ? "—" : currency ? formatCurrency(value, { currency, maximumFractionDigits: 2 }) : "Currency unavailable"; }
 function dateTime(value: string) { return formatDateTimeLabel(value); }

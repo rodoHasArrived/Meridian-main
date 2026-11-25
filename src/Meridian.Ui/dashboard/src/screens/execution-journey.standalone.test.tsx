@@ -26,8 +26,8 @@ describe("execution journey", () => {
     expect(screen.getByText(/Sources:/)).toHaveTextContent("Unavailable");
     expect(screen.getByLabelText("Journey stage coverage")).toHaveTextContent("Fill report: not recorded / unknown");
     const timeline = within(screen.getByLabelText("Chronological order events"));
-    await user.click(timeline.getByText("OrderSubmitted"));
-    expect(timeline.getByText("OrderSubmitted").closest("details")).toHaveAttribute("open");
+    await user.click(timeline.getByText("Order submitted"));
+    expect(timeline.getByText("Order submitted").closest("details")).toHaveAttribute("open");
     expect(screen.getAllByText("not separately retained")).toHaveLength(2);
   });
   it("invalidates a previous request when the order changes", async () => {

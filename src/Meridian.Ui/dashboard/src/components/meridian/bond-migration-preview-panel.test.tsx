@@ -48,7 +48,7 @@ describe("bond migration preview", () => {
       target: { value: "Percent" }
     });
     fireEvent.submit(screen.getByRole("form", { name: "Bond migration preview inputs" }));
-    await waitFor(() => expect(screen.getByText("Preview ready for governed review")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Preview ready for review")).toBeInTheDocument());
     expect(preview).toHaveBeenCalledTimes(1);
     expect(preview.mock.calls[0][0]).toMatchObject({
       securityId: SECURITY_ID,
@@ -85,7 +85,7 @@ describe("bond migration preview", () => {
     });
     fireEvent.submit(screen.getByRole("form", { name: "Bond migration preview inputs" }));
     const button = await screen.findByRole("button", {
-      name: "Stage governed draft"
+      name: "Stage draft"
     });
     expect(button).toBeDisabled();
     fireEvent.change(screen.getByLabelText("Review justification"), {
@@ -94,10 +94,10 @@ describe("bond migration preview", () => {
       }
     });
     fireEvent.submit(screen.getByRole("form", { name: "Stage reviewed bond migration" }));
-    expect(await screen.findByText("Governed revision created")).toBeInTheDocument();
+    expect(await screen.findByText("Revision created")).toBeInTheDocument();
     // Focus moves in an effect after the result renders, so wait for it rather than racing it.
     await waitFor(() =>
-      expect(screen.getByRole("region", { name: "Governed bond migration result" })).toHaveFocus());
+      expect(screen.getByRole("region", { name: "Bond migration result" })).toHaveFocus());
     expect(stage).toHaveBeenCalledTimes(1);
     expect(stage.mock.calls[0][0]).toMatchObject({
       previewSha256: "preview-hash",
@@ -105,7 +105,7 @@ describe("bond migration preview", () => {
       justification: "Contract confirmation reviewed against changed payments."
     });
     expect(stage.mock.calls[0][0]).not.toHaveProperty("cashDifferences");
-    expect(screen.queryByRole("button", { name: "Stage governed draft" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Stage draft" })).not.toBeInTheDocument();
     expect(screen.getByText(/No approval or publication was requested/)).toBeInTheDocument();
   });
 
@@ -124,13 +124,13 @@ describe("bond migration preview", () => {
       target: { value: "Percent" }
     });
     fireEvent.submit(screen.getByRole("form", { name: "Bond migration preview inputs" }));
-    await screen.findByRole("button", { name: "Stage governed draft" });
+    await screen.findByRole("button", { name: "Stage draft" });
     fireEvent.change(screen.getByLabelText("Review justification"), {
       target: { value: "Reviewed." }
     });
     fireEvent.submit(screen.getByRole("form", { name: "Stage reviewed bond migration" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("prepare a fresh preview");
-    expect(screen.getByRole("button", { name: "Stage governed draft" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Stage draft" })).toBeDisabled();
   });
 });
 

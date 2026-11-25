@@ -23,6 +23,10 @@ public sealed partial class PostgresLedgerJournalStore
     private static JournalEntryMetadata DeserializeMetadata(string json)
         => JsonSerializer.Deserialize<JournalEntryMetadata>(json, JsonOptions) ?? new JournalEntryMetadata();
 
+    private static LedgerAccountChartReference DeserializeChartAccount(string json)
+        => JsonSerializer.Deserialize<LedgerAccountChartReference>(json, JsonOptions)
+           ?? throw new LedgerValidationException("Stored chart account evidence is invalid.");
+
     private static LedgerEntryCurrency? ReadLegCurrency(
         NpgsqlDataReader reader,
         int transactionCurrencyOrdinal,
@@ -120,6 +124,43 @@ public sealed partial class PostgresLedgerJournalStore
         return JsonSerializer.Serialize(values, JsonOptions);
     }
 
+    /// <summary>
+    /// The execution-lineage filter on the retained journal metadata (web JSON: camelCase properties,
+    /// tag keys as written, GUIDs in lowercase "D" form). A fill matches <c>fillId</c> exactly. An order
+    /// matches the <c>source.orderId</c> tag, which holds the execution journal's own identifier, or the
+    /// GUID <c>orderId</c> when that identifier parses as a GUID. Exact matches only.
+    /// </summary>
+    internal static (string Sql, IReadOnlyList<(string Name, object Value)> Parameters) BuildExecutionLineageFilter(
+        LedgerJournalEntryQuery query)
+    {
+        var sql = string.Empty;
+        var parameters = new List<(string Name, object Value)>();
+        if (query.FillId is { } fillId)
+        {
+            sql += " and je_filter.metadata ->> 'fillId' = @execution_fill_id";
+            parameters.Add(("execution_fill_id", fillId.ToString("D")));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.OrderId))
+        {
+            var orderId = query.OrderId.Trim();
+            if (Guid.TryParse(orderId, out var orderGuid))
+            {
+                sql += " and (je_filter.metadata -> 'tags' ->> 'source.orderId' = @execution_order_id"
+                    + " or je_filter.metadata ->> 'orderId' = @execution_order_guid)";
+                parameters.Add(("execution_order_guid", orderGuid.ToString("D")));
+            }
+            else
+            {
+                sql += " and je_filter.metadata -> 'tags' ->> 'source.orderId' = @execution_order_id";
+            }
+
+            parameters.Add(("execution_order_id", orderId));
+        }
+
+        return (sql, parameters);
+    }
+
     internal static string BuildJournalEntryQueryFilterSql(
         string journalEntriesTable,
         string journalLegsTable,
@@ -141,9 +182,19 @@ public sealed partial class PostgresLedgerJournalStore
             sql += " and je_filter.journal_entry_id = @journal_entry_id";
         }
 
+        if (!string.IsNullOrEmpty(query?.JournalEntryIdPrefix))
+        {
+            sql += " and starts_with(je_filter.journal_entry_id::text, @journal_entry_id_prefix)";
+        }
+
         if (query?.SourceEventId.HasValue == true)
         {
             sql += " and je_filter.source_event_id = @source_event_id";
+        }
+
+        if (query?.SourceJournalEntryId.HasValue == true)
+        {
+            sql += " and je_filter.source_journal_entry_id = @source_journal_entry_id";
         }
 
         // JournalEntryMetadata.EffectiveDate is serialized as an ISO yyyy-MM-dd JSON string. Use

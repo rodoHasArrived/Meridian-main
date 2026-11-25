@@ -31,6 +31,7 @@ import {
   saveProviderIntegrationSetup
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { formatProviderIntegrationSetupDraftIssues, validateProviderIntegrationSetupDraft } from "@/lib/provider-integration-setup-validation";
 import {
   parseProviderIntegrationStringRecord,
@@ -287,7 +288,9 @@ export function ProviderIntegrationRuntimePanel({
     .filter((promotionRow) => promotionRow.status === "ReadyForReconciliation" && !alreadyHandedOff.has(promotionRow.stagingRecordId))
     .length;
   const canCreateHandoff = !loading && handoffReadyCount > 0;
-  const actionLabel = state.phase === "loaded" || state.phase === "error" ? "Refresh runtime" : loading ? "Loading runtime" : "Load runtime";
+  // Runtime evidence is loaded on demand. Once it is on screen the header Refresh re-reads it; a local control returns only as Retry.
+  const onScreen = state.phase === "loaded" || (loading && [state.monitor, state.syncRuns, state.syncPlan, state.staging, state.identity, state.promotion, state.handoff, state.quarantine].some(Boolean));
+  useOnGlobalRefresh(() => { if (state.phase === "loaded" || state.phase === "error") onLoad(); });
 
   return (
     <section
@@ -303,7 +306,7 @@ export function ProviderIntegrationRuntimePanel({
               label={providerRuntimeStatusLabel(state)}
             />
           </div>
-          <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.integrationConnectionId}</p>
+          <p className="mt-1 break-all font-mono text-xs text-muted-foreground">{row.integrationConnectionId}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button
@@ -326,8 +329,8 @@ export function ProviderIntegrationRuntimePanel({
             className="shrink-0"
             onClick={onCreateHandoff}
             disabled={!canCreateHandoff}
-            disabledReason={!state.promotion ? "Load promotion readiness before creating a handoff." : handoffReadyCount === 0 ? "No unhanded promotion-ready staging rows are available." : undefined}
-            aria-label={`Create reconciliation handoff for ${handoffReadyCount} provider integration staging rows for ${row.displayName}`}
+            disabledReason={!state.promotion ? "Load promotion readiness before creating a reconciliation delivery." : handoffReadyCount === 0 ? "No unhanded promotion-ready staging rows are available." : undefined}
+            aria-label={`Create reconciliation delivery for ${handoffReadyCount} provider integration staging rows for ${row.displayName}`}
           >
             {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <GitBranch className="h-3.5 w-3.5" aria-hidden="true" />}
             Hand off ready
@@ -344,18 +347,18 @@ export function ProviderIntegrationRuntimePanel({
             {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />}
             Replay quarantine
           </Button>
-          <Button
+          {onScreen ? null : <Button
             type="button"
             variant="outline"
             size="sm"
             className="shrink-0"
             onClick={onLoad}
             disabled={loading}
-            aria-label={`${state.phase === "loaded" || state.phase === "error" ? "Refresh" : "Load"} provider integration runtime evidence for ${row.displayName}`}
+            aria-label={`${state.phase === "error" ? "Retry loading" : "Load"} provider integration runtime evidence for ${row.displayName}`}
           >
-            {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />}
-            {actionLabel}
-          </Button>
+            {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : null}
+            {state.phase === "error" ? "Retry" : loading ? "Loading runtime" : "Load runtime"}
+          </Button>}
         </div>
       </div>
       <ProviderOpenApiImportForm
@@ -387,7 +390,7 @@ export function ProviderIntegrationRuntimePanel({
         <SettingsFieldRow label="Quarantine retained" value={formatProviderRuntimeNumber(durableQuarantinedCount)} tone={durableQuarantinedCount > 0 ? providerRuntimeIssueTone(criticalIssueCount, warningIssueCount) : "muted"} />
         <SettingsFieldRow label="Decisioned records" value={formatProviderRuntimeNumber(quarantineDecisionCount)} tone={quarantineDecisionCount > 0 ? "success" : "muted"} />
         <SettingsFieldRow
-          label="Review posture"
+          label="Review status"
           value={`${formatProviderRuntimeNumber(pendingReviewRecordCount)} pending / ${formatProviderRuntimeNumber(replayRequestedRecordCount)} replay / ${formatProviderRuntimeNumber(ignoredRecordCount)} ignored / ${formatProviderRuntimeNumber(cashPositionCandidateCount)} cash`}
           tone={pendingReviewRecordCount > 0 ? "warning" : quarantineDecisionCount > 0 ? "success" : "muted"}
         />
@@ -422,8 +425,8 @@ export function ProviderIntegrationRuntimePanel({
           tone={promotionBlocked > 0 ? "danger" : promotionReady > 0 ? "success" : state.promotion ? "muted" : "muted"}
         />
         <SettingsFieldRow
-          label="Reconciliation handoffs"
-          value={`${formatProviderRuntimeNumber(handoffCount)} handoffs`}
+          label="Reconciliation deliveries"
+          value={`${formatProviderRuntimeNumber(handoffCount)} deliveries`}
           tone={handoffCount > 0 ? "success" : "muted"}
         />
       </dl>
@@ -431,7 +434,7 @@ export function ProviderIntegrationRuntimePanel({
         <div role={state.phase === "error" ? "alert" : "status"} className={cn("mt-3 text-xs", itemToneClass[providerRuntimeMessageTone(state)])}>
           <div>{state.message}</div>
           {state.details.length > 0 ? (
-            <ul className="mt-1 list-disc space-y-1 pl-4 text-[11px] text-muted-foreground">
+            <ul className="mt-1 list-disc space-y-1 pl-4 text-xs text-muted-foreground">
               {state.details.map((detail) => <li key={detail}>{detail}</li>)}
             </ul>
           ) : null}
@@ -445,10 +448,10 @@ export function ProviderIntegrationRuntimePanel({
           {runs.slice(0, 3).map((run) => (
             <div key={run.syncRunId} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-mono text-[11px] text-foreground">{run.syncRunId}</span>
+                <span className="font-mono text-xs text-foreground">{run.syncRunId}</span>
                 <SeverityBadge status={toSeverity(providerRuntimeRunVariant(run))} label={run.status} />
               </div>
-              <div className="mt-1 text-[11px] text-muted-foreground">
+              <div className="mt-1 text-xs text-muted-foreground">
                 {run.capability} · {formatProviderRuntimeMinute(run.startedAt)} · {formatProviderRuntimeNumber(run.recordsAccepted)} accepted / {formatProviderRuntimeNumber(run.recordsQuarantined)} quarantined
               </div>
             </div>
@@ -468,13 +471,13 @@ export function ProviderIntegrationRuntimePanel({
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <SeverityBadge status={toSeverity(providerRuntimeProcessingStatusVariant(record.status))} label={record.status} />
-                      <span className="font-mono text-[11px] text-foreground">{record.quarantineRecordId}</span>
+                      <span className="font-mono text-xs text-foreground">{record.quarantineRecordId}</span>
                     </div>
-                    <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
+                    <p className="mt-1 text-xs leading-4 text-muted-foreground">
                       {record.capability} · {formatProviderRuntimeMinute(record.createdAt)} · {formatProviderRuntimeNumber(record.validationErrors.length)} issues
                     </p>
                     {latestDecision ? (
-                      <p className="mt-1 text-[11px] leading-4 text-success">
+                      <p className="mt-1 text-xs leading-4 text-success">
                         Decision: {providerRuntimeQuarantineActionLabel(latestDecision.action)} by {latestDecision.reviewedBy} · {formatProviderRuntimeMinute(latestDecision.reviewedAt)}
                       </p>
                     ) : null}
@@ -539,7 +542,7 @@ export function ProviderIntegrationRuntimePanel({
                   </div>
                 </div>
                 {record.validationErrors[0] ? (
-                  <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{record.validationErrors[0].message}</p>
+                  <p className="mt-1 text-xs leading-4 text-muted-foreground">{record.validationErrors[0].message}</p>
                 ) : null}
               </div>
             );
@@ -552,10 +555,10 @@ export function ProviderIntegrationRuntimePanel({
             <div key={`${group.issueCode}-${group.targetField ?? "record"}`} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
               <div className="flex flex-wrap items-center gap-2">
                 <SeverityBadge status={toSeverity(providerRuntimeSeverityVariant(group.severity))} label={group.severity} />
-                <span className="font-mono text-[11px] text-foreground">{group.issueCode}</span>
-                <span className="text-[11px] text-muted-foreground">{formatProviderRuntimeNumber(group.recordCount)} records</span>
+                <span className="font-mono text-xs text-foreground">{group.issueCode}</span>
+                <span className="text-xs text-muted-foreground">{formatProviderRuntimeNumber(group.recordCount)} records</span>
               </div>
-              <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{group.message}</p>
+              <p className="mt-1 text-xs leading-4 text-muted-foreground">{group.message}</p>
             </div>
           ))}
         </div>
@@ -569,10 +572,10 @@ export function ProviderIntegrationRuntimePanel({
                   status={item.isBlocked ? "blocked" : item.isDue ? "action" : "ready"}
                   label={item.isBlocked ? "Blocked" : item.isDue ? "Due" : "Scheduled"}
                 />
-                <span className="text-[11px] font-medium text-foreground">{item.capability}</span>
-                <span className="font-mono text-[11px] text-muted-foreground">{item.endpointKey ?? "no service"}</span>
+                <span className="text-xs font-medium text-foreground">{item.capability}</span>
+                <span className="font-mono text-xs text-muted-foreground">{item.endpointKey ?? "no service"}</span>
               </div>
-              <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{item.reason}</p>
+              <p className="mt-1 text-xs leading-4 text-muted-foreground">{item.reason}</p>
             </div>
           ))}
         </div>
@@ -584,10 +587,10 @@ export function ProviderIntegrationRuntimePanel({
             <div key={promotionRow.stagingRecordId} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
               <div className="flex flex-wrap items-center gap-2">
                 <SeverityBadge status={toSeverity(providerRuntimePromotionVariant(promotionRow.status))} label={promotionRow.status} />
-                <span className="font-mono text-[11px] text-foreground">{promotionRow.stagingRecordId}</span>
-                <span className="text-[11px] text-muted-foreground">{promotionRow.promotionTarget}</span>
+                <span className="font-mono text-xs text-foreground">{promotionRow.stagingRecordId}</span>
+                <span className="text-xs text-muted-foreground">{promotionRow.promotionTarget}</span>
               </div>
-              <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
+              <p className="mt-1 text-xs leading-4 text-muted-foreground">
                 {promotionRow.providerAccountId ?? "No provider account"} · {promotionRow.securityDisplayName ?? promotionRow.internalSecurityId ?? "No security match"}
               </p>
             </div>
@@ -945,7 +948,7 @@ export function ProviderIntegrationWorkbenchPanel({
       <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h6 className="text-xs font-semibold text-foreground">Manifest and activation workbench</h6>
-          <p className="mt-1 text-[11px] leading-4 text-muted-foreground">Advanced template, dry-run, readiness, drift, and activation evidence stay on shared provider-integration endpoints.</p>
+          <p className="mt-1 text-xs leading-4 text-muted-foreground">Advanced template, dry-run, readiness, drift, and activation evidence stay on shared provider-integration endpoints.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant="outline" size="sm" onClick={() => void loadTemplates()} disabled={busy} busy={state.busyAction === "templates"} aria-label={`Load provider integration templates for ${row.displayName}`}>
@@ -963,11 +966,11 @@ export function ProviderIntegrationWorkbenchPanel({
         </div>
       </div>
       <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+        <label className="grid gap-1 text-xs font-medium text-muted-foreground">
           Template or manifest ID
           <Input value={state.selectedManifestId} onChange={(event) => updateField("selectedManifestId", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration manifest id`} />
         </label>
-        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+        <label className="grid gap-1 text-xs font-medium text-muted-foreground">
           Template catalog
           <Select className="text-xs" value={state.selectedManifestId} onChange={(event) => updateField("selectedManifestId", event.target.value)} disabled={busy || !state.templates || state.templates.length === 0} aria-label={`${row.displayName} provider integration template`}>
             <option value={state.selectedManifestId}>{state.selectedManifestId || "No template selected"}</option>
@@ -976,13 +979,13 @@ export function ProviderIntegrationWorkbenchPanel({
         </label>
       </div>
       <div className="mt-3 grid gap-3 lg:grid-cols-2">
-        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+        <label className="grid gap-1 text-xs font-medium text-muted-foreground">
           Manifest draft JSON
-          <TextArea className="min-h-36 font-mono text-[11px]" value={state.draftManifestJson} onChange={(event) => updateField("draftManifestJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration manifest draft JSON`} spellCheck={false} />
+          <TextArea className="min-h-36 font-mono text-xs" value={state.draftManifestJson} onChange={(event) => updateField("draftManifestJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration manifest draft JSON`} spellCheck={false} />
         </label>
-        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+        <label className="grid gap-1 text-xs font-medium text-muted-foreground">
           Connection draft JSON
-          <TextArea className="min-h-36 font-mono text-[11px]" value={state.draftConnectionJson} onChange={(event) => updateField("draftConnectionJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration connection draft JSON`} spellCheck={false} />
+          <TextArea className="min-h-36 font-mono text-xs" value={state.draftConnectionJson} onChange={(event) => updateField("draftConnectionJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration connection draft JSON`} spellCheck={false} />
         </label>
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
@@ -999,7 +1002,7 @@ export function ProviderIntegrationWorkbenchPanel({
         confirmation={activationConfirmationOpen ? {
           id: `activate-provider-${row.providerId}`,
           title: `Activate ${row.displayName} integration?`,
-          description: "Submit the readiness-approved manifest and connection for server-governed activation. This does not bypass shared approval or production-write policy.",
+          description: "Submit the readiness-approved manifest and connection for server-controlled activation. This does not bypass shared approval or production-write policy.",
           confirmLabel: "Confirm activation",
           confirmAriaLabel: `Confirm provider integration activation for ${row.displayName}`,
           run: activateSetup
@@ -1023,15 +1026,15 @@ export function ProviderIntegrationWorkbenchPanel({
           </div>
           <div className="grid gap-2 md:grid-cols-2">
             {mappingPreview.length > 0 ? mappingPreview.slice(0, 4).map((mapping) => (
-              <div key={`${mapping.capability}-${mapping.sourcePath}-${mapping.targetField}`} className="rounded-sm border border-border/60 bg-secondary/20 px-2 py-2 text-[11px] text-muted-foreground">
+              <div key={`${mapping.capability}-${mapping.sourcePath}-${mapping.targetField}`} className="rounded-sm border border-border/60 bg-secondary/20 px-2 py-2 text-xs text-muted-foreground">
                 <span className="font-mono text-foreground">{mapping.sourcePath}</span> {" → "} <span className="font-mono text-foreground">{mapping.targetField}</span> · {mapping.confidence}{mapping.required ? " · required" : ""}
               </div>
-            )) : <p className="text-[11px] text-muted-foreground">No mapping rows for the selected capability.</p>}
+            )) : <p className="text-xs text-muted-foreground">No mapping rows for the selected capability.</p>}
           </div>
         </div>
       ) : null}
       <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
-        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+        <label className="grid gap-1 text-xs font-medium text-muted-foreground">
           Capability
           <Select className="text-xs" value={state.capability} onChange={(event) => setState((current) => {
             const capability = event.target.value as ProviderIntegrationCapabilityKind;
@@ -1040,27 +1043,27 @@ export function ProviderIntegrationWorkbenchPanel({
             {capabilityOptions.map((capability) => <option key={capability} value={capability}>{capability}</option>)}
           </Select>
         </label>
-        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+        <label className="grid gap-1 text-xs font-medium text-muted-foreground">
           Service key
           <Input value={state.endpointKey} onChange={(event) => updateField("endpointKey", event.target.value)} list={`${row.providerId}-provider-endpoint-options`} disabled={busy} aria-label={`${row.displayName} provider integration dry-run service key`} />
           <datalist id={`${row.providerId}-provider-endpoint-options`}>{endpointOptions.map((endpoint) => <option key={endpoint.endpointKey} value={endpoint.endpointKey} />)}</datalist>
         </label>
-        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+        <label className="grid gap-1 text-xs font-medium text-muted-foreground">
           CSV file name
           <Input value={state.csvFileName} onChange={(event) => updateField("csvFileName", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration CSV dry-run file name`} />
         </label>
       </div>
       <div className="mt-3 grid gap-3 lg:grid-cols-2">
-        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+        <label className="grid gap-1 text-xs font-medium text-muted-foreground">
           CSV content
-          <TextArea className="min-h-24 font-mono text-[11px]" value={state.csvContent} onChange={(event) => updateField("csvContent", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration CSV dry-run content`} spellCheck={false} />
+          <TextArea className="min-h-24 font-mono text-xs" value={state.csvContent} onChange={(event) => updateField("csvContent", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration CSV dry-run content`} spellCheck={false} />
         </label>
         <div className="grid gap-3">
-          <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          <label className="grid gap-1 text-xs font-medium text-muted-foreground">
             REST path parameters JSON
             <Input value={state.restPathParametersJson} onChange={(event) => updateField("restPathParametersJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration REST path parameters JSON`} />
           </label>
-          <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          <label className="grid gap-1 text-xs font-medium text-muted-foreground">
             REST query parameters JSON
             <Input value={state.restQueryParametersJson} onChange={(event) => updateField("restQueryParametersJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration REST query parameters JSON`} />
           </label>
@@ -1094,7 +1097,7 @@ export function ProviderIntegrationWorkbenchPanel({
         <div role={state.tone === "danger" ? "alert" : "status"} className={cn("mt-3 text-xs", itemToneClass[state.tone])}>
           <div>{state.message}</div>
           {state.details.length > 0 ? (
-            <ul className="mt-1 list-disc space-y-1 pl-4 text-[11px] text-muted-foreground">
+            <ul className="mt-1 list-disc space-y-1 pl-4 text-xs text-muted-foreground">
               {state.details.map((detail) => <li key={detail}>{detail}</li>)}
             </ul>
           ) : null}
@@ -1141,7 +1144,7 @@ export function ProviderOpenApiImportForm({
       <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h6 className="text-xs font-semibold text-foreground">OpenAPI import draft</h6>
-          <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
+          <p className="mt-1 text-xs leading-4 text-muted-foreground">
             Seed a draft manifest through the shared import endpoint; readiness, mapping, and runtime evidence stay service-owned.
           </p>
         </div>
@@ -1160,7 +1163,7 @@ export function ProviderOpenApiImportForm({
         </Button>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
-        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+        <label className="grid gap-1 text-xs font-medium text-muted-foreground">
           Manifest ID
           <Input
             value={state.manifestId}
@@ -1169,7 +1172,7 @@ export function ProviderOpenApiImportForm({
             aria-label={`${row.displayName} OpenAPI manifest id`}
           />
         </label>
-        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+        <label className="grid gap-1 text-xs font-medium text-muted-foreground">
           Display name
           <Input
             value={state.displayName}
@@ -1178,7 +1181,7 @@ export function ProviderOpenApiImportForm({
             aria-label={`${row.displayName} OpenAPI display name`}
           />
         </label>
-        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+        <label className="grid gap-1 text-xs font-medium text-muted-foreground">
           Environment
           <Input
             value={state.environment}
@@ -1193,7 +1196,7 @@ export function ProviderOpenApiImportForm({
           onChange={(value) => updateField("authType", value as ProviderIntegrationAuthType)}
           options={PROVIDER_OPEN_API_AUTH_OPTIONS}
         />
-        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+        <label className="grid gap-1 text-xs font-medium text-muted-foreground">
           Capabilities
           <Input
             value={state.capabilities}
@@ -1202,7 +1205,7 @@ export function ProviderOpenApiImportForm({
             aria-label={`${row.displayName} OpenAPI capabilities`}
           />
         </label>
-        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+        <label className="grid gap-1 text-xs font-medium text-muted-foreground">
           OAuth token URL
           <Input
             value={state.tokenUrl}
@@ -1211,7 +1214,7 @@ export function ProviderOpenApiImportForm({
             aria-label={`${row.displayName} OpenAPI token URL`}
           />
         </label>
-        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+        <label className="grid gap-1 text-xs font-medium text-muted-foreground">
           Scopes
           <Input
             value={state.scopes}
@@ -1220,7 +1223,7 @@ export function ProviderOpenApiImportForm({
             aria-label={`${row.displayName} OpenAPI scopes`}
           />
         </label>
-        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+        <label className="grid gap-1 text-xs font-medium text-muted-foreground">
           Change reason
           <Input
             value={state.changeReason}
@@ -1230,7 +1233,7 @@ export function ProviderOpenApiImportForm({
           />
         </label>
       </div>
-      <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+      <label className="grid gap-1 text-xs font-medium text-muted-foreground">
         OpenAPI JSON
         <TextArea rows={2}
           className="min-h-24 font-mono text-xs"
@@ -1245,12 +1248,12 @@ export function ProviderOpenApiImportForm({
         <div role={state.tone === "danger" ? "alert" : "status"} className={cn("text-xs", itemToneClass[state.tone])}>
           <div>{state.message}</div>
           {state.result ? (
-            <div className="mt-1 text-[11px] text-muted-foreground">
+            <div className="mt-1 text-xs text-muted-foreground">
               {state.result.manifest.integrationType} · {state.result.manifest.state} · {state.result.readiness.isReady ? "Ready" : "Readiness review"}
             </div>
           ) : null}
           {state.details.length > 0 ? (
-            <ul className="mt-1 list-disc space-y-1 pl-4 text-[11px] text-muted-foreground">
+            <ul className="mt-1 list-disc space-y-1 pl-4 text-xs text-muted-foreground">
               {state.details.map((detail) => <li key={detail}>{detail}</li>)}
             </ul>
           ) : null}

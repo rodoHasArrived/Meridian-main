@@ -1,22 +1,26 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
-import { failoverApi, type FailoverRule, type FailoverRuleDraft, type FailoverSettings } from "@/lib/failover-api";
+import { failoverApi, type FailoverRule, type FailoverRuleDraft, type FailoverSaveResult, type FailoverSettings } from "@/lib/failover-api";
+import { describeConfigurationApply, type ConfigurationApplyMessage } from "@/lib/configuration-apply";
 
 type FailoverApi = typeof failoverApi;
 const newRule = (): FailoverRuleDraft => ({ id: "", primaryProviderId: "", backupProviderIds: [], failoverThreshold: 3, recoveryThreshold: 5, dataQualityThreshold: 0, maxLatencyMs: 0 });
 
 function FailoverEditor({ api }: { api: FailoverApi }) {
   const [settings, setSettings] = useState<FailoverSettings | null>(null);
+  const [loaded, setLoaded] = useState<FailoverSettings | null>(null);
   const [rule, setRule] = useState<FailoverRuleDraft | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
+  // What the host reported for the last save: applied live, provider re-routed, or restart required.
+  const [applied, setApplied] = useState<ConfigurationApplyMessage | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteReason, setDeleteReason] = useState("");
   const [targets, setTargets] = useState<Record<string, string>>({});
@@ -28,36 +32,43 @@ function FailoverEditor({ api }: { api: FailoverApi }) {
 
   useEffect(() => {
     const controller = new AbortController(); request.current = controller;
-    api.get({ signal: controller.signal }).then(setSettings).catch((cause: unknown) => {
+    api.get({ signal: controller.signal }).then(fresh => { setSettings(fresh); setLoaded(fresh); }).catch((cause: unknown) => {
       if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : "Failover settings could not be loaded.");
     });
     return () => { controller.abort(); request.current?.abort(); };
   }, [api]);
 
-  async function perform(action: (signal: AbortSignal) => Promise<unknown>, message: string, saved = false) {
+  async function perform(action: (signal: AbortSignal) => Promise<unknown>, message: string | null, saved = false) {
     request.current?.abort(); const controller = new AbortController(); request.current = controller;
     setBusy(true); setError(null); setNotice(null);
     try {
-      await action(controller.signal);
+      const result = await action(controller.signal);
       if (controller.signal.aborted) return;
-      if (saved) { setPending(true); window.dispatchEvent(new Event("meridian:configuration-saved")); }
+      if (saved) {
+        setApplied(describeConfigurationApply((result as FailoverSaveResult | undefined)?.changeImpact));
+        window.dispatchEvent(new Event("meridian:configuration-saved"));
+      }
       setNotice(message);
       const refreshed = await api.get({ signal: controller.signal });
-      if (!controller.signal.aborted) setSettings(refreshed);
+      if (!controller.signal.aborted) { setSettings(refreshed); setLoaded(refreshed); }
     } catch (cause) {
       if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : "The operation failed. Refresh to inspect current state before retrying.");
     } finally { if (!controller.signal.aborted) setBusy(false); }
   }
 
   function editRule(existing: FailoverRule) { setRule({ ...existing, reason: "" }); }
+  // The header Refresh is not a deliberate local click: it never replaces unsaved edits or an open draft, and reports nothing.
+  const dirty = JSON.stringify(settings) !== JSON.stringify(loaded) || rule !== null || deleteId !== null;
+  useOnGlobalRefresh(() => { if (!busy && !dirty) void perform(async () => undefined, null); });
 
   return <div className="grid gap-4">
     {error ? <StatusBanner tone="danger" title="Failover operation unavailable" detail={error} role="alert" /> : null}
     {notice ? <StatusBanner tone="success" title={notice} role="status" /> : null}
-    {pending ? <StatusBanner tone="warning" title="Pending host restart" detail="Saved configuration applies after the host restarts and rebuilds streaming providers. The active provider shown below is live runtime evidence; saving does not switch it." /> : null}
-    <Button type="button" variant="outline" disabled={busy} onClick={() => void perform(async signal => {
-      const fresh = await api.get({ signal }); if (!signal.aborted) setSettings(fresh);
-    }, "Failover state refreshed.")}>Refresh failover state</Button>
+    {applied ? <StatusBanner tone={applied.tone} title={applied.title} role="status" detail={<>
+      {applied.detail}
+      {applied.notes.length > 0 ? <ul className="mt-1 list-disc pl-5">{applied.notes.map(note => <li key={note}>{note}</li>)}</ul> : null}
+    </>} /> : null}
+    {error ? <div><Button type="button" size="sm" variant="outline" disabled={busy} aria-label="Retry loading failover state" onClick={() => void perform(async () => undefined, "Failover state refreshed.")}>Retry</Button></div> : null}
     {!settings ? <p role="status" className="text-sm text-muted-foreground">{error ? "No authoritative settings loaded." : "Loading failover configuration…"}</p> : <>
       {!settings.runtimeAvailable ? <StatusBanner tone="warning" title="Streaming runtime unavailable" detail="You can edit saved configuration. Provider switch controls require a running streaming failover service." /> : null}
       <form className="grid gap-3 rounded border p-3" onSubmit={event => {
@@ -86,11 +97,12 @@ function FailoverEditor({ api }: { api: FailoverApi }) {
             <Button type="button" variant="outline" disabled={busy} onClick={() => { setDeleteId(existing.id); setDeleteReason(""); }}>Delete {existing.id}</Button>
           </div>
           {deleteId === existing.id ? <div className="grid gap-2 rounded border p-2" role="group" aria-label={`Confirm deletion of ${existing.id}`}>
-            <p className="text-sm">Delete this saved rule? Running routing continues until the host restarts.</p>
+            <p className="text-sm">Delete this saved rule? A rule that drives live streaming keeps routing until the host restarts.</p>
             <label className="grid gap-1 text-sm">Reason for deleting {existing.id}<Input required maxLength={2000} value={deleteReason} disabled={busy} onChange={event => setDeleteReason(event.target.value)} /></label>
             <p className="text-xs text-muted-foreground">Removal disables this rule's validation protections. Your reason and the previous thresholds are retained in the audit history.</p>
             <div className="flex gap-2"><Button type="button" disabled={busy || !deleteReason.trim()} onClick={() => void perform(async signal => {
-              await api.deleteRule(existing.id, deleteReason.trim(), { signal }); if (!signal.aborted) setDeleteId(null);
+              const result = await api.deleteRule(existing.id, deleteReason.trim(), { signal }); if (!signal.aborted) setDeleteId(null);
+              return result;
             }, "Failover rule deleted.", true)}>Confirm delete</Button><Button type="button" variant="outline" disabled={busy} onClick={() => setDeleteId(null)}>Cancel deletion</Button></div>
           </div> : null}
         </article>)}
@@ -98,7 +110,8 @@ function FailoverEditor({ api }: { api: FailoverApi }) {
       <Button type="button" variant="outline" disabled={busy} className="justify-self-start" onClick={() => setRule(newRule())}>Add failover rule</Button>
       {rule ? <form className="grid gap-3 rounded border p-3" aria-label="Edit failover rule" onSubmit={event => {
         event.preventDefault(); void perform(async signal => {
-          await api.saveRule(rule, { signal }); if (!signal.aborted) setRule(null);
+          const result = await api.saveRule(rule, { signal }); if (!signal.aborted) setRule(null);
+          return result;
         }, "Failover rule saved.", true);
       }}>
         <fieldset disabled={busy} className="grid gap-3 lg:grid-cols-2">
@@ -110,7 +123,7 @@ function FailoverEditor({ api }: { api: FailoverApi }) {
           <label className="grid gap-1 text-sm">Maximum latency in ms (0 disables)<Input type="number" min="0" step="any" value={rule.maxLatencyMs} onChange={event => setRule({ ...rule, maxLatencyMs: Number(event.target.value) })} /></label>
           <label className="grid gap-1 text-sm lg:col-span-2">Reason for loosening thresholds<Input required={loosens} maxLength={2000} value={rule.reason ?? ""} onChange={event => setRule({ ...rule, reason: event.target.value })} /></label>
         </fieldset>
-        <p className="text-xs text-muted-foreground">Loosening an existing threshold requires a recorded reason and creates an audit entry. Changes require a host restart.</p>
+        <p className="text-xs text-muted-foreground">Loosening an existing threshold requires a recorded reason and creates an audit entry. A running collector applies threshold and backup-order changes live; rules naming providers it is not streaming apply after a host restart.</p>
         <div className="flex gap-2"><Button type="submit" disabled={busy || (loosens && !rule.reason?.trim())}>Save rule</Button><Button type="button" variant="outline" disabled={busy} onClick={() => setRule(null)}>Discard rule edit</Button></div>
       </form> : null}
     </>}

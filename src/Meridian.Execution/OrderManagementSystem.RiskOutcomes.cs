@@ -31,9 +31,24 @@ public sealed partial class OrderManagementSystem
         string? correlationId,
         RiskValidationResult riskResult,
         string? sessionId,
-        CancellationToken ct)
+        CancellationToken ct,
+        OrderSubmissionAuthorityRecord? authority = null)
     {
-        var parkedState = CreateRejectedState(orderId, request, riskResult.RejectReason);
+        var parkedState = CreateRejectedState(orderId, request, riskResult.RejectReason, authority?.Origin ?? OrderCommandOrigin.Unattributed);
+
+        // The park normally retained the typed authority already: the OMS staged it with the
+        // queue before risk validation. Attaching afterwards is only a fallback for a validator
+        // that parks into the queue without that staging. Best effort like the rest of post-park
+        // bookkeeping: without it the release stays on the untyped path, which refuses live orders.
+        if (authority is not null && riskResult.EscalationId is { } parkedEscalationId && _escalationQueue is not null
+            && _escalationQueue.TryGet(parkedEscalationId)?.Authority is null
+            && !_escalationQueue.TryAttachAuthority(parkedEscalationId, authority))
+        {
+            _logger.LogWarning(
+                "Order {OrderId} parked for approval ({EscalationId}) without its typed authority retained",
+                LogSanitizer.Sanitize(orderId),
+                LogSanitizer.Sanitize(parkedEscalationId));
+        }
 
         // The tracked state is terminal (nothing is working at the broker), but the client
         // order id must not be reclaimable while the approval is live: another submission
@@ -166,7 +181,8 @@ public sealed partial class OrderManagementSystem
     /// completes locally because no broker order exists. Returns null when the order is
     /// not parked, leaving the ordinary gateway cancellation to run.
     /// </summary>
-    private async Task<OrderResult?> TryCancelParkedOrderAsync(string orderId, CancellationToken ct)
+    private async Task<OrderResult?> TryCancelParkedOrderAsync(string orderId, CancellationToken ct,
+        OrderSubmissionAuthority? authority = null, string? cancelAllIncidentId = null)
     {
         if (TryWithdrawParkedEscalation(orderId) is not { } withdrawnState)
         {
@@ -181,7 +197,9 @@ public sealed partial class OrderManagementSystem
             state: withdrawnState,
             report: null,
             message: "Cancelled while awaiting governed approval; the escalation was withdrawn.",
-            ct: ct).ConfigureAwait(false);
+            ct: ct,
+            authority: authority,
+            cancelAllIncidentId: cancelAllIncidentId).ConfigureAwait(false);
 
         return new OrderResult { Success = true, OrderId = orderId, OrderState = withdrawnState };
     }
@@ -522,10 +540,12 @@ public sealed partial class OrderManagementSystem
     private static OrderState CreateRejectedState(
         string orderId,
         OrderRequest request,
-        string? reason)
+        string? reason,
+        OrderCommandOrigin? origin = null)
     {
         return new OrderState
         {
+            Origin = origin,
             OrderId = orderId,
             Symbol = request.Symbol,
             Side = request.Side,
@@ -537,6 +557,7 @@ public sealed partial class OrderManagementSystem
             CreatedAt = DateTimeOffset.UtcNow,
             LastUpdatedAt = DateTimeOffset.UtcNow,
             StrategyId = request.StrategyId,
+            IntentId = request.IntentId,
             // Fund scope survives a rejection: a parked order's state is built here, and
             // cancelling one withdraws its approval — authorized against this field.
             FundAccountId = request.FundAccountId,

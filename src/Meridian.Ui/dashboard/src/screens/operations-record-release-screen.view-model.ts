@@ -157,7 +157,7 @@ export function buildOperationsRecordReleaseViewModel({
     title: "Operations record release",
     eyebrow: "W1-W5 release path",
     summary:
-      "One operator path ties source data, retained accounting-record evidence, close controls, and governed report packs without adding another root workspace.",
+      "One operator path ties source data, retained accounting-record evidence, close controls, and report packs without adding another root workspace.",
     statusLabel,
     statusDetail: buildStatusDetail(blockedCount, reviewCount, neutralCount),
     tone,
@@ -202,9 +202,9 @@ export function buildOperationsRecordReleaseViewModel({
     distributionLabel: "Report-pack distributions",
     distributions: reporting.packTargets,
     distributionEmptyText: reporting.packTargetsEmptyState.text,
-    templateLabel: "Governed templates",
+    templateLabel: "Approved templates",
     templates: reporting.templateRows,
-    templateEmptyText: "No governed report templates are loaded for this release path.",
+    templateEmptyText: "No report templates are loaded for this release path.",
     recentRunsLabel: "Recent report runs",
     recentRuns: reporting.runStatusRows,
     recentRunsEmptyText: "No recent report runs are loaded for this release path."
@@ -232,13 +232,13 @@ function buildSourcePanel(data: DataWorkspaceResponse | null): OperationsRecordR
   if (!data) {
     return {
       title: "Source data",
-      description: "Source data is unavailable; the release path must fail closed until provider posture loads.",
+      description: "Source data is unavailable; the release path must fail closed until provider health loads.",
       statusLabel: "Data pending",
       tone: "blocked",
       badgeVariant: "danger",
       primaryHref: WORKSTATION_ROUTE_CATALOG.dataProviders,
       primaryLabel: "Open Data providers",
-      primaryAriaLabel: "Open Data providers for source data posture",
+      primaryAriaLabel: "Open Data providers for source data health",
       rows: [],
       emptyText: "No source-data evidence is loaded."
     };
@@ -256,18 +256,18 @@ function buildSourcePanel(data: DataWorkspaceResponse | null): OperationsRecordR
     badgeVariant: toneToBadgeVariant(providerSummary.tone),
     primaryHref: WORKSTATION_ROUTE_CATALOG.dataProviders,
     primaryLabel: "Open Data providers",
-    primaryAriaLabel: "Open Data providers for source data posture",
+    primaryAriaLabel: "Open Data providers for source data health",
     rows: [
       {
         id: "providers",
-        label: "Provider posture",
+        label: "Provider health",
         value: providerSummary.value,
         detail: providerSummary.detail,
         href: WORKSTATION_ROUTE_CATALOG.dataProviders,
         routeLabel: "Data providers",
         tone: providerSummary.tone,
         badgeVariant: toneToBadgeVariant(providerSummary.tone),
-        ariaLabel: `Provider posture ${providerSummary.statusLabel}: ${providerSummary.value}`
+        ariaLabel: `Provider health ${providerSummary.statusLabel}: ${providerSummary.value}`
       },
       {
         id: "backfills",
@@ -287,7 +287,7 @@ function buildSourcePanel(data: DataWorkspaceResponse | null): OperationsRecordR
         label: "Publish data",
         value: `${exportReadyCount}/${data.exports.length} ready`,
         detail: data.exports.length > 0
-          ? "Export rows show whether source data has a publishable handoff."
+          ? "Export rows show whether source data is ready to publish."
           : "No data export rows are loaded for the release path.",
         href: WORKSTATION_ROUTE_CATALOG.dataExports,
         routeLabel: "Data exports",
@@ -510,7 +510,7 @@ function summarizeProviderPosture(data: DataWorkspaceResponse): {
     return {
       statusLabel: "Providers missing",
       value: "0 providers",
-      detail: "No provider posture rows are loaded for the source-data step.",
+      detail: "No provider health rows are loaded for the source-data step.",
       tone: "blocked"
     };
   }
@@ -540,8 +540,8 @@ function summarizeProviderPosture(data: DataWorkspaceResponse): {
 
   return {
     statusLabel: "Providers ready",
-    value: `${healthy}/${providers.length} healthy`,
-    detail: `${healthy} provider${healthy === 1 ? "" : "s"} healthy in the loaded source-data posture.`,
+    value: `${healthy} of ${providers.length} healthy`,
+    detail: `${healthy} provider${healthy === 1 ? "" : "s"} healthy in the loaded source data.`,
     tone: "ready"
   };
 }

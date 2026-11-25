@@ -563,7 +563,7 @@ public static class OperatorReadinessConsoleMapper
         };
 
     public static string FormatTimestamp(DateTimeOffset value)
-        => $"{value.UtcDateTime:yyyy-MM-dd HH:mm} UTC";
+        => Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(value);
 
     /// <summary>
     /// Replaces a duplicate work item only when the candidate carries a more severe tone, or the

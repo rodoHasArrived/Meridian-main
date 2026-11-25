@@ -1,3 +1,4 @@
+import { PROVIDER_EVIDENCE_STALE_AFTER_MS } from "@/lib/cross-screen-counts";
 import type {
   ProviderConnectionRow,
   ProviderReadinessStatus,
@@ -6,7 +7,7 @@ import type {
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot
 } from "@/types";
-import { formatTimestamp } from "@/lib/format";
+import { formatTimestamp, pluralizeCount } from "@/lib/format";
 
 export function joinProviderDetailSentences(...values: Array<string | null | undefined>): string {
   const sentences = values
@@ -61,14 +62,14 @@ export function buildProviderReadinessSummaryText(
 
   if (!readiness) {
     return counts.rowCount > 0
-      ? `Displayed posture: ${displayedCounts}. Provider readiness is assembled from connection, routing, and workspace evidence while the shared readiness summary is unavailable.`
+      ? `Displayed status: ${displayedCounts}. Provider readiness is assembled from connection, routing, and workspace evidence while the shared readiness summary is unavailable.`
       : "Provider readiness will appear after the shared provider setup, validation, degradation, and evidence data loads.";
   }
 
   const coverage = readiness.totalProviders === counts.rowCount
     ? ""
     : ` Shared readiness covers ${readiness.totalProviders} of ${counts.rowCount} displayed providers.`;
-  return `${readiness.summary} Displayed posture: ${displayedCounts}.${coverage} Next action: ${readiness.recommendedAction}`;
+  return `${readiness.summary} Displayed status: ${displayedCounts}.${coverage} Next action: ${readiness.recommendedAction}`;
 }
 
 export function normalizeProviderTrustScore(score: number): number {
@@ -290,4 +291,48 @@ export function splitProviderSetupPascalCase(value: string): string {
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
     .replace(/_/g, " ")
     .trim() || value;
+}
+
+/**
+ * How old a provider's newest evidence may be before "Healthy" stops being believable. Three days
+ * spans a weekend without a market session; past it, health is capped at review until the provider
+ * is verified again.
+ */
+export { PROVIDER_EVIDENCE_STALE_AFTER_MS };
+
+export interface ProviderEvidenceStaleness {
+  /** Newest instant any evidence for the provider was observed, or null when none carries a time. */
+  latestEvidenceAt: string | null;
+  stale: boolean;
+  /** Operator copy for a stale provider, e.g. "Last evidence Jun 2, 2026, 14:00 UTC (166 days ago)..." */
+  reason: string | null;
+}
+
+/**
+ * Health is only as current as the evidence behind it. Given the times a provider's evidence was
+ * observed, this finds the newest; when that is older than `PROVIDER_EVIDENCE_STALE_AFTER_MS`, the
+ * provider cannot be shown as healthy. No timestamped evidence at all is unknown, not stale.
+ */
+export function assessEvidenceStaleness(
+  observedAt: readonly (string | null | undefined)[],
+  now: number = Date.now()
+): ProviderEvidenceStaleness {
+  let latest: number | null = null;
+  let latestEvidenceAt: string | null = null;
+  for (const candidate of observedAt) {
+    const time = candidate ? Date.parse(candidate) : Number.NaN;
+    if (Number.isFinite(time) && (latest === null || time > latest)) {
+      latest = time;
+      latestEvidenceAt = candidate ?? null;
+    }
+  }
+  if (latest === null || now - latest <= PROVIDER_EVIDENCE_STALE_AFTER_MS) {
+    return { latestEvidenceAt, stale: false, reason: null };
+  }
+  const days = Math.floor((now - latest) / (24 * 60 * 60 * 1000));
+  return {
+    latestEvidenceAt,
+    stale: true,
+    reason: `Last evidence ${formatTimestamp(latest)} (${pluralizeCount(days, "day")} ago). Health cannot be confirmed until the provider is verified again.`
+  };
 }

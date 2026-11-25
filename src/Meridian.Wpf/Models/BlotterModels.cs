@@ -32,11 +32,20 @@ public sealed class BlotterEntry : INotifyPropertyChanged
     /// <summary>Stable key used for broker-aware position actions.</summary>
     public string PositionKey { get; set; } = string.Empty;
 
-    /// <summary>Executed unit price of the position.</summary>
+    /// <summary>Average cost per unit of the position, as reported by the execution source.</summary>
     public decimal UnitPrice { get; set; }
 
-    /// <summary>Formatted unit price string for display.</summary>
+    /// <summary>Formatted average cost for display.</summary>
     public string UnitPriceText => UnitPrice > 0 ? UnitPrice.ToString("N4") : "—";
+
+    /// <summary>
+    /// Market value reported by the execution source, or null when it supplied none. The row shows
+    /// this value so it can be reconciled with the account's exposure totals.
+    /// </summary>
+    public decimal? MarketValue { get; set; }
+
+    /// <summary>Formatted market value; a dash when the source supplied no value.</summary>
+    public string MarketValueText => MarketValue is { } value ? value.ToString("#,0.00;-#,0.00;0.00") : "—";
 
     /// <summary>Signed quantity (positive = long, negative = short).</summary>
     public decimal Quantity { get; set; }

@@ -21,6 +21,24 @@ namespace Meridian.Tests.Ui;
 
 public sealed class BackfillProviderEditorTests
 {
+    [Fact]
+    public async Task ProviderStatuses_WhenConfigurationAndRuntimeAreMissing_ReturnsServiceUnavailable()
+    {
+        var (app, store, root) = await CreateApp(UserPermission.ViewHistoricalData);
+        await using (app)
+        {
+            (store.Load().Backfill?.Providers).Should().BeNull();
+            app.Services.GetService<Meridian.Application.Backfill.BackfillRoutingRuntime>().Should().BeNull();
+            using var client = app.GetTestClient();
+            using var response = await client.GetAsync("/api/backfill/providers/statuses");
+
+            response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+            using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            document.RootElement.GetProperty("service").GetString().Should().Be("backfill provider configuration");
+        }
+        Directory.Delete(root, true);
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
@@ -42,6 +60,14 @@ public sealed class BackfillProviderEditorTests
     }
 
     [Fact]
+    public void Catalog_InitialAlpacaPriorityEditKeepsTheInheritedHostFeed()
+    {
+        var changed = BackfillProviderCatalog.Apply(new(), "alpaca", new(true, 2));
+        changed.Alpaca!.Feed.Should().BeEmpty();
+        changed.Alpaca.Priority.Should().Be(2);
+    }
+
+    [Fact]
     public void Catalog_StarterPresetFeedsRuntimePriorityAndLimit()
     {
         var cfg = BackfillProviderCatalog.Apply(new(), "polygon", new(true, 3, "starter"));
@@ -60,12 +86,15 @@ public sealed class BackfillProviderEditorTests
         var cfg = BackfillProviderCatalog.Apply(new(), "twelvedata", new(true, 7, RateLimitPerMinute: 4));
         var options = BackfillProviderRuntimeOptions.FromConfig(cfg, "twelvedata");
         using var http = new HttpClient();
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "synthetic-fixture", httpClient: http, runtimeOptions: options);
-        using var search = new TwelveDataSymbolSearchProvider(apiKey: "synthetic-fixture", httpClient: http, runtimeOptions: options);
+        using var registry = new RateLimiterRegistry();
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "synthetic-fixture", httpClient: http, rateLimiterRegistry: registry, runtimeOptions: options);
+        using var search = new TwelveDataSymbolSearchProvider(apiKey: "synthetic-fixture", httpClient: http, rateLimiterRegistry: registry, runtimeOptions: options);
         provider.Priority.Should().Be(7);
         search.Priority.Should().Be(7);
-        provider.MaxRequestsPerWindow.Should().Be(4);
+        // The editor bounds physical requests; account capacity and diagnostics retain credits.
+        provider.MaxRequestsPerWindow.Should().Be(8);
         provider.RateLimitDelay.Should().Be(TimeSpan.FromSeconds(15));
+        provider.GetRateLimitDiagnosticsSnapshot().QuotaUnit.Should().Be("credits");
     }
 
     [Fact]

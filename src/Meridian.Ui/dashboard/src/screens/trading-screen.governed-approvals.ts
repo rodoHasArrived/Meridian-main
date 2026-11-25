@@ -110,7 +110,7 @@ export function useGovernedApprovalsViewModel(
         return;
       }
 
-      setErrorText(toErrorText(error, "Could not load the governed approval queue."));
+      setErrorText(toErrorText(error, "Could not load the approval queue."));
     } finally {
       if (outstandingRevisionRef.current === revision) {
         outstandingRevisionRef.current = null;

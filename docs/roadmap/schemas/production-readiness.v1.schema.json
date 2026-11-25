@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "meridian.production-readiness.v1",
+  "type": "object",
+  "required": [
+    "schema",
+    "registry",
+    "items",
+    "detail_sections"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "type": "object",
+      "required": [
+        "id",
+        "version",
+        "minimum_renderer_version"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "const": "meridian.production-readiness"
+        },
+        "version": {
+          "const": "1.0.0"
+        },
+        "minimum_renderer_version": {
+          "const": "1.0.0"
+        }
+      }
+    },
+    "registry": {
+      "type": "object",
+      "required": [
+        "reviewed",
+        "migration_snapshot",
+        "baseline_commit",
+        "release_status",
+        "release_commit"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "reviewed": {
+          "type": "string",
+          "format": "date"
+        },
+        "migration_snapshot": {
+          "type": "string",
+          "pattern": "^docs/product/history/",
+          "maxLength": 512
+        },
+        "baseline_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "release_status": {
+          "enum": [
+            "blocked",
+            "ready"
+          ]
+        },
+        "release_commit": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "priority",
+          "owner",
+          "title",
+          "status",
+          "release_status",
+          "remaining_gate",
+          "decision_ids",
+          "evidence_links",
+          "pr_references",
+          "detail_anchor"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^PRD-[0-9]{3}$"
+          },
+          "priority": {
+            "enum": [
+              "P0",
+              "P1",
+              "P2"
+            ]
+          },
+          "owner": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "status": {
+            "enum": [
+              "open",
+              "in_progress",
+              "implementation_complete",
+              "evidence_gated"
+            ]
+          },
+          "release_status": {
+            "enum": [
+              "open",
+              "complete"
+            ]
+          },
+          "remaining_gate": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 320
+          },
+          "decision_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^DEC-[A-Z0-9-]+$"
+            }
+          },
+          "evidence_links": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          },
+          "pr_references": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "detail_anchor": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          }
+        }
+      }
+    },
+    "detail_sections": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "heading",
+          "level",
+          "anchor"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "heading": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "level": {
+            "enum": [
+              2,
+              3
+            ]
+          },
+          "anchor": {
+            "type": "string",
+            "pattern": "^[\\w-]+$"
+          }
+        }
+      }
+    }
+  }
+}

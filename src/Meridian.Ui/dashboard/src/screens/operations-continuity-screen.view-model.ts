@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatAmountWithCode, formatCurrency as formatCurrencyAmount, formatNumber, pluralizeCount } from "@/lib/format";
 import { formatDate, formatDateOnly } from "@/screens/operations-continuity-screen.date-format";
+import { operationsCaseVarianceLabel } from "./reconciliation-case-values";
 import {
   collectCloseWorkflowEvidenceLinks,
   collectCloseWorkflowChecklistControlApprovals,
@@ -23,6 +24,11 @@ import {
   type PrivateCapitalCloseCockpitQuery
 } from "@/lib/api";
 import { describeApiError, isAbortError } from "@/lib/api-errors";
+import {
+  narrowRowsWithFundScopeContext,
+  type FundScopeNarrowingContextValue
+} from "@/lib/operating-scope/fund-scope-context";
+import type { FundScopeNarrowingStatus } from "@/lib/operating-scope/fund-scope-narrowing";
 import { humanizeStatus } from "@/components/operations/status";
 import { normalizeLocalWorkstationRoute, workstationRouteWithQuery } from "@/lib/workspace";
 import {
@@ -167,7 +173,13 @@ export interface OperationsContinuityChecklistSummary {
   statusTone: OperationsContinuityTone;
 }
 
+export interface OperationsTechnicalField {
+  label: string;
+  value: string;
+}
+
 export interface OperationsContinuityBreakCaseRow {
+  technicalDetails?: OperationsTechnicalField[];
   id: string;
   caseLabel: string;
   categoryLabel: string;
@@ -216,6 +228,7 @@ export interface OperationsContinuityBreakCaseRow {
 }
 
 export interface OperationsContinuityReconciliationLaneRow {
+  technicalDetails?: OperationsTechnicalField[];
   id: string;
   label: string;
   statusLabel: string;
@@ -232,6 +245,7 @@ export interface OperationsContinuityReconciliationLaneRow {
 }
 
 export interface OperationsContinuityDashboardMetricRow {
+  technicalDetails?: OperationsTechnicalField[];
   id: string;
   label: string;
   valueLabel: string;
@@ -246,6 +260,7 @@ export interface OperationsContinuityDashboardMetricRow {
 }
 
 export interface OperationsContinuityDashboardViewModel {
+  technicalDetails?: OperationsTechnicalField[];
   title: string;
   statusLabel: string;
   statusTone: OperationsContinuityTone;
@@ -333,6 +348,7 @@ export interface OperationsReviewedAutomationArtifactRow {
 }
 
 export interface FinancialOperationsOperatorQueueRow {
+  technicalDetails?: OperationsTechnicalField[];
   id: string;
   kindLabel: string;
   title: string;
@@ -413,6 +429,7 @@ export interface OperationsContinuityCloseGovernanceViewModel {
 }
 
 export interface OperationsContinuityCloseCalendarRow {
+  technicalDetails?: OperationsTechnicalField[];
   id: string;
   periodLabel: string;
   statusLabel: string;
@@ -448,6 +465,7 @@ export interface OperationsContinuityCloseCalendarViewModel {
 }
 
 export interface OperationsContinuityCloseCockpitLaneRow {
+  technicalDetails?: OperationsTechnicalField[];
   id: string;
   label: string;
   statusLabel: string;
@@ -461,6 +479,7 @@ export interface OperationsContinuityCloseCockpitLaneRow {
 }
 
 export interface OperationsContinuityCloseCockpitWorkflowRow {
+  technicalDetails?: OperationsTechnicalField[];
   id: string;
   periodLabel: string;
   statusLabel: string;
@@ -476,6 +495,7 @@ export interface OperationsContinuityCloseCockpitWorkflowRow {
 }
 
 export interface OperationsContinuityCloseCockpitApprovalRow {
+  technicalDetails?: OperationsTechnicalField[];
   id: string;
   workflowLabel: string;
   statusLabel: string;
@@ -538,6 +558,7 @@ export interface OperationsContinuityNavSupportPackageRow {
 }
 
 export interface OperationsContinuityCloseCockpitViewModel {
+  technicalDetails?: OperationsTechnicalField[];
   title: string;
   statusLabel: string;
   statusTone: OperationsContinuityTone;
@@ -584,11 +605,13 @@ export interface OperationsAccountingRecordEvidenceRow {
 }
 
 export interface OperationsAccountingRecordSummaryViewModel {
+  technicalDetails?: OperationsTechnicalField[];
   title: string;
   summaryLabel: string;
   statusLabel: string;
   statusTone: OperationsContinuityTone;
   recordIdLabel: string;
+  recordDisplayLabel: string;
   evidenceLabel: string;
   auditPackLabel: string;
   auditPackTimingLabel: string;
@@ -634,6 +657,10 @@ export interface OperationsContinuityScreenViewModel {
   workflowsTableLabel: string;
   workflowsTableCaption: string;
   workflows: OperationsContinuityWorkflowRow[];
+  /** How the workflow list was narrowed by the scope's entity/fund (`inactive` when not). */
+  workflowsFundScopeStatus: FundScopeNarrowingStatus;
+  /** What that narrowing did, to print next to the list; null when no entity or fund is chosen. */
+  workflowsFundScopeNote: string | null;
   selectedWorkflowId: string | null;
   selectWorkflow: (workflowId: string) => void;
   selectedDetail: OperationsContinuityDetailPanel | null;
@@ -699,6 +726,9 @@ export interface BuildOperationsContinuityScreenViewModelOptions {
   commandCenter?: FinancialOperationsCommandCenter | null;
   expectedCloseScope?: PrivateCapitalCloseCockpitQuery;
   workflows: OperationsContinuityWorkflowSummary[];
+  /** How `workflows` was narrowed by the scope's entity/fund before it got here. */
+  workflowsFundScopeStatus?: FundScopeNarrowingStatus;
+  workflowsFundScopeNote?: string | null;
   selectedWorkflowId: string | null;
   detail: OperationsContinuityWorkflow | null;
   loading: boolean;
@@ -729,10 +759,26 @@ const emptyCloseScope: PrivateCapitalCloseCockpitQuery = {};
 export function useOperationsContinuityScreenViewModel(
   services: OperationsContinuityScreenServices = defaultServices,
   closeScope: PrivateCapitalCloseCockpitQuery = emptyCloseScope,
-  selection: OperationsContinuityScreenSelection = {}
+  selection: OperationsContinuityScreenSelection = {},
+  /**
+   * The shell's entity/fund narrowing inputs. When given, the workflow list is narrowed to the
+   * chosen fund (or entity) by each workflow's fund account, and selection, detail and close reads
+   * follow the kept workflows. Null (the default) keeps every workflow.
+   */
+  fundScope: FundScopeNarrowingContextValue | null = null
 ): OperationsContinuityScreenViewModel {
   const { initialWorkflowId, fundAccountId, ledgerBookId, periodId, status } = normalizeWorkflowSelection(selection);
-  const [workflows, setWorkflows] = useState<OperationsContinuityWorkflowSummary[]>([]);
+  const [loadedWorkflows, setWorkflows] = useState<OperationsContinuityWorkflowSummary[]>([]);
+  // Workflows narrowed to the scope's fund (or entity) when the organization graph places their
+  // fund accounts; workflows it does not place are counted in the note, never hidden silently.
+  const workflowsFundScope = useMemo(
+    () => narrowRowsWithFundScopeContext(fundScope, loadedWorkflows, (workflow) => workflow.fundAccountId, "close workflows"),
+    [fundScope, loadedWorkflows]
+  );
+  const workflows = workflowsFundScope.rows;
+  // An applied fund/entity narrowing that keeps no workflow leaves no scope to read the close
+  // calendar or cockpit for; an unscoped read would show other funds' items, so none is made.
+  const narrowedToNoWorkflow = workflowsFundScope.status === "applied" && workflows.length === 0;
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
   const [detail, setDetail] = useState<OperationsContinuityWorkflow | null>(null);
   const [loading, setLoading] = useState(true);
@@ -745,7 +791,16 @@ export function useOperationsContinuityScreenViewModel(
   const [closeCockpitLoading, setCloseCockpitLoading] = useState(false);
   const [closeCockpitError, setCloseCockpitError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [selectionError, setSelectionError] = useState<string | null>(null);
+  const [requestSelectionError, setSelectionError] = useState<string | null>(null);
+  // A requested workflow the server returned but the scope's fund/entity narrowed out is reported
+  // as out of scope, never replaced silently by the first kept workflow.
+  const requestedOutsideFundScope = !!initialWorkflowId
+    && !loading
+    && loadedWorkflows.some((workflow) => workflow.workflowId === initialWorkflowId)
+    && !workflows.some((workflow) => workflow.workflowId === initialWorkflowId);
+  const selectionError = requestSelectionError ?? (requestedOutsideFundScope
+    ? `Workflow ${initialWorkflowId} is outside the chosen fund or entity. Clear the fund or entity in the scope to open it.`
+    : null);
   const [detailError, setDetailError] = useState<string | null>(null);
   const mountedRef = useRef(true);
   const listRevisionRef = useRef(0);
@@ -905,7 +960,20 @@ export function useOperationsContinuityScreenViewModel(
     closeScope.fundAccountId, closeScope.entityId, closeScope.periodId]);
 
   useEffect(() => {
-    if (loading || selectionError) {
+    if (loading) {
+      return;
+    }
+
+    // A blocked selection (a requested workflow unavailable or outside the scope) or a narrowing
+    // that keeps no workflow leaves nothing to read for: clear what an earlier scope loaded and
+    // invalidate reads still in flight, so another fund's close evidence never stays on screen.
+    if (selectionError || narrowedToNoWorkflow) {
+      closeCalendarRevisionRef.current += 1;
+      closeCalendarAbortRef.current?.abort();
+      closeCalendarAbortRef.current = null;
+      setCloseCalendar(null);
+      setCloseCalendarError(null);
+      setCloseCalendarLoading(false);
       return;
     }
 
@@ -943,10 +1011,24 @@ export function useOperationsContinuityScreenViewModel(
           closeCalendarAbortRef.current = null;
         }
       });
-  }, [workflows, closeCockpitScope, loading, selectionError, services]);
+  }, [workflows, closeCockpitScope, loading, narrowedToNoWorkflow, selectionError, services]);
 
   useEffect(() => {
-    if (loading || selectionError) {
+    if (loading) {
+      return;
+    }
+
+    // A blocked selection (a requested workflow unavailable or outside the scope) or a narrowing
+    // that keeps no workflow leaves nothing to read for: clear what an earlier scope loaded and
+    // invalidate reads still in flight, so another fund's close evidence never stays on screen.
+    if (selectionError || narrowedToNoWorkflow) {
+      closeCockpitRevisionRef.current += 1;
+      closeCockpitAbortRef.current?.abort();
+      closeCockpitAbortRef.current = null;
+      setCloseCockpit(null);
+      setCommandCenter(null);
+      setCloseCockpitError(null);
+      setCloseCockpitLoading(false);
       return;
     }
 
@@ -989,7 +1071,7 @@ export function useOperationsContinuityScreenViewModel(
           closeCockpitAbortRef.current = null;
         }
       });
-  }, [workflows, closeCockpitScope, closeScope, loading, selectionError, services]);
+  }, [workflows, closeCockpitScope, closeScope, loading, narrowedToNoWorkflow, selectionError, services]);
 
   const selectWorkflow = useCallback((workflowId: string) => {
     setSelectedWorkflowId(workflowId);
@@ -999,6 +1081,8 @@ export function useOperationsContinuityScreenViewModel(
     commandCenter,
     expectedCloseScope: closeScope,
     workflows,
+    workflowsFundScopeStatus: workflowsFundScope.status,
+    workflowsFundScopeNote: workflowsFundScope.note,
     selectedWorkflowId,
     detail,
     loading,
@@ -1014,13 +1098,15 @@ export function useOperationsContinuityScreenViewModel(
     selectionBlocked: selectionError !== null,
     refresh,
     selectWorkflow
-  }), [commandCenter, closeScope, closeCalendar, closeCalendarError, closeCalendarLoading, closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, selectionError, workflows]);
+  }), [commandCenter, closeScope, closeCalendar, closeCalendarError, closeCalendarLoading, closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, selectionError, workflows, workflowsFundScope.status, workflowsFundScope.note]);
 }
 
 export function buildOperationsContinuityScreenViewModel({
   commandCenter = null,
   expectedCloseScope = emptyCloseScope,
   workflows,
+  workflowsFundScopeStatus = "inactive",
+  workflowsFundScopeNote = null,
   selectedWorkflowId,
   detail,
   loading,
@@ -1132,34 +1218,38 @@ export function buildOperationsContinuityScreenViewModel({
     statusAnnouncement: buildStatusAnnouncement({ loading, rows, selectedSummary, detailLoading, detailError }),
     errorText: error,
     detailErrorText: detailError,
-    reloadLabel: loading ? "Refreshing" : "Refresh workflows",
-    reloadAriaLabel: loading ? "Refreshing operations continuity workflows" : "Refresh operations continuity workflows",
+    reloadLabel: loading ? "Retrying" : "Retry workflows",
+    reloadAriaLabel: loading ? "Loading operations continuity workflows" : "Retry loading operations continuity workflows",
     reloadBusy: loading,
     reloadDisabled: loading,
-    reloadDisabledReason: loading ? "Operations continuity workflows are already refreshing." : null,
+    reloadDisabledReason: loading ? "Operations continuity workflows are already loading." : null,
     workflowsSummaryLabel: `${rows.length} workflow${rows.length === 1 ? "" : "s"}`,
     workflowsEmptyText: loading
       ? "Loading operations continuity workflows..."
       : error
         ? "Operations continuity workflows could not be loaded."
-        : "No operations continuity workflows are available for this workstation context.",
+        : workflowsFundScopeStatus === "applied"
+          ? "No operations continuity workflows are under the chosen entity or fund."
+          : "No operations continuity workflows are available for this workstation context.",
     workflowsTableLabel: "Operations continuity workflows",
-    workflowsTableCaption: "Operations continuity workflows. Select a row to inspect close-lane gates, blockers, next action, and timeline.",
+    workflowsTableCaption: "Operations continuity workflows. Select a row to inspect close-workstream gates, blockers, next action, and timeline.",
     workflows: rows,
+    workflowsFundScopeStatus,
+    workflowsFundScopeNote,
     selectedWorkflowId: selectedSummary?.workflowId ?? null,
     selectWorkflow,
     selectedDetail,
     nextAction,
     gatesLabel: "Gates",
-    gatesEmptyText: detailLoading ? "Loading selected workflow gates..." : "Open a workflow to inspect gate posture.",
+    gatesEmptyText: detailLoading ? "Loading selected workflow gates..." : "Open a workflow to inspect gate status.",
     gates,
     blockersLabel: "Blockers",
     blockersEmptyText: detailLoading ? "Loading selected workflow blockers..." : "No blockers are surfaced for the selected workflow.",
     blockers,
     breakCasesLabel: "Break assignment and escalation",
     breakCasesEmptyText: detailLoading ? "Loading reconciliation break cases..." : "No reconciliation break cases are surfaced for the selected workflow.",
-    reconciliationLanesLabel: "Reconciliation lane coverage",
-    reconciliationLanesEmptyText: detailLoading ? "Loading reconciliation lane coverage..." : "No reconciliation lane coverage is surfaced for the selected workflow.",
+    reconciliationLanesLabel: "Reconciliation workstream coverage",
+    reconciliationLanesEmptyText: detailLoading ? "Loading reconciliation workstream coverage..." : "No reconciliation workstream coverage is surfaced for the selected workflow.",
     evidencePackagesLabel: "Evidence packages",
     evidencePackagesEmptyText: detailLoading ? "Loading evidence packages..." : "No evidence packages are surfaced for the selected workflow.",
     workflowApprovalHistoryLabel: "Workflow approval history",
@@ -1203,7 +1293,7 @@ function buildDetailPanel(
     ariaLabel: `Operations continuity detail for ${summary.periodId} close workflow`,
     title: `${summary.periodId} close workflow`,
     subtitle: `Broker source: ${formatWorkflowSourceLabel(summary.brokerSource)}.`,
-    description: "Selected close-lane evidence, gate progress, Security Master snapshot, and blocker count.",
+    description: "Selected close-workstream evidence, gate progress, Security Master snapshot, and blocker count.",
     statusLabel: statusLabel(summary.status),
     statusTone: statusTone(summary.status),
     metadata: [
@@ -1347,7 +1437,7 @@ function mapWorkflowApprovalHistoryRow(
     reviewer: reviewer ?? resolveApprovalReviewer(workflow),
     evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
     evidenceHref,
-    evidenceRouteLabel: evidenceHref ? "Open approval evidence" : "No local evidence route",
+    evidenceRouteLabel: evidenceHref ? "Open approval evidence" : "No local supporting record link",
     decisionGuardLabel,
     approveWorkflowReportPackId: resolveApprovalReportPackId(workflow),
     approveWorkflowEvidenceLinks: collectApprovalDecisionEvidenceLinks(workflow, approval),
@@ -1460,7 +1550,7 @@ function buildNextActionViewModel({
         ? "Start or load an operations continuity workflow before taking an action."
         : !rawAction
           ? workflow.status === "Closed"
-            ? "This workflow is closed and locked; use the governed reopen command with admin incident metadata before applying further transitions."
+            ? "This workflow is closed and locked; use the period reopen command with admin incident metadata before applying further transitions."
             : "No server-recommended next action is available for the selected workflow."
           : !href
             ? "The server did not provide a local workstation route for this action."
@@ -1612,7 +1702,7 @@ function buildBlockerRows(blockers: OperationsWorkflowBlocker[]): OperationsCont
       severityTone: severityTone(blocker.severity),
       evidenceLabel: blocker.evidenceLinks.length === 0 ? "No linked evidence" : `${blocker.evidenceLinks.length} evidence link${blocker.evidenceLinks.length === 1 ? "" : "s"}`,
       evidenceHref,
-      evidenceRouteLabel: evidenceHref ? "Open blocker evidence" : "No local evidence route",
+      evidenceRouteLabel: evidenceHref ? "Open blocker evidence" : "No local supporting record link",
       ariaLabel: `${blocker.code}, ${blocker.severity || "Review"} blocker for ${blocker.gate ? gateLabel(blocker.gate) : "workflow"}`
     };
   });
@@ -1635,13 +1725,14 @@ function buildReconciliationLaneRows(lanes: OperationsReconciliationLaneSummary[
         statusLabel: evidenceStatusLabel(lane.status),
         statusTone: lane.isReady ? "ready" : evidenceStatusTone(lane.status),
         breakCountLabel: lane.breakCount === 0 ? "No open breaks" : `${lane.breakCount} open break${lane.breakCount === 1 ? "" : "s"}`,
-        summary: lane.summary?.trim() || "No reconciliation lane summary returned.",
+        summary: workstreamCopy(lane.summary?.trim() || "No reconciliation workstream summary returned."),
+        technicalDetails: [{ label: "Source summary", value: lane.summary || "Not recorded" }],
         evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
         evidenceHref,
-        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local evidence route",
+        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local supporting record link",
         routeHref,
-        routeLabel: routeHref ? "Open lane" : "No local route",
-        requiredActionsLabel: actions.length === 0 ? "No required actions" : actions.join("; "),
+        routeLabel: routeHref ? "Open workstream" : "No local route",
+        requiredActionsLabel: actions.length === 0 ? "No required actions" : workstreamCopy(actions.join("; ")),
         ariaLabel: `${lane.label || lane.laneId}, ${evidenceStatusLabel(lane.status)}, ${lane.breakCount} open breaks`
       };
     });
@@ -1692,10 +1783,11 @@ function buildOperationsDashboardViewModel(
     statusLabel: evidenceStatusLabel(dashboard.status),
     statusTone: dashboard.isReady ? "ready" : evidenceStatusTone(dashboard.status),
     stageLabel: `Core flow: ${dashboard.stage || "Stage pending"}`,
-    summaryLabel: dashboard.summary?.trim() || "No operational dashboard summary returned.",
+    summaryLabel: workstreamCopy(dashboard.summary?.trim() || "No operational dashboard summary returned."),
+    technicalDetails: [{ label: "Source summary", value: dashboard.summary || "Not recorded" }, { label: "Source required actions", value: requiredActions.join("; ") }].filter((field) => workstreamCopy(field.value) !== field.value),
     metricCountLabel: `${dashboard.readyMetricCount}/${dashboard.totalMetricCount} metrics ready`,
     evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} retained evidence link${evidenceCount === 1 ? "" : "s"}`,
-    requiredActionsLabel: requiredActions.length === 0 ? "No required actions" : requiredActions.join("; "),
+    requiredActionsLabel: requiredActions.length === 0 ? "No required actions" : workstreamCopy(requiredActions.join("; ")),
     metricsEmptyText: "No operational dashboard metrics returned by the shared operations API.",
     metrics
   };
@@ -1711,15 +1803,16 @@ function mapDashboardMetricRow(metric: OperationsDashboardSummary["metrics"][num
   return {
     id: metric.metricId,
     label: metric.label || splitEnumLabel(metric.metricId),
-    valueLabel: metric.value?.trim() || "Value pending",
+    valueLabel: workstreamCopy(metric.value?.trim() || "Value pending"),
+    technicalDetails: [{ label: "Source value", value: metric.value || "Not recorded" }, { label: "Source detail", value: metric.detail || "Not recorded" }, { label: "Source required actions", value: actions.join("; ") || "None returned" }].filter((field) => workstreamCopy(field.value) !== field.value),
     statusLabel: evidenceStatusLabel(metric.status),
     statusTone: evidenceStatusTone(metric.status),
-    detail: metric.detail?.trim() || "No metric detail returned.",
+    detail: workstreamCopy(metric.detail?.trim() || "No metric detail returned."),
     evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
-    requiredActionsLabel: actions.length === 0 ? "No required actions" : actions.join("; "),
+    requiredActionsLabel: actions.length === 0 ? "No required actions" : workstreamCopy(actions.join("; ")),
     routeHref,
     routeLabel: routeHref ? "Open metric" : "No local route",
-    ariaLabel: `${metric.label || metric.metricId}, ${evidenceStatusLabel(metric.status)}, ${metric.value || "value pending"}`
+    ariaLabel: `${metric.label || metric.metricId}, ${evidenceStatusLabel(metric.status)}, ${workstreamCopy(metric.value || "value pending")}`
   };
 }
 
@@ -2044,8 +2137,8 @@ function buildEvidencePackageRows(packages: OperationsEvidencePackageSummary[]):
         summary: packageDto.summary?.trim() || "No evidence package summary returned.",
         evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
         evidenceHref,
-        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local evidence route",
-        requiredActionsLabel: actions.length === 0 ? "No required actions" : actions.join("; "),
+        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local supporting record link",
+        requiredActionsLabel: actions.length === 0 ? "No required actions" : workstreamCopy(actions.join("; ")),
         routeHref,
         routeLabel: routeHref ? "Open package" : "No local route",
         ariaLabel: `${packageDto.label || packageDto.packageId}, ${evidenceStatusLabel(packageDto.status)}, ${packageDto.completeCategoryCount} of ${packageDto.requiredCategoryCount} categories complete`
@@ -2093,6 +2186,7 @@ function buildFinancialOperationsOperatorQueueViewModel({
         id: `break:${row.id}`,
         kindLabel: "Break",
         title: row.caseLabel,
+        technicalDetails: row.technicalDetails,
         detail: `${row.categoryLabel}; ${row.escalationLabel}`,
         statusLabel: row.statusLabel,
         statusTone: row.statusTone,
@@ -2267,7 +2361,7 @@ function mapReconciliationLaneQueueRow(
 
   return {
     id: `reconciliation-lane:${row.id}`,
-    kindLabel: "Reconciliation lane",
+    kindLabel: "Reconciliation workstream",
     title: row.label,
     detail: `${row.breakCountLabel}; ${row.summary}`,
     statusLabel: row.statusLabel,
@@ -2278,7 +2372,7 @@ function mapReconciliationLaneQueueRow(
     actionLabel: row.requiredActionsLabel,
     routeHref,
     routeLabel,
-    ariaLabel: `Financial Operations reconciliation lane ${row.ariaLabel}`
+    ariaLabel: `Financial Operations reconciliation workstream ${row.ariaLabel}`
   };
 }
 
@@ -2306,14 +2400,14 @@ function mapCloseCalendarErrorQueueRow(
   selectedSummary: OperationsContinuityWorkflowSummary | null
 ): FinancialOperationsOperatorQueueRow {
   const scopeLabel = selectedSummary
-    ? `${selectedSummary.periodId} / ${selectedSummary.fundAccountId}`
+    ? `${selectedSummary.periodId} close`
     : "Selected close scope";
 
   return {
     id: "close-calendar:error",
     kindLabel: "Close calendar",
     title: `${scopeLabel}: Close calendar unavailable`,
-    detail: "Close-calendar projection could not be loaded from the shared operations API.",
+    detail: "Close-calendar view could not be loaded from the shared operations API.",
     statusLabel: "Unavailable",
     statusTone: "blocked",
     ownerLabel: "Operations control",
@@ -2360,7 +2454,7 @@ function mapCloseCockpitLaneQueueRow(
 
   return {
     id: `private-capital-proof-lane:${row.id}`,
-    kindLabel: "Private-capital proof lane",
+    kindLabel: "Private-capital control workstream",
     title: row.label,
     detail: row.summary,
     statusLabel: row.statusLabel,
@@ -2371,7 +2465,7 @@ function mapCloseCockpitLaneQueueRow(
     actionLabel,
     routeHref: row.routeHref,
     routeLabel: row.routeLabel,
-    ariaLabel: `Financial Operations private-capital proof lane ${row.ariaLabel}`
+    ariaLabel: `Financial Operations private-capital control workstream ${row.ariaLabel}`
   };
 }
 
@@ -2424,14 +2518,14 @@ function mapCloseCockpitErrorQueueRow(
   selectedSummary: OperationsContinuityWorkflowSummary | null
 ): FinancialOperationsOperatorQueueRow {
   const scopeLabel = selectedSummary
-    ? `${selectedSummary.periodId} / ${selectedSummary.fundAccountId}`
+    ? `${selectedSummary.periodId} close`
     : "Selected close scope";
 
   return {
     id: "private-capital-close-cockpit:error",
     kindLabel: "Private-capital close cockpit",
     title: `${scopeLabel}: Private-capital close cockpit unavailable`,
-    detail: "Private-capital proof-lane and NAV-support projection could not be loaded from the shared operations API.",
+    detail: "Private-capital control-workstream and NAV-support view could not be loaded from the shared operations API.",
     statusLabel: "Unavailable",
     statusTone: "blocked",
     ownerLabel: "Operations control",
@@ -2474,7 +2568,8 @@ function mapApprovalQueueRow(
   return {
     id: `approval:${approval.approvalId}`,
     kindLabel: "Approval",
-    title: approval.approvalId,
+    title: "Workflow approval",
+    technicalDetails: [{ label: "Approval ID", value: approval.approvalId }],
     detail: approval.rationale?.trim() || "Approval rationale pending.",
     statusLabel: statusLabelText,
     statusTone: approvalStatusTone(approval.status),
@@ -2553,7 +2648,8 @@ function mapCloseCockpitApprovalQueueRow(
   return {
     id: `private-capital-approval:${row.id}`,
     kindLabel: "Private-capital approval",
-    title: row.id,
+    title: `${row.workflowLabel} approval`,
+    technicalDetails: row.technicalDetails,
     detail: `${row.workflowLabel}: ${row.rationale}`,
     statusLabel: row.statusLabel,
     statusTone: row.statusTone,
@@ -2640,16 +2736,17 @@ function buildBreakCaseRows(
       const materialityLabel = buildMaterialityLabel(breakCase);
       const sourceLabel = buildBreakSourceLabel(breakCase);
       const rootCauseLabel = buildRootCauseLabel(breakCase);
-      const symbolLabel = breakCase.symbol?.trim() || breakCase.securityId?.trim() || "No security";
+      const symbolLabel = breakCase.symbol?.trim() || (breakCase.securityId ? "Selected instrument" : "No security");
+      const caseLabel = breakCase.category?.trim() ? splitEnumLabel(breakCase.category) : "Reconciliation break";
       const actionLabel = breakCase.suggestedAction?.trim() || "No suggested action";
       const approvalLabel = buildApprovalLabel(breakCase);
       const blockedOutputsLabel = buildBlockedOutputsLabel(breakCase);
       const evidenceCount = breakCase.evidenceLinks.length;
       const evidenceHref = normalizeLocalWorkstationRoute(breakCase.evidenceLinks[0]?.route) ?? null;
       const caseworkHref = workflowId
-        ? workstationRouteWithQuery("accountingExceptions", {
+        ? workstationRouteWithQuery("accountingReconciliation", {
             workflowId,
-            breakId: breakCase.breakId
+            reconciliationBreak: breakCase.breakId
           })
         : null;
       const isReady = breakStatusTone(breakCase.status) === "ready";
@@ -2657,8 +2754,9 @@ function buildBreakCaseRows(
       const resolveDisabledReason = buildBreakResolveDisabledReason(breakCase, workflowId, workflowVersion, ownerLabel);
       return {
         id: breakCase.breakId,
-        caseLabel: breakCase.breakId,
-        categoryLabel: `${breakCase.category || "Uncategorized"} / ${breakCase.checkId || "check pending"}`,
+        caseLabel,
+        categoryLabel: breakCase.symbol?.trim() || "Reconciliation check",
+        technicalDetails: [{ label: "Break ID", value: breakCase.breakId }, { label: "Check ID", value: breakCase.checkId || "Not recorded" }, { label: "Security ID", value: breakCase.securityId || "Not recorded" }],
         statusLabel,
         statusTone: breakStatusTone(breakCase.status),
         severityLabel: breakCase.severity?.trim() || "Review",
@@ -2674,7 +2772,7 @@ function buildBreakCaseRows(
         symbolLabel,
         evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} retained evidence link${evidenceCount === 1 ? "" : "s"}`,
         evidenceHref,
-        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local evidence route",
+        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local supporting record link",
         approvalLabel,
         blockedOutputsLabel,
         actionLabel,
@@ -2697,16 +2795,16 @@ function buildBreakCaseRows(
         canAssign: assignDisabledReason === null,
         assignLabel: ownerLabel === "Unassigned" ? "Assign to me" : "Assigned",
         assignDisabledReason,
-        assignAriaLabel: `Assign break ${breakCase.breakId} to browser operator`,
+        assignAriaLabel: `Assign ${caseLabel} break to browser operator`,
         resolutionStatus: "Resolved",
         resolutionEvidenceLinks: breakCase.evidenceLinks,
         canResolve: resolveDisabledReason === null,
         resolveLabel: isReady ? "Resolved" : "Resolve break",
         resolveDisabledReason,
-        resolveAriaLabel: `Resolve break ${breakCase.breakId}`,
+        resolveAriaLabel: `Resolve ${caseLabel} break`,
         routeHref: evidenceHref,
         routeLabel: evidenceHref ? "Open break evidence" : "No local route",
-        ariaLabel: `${breakCase.breakId}, ${statusLabel}, ${ownerLabel}, ${slaLabel}, ${blockedOutputsLabel}`
+        ariaLabel: `${caseLabel}, ${statusLabel}, ${ownerLabel}, ${slaLabel}, ${blockedOutputsLabel}`
       };
     });
 }
@@ -2805,14 +2903,7 @@ function buildEscalationLabel(breakCase: OperationsBreakCase): string {
 }
 
 function buildVarianceLabel(breakCase: OperationsBreakCase): string {
-  const expected = formatDecimal(breakCase.expectedAmount);
-  const actual = formatDecimal(breakCase.actualAmount);
-  const variance = formatDecimal(breakCase.variance);
-  if (expected === "Not recorded" && actual === "Not recorded" && variance === "Not recorded") {
-    return "No amount variance";
-  }
-
-  return `Expected ${expected} / Actual ${actual} / Variance ${variance}`;
+  return operationsCaseVarianceLabel(breakCase);
 }
 
 function buildBreakSourceLabel(breakCase: OperationsBreakCase): string {
@@ -2977,7 +3068,7 @@ function buildCloseGovernanceViewModel(
         : "Select an operations continuity workflow to inspect close-lock and reopen evidence.",
       closeAuditLabel: "No close audit event",
       closePackageLabel: "No close package published",
-      reopenAuditLabel: "No governed reopen recorded",
+      reopenAuditLabel: "No period reopen recorded",
       reopenIncidentLabel: "No incident correlation",
       reopenEvidenceLabel: "No reopen evidence links",
       reopenRationaleLabel: "No reopen rationale recorded",
@@ -3008,12 +3099,12 @@ function buildCloseGovernanceViewModel(
       ? "Period reopened under governance"
       : "Period remains open";
   const lockDetail = isClosed
-    ? "Closed operations continuity workflows are immutable until a governed admin reopen command succeeds."
+    ? "Closed operations continuity workflows are immutable until an admin period reopen command succeeds."
     : latestReopen
-      ? "The workflow is open after a governed reopen; subsequent close evidence must retain the reopen audit trail."
+      ? "The workflow is open after a period reopen; subsequent close evidence must retain the reopen audit trail."
       : "Close publication has not locked this account period yet.";
   const commandGuardLabel = isClosed
-    ? "Mutations must use the governed reopen command with incident metadata, justification, approval reference, and impact summary."
+    ? "Mutations must use the period reopen command with incident metadata, justification, approval reference, and impact summary."
     : latestReopen
       ? "Close can proceed only after refreshed gate evidence and the reopen incident trail remain linked."
       : "Close and reopen command decisions remain enforced by the shared workflow API.";
@@ -3032,7 +3123,7 @@ function buildCloseGovernanceViewModel(
       : "No close package published",
     reopenAuditLabel: latestReopen
       ? `${eventLabel(latestReopen.eventType)} by ${latestReopen.actor || "unknown actor"} at ${formatDate(latestReopen.occurredAtUtc)} / ${latestReopen.currentHash.slice(0, 12)}`
-      : "No governed reopen recorded",
+      : "No period reopen recorded",
     reopenIncidentLabel: latestReopen?.correlationId?.trim()
       ? `Incident ${latestReopen.correlationId}`
       : "No incident correlation",
@@ -3047,7 +3138,7 @@ function buildCloseGovernanceViewModel(
     canReopenWorkflow: reopenWorkflowDisabledReason === null,
     reopenWorkflowLabel: "Reopen period",
     reopenWorkflowDisabledReason,
-    reopenWorkflowAriaLabel: `Reopen governed period for ${workflow.periodId || "selected period"}`
+    reopenWorkflowAriaLabel: `Reopen period for ${workflow.periodId || "selected period"}`
   };
 }
 
@@ -3057,11 +3148,11 @@ function buildReopenWorkflowDisabledReason(workflow: OperationsContinuityWorkflo
   }
 
   if (workflow.version === null || workflow.version === undefined) {
-    return "Workflow version is unavailable for governed reopen.";
+    return "Workflow version is unavailable for period reopen.";
   }
 
   if (workflow.status !== "Closed") {
-    return "Only closed workflows can be reopened through the governed reopen command.";
+    return "Only closed workflows can be reopened through the period reopen command.";
   }
 
   if (!workflow.closePackage) {
@@ -3114,7 +3205,7 @@ const FINANCIAL_OPERATIONS_DASHBOARD_METRIC_ORDER = [
 
 const FINANCIAL_OPERATIONS_COMMAND_LABELS: Record<string, string> = {
   "receive-activity": "Start/import/normalize activity",
-  "match-records": "Run reconciliation and refresh posture",
+  "match-records": "Run reconciliation and refresh status",
   "resolve-exceptions": "Assign, escalate, or resolve breaks",
   "approve-results": "Submit or decide approval",
   "produce-evidence": "Open evidence package routes",
@@ -3150,13 +3241,13 @@ function buildCloseCalendarViewModel(
           ? "Close calendar evidence is unavailable."
           : "No close calendar data is available for this workstation context.",
       scopeLabel: selectedSummary
-        ? `Selected ${selectedSummary.periodId} / ${selectedSummary.fundAccountId}`
+        ? `Selected ${selectedSummary.periodId} close`
         : "No close scope selected",
-      freshnessLabel: "Projection pending",
+      freshnessLabel: "Snapshot pending",
       itemCountLabel: "No calendar items",
       blockerCountLabel: "No blockers loaded",
-      checklistCountLabel: "No checklist posture loaded",
-      approvalCountLabel: "No approval posture loaded",
+      checklistCountLabel: "No checklist status loaded",
+      approvalCountLabel: "No approval status loaded",
       nextDueLabel: loading
         ? "Next due task loading"
         : error
@@ -3200,7 +3291,7 @@ function buildCloseCalendarViewModel(
     statusTone,
     summaryLabel: `${readyCount}/${calendar.items.length} calendar item${calendar.items.length === 1 ? "" : "s"} ready; ${openChecklistCount} open checklist item${openChecklistCount === 1 ? "" : "s"}.`,
     scopeLabel: selectedSummary
-      ? `Selected ${selectedSummary.periodId} / ${selectedSummary.fundAccountId}`
+      ? `Selected ${selectedSummary.periodId} close`
       : "All close calendar scopes",
     freshnessLabel: `Generated ${formatDate(calendar.generatedAtUtc)}`,
     itemCountLabel: `${calendar.items.length} calendar item${calendar.items.length === 1 ? "" : "s"}`,
@@ -3234,7 +3325,8 @@ function mapCloseCalendarRow(item: OperationsCloseCalendarItem): OperationsConti
 
   return {
     id: item.workflowId,
-    periodLabel: `${item.periodId} / ${item.fundAccountId}`,
+    periodLabel: `${item.periodId} close`,
+    technicalDetails: [{ label: "Workflow ID", value: item.workflowId }, { label: "Fund account ID", value: item.fundAccountId }],
     statusLabel: statusText,
     statusTone: statusTone(item.status),
     dueLabel: item.nextDueDate ? formatDateOnly(item.nextDueDate) : "No due date",
@@ -3270,16 +3362,16 @@ function buildCloseCockpitViewModel(
           ? "Private-capital close evidence is unavailable."
           : "No private-capital close cockpit data is available for this workstation context.",
       scopeLabel: selectedSummary
-        ? `Selected ${selectedSummary.periodId} / ${selectedSummary.fundAccountId}`
+        ? `Selected ${selectedSummary.periodId} close`
         : "No close scope selected",
-      freshnessLabel: "Projection pending",
+      freshnessLabel: "Snapshot pending",
       readinessLabel: "Readiness unavailable",
-      laneCountLabel: "No cockpit lanes",
+      laneCountLabel: "No cockpit workstreams",
       proofLaneSummaryLabel: loading
-        ? "Proof lanes loading"
+        ? "Control workstreams loading"
         : error
-          ? "Proof lanes unavailable"
-          : "No Financial Operations proof lanes",
+          ? "Control workstreams unavailable"
+          : "No Financial Operations control workstreams",
       workflowCountLabel: "No close workflows",
       blockerCountLabel: "No blockers loaded",
       fundEventCountLabel: "No fund events loaded",
@@ -3296,10 +3388,10 @@ function buildCloseCockpitViewModel(
       plannedCapabilitiesLabel: "No planned close capabilities loaded",
       errorText: error,
       lanesEmptyText: loading
-        ? "Loading private-capital cockpit lanes..."
+        ? "Loading private-capital cockpit workstreams..."
         : error
-          ? "Private-capital cockpit lanes could not be loaded."
-          : "No private-capital cockpit lanes returned by the shared operations API.",
+          ? "Private-capital cockpit workstreams could not be loaded."
+          : "No private-capital cockpit workstreams returned by the shared operations API.",
       workflowsEmptyText: loading
         ? "Loading private-capital close workflows..."
         : error
@@ -3346,11 +3438,17 @@ function buildCloseCockpitViewModel(
     title: "Private-capital close cockpit",
     statusLabel: evidenceStatusLabel(cockpit.overallStatus),
     statusTone: cockpitStatusTone(cockpit),
-    summaryLabel: `${cockpit.readyLaneCount}/${cockpit.lanes.length} lanes ready across ${cockpit.workflowCount} close workflow${cockpit.workflowCount === 1 ? "" : "s"}.`,
+    summaryLabel: `${cockpit.readyLaneCount}/${cockpit.lanes.length} workstreams ready across ${cockpit.workflowCount} close workflow${cockpit.workflowCount === 1 ? "" : "s"}.`,
     scopeLabel: buildCloseCockpitScopeLabel(cockpit),
+    technicalDetails: [
+      { label: "Fund profile ID", value: cockpit.fundProfileId ?? "Not recorded" },
+      { label: "Ledger book ID", value: cockpit.ledgerBookId ?? "Not recorded" },
+      { label: "Fund account ID", value: cockpit.fundAccountId ?? "Not recorded" },
+      { label: "Entity ID", value: cockpit.entityId ?? "Not recorded" }
+    ],
     freshnessLabel: `Projected ${formatDate(cockpit.projectedAtUtc)}`,
     readinessLabel: `${formatPercent(cockpit.readinessScore)} readiness`,
-    laneCountLabel: `${cockpit.readyLaneCount} ready / ${cockpit.blockedLaneCount} blocked lane${cockpit.lanes.length === 1 ? "" : "s"}`,
+    laneCountLabel: `${cockpit.readyLaneCount} ready / ${cockpit.blockedLaneCount} blocked workstream${cockpit.lanes.length === 1 ? "" : "s"}`,
     proofLaneSummaryLabel: buildFinancialOperationsProofLaneSummary(cockpit.lanes),
     workflowCountLabel: `${cockpit.workflowCount} close workflow${cockpit.workflowCount === 1 ? "" : "s"}`,
     blockerCountLabel: blockerCount === 0 ? "No close blockers" : `${blockerCount} close blocker${blockerCount === 1 ? "" : "s"}`,
@@ -3363,7 +3461,7 @@ function buildCloseCockpitViewModel(
     liveCapabilitiesLabel: listLabel(cockpit.liveCapabilities, "No live close capabilities reported"),
     plannedCapabilitiesLabel: listLabel(cockpit.plannedCapabilities, "No planned close capabilities reported"),
     errorText: error,
-    lanesEmptyText: "No private-capital cockpit lanes returned by the shared operations API.",
+    lanesEmptyText: "No private-capital cockpit workstreams returned by the shared operations API.",
     workflowsEmptyText: "No private-capital close workflows returned by the shared operations API.",
     evidencePackagesEmptyText: "No private-capital evidence packages returned by the shared operations API.",
     approvalHistoryEmptyText: "No private-capital approval history returned by the shared operations API.",
@@ -3385,7 +3483,7 @@ function buildFinancialOperationsProofLaneSummary(lanes: PrivateCapitalCloseCock
     .filter((item): item is { label: string; lane: PrivateCapitalCloseCockpitLane } => item !== null);
 
   if (proofLanes.length === 0) {
-    return "No Financial Operations proof lanes returned";
+    return "No Financial Operations control workstreams returned";
   }
 
   const readyCount = proofLanes.filter((item) => item.lane.isReady).length;
@@ -3394,8 +3492,8 @@ function buildFinancialOperationsProofLaneSummary(lanes: PrivateCapitalCloseCock
     .map((item) => item.label);
 
   return reviewLabels.length === 0
-    ? `${readyCount}/${proofLanes.length} proof lanes ready`
-    : `${readyCount}/${proofLanes.length} proof lanes ready; review ${reviewLabels.join(", ")}`;
+    ? `${readyCount}/${proofLanes.length} control workstreams ready`
+    : `${readyCount}/${proofLanes.length} control workstreams ready; review ${reviewLabels.join(", ")}`;
 }
 
 function mapCloseCockpitLaneRow(lane: PrivateCapitalCloseCockpitLane): OperationsContinuityCloseCockpitLaneRow {
@@ -3410,11 +3508,12 @@ function mapCloseCockpitLaneRow(lane: PrivateCapitalCloseCockpitLane): Operation
     label: lane.label || splitEnumLabel(lane.laneId),
     statusLabel: evidenceStatusLabel(lane.status),
     statusTone: lane.isReady ? "ready" : evidenceStatusTone(lane.status),
-    summary: lane.summary?.trim() || "No lane summary returned.",
+    summary: workstreamCopy(lane.summary?.trim() || "No workstream summary returned."),
+    technicalDetails: [{ label: "Source summary", value: lane.summary || "Not recorded" }],
     evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
     routeHref: href,
-    routeLabel: href ? "Open lane" : "No local route",
-    requiredActionsLabel: actions.length === 0 ? "No required actions" : actions.join("; "),
+    routeLabel: href ? "Open workstream" : "No local route",
+    requiredActionsLabel: actions.length === 0 ? "No required actions" : workstreamCopy(actions.join("; ")),
     ariaLabel: `${lane.label || lane.laneId}, ${evidenceStatusLabel(lane.status)}, ${evidenceCount} evidence links`
   };
 }
@@ -3432,7 +3531,8 @@ function mapCloseCockpitWorkflowRow(
 
   return {
     id: workflow.workflowId,
-    periodLabel: `${workflow.periodId} / ${workflow.fundAccountId}`,
+    periodLabel: `${workflow.periodId} close`,
+    technicalDetails: [{ label: "Workflow ID", value: workflow.workflowId }, { label: "Fund account ID", value: workflow.fundAccountId }, ...(workflow.closePackageId ? [{ label: "Close package ID", value: workflow.closePackageId }] : [])],
     statusLabel: statusLabel(workflow.status),
     statusTone: statusTone(workflow.status),
     readinessLabel: `${formatPercent(workflow.closeReadinessScore)} ready`,
@@ -3440,7 +3540,7 @@ function mapCloseCockpitWorkflowRow(
     blockersLabel: workflow.blockerCount === 0 ? "No blockers" : `${workflow.blockerCount} blocker${workflow.blockerCount === 1 ? "" : "s"}`,
     checklistLabel: workflow.openChecklistCount === 0 ? "Checklist clear" : `${workflow.openChecklistCount} open checklist item${workflow.openChecklistCount === 1 ? "" : "s"}`,
     packageHref,
-    packageLabel: workflow.closePackageId?.trim() || "Close package pending",
+    packageLabel: workflow.closePackageId?.trim() ? "Retained close package" : "Close package pending",
     workflowHref,
     ariaLabel: `${workflow.periodId} private-capital close workflow, ${statusLabel(workflow.status)}, ${formatPercent(workflow.closeReadinessScore)} ready`
   };
@@ -3462,7 +3562,8 @@ function mapCloseCockpitApprovalRow(
 
   return {
     id: approval.approvalId,
-    workflowLabel: `${approval.periodId} / ${approval.fundAccountId}`,
+    workflowLabel: `${approval.periodId} close`,
+    technicalDetails: [{ label: "Approval ID", value: approval.approvalId }, { label: "Fund account ID", value: approval.fundAccountId }],
     statusLabel: splitEnumLabel(approval.status),
     statusTone: approvalStatusTone(approval.status),
     actorLabel: actors.length === 0 ? "No approval actor returned" : actors.join(" / "),
@@ -3470,7 +3571,7 @@ function mapCloseCockpitApprovalRow(
     rationale: approval.rationale?.trim() || "No approval rationale returned.",
     evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
     evidenceHref,
-    evidenceRouteLabel: evidenceHref ? "Open evidence" : "No local evidence route",
+    evidenceRouteLabel: evidenceHref ? "Open evidence" : "No local supporting record link",
     workflowHref,
     routeLabel: workflowHref ? "Open workflow" : "No local route",
     ariaLabel: `${approval.periodId} approval ${approval.approvalId}, ${splitEnumLabel(approval.status)}`
@@ -3507,7 +3608,7 @@ function mapNavSupportPackageRow(packageDto: PrivateCapitalNavSupportPackage): O
       ? "Shadow NAV not retained"
       : `${shadowNavAmount} shadow NAV`,
     evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
-    requiredActionsLabel: actions.length === 0 ? "No required actions" : actions.join("; "),
+    requiredActionsLabel: actions.length === 0 ? "No required actions" : workstreamCopy(actions.join("; ")),
     routeHref,
     routeLabel: routeHref ? "Open package" : "No local route",
     ariaLabel: `${packageDto.label || packageDto.packageId}, ${evidenceStatusLabel(packageDto.status)}, ${readyComponentCount} of ${components.length} components ready`
@@ -3540,15 +3641,11 @@ function buildCockpitNextAction(
 }
 
 function buildCloseCockpitScopeLabel(cockpit: PrivateCapitalCloseCockpit): string {
-  const scope = [
-    cockpit.fundProfileId ? `Fund profile ${cockpit.fundProfileId}` : null,
-    cockpit.ledgerBookId ? `Ledger book ${cockpit.ledgerBookId}` : null,
-    cockpit.fundAccountId ? `Fund account ${cockpit.fundAccountId}` : null,
-    cockpit.periodId ? `Period ${cockpit.periodId}` : null,
-    cockpit.entityId ? `Entity ${cockpit.entityId}` : null
-  ].filter(Boolean);
+  return cockpit.periodId ? `${cockpit.periodId} close scope` : "Selected private-capital close scope";
+}
 
-  return scope.length === 0 ? "All private-capital close scopes" : scope.join(" / ");
+function workstreamCopy(text: string): string {
+  return text.replace(/\blanes\b/gi, "workstreams").replace(/\blane\b/gi, "workstream");
 }
 
 function cockpitStatusTone(cockpit: PrivateCapitalCloseCockpit): OperationsContinuityTone {
@@ -3678,6 +3775,7 @@ function buildAccountingRecordSummaryViewModel(
       statusLabel: loading ? "Loading" : "Not available",
       statusTone: "neutral",
       recordIdLabel: loading ? "Record pending" : "No accounting record selected",
+      recordDisplayLabel: loading ? "Record pending" : "No accounting record selected",
       evidenceLabel: "No retained evidence links",
       auditPackLabel: "Audit pack readiness unavailable",
       auditPackTimingLabel: "60 sec target not measured"
@@ -3693,11 +3791,12 @@ function buildAccountingRecordSummaryViewModel(
 
   return {
     title: "Accounting record",
-    summaryLabel: summary.summary?.trim()
-      || `${summary.completeCategoryCount}/${summary.requiredCategoryCount} evidence categories complete.`,
+    summaryLabel: `${summary.completeCategoryCount}/${summary.requiredCategoryCount} evidence categories complete.`,
+    technicalDetails: [{ label: "Accounting record ID", value: summary.recordId || "Not recorded" }, { label: "Source summary", value: summary.summary?.trim() || "Not recorded" }],
     statusLabel: summary.isAuditReady ? "Audit ready" : "Review required",
     statusTone: summary.isAuditReady ? "ready" : "review",
     recordIdLabel: summary.recordId || "Record id pending",
+    recordDisplayLabel: "Selected accounting record",
     evidenceLabel: evidenceCount === 0
       ? "No retained evidence links"
       : `${evidenceCount} retained evidence link${evidenceCount === 1 ? "" : "s"}`,

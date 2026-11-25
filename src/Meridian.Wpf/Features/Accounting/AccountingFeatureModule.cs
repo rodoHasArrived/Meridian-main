@@ -99,8 +99,11 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.AddSingleton<IWorkstationAccountingApiClient, WorkstationAccountingApiClient>();
         services.AddSingleton<IWorkstationAccountingCloseApiClient, WorkstationAccountingCloseApiClient>();
         services.AddSingleton<IWorkstationEntityConsolidationApiClient, WorkstationEntityConsolidationApiClient>();
+        services.AddSingleton<IWorkstationFiscalYearCloseApiClient, WorkstationFiscalYearCloseApiClient>();
         services.AddSingleton<IWorkstationManualJournalApiClient, WorkstationManualJournalApiClient>();
         services.AddSingleton<IWorkstationIntercompanyAgreementApiClient, WorkstationIntercompanyAgreementApiClient>();
+        // Shadow-mode onboarding (W11-SHADOW-001) uses the browser's shared onboarding routes; no desktop-local state.
+        services.AddSingleton<IWorkstationOnboardingApiClient, WorkstationOnboardingApiClient>();
         // Audit-chain verification (W9-GOV-008) is read-only and AdminMaintenance-gated server side.
         services.AddSingleton<IAccountingAuditIntegrityApiClient, AccountingAuditIntegrityApiClient>();
         services.AddSingleton<IFactorPaydownApiClient, FactorPaydownApiClient>();
@@ -340,14 +343,22 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, QuickBooksFixtureAccountingProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, XeroFixtureAccountingProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, NetSuiteFixtureAccountingProvider>());
+        // Imports, mapping profiles and certified export packages survive a restart.
+        services.TryAddSingleton(sp => new AccountingSystemIntegrationStateStore(
+            Path.Combine(ResolveAccountingDataDirectory(sp), "external-gl")));
         services.TryAddSingleton<AccountingSystemIntegrationService>();
         services.TryAddSingleton<AccountingProductionReadinessService>();
         services.AddTransient<AccountingConfigureViewModel>();
         services.AddTransient<AccountingConfigurePage>();
+        services.AddTransient<FiscalYearCloseViewModel>();
+        services.AddTransient<BookFxSettlementViewModel>();
+        services.AddTransient<PrivateCapitalUnitRegisterViewModel>();
         services.AddTransient(sp => new AccountingCloseViewModel(
             sp.GetRequiredService<IAccountingProjectionQueryService>(),
             sp.GetRequiredService<IWorkstationAccountingCloseApiClient>(),
-            sp.GetService<DesktopAuthenticationSession>()));
+            sp.GetService<DesktopAuthenticationSession>(),
+            sp.GetRequiredService<FiscalYearCloseViewModel>(),
+            sp.GetRequiredService<BookFxSettlementViewModel>()));
         services.AddTransient<AccountingClosePage>();
         services.AddTransient<FundStructureSetupViewModel>();
         services.AddTransient<FundAccountsViewModel>();

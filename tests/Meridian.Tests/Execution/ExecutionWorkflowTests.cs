@@ -130,6 +130,40 @@ public sealed class ExecutionWorkflowTests
         (await recovered.NotificationsAsync(Account, "live")).Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData("https://169.254.169.254/latest/meta-data")]
+    [InlineData("https://10.0.0.5/hook")]
+    [InlineData("https://172.16.4.1/hook")]
+    [InlineData("https://192.168.1.10:8443/hook")]
+    [InlineData("https://100.64.0.1/hook")]
+    [InlineData("https://[fd00::1]/hook")]
+    [InlineData("https://[fe80::1]/hook")]
+    [InlineData("https://[::ffff:10.0.0.5]/hook")]
+    [InlineData("https://127.0.0.1/hook")]
+    public async Task WebhookSettings_RejectInternalAddressTargets(string url)
+    {
+        await using var journal = new ExecutionJournal(Root());
+        var alerts = new ExecutionAlertService(journal, new FrozenClock(At));
+
+        var save = () => alerts.SaveSettingsAsync(new(Account, WebhookEnabled: true, WebhookUrl: url), "paper");
+
+        await save.Should().ThrowAsync<ArgumentException>();
+        (await alerts.SettingsAsync(Account, "paper")).WebhookEnabled.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("https://hooks.example.com/meridian")]
+    [InlineData("https://8.8.8.8/hook")]
+    public async Task WebhookSettings_AcceptPublicHttpsTargets(string url)
+    {
+        await using var journal = new ExecutionJournal(Root());
+        var alerts = new ExecutionAlertService(journal, new FrozenClock(At));
+
+        await alerts.SaveSettingsAsync(new(Account, WebhookEnabled: true, WebhookUrl: url), "paper");
+
+        (await alerts.SettingsAsync(Account, "paper")).WebhookUrl.Should().Be(url);
+    }
+
     [Fact]
     public async Task DailyLoss_MissingBaselineRaisesMonitoringGap_InsteadOfClaimingSafety()
     {

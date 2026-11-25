@@ -54,7 +54,10 @@ public sealed partial class AccountingConfigureViewModel
                 accountName,
                 accountType,
                 string.IsNullOrWhiteSpace(ChartAccountParentPath) ? null : ChartAccountParentPath.Trim(),
-                FinancialAccountId: string.IsNullOrWhiteSpace(ChartAccountFinancialAccountId) ? null : ChartAccountFinancialAccountId.Trim());
+                FinancialAccountId: string.IsNullOrWhiteSpace(ChartAccountFinancialAccountId) ? null : ChartAccountFinancialAccountId.Trim())
+            {
+                AccountCode = string.IsNullOrWhiteSpace(ChartAccountCode) ? null : ChartAccountCode.Trim()
+            };
             _configuration = await _configurationService.UpsertChartNodeAsync(
                 new UpsertChartOfAccountsNodeRequest(
                     _activeFundProfile.FundProfileId,
@@ -313,7 +316,7 @@ public sealed partial class AccountingConfigureViewModel
             new(
                 "Regression suite",
                 $"{result.PassedCount}/{result.TotalCount} passed",
-                $"Executed by {result.Actor} at {result.ExecutedAtUtc:yyyy-MM-dd HH:mm:ss} UTC.",
+                $"Executed by {result.Actor} at {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(result.ExecutedAtUtc, "yyyy-MM-dd HH:mm:ss")}.",
                 result.FailedCount == 0
                     ? "All saved rule tests passed."
                     : $"{result.FailedCount} saved rule test(s) failed and block promotion or activation.",
@@ -424,6 +427,7 @@ public sealed partial class AccountingConfigureViewModel
         ChartAccountPath = $"Assets:Configured Account {nextIndex.ToString(CultureInfo.InvariantCulture)}";
         ChartAccountName = $"Configured Account {nextIndex.ToString(CultureInfo.InvariantCulture)}";
         ChartAccountType = "Asset";
+        ChartAccountCode = string.Empty;
         ChartAccountParentPath = "Assets";
         ChartAccountFinancialAccountId = string.Empty;
         ChartAccountEvidenceText = $"wpf://accounting/configure/chart-account/{nextIndex.ToString(CultureInfo.InvariantCulture)}";

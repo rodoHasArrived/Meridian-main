@@ -23,13 +23,34 @@ function baselineFixture(value: unknown = counts()) {
 }
 
 describe("design-system ratchets", () => {
+  it("counts hand-styled native selects", () => {
+    expect(RATCHETS.rawSelects.count("<Select id=\"a\"><option /></Select>")).toBe(0);
+    expect(RATCHETS.rawSelects.count("<select\n  id=\"a\">")).toBe(1);
+  });
+
+  it("keeps hand-styled native selects out of every component, not only screens", () => {
+    const srcRoot = path.resolve(__dirname, "..");
+    const offenders: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else if (/\.tsx$/.test(entry.name) && !/\.test\.tsx$/.test(entry.name)
+          && path.relative(srcRoot, full).split(path.sep).join("/") !== "components/ui/select.tsx"
+          && /<select\b/.test(fs.readFileSync(full, "utf8"))) offenders.push(path.relative(srcRoot, full));
+      }
+    };
+    walk(srcRoot);
+    expect(offenders).toEqual([]);
+  });
+
   // Phase 2 turned these rules on with a baseline of existing offenders: no file may gain an
   // occurrence, no new file may introduce one, and progress must be locked in by lowering the
   // baseline (`npm run ratchets:update`).
-  it("lets no screen add hand-styled status chips, direct Intl or hand-rolled number formatting, local money formatters or raw tables", () => {
+  it("lets no screen add hand-styled status chips, direct Intl or hand-rolled number formatting, local money formatters, raw tables, PascalCase enum text or raw ISO timestamps", () => {
     const { regressions, improvements } = compareWithBaseline();
 
-    expect(regressions, "Use StatusBadge (@/design-system/status), @/lib/format and DenseDataTable instead.").toEqual([]);
+    expect(regressions, "Use StatusBadge (@/design-system/status), @/lib/format, @/lib/display-labels and DenseDataTable instead.").toEqual([]);
     expect(improvements, "Lower the baseline with `npm run ratchets:update`.").toEqual([]);
   });
 
@@ -60,6 +81,29 @@ describe("design-system ratchets", () => {
       "function formatCountLabel(count: number) {}"
     ].join("\n");
     expect(RATCHETS.localMoneyFormatters.count(source)).toBe(3);
+  });
+
+  it("counts PascalCase enum identifiers in rendered text but not product names, code or sentence-case labels", () => {
+    const count = RATCHETS.pascalCaseRenderedText.count;
+    expect(count("<p>PartialFill · PartiallyFilled</p>")).toBe(2);
+    expect(count('{ id: "status", label: "ControlEvaluated" }')).toBe(1);
+    expect(count('<Badge title="ReviewRequired">Review</Badge>')).toBe(1);
+    expect(count("<p>Partial fill · Partly filled</p>")).toBe(0);
+    expect(count("<p>Open the PlotTool workstation</p>")).toBe(0);
+    expect(count('if (status === "PartiallyFilled") return formatEnumLabel(status);')).toBe(0);
+    expect(count("const rows = useMemo<AuditTrailRow[]>(() => build(entries), [entries]);")).toBe(0);
+  });
+
+  it("counts raw ISO timestamps rendered into JSX but not formatted ones, props or exports", () => {
+    const count = RATCHETS.isoTimestampsInJsx.count;
+    expect(count("<time>{entry.occurredAt}</time>")).toBe(1);
+    expect(count('{ id: "at", label: "Recorded", render: (entry) => entry.recordedAtUtc },')).toBe(1);
+    expect(count("<p>Read {new Date().toISOString()}</p>")).toBe(1);
+    expect(count("<p>Cut-off 2026-05-29T11:00:00Z</p>")).toBe(1);
+    expect(count("<TimeText value={entry.occurredAt} />")).toBe(0);
+    expect(count("<p>{formatTimestamp(entry.occurredAt)}</p>")).toBe(0);
+    expect(count('{ id: "at", exportValue: (entry) => entry.occurredAt },')).toBe(0);
+    expect(count("const key = `${entry.occurredAt}`;")).toBe(0);
   });
 
   it("counts raw tables but not table-system tables", () => {

@@ -23,6 +23,7 @@ using Meridian.Execution.Services;
 using Meridian.Instruments.AssetOperations;
 using Meridian.QuantScript.Compilation;
 using Meridian.Storage.Export;
+using Meridian.Storage.Backfill;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Query;
 using Meridian.Storage.Services;
@@ -39,6 +40,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 using static Meridian.Contracts.Text.TextPrimitives;
@@ -116,6 +118,7 @@ public static partial class WorkstationEndpoints
         // so it maps its own tenant-scoped group directly on the app.
         MapSecurityMasterWorkbenchEndpoints(app, jsonOptions);
 
+        MapAssetMarketValuationEndpoints(group, jsonOptions);
         MapStreamEndpoints(group, jsonOptions);
         MapStrategyDesignerEndpoints(group, jsonOptions);
         MapStrategyEngineEndpoints(group, jsonOptions);
@@ -123,7 +126,9 @@ public static partial class WorkstationEndpoints
         MapExtensibilityEndpoints(group, jsonOptions);
         MapCloseReadinessEndpoints(group, jsonOptions);
         MapFinancialRecordExplorerEndpoints(group, jsonOptions);
+        MapRecordSearchEndpoint(group, jsonOptions);
         MapOperatorTriageEndpoints(group, jsonOptions);
+        MapBookReceiptQueueEndpoints(group, jsonOptions);
         MapCloseChecklistHistoryEndpoints(group, jsonOptions);
         MapApprovalCollaborationEndpoints(group, jsonOptions);
         MapWorkstationChartEvidenceEndpoints(group, jsonOptions);
@@ -193,6 +198,7 @@ public static partial class WorkstationEndpoints
 
         MapCollateralEndpoints(group, jsonOptions);
         MapOperatorScopePreferenceEndpoints(group, jsonOptions);
+        MapOperatorPreferencesEndpoints(group, jsonOptions);
         MapScopeOptionEndpoints(group, jsonOptions);
         MapOperatorSurfaceVisitEndpoints(group, jsonOptions);
 
@@ -432,6 +438,12 @@ public static partial class WorkstationEndpoints
         .WithName("GetWorkstationCrossScreenCounts").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<WorkstationCrossScreenCountsDto>(200)
         .RequireWorkstationTenantCompanyScope();
+
+        // UX Phase A: one definition per headline figure, read by the browser and WPF workstations.
+        // The catalog describes figures, not data, so any workstation reader may load it.
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationKpiDefinitions), () => Results.Json(WorkstationKpiDefinitions.Catalog, jsonOptions))
+        .WithName("GetWorkstationKpiDefinitions").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .Produces<WorkstationKpiDefinitionsDto>(200);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationDataOperations), async (HttpContext context) =>
         {
@@ -722,6 +734,43 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetRunAttribution").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<RunAttributionSummary>(200)
+        .Produces(404)
+        .Produces(501)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsAttributionPeriodComparison), async (string runId, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var rawPeriodEnd = context.Request.Query["periodEnd"].FirstOrDefault();
+            DateOnly? periodEnd = null;
+            if (!string.IsNullOrWhiteSpace(rawPeriodEnd))
+            {
+                if (!DateOnly.TryParseExact(rawPeriodEnd, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsed))
+                {
+                    return Results.Problem("periodEnd must be a date in yyyy-MM-dd form.", statusCode: StatusCodes.Status400BadRequest);
+                }
+
+                periodEnd = parsed;
+            }
+
+            var comparison = await readService.GetAttributionPeriodComparisonAsync(
+                    runId,
+                    periodEnd,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
+            return comparison is null
+                ? Results.NotFound()
+                : Results.Json(comparison, jsonOptions);
+        })
+        .WithName("GetRunAttributionPeriodComparison").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .Produces<PeriodComparisonDto>(200)
+        .Produces(400)
         .Produces(404)
         .Produces(501)
         .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
@@ -1252,10 +1301,15 @@ public static partial class WorkstationEndpoints
             readinessService = new TradingOperatorReadinessService(context.RequestServices, logger);
         }
 
+        Guid? authorizedPaperAccountId = fundAccountId is { } selectedAccount &&
+            await FundAccountEndpoints.CanAccessFundAccountBrokerageSyncAsync(selectedAccount, context).ConfigureAwait(false)
+                ? selectedAccount
+                : null;
         return await readinessService.GetAsync(
             fundAccountId,
             ResolveStrategyRunReadScope(context),
-            context.RequestAborted).ConfigureAwait(false);
+            context.RequestAborted,
+            authorizedPaperAccountId).ConfigureAwait(false);
     }
 
     private static Task<bool> CanReadTradingAccountAsync(Guid? fundAccountId, HttpContext context) =>
@@ -1335,7 +1389,6 @@ public static partial class WorkstationEndpoints
         HttpContext context,
         Meridian.Application.UI.ConfigStore? configStore)
     {
-        var providerConnectionLifecycle = context.RequestServices.GetService<ProviderConnectionLifecycleService>();
         var routingConnectionService = context.RequestServices.GetService<ProviderConnectionService>();
         var routingBindingService = context.RequestServices.GetService<ProviderBindingService>();
         var routingTrustService = context.RequestServices.GetService<ProviderTrustScoringService>();
@@ -1346,11 +1399,18 @@ public static partial class WorkstationEndpoints
         var routingTenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
         // Provider readiness mirrors GET /api/providers/connections: a tenant-scoped request includes the
         // tenant's own connection credentials, so a scoped save is reflected here as it is in Settings.
-        var connectionRows = !canManageCredentials || providerConnectionLifecycle is null
-            ? []
-            : routingTenant.HasTenantScope
-                ? await providerConnectionLifecycle.GetConnectionsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
-                : await providerConnectionLifecycle.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
+        var connectionRows = canManageCredentials
+            ? await LoadOptionalDataProviderEvidenceAsync<ProviderConnectionRowDto>(context, "Provider connections", async () =>
+            {
+                var lifecycle = context.RequestServices.GetService<ProviderConnectionLifecycleService>();
+                if (lifecycle is null)
+                    return [];
+
+                return routingTenant.HasTenantScope
+                    ? await lifecycle.GetConnectionsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
+                    : await lifecycle.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
+            }).ConfigureAwait(false)
+            : [];
         // Routing reads mirror the direct /api/provider-routing endpoints: they are filtered to the
         // authenticated tenant's retained connections, and a request without tenant scope sees none.
         var canReadRouting = canManageCredentials && routingTenant.HasTenantScope;
@@ -1363,13 +1423,70 @@ public static partial class WorkstationEndpoints
         var trustSnapshots = canReadRouting && routingTrustService is not null
             ? await routingTrustService.GetTrustSnapshotsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
             : [];
+        // Readiness also depends on the connection read. A failed read leaves only independent evidence.
+        var readinessRows = connectionRows is null
+            ? null
+            : await LoadDataProviderReadinessRowsAsync(context).ConfigureAwait(false);
         return BuildWorkstationDataProviderRecords(
             metricsStatus,
-            connectionRows,
+            connectionRows ?? [],
             routingConnections,
             routingBindings,
             trustSnapshots,
-            exposeConnectionSummaries: canManageCredentials);
+            readinessRows,
+            asOf: DateTimeOffset.UtcNow,
+            exposeConnectionSummaries: canManageCredentials && connectionRows is not null);
+    }
+
+    // The same permissions GET /api/providers/readiness admits, so the list never shows a caller a
+    // readiness-derived status the browser's own readiness read would refuse them.
+    private static readonly UserPermission[] DataProviderReadinessPermissions =
+        [UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders,
+         UserPermission.ManageCredentials, UserPermission.AdminMaintenance];
+
+    /// <summary>
+    /// Readiness rows for the provider list. The browser's Data page shows each provider the worse
+    /// of its listed and readiness status; listing with the same rule here keeps the cross-screen
+    /// "Providers healthy" count equal to what that page shows.
+    /// </summary>
+    private static async Task<IReadOnlyList<ProviderReadinessRowDto>?> LoadDataProviderReadinessRowsAsync(HttpContext context)
+    {
+        if (!DataProviderReadinessPermissions.Any(permission => HasPermission(context, permission)))
+        {
+            return [];
+        }
+
+        return await LoadOptionalDataProviderEvidenceAsync<ProviderReadinessRowDto>(context, "Provider readiness", async () =>
+        {
+            // Hosts without the shared configuration store do not offer readiness enrichment.
+            if (context.RequestServices.GetService<Meridian.Ui.Shared.Services.ConfigStore>() is null)
+                return [];
+
+            var readinessService = context.RequestServices.GetService<ProviderReadinessService>();
+            if (readinessService is null)
+                return [];
+
+            var readiness = await readinessService.GetReadinessAsync(context.RequestAborted).ConfigureAwait(false);
+            return readiness.Providers;
+        }).ConfigureAwait(false);
+    }
+
+    private static async Task<IReadOnlyList<T>?> LoadOptionalDataProviderEvidenceAsync<T>(
+        HttpContext context, string evidence, Func<Task<IReadOnlyList<T>>> read)
+    {
+        try
+        {
+            return await read().ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException and not AccessViolationException)
+        {
+            context.RequestAborted.ThrowIfCancellationRequested();
+            // Repository failures can contain connection details. Log the type without the payload.
+            context.RequestServices.GetService<ILoggerFactory>()
+                ?.CreateLogger("Meridian.Ui.Shared.Endpoints.WorkstationEndpoints")
+                .LogWarning("{Evidence} unavailable ({FailureType}).", evidence, ex.GetType().Name);
+            return null;
+        }
     }
 
     // Returns null when neither the strategy run read service nor the configuration store is
@@ -1399,39 +1516,7 @@ public static partial class WorkstationEndpoints
             .CountProviderHealth(providers.Select(static provider => provider.Status))
             .Healthy;
 
-        // --- Backfills (last known backfill result from status file) ---
-        var lastBackfill = configStore?.TryLoadBackfillStatus();
-        WorkstationDataBackfillRecord[] backfills;
-        if (lastBackfill is not null)
-        {
-            var symbolSummary = lastBackfill.Symbols.Length > 0
-                ? string.Join(", ", lastBackfill.Symbols.Take(3)) + (lastBackfill.Symbols.Length > 3 ? " …" : "")
-                : "unknown";
-            var days = (lastBackfill.To != null && lastBackfill.From != null)
-                ? (lastBackfill.To.Value.DayNumber - lastBackfill.From.Value.DayNumber).ToString(CultureInfo.InvariantCulture) + "d"
-                : "—";
-            var age = DateTimeOffset.UtcNow - lastBackfill.CompletedUtc;
-            var updatedAt = age.TotalMinutes < 60
-                ? $"{(int)age.TotalMinutes}m ago"
-                : $"{(int)age.TotalHours}h ago";
-            backfills =
-            [
-                new WorkstationDataBackfillRecord(
-                    JobId: "BF-" + Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
-                    {
-                        lastBackfill.Provider, lastBackfill.CompletedUtc, lastBackfill.From, lastBackfill.To, lastBackfill.Symbols
-                    }))[..16],
-                    Scope: $"{symbolSummary} / {days}",
-                    Provider: lastBackfill.Provider,
-                    Status: lastBackfill.Success ? "Completed" : "Failed",
-                    Progress: lastBackfill.Success ? "100%" : "Error",
-                    UpdatedAt: updatedAt)
-            ];
-        }
-        else
-        {
-            backfills = [];
-        }
+        var backfills = LoadOptionalDataBackfillRows(context, configStore);
 
         var metrics = new List<WorkstationMetricCard>
         {
@@ -1460,6 +1545,67 @@ public static partial class WorkstationEndpoints
             Exports: [],
             UploadTemplates: BuildDataUploadTemplateCatalog(),
             KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
+    }
+
+    private static IReadOnlyList<WorkstationDataBackfillRecord> LoadOptionalDataBackfillRows(
+        HttpContext context, Meridian.Application.UI.ConfigStore? configStore)
+    {
+        context.RequestAborted.ThrowIfCancellationRequested();
+        var backfills = new List<WorkstationDataBackfillRecord>();
+        try
+        {
+            var backfillStore = context.RequestServices.GetService<BackfillCoordinator>()?.GetReceiptStore()
+                ?? (configStore is null ? null : new BackfillStatusStore(configStore.GetDataRoot()));
+            var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+            var retained = backfillStore?.ReadRecentRetainedResults(50, tenantId) ?? [];
+            backfills.AddRange(retained.Select(BuildRetainedBackfillRow));
+
+            if (backfillStore?.TryReadLegacySummary() is { } legacy)
+            {
+                var legacyId = "BF-" + Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
+                {
+                    legacy.Provider,
+                    legacy.CompletedUtc,
+                    legacy.From,
+                    legacy.To,
+                    legacy.Symbols
+                }))[..16];
+                backfills.Add(BuildBackfillRow(legacyId, legacy.Symbols,
+                    legacy.From, legacy.To, legacy.Provider, legacy.Success, legacy.CompletedUtc));
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            context.RequestServices.GetService<ILoggerFactory>()
+                ?.CreateLogger("Meridian.Ui.Shared.Endpoints.WorkstationEndpoints")
+                .LogWarning("Backfill evidence unavailable ({FailureType}).", ex.GetType().Name);
+        }
+
+        context.RequestAborted.ThrowIfCancellationRequested();
+        return backfills;
+    }
+
+    private static WorkstationDataBackfillRecord BuildBackfillRow(string id, IReadOnlyList<string> symbols,
+        DateOnly? from, DateOnly? to, string provider, bool success, DateTimeOffset completed)
+    {
+        var symbolSummary = symbols.Count > 0
+            ? string.Join(", ", symbols.Take(3)) + (symbols.Count > 3 ? " …" : "")
+            : "Unknown symbols";
+        var days = from.HasValue && to.HasValue ? $"{to.Value.DayNumber - from.Value.DayNumber + 1}d" : "—";
+        var age = DateTimeOffset.UtcNow - completed;
+        var updatedAt = age.TotalMinutes < 60 ? $"{(int)age.TotalMinutes}m ago" : $"{(int)age.TotalHours}h ago";
+        return new(id, $"{symbolSummary} / {days}", provider, success ? "Completed" : "Failed", success ? "100%" : "Error", updatedAt);
+    }
+
+    internal static WorkstationDataBackfillRecord BuildRetainedBackfillRow(RetainedBackfillResult result)
+    {
+        var receipt = result.Receipt;
+        var providers = receipt.Providers.Where(provider => provider.ResponsesWithData > 0 || provider.StaleResponsesAccepted > 0)
+            .Select(provider => provider.ProviderId).ToArray();
+        var providerLabel = providers.Length > 0 ? string.Join(", ", providers) : receipt.RoutingDecision;
+        return BuildBackfillRow($"BF-{receipt.ReceiptId:N}", receipt.Request.Symbols, receipt.Request.From,
+            receipt.Request.To, providerLabel, result.Success, receipt.CompletedUtc) with
+        { ProviderProvenance = receipt };
     }
 
     /// <summary>
@@ -1590,6 +1736,12 @@ public static partial class WorkstationEndpoints
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var portfolio = context.RequestServices.GetService<IPortfolioState>();
         var oms = context.RequestServices.GetService<IOrderManager>();
+        if (oms is Meridian.Execution.OrderManagementSystem { ScopedPaperBook: { } paper } &&
+            !await ExecutionEndpoints.CanAccessScopedPaperBookAsync(context, paper, UserPermission.ViewTrades).ConfigureAwait(false))
+        {
+            portfolio = null;
+            oms = null;
+        }
         var brokerageConfiguration = context.RequestServices.GetService<BrokerageConfiguration>();
         var quoteCollector = context.RequestServices.GetService<QuoteCollector>();
         var tradeCollector = context.RequestServices.GetService<TradeDataCollector>();
@@ -1638,19 +1790,23 @@ public static partial class WorkstationEndpoints
                 var mark = retainedMark.Price;
                 var hasMark = mark.HasValue && mark.Value > 0m;
                 var effectiveMark = hasMark ? mark!.Value : pos.AverageCostBasis;
-                var liveUnrealized = (effectiveMark - pos.AverageCostBasis) * pos.Quantity;
-                var liveExposure = Math.Abs(pos.Quantity * effectiveMark);
+                var liveUnrealized = (effectiveMark - pos.AverageCostBasis) * pos.ExactQuantity * pos.ContractMultiplier;
+                var liveExposure = Math.Abs(pos.ExactQuantity * effectiveMark * pos.ContractMultiplier);
 
                 return new WorkstationTradingPositionRow(
                     PositionKey: pos.Symbol,
                     Symbol: pos.Symbol,
-                    Side: pos.Quantity >= 0 ? "Long" : "Short",
-                    Quantity: Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
+                    Side: pos.ExactQuantity >= 0 ? "Long" : "Short",
+                    Quantity: Math.Abs(pos.ExactQuantity).ToString(CultureInfo.InvariantCulture),
                     AveragePrice: pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
                     MarkPrice: hasMark ? effectiveMark.ToString("F2", CultureInfo.InvariantCulture) : "—",
                     DayPnl: "—",
                     UnrealizedPnl: FormatCurrency(hasMark ? liveUnrealized : pos.UnrealizedPnl),
-                    Exposure: hasMark ? FormatCurrency(liveExposure) : "—");
+                    Exposure: hasMark ? FormatCurrency(liveExposure) : "—",
+                    AveragePriceExact: pos.AverageCostBasis.ToString(CultureInfo.InvariantCulture),
+                    MarkPriceExact: hasMark ? effectiveMark.ToString(CultureInfo.InvariantCulture) : null,
+                    UnrealizedPnlExact: (hasMark ? liveUnrealized : pos.UnrealizedPnl).ToString(CultureInfo.InvariantCulture),
+                    ExposureExact: hasMark ? liveExposure.ToString(CultureInfo.InvariantCulture) : null);
             }).ToArray();
         }
         else
@@ -1672,8 +1828,8 @@ public static partial class WorkstationEndpoints
             {
                 var mark = ResolveLiveMark(pos.Symbol, quoteCollector, tradeCollector);
                 var px = mark.HasValue && mark.Value > 0m ? mark.Value : pos.AverageCostBasis;
-                grossExposure += Math.Abs(pos.Quantity * px);
-                netExposureValue += pos.Quantity * px;
+                grossExposure += Math.Abs(pos.ExactQuantity * px * pos.ContractMultiplier);
+                netExposureValue += pos.ExactQuantity * px * pos.ContractMultiplier;
             }
             var drawdownPct = portfolio.PortfolioValue > 0m ? totalPnl / portfolio.PortfolioValue : 0m;
             if (drawdownPct < -0.05m)

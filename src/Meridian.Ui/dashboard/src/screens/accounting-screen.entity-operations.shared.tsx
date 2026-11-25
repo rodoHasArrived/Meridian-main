@@ -77,6 +77,9 @@ export function useEntityMutation() {
     try {
       const result = await postEntityOperation<T>(path, body, { signal: controller.signal });
       if (controller.signal.aborted) return null;
+      // A confirmed command is finished. The same input entered again later is a new request,
+      // not a replay; only an unconfirmed command keeps its identity for a safe retry.
+      requestIdentity.current = null;
       setMessage(success);
       return result;
     } catch (failure) {

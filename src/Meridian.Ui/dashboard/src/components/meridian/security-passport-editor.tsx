@@ -348,7 +348,7 @@ export function SecurityPassportEditor({
           <Badge variant={STATE_BADGE_VARIANT[stateBadge.tone]}>{stateBadge.label}</Badge>
           <Badge variant="outline">v{expectedVersion}</Badge>
         </div>
-        <CardDescription>Governed passport edit — changes are staged as a draft and published through the approval gate.</CardDescription>
+        <CardDescription>Passport changes are staged as a draft and published through the approval gate.</CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-4">

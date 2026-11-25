@@ -129,6 +129,8 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(RobinhoodConfig))]
 [JsonSerializable(typeof(DerivativesConfig))]
 [JsonSerializable(typeof(IndexOptionsConfig))]
+[JsonSerializable(typeof(DataQualityConfig))]
+[JsonSerializable(typeof(CrossProviderTolerancePolicy))]
 // Canonicalization enums
 [JsonSerializable(typeof(CanonicalTradeCondition))]
 [JsonSerializable(typeof(CanonicalTradeCondition[]))]

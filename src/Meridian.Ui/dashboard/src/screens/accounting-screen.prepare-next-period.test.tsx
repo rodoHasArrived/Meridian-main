@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { axe } from "jest-axe";
 import { ApiError } from "@/lib/api-errors";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import * as api from "@/lib/api/close-preparation.api";
 import { PrepareNextPeriodPanel } from "./accounting-screen.prepare-next-period";
 import { preparationPreview, preparedResult, retainedTemplate, sourcePlan, sourceWorkflow, targetBook, targetPeriod } from "./accounting-screen.prepare-next-period.test-fixtures";
@@ -107,10 +108,10 @@ it("rejects stale previews and requires a new preview before another creation", 
   const { user } = await selectTarget();
   await user.click(screen.getByRole("button", { name: "Preview next period" }));
   await user.click(await screen.findByRole("button", { name: "Create next-period plan" }));
-  await screen.findByText(/Refresh the preview before creating the plan/);
+  await screen.findByText(/Recalculate the preview before creating the plan/);
   expect(storedRecovery()).toBeNull();
   expect(screen.queryByRole("button", { name: "Create next-period plan" })).not.toBeInTheDocument();
-  await user.click(screen.getByRole("button", { name: "Refresh preview" }));
+  await user.click(screen.getByRole("button", { name: "Recalculate preview" }));
   await user.click(await screen.findByRole("button", { name: "Create next-period plan" }));
   await screen.findByText("Next-period plan created");
   expect(service.previewClosePreparation).toHaveBeenCalledTimes(2);
@@ -140,7 +141,7 @@ it("persists before posting and recovers a lost response after reload with the o
   await screen.findByRole("button", { name: "Retry creation" });
   const saved = storedRecovery();
   expect(saved).not.toBeNull();
-  expect(screen.getByRole("button", { name: "Refresh preview" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Recalculate preview" })).toBeDisabled();
   expect(screen.getByLabelText("Retained template")).toBeDisabled();
   expect(screen.getByRole("button", { name: "Capture another version" })).toBeDisabled();
   unmount();
@@ -181,7 +182,7 @@ it.each([
   expect(screen.queryByRole("region", { name: "Next-period preview" })).not.toBeInTheDocument();
   expect(screen.getByLabelText("Target book")).toBeDisabled();
   await user.click(recover);
-  await screen.findByText(/Refresh the preview before creating the plan/);
+  await screen.findByText(/Recalculate the preview before creating the plan/);
   expect(service.createPreparedClosePlan).toHaveBeenCalledWith({ previewId: preparationPreview.previewId, idempotencyKey: "retained-request-key" }, expect.any(AbortSignal));
   expect(storedRecovery()).toBeNull();
   expect(screen.queryByRole("button", { name: "Recover pending creation" })).not.toBeInTheDocument();
@@ -318,4 +319,19 @@ it("marks each source deadline in the reusable rule table up as a calendar date"
   expect(due.parentElement).toHaveClass("font-mono", "text-xs", "text-muted-foreground");
   expect(within(within(rules).getByRole("rowheader", { name: /Review close/ })).getByText("2026-10-05")).toHaveAttribute("datetime", "2026-10-05");
   expect((await axe(container)).violations).toEqual([]);
+});
+
+it("keeps the selected template when the header refresh re-reads the source plan", async () => {
+  const user = userEvent.setup();
+  const tree = <MemoryRouter><PrepareNextPeriodPanel initialWorkflowId={sourceWorkflow.workflowId} /></MemoryRouter>;
+  const view = render(<GlobalRefreshProvider sequence={0}>{tree}</GlobalRefreshProvider>);
+  await user.click(screen.getByRole("button", { name: "Prepare next period" }));
+  const templateKey = `${retainedTemplate.templateId}:${retainedTemplate.version}`;
+  await user.selectOptions(await screen.findByLabelText("Retained template"), templateKey);
+  expect(screen.queryByRole("button", { name: "Refresh source plan" })).not.toBeInTheDocument();
+  const reads = service.getClosePreparationSource.mock.calls.length;
+  view.rerender(<GlobalRefreshProvider sequence={1}>{tree}</GlobalRefreshProvider>);
+  await waitFor(() => expect(service.getClosePreparationSource).toHaveBeenCalledTimes(reads + 1));
+  expect(screen.getByLabelText("Retained template")).toHaveValue(templateKey);
+  expect(screen.getByLabelText("Target book")).toBeInTheDocument();
 });

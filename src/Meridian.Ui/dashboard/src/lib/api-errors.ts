@@ -70,7 +70,7 @@ export function createApiErrorFromResponseBody(
   correlationId: string | null = null
 ): ApiError {
   const trimmed = body.trim();
-  if (!trimmed) {
+  if (isEmptyResponseBody(trimmed)) {
     return new ApiError({ path, status, correlationId });
   }
 
@@ -328,7 +328,8 @@ export function describeApiError(error: unknown, fallback: string): ApiErrorDisp
     }
   }
 
-  if (details.length === 1 && error.responseBody && !looksLikeDuplicate(summary, error.responseBody)) {
+  if (details.length === 1 && error.responseBody && !isEmptyResponseBody(error.responseBody)
+      && !looksLikeDuplicate(summary, error.responseBody)) {
     details.push(error.responseBody);
   }
 
@@ -412,6 +413,18 @@ function formatValidationIssues(issues: ApiValidationIssue[]): string {
   return issues
     .flatMap((issue) => issue.messages.map((message) => `${issue.label}: ${message}`))
     .join("; ");
+}
+
+/**
+ * A body that says nothing: blank, `null`, or only JSON punctuation such as `{}`, `[]` or `""`.
+ * Showing it would put raw braces in front of an operator as if they were an explanation.
+ */
+export function isEmptyResponseBody(body: string | null | undefined): boolean {
+  if (!body) {
+    return true;
+  }
+  const trimmed = body.trim();
+  return trimmed === "null" || /^[\s{}[\]"',:]*$/.test(trimmed);
 }
 
 function looksLikeDuplicate(summary: string, body: string): boolean {

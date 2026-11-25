@@ -109,6 +109,10 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
     // Uses a bitmask (& 63) for a branch-friendly, division-free sampling check.
     private const int ReaderCountSampleMask = 63; // sample every 64th event
 
+    // Attempts to dead-letter one validation-rejected event before the reject is discarded so
+    // the rest of its batch can proceed.
+    private const int MaxDeadLetterAdmissionAttempts = 3;
+
     /// <summary>
     /// Default maximum time to wait for the final flush during shutdown before giving up.
     /// Prevents the consumer task from hanging indefinitely if the sink is unresponsive.
@@ -925,6 +929,18 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         );
     }
 
+    internal async ValueTask<bool> HasDurableBackfillRowAsync(MarketEvent row, CancellationToken ct)
+    {
+        if (_dedupLedger is null)
+            return false;
+
+        // Recovery trusts only identities committed after the primary sink flushed.
+        var lookup = await _dedupLedger.TryReserveAsync(row, DedupLookupScope.WalRecovery, ct).ConfigureAwait(false);
+        if (lookup.IsReserved)
+            _dedupLedger.Release(lookup.Reservation);
+        return lookup.Status == DedupReservationStatus.Duplicate;
+    }
+
     // Each consumer reuses its own scratch storage, including when listeners sample
     // a batch out. Clear it for retries too so links describe only the retained batch.
     internal sealed class BatchTraceLinks
@@ -972,6 +988,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
             var walBatchFlushed = false;
             var sinkBatchFlushed = false;
             var dedupBatchCommitted = false;
+            var deadLetterAdmissionFailures = 0;
 
             while (retryPendingBatch || await _channel.Reader.WaitToReadAsync(_cts.Token).ConfigureAwait(false))
             {
@@ -995,6 +1012,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                         walBatchFlushed = false;
                         sinkBatchFlushed = false;
                         dedupBatchCommitted = false;
+                        deadLetterAdmissionFailures = 0;
                         while (batchBuffer.Count < targetBatchSize && _channel.Reader.TryRead(out var evt))
                         {
                             batchBuffer.Add(evt);
@@ -1066,7 +1084,30 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                                 {
                                     if (_deadLetterSink != null)
                                     {
-                                        await _deadLetterSink.RecordAsync(evt, validationResult.Errors, _cts.Token).ConfigureAwait(false);
+                                        try
+                                        {
+                                            await _deadLetterSink.RecordAsync(evt, validationResult.Errors, _cts.Token).ConfigureAwait(false);
+                                            deadLetterAdmissionFailures = 0;
+                                        }
+                                        catch (Exception deadLetterEx) when (deadLetterEx is not OperationCanceledException)
+                                        {
+                                            // A dead-letter fault concerns this one rejected event.
+                                            // Retry it a few times with the batch retained; if the
+                                            // sink stays down, give up on recording this reject only
+                                            // — the valid events around it must still be persisted.
+                                            if (++deadLetterAdmissionFailures < MaxDeadLetterAdmissionAttempts)
+                                            {
+                                                throw new AdmissionDependencyException(
+                                                    "Dead-letter recording failed during batch admission; the batch is retained and retried.",
+                                                    deadLetterEx);
+                                            }
+
+                                            deadLetterAdmissionFailures = 0;
+                                            _logger.LogError(deadLetterEx,
+                                                "Dead-letter recording failed {Attempts} times for a validation-rejected {EventType} event " +
+                                                "for {Symbol} (sequence {Sequence}); the rejected event is discarded without a dead-letter record",
+                                                MaxDeadLetterAdmissionAttempts, GetEventTypeName(evt.Type), evt.EffectiveSymbol, evt.Sequence);
+                                        }
                                     }
 
                                     Interlocked.Increment(ref _rejectedCount);
@@ -1080,8 +1121,24 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                             // claim is pending and memory-only until the sink flush confirms it.
                             if (_dedupLedger != null)
                             {
-                                var reservationResult = await _dedupLedger
-                                    .TryReserveAsync(evt, DedupLookupScope.LiveIngress, _cts.Token).ConfigureAwait(false);
+                                DedupReservationResult reservationResult;
+                                try
+                                {
+                                    reservationResult = await _dedupLedger
+                                        .TryReserveAsync(evt, evt.BackfillRevisionId is null
+                                            ? DedupLookupScope.LiveIngress : DedupLookupScope.WalRecovery, _cts.Token).ConfigureAwait(false);
+                                }
+                                catch (Exception dedupEx) when (dedupEx is not OperationCanceledException)
+                                {
+                                    // Nothing in this batch has reached the sink, so abandoning it
+                                    // would discard every event in it over a store hiccup. An
+                                    // unavailable identity store is treated like an unavailable
+                                    // WAL: the batch waits, resuming admission at this event.
+                                    throw new AdmissionDependencyException(
+                                        "Dedup reservation failed during batch admission; the batch is retained and retried.",
+                                        dedupEx);
+                                }
+
                                 if (reservationResult.IsSuppressed)
                                 {
                                     // A pending claim justifies discarding this delivery only when
@@ -1300,7 +1357,8 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                         (sinkBatchFlushed && _dedupLedger != null && !dedupBatchCommitted &&
                          batchBuffer.Any(static traced => traced.Reservation.IsHeld)) ||
                         ex is PendingExternalDedupClaimException ||
-                        ex is WalAdmissionException;
+                        ex is WalAdmissionException ||
+                        ex is AdmissionDependencyException;
                     // A retained batch is outstanding work that is no longer visible in the
                     // channel and not yet counted as consumed: publish it so FlushAsync's
                     // idle check cannot acknowledge a flush while its events are undelivered.
@@ -1606,8 +1664,26 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
 
                 await _cts.CancelAsync().ConfigureAwait(false);
 
-                // Give a short grace period after force-cancel
-                await Task.WhenAny(allConsumers, Task.Delay(TimeSpan.FromSeconds(5))).ConfigureAwait(false);
+                // Cancellation moves each consumer into its final flush and WAL commit, which
+                // allow themselves _finalFlushTimeout. Wait that long (plus scheduling slack)
+                // before the sink and WAL are disposed below; a shorter grace would dispose them
+                // underneath a flush that is still legitimately running.
+                var afterCancel = await Task.WhenAny(
+                    allConsumers,
+                    Task.Delay(_disposeTaskTimeout)).ConfigureAwait(false);
+
+                if (afterCancel == allConsumers)
+                {
+                    await allConsumers.ConfigureAwait(false); // Observe any exception
+                }
+                else
+                {
+                    _logger.LogError(
+                        "{ConsumerCount} consumer task(s) still running {TimeoutSeconds}s after force-cancel; " +
+                        "disposing the sink and WAL underneath them. The final flush did not honour its timeout " +
+                        "and buffered events may be lost. Published: {PublishedCount}, consumed: {ConsumedCount}",
+                        _consumerCount, _disposeTaskTimeout.TotalSeconds, _publishedCount, _consumedCount);
+                }
             }
             else
             {
@@ -1782,6 +1858,20 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
     private sealed class WalAdmissionException : InvalidOperationException
     {
         public WalAdmissionException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
+    }
+
+    /// <summary>
+    /// Raised when a dependency consulted before the WAL append (the dead-letter sink or the
+    /// dedup store) fails during batch admission. Retryable by design: no event in the batch has
+    /// been persisted on account of this step, so abandoning the batch would turn a transient
+    /// dependency fault into the loss of every event in it.
+    /// </summary>
+    private sealed class AdmissionDependencyException : InvalidOperationException
+    {
+        public AdmissionDependencyException(string message, Exception innerException)
             : base(message, innerException)
         {
         }

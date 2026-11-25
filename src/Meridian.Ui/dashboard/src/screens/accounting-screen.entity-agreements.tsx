@@ -2,11 +2,14 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { FormGrid } from "@/components/ui/form";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { entityOperationEndpoints as endpoints } from "@/lib/api/entity-operations.api";
 import type { AccountingArrangementHistory, AccountingArrangementRecord, EntityOperationScope, IntercompanyAccountingArrangement } from "@/types/entity-operations";
 import { AccountingArrangementEditor, canonicalAgreementPath } from "./accounting-screen.entity-agreement-editor";
+import { IntercompanyInterestAccrual } from "./accounting-screen.entity-interest-accrual";
+import { IntercompanyManagementFeeAccrual } from "./accounting-screen.entity-management-fee";
 import { effectiveUtc, EntityOperationTable, MutationFeedback, OperationError, OperationField, today, useEntityData, useEntityMutation } from "./accounting-screen.entity-operations.shared";
 
 export function EntityAccountingArrangements({ scope }: { scope: EntityOperationScope }) {
@@ -39,7 +42,7 @@ export function EntityAccountingArrangements({ scope }: { scope: EntityOperation
     if (result) { arrangements.refresh(); history.refresh(); setEditing(false); }
   }
   return <div className="space-y-4"><div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">Intercompany accounting profiles</h3><div className="flex flex-wrap gap-2">
-    <Button type="button" variant="outline" onClick={arrangements.refresh} disabled={arrangements.loading || !organizationId || editing || mutation.busy} disabledReason={mutation.busy ? "Wait for the current accounting profile change to finish." : editing ? "Save or cancel the current accounting profile edit." : !organizationId ? "Select an accounting profile organization." : "Wait for accounting profiles to load."}>Refresh accounting profiles</Button>
+    <PanelReload reload={() => { if (!editing && !mutation.busy && !(selected && reason.trim())) arrangements.refresh(); }} failed={Boolean(arrangements.error)} busy={arrangements.loading || editing || mutation.busy} what="accounting profiles" />
     <Button type="button" disabled={!organizationId || editing || mutation.busy} disabledReason={mutation.busy ? "Wait for the current accounting profile change to finish." : editing ? "Save or cancel the current accounting profile edit." : "Select an accounting profile organization."} onClick={() => { setCreating(true); setEditing(true); }}>New accounting profile</Button>
   </div></div>
   <p className="text-sm text-muted-foreground">Profiles govern book mappings and counterpart accounting against an exact approved legal agreement version. Legal terms and their independent review remain in the canonical agreement registry.</p>
@@ -69,6 +72,8 @@ export function EntityAccountingArrangements({ scope }: { scope: EntityOperation
     </div>
     <p className="text-xs text-muted-foreground">The owner may approve accounting mappings. This records no legal approval. Counterpart journals retain their independent journal review and posting controls.</p>
     <MutationFeedback state={mutation} />
+    {selected.templateKind === "LoanInterest" && !editing ? <IntercompanyInterestAccrual key={selected.arrangementId} scope={scope} arrangement={selected} arrangements={arrangements.data ?? []} /> : null}
+    {selected.templateKind === "ManagementFee" && !editing ? <IntercompanyManagementFeeAccrual key={selected.arrangementId} scope={scope} arrangement={selected} /> : null}
     <TechnicalDetails label="Canonical legal authority and accounting history"><dl className="space-y-2 break-all text-xs"><div><dt>Canonical legal agreement</dt><dd>{selected.canonicalAgreementId} · version {selected.canonicalAgreementVersion}</dd></div><div><dt>Approved legal payload hash</dt><dd className="font-mono">{selected.canonicalPayloadHash}</dd></div><div><dt>Legal effective window</dt><dd>{selected.legalRevision.terms.effectiveFrom} → {selected.legalRevision.terms.effectiveTo ?? "Open"} (exclusive)</dd></div><div><dt>Canonical legal approval</dt><dd>{selected.legalRevision.approver} · {selected.legalRevision.approvedAtUtc}</dd></div></dl>
       <ul className="mt-3 space-y-2 break-all text-xs">{selected.canonicalEvidence.map((evidence, index) => <li key={index}>{evidence.reference}<p className="font-mono">{evidence.artifactId} · {evidence.contentHash}</p></li>)}</ul>
       <OperationError error={history.error} /><ol className="mt-3 space-y-2 text-xs">{history.data?.events.map((event) => <li key={event.requestId}>{event.recordedAt} · {event.action} · {event.actor} · {event.reason ?? "Initial mapping"} · mapping revision {(event.targetRevisionSnapshot ?? event.snapshot).revisionNumber}</li>)}</ol>

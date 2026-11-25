@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildPortfolioScreenViewModel } from "./portfolio-screen.view-model";
 import { presentMarkFreshness } from "@/lib/mark-freshness";
-import type { MarkFreshnessAssessmentDto, TradingWorkspaceResponse } from "@/types";
+import type { MarkFreshnessAssessmentDto, PortfolioWorkspaceResponse } from "@/types";
 
 const current: MarkFreshnessAssessmentDto = {
   symbol: "AAPL", securityId: "apple-security", financialAccountId: "account-1",
@@ -10,12 +10,12 @@ const current: MarkFreshnessAssessmentDto = {
 };
 
 function portfolio(markFreshness: MarkFreshnessAssessmentDto | null) {
-  const trading = {
+  const portfolioPayload = {
     positions: [{ symbol: "AAPL", side: "Long", quantity: "10", averagePrice: "$90",
       markPrice: "$100", exposure: "$1,000", dayPnl: "$0", unrealizedPnl: "$100", markFreshness }],
-    metrics: [], openOrders: [], fills: [], risk: null, brokerage: null
-  } as unknown as TradingWorkspaceResponse;
-  return buildPortfolioScreenViewModel({ trading, strategy: null, accounting: null });
+    metrics: [], runs: [], cashFlow: null, risk: null, brokerage: null
+  } as unknown as PortfolioWorkspaceResponse;
+  return buildPortfolioScreenViewModel({ portfolio: portfolioPayload, trading: null, strategy: null, accounting: null });
 }
 
 describe("Portfolio shared mark readiness", () => {
@@ -45,10 +45,11 @@ describe("Portfolio shared mark readiness", () => {
 
   it("states a missing assessment once instead of listing every unknown field", () => {
     const vm = portfolio(null);
-    const markFields = vm.selectedPosition?.fields.filter((field) => field.label.startsWith("Mark") || field.label === "Valuation date");
+    const markFields = vm.selectedPosition?.fields.filter((field) => field.label.startsWith("Mark ") || field.label === "Valuation date");
     expect(markFields).toEqual([
+      // The price names its own source, so no separate row contradicts it with "No mark observed".
+      { label: "Mark price", value: expect.stringMatching(/ \(recorded on the position, no observed mark\)$/), tone: "warning" },
       { label: "Mark readiness", value: "Review required", tone: "warning" },
-      { label: "Mark evidence", value: "No mark observed", tone: "muted" },
       { label: "Mark assessment", value: expect.stringContaining("Shared mark assessment unavailable"), tone: "warning" }
     ]);
     expect(vm.selectedPosition?.fields.map((field) => field.value)).not.toContain("Unknown");

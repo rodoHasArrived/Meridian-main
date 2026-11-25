@@ -225,6 +225,32 @@ export function pluralizeCount(count: number, singular: string, options: Plurali
   return `${renderedCount} ${count === 1 ? singular : plural}`;
 }
 
+// Vowel-initial words that start with a consonant sound ("a user", "a one-time", "a European").
+const CONSONANT_SOUND_VOWEL_START = /^(?:uni|us[aeu]|ut[eio]|eu|one|once|ubiq)/i;
+// Consonant-initial words that start with a vowel sound ("an hour", "an honest").
+const VOWEL_SOUND_CONSONANT_START = /^(?:hour|honest|honou?r|heir)/i;
+
+/**
+ * A word or phrase with the right indefinite article: "an Operator session", "a Viewer session".
+ * Use it wherever a generated sentence puts "a" before a name it does not control.
+ */
+export function withIndefiniteArticle(phrase: string): string {
+  const word = phrase.trim();
+  const vowelSound = /^[aeiou]/i.test(word)
+    ? !CONSONANT_SOUND_VOWEL_START.test(word)
+    : VOWEL_SOUND_CONSONANT_START.test(word);
+  return `${vowelSound ? "an" : "a"} ${word}`;
+}
+
+/**
+ * A count out of a named population, e.g. "1 of 5 providers". Every KPI that shows a part of a
+ * whole uses this, so the denominator always says what it counts and two figures over different
+ * populations cannot be read as contradicting each other.
+ */
+export function formatCountOfTotal(count: number, total: number, singular: string, options: PluralizeCountOptions = {}): string {
+  return `${count} of ${pluralizeCount(total, singular, options)}`;
+}
+
 /** Amount with an ISO code suffix and no symbol, e.g. "1,234.56 USD"; `signed` gives "+1,234.56 USD". */
 export function formatAmountWithCode(
   value: NullableNumber,
@@ -566,10 +592,49 @@ export function formatUtcTimestamp(date: Date, options: Pick<TimestampFormatOpti
 }
 
 /**
- * Compact relative time from `now`, e.g. "30s ago", "5m ago", "3d ago", or "in 2h" for a future
- * instant. Units round to the nearest whole second, minute, hour and day. Pair it with the absolute
+ * A timestamp for a narrow cell or tile: "Jan 1 '26 00:00Z" in UTC, "Jan 1 '26 09:00 GMT+9" in
+ * another display zone. It never wraps mid-value; pair it with the full `formatTimestamp` on hover
+ * (`<TimeText display="compact">` does). The zone is always shown: "Z" for UTC, else the short name.
+ */
+export function formatCompactTimestamp(value: TimestampInput, options: Pick<TimestampFormatOptions, "timeZone"> = {}): string {
+  const date = toDate(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Invalid Date";
+  }
+  const fields: Partial<Record<Intl.DateTimeFormatPartTypes, string>> = {};
+  for (const part of timestampFormatter(options.timeZone ?? getDisplayTimeZone(), "minute").formatToParts(date)) {
+    fields[part.type] = part.value;
+  }
+  const zone = fields.timeZoneName === "UTC" ? "Z" : ` ${fields.timeZoneName}`;
+  return `${fields.month} ${fields.day} '${(fields.year ?? "").slice(-2)} ${fields.hour}:${fields.minute}${zone}`;
+}
+
+const FULL_TIMESTAMP_LABEL = /^([A-Z][a-z]{2}) (\d{1,2}), (\d{4}), (\d{2}:\d{2})(?::\d{2}(?:\.\d{3})?)? (\S.*)$/;
+
+/**
+ * The compact form of text already produced by `formatTimestamp` ("Jan 1, 2026, 00:00 UTC" →
+ * "Jan 1 '26 00:00Z"), for a tile or badge whose view model hands it a formatted string. Any other
+ * text is returned unchanged, so it is safe on a value that is only sometimes a timestamp. Show
+ * the original as the hover title.
+ */
+export function compactTimestampLabel(label: string): string {
+  const match = FULL_TIMESTAMP_LABEL.exec(label.trim());
+  if (!match) {
+    return label;
+  }
+  const [, month, day, year, clock, zone] = match;
+  return `${month} ${day} '${year.slice(-2)} ${clock}${zone === "UTC" ? "Z" : ` ${zone}`}`;
+}
+
+/**
+ * Compact relative time from `now`, e.g. "30s ago", "5m ago", "36h ago", "3d ago", or "in 2h" for a
+ * future instant. Hours run up to 48h and whole days up to 60d; an older past instant reads
+ * "since May 8, 2026" so very old ages ("4643h ago", "195d ago") never appear. Pair it with the absolute
  * `formatTimestamp` (`<TimeText>` puts that in the hover title). An invalid date renders "Invalid Date".
  */
+const RELATIVE_HOURS_LIMIT = 48;
+const RELATIVE_DAYS_LIMIT = 60;
+
 export function formatRelativeTime(value: TimestampInput, now: TimestampInput = Date.now()): string {
   const timestamp = toDate(value).getTime();
   const reference = toDate(now).getTime();
@@ -580,7 +645,11 @@ export function formatRelativeTime(value: TimestampInput, now: TimestampInput = 
   const seconds = Math.round(Math.abs(diff) / 1000);
   const minutes = Math.round(seconds / 60);
   const hours = Math.round(minutes / 60);
-  const amount = seconds < 60 ? `${seconds}s` : minutes < 60 ? `${minutes}m` : hours < 24 ? `${hours}h` : `${Math.round(hours / 24)}d`;
+  const days = Math.floor(hours / 24);
+  if (diff > 0 && hours >= RELATIVE_HOURS_LIMIT && days >= RELATIVE_DAYS_LIMIT) {
+    return `since ${formatUtcDate(new Date(timestamp))}`;
+  }
+  const amount = seconds < 60 ? `${seconds}s` : minutes < 60 ? `${minutes}m` : hours < RELATIVE_HOURS_LIMIT ? `${hours}h` : `${days}d`;
   return diff < 0 && seconds > 0 ? `in ${amount}` : `${amount} ago`;
 }
 

@@ -37,12 +37,14 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
     private readonly bool _allowScaffoldMarketFills;
     private readonly Interfaces.ILiveFeedAdapter? _liveFeed;
     private int _scaffoldPriceWarningIssued;
+    private readonly PaperObservationFreshnessPolicy _freshness;
 
     private readonly ILogger<PaperTradingGateway> _logger;
     private readonly PaperTradingGatewayTradingParameters _tradingParameters;
     private readonly PaperTradingCostModel _costModel;
     private readonly PaperSymbolEvaluationPump _evaluationPump;
     private readonly System.Threading.Channels.Channel<OrderStatusUpdate> _updates;
+    private readonly CancellationTokenSource _disposeCts = new();
     private readonly Dictionary<string, WorkingPaperOrder> _workingOrders = new();
     private readonly ConcurrentDictionary<string, Task> _fillTasks = new(StringComparer.OrdinalIgnoreCase);
     private readonly Lock _lock = new();
@@ -143,6 +145,7 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
             securityIdentity);
         _scaffoldMarketFillPrice = PaperTradingGatewayScaffoldPricing.ResolveScaffoldMarketFillPrice(options);
         _allowScaffoldMarketFills = PaperTradingGatewayScaffoldPricing.ResolveAllowScaffoldMarketFills(options);
+        _freshness = PaperObservationFreshnessPolicy.From(options);
         _liveFeed = liveFeed;
         _costModel = new PaperTradingCostModel(costOptions);
         _evaluationPump = new PaperSymbolEvaluationPump(EvaluateRestingOrdersForSymbolAsync, _logger);
@@ -236,7 +239,7 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
     }
 
     /// <inheritdoc/>
-    public Task<bool> CancelAsync(string orderId, CancellationToken ct = default)
+    public async Task<bool> CancelAsync(string orderId, CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
 
@@ -262,15 +265,12 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
                 RejectReason: null,
                 Timestamp: DateTimeOffset.UtcNow);
 
-            if (!_updates.Writer.TryWrite(update))
-            {
-                _logger.LogWarning(
-                    "Paper cancellation update for {OrderId} could not be queued because the update channel was unavailable.",
-                    LogSanitizer.Sanitize(orderId));
-            }
+            // The order already left the working set, so the caller's token must not be able
+            // to abandon the terminal update: only gateway disposal may.
+            await EmitUpdateAsync(update).ConfigureAwait(false);
         }
 
-        return Task.FromResult(cancelledRequest is not null);
+        return cancelledRequest is not null;
     }
 
     /// <inheritdoc/>
@@ -356,7 +356,7 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
         string orderId, WorkingPaperOrder order, bool initialSubmission, CancellationToken ct)
     {
         var request = order.Request;
-        var observation = PaperMarketObservation.Capture(_liveFeed, request.Symbol);
+        var observation = _freshness.Capture(_liveFeed, request.Symbol);
 
         bool stopTriggered;
         lock (_lock)
@@ -379,6 +379,15 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
                     .ConfigureAwait(false);
                 return;
 
+            case PaperMatchOutcome.NoMarketData when (OrderType)request.Type is OrderType.Market && observation.IsStale:
+                // A stalled feed is not "no feed wired": scaffold pricing must not stand in.
+                await EmitTerminalIfStillWorkingAsync(
+                    orderId,
+                    request,
+                    GatewayOrderStatus.Rejected,
+                    _freshness.BuildStaleObservationRejectReason(request.Symbol)).ConfigureAwait(false);
+                return;
+
             case PaperMatchOutcome.NoMarketData when (OrderType)request.Type is OrderType.Market:
                 if (_allowScaffoldMarketFills)
                 {
@@ -388,11 +397,11 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
                     return;
                 }
 
-                EmitTerminalIfStillWorking(
+                await EmitTerminalIfStillWorkingAsync(
                     orderId,
                     request,
                     GatewayOrderStatus.Rejected,
-                    PaperTradingGatewayScaffoldPricing.BuildNoReferencePriceRejectReason(request.Symbol));
+                    PaperTradingGatewayScaffoldPricing.BuildNoReferencePriceRejectReason(request.Symbol)).ConfigureAwait(false);
                 return;
 
             default:
@@ -401,11 +410,11 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
                 if (initialSubmission
                     && request.TimeInForce is TimeInForce.ImmediateOrCancel or TimeInForce.FillOrKill)
                 {
-                    EmitTerminalIfStillWorking(
+                    await EmitTerminalIfStillWorkingAsync(
                         orderId,
                         request,
                         GatewayOrderStatus.Cancelled,
-                        $"{request.TimeInForce} order was not immediately fillable against observed market data.");
+                        $"{request.TimeInForce} order was not immediately fillable against observed market data.").ConfigureAwait(false);
                     return;
                 }
 
@@ -465,12 +474,7 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
             Fees: costs.Fees,
             SlippageCost: costs.SlippageCost);
 
-        if (!_updates.Writer.TryWrite(fill))
-        {
-            _logger.LogWarning(
-                "Paper fill update for {OrderId} could not be queued because the update channel was unavailable.",
-                LogSanitizer.Sanitize(orderId));
-        }
+        await EmitUpdateAsync(fill).ConfigureAwait(false);
 
         _logger.LogInformation(
             "Paper fill: {ClientOrderId} {Quantity} {Symbol} @ {FillPrice} (commission {Commission}, fees {Fees}, slippage {Slippage})",
@@ -478,7 +482,7 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
             fillPrice, costs.Commission, costs.Fees, costs.SlippageCost);
     }
 
-    private void EmitTerminalIfStillWorking(
+    private async Task EmitTerminalIfStillWorkingAsync(
         string orderId, OrderRequest request, GatewayOrderStatus status, string reason)
     {
         lock (_lock)
@@ -503,11 +507,33 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
             RejectReason: reason,
             Timestamp: DateTimeOffset.UtcNow);
 
-        if (!_updates.Writer.TryWrite(update))
+        await EmitUpdateAsync(update).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Queues an update for an order that has already left the working set. The update
+    /// channel is bounded with wait-on-full semantics, so <c>TryWrite</c> fails whenever the
+    /// consumer is behind; dropping the update there would leave the order "working" in the
+    /// order manager forever. Wait for capacity instead, giving up only when the gateway is
+    /// disposed.
+    /// </summary>
+    private async ValueTask EmitUpdateAsync(OrderStatusUpdate update)
+    {
+        if (_updates.Writer.TryWrite(update))
+        {
+            return;
+        }
+
+        try
+        {
+            await _updates.Writer.WriteAsync(update, _disposeCts.Token).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is OperationCanceledException or System.Threading.Channels.ChannelClosedException)
         {
             _logger.LogWarning(
-                "Paper terminal update for {OrderId} could not be queued because the update channel was unavailable.",
-                LogSanitizer.Sanitize(orderId));
+                "Paper {Status} update for {OrderId} was dropped because the gateway was disposed before the update channel had capacity.",
+                update.Status,
+                LogSanitizer.Sanitize(update.OrderId));
         }
     }
 
@@ -532,6 +558,10 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
             return;
         }
 
+        // Release emitters parked on a full update channel so disposal cannot hang when no
+        // consumer is draining. Updates that still fit are queued through the fast path.
+        await _disposeCts.CancelAsync().ConfigureAwait(false);
+
         Task[] fillTasks;
         lock (_lock)
         {
@@ -555,6 +585,7 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
         await _evaluationPump.DisposeAsync().ConfigureAwait(false);
 
         _updates.Writer.TryComplete();
+        _disposeCts.Dispose();
     }
 
     private bool IsDisposed => Volatile.Read(ref _disposed) != 0;

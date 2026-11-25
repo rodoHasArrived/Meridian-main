@@ -13,6 +13,7 @@ import {
 } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { formatCount as formatCountValue } from "@/lib/format";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { type ReferenceDataWorkbenchEndpointSeed } from "@/lib/workstation-endpoints";
 import type {
   CorporateAction,
@@ -221,7 +222,8 @@ export interface SecurityConflictActionViewModel {
 
 
 export interface SecurityConflictRefreshCommandViewModel {
-  label: string;
+  /** The conflict queue reloads with the header Refresh; this retry command shows only after a failed load. */
+  visible: boolean; label: string;
   ariaLabel: string;
   disabled: boolean;
   disabledReason: string | null;
@@ -406,7 +408,7 @@ export function useSecurityMasterViewModel(
   useEffect(() => {
     void refreshConflicts();
   }, [refreshConflicts]);
-
+  useOnGlobalRefresh(refreshConflicts);
   useEffect(() => {
     if (!active || !selectedSecurityId) {
       setCorporateActions(null);
@@ -1092,7 +1094,7 @@ export function buildSecurityMasterPageViewState({
       : instrumentPassport
         ? totalOperationCount > 0
           ? `${readyOperationCount}/${totalOperationCount} operations checks ready; trading controls ${tradingParameters ? "loaded" : "pending"}.`
-          : `Trust posture ${passportTrustSummary}; trading controls ${tradingParameters ? "loaded" : "pending"}.`
+          : `Trust status ${passportTrustSummary}; trading controls ${tradingParameters ? "loaded" : "pending"}.`
         : selectedSecurityId
           ? "Passport and control readiness are queued for the selected record."
           : "Select a security to inspect passport and control readiness.";
@@ -1338,8 +1340,8 @@ export function buildSecurityConflictRefreshCommand(
     const disabledReason = `Wait until identifier conflict ${resolvingConflictId} finishes resolving before refreshing the conflict queue.`;
 
     return {
-      label: "Refresh conflicts",
-      ariaLabel: `Refresh disabled while identifier conflict ${resolvingConflictId} is resolving`,
+      visible: Boolean(normalizedError), label: "Retry conflicts",
+      ariaLabel: `Retry disabled while identifier conflict ${resolvingConflictId} is resolving`,
       disabled: true,
       disabledReason,
       busy: false,
@@ -1350,16 +1352,12 @@ export function buildSecurityConflictRefreshCommand(
   }
 
   return {
-    label: loading ? "Refreshing..." : normalizedError ? "Retry conflicts" : "Refresh conflicts",
-    ariaLabel: loading
-      ? "Refreshing Security Master identifier conflicts"
-      : normalizedError
-        ? "Retry loading Security Master identifier conflicts"
-        : "Refresh Security Master identifier conflicts",
+    visible: Boolean(normalizedError), label: loading ? "Retrying..." : "Retry conflicts",
+    ariaLabel: loading ? "Loading Security Master identifier conflicts" : "Retry loading Security Master identifier conflicts",
     disabled: loading,
     disabledReason: loading ? "Identifier conflicts are already loading." : null,
     busy: loading,
-    busyLabel: loading ? "Refreshing..." : null,
+    busyLabel: loading ? "Retrying..." : null,
     feedbackId: "security-conflict-refresh-feedback",
     feedbackText: null
   };

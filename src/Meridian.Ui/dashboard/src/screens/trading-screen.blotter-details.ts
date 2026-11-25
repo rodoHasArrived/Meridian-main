@@ -1,7 +1,7 @@
 // Detail-pane content for the row selected in each Trading blotter table (positions, open orders,
 // recent fills): the heading, the summary sentence, the field rows and which of those rows the
 // table already shows. Kept beside, not inside, the screen view model.
-import { markFreshnessFields } from "@/lib/mark-freshness";
+import { markFreshnessFields, markPriceField } from "@/lib/mark-freshness";
 import type {
   TradingBlotterDetail,
   TradingDataTone,
@@ -31,7 +31,7 @@ export function buildPositionDetail(
       { label: "Side", value: row.side, tone: "default" },
       { label: "Quantity", value: row.quantity, tone: "default" },
       { label: "Average price", value: row.averagePrice, tone: "muted" },
-      { label: "Recorded mark price", value: row.markPrice, tone: "muted" },
+      markPriceField(row.markPrice, row.markFreshness),
       ...markFreshnessFields(row.markFreshness),
       { label: "Day P&L", value: row.dayPnl, tone: row.dayPnlTone },
       { label: "Unrealized P&L", value: row.unrealizedPnl, tone: row.unrealizedPnlTone },

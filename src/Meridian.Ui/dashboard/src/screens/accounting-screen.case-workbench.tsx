@@ -1,3 +1,8 @@
+import { CaseInspector } from "./case-inspector";
+import type { useAccountingReconciliationViewModel, useReconciliationResolveDialogViewModel } from "./accounting-screen.view-model";
+import type { useReconciliationViewState } from "./reconciliation-view-state";
+import type { ReconciliationCaseworkCommand } from "@/types";
+import { useRef, type ReactNode } from "react";
 // Accounting case workbench panel, extracted from accounting-screen.tsx.
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -9,9 +14,14 @@ import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { BreakAuditRebuildCheck } from "@/screens/accounting-screen.break-audit-rebuild";
 import type { ReconciliationBreakRowViewModel, ReconciliationBreakDetailViewModel, ReconciliationDetailActionsViewModel, CloseCommandCenterViewState } from "@/screens/accounting-screen.view-model";
 import { AccountingValue } from "@/screens/accounting-screen.accounting-value";
+import { SinceLastVisitBadge } from "@/components/meridian/since-last-visit-badge";
+import { classifySinceLastVisit } from "@/lib/since-last-visit";
 
 interface AccountingCaseWorkbenchProps {
+  caseInspector?: ReactNode;
   breakRows: ReconciliationBreakRowViewModel[];
+  /** The break queue's last-visit baseline, so casework marks the same new and updated breaks (UX Phase E). */
+  visitBaseline?: string | null;
   selectedBreakId: string | null;
   selectedBreakDetail: ReconciliationBreakDetailViewModel | null;
   closeCommandCenter: CloseCommandCenterViewState | null;
@@ -24,6 +34,8 @@ interface AccountingCaseWorkbenchProps {
 
 export function AccountingCaseWorkbench({
   breakRows,
+  caseInspector,
+  visitBaseline = null,
   selectedBreakId,
   selectedBreakDetail,
   closeCommandCenter,
@@ -34,7 +46,7 @@ export function AccountingCaseWorkbench({
   onDismissBreak
 }: AccountingCaseWorkbenchProps) {
   const selectedBreak = breakRows.find((row) => row.breakId === selectedBreakId) ?? breakRows[0] ?? null;
-  const selectedBlocker = closeCommandCenter?.blockerRows[0] ?? null;
+  const selectedBlocker = caseInspector ? null : closeCommandCenter?.blockerRows[0] ?? null;
   const queueEmpty = breakRows.length === 0 && !selectedBlocker;
   const dueWorkCount = closeCommandCenter?.blockerRows.length ?? 0;
 
@@ -44,23 +56,19 @@ export function AccountingCaseWorkbench({
       className="workspace-section-band"
       aria-labelledby="accounting-case-workbench-heading"
     >
-      <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <p className="eyebrow-label">Today</p>
-          <h3 id="accounting-case-workbench-heading" className="workspace-section-title">Accounting case workbench</h3>
-          <p className="workspace-section-summary">
-            Status -&gt; Queue -&gt; Selected item -&gt; Evidence -&gt; Action for breaks, approvals, and close tasks.
-          </p>
-        </div>
-        <Badge variant={closeCommandCenter?.statusTone === "danger" ? "danger" : closeCommandCenter?.statusTone === "warning" ? "warning" : closeCommandCenter?.statusTone === "success" ? "success" : "outline"}>
-          {closeCommandCenter?.statusLabel ?? "Loading"}
-        </Badge>
-      </div>
+      {/* The queue, the selected case and its evidence are the section; it needs no band of its own
+          above them. The name stays for assistive technology and the close status sits on the queue. */}
+      <h3 id="accounting-case-workbench-heading" className="sr-only">Accounting case workbench</h3>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(15rem,0.72fr)_minmax(0,1.1fr)_minmax(16rem,0.82fr)]">
         <Card className="panel-surface" role="region" aria-label="Accounting case queue">
           <CardHeader>
-            <CardTitle className="text-base">Queue</CardTitle>
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle className="text-base">Queue</CardTitle>
+              <Badge variant={closeCommandCenter?.statusTone === "danger" ? "danger" : closeCommandCenter?.statusTone === "warning" ? "warning" : closeCommandCenter?.statusTone === "success" ? "success" : "outline"}>
+                {closeCommandCenter?.statusLabel ?? "Loading"}
+              </Badge>
+            </div>
             <CardDescription>Breaks, approvals, and close tasks needing finance review.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -75,7 +83,7 @@ export function AccountingCaseWorkbench({
               </div>
             ) : (
               <div role="list" aria-label="Accounting case queue rows" className="grid gap-2">
-                {breakRows.slice(0, 6).map((row) => (
+                {breakRows.map((row) => (
                   <div role="listitem" key={row.breakId} className="grid">
                   <button
                     type="button"
@@ -86,7 +94,10 @@ export function AccountingCaseWorkbench({
                     aria-pressed={row.breakId === selectedBreak?.breakId}
                     onClick={() => onSelectBreak(row.breakId)}
                   >
-                    <span className="block text-sm font-semibold text-foreground">{row.financeLabel}</span>
+                    <span className="flex items-start justify-between gap-2">
+                      <span className="block text-sm font-semibold text-foreground">{row.financeLabel}</span>
+                      {(() => { const mark = classifySinceLastVisit(row, visitBaseline); return mark ? <SinceLastVisitBadge mark={mark} /> : null; })()}
+                    </span>
                     <span className="mt-1 block text-xs leading-5 text-muted-foreground">
                       {row.strategyName} · {row.varianceLabel} · {row.ownerLabel}
                     </span>
@@ -107,6 +118,7 @@ export function AccountingCaseWorkbench({
           </CardContent>
         </Card>
 
+        {caseInspector ? <Card className="panel-surface-strong min-w-0 lg:col-span-2" role="region" aria-label="Selected accounting case"><CardContent className="p-4">{caseInspector}</CardContent></Card> : <>
         <Card className="panel-surface-strong" role="region" aria-label="Selected accounting case">
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -124,7 +136,8 @@ export function AccountingCaseWorkbench({
           <CardContent className="space-y-4 text-sm">
             {selectedBreakDetail ? (
               <>
-                <div className="grid gap-3 sm:grid-cols-2">
+                {/* Two columns only when each cell fits a timestamp; a narrow column stacks the values. */}
+                <div className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(12rem,1fr))]">
                   {selectedBreakDetail.fields.filter((field) => field.label !== "Run").slice(0, 6).map((field) => (
                     <AccountingValue key={field.label} label={field.label} value={field.value} />
                   ))}
@@ -211,7 +224,52 @@ export function AccountingCaseWorkbench({
             </TechnicalDetails>
           </CardContent>
         </Card>
+        </>}
       </div>
     </section>
+  );
+}
+
+/** Shared inspector wiring for the cockpit, retaining its last-visit marks and close context. */
+export function AccountingCaseWorkbenchSection({ reconciliation, controls: reconciliationViewState, resolveDialog,
+  closeCommandCenter, visitBaseline, operatorId }: {
+  reconciliation: ReturnType<typeof useAccountingReconciliationViewModel>;
+  controls: ReturnType<typeof useReconciliationViewState>;
+  resolveDialog: ReturnType<typeof useReconciliationResolveDialogViewModel>;
+  closeCommandCenter: CloseCommandCenterViewState | null;
+  visitBaseline?: string | null;
+  operatorId?: string | null;
+}) {
+  const commandMemory = useRef(new Map<string, ReconciliationCaseworkCommand>());
+  const actor = useRef(operatorId);
+  if (actor.current !== operatorId) { commandMemory.current.clear(); actor.current = operatorId; }
+  return (
+          <AccountingCaseWorkbench
+            breakRows={reconciliation.rows}
+            visitBaseline={visitBaseline}
+            caseInspector={<CaseInspector key={reconciliationViewState.selectedBreakId ?? reconciliation.selectedBreakId}
+              operatorId={operatorId} commandMemory={commandMemory.current}
+              caseId={reconciliationViewState.selectedBreakId ?? reconciliation.selectedBreakId}
+              initialCase={reconciliation.sourceRows.find((item) => item.breakId === (reconciliationViewState.selectedBreakId ?? reconciliation.selectedBreakId))}
+              onChanged={reconciliation.applyCaseworkUpdate} relatedCases={reconciliation.lineageRows}
+              onOpenCase={(breakId) => { reconciliation.selectBreak(breakId); reconciliationViewState.selectBreak(breakId); }} />}
+            selectedBreakId={reconciliationViewState.selectedBreakId ?? reconciliation.selectedBreakId}
+            selectedBreakDetail={reconciliation.selectedDetail}
+            closeCommandCenter={closeCommandCenter}
+            detailActions={reconciliation.detailActions}
+            onSelectBreak={(breakId) => { reconciliation.selectBreak(breakId); reconciliationViewState.selectBreak(breakId); }}
+            onAssignBreak={(breakId) => {
+              reconciliation.selectBreak(breakId);
+              void reconciliation.assignBreak(breakId);
+            }}
+            onResolveBreak={(breakId) => {
+              reconciliation.selectBreak(breakId);
+              resolveDialog.open(breakId, "Resolved");
+            }}
+            onDismissBreak={(breakId) => {
+              reconciliation.selectBreak(breakId);
+              resolveDialog.open(breakId, "Dismissed");
+            }}
+          />
   );
 }

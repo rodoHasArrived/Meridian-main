@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Meridian.DataIntegration.Credentials;
+using Meridian.Application.ProviderRouting;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -23,6 +24,7 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     private readonly string _tokenPersistencePath;
     private readonly IOAuthTokenVault _vault;
     private readonly ProviderCredentialScope? _ownershipScope;
+    private readonly ProviderCredentialOwnershipPolicy _ownershipPolicy;
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
     private readonly object _initializationSync = new();
     private readonly object _lifecycleSync = new();
@@ -49,11 +51,13 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
         HttpClient? httpClient = null,
         ILogger? logger = null,
         IOAuthTokenVault? vault = null,
-        ProviderCredentialScope? ownershipScope = null)
+        ProviderCredentialScope? ownershipScope = null,
+        ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
     {
         _log = logger ?? LoggingSetup.ForContext<OAuthTokenRefreshService>();
         _vault = vault ?? new FileProviderCredentialStore(dataRoot);
         _ownershipScope = ownershipScope;
+        _ownershipPolicy = ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
         if (_ownershipScope is not null && _vault is not IScopedOAuthTokenVault)
             throw new InvalidOperationException("Configured OAuth vault does not support scoped ownership.");
         _config = config ?? new CredentialExpirationConfig();
@@ -64,12 +68,19 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     /// <summary>Loads and migrates retained tokens asynchronously before synchronous token inspection.</summary>
     public Task InitializeAsync(CancellationToken ct = default)
     {
+        RequireOwnedRuntime();
         lock (_initializationSync)
         {
             if (_initialization is null || _initialization.IsFaulted || _initialization.IsCanceled)
                 _initialization = LoadPersistedTokensAsync();
             return _initialization.WaitAsync(ct);
         }
+    }
+
+    private void RequireOwnedRuntime()
+    {
+        if (_ownershipPolicy.RequireExplicitOwnership && _ownershipScope is null)
+            throw new ProviderCredentialOwnershipRequiredException();
     }
 
     private void RequireInitialized()
@@ -94,6 +105,7 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     /// </summary>
     public void Start()
     {
+        RequireOwnedRuntime();
         lock (_lifecycleSync)
         {
             if (_stopping is not null || _refreshLoop is { IsCompleted: false })

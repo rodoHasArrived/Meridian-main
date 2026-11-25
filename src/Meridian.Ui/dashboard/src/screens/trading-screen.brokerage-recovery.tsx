@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { EmptyState } from "@/components/data/empty-state";
-import { useOpenScopePicker } from "@/lib/operating-scope/scope-picker-context";
+import { useFundAccountScopeSelection, useOpenScopePicker } from "@/lib/operating-scope/scope-picker-context";
 import { InlineFundAccountPicker } from "@/components/meridian/inline-fund-account-picker";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -70,6 +70,8 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, brokerageEnvi
   reviewHref?: string;
 }) {
   const openScopePicker = useOpenScopePicker();
+  // Inside the shell the header scope bar carries the account step.
+  const inShell = useFundAccountScopeSelection() !== null;
   const suppliedRecovery = readiness?.brokerageRecovery;
   const scopeMatches = Boolean(fundAccountId && suppliedRecovery?.fundAccountId?.toLowerCase() === fundAccountId.toLowerCase());
   const recovery = scopeMatches ? suppliedRecovery : null;
@@ -122,38 +124,27 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, brokerageEnvi
         <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
       </Link>
     ) : null;
-    if (needsAccountSetup) {
-      // Setup, not a failure: neutral border, no alert icon, and choosing the account as the one
-      // next step when the shell can open the scope picker.
-      // In the shell the account is chosen right in the row (the inline account picker); outside
-      // it, the row explains and opens the scope picker or the full panel.
+    if (!fundAccountId) {
+      // Choosing an account is actionable in every environment; live and unknown
+      // environments retain their blocking status. In the shell the header scope bar carries the
+      // account step; outside it, the row opens the scope picker or links to the full panel.
       return (
         <section
           role="region"
           aria-label="Brokerage recovery"
           aria-busy={busy}
-          className="flex min-w-0 items-center gap-3 rounded-[2px] border border-l-[3px] border-border bg-card px-3 py-2 text-xs"
+          className={`flex min-w-0 items-center gap-3 rounded-[2px] border border-l-[3px] border-border bg-card px-3 py-2 text-xs${needsAccountSetup ? "" : " border-l-danger"}`}
         >
-          <InlineFundAccountPicker
-            variant="row"
-            className="flex-1"
-            title={ACCOUNT_SETUP_ROW_TITLE}
-            detail={ACCOUNT_SETUP_ROW_DETAIL}
-            normalize={normalizeFundAccountGuid}
-            invalidMessage={FUND_ACCOUNT_GUID_MESSAGE}
-            role="status"
-            ariaLabel="Brokerage recovery readiness"
-            fallback={(
-              <>
-                <p role="status" aria-label="Brokerage recovery readiness" aria-live="polite" className="min-w-0 flex-1 text-muted-foreground">
-                  {ACCOUNT_SETUP_ROW_TITLE} · {ACCOUNT_SETUP_ROW_DETAIL}
-                </p>
-                {openScopePicker ? (
-                  <Button size="sm" variant="outline" onClick={openScopePicker}>Choose account</Button>
-                ) : reviewLink}
-              </>
-            )}
-          />
+          {/* The account is chosen in the header scope bar (its inline account step), so this
+              row only states why brokerage recovery has nothing to show yet. */}
+          <p role="status" aria-label="Brokerage recovery readiness" aria-live="polite" className="min-w-0 flex-1 text-muted-foreground">
+            {needsAccountSetup ? ACCOUNT_SETUP_ROW_TITLE : "Live trading blocked — recovery required"} · {needsAccountSetup ? ACCOUNT_SETUP_ROW_DETAIL : blockedDetail}
+          </p>
+          {inShell ? (
+            <span className="shrink-0 text-muted-foreground">Choose the account in the scope bar above.</span>
+          ) : openScopePicker ? (
+            <Button size="sm" variant="outline" onClick={openScopePicker}>Choose account</Button>
+          ) : reviewLink}
         </section>
       );
     }
@@ -203,20 +194,17 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, brokerageEnvi
         )}
         {reasons.length > 0 ? <ul aria-label="Recovery blockers" className="list-disc space-y-1 pl-5 text-xs text-danger">{reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul> : null}
         {!fundAccountId ? (
-          // One explanation and one next step, instead of a grid of "Unavailable" facts. For
-          // setup (a non-live environment) the step is taken inline; a live, unreported or failed
-          // environment keeps the blocking banner above and only explains.
-          needsAccountSetup ? (
-            <InlineFundAccountPicker
-              title={ACCOUNT_SETUP_TITLE}
-              detail={ACCOUNT_SETUP_DETAIL}
-              normalize={normalizeFundAccountGuid}
-              invalidMessage={FUND_ACCOUNT_GUID_MESSAGE}
-              role="status"
-              ariaLabel="Brokerage recovery readiness"
-              fallback={accountEmptyState}
-            />
-          ) : accountEmptyState
+          // Account selection is available even when recovery is blocked. Selecting a scope
+          // never bypasses the recovery checks or enables live trading.
+          <InlineFundAccountPicker
+            title={ACCOUNT_SETUP_TITLE}
+            detail={ACCOUNT_SETUP_DETAIL}
+            normalize={normalizeFundAccountGuid}
+            invalidMessage={FUND_ACCOUNT_GUID_MESSAGE}
+            role={needsAccountSetup ? "status" : undefined}
+            ariaLabel={needsAccountSetup ? "Brokerage recovery readiness" : undefined}
+            fallback={accountEmptyState}
+          />
         ) : !recovery && !busy && !error ? null : (
         <TechnicalDetails label="Brokerage recovery evidence">
         <dl className="grid gap-x-5 gap-y-3 text-xs sm:grid-cols-2 xl:grid-cols-4">

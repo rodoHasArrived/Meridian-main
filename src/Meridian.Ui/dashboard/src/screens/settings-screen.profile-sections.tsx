@@ -1,8 +1,10 @@
 // Profile authentication, system posture, and appearance sections of the Settings screen.
 import { SeverityBadge } from "@/components/operations";
+import { useKpi } from "@/lib/kpi-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DensityToggle } from "@/components/ui/density-toggle";
+import { useSectionDescriptionsHidden } from "@/components/ui/section-description";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { usesTrackedCaps } from "@/design-system/label-case";
@@ -13,10 +15,11 @@ import { ArrowRight, MonitorCheck, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { diagnosticToneClass, SettingsFieldRow } from "./settings-provider-integration";
 import type { SettingsScreenViewModel } from "@/screens/settings-screen.view-model";
-import type { ProviderHealthCount } from "@/lib/cross-screen-counts";
+import { formatProviderHealth, type ProviderHealthCount } from "@/lib/cross-screen-counts";
 import { SettingsChip, settingsBannerTone, setupStepToneClass } from "@/screens/settings-screen.section-primitives";
 import { toSeverity } from "@/design-system/status-styles";
 import { SettingsTimeZonePreference } from "@/screens/settings-screen.time-zone-preference";
+import { PreferenceSyncStatus } from "@/screens/settings-screen.preference-sync-status";
 
 interface SettingsAccessPostureSectionProps {
   vm: SettingsScreenViewModel;
@@ -26,6 +29,7 @@ interface SettingsAccessPostureSectionProps {
 
 /** Profile authentication and system posture cards. */
 export function SettingsAccessPostureSection({ vm, overview, providerHealth }: SettingsAccessPostureSectionProps) {
+  const openPositionsKpi = useKpi("portfolio.open-positions");
   return (
     <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
       <Card
@@ -120,7 +124,7 @@ export function SettingsAccessPostureSection({ vm, overview, providerHealth }: S
         <CardHeader>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <div className="eyebrow-label">System posture</div>
+              <div className="eyebrow-label">System status</div>
               <CardTitle className="mt-2 flex items-center gap-2">
                 <MonitorCheck className="h-5 w-5 text-primary" />
                 {vm.systemTitle}
@@ -135,9 +139,9 @@ export function SettingsAccessPostureSection({ vm, overview, providerHealth }: S
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
-            <SettingsChip label="Providers healthy" value={providerHealth ? `${providerHealth.healthy} / ${providerHealth.total}` : "—"} />
+            <SettingsChip label="Providers healthy" value={providerHealth ? formatProviderHealth(providerHealth) : "—"} />
             <SettingsChip label="Runs" value={overview ? String(overview.activeRuns) : "—"} />
-            <SettingsChip label="Positions" value={overview ? String(overview.openPositions) : "—"} />
+            <SettingsChip label="Positions" kpi={openPositionsKpi} />
             <SettingsChip label="Storage" value={overview?.storageHealth ?? "—"} />
           </div>
           {vm.hasOverview ? (
@@ -173,8 +177,10 @@ export function SettingsAppearanceSection() {
           Appearance
         </CardTitle>
         <CardDescription className="mt-2">
-          Choose the workstation theme, screen density and display time zone for this browser.
+          Choose the theme, screen density, display time zone and page descriptions. They follow you to other
+          browsers and the desktop app.
         </CardDescription>
+        <PreferenceSyncStatus />
       </CardHeader>
       <CardContent className="grid gap-4 md:grid-cols-2">
         <div className="grid gap-2">
@@ -186,8 +192,26 @@ export function SettingsAppearanceSection() {
           <DensityToggle persist="meridian.workstation.density.v1" fullWidth />
         </div>
         <SettingsTimeZonePreference />
+        <PageDescriptionsPreference />
       </CardContent>
     </Card>
+  );
+}
+
+/** One setting for every page and section description; there is no per-page "Hide" link. */
+function PageDescriptionsPreference() {
+  const [hidden, setHidden] = useSectionDescriptionsHidden();
+  return (
+    <div className="grid gap-2">
+      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Page descriptions</div>
+      <label className="flex items-start gap-2 text-sm">
+        <input type="checkbox" className="mt-1" checked={!hidden} onChange={(event) => setHidden(!event.target.checked)} />
+        <span>
+          Show the one-line description under page and section headings
+          <span className="block text-xs text-muted-foreground">When off, each description is behind an information icon beside its heading.</span>
+        </span>
+      </label>
+    </div>
   );
 }
 

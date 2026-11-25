@@ -69,11 +69,15 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
     public AccountingCloseViewModel(
         IAccountingProjectionQueryService queryService,
         IAccountingCloseManagementService? closeManagementService = null,
-        DesktopAuthenticationSession? authenticationSession = null)
+        DesktopAuthenticationSession? authenticationSession = null,
+        FiscalYearCloseViewModel? fiscalYearClose = null,
+        BookFxSettlementViewModel? bookFxSettlement = null)
     {
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         _closeManagementService = closeManagementService;
         _authenticationSession = authenticationSession;
+        FiscalYearClose = fiscalYearClose;
+        BookFxSettlement = bookFxSettlement;
         LoadClosePlanCommand = new AsyncRelayCommand(LoadClosePlanAsync, CanLoadClosePlan);
         ConfigureClosePlanCommand = new AsyncRelayCommand(ConfigureClosePlanAsync, CanConfigureClosePlan);
         SignOffCloseTaskCommand = new AsyncRelayCommand(SignOffCloseTaskAsync, CanSignOffCloseTask);
@@ -85,6 +89,8 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
     }
 
     public ObservableCollection<TrialBalanceLine> TrialBalance { get; } = [];
+    public FiscalYearCloseViewModel? FiscalYearClose { get; }
+    public BookFxSettlementViewModel? BookFxSettlement { get; }
     public ObservableCollection<RollForwardLine> RollForward { get; } = [];
     public ObservableCollection<SourceLinkedAuditLine> AuditTrail { get; } = [];
     public ObservableCollection<CloseApprovalHistoryEntry> ApprovalHistory { get; } = [];
@@ -1766,7 +1772,7 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
                 review is null ? "Review required" : "Review retained",
                 review is null
                     ? issue.Message
-                    : $"{review.ReviewedBy} reviewed {issue.Code} at {review.ReviewedAtUtc:yyyy-MM-dd HH:mm} UTC. {review.Notes}",
+                    : $"{review.ReviewedBy} reviewed {issue.Code} at {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(review.ReviewedAtUtc)}. {review.Notes}",
                 review is null
                     ? issue.SuggestedAction ?? "Retain blocker review evidence before close certification or period lock."
                     : JoinEvidence(review.EvidenceLinks, "Retained close evidence review has no evidence links."),
@@ -1914,12 +1920,12 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
         bool periodLocked)
     {
         var decisionText = adjustment.DecidedAtUtc is { } decidedAt
-            ? $"Decision by {NormalizeOptional(adjustment.DecidedBy) ?? "unknown actor"} at {decidedAt:yyyy-MM-dd HH:mm} UTC."
+            ? $"Decision by {NormalizeOptional(adjustment.DecidedBy) ?? "unknown actor"} at {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(decidedAt)}."
             : "No retained review decision.";
         return new AccountingWorkbenchRow(
             adjustment.RequestId,
             adjustment.ApprovalState.ToString(),
-            $"{adjustment.Amount:N2} {adjustment.Currency} journal {adjustment.JournalEntryId:D}; requested by {adjustment.RequestedBy} at {adjustment.RequestedAtUtc:yyyy-MM-dd HH:mm} UTC.",
+            $"{adjustment.Amount:N2} {adjustment.Currency} journal {adjustment.JournalEntryId:D}; requested by {adjustment.RequestedBy} at {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(adjustment.RequestedAtUtc)}.",
             $"{decisionText} {(periodLocked ? "Period is locked." : adjustment.DecisionNotes ?? adjustment.Reason)}",
             adjustment.RequestId);
     }
@@ -1952,7 +1958,7 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
     }
 
     private static string FormatSignedAt(DateTimeOffset? signedAt)
-        => signedAt is { } value ? $" at {value:yyyy-MM-dd HH:mm} UTC" : string.Empty;
+        => signedAt is { } value ? $" at {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(value)}" : string.Empty;
 
     private static string FormatAccountingReadinessState(AccountingReadinessStateDto state)
         => state switch

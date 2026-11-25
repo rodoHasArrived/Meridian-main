@@ -833,7 +833,7 @@ export function buildPriceAlertTriggerSection(
       title: "No triggered alert selected",
       description: count === 0
         ? "Triggered alerts will appear here once a watched price crosses its threshold."
-        : "Select a triggered alert row to inspect acknowledgement state, note, and quote handoff.",
+        : "Select a triggered alert row to inspect acknowledgement state, note, and quote link.",
       ariaLabel: "Triggered price alert detail empty state"
     },
     rows,

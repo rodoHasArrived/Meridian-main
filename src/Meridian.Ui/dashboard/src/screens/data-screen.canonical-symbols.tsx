@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { SymbolMappingEditor } from "@/screens/data-screen.symbol-mapping-editor";
-import { RefreshCcw, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { StatusBanner, type StatusBannerTone } from "@/components/ui/status-banner";
@@ -117,17 +118,7 @@ export function CanonicalSymbolRegistryRegion({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {model ? <Badge variant={badgeVariantByTone[model.modeTone]}>{model.resolutionMode}</Badge> : null}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => void panel.refresh()}
-              disabled={panel.loading}
-              aria-label="Refresh canonical symbol registry"
-            >
-              <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">{panel.loading ? "Refreshing…" : "Refresh"}</span>
-            </Button>
+            <PanelReload reload={panel.refresh} failed={Boolean(panel.error)} busy={panel.loading} what="canonical symbol registry" />
           </div>
         </CardHeader>
         <CardContent>

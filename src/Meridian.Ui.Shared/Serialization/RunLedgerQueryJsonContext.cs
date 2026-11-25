@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Meridian.Ledger;
+using Meridian.Storage.Ledger;
 
 namespace Meridian.Ui.Shared.Serialization;
 
@@ -8,6 +9,7 @@ namespace Meridian.Ui.Shared.Serialization;
 [JsonSerializable(typeof(LedgerAccountSummary[]))]
 [JsonSerializable(typeof(LedgerBalancePoint[]))]
 [JsonSerializable(typeof(RunLedgerExportRequest))]
+[JsonSerializable(typeof(LedgerJournalChainVerification))]
 internal partial class RunLedgerQueryJsonContext : JsonSerializerContext;
 
 public sealed record RunLedgerExportRequest(

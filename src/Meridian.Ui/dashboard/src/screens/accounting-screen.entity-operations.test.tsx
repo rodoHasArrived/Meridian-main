@@ -1,4 +1,6 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { axe } from "jest-axe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithRouter } from "@/test/render";
@@ -215,14 +217,16 @@ describe("Entity operations", () => {
   it("keeps pending decisions and unsaved mapping edits in their selected scope until completion or explicit cancel", async () => {
     let rejectDecision: (error: Error) => void = () => {};
     vi.mocked(postEntityOperation).mockImplementation(() => new Promise((_resolve, reject) => { rejectDecision = reject; }));
-    renderWithRouter(<EntityAccountingArrangements scope={scope} />);
+    renderWithRouter(<WithHeaderRefresh><EntityAccountingArrangements scope={scope} /></WithHeaderRefresh>);
     const row = await screen.findByRole("button", { name: arrangement.arrangementReference });
     fireEvent.click(row);
+    const headerRefreshReads = () => { const before = vi.mocked(getEntityOperation).mock.calls.length; fireEvent.click(screen.getByRole("button", { name: "Header refresh" })); return vi.mocked(getEntityOperation).mock.calls.length - before; };
+    expect(screen.queryByRole("button", { name: /accounting profiles/ })).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Accounting profile action reason"), { target: { value: "Mappings reviewed" } });
     fireEvent.click(screen.getByRole("button", { name: "Approve accounting mappings" }));
     await waitFor(() => expect(postEntityOperation).toHaveBeenCalledTimes(1));
     expect(row).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Refresh accounting profiles" })).toBeDisabled();
+    expect(headerRefreshReads()).toBe(0);
     expect(screen.getByRole("button", { name: "New accounting profile" })).toBeDisabled();
     expect(screen.getByLabelText("Accounting profile perimeter")).toBeDisabled();
     rejectDecision(new Error("Mapping decision unavailable"));
@@ -230,13 +234,16 @@ describe("Entity operations", () => {
     fireEvent.click(screen.getByRole("button", { name: "Revise accounting mappings" }));
     await screen.findByRole("heading", { name: "Approved legal version 4 · LEGAL-01" });
     fireEvent.change(screen.getByLabelText("Accounting profile reference"), { target: { value: "Unsaved reviewed mapping" } });
-    expect(screen.getByRole("button", { name: "Refresh accounting profiles" })).toBeDisabled();
+    expect(headerRefreshReads()).toBe(0);
     expect(screen.getByRole("button", { name: "New accounting profile" })).toBeDisabled();
     expect(screen.getByLabelText("Accounting profile perimeter")).toBeDisabled();
     expect(screen.getByRole("button", { name: "Approve accounting mappings" })).toBeDisabled();
     expect(screen.getByLabelText("Accounting profile reference")).toHaveValue("Unsaved reviewed mapping");
     fireEvent.click(screen.getByRole("button", { name: "Cancel profile editing" }));
-    expect(screen.getByRole("button", { name: "Refresh accounting profiles" })).toBeEnabled();
+    expect(headerRefreshReads()).toBe(0);
+    expect(screen.getByLabelText("Accounting profile action reason")).toHaveValue("Mappings reviewed");
+    fireEvent.change(screen.getByLabelText("Accounting profile action reason"), { target: { value: "" } });
+    expect(headerRefreshReads()).toBeGreaterThan(0);
     expect(postEntityOperation).toHaveBeenCalledTimes(1);
   });
 
@@ -255,11 +262,15 @@ describe("Entity operations", () => {
     vi.mocked(getEntityOperation).mockImplementation(async (path) => path.endsWith("/rate-sets") ? [rateSet] : null);
     let complete: (value: unknown) => void = () => {};
     vi.mocked(postEntityOperation).mockImplementation(() => new Promise((resolve) => { complete = resolve; }));
-    renderWithRouter(<EntityFxAuthority scope={scope} />);
+    renderWithRouter(<WithHeaderRefresh><EntityFxAuthority scope={scope} /></WithHeaderRefresh>);
     await waitFor(() => expect(screen.getByRole("button", { name: "Configure book translation" })).toBeEnabled());
     fireEvent.click(screen.getByRole("button", { name: editor === "rates" ? "New approved rate set" : "Configure book translation" }));
     expect(screen.getByLabelText("FX configuration as of")).toBeDisabled();
-    for (const name of ["Refresh FX authority", "New approved rate set", "Configure book translation", "Revise rate set 1"]) {
+    const readsBeforeRefresh = vi.mocked(getEntityOperation).mock.calls.length;
+    fireEvent.click(screen.getByRole("button", { name: "Header refresh" }));
+    expect(getEntityOperation).toHaveBeenCalledTimes(readsBeforeRefresh);
+    expect(screen.queryByRole("button", { name: /FX authority/ })).not.toBeInTheDocument();
+    for (const name of ["New approved rate set", "Configure book translation", "Revise rate set 1"]) {
       expect(screen.getByRole("button", { name })).toBeDisabled();
       expect(screen.getByRole("button", { name })).toHaveAttribute("title", expect.stringContaining("Save or cancel"));
     }
@@ -286,15 +297,45 @@ describe("Entity operations", () => {
     expect(screen.getByRole("button", { name: "New approved rate set" })).toBeEnabled();
   });
 
-  it("shows delivery failure and links a specifically identified existing counterpart", async () => {
+  it("gives a confirmed counterpart retry a new request identity and reuses it only while unconfirmed", async () => {
     const proposal: IntercompanyProposal = { source: { proposalId: "proposal-a", sourceJournalId: "source-journal", sourceBookId: "book-a", sourceEntityId: "entity-a", counterpartyEntityId: "entity-b", accountingArrangementId: "arrangement-a", accountingArrangementRevisionId: "mapping-a", intercompanyAgreementId: "legal-a", intercompanyAgreementVersion: 4, intercompanyAgreementPayloadHash: "approved-native-payload", transactionId: "recharge-123", effectiveDate: "2026-11-01", sourceFunctionalCurrency: "USD" }, status: "NeedsFix", attempts: 2, recordedAt: "2026-11-01", targetBookId: null, targetJournalId: null, lastError: "Destination period is locked.", dueDate: null, sourceDigest: "source-digest" };
     vi.mocked(getEntityOperation).mockImplementation(async (path) => path.includes("/proposals") ? [proposal] : []);
+    // Delivery fails again after each scheduled retry, so the record stays repairable.
+    vi.mocked(postEntityOperation).mockResolvedValueOnce(proposal).mockRejectedValueOnce(new Error("Service unreachable")).mockResolvedValue(proposal);
+    renderWithRouter(<EntityCounterpartProposals scope={scope} />);
+    await screen.findByText("Destination period is locked.");
+    fireEvent.click(screen.getByRole("button", { name: "recharge-123" }));
+    fireEvent.change(screen.getByLabelText("Delivery retry reason"), { target: { value: "Destination period reopened" } });
+    const retry = async (calls: number) => {
+      const button = await screen.findByRole("button", { name: "Retry counterpart delivery" });
+      await waitFor(() => expect(button).toBeEnabled());
+      fireEvent.click(button);
+      await waitFor(() => expect(postEntityOperation).toHaveBeenCalledTimes(calls));
+      await waitFor(() => expect(screen.getByRole("button", { name: "Retry counterpart delivery" })).toBeEnabled());
+    };
+    await retry(1);
+    await retry(2);
+    await retry(3);
+    const ids = vi.mocked(postEntityOperation).mock.calls.map(([, body]) => (body as { requestId: string; reason: string }).requestId);
+    expect(vi.mocked(postEntityOperation).mock.calls.every(([, body]) => (body as { reason: string }).reason === "Destination period reopened")).toBe(true);
+    expect(ids[1]).not.toBe(ids[0]);
+    expect(ids[2]).toBe(ids[1]);
+  });
+
+  it("shows delivery failure and links a specifically identified existing counterpart", async () => {
+    const proposal: IntercompanyProposal = { source: { proposalId: "proposal-a", sourceJournalId: "source-journal", sourceBookId: "book-a", sourceEntityId: "entity-a", counterpartyEntityId: "entity-b", accountingArrangementId: "arrangement-a", accountingArrangementRevisionId: "mapping-a", intercompanyAgreementId: "legal-a", intercompanyAgreementVersion: 4, intercompanyAgreementPayloadHash: "approved-native-payload", transactionId: "recharge-123", effectiveDate: "2026-11-01", sourceFunctionalCurrency: "USD" }, status: "NeedsFix", attempts: 2, recordedAt: "2026-11-01", targetBookId: null, targetJournalId: null, lastError: "Destination period is locked.", dueDate: null, sourceDigest: "source-digest" };
+    vi.mocked(getEntityOperation).mockImplementation(async (path) => path.includes("/counterpart-candidates")
+      ? (path.includes("targetBookId=book-b") ? [{ journalEntryId: "existing-journal", effectiveDate: "2026-11-01", description: "Book B recharge", amount: -100, currency: "USD" }] : [])
+      : path.includes("/proposals") ? [proposal] : []);
     vi.mocked(postEntityOperation).mockResolvedValue({ ...proposal, status: "Linked", targetBookId: "book-b", targetJournalId: "existing-journal" });
     renderWithRouter(<EntityCounterpartProposals scope={scope} />);
     await screen.findByText("Destination period is locked.");
     fireEvent.click(screen.getByRole("button", { name: "recharge-123" }));
+    expect(screen.getByLabelText("Existing counterpart journal")).toBeDisabled();
     fireEvent.change(screen.getByLabelText("Existing counterpart book"), { target: { value: "book-b" } });
-    fireEvent.change(screen.getByLabelText("Existing counterpart journal ID"), { target: { value: "existing-journal" } });
+    await screen.findByRole("option", { name: "2026-11-01 · Book B recharge · -100 USD" });
+    expect(getEntityOperation).toHaveBeenCalledWith("/api/ledger/intercompany/proposals/proposal-a/counterpart-candidates?targetBookId=book-b", expect.any(Object));
+    fireEvent.change(screen.getByLabelText("Existing counterpart journal"), { target: { value: "existing-journal" } });
     fireEvent.change(screen.getByLabelText("Counterpart linking reason"), { target: { value: "Book B already recorded the source invoice" } });
     fireEvent.click(screen.getByRole("button", { name: "Validate and link existing counterpart" }));
     await waitFor(() => expect(postEntityOperation).toHaveBeenCalledWith("/api/ledger/intercompany/proposals/proposal-a/link", expect.objectContaining({ targetBookId: "book-b", targetJournalId: "existing-journal", requestId: expect.any(String) }), expect.any(Object)));
@@ -302,7 +343,9 @@ describe("Entity operations", () => {
 
   it.each([true, false])("uses the appended manual resolution without rewriting original delivery or offering more actions (resolved getters %s)", async (includeResolvedGetters) => {
     let proposal: IntercompanyProposal = { source: { proposalId: "proposal-a", sourceJournalId: "source-journal", sourceBookId: "book-a", sourceEntityId: "entity-a", counterpartyEntityId: "entity-b", accountingArrangementId: "arrangement-a", accountingArrangementRevisionId: "mapping-a", intercompanyAgreementId: "legal-a", intercompanyAgreementVersion: 4, intercompanyAgreementPayloadHash: "approved-native-payload", transactionId: "rejected-recharge", effectiveDate: "2026-11-01", sourceFunctionalCurrency: "USD" }, status: "Drafted", attempts: 1, recordedAt: "2026-11-01", targetBookId: "book-b", targetJournalId: "original-rejected-generated-draft", lastError: null, dueDate: null, sourceDigest: "source-digest" };
-    vi.mocked(getEntityOperation).mockImplementation(async (path) => path.includes("/proposals?") ? [proposal] : []);
+    vi.mocked(getEntityOperation).mockImplementation(async (path) => path.includes("/counterpart-candidates")
+      ? [{ journalEntryId: "manually-posted-counterpart", effectiveDate: "2026-11-01", description: "Manual reciprocal", amount: -100, currency: "USD" }]
+      : path.includes("/proposals?") ? [proposal] : []);
     vi.mocked(postEntityOperation).mockImplementation(async () => {
       proposal = { ...proposal, latestLink: { requestId: "link-request", proposalId: "proposal-a", targetBookId: "book-b", targetJournalId: "manually-posted-counterpart", actor: "target-reviewer", reason: "Rejected generated draft replaced by existing reciprocal posted journal", recordedAt: "2026-11-12", rejectedDraftId: "original-rejected-generated-draft", rejectedDraftVersion: 6 },
         ...(includeResolvedGetters ? { resolvedTargetBookId: "book-b", resolvedTargetJournalId: "manually-posted-counterpart" } : {}) };
@@ -312,7 +355,8 @@ describe("Entity operations", () => {
     fireEvent.click(await screen.findByRole("button", { name: "rejected-recharge" }));
     expect(screen.getByRole("button", { name: "Preview counterpart FX repricing" })).toBeVisible();
     fireEvent.change(screen.getByLabelText("Existing counterpart book"), { target: { value: "book-b" } });
-    fireEvent.change(screen.getByLabelText("Existing counterpart journal ID"), { target: { value: "manually-posted-counterpart" } });
+    await screen.findByRole("option", { name: "2026-11-01 · Manual reciprocal · -100 USD" });
+    fireEvent.change(screen.getByLabelText("Existing counterpart journal"), { target: { value: "manually-posted-counterpart" } });
     fireEvent.change(screen.getByLabelText("Counterpart linking reason"), { target: { value: "Reviewed generated-draft rejection and exact posted counterpart" } });
     fireEvent.click(screen.getByRole("button", { name: "Validate and link existing counterpart" }));
     const resolved = await screen.findByRole("link", { name: "Open resolved counterpart journal" });
@@ -376,4 +420,10 @@ describe("Entity operations", () => {
 
 function cutoverPreview(): ConsolidationTransitionPreview {
   return { previewId: "70000000-0000-0000-0000-000000000001", request: { transitionId: "70000000-0000-0000-0000-000000000002", organizationId: "70000000-0000-0000-0000-000000000003", ownershipRootId: "70000000-0000-0000-0000-000000000004", previousEliminationBookId: "70000000-0000-0000-0000-000000000005", newEliminationBookId: "70000000-0000-0000-0000-000000000006", newPeriodId: "70000000-0000-0000-0000-000000000007", cutoverDate: "2026-11-12", reason: "Owned entity joins group", evidenceReference: "vault:ownership-cutover" }, rootVersion: 0, previousTransitionId: null, preparedBy: "preparer-a", preparedAt: "2026-11-12", previousBookEvidenceDigest: "old-reviewed-evidence", previousPostedJournalIds: [], previousLatestPostedAsOf: "2026-11-11", previousEntityIds: ["entity-a"], joinedEntityIds: ["entity-b"], removedEntityIds: [], newEvidence: { ruleVersion: "w10-v4", entityIds: ["entity-a", "entity-b"], sourceFingerprint: "new-source-population", perimeterFingerprint: "new-owned-perimeter" }, blockers: [], fingerprint: "exact-cutover-preview", canApprove: true };
+}
+
+/** Stands in for the shell: the header Refresh is the only control that reloads panel data. */
+function WithHeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence((value) => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
 }

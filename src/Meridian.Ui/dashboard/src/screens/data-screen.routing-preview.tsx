@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -78,7 +79,7 @@ export function DataRoutingPreviewPanel() {
           <legend className="px-1 text-sm">Optional proposed change</legend>
           <label className="text-sm">Provider ID<Input aria-label="Proposed routing provider" placeholder="e.g. tiingo" value={provider} onChange={(event) => setProvider(event.target.value)} /></label>
           <label className="text-sm">Priority<Input aria-label="Proposed routing priority" type="number" min={0} max={10000} step={1} placeholder="Use saved priority" value={priority} onChange={(event) => setPriority(event.target.value)} disabled={!provider.trim()} /></label>
-          <label className="text-sm">Availability<select aria-label="Proposed routing availability" className="h-9 w-full rounded border border-input bg-background px-2" value={enabled} onChange={(event) => setEnabled(event.target.value)} disabled={!provider.trim()}><option value="saved">Use saved setting</option><option value="enabled">Enabled</option><option value="disabled">Disabled</option></select></label>
+          <label className="text-sm">Availability<Select aria-label="Proposed routing availability" value={enabled} onChange={(event) => setEnabled(event.target.value)} disabled={!provider.trim()}><option value="saved">Use saved setting</option><option value="enabled">Enabled</option><option value="disabled">Disabled</option></Select></label>
         </fieldset>
         <Button type="submit" size="sm" disabled={busy}>{busy ? "Previewing…" : "Preview route"}</Button>
       </form>

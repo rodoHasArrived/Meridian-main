@@ -15,6 +15,7 @@ using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
+using Meridian.Tests.TestHelpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -86,7 +87,12 @@ public sealed class ExecutionGovernanceEndpointsTests
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        await oms.Received(1).CancelAllAsync(Arg.Any<CancellationToken>());
+        // The sweep runs under the operator's kill-switch authority, so each cancellation it makes
+        // records who opened the breaker.
+        await oms.Received(1).CancelAllAsync(
+            Arg.Is<OrderCancelAllCommand>(command =>
+                command.Authority.Origin == OrderCommandOrigin.KillSwitch && command.Authority.Actor == "ops-user"),
+            Arg.Any<CancellationToken>());
 
         var controlsResponse = await client.GetAsync("/api/execution/controls");
         controlsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -107,6 +113,27 @@ public sealed class ExecutionGovernanceEndpointsTests
             entry.Action == "CircuitBreakerCancelAll" &&
             entry.Outcome == "Completed",
             because: "opening the breaker is the kill switch and must sweep the open book with an audited outcome");
+    }
+
+    [Fact]
+    public async Task CancelAll_SweepsUnderKillSwitchAuthorityCorrelatedToTheAction()
+    {
+        OrderCancelAllCommand? command = null;
+        var oms = Substitute.For<IOrderManager>();
+        oms.GetOpenOrders().Returns(Array.Empty<OrderState>());
+        oms.CancelAllAsync(Arg.Do<OrderCancelAllCommand>(received => command = received), Arg.Any<CancellationToken>())
+            .Returns(KillSwitchSweepResult.Empty);
+        await using var app = await CreateAppAsync(services => services.AddSingleton(oms));
+
+        var response = await app.GetTestClient().PostAsync("/api/execution/orders/cancel-all", content: null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        command.Should().NotBeNull("the operator's sweep carries kill-switch authority into the OMS");
+        command!.Authority.Origin.Should().Be(OrderCommandOrigin.KillSwitch);
+        command.Authority.Actor.Should().NotBeNullOrWhiteSpace();
+        command.Authority.CorrelationId.Should().Be(body.RootElement.GetProperty("actionId").GetString(),
+            "the sweep's records correlate to the action the operator was shown");
     }
 
     [Fact]
@@ -338,6 +365,7 @@ public sealed class ExecutionGovernanceEndpointsTests
             services.AddSingleton<ExecutionOperatorControlService>();
             services.AddSingleton<IPortfolioState, EmptyPortfolioState>();
             services.AddSingleton<ILiveOrderReadinessGate>(_ => new ApprovedLiveOrderReadinessGate(ApprovedLiveRunId));
+            services.AddSingleton(LiveRuns.Source);
             RegisterFundAccountScope(services, LiveFundAccountId);
             services.AddSingleton(sp => new AlpacaBrokerageGateway(
                 sp.GetRequiredService<IHttpClientFactory>(),
@@ -353,28 +381,12 @@ public sealed class ExecutionGovernanceEndpointsTests
         var client = app.GetTestClient();
         client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
 
-        var submitResponse = await client.PostAsync(
-            "/api/execution/orders/submit",
-            JsonContent(new
-            {
-                clientOrderId,
-                symbol = "AAPL",
-                side = 0,
-                type = 0,
-                timeInForce = 0,
-                quantity = 1,
-                strategyId = "strategy-live",
-                fundAccountId = LiveFundAccountId,
-                metadata = new Dictionary<string, string>
-                {
-                    ["runId"] = ApprovedLiveRunId
-                }
-            }));
+        // Live authority comes from a promoted strategy run, which only server-side callers may
+        // stamp (clients are refused "runId" metadata), so submit the way LiveStrategyRunSession does.
+        var submitResult = await SubmitAsPromotedLiveRunAsync(app, clientOrderId);
 
-        submitResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-        using var submitJson = JsonDocument.Parse(await submitResponse.Content.ReadAsStringAsync());
-        submitJson.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
-        submitJson.RootElement.GetProperty("orderId").GetString().Should().Be(clientOrderId);
+        submitResult.Success.Should().BeTrue("the broker accepted the order; error: {0}", submitResult.ErrorMessage);
+        submitResult.OrderId.Should().Be(clientOrderId);
 
         var healthResponse = await client.GetAsync("/api/execution/health");
         healthResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -418,6 +430,7 @@ public sealed class ExecutionGovernanceEndpointsTests
             services.AddSingleton<ExecutionOperatorControlService>();
             services.AddSingleton<IPortfolioState, EmptyPortfolioState>();
             services.AddSingleton<ILiveOrderReadinessGate>(_ => new ApprovedLiveOrderReadinessGate(ApprovedLiveRunId));
+            services.AddSingleton(LiveRuns.Source);
             RegisterFundAccountScope(services, LiveFundAccountId);
             services.AddSingleton(sp => new RobinhoodBrokerageGateway(
                 sp.GetRequiredService<IHttpClientFactory>(),
@@ -433,26 +446,9 @@ public sealed class ExecutionGovernanceEndpointsTests
         var client = app.GetTestClient();
         client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
 
-        var submitResponse = await client.PostAsync(
-            "/api/execution/orders/submit",
-            JsonContent(new
-            {
-                symbol = "AAPL",
-                side = 0,
-                type = 0,
-                timeInForce = 0,
-                quantity = 1,
-                strategyId = "strategy-live",
-                fundAccountId = LiveFundAccountId,
-                metadata = new Dictionary<string, string>
-                {
-                    ["runId"] = ApprovedLiveRunId
-                }
-            }));
+        var submitResult = await SubmitAsPromotedLiveRunAsync(app, clientOrderId: null);
 
-        submitResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-        using var submitJson = JsonDocument.Parse(await submitResponse.Content.ReadAsStringAsync());
-        submitJson.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
+        submitResult.Success.Should().BeTrue("the broker accepted the order; error: {0}", submitResult.ErrorMessage);
 
         var healthResponse = await client.GetAsync("/api/execution/health");
         healthResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -501,6 +497,233 @@ public sealed class ExecutionGovernanceEndpointsTests
         }));
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Theory]
+    [InlineData("runId")]
+    [InlineData("RUNID")]
+    [InlineData("run_id")]
+    [InlineData("sessionId")]
+    [InlineData("session_id")]
+    [InlineData("orderOrigin")]
+    public async Task SubmitOrder_ClientSuppliesRunOrSessionAuthorityMetadata_ReturnsForbiddenBeforeOms(string key)
+    {
+        // A manual ticket carrying the promoted run's id used to pass the live readiness gate,
+        // which approves when the order's runId equals the promotion's target run. Run and session
+        // identity is server-owned: the ticket is refused before the OMS sees it.
+        var oms = Substitute.For<IOrderManager>();
+        await using var app = await CreateAppAsync(services => services.AddSingleton(oms));
+
+        var response = await app.GetTestClient().PostAsync("/api/execution/orders/submit", JsonContent(new
+        {
+            symbol = "AAPL",
+            side = 0,
+            type = 0,
+            quantity = 1,
+            strategyId = "strategy-live",
+            metadata = new Dictionary<string, string> { [key] = ApprovedLiveRunId }
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var result = JsonSerializer.Deserialize<OrderResult>(await response.Content.ReadAsStringAsync(), JsonOptions());
+        result.Should().NotBeNull();
+        result!.Success.Should().BeFalse();
+        await oms.DidNotReceive().PlaceOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task PreviewOrder_ClientSuppliesRunIdMetadata_ReturnsForbiddenBeforePreview()
+    {
+        // Preview requires an accessible execution account before it reads metadata, so the
+        // request names one; the refusal must then come from the server-owned run key.
+        var preview = Substitute.For<IOrderPreviewService>();
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterFundAccountScope(services, LiveFundAccountId);
+            services.AddSingleton(preview);
+        });
+
+        var response = await app.GetTestClient().PostAsync("/api/execution/orders/preview", JsonContent(new
+        {
+            fundAccountId = LiveFundAccountId,
+            symbol = "AAPL",
+            side = 0,
+            type = 0,
+            quantity = 1,
+            metadata = new Dictionary<string, string> { ["runId"] = ApprovedLiveRunId }
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await preview.DidNotReceive().PreviewAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task SubmitOrder_RequiresFundAccountBeforeCallingOms()
+    {
+        var oms = Substitute.For<IOrderManager>();
+        await using var app = await CreateAppAsync(services => services.AddSingleton(oms));
+
+        var response = await app.GetTestClient().PostAsync("/api/execution/orders/submit",
+            JsonContent(new { clientOrderId = "missing-account", symbol = "AAPL", side = 0, type = 0, quantity = 1 }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await oms.DidNotReceive().SubmitAsync(Arg.Any<OrderSubmitCommand>(), Arg.Any<CancellationToken>());
+        await oms.DidNotReceive().PlaceOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task SubmitOrder_BrowserShapedTicket_ReachesOmsWithServerStampedIdentityOnly()
+    {
+        // The browser ticket (OrderSubmitRequest) sends no metadata; closing the run-authority path
+        // must not change its route to the OMS.
+        OrderRequest? forwarded = null;
+        var oms = Substitute.For<IOrderManager>();
+        oms.SubmitAsync(Arg.Do<OrderSubmitCommand>((OrderSubmitCommand command) => forwarded = command.Order), Arg.Any<CancellationToken>())
+            .Returns(new OrderResult { Success = true, OrderId = "browser-ticket-1" });
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterFundAccountScope(services, LiveFundAccountId);
+            services.AddSingleton(oms);
+        });
+
+        var response = await app.GetTestClient().PostAsync("/api/execution/orders/submit", JsonContent(new
+        {
+            clientOrderId = "browser-ticket-1",
+            symbol = "AAPL",
+            side = 0,
+            type = 1,
+            quantity = 1,
+            limitPrice = 190.25m,
+            fundAccountId = LiveFundAccountId
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        forwarded.Should().NotBeNull();
+        forwarded!.Metadata.Should().ContainKey("actor");
+        forwarded.Metadata.Should().NotContainKeys("runId", "sessionId");
+    }
+
+    [Fact]
+    public async Task SubmitOrder_WithVerifiedAccount_SubmitsUnderOperatorTicketAuthority()
+    {
+        // The account check verifies the operator for the named account; that verification is
+        // the grant the typed authority carries into the OMS.
+        OrderSubmitCommand? submitted = null;
+        var oms = Substitute.For<IOrderManager>();
+        oms.SubmitAsync(Arg.Do<OrderSubmitCommand>(command => submitted = command), Arg.Any<CancellationToken>())
+            .Returns(new OrderResult { Success = true, OrderId = "ticket-1" });
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterFundAccountScope(services, LiveFundAccountId);
+            services.AddSingleton(oms);
+        });
+        var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
+
+        var response = await client.PostAsync("/api/execution/orders/submit", JsonContent(new
+        {
+            clientOrderId = "ticket-1",
+            symbol = "AAPL",
+            side = 0,
+            type = 1,
+            quantity = 1,
+            limitPrice = 190.25m,
+            fundAccountId = LiveFundAccountId
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        submitted.Should().NotBeNull();
+        submitted!.Authority.Origin.Should().Be(OrderCommandOrigin.OperatorTicket);
+        submitted.Authority.AccountGrant!.FundAccountId.Should().Be(LiveFundAccountId);
+        submitted.Authority.AccountGrant.Source.Should().Be(ExecutionAccountGrantSources.HttpPrincipal);
+        submitted.Authority.RunId.Should().BeNull("a manual ticket never carries strategy-run authority");
+        await oms.DidNotReceive().PlaceOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SubmitPaperOrder_ExplicitSessionMustBelongToTheAuthorizedAccount(bool sameAccount)
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"scoped-paper-ticket-{Guid.NewGuid():N}");
+        try
+        {
+            var store = new JsonlFilePaperSessionStore(root, NullLogger<JsonlFilePaperSessionStore>.Instance);
+            await using var persistence = new PaperSessionPersistenceService(
+                NullLogger<PaperSessionPersistenceService>.Instance, store,
+                resolveAccountCurrency: static (_, _) => Task.FromResult<string?>("USD"));
+            var retained = await persistence.CreateSessionAsync(new("scoped", null)
+            {
+                FinancialAccountId = (sameAccount ? LiveFundAccountId : Guid.NewGuid()).ToString("D")
+            });
+            OrderSubmitCommand? submitted = null;
+            var oms = Substitute.For<IOrderManager>();
+            oms.SubmitAsync(Arg.Do<OrderSubmitCommand>(command => submitted = command), Arg.Any<CancellationToken>())
+                .Returns(new OrderResult { Success = true, OrderId = "paper-ticket" });
+            var gateway = Substitute.For<IExecutionGateway>();
+            gateway.GatewayId.Returns("paper");
+            await using var app = await CreateAppAsync(services =>
+            {
+                RegisterFundAccountScope(services, LiveFundAccountId);
+                services.AddSingleton(oms);
+                services.AddSingleton(gateway);
+                services.AddSingleton(persistence);
+            });
+
+            var client = app.GetTestClient();
+            client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
+            var response = await client.PostAsync($"/api/execution/orders/submit?paperSessionId={Uri.EscapeDataString(retained.SessionId)}",
+                JsonContent(new { symbol = "AAPL", side = 0, type = 0, quantity = 1, fundAccountId = LiveFundAccountId }));
+
+            response.StatusCode.Should().Be(sameAccount ? HttpStatusCode.Created : HttpStatusCode.Forbidden);
+            if (sameAccount)
+                submitted!.Authority.SessionId.Should().Be(retained.SessionId);
+            else
+                submitted.Should().BeNull();
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task SubmitOrder_ClientCorrelationId_IsKeptAsClientTraceButNeverNamesTheOrder()
+    {
+        // A client-chosen correlation id would flow into the authority, journal, audit and any
+        // escalation; one shaped like a governed release's would make the order's records look
+        // like a release. The server mints the order's correlation and keeps the client's value
+        // under its own key.
+        OrderSubmitCommand? submitted = null;
+        var oms = Substitute.For<IOrderManager>();
+        oms.SubmitAsync(Arg.Do<OrderSubmitCommand>(command => submitted = command), Arg.Any<CancellationToken>())
+            .Returns(new OrderResult { Success = true, OrderId = "ticket-corr" });
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterFundAccountScope(services, LiveFundAccountId);
+            services.AddSingleton(oms);
+        });
+        var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
+
+        var response = await client.PostAsync("/api/execution/orders/submit", JsonContent(new
+        {
+            clientOrderId = "ticket-corr",
+            symbol = "AAPL",
+            side = 0,
+            type = 1,
+            quantity = 1,
+            limitPrice = 190.25m,
+            fundAccountId = LiveFundAccountId,
+            metadata = new Dictionary<string, string> { ["correlationId"] = "risk-escalation-forged" }
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        submitted.Should().NotBeNull();
+        submitted!.Authority.CorrelationId.Should().NotBe("risk-escalation-forged");
+        submitted.Order.Metadata!["correlationId"].Should().Be(submitted.Authority.CorrelationId);
+        submitted.Order.Metadata["clientCorrelationId"].Should().Be("risk-escalation-forged");
     }
 
     [Fact]
@@ -589,13 +812,17 @@ public sealed class ExecutionGovernanceEndpointsTests
     {
         const string orderId = "client-order-1";
         var oms = Substitute.For<IOrderManager>();
-        oms.PlaceOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>()).Returns(new OrderResult
+        oms.SubmitAsync(Arg.Any<OrderSubmitCommand>(), Arg.Any<CancellationToken>()).Returns(new OrderResult
         {
             Success = false,
             OrderId = orderId,
             RequiresOrderReconciliation = requiresReconciliation
         });
-        await using var app = await CreateAppAsync(services => services.AddSingleton(oms));
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterFundAccountScope(services, LiveFundAccountId);
+            services.AddSingleton(oms);
+        });
 
         var response = await app.GetTestClient().PostAsync("/api/execution/orders/submit", JsonContent(new
         {
@@ -603,7 +830,8 @@ public sealed class ExecutionGovernanceEndpointsTests
             symbol = "AAPL",
             side = 0,
             type = 0,
-            quantity = 1
+            quantity = 1,
+            fundAccountId = LiveFundAccountId
         }));
 
         response.StatusCode.Should().Be(expectedStatus);
@@ -618,16 +846,21 @@ public sealed class ExecutionGovernanceEndpointsTests
     public async Task SubmitOrder_WhenOrderManagerThrows_ReturnsUnconfirmedOutcome()
     {
         var oms = Substitute.For<IOrderManager>();
-        oms.PlaceOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+        oms.SubmitAsync(Arg.Any<OrderSubmitCommand>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException<OrderResult>(new ArgumentException("Could not retain the acknowledgement.")));
-        await using var app = await CreateAppAsync(services => services.AddSingleton(oms));
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterFundAccountScope(services, LiveFundAccountId);
+            services.AddSingleton(oms);
+        });
 
         var response = await app.GetTestClient().PostAsync("/api/execution/orders/submit", JsonContent(new
         {
             symbol = "AAPL",
             side = 0,
             type = 0,
-            quantity = 1
+            quantity = 1,
+            fundAccountId = LiveFundAccountId
         }));
 
         response.StatusCode.Should().Be(HttpStatusCode.BadGateway);
@@ -638,6 +871,7 @@ public sealed class ExecutionGovernanceEndpointsTests
     {
         await using var app = await CreateAppAsync(services =>
         {
+            RegisterFundAccountScope(services, LiveFundAccountId);
             services.AddSingleton<IExecutionGateway, PaperTradingGateway>();
             services.AddSingleton<IOrderManager>(sp => new OrderManagementSystem(
                 sp.GetRequiredService<IExecutionGateway>(), NullLogger<OrderManagementSystem>.Instance));
@@ -649,7 +883,8 @@ public sealed class ExecutionGovernanceEndpointsTests
             symbol = "AAPL",
             side = 0,
             type = 0,
-            quantity = 1
+            quantity = 1,
+            fundAccountId = LiveFundAccountId
         }));
 
         response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
@@ -683,6 +918,30 @@ public sealed class ExecutionGovernanceEndpointsTests
         }
         return app;
     }
+
+    /// <summary>
+    /// Submits a live order the way LiveStrategyRunSession does: server-side, under typed
+    /// strategy-run authority for the promoted run. Clients cannot supply run authority through
+    /// the REST ticket, and live routing refuses untyped orders.
+    /// </summary>
+    private static Task<OrderResult> SubmitAsPromotedLiveRunAsync(WebApplication app, string? clientOrderId) =>
+        app.Services.GetRequiredService<IOrderManager>().SubmitLiveRunAsync(new OrderRequest
+        {
+            ClientOrderId = clientOrderId,
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            TimeInForce = TimeInForce.Day,
+            Quantity = 1,
+            StrategyId = "strategy-live",
+            FundAccountId = LiveFundAccountId,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["runId"] = ApprovedLiveRunId
+            }
+        }, LiveRuns);
+
+    private static readonly LiveRunOrderAuthority LiveRuns = new(LiveFundAccountId);
 
     private static void ConfigureReadyBrokerage(BrokerageConfiguration config, string gatewayId)
     {

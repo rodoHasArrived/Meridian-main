@@ -217,6 +217,122 @@ public sealed class PostedPeriodComparisonTests
         Assert.Empty(result.Lines);
     }
 
+    [Fact]
+    public async Task ClosingBalancesAccumulateEarlierPeriodsAndCompareAgainstThePriorClose()
+    {
+        var fixture = new Fixture();
+        var january = Period(1, 31, "HardClosed");
+        var february = Period(2, 28, "HardClosed");
+        var books = BookWith(fixture, january, february);
+        books.Add(RecordOn(january, 10, 100m));
+        books.Add(RecordOn(february, 10, 40m));
+        books.Add(RecordOn(fixture.Current, 10, 25m));
+
+        var balances = await fixture.Service.GetAsync("tenant", "company", BookId, fixture.Current.PeriodId, null,
+            Cutoff, null, Project, measure: PostedComparisonMeasureDto.ClosingBalances);
+
+        Assert.Equal("Ready", balances.Status);
+        Assert.Equal(PostedComparisonMeasureDto.ClosingBalances, balances.Measure);
+        var cash = Assert.Single(balances.Lines, line => line.AccountName == "Cash");
+        Assert.Equal(165m, cash.CurrentBalance);   // January + February + March to the cutoff
+        Assert.Equal(140m, cash.PriorBalance);     // February close: January + February
+        Assert.Equal(25m, cash.Change);
+        var capital = Assert.Single(balances.Lines, line => line.AccountName == "Capital");
+        Assert.Equal(165m, capital.CurrentBalance);
+        // Point-in-time: the baseline is the full prior close, the current side stops at the cutoff.
+        Assert.Equal(february.EndDate, balances.Baseline!.RangeEnd);
+        Assert.False(balances.Baseline.IsPartial);
+        Assert.True(balances.Current.IsPartial);
+        Assert.Equal(3, balances.CurrentJournalIds.Count);
+        Assert.Equal(2, balances.BaselineJournalIds.Count);
+
+        // The same population as movements is each period's activity, not its balance.
+        var movements = await fixture.Service.GetAsync("tenant", "company", BookId, fixture.Current.PeriodId, null,
+            Cutoff, null, Project);
+        Assert.Equal(PostedComparisonMeasureDto.Movements, movements.Measure);
+        var cashMovement = Assert.Single(movements.Lines, line => line.AccountName == "Cash");
+        Assert.Equal(25m, cashMovement.CurrentBalance);
+        Assert.Equal(40m, cashMovement.PriorBalance);
+        Assert.NotEqual(balances.PopulationHash, movements.PopulationHash);
+    }
+
+    [Fact]
+    public async Task ClosingBalancesExcludeOpenPeriodPostingsAfterTheCutoff()
+    {
+        var fixture = new Fixture();
+        var february = Period(2, 28, "HardClosed");
+        var books = BookWith(fixture, february);
+        books.Add(RecordOn(february, 10, 40m));
+        books.Add(RecordOn(fixture.Current, 5, 25m));
+        books.Add(RecordOn(fixture.Current, 25, 900m)); // March 26: after the March 15 cutoff
+
+        var result = await fixture.Service.GetAsync("tenant", "company", BookId, fixture.Current.PeriodId, null,
+            Cutoff, null, Project, measure: PostedComparisonMeasureDto.ClosingBalances);
+
+        Assert.Equal("Ready", result.Status);
+        Assert.Equal(65m, Assert.Single(result.Lines, line => line.AccountName == "Cash").CurrentBalance);
+    }
+
+    [Fact]
+    public async Task ClosingBalancesRefusePostingsOutsideTheBooksPeriodsInsteadOfGuessing()
+    {
+        var fixture = new Fixture();
+        var february = Period(2, 28, "HardClosed");
+        var books = BookWith(fixture, february);
+        books.Add(RecordOn(february, 10, 40m));
+        books.Add(RecordOn(Period(1, 31, "HardClosed"), 10, 100m)); // its period is not one of this book's
+
+        var result = await fixture.Service.GetAsync("tenant", "company", BookId, fixture.Current.PeriodId, null,
+            Cutoff, null, Project, measure: PostedComparisonMeasureDto.ClosingBalances);
+
+        Assert.Equal("Unavailable", result.Status);
+        Assert.Contains("not assigned to an accounting period", result.Reason);
+        Assert.Empty(result.Lines);
+        Assert.Null(result.PopulationHash);
+    }
+
+    [Theory]
+    [InlineData("measure", "ClosingBalances", false)]
+    [InlineData("measure", "Movements", false)]
+    [InlineData("baselinePeriodId", "00000000-0000-0000-0000-000000000001", false)]
+    [InlineData("notAComparisonKey", "x", true)]
+    public void ComparisonQueryAcceptsTheMeasureSelectorAndStillRefusesUnknownKeys(string key, string value, bool unsupported)
+    {
+        var check = typeof(Meridian.Ui.Shared.Endpoints.LedgerEndpoints).GetMethod("HasUnsupportedComparisonQuery",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
+        var query = new Microsoft.AspNetCore.Http.QueryCollection(
+            new Dictionary<string, Microsoft.Extensions.Primitives.StringValues> { [key] = value });
+        Assert.Equal(unsupported, (bool)check.Invoke(null, [query])!);
+    }
+
+    /// <summary>Registers the book's periods and answers queries from one retained record list.</summary>
+    private static List<LedgerJournalEntryRecord> BookWith(Fixture fixture, params LedgerAccountingPeriod[] earlier)
+    {
+        var records = new List<LedgerJournalEntryRecord>();
+        foreach (var period in earlier)
+            fixture.Journals.Setup(store => store.GetPeriodAsync(period.PeriodId, It.IsAny<CancellationToken>())).ReturnsAsync(period);
+        fixture.Journals.Setup(store => store.ListPeriodsAsync(BookId, null, null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([fixture.Current, .. earlier]);
+        fixture.Journals.Setup(store => store.QueryAsync(It.IsAny<LedgerJournalEntryQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((LedgerJournalEntryQuery query, CancellationToken _) => query.PeriodId is { } periodId
+                ? records.Where(record => record.PeriodId == periodId).ToArray()
+                : records.ToArray());
+        return records;
+    }
+
+    private static LedgerJournalEntryRecord RecordOn(LedgerAccountingPeriod period, int dayOffset, decimal amount)
+    {
+        var journalId = Guid.NewGuid();
+        var posted = new DateTimeOffset(period.StartDate.AddDays(dayOffset).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var lines = new[]
+        {
+            new LedgerEntry(Guid.NewGuid(), journalId, posted, new("Cash", LedgerAccountType.Asset), amount, 0m, "Retained posting"),
+            new LedgerEntry(Guid.NewGuid(), journalId, posted, new("Capital", LedgerAccountType.Equity), 0m, amount, "Retained posting")
+        };
+        return new(new JournalEntry(journalId, posted, "Retained posting", lines), Guid.NewGuid(), period.PeriodId,
+            null, null, posted.Ticks, posted, AccountingBasis: AccountingBasisKindDto.Primary);
+    }
+
     private static LedgerJournalEntryRecord Record(LedgerAccountingPeriod period, decimal amount, AccountingBasisKindDto basis)
     {
         var journalId = Guid.NewGuid();

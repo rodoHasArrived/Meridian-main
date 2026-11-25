@@ -37,7 +37,7 @@ public sealed record BrokeragePortfolioSyncOptions(
 /// a durable workstation projection. This service is operator-triggered and intentionally
 /// avoids live-trading readiness decisions.
 /// </summary>
-public sealed class BrokeragePortfolioSyncService
+public sealed partial class BrokeragePortfolioSyncService
 {
     // Keep the accounting-boundary tolerance aligned with ProviderDataQualityValidator:
     // small provider clock drift is accepted, but timestamps beyond five minutes fail closed.
@@ -179,7 +179,9 @@ public sealed class BrokeragePortfolioSyncService
     public async Task<WorkstationBrokerageSyncStatusDto> RunSyncAsync(
         Guid fundAccountId,
         WorkstationBrokerageSyncRunRequestDto? request = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? passportTenantId = null,
+        string? passportCompanyId = null)
     {
         ct.ThrowIfCancellationRequested();
         request ??= new WorkstationBrokerageSyncRunRequestDto();
@@ -294,7 +296,8 @@ public sealed class BrokeragePortfolioSyncService
             warnings.Add($"Provider '{link.ProviderId}' has no activity sync adapter registered.");
         }
 
-        var rawPath = BuildRawSnapshotPath(link.ProviderId, link.ExternalAccountId, attemptedAt);
+        var passportScope = portfolio is null ? null
+            : await BuildPassportScopeAsync(fundAccountId, passportTenantId, passportCompanyId, ct).ConfigureAwait(false);
         var raw = new BrokerageRawSyncSnapshot(
             CapturedAt: attemptedAt,
             ProviderId: link.ProviderId,
@@ -302,8 +305,9 @@ public sealed class BrokeragePortfolioSyncService
             RequestedBy: request.RequestedBy,
             Portfolio: portfolio,
             Activity: activity,
-            Warnings: warnings);
-        await WriteJsonAsync(rawPath, raw, ct).ConfigureAwait(false);
+            Warnings: warnings,
+            PassportScope: passportScope);
+        var (rawPath, passportSnapshot) = await RetainRawSnapshotAsync(raw, ct).ConfigureAwait(false);
 
         var projection = await BuildProjectionAsync(
             fundAccountId,
@@ -315,7 +319,7 @@ public sealed class BrokeragePortfolioSyncService
             warnings,
             ct).ConfigureAwait(false);
         projection = CarryForwardLastGoodState(
-            projection,
+            projection with { AmountPassportSnapshot = passportSnapshot },
             await TryLoadPriorProjectionAsync(projection.FundAccountId, ct).ConfigureAwait(false),
             portfolioMissing: portfolio is null,
             activityMissing: activity is null);
@@ -513,70 +517,6 @@ public sealed class BrokeragePortfolioSyncService
         return link;
     }
 
-    public async Task<BrokeragePortfolioPerformanceDto> GetPerformanceAsync(
-        Guid fundAccountId,
-        DateOnly? from,
-        DateOnly? to,
-        CancellationToken ct = default)
-    {
-        ct.ThrowIfCancellationRequested();
-
-        var projection = await LoadProjectionAsync(fundAccountId, ct).ConfigureAwait(false);
-        var timeline = await GetBalanceHistoryAsync(fundAccountId, from, to, ct).ConfigureAwait(false);
-        var cashEntries = FilterCashTransactions(projection, from, to)
-            .Select(ToCashFlowEntry)
-            .ToArray();
-        var cashByDate = cashEntries
-            .GroupBy(static entry => DateOnly.FromDateTime(entry.PostedAt.UtcDateTime))
-            .ToDictionary(static group => group.Key, static group => group.Sum(entry => entry.Amount));
-        var points = timeline
-            .OrderBy(static snapshot => snapshot.AsOfDate)
-            .Select(snapshot => new BrokeragePortfolioPerformancePointDto(
-                snapshot.AsOfDate,
-                snapshot.CashBalance + (snapshot.SecuritiesMarketValue ?? 0m)
-                    + (HasDisjointBalanceComponents(snapshot.Source) ? snapshot.AccruedInterest ?? 0m : 0m),
-                snapshot.CashBalance,
-                cashByDate.GetValueOrDefault(snapshot.AsOfDate)))
-            .ToArray();
-
-        var warnings = new List<string>();
-        if (projection is null && points.Length == 0)
-        {
-            warnings.Add("No brokerage sync projection exists for this fund account.");
-        }
-
-        if (points.Length < 2)
-        {
-            warnings.Add("At least two balance snapshots are required for cash-adjusted performance.");
-        }
-
-        var beginningEquity = points.Length >= 2 ? points[0].Equity : (decimal?)null;
-        var endingEquity = points.Length >= 2 ? points[^1].Equity : (decimal?)null;
-        var netCashFlow = cashEntries.Sum(static entry => entry.Amount);
-        var cashAdjustedReturn = beginningEquity.HasValue && endingEquity.HasValue
-            ? endingEquity.Value - beginningEquity.Value - netCashFlow
-            : (decimal?)null;
-        var cashAdjustedReturnPercent = cashAdjustedReturn.HasValue && beginningEquity.GetValueOrDefault() != 0m
-            ? cashAdjustedReturn.Value / beginningEquity!.Value
-            : (decimal?)null;
-
-        return new BrokeragePortfolioPerformanceDto(
-            FundAccountId: fundAccountId,
-            ProviderId: projection?.Link.ProviderId,
-            ExternalAccountId: projection?.Link.ExternalAccountId,
-            AccountKind: projection?.Link.AccountKind ?? BrokerageAccountKindDto.Unknown,
-            From: from,
-            To: to,
-            HasSufficientHistory: points.Length >= 2,
-            BeginningEquity: beginningEquity,
-            EndingEquity: endingEquity,
-            NetCashFlow: netCashFlow,
-            CashAdjustedReturn: cashAdjustedReturn,
-            CashAdjustedReturnPercent: cashAdjustedReturnPercent,
-            Points: points,
-            Warnings: warnings);
-    }
-
     public async Task<BrokerageCashFlowSummaryDto> GetCashFlowAsync(
         Guid fundAccountId,
         DateOnly? from,
@@ -616,7 +556,9 @@ public sealed class BrokeragePortfolioSyncService
     public async Task<BrokerageHouseholdPortfolioDto> GetHouseholdAsync(
         string? providerId,
         Func<IReadOnlyCollection<Guid>, CancellationToken, Task<IReadOnlySet<Guid>>> authorizeFundAccounts,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? passportTenantId = null,
+        string? passportCompanyId = null)
     {
         ArgumentNullException.ThrowIfNull(authorizeFundAccounts);
         ct.ThrowIfCancellationRequested();
@@ -685,7 +627,7 @@ public sealed class BrokeragePortfolioSyncService
                 Warnings: projection.Status.Warnings))
             .ToArray();
         var positions = projections
-            .SelectMany(static projection => projection.Positions.Select(position => new BrokerageHouseholdPositionDto(
+            .SelectMany(projection => projection.Positions.Select((position, index) => new BrokerageHouseholdPositionDto(
                 FundAccountId: projection.FundAccountId,
                 ProviderId: projection.Link.ProviderId,
                 ExternalAccountId: projection.Link.ExternalAccountId,
@@ -703,7 +645,8 @@ public sealed class BrokeragePortfolioSyncService
                 Currency: position.Currency)
             {
                 AccruedInterest = position.AccruedInterest,
-                ValuationBasis = position.ValuationBasis
+                ValuationBasis = position.ValuationBasis,
+                AmountPassports = BuildPositionReferences(projection, position, index, passportTenantId, passportCompanyId)
             }))
             .OrderBy(static position => position.Symbol, StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -1059,7 +1002,7 @@ public sealed class BrokeragePortfolioSyncService
 
         if (portfolioMissing && (prior.Balance is not null || prior.Positions.Count > 0))
         {
-            result = result with { Balance = prior.Balance, Positions = prior.Positions };
+            result = result with { Balance = prior.Balance, Positions = prior.Positions, AmountPassportSnapshot = prior.AmountPassportSnapshot };
             status = status with
             {
                 PositionCount = prior.Positions.Count,
@@ -1976,7 +1919,8 @@ public sealed class BrokeragePortfolioSyncService
         string? RequestedBy,
         BrokeragePortfolioSnapshotDto? Portfolio,
         BrokerageActivitySnapshotDto? Activity,
-        IReadOnlyList<string> Warnings);
+        IReadOnlyList<string> Warnings,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] AmountPassportScopeDto? PassportScope = null);
 
     private sealed record BrokerageActivityHistory(
         Guid FundAccountId,

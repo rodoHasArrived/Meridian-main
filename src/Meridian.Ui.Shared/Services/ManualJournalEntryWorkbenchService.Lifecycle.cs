@@ -556,6 +556,9 @@ public sealed partial class ManualJournalEntryWorkbenchService
                     AccountingConfigurationValidationSeverityDto.Critical, recurringReason, "recurringJournalEvidence",
                     "Restore the retained source evidence and accounting scope before human approval."));
         }
+        if (IntercompanyAccrualEvidenceGuard.IsAccrualDraft(draft) && IntercompanyAccrualEvidenceGuard.Validate(draft) is { } accrualReason)
+            issues.Add(Issue("manual-je.intercompany-accrual-evidence", AccountingConfigurationValidationSeverityDto.Critical,
+                accrualReason, "intercompanyAccrualEvidence", "Recompute the accrual from its approved terms; computed lines are not hand-edited."));
         if (draft.RequiresValuationMarkEvidence || ValuationMarkEvidenceGuard.IsValuation(draft.TreasuryContext?.IdempotencyKey) ||
             draft.ValuationMarkEvidenceJson is not null)
         {
@@ -762,7 +765,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
             lines.Add(normalizedLine);
         }
 
-        ValidateTreasuryContext(treasuryContext, entryType, allowIncomplete, issues);
+        ValidateTreasuryContext(treasuryContext, entryType, allowIncomplete, issues,
+            intercompanyCounterpart: draft.IntercompanyProposalId is not null);
         await ValidateAgreementDraftAsync(draft, lines, chartByPath, issues, ct).ConfigureAwait(false);
 
         var totalDebits = lines.Where(line => line.Side == AccountingTemplateLineSideDto.Debit).Sum(line => line.Amount);
@@ -1081,11 +1085,19 @@ public sealed partial class ManualJournalEntryWorkbenchService
         }
     }
 
+    private static bool IsIntercompanyMirrorLabelOnly(bool intercompanyCounterpart, TreasuryLedgerContextDto? context)
+        => intercompanyCounterpart && context is not null &&
+            string.Equals(context.FundEventType?.Trim(), Meridian.FinancialOperations.Intercompany.IntercompanyProposalDraftBuilder.MirrorFundEventType, StringComparison.Ordinal) &&
+            string.IsNullOrWhiteSpace(context.FundEventId) &&
+            string.IsNullOrWhiteSpace(context.CapitalAccountId) &&
+            string.IsNullOrWhiteSpace(context.InvestorId);
+
     private static void ValidateTreasuryContext(
         TreasuryLedgerContextDto? context,
         ManualJournalEntryTypeDto entryType,
         bool allowIncomplete,
-        List<AccountingConfigurationValidationIssueDto> issues)
+        List<AccountingConfigurationValidationIssueDto> issues,
+        bool intercompanyCounterpart = false)
     {
         var requiresPrivateCapitalContext = RequiresPrivateCapitalTreasuryContext(entryType);
         if (allowIncomplete && context is null)
@@ -1127,11 +1139,15 @@ public sealed partial class ManualJournalEntryWorkbenchService
             issues.Add(Issue("manual-je.treasury-idempotency-missing", AccountingConfigurationValidationSeverityDto.Critical, "Treasury ledger context requires an idempotency key before approval submission.", "treasuryContext.idempotencyKey", "Use a stable source-event key for retry-safe posting."));
         }
 
-        var hasFundEventContext = requiresPrivateCapitalContext ||
+        // A delivered intercompany counterpart is identified by its retained proposal, and the delivery service
+        // labels its context as a mirror. That label alone is not a fund event: the counterpart has no fund event
+        // identity or capital account to attach, so requiring them would make every counterpart unsubmittable.
+        var mirrorLabelOnly = IsIntercompanyMirrorLabelOnly(intercompanyCounterpart, context);
+        var hasFundEventContext = requiresPrivateCapitalContext || (!mirrorLabelOnly && (
             !string.IsNullOrWhiteSpace(context.FundEventId) ||
             !string.IsNullOrWhiteSpace(context.FundEventType) ||
             !string.IsNullOrWhiteSpace(context.CapitalAccountId) ||
-            !string.IsNullOrWhiteSpace(context.InvestorId);
+            !string.IsNullOrWhiteSpace(context.InvestorId)));
         if (!allowIncomplete && hasFundEventContext)
         {
             RequireTreasuryContextText(issues, context.FundEventId, "manual-je.fund-event-missing", "fund event id", "treasuryContext.fundEventId");

@@ -12,6 +12,7 @@ import {
 import type {
   BrokerageConnectionStatus,
   LedgerMappingWorkbench,
+  PortfolioWorkspaceResponse,
   OperationsApprovalPolicyMatrix,
   OperationsCloseCalendar,
   ProviderConnectionRow,
@@ -422,6 +423,29 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.systemTone).toBe("warning");
   });
 
+  it("uses the loaded portfolio population for system position facts", () => {
+    const portfolio: PortfolioWorkspaceResponse = {
+      metrics: [],
+      positions: [{
+        symbol: "AAPL", side: "Long", quantity: "10", averagePrice: "$100",
+        markPrice: "$110", dayPnl: "$0", unrealizedPnl: "$100", exposure: "$1,100"
+      }],
+      risk: {
+        state: "Healthy", summary: "Ready", netExposure: "$1,100", grossExposure: "$1,100",
+        var95: "$0", maxDrawdown: "0%", buyingPowerUsed: "0%", activeGuardrails: []
+      },
+      brokerage: {
+        provider: "Synthetic", account: "synthetic-account", environment: "paper", connection: "Connected",
+        lastHeartbeat: "2026-05-01T00:00:00Z", orderIngress: "healthy", fillFeed: "healthy", notes: "Synthetic"
+      },
+      runs: [], cashFlow: null
+    };
+    const loaded = buildSettingsScreenViewModel({ session, overview, portfolio });
+    expect(loaded.systemItems.find((item) => item.label === "Open positions")?.value).toBe("1");
+    const unavailable = buildSettingsScreenViewModel({ session, overview });
+    expect(unavailable.systemItems.find((item) => item.label === "Open positions")?.value).toBe("Unavailable");
+  });
+
   it("classifies freshness evidence without presenting old timestamps as current", () => {
     const evaluatedAt = new Date("2026-07-13T12:00:00Z");
 
@@ -624,11 +648,12 @@ describe("buildSettingsScreenViewModel", () => {
     });
 
     expect(vm.providerConnectionCenter.statusLabel).toBe("Refreshing");
-    expect(vm.providerConnectionCenter.refreshAction).toMatchObject({
-      label: "Refreshing...",
-      busy: true,
-      disabled: true
-    });
+    // Loaded evidence is re-read by the header Refresh; the local control exists only as Retry after a failed load.
+    expect(vm.providerConnectionCenter.refreshAction).toBeNull();
+    expect(buildSettingsScreenViewModel({ session, overview, providerConnections: [], workspaceErrors: { settings: "Provider-routing connection refresh failed." } }).providerConnectionCenter.refreshAction)
+      .toMatchObject({ label: "Retry", ariaLabel: "Retry loading Provider Connection Center routing data", busy: false, disabled: false });
+    expect(buildSettingsScreenViewModel({ session, overview, providerConnections: null, providerRoutingRefreshing: true }).providerConnectionCenter.refreshAction)
+      .toMatchObject({ label: "Retrying...", busy: true, disabled: true });
     expect(vm.providerConnectionCenter.routingSummaryLabel).toBe("2 routing connections · 2 bindings · 2 trust snapshots");
 
     const dataRows = vm.providerConnectionCenter.groups.find((group) => group.id === "data")?.rows ?? [];
@@ -966,8 +991,8 @@ describe("buildSettingsScreenViewModel", () => {
     });
 
     expect(vm.profileAuthenticationPanel).toMatchObject({
-      regionLabel: "Profile and authentication posture",
-      title: "Profile and access posture",
+      regionLabel: "Profile and authentication status",
+      title: "Profile and access status",
       statusLabel: "Access ready",
       statusTone: "success",
       avatarInitials: "AR",
@@ -977,7 +1002,7 @@ describe("buildSettingsScreenViewModel", () => {
       workspaceLabel: "Settings",
       commandCountLabel: "42 commands issued",
       authorityLabel: "Brokerage verified",
-      authorityDetail: "Alpaca account PA123 is verified for readiness handoffs.",
+      authorityDetail: "Alpaca account PA123 is verified for readiness reviews.",
       notice: null
     });
     expect(vm.profileAuthenticationPanel.facts).toEqual(expect.arrayContaining([
@@ -990,7 +1015,7 @@ describe("buildSettingsScreenViewModel", () => {
         id: "brokerage-authority",
         statusLabel: "Verified",
         actionHref: "/trading/readiness",
-        actionAriaLabel: "Open Trading readiness from verified profile authentication posture"
+        actionAriaLabel: "Open Trading readiness from verified profile authentication status"
       }),
       expect.objectContaining({
         id: "audit-diagnostics",
@@ -1025,7 +1050,7 @@ describe("buildSettingsScreenViewModel", () => {
       tone: "warning",
       actionLabel: "Review provider setup",
       actionHref: "/settings#alpaca-provider-setup",
-      actionAriaLabel: "Review Alpaca provider setup from profile authentication posture"
+      actionAriaLabel: "Review Alpaca provider setup from profile authentication status"
     });
     expect(delayedVm.profileAuthenticationPanel.steps.find((step) => step.id === "brokerage-authority")?.actionHref).not.toBe("/trading/readiness");
     expect(delayedVm.alpacaConnectionPanel.warnings[0]).toBe(
@@ -1557,8 +1582,8 @@ describe("buildSettingsScreenViewModel", () => {
         openBreaks: null
       }
     });
-    expect(vm.systemSummary).toContain("2/3 providers healthy");
-    expect(vm.systemItems.find((item) => item.label === "Providers healthy")?.value).toBe("2 / 3");
+    expect(vm.systemSummary).toContain("2 of 3 providers healthy");
+    expect(vm.systemItems.find((item) => item.label === "Providers healthy")?.value).toBe("2 of 3 providers");
   });
 
   it("keeps the refreshed shared provider count over retained Data rows", () => {
@@ -1575,7 +1600,7 @@ describe("buildSettingsScreenViewModel", () => {
       },
       data: { providers: [{ status: "Healthy" }, { status: "Healthy" }] } as never
     });
-    expect(vm.systemItems.find((item) => item.label === "Providers healthy")?.value).toBe("1 / 2");
+    expect(vm.systemItems.find((item) => item.label === "Providers healthy")?.value).toBe("1 of 2 providers");
 
     const withoutShared = buildSettingsScreenViewModel({
       session: null,
@@ -1583,7 +1608,7 @@ describe("buildSettingsScreenViewModel", () => {
       crossScreenCounts: null,
       data: { providers: [{ status: "Healthy" }, { status: "Degraded" }] } as never
     });
-    expect(withoutShared.systemItems.find((item) => item.label === "Providers healthy")?.value).toBe("1 / 2");
+    expect(withoutShared.systemItems.find((item) => item.label === "Providers healthy")?.value).toBe("1 of 2 providers");
   });
 
   it("points system overview diagnostics at the mapped status endpoint", () => {

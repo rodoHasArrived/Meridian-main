@@ -251,6 +251,7 @@ export interface AccountingPostedLedgerViewState {
 
 export interface AccountingPostedLedgerViewModel {
   selectedBook: LedgerBook | null;
+  selectedPeriod: LedgerPeriod | null;
   view: AccountingPostedLedgerViewState;
   selectBook: (ledgerBookId: string) => void;
   selectPeriod: (periodId: string) => void;
@@ -320,6 +321,12 @@ export function toTrialBalanceLine(line: LedgerPeriodTrialBalanceLine): LedgerTr
     symbol: line.symbol,
     financialAccountId: line.financialAccountId,
     balance: line.balance,
+    ...(line.balanceExact !== undefined ? { balanceExact: line.balanceExact } : {}),
+    balanceProofSubjectId: line.balanceProofSubjectId,
+    balanceProofScope: line.balanceProofScope,
+    balanceProofCurrency: line.balanceProofCurrency,
+    journalEntryIds: line.journalEntryIds,
+    ledgerEntryIds: line.ledgerEntryIds,
     entryCount: line.entryCount,
     security: null,
     dimensions: line.dimensions ?? null,
@@ -333,7 +340,7 @@ export function toTrialBalanceLine(line: LedgerPeriodTrialBalanceLine): LedgerTr
   };
 }
 
-function periodStatusLabel(status: LedgerPeriod["status"]): string {
+export function periodStatusLabel(status: LedgerPeriod["status"]): string {
   switch (status) {
     case "HardClosed":
       return "Hard closed";
@@ -599,7 +606,7 @@ export function buildAccountingPostedLedgerViewState({
 
   return {
     title: "Posted-journal trial balance",
-    description: "Account balances from the governed, immutable journal — the fund's book of record — scoped by ledger period. Strategy-run ledgers are simulation artifacts and live in the strategy-run explorer below.",
+    description: "Account balances from the immutable journal — the fund's book of record — scoped by ledger period; strategy-run ledgers are simulations and live in the strategy-run explorer below.",
     sourceBadgeLabel: "Source: posted journal",
     periodSelector: {
       label: "Ledger period",
@@ -614,7 +621,7 @@ export function buildAccountingPostedLedgerViewState({
       // would have found one is still in flight or has failed.
       emptyText: periodsLoading || booksLoading || periodsError || booksErrorText || periods.length > 0
         ? null
-        : "No ledger periods exist yet. Create a ledger book and period in Accounting → Configure to start the governed book."
+        : "No ledger periods exist yet. Create a ledger book and period in Accounting → Configure to start the book of record."
     },
     periodNotice,
     selectedBookLabel,
@@ -1171,10 +1178,9 @@ export function useAccountingPostedLedgerViewModel(
     ]
   );
 
-  const selectedPeriodLabel = useMemo(() => {
-    const period = periods.find((candidate) => candidate.periodId === selectedPeriodId);
-    return period ? (period.label.trim() || `FY${period.fiscalYear} P${period.periodNo}`) : null;
-  }, [periods, selectedPeriodId]);
+  const period = periods.find((candidate) => candidate.periodId === selectedPeriodId) ?? null;
+  const selectedPeriodLabel = period ? (period.label.trim() || `FY${period.fiscalYear} P${period.periodNo}`) : null;
+  const selectedPeriod = periodsSettled ? period : null;
 
   return {
     view,
@@ -1189,8 +1195,9 @@ export function useAccountingPostedLedgerViewModel(
     journalErrorText,
     selectedPeriodId,
     selectedPeriodLabel,
-    selectedPeriodVersion: periodsSettled ? periods.find((period) => period.periodId === selectedPeriodId)?.version ?? null : null,
+    selectedPeriodVersion: selectedPeriod?.version ?? null,
     selectedBook,
+    selectedPeriod,
     /**
      * True once the selected book's period request has come back successfully. A deep link cannot
      * tell an empty book from a still-loading one without this, and waiting on the loading flags

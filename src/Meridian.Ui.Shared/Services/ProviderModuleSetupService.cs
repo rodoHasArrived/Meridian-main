@@ -194,32 +194,22 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
 
-        // Persist first; only update live registry when config write succeeds to keep
-        // the in-process state and the persisted config in sync across restarts.
         var result = await MutateConfigAsync(cfg =>
         {
             var modules = cfg.ProviderModules?.Modules is not null
                 ? new Dictionary<string, ProviderModuleSettings>(cfg.ProviderModules.Modules, StringComparer.OrdinalIgnoreCase)
                 : new Dictionary<string, ProviderModuleSettings>(StringComparer.OrdinalIgnoreCase);
 
-            if (modules.TryGetValue(moduleId, out var existing))
-                modules[moduleId] = existing with { Enabled = enabled };
+            if (!modules.TryGetValue(moduleId, out var existing))
+                throw new InvalidOperationException("Configure this provider module before changing its enabled state.");
+            modules[moduleId] = existing with { Enabled = enabled };
 
             return cfg with { ProviderModules = new ProviderModulesConfig(modules) };
         }, ct).ConfigureAwait(false);
 
-        if (!result.Success)
-            return result;
-
-        if (_providerRegistry is not null)
-        {
-            if (enabled)
-                _providerRegistry.Enable(moduleId);
-            else
-                _providerRegistry.Disable(moduleId);
-        }
-
-        return result;
+        // Configuration rebuilds the provider graph at startup. The UI registry alone cannot
+        // confirm that independently composed or already connected consumers applied the edit.
+        return result.Success ? result with { ChangeStatus = _configStore.GetChangeStatus() } : result;
     }
 
     public async Task<ProviderModuleSetupResult> RemoveModuleAsync(string moduleId, CancellationToken ct = default)

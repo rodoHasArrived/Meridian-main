@@ -57,6 +57,7 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         {
             values["MERIDIAN_SECURITY_MASTER_IDENTIFIER_HISTORY_WRITERS_STOPPED"] = "true";
             values["MERIDIAN_SECURITY_MASTER_IDENTIFIER_HISTORY_LEGACY_WRITERS_RETIRED"] = "true";
+            values["MERIDIAN_SECURITY_MASTER_TERMS_FORMAT_BACKFILL_LEGACY_WRITERS_RETIRED"] = "true";
         }
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(values).Build();
         var services = new ServiceCollection();
@@ -66,6 +67,7 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         var options = provider.GetRequiredService<SecurityMasterOptions>();
         options.IdentifierHistoryMigrationWritersStopped.Should().Be(acknowledged);
         options.IdentifierHistoryMigrationLegacyWritersRetired.Should().Be(acknowledged);
+        options.TermsFormatBackfillLegacyWritersRetired.Should().Be(acknowledged);
     }
 
     private readonly string? _originalSecurityMasterConnectionString;
@@ -694,6 +696,78 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IOperationsContinuityRepository));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IOperationsWorkflowAuditStore));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IOperationsContinuityTransactionalCommitStore));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Register_SelectsThePostgresOnboardingStore_WhenLedgerConnectionStringIsConfigured(bool fileFallbackFirst)
+    {
+        ConfigureInMemoryGovernanceFixture();
+        ClearPostgresBackedStorageEnvironment();
+        Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, "Host=ledger-db;Port=5432;Database=ledger;Username=postgres;Password=secret");
+        var services = new ServiceCollection();
+        // The workstation composition adds the file store with TryAdd, before or after storage registration.
+        void AddFileFallback() => services.TryAddSingleton<Meridian.FinancialOperations.Onboarding.IOnboardingWorkspaceStore>(_ =>
+            new Meridian.Ui.Shared.Services.FileOnboardingWorkspaceStore(Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json")));
+
+        if (fileFallbackFirst)
+            AddFileFallback();
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+        if (!fileFallbackFirst)
+            AddFileFallback();
+
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<Meridian.FinancialOperations.Onboarding.IOnboardingWorkspaceStore>()
+            .Should().BeOfType<Meridian.FinancialOperations.Onboarding.PostgresOnboardingWorkspaceStore>();
+    }
+
+    [Fact]
+    public void Register_LeavesTheOnboardingStoreToTheWorkstation_WithoutALedgerDatabase()
+    {
+        ConfigureInMemoryGovernanceFixture();
+        ClearPostgresBackedStorageEnvironment();
+        var services = new ServiceCollection();
+
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+
+        services.Should().NotContain(sd => sd.ServiceType == typeof(Meridian.FinancialOperations.Onboarding.IOnboardingWorkspaceStore));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Register_SelectsThePostgresRecurringJournalStore_WhenLedgerConnectionStringIsConfigured(bool fileFallbackFirst)
+    {
+        ConfigureInMemoryGovernanceFixture();
+        ClearPostgresBackedStorageEnvironment();
+        Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, "Host=ledger-db;Port=5432;Database=ledger;Username=postgres;Password=secret");
+        var services = new ServiceCollection();
+        // The workstation composition adds the file store with TryAdd, before or after storage registration.
+        void AddFileFallback() => services.TryAddSingleton<Meridian.FinancialOperations.FundAdministration.IRecurringJournalStore>(_ =>
+            new Meridian.FinancialOperations.FundAdministration.FileRecurringJournalStore(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"))));
+
+        if (fileFallbackFirst)
+            AddFileFallback();
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+        if (!fileFallbackFirst)
+            AddFileFallback();
+
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<Meridian.FinancialOperations.FundAdministration.IRecurringJournalStore>()
+            .Should().BeOfType<Meridian.FinancialOperations.FundAdministration.PostgresRecurringJournalStore>();
+    }
+
+    [Fact]
+    public void Register_LeavesTheRecurringJournalStoreToTheWorkstation_WithoutALedgerDatabase()
+    {
+        ConfigureInMemoryGovernanceFixture();
+        ClearPostgresBackedStorageEnvironment();
+        var services = new ServiceCollection();
+
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+
+        services.Should().NotContain(sd => sd.ServiceType == typeof(Meridian.FinancialOperations.FundAdministration.IRecurringJournalStore));
     }
 
     private static void ConfigureInMemoryGovernanceFixture()

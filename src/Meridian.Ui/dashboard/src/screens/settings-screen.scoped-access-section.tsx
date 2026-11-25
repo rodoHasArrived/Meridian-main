@@ -589,7 +589,7 @@ export function SettingsScopedAccessSection({ scopedAccessActiveCount, scopedAcc
                   label={
                     <span className="min-w-0">
                     <span className="block font-medium text-foreground">{permission.label}</span>
-                    <span className="block break-words text-[11px] leading-4">{permission.group}</span>
+                    <span className="block break-words text-xs leading-4">{permission.group}</span>
                   </span>
                   }
                 />

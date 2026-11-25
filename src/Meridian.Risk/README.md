@@ -15,6 +15,11 @@ last_reviewed: 2026-11-13
 
 `PositionLimitRule` optionally measures the limit against the filled position plus same-side working orders (via an `IOrderManager` accessor), excluding the order being amended. A pending amendment counts as its larger-quantity outcome (`IOrderManager.GetUnitReservingOrders`).
 
+A zero or negative limit means "no limit configured" in every rule, `PositionLimitRule` included,
+matching the operator control service, which stores such limits as unset. `GrossExposureRule`
+rejections carry `Code = GROSS_EXPOSURE_EXCEEDED`, the projected gross exposure as
+`ObservedValue`, and the ceiling as `LimitValue`.
+
 `BrokeragePortfolioStateRule` requires a current, complete and reconciled account snapshot before
 live admission, independently of configurable exposure ceilings. Scoped exposure uses broker
 holdings, cash, buying power and currency, with remaining working orders reserved in the same
@@ -147,7 +152,9 @@ exposes one. During submission admission, rule severity maps to an outcome in `C
   `ICircuitBreakerTripHandler` is composed (the workstation registers `KillSwitchSweepTripHandler`),
   the trip is followed by the same kill-switch cancel-all sweep of the open book the operator
   breaker endpoint performs, with the sweep outcome audited as `controls/CircuitBreakerCancelAll`;
-  the sweep runs strictly after the trip and can never delay, block, or revert it.
+  the sweep runs strictly after the trip and can never delay, block, or revert it. The sweep runs
+  under kill-switch authority naming what tripped the breaker, which the OMS records on every
+  cancellation it makes.
 
 Portfolio-aware rules read a `PortfolioExposureSnapshot` per evaluation, so thresholds tuned
 through the UI runtime service apply immediately and enforcement always sees the same

@@ -802,7 +802,8 @@ public sealed partial class WorkstationEndpointsTests
                     MaxLatencyMs: 80,
                     DataQualityScore: 0.96,
                     ConnectionSuccessRate: 1,
-                    Timestamp: new DateTimeOffset(2026, 4, 24, 16, 59, 0, TimeSpan.Zero)),
+                    // Recent: a provider is not listed Healthy on evidence older than three days.
+                    Timestamp: DateTimeOffset.UtcNow.AddMinutes(-1)),
                 new ProviderMetrics(
                     ProviderId: "alpaca",
                     ProviderType: "Streaming equities",

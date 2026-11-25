@@ -122,6 +122,29 @@ class ReleaseReadinessTests(unittest.TestCase):
             mutation(gate)
             self.assertEqual(readiness.promotion_status(gate, self.expected)['status'], 'blocked')
 
+    def test_version_bound_initial_scope_requires_both_x64_package_families(self):
+        self.gate.update(version='0.1.0-rc.2', supportScope='windows-x64-v0.1.0', supportedRuntimes=['win-x64'])
+        arm = next(item for item in self.gate['lifecycle'] if item['architecture'] == 'arm64')
+        self.gate['lifecycle'].remove(arm)
+        del self.gate['assets'][arm['currentPackage']['name']]
+        self.assertEqual(readiness.promotion_status(self.gate, self.expected)['status'], 'ready')
+        original = deepcopy(self.gate)
+        for change in (dict(version='0.1.1'), dict(version=None), dict(version='invalid'),
+                       dict(supportScope='windows-x64-arm64'), dict(supportedRuntimes=['win-arm64'])):
+            self.assertEqual(readiness.promotion_status(dict(original, **change), self.expected)['status'], 'blocked')
+        self.gate['lifecycle'].pop()
+        self.assertEqual(readiness.promotion_status(self.gate, self.expected)['status'], 'blocked')
+
+    def test_arm64_capacity_is_outside_only_the_explicit_initial_readiness_envelope(self):
+        arm_name = next(name for name in readiness.RUNNER_JOBS if 'ARM64' in name)
+        del self.runners['observations'][arm_name]
+        initial = readiness.runner_status(self.runners, self.expected, self.now, '0.1.0-rc.2')
+        self.assertEqual(len(initial), 2)
+        self.assertTrue(all(item['status'] == 'observed' for item in initial))
+        for version in (None, '0.1.1'):
+            future = readiness.runner_status(self.runners, self.expected, self.now, version)
+            self.assertEqual(next(item for item in future if item['name'] == arm_name)['status'], 'unknown')
+
     def test_missing_signing_evidence_is_unknown(self):
         self.signing = None
         self.assertEqual(self.report()['status'], 'unknown')

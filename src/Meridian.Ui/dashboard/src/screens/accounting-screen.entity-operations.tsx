@@ -10,14 +10,18 @@ import { EntityLifecycleTimeline } from "./accounting-screen.entity-timeline";
 import { EntityBookControls } from "./accounting-screen.entity-book-controls";
 import { EntityCounterpartProposals } from "./accounting-screen.entity-proposals";
 import { EntityFxAuthority } from "./accounting-screen.entity-fx";
+import { EntityRateFixings } from "./accounting-screen.entity-rate-fixings";
 import { EntityAccountBindings } from "./accounting-screen.entity-account-bindings";
+import { EntityObligationMonitor } from "./accounting-screen.entity-obligations";
+import { EntityBalanceConfirmations } from "./accounting-screen.entity-confirmations";
 import { EntityPerimeterTransition } from "./accounting-screen.entity-perimeter-transition";
+import { EntityAccrualSchedules } from "./accounting-screen.entity-accrual-schedules";
 import { OperationError, useEntityData } from "./accounting-screen.entity-operations.shared";
 
 const tabs = [
-  { id: "profiles", label: "Accounting profiles" }, { id: "timeline", label: "Entity timeline" },
+  { id: "profiles", label: "Accounting profiles" }, { id: "obligations", label: "Obligation monitor" }, { id: "confirmations", label: "Balance confirmation" }, { id: "timeline", label: "Entity timeline" },
   { id: "controls", label: "Book controls" }, { id: "accounts", label: "Account roles" },
-  { id: "proposals", label: "Counterpart proposals" }, { id: "fx", label: "FX authority" }, { id: "perimeter", label: "Perimeter cutover" }
+  { id: "proposals", label: "Counterpart proposals" }, { id: "accrual-schedules", label: "Accrual schedules" }, { id: "fx", label: "FX authority" }, { id: "fixings", label: "Rate fixings" }, { id: "perimeter", label: "Perimeter cutover" }
 ];
 
 /** Entity operations remain within Accounting and reuse its explicit selected-book scope. */
@@ -25,11 +29,11 @@ export function EntityOperationsPanel({ book }: { book: LedgerBook }) {
   const capabilities = useEntityData<EntityOperationCapabilities>(endpoints.capabilities);
   const graph = useEntityData<EntityOperationGraph>(capabilities.data?.canManageAgreements || capabilities.data?.canManageLifecycle ? endpoints.graph : null);
   const books = useEntityData<LedgerBook[]>(capabilities.data ? endpoints.books : null);
-  const [active, setActive] = useState("profiles");
+  const [active, setActive] = useState(() => { const requested = new URLSearchParams(window.location.search).get("entityTab"); return tabs.some((tab) => tab.id === requested) ? requested! : "profiles"; });
   const scope: EntityOperationScope | null = capabilities.data ? { book, books: books.data ?? [book], graph: graph.data, capabilities: capabilities.data } : null;
   return <Card id="entity-operations" className="panel-surface min-w-0" aria-labelledby="entity-operations-title"><CardHeader>
     <CardTitle id="entity-operations-title">Entity operations</CardTitle>
-    <CardDescription>{book.displayName} · {book.baseCurrency} · accounting profiles, lifecycle, intercompany delivery and governed account/FX authority.</CardDescription>
+    <CardDescription>{book.displayName} · {book.baseCurrency} · accounting profiles, lifecycle, intercompany delivery and account/FX authority.</CardDescription>
   </CardHeader><CardContent className="space-y-4">
     <OperationError error={capabilities.error} /><OperationError error={books.error} />
     {graph.error ? <p role="status" className="text-sm text-warning">Entity graph access is unavailable: {graph.error} Book-scoped controls and evidence remain available according to your permission.</p> : null}
@@ -37,11 +41,15 @@ export function EntityOperationsPanel({ book }: { book: LedgerBook }) {
     {capabilities.error ? <Button type="button" variant="outline" onClick={capabilities.refresh}>Retry operation permissions</Button> : null}
     {scope ? <Tabs value={active} tabs={tabs} onValueChange={setActive} aria-label="Entity operations">
       <TabPanel>{active === "profiles" ? <EntityAccountingArrangements scope={scope} /> : null}</TabPanel>
+      <TabPanel>{active === "obligations" ? <EntityObligationMonitor scope={scope} /> : null}</TabPanel>
+      <TabPanel>{active === "confirmations" ? <EntityBalanceConfirmations scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "timeline" ? <EntityLifecycleTimeline key={graph.data ? "graph-ready" : "graph-pending"} scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "controls" ? <EntityBookControls scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "accounts" ? <EntityAccountBindings scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "proposals" ? <EntityCounterpartProposals scope={scope} /> : null}</TabPanel>
+      <TabPanel>{active === "accrual-schedules" ? <EntityAccrualSchedules scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "fx" ? <EntityFxAuthority scope={scope} /> : null}</TabPanel>
+      <TabPanel>{active === "fixings" ? <EntityRateFixings scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "perimeter" ? <EntityPerimeterTransition scope={scope} /> : null}</TabPanel>
     </Tabs> : null}
   </CardContent></Card>;

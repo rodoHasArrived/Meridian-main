@@ -2,6 +2,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Ui.Shared.Services;
+using Meridian.Wpf.Copy;
 using Meridian.Wpf.Models;
 using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
@@ -640,8 +641,8 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         CancellationToken ct)
         => await _shellContextService.CreateAsync(new WorkspaceShellContextInput
         {
-            WorkspaceTitle = "Trading Cockpit",
-            WorkspaceSubtitle = "Risk-aware trading shell for live posture, blotter review, safe staging, and docked execution detail.",
+            WorkspaceTitle = WorkspaceCopyCatalog.Trading.ShellTitle,
+            WorkspaceSubtitle = WorkspaceCopyCatalog.Trading.ShellSubtitle,
             PrimaryScopeLabel = "Desk",
             PrimaryScopeValue = summary.ActiveRunContext?.StrategyName ?? (_fundContextService.CurrentFundProfile?.DisplayName ?? "No active trading run"),
             AsOfValue = DateTimeOffset.Now.ToString("MMM dd yyyy HH:mm"),
@@ -706,8 +707,8 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         if (profile is null)
         {
             return new ActiveFundPresentation(
-                "No operating context selected",
-                "Runs, allocations, and accounting posture scope to the active operating context.");
+                WorkspaceCopyCatalog.Scope.AllAuthorized,
+                "Runs, allocations, and accounting status narrow to an operating context once one is selected.");
         }
 
         return new ActiveFundPresentation(profile.DisplayName, $"{profile.LegalEntityName} · {profile.BaseCurrency}");
@@ -823,7 +824,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         }
 
         var syncAsOf = readiness.BrokerageSync.LastSuccessfulSyncAt is { } successfulSync
-            ? FormatHelpers.FormatUtcTimestamp(successfulSync)
+            ? FormatHelpers.FormatDisplayTimestamp(successfulSync)
             : "never";
         return $"Brokerage sync {readiness.BrokerageSync.Health.ToString().ToLowerInvariant()} as of {syncAsOf}; {readiness.BrokerageSync.PositionCount} position(s), {readiness.BrokerageSync.OpenOrderCount} open order(s).";
     }
@@ -848,7 +849,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
                 Tone: "Primary"),
             PrimaryBlocker: new WorkflowBlockerSummary(
                 Code: hasOperatingContext ? "fallback" : "choose-context",
-                Label: hasOperatingContext ? "Workflow summary unavailable" : "No operating context selected",
+                Label: hasOperatingContext ? "Workflow summary unavailable" : WorkspaceCopyCatalog.Scope.NoneSelected,
                 Detail: hasOperatingContext
                     ? "Fallback guidance keeps one stable desk action visible while shared workflow data refreshes."
                     : "Paper review, live posture, and Accounting-linked trading actions scope to the active operating context.",
@@ -1036,7 +1037,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         }
 
         var syncAsOf = readiness.BrokerageSync.LastSuccessfulSyncAt is { } successfulSync
-            ? FormatHelpers.FormatUtcTimestamp(successfulSync)
+            ? FormatHelpers.FormatDisplayTimestamp(successfulSync)
             : "never";
         var trustDetail = string.IsNullOrWhiteSpace(readiness.TrustGate.Detail)
             ? fallbackDetail

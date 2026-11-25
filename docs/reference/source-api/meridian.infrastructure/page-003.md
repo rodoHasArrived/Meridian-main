@@ -6,13 +6,218 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderCapabilityExclusion
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderCapabilityExclusion</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:294](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L294).
+
+```csharp
+public sealed record ProviderCapabilityExclusion(string Capability, string Reason);
+```
+
+## ProviderCapabilityFactoryOwner
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderCapabilityFactoryOwner</code>. Kind: `enum`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:299](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L299).
+
+Identifies the authority that supplies configured capability factories.
+
+```csharp
+public enum ProviderCapabilityFactoryOwner
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Descriptor</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:301](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L301) |  |
+| <code>Module</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:302](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L302) |  |
+
+## ProviderCapabilityRegistration
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderCapabilityRegistration</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:285](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L285).
+
+A constructible capability belonging to one canonical provider family.
+
+```csharp
+public sealed record ProviderCapabilityRegistration(string ProviderId, Type Contract, Type Implementation, Func<ProviderFactory, object?> Factory)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Func&lt;ProviderFactory, bool&gt; IsEnabled { get; init; } = static _ =&gt; true;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:291](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L291) |  |
+
+## ProviderCreationResult
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderCreationResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:570](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L570).
+
+Result of provider creation operation.
+
+```csharp
+public sealed class ProviderCreationResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public List&lt;string&gt; BackfillProviders { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:572](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L572) |  |
+| <code>public List&lt;string&gt; SymbolSearchProviders { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:573](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L573) |  |
+| <code>public int TotalProviders =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:575](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L575) |  |
+| <code>public bool HasBackfillProviders =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:578](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L578) |  |
+| <code>public bool HasSymbolSearchProviders =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:579](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L579) |  |
+
+## ProviderDataQualityIssue
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderDataQualityIssue</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:217](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L217).
+
+```csharp
+public sealed record ProviderDataQualityIssue(ProviderDataQualitySeverity Severity, string ProviderName, string FieldPath, string? Entity, string Message, string SuggestedRecovery)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ProviderDataQualityIssue Error(string providerName, string fieldPath, string? entity, string message, string suggestedRecovery) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:225](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L225) |  |
+| <code>public static ProviderDataQualityIssue Warning(string providerName, string fieldPath, string? entity, string message, string suggestedRecovery) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:239](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L239) |  |
+
+## ProviderDataQualitySeverity
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderDataQualitySeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:211](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L211).
+
+```csharp
+public enum ProviderDataQualitySeverity
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Warning = 0</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:213](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L213) |  |
+| <code>Error = 1</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:214](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L214) |  |
+
+## ProviderDataQualityValidator
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderDataQualityValidator</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:11](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L11).
+
+Shared provider-boundary validation for normalized market-data updates before they enter collectors and downstream pipelines.
+
+```csharp
+public static class ProviderDataQualityValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;ProviderDataQualityIssue&gt; ValidateTrade(string providerName, MarketTradeUpdate update, DateTimeOffset? now = null, TimeSpan? staleThreshold = null, ProviderValidationProfile? profile = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:15](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L15) |  |
+| <code>public static IReadOnlyList&lt;ProviderDataQualityIssue&gt; ValidateQuote(string providerName, MarketQuoteUpdate update, DateTimeOffset? now = null, TimeSpan? staleThreshold = null, ProviderValidationProfile? profile = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:50](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L50) |  |
+| <code>public static IReadOnlyList&lt;ProviderDataQualityIssue&gt; ValidateAggregate(string providerName, AggregateBar update, DateTimeOffset? now = null, TimeSpan? staleThreshold = null, ProviderValidationProfile? profile = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:115](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L115) |  |
+
+## ProviderFactory
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderFactory</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:40](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L40).
+
+Configured construction context for the streaming, historical, search, corporate-action, options, and brokerage factories declared by ProviderCapabilityDescriptorCatalog.
+
+```csharp
+public sealed partial class ProviderFactory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderValidationProfile GetStartupValidationProfile(string providerId) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:43](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L43) | Returns the validation profile captured by this host&#x27;s provider factory. |
+| <code>public ProviderFactory(AppConfig config, IProviderCredentialResolver credentialResolver, ILogger? log = null, ISymbolResolver? symbolResolver = null, IServiceProvider? services = null, IReadOnlyDictionary&lt;string, ProviderModuleContext&gt;? moduleContexts = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:52](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L52) |  |
+| <code>public Task&lt;ProviderCreationResult&gt; CreateAndRegisterAllAsync(ProviderRegistry registry, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:76](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L76) | Creates backfill and symbol search providers and registers them with the provided registry. Streaming providers are registered separately via ProviderRegistry factory functions. |
+| <code>public ValueTask&lt;IPreparedProviderCredentials&gt; PrepareCredentialsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:140](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L140) | Asynchronously reads the credentials provider construction will need. Await it at an asynchronous entry point and construct inside IPreparedProviderCredentials.Activate. |
+| <code>public IReadOnlyList&lt;IHistoricalDataProvider&gt; CreateBackfillProviders() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:146](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L146) | Creates all configured backfill providers. |
+| <code>public IReadOnlyList&lt;IHistoricalDataProvider&gt; CreateStandbyBackfillProviders();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:153](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L153) | Builds standby historical adapters inside the host&#x27;s startup credential scope. Runtime enablement can then select existing adapters without incorporating pending secrets or pacing. |
+| <code>public async Task&lt;IReadOnlyList&lt;IHistoricalDataProvider&gt;&gt; CreateBackfillProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:185](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L185) | Creates all configured backfill providers, reading their credentials without blocking. |
+| <code>public IReadOnlyList&lt;ISymbolSearchProvider&gt; CreateSymbolSearchProviders() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:198](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L198) | Creates all configured symbol search providers. Symbol search uses the same credentials as backfill providers. |
+| <code>public async Task&lt;IReadOnlyList&lt;ISymbolSearchProvider&gt;&gt; CreateSymbolSearchProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:204](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L204) | Creates all configured symbol search providers, reading their credentials without blocking. |
+| <code>public CompositeHistoricalDataProvider CreateCompositeBackfillProvider(IReadOnlyList&lt;IHistoricalDataProvider&gt; providers);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:460](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L460) | Creates a composite backfill provider with automatic failover. |
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs:23](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs#L23).
+
+```csharp
+public sealed partial class ProviderFactory
+```
+
+## ProviderHealthStatus
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderHealthStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:344](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L344).
+
+Result of a provider health check.
+
+```csharp
+public sealed record ProviderHealthStatus(string ProviderName, bool IsAvailable, string? Message = null, DateTimeOffset? CheckedAt = null, TimeSpan? ResponseTime = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderHealthStatus() : this(&quot;unknown&quot;, false);</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:352](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L352) |  |
+
+## ProviderInfo
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderInfo</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs:22](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs#L22).
+
+Provider capability metadata for discovery and routing.
+
+```csharp
+public sealed record ProviderInfo(string Name, string DisplayName, ProviderType ProviderType, int Priority, bool IsEnabled, IReadOnlyDictionary<string, object>? Capabilities = null);
+```
+
+## ProviderQuotaBudgets
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderQuotaBudgets</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RequestBudgetConfiguration.cs:53](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RequestBudgetConfiguration.cs#L53).
+
+One account profile is used across history, search and corporate actions.
+
+```csharp
+public static class ProviderQuotaBudgets
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RequestBudgetConfiguration TwelveData(TwelveDataQuotaConfig? profile = null, BackfillProviderRuntimeOptions? runtimeOptions = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RequestBudgetConfiguration.cs:55](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RequestBudgetConfiguration.cs#L55) |  |
+| <code>public static RequestBudgetConfiguration AlphaVantage(AlphaVantageQuotaConfig? profile = null, BackfillProviderRuntimeOptions? runtimeOptions = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RequestBudgetConfiguration.cs:68](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RequestBudgetConfiguration.cs#L68) |  |
+
 ## ProviderRateLimitHistory
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderRateLimitHistory</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:6](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L6).
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:10](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L10).
 
-Bounded process-lifetime quota evidence, excluding symbols, credentials and request payloads.
+Recent quota events and durable UTC daily totals, without request payloads or credentials.
 
 ```csharp
 public sealed class ProviderRateLimitHistory
@@ -22,10 +227,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ProviderRateLimitHistory Shared { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:8](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L8) |  |
-| <code>public ProviderRateLimitHistory(int capacity = 1024);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:13](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L13) |  |
-| <code>public void Record(string provider, RateLimitStatus? status, string? nextProvider = null, int? httpStatus = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:20](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L20) |  |
-| <code>public IReadOnlyList&lt;ProviderRateLimitEventDto&gt; Read(string provider, int hours, DateTimeOffset? now = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L34) |  |
+| <code>public static ProviderRateLimitHistory Shared { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:15](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L15) |  |
+| <code>public ProviderRateLimitHistory(int capacity = 1024) : this(capacity, TimeProvider.System);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:25](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L25) |  |
+| <code>public ProviderRateLimitHistory(string dataRoot, IAtomicFileWriter writer, TimeProvider? timeProvider = null, int capacity = 1024) : this(capacity, timeProvider?? TimeProvider.System);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:30](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L30) |  |
+| <code>public static ProviderRateLimitHistory ForDataRoot(string dataRoot, IAtomicFileWriter writer);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:45](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L45) | Shares recent observations between host surfaces using the same data root. |
+| <code>public IDisposable BeginScope();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:54](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L54) | Directs adapter observations to this history for the current asynchronous request. |
+| <code>public void Record(string provider, RateLimitStatus? status, string? nextProvider = null, int? httpStatus = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:61](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L61) |  |
+| <code>public IReadOnlyList&lt;ProviderRateLimitEventDto&gt; Read(string provider, int hours, DateTimeOffset? now = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:140](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L140) |  |
+| <code>public bool TryReadDailyRollups(string provider, out IReadOnlyList&lt;ProviderRateLimitDailyRollupDto&gt; rollups);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:148](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L148) |  |
 
 ## ProviderRateLimitProfile
 
@@ -391,7 +600,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.QueueStateChangedEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:797](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L797).
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:814](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L814).
 
 Event args for queue state changes.
 
@@ -403,15 +612,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int PendingCount { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:799](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L799) |  |
-| <code>public int InFlightCount { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:800](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L800) |  |
-| <code>public DateTimeOffset Timestamp { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:801](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L801) |  |
+| <code>public int PendingCount { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:816](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L816) |  |
+| <code>public int InFlightCount { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:817](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L817) |  |
+| <code>public DateTimeOffset Timestamp { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:818](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L818) |  |
 
 ## QueueStatistics
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.QueueStatistics</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:786](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L786).
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:803](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L803).
 
 Queue statistics.
 
@@ -423,10 +632,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int PendingRequests { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:788](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L788) |  |
-| <code>public int InFlightRequests { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:789](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L789) |  |
-| <code>public Dictionary&lt;string, int&gt; ActiveByProvider { get; init; } = [];</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:790](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L790) |  |
-| <code>public Dictionary&lt;string, TimeSpan&gt; CooldownsByProvider { get; init; } = [];</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:791](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L791) |  |
+| <code>public int PendingRequests { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:805](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L805) |  |
+| <code>public int InFlightRequests { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:806](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L806) |  |
+| <code>public Dictionary&lt;string, int&gt; ActiveByProvider { get; init; } = [];</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:807](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L807) |  |
+| <code>public Dictionary&lt;string, TimeSpan&gt; CooldownsByProvider { get; init; } = [];</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:808](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L808) |  |
 
 ## RateLimiter
 
@@ -434,7 +643,7 @@ Qualified name: <code>Meridian.Infrastructure.Adapters.Core.RateLimiter</code>. 
 
 Source: [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:10](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L10).
 
-Thread-safe rate limiter for API calls with sliding window support.
+Thread-safe weighted admission with a sliding window and optional vendor-specific daily limit.
 
 ```csharp
 public sealed class RateLimiter : IDisposable
@@ -444,20 +653,25 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public RateLimiter(int maxRequestsPerWindow, TimeSpan window, TimeSpan? minDelayBetweenRequests = null, ILogger? log = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:24](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L24) |  |
-| <code>public void UpdateLimits(int maxRequestsPerWindow, TimeSpan window, TimeSpan? minDelayBetweenRequests = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:41](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L41) | Updates admission limits in place, retaining recent request history and cooldown. |
-| <code>public async Task&lt;TimeSpan&gt; WaitForSlotAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:57](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L57) | Wait until a request can be made within rate limits, and charge that attempt. Returns the time waited. Cancelled waits do not consume capacity. |
-| <code>public void ApplyCooldown(TimeSpan duration);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:109](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L109) | Extend the shared provider cooldown without shortening an existing one. |
-| <code>public DateTimeOffset? GetCooldownUntil();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:122](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L122) |  |
-| <code>public void RecordRequest();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:132](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L132) | Record a request without waiting (for tracking external calls). |
-| <code>public (int RequestsInWindow, int MaxRequests, TimeSpan WindowRemaining) GetStatus();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:144](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L144) | Get current usage statistics, including a provider-imposed cooldown. |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:169](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L169) |  |
+| <code>public RateLimiter(int maxRequestsPerWindow, TimeSpan window, TimeSpan? minDelayBetweenRequests = null, ILogger? log = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:28](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L28) |  |
+| <code>public RateLimiter(RequestBudgetConfiguration configuration, ILogger? log = null, TimeProvider? timeProvider = null) : this(configuration.Maximum, configuration.Window, configuration.MinimumDelay, log, timeProvider);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L44) |  |
+| <code>public void UpdateLimits(int maxRequestsPerWindow, TimeSpan window, TimeSpan? minDelayBetweenRequests = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:52](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L52) | Updates admission limits in place, retaining recent request history and cooldown. |
+| <code>public Task&lt;TimeSpan&gt; WaitForSlotAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:68](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L68) | Wait until a request can be made within rate limits, and charge that attempt. Returns the time waited. Cancelled waits do not consume capacity. |
+| <code>public Task&lt;TimeSpan&gt; WaitForUnitsAsync(int units, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:74](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L74) | Atomically reserve the complete request cost against short and daily limits. A wait cancelled before admission charges neither limit. No HTTP timeout runs during admission. |
+| <code>public async Task&lt;TimeSpan&gt; WaitForUnitsAsync(int units, int reserveHeadroomPercent, Action&lt;TimeSpan&gt;? onWait, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:78](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L78) | Admit a backfill request against the same vendor quota with optional operational headroom. |
+| <code>public void ApplyCooldown(TimeSpan duration);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:147](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L147) | Extend the shared provider cooldown without shortening an existing one. |
+| <code>public DateTimeOffset? GetCooldownUntil();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:160](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L160) |  |
+| <code>public void RecordRequest() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:170](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L170) | Record a request without waiting (for tracking external calls). |
+| <code>public void RecordUnits(int units);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:174](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L174) | Record a known external request&#x27;s full cost without waiting. |
+| <code>public (int RequestsInWindow, int MaxRequests, TimeSpan WindowRemaining) GetStatus();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:187](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L187) | Get current usage statistics, including a provider-imposed cooldown. |
+| <code>public RequestBudgetStatus GetBudgetStatus();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:206](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L206) | Get weighted usage and the explicitly configured vendor daily boundary. |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:311](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L311) |  |
 
 ## RateLimiterRegistry
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.RateLimiterRegistry</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:184](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L184).
+Source: [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:326](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L326).
 
 Manages request budgets shared across provider capabilities.
 
@@ -469,11 +683,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public RateLimiterRegistry(ILogger? log = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:195](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L195) |  |
-| <code>public RateLimiter GetOrCreate(string providerName, int maxRequests, TimeSpan window, TimeSpan? minDelay = null) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:202](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L202) | Get or create a legacy provider-wide limiter. |
-| <code>public RateLimiter GetOrCreate(string providerName, string credential, string quotaGroup, int maxRequests, TimeSpan window, TimeSpan? minDelay = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:210](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L210) | Get the vendor quota shared by capabilities using the same credential. Credential values are hashed before becoming registry keys and never appear in status or logs. The registry owns these limiters; individual providers must not dispose them. |
-| <code>public IReadOnlyDictionary&lt;string, (int RequestsInWindow, int MaxRequests, TimeSpan WindowRemaining)&gt; GetAllStatus();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:250](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L250) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:259](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L259) |  |
+| <code>public RateLimiterRegistry(ILogger? log = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:337](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L337) |  |
+| <code>public RateLimiter GetOrCreate(string providerName, int maxRequests, TimeSpan window, TimeSpan? minDelay = null) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:344](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L344) | Get or create a legacy provider-wide limiter. |
+| <code>public RateLimiter GetOrCreate(string providerName, string credential, string quotaGroup, int maxRequests, TimeSpan window, TimeSpan? minDelay = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:352](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L352) | Get the vendor quota shared by capabilities using the same credential. Credential values are hashed before becoming registry keys and never appear in status or logs. The registry owns these limiters; individual providers must not dispose them. |
+| <code>public RateLimiter GetOrCreate(string providerName, string credential, string quotaGroup, RequestBudgetConfiguration configuration);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:364](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L364) | Get the immutable effective account profile shared across all capabilities. |
+| <code>public IReadOnlyDictionary&lt;string, (int RequestsInWindow, int MaxRequests, TimeSpan WindowRemaining)&gt; GetAllStatus();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:399](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L399) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:408](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L408) |  |
 
 ## RateLimitInfo
 
@@ -513,6 +728,36 @@ Declared public members:
 | --- | --- | --- |
 | <code>public int RemainingRequests =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:368](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L368) |  |
 | <code>public double UsagePercent =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:369](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L369) |  |
+
+## RequestBudgetConfiguration
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.RequestBudgetConfiguration</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RequestBudgetConfiguration.cs:13](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RequestBudgetConfiguration.cs#L13).
+
+Immutable effective limits for one credential and vendor quota group.
+
+```csharp
+public sealed record RequestBudgetConfiguration(int Maximum, TimeSpan Window, TimeSpan MinimumDelay, int? DailyMaximum = null, DailyQuotaResetMode DailyReset = DailyQuotaResetMode.Rolling24Hours, string Unit = "requests")
+```
+
+## RequestBudgetStatus
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.RequestBudgetStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RequestBudgetConfiguration.cs:36](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RequestBudgetConfiguration.cs#L36).
+
+A coherent admission snapshot. Units are credits for weighted vendor APIs.
+
+```csharp
+public sealed record RequestBudgetStatus(string Unit, int UnitsInWindow, int Maximum, TimeSpan Window, int? DailyUnitsUsed, int? DailyMaximum, DateTimeOffset? DailyResetsAt, DailyQuotaResetMode DailyReset, DateTimeOffset? NextAvailableAt, DateTimeOffset ObservedAt, DateTimeOffset? CooldownUntil)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsLimited =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RequestBudgetConfiguration.cs:49](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RequestBudgetConfiguration.cs#L49) |  |
 
 ## StaleBarsVerdict
 
@@ -597,12 +842,12 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public CanonicalRegistrySymbolResolver(ICanonicalSymbolRegistry registry, ISymbolResolver? inner = null, ILogger? log = null, SymbolResolutionMode mode = SymbolResolutionMode.Canonical, Action&lt;SymbolResolutionMismatch&gt;? mismatchObserver = null, IReadOnlyDictionary&lt;string, SymbolResolutionMode&gt;? providerModes = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:22](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L22) |  |
-| <code>public SymbolResolutionMode GetProviderMode(string provider) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:39](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L39) |  |
-| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:42](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L42) |  |
-| <code>public async Task&lt;SymbolResolution?&gt; ResolveAsync(string symbol, string? exchange = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L44) |  |
-| <code>public async Task&lt;string?&gt; MapSymbolAsync(string symbol, string fromProvider, string toProvider, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:66](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L66) |  |
-| <code>public Task&lt;IReadOnlyList&lt;SymbolSearchResult&gt;&gt; SearchAsync(string query, int maxResults = 10, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:101](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L101) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:234](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L234) |  |
+| <code>public SymbolResolutionMode GetProviderMode(string provider);</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:39](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L39) |  |
+| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:49](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L49) |  |
+| <code>public async Task&lt;SymbolResolution?&gt; ResolveAsync(string symbol, string? exchange = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:51](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L51) |  |
+| <code>public async Task&lt;string?&gt; MapSymbolAsync(string symbol, string fromProvider, string toProvider, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:73](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L73) |  |
+| <code>public Task&lt;IReadOnlyList&lt;SymbolSearchResult&gt;&gt; SearchAsync(string query, int maxResults = 10, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:108](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L108) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:242](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L242) |  |
 
 ## ISymbolResolver
 
@@ -843,283 +1088,10 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.FailoverRecoveredEvent</code>. Kind: `record struct`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1258](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1258).
+Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1436](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1436).
 
 Raised when the primary provider recovers and is restored as active.
 
 ```csharp
 public readonly record struct FailoverRecoveredEvent(string RuleId, string FromProviderId, string ToProviderId, DateTimeOffset Timestamp);
-```
-
-## FailoverRuleSnapshot
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1267](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1267).
-
-Point-in-time snapshot of a failover rule&#x27;s state.
-
-```csharp
-public readonly record struct FailoverRuleSnapshot(string RuleId, string PrimaryProviderId, string[] BackupProviderIds, string CurrentActiveProviderId, bool IsInFailoverState, DateTimeOffset? LastFailoverTime, int FailoverCount, int FailoverThreshold, int RecoveryThreshold);
-```
-
-## FailoverTransitionRequest
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.FailoverTransitionRequest</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1149](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1149).
-
-A requested provider transition. The failover coordinator does not change its active-provider state until the registered runtime confirms that connection and subscription restoration succeeded.
-
-```csharp
-public sealed class FailoverTransitionRequest
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Guid TransitionId { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1183](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1183) |  |
-| <code>public string RuleId { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1184](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1184) |  |
-| <code>public string FromProviderId { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1185](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1185) |  |
-| <code>public string ToProviderId { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1186](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1186) |  |
-| <code>public bool IsRecovery { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1187](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1187) |  |
-| <code>public string Reason { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1188](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1188) |  |
-| <code>public CancellationToken CancellationToken { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1189](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1189) |  |
-| <code>public Task&lt;bool&gt; Completion =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1190](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1190) |  |
-| <code>public bool TryComplete() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1193](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1193) |  |
-| <code>public bool TryReject(string reason) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1202](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1202) |  |
-
-## FailoverTriggeredEvent
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1248](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1248).
-
-Raised when an automatic or manual failover is triggered.
-
-```csharp
-public readonly record struct FailoverTriggeredEvent(string RuleId, string FromProviderId, string ToProviderId, string Reason, DateTimeOffset Timestamp);
-```
-
-## ProviderHealthSnapshot
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1281](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1281).
-
-Point-in-time snapshot of a provider&#x27;s health.
-
-```csharp
-public readonly record struct ProviderHealthSnapshot(string ProviderId, int ConsecutiveFailures, int ConsecutiveSuccesses, DateTimeOffset? LastFailureTime, DateTimeOffset? LastSuccessTime, double AverageLatencyMs, string[] RecentIssues);
-```
-
-## StreamingFailoverRegistry
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.StreamingFailoverRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs:13](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs#L13).
-
-Singleton registry that holds the runtime StreamingFailoverService instance. Allows API endpoints (in the Ui.Shared layer) to access the failover service without requiring a direct project reference to the runtime.
-
-```csharp
-public sealed class StreamingFailoverRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StreamingFailoverService? Service { get; set; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs:18](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs#L18) | The runtime failover service, or null if failover is disabled. |
-| <code>public bool IsAvailable =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs:23](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs#L23) | Whether a runtime failover service is available. |
-
-## StreamingFailoverService
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:23](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L23).
-
-Orchestrates automatic failover between streaming market data providers. Monitors provider health via IConnectionHealthMonitor, evaluates configured FailoverRuleConfig rules, and triggers switchover when consecutive failures exceed the threshold.
-
-```csharp
-public sealed class StreamingFailoverService : IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public event Action&lt;FailoverTriggeredEvent&gt;? OnFailoverTriggered;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:42](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L42) | Raised when a failover is triggered, providing the rule ID, the failed provider, and the new active provider. |
-| <code>public event Action&lt;FailoverRecoveredEvent&gt;? OnFailoverRecovered;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:47](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L47) | Raised when a provider recovers and becomes the active provider again. |
-| <code>public StreamingFailoverService(IConnectionHealthMonitor healthMonitor);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:49](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L49) |  |
-| <code>public void Start(DataSourcesConfig config, IReadOnlyDictionary&lt;string, string&gt;? initialActiveProviderIds = null);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:61](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L61) | Starts periodic health evaluation based on the configured interval. |
-| <code>public void RegisterProvider(string providerId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:130](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L130) | Registers a provider for health tracking. |
-| <code>public IDisposable RegisterTransitionHandler(string ruleId, Action&lt;FailoverTransitionRequest&gt; handler);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:142](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L142) | Registers the runtime that can execute provider switches for a rule. Rule state is committed only after that runtime confirms the connection and subscription hand-off completed. |
-| <code>public bool HasLiveTransitionHandler(string ruleId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:166](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L166) | Returns whether a live runtime is registered to execute transitions for the rule. |
-| <code>public void RecordHeartbeat(string providerId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:202](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L202) | Records transport-level liveness for a provider&#x27;s current connection. This keeps the connection&#x27;s inactivity window open without counting as a successful operation, so a quiet but connected feed stays healthy and recovery evidence is not inflated by heartbeats. |
-| <code>public void RecordSuccess(string providerId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:221](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L221) | Records a successful operation for a provider (resets failure counter, increments success counter). |
-| <code>public void RecordFailure(string providerId, string reason);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:236](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L236) | Records a failure for a provider. |
-| <code>public void RecordLatency(string providerId, double latencyMs);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:253](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L253) | Records latency for a provider. If latency exceeds the configured threshold for any rule, it counts as a failure for that rule. |
-| <code>public bool ForceFailover(string ruleId, string targetProviderId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:271](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L271) | Forces failover for a specific rule to a target provider. |
-| <code>public async Task&lt;bool&gt; ForceFailoverAsync(string ruleId, string targetProviderId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:322](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L322) | Forces a failover and waits until the registered runtime either commits or rejects the provider hand-off. A false result never changes the active provider. |
-| <code>public async Task&lt;bool&gt; FailoverAfterConnectionFailureAsync(string ruleId, string failedProviderId, string reason, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:381](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L381) | Records an active-provider connection failure and performs an immediate, coordinator-owned hand-off to the next configured healthy provider. Each candidate transition remains two-phase: the coordinator commits its active provider only after the runtime confirms the connection and subscription hand-off. |
-| <code>public string? GetActiveProviderId(string ruleId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:466](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L466) | Gets the current active provider ID for a given rule. |
-| <code>public IReadOnlyList&lt;FailoverRuleSnapshot&gt; GetRuleSnapshots();</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:475](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L475) | Gets the current failover state for all rules. |
-| <code>public IReadOnlyList&lt;ProviderHealthSnapshot&gt; GetProviderHealthSnapshots();</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:484](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L484) | Gets the health state for all registered providers. |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:902](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L902) |  |
-
-## FinnhubCompanyProfile
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Finnhub.FinnhubCompanyProfile</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:480](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L480).
-
-Finnhub company profile data.
-
-```csharp
-public sealed record FinnhubCompanyProfile
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;country&quot;)] public string? Country { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:483](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L483) |  |
-| <code>[JsonPropertyName(&quot;currency&quot;)] public string? Currency { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:486](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L486) |  |
-| <code>[JsonPropertyName(&quot;exchange&quot;)] public string? Exchange { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:489](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L489) |  |
-| <code>[JsonPropertyName(&quot;finnhubIndustry&quot;)] public string? Industry { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:492](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L492) |  |
-| <code>[JsonPropertyName(&quot;ipo&quot;)] public string? IpoDate { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:495](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L495) |  |
-| <code>[JsonPropertyName(&quot;logo&quot;)] public string? LogoUrl { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:498](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L498) |  |
-| <code>[JsonPropertyName(&quot;marketCapitalization&quot;)] public decimal? MarketCap { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:501](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L501) |  |
-| <code>[JsonPropertyName(&quot;name&quot;)] public string? Name { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:504](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L504) |  |
-| <code>[JsonPropertyName(&quot;phone&quot;)] public string? Phone { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:507](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L507) |  |
-| <code>[JsonPropertyName(&quot;shareOutstanding&quot;)] public decimal? SharesOutstanding { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:510](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L510) |  |
-| <code>[JsonPropertyName(&quot;ticker&quot;)] public string? Ticker { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:513](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L513) |  |
-| <code>[JsonPropertyName(&quot;weburl&quot;)] public string? WebUrl { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:516](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L516) |  |
-
-## FinnhubCorporateActionProvider
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Finnhub.FinnhubCorporateActionProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:35](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L35).
-
-Fetches dividend and split history from Finnhub corporate-action endpoints.
-
-```csharp
-public sealed partial class FinnhubCorporateActionProvider : ICorporateActionProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FinnhubCorporateActionProvider(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger&lt;FinnhubCorporateActionProvider&gt; logger, ICredentialContext? credentials = null);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L44) |  |
-| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:56](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L56) |  |
-| <code>public CorporateActionProviderReleaseStatusDto ReleaseStatus =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:58](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L58) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionCommand&gt;&gt; FetchAsync(string ticker, Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:62](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L62) |  |
-| <code>public async Task&lt;CorporateActionFetchResult&gt; FetchWithOutcomeAsync(string ticker, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:69](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L69) |  |
-
-## FinnhubEarning
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:450](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L450).
-
-Finnhub earnings data.
-
-```csharp
-public sealed record FinnhubEarning
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;actual&quot;)] public decimal? Actual { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:453](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L453) |  |
-| <code>[JsonPropertyName(&quot;estimate&quot;)] public decimal? Estimate { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:456](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L456) |  |
-| <code>[JsonPropertyName(&quot;period&quot;)] public string? Period { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:459](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L459) |  |
-| <code>[JsonPropertyName(&quot;quarter&quot;)] public int? Quarter { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:462](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L462) |  |
-| <code>[JsonPropertyName(&quot;surprise&quot;)] public decimal? Surprise { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:465](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L465) |  |
-| <code>[JsonPropertyName(&quot;surprisePercent&quot;)] public decimal? SurprisePercent { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:468](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L468) |  |
-| <code>[JsonPropertyName(&quot;symbol&quot;)] public string? Symbol { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:471](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L471) |  |
-| <code>[JsonPropertyName(&quot;year&quot;)] public int? Year { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:474](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L474) |  |
-
-## FinnhubHistoricalDataProvider
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:35](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L35).
-
-Historical data provider using Finnhub API (free tier with API key). Generous free tier: 60 API calls/minute. Coverage: 60,000+ global securities with company fundamentals. Best for: Earnings data, fundamentals, news, and high-frequency backfill operations. Extends BaseHistoricalDataProvider for common functionality including: - HTTP resilience (retry, circuit breaker) - Rate limit tracking with IRateLimitAwareProvider - Centralized error handling
-
-```csharp
-public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:42](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L42) |  |
-| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:43](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L43) |  |
-| <code>public override string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L44) |  |
-| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:49](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L49) |  |
-| <code>public override TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:50](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L50) |  |
-| <code>public override int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:53](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L53) |  |
-| <code>public override TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:54](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L54) |  |
-| <code>public override HistoricalDataCapabilities Capabilities { get; } = new () { Intraday = true, Dividends = true, Splits = true, SupportedMarkets = [&quot;US&quot;, &quot;UK&quot;, &quot;DE&quot;, &quot;CA&quot;, &quot;AU&quot;, &quot;HK&quot;, &quot;JP&quot;, &quot;CN&quot;]};</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:60](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L60) | Finnhub supports intraday bars and corporate actions (raw prices, not adjusted). Wide market coverage: US, UK, DE, CA, AU, HK, JP, CN. |
-| <code>public static IReadOnlyList&lt;string&gt; SupportedResolutions =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:72](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L72) | Supported candle resolutions. |
-| <code>public FinnhubHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(httpClient, log, runtimeOptions : runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:74](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L74) |  |
-| <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:88](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L88) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:109](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L109) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:115](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L115) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;IntradayBar&gt;&gt; GetIntradayBarsAsync(string symbol, string resolution, DateTimeOffset? from, DateTimeOffset? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:213](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L213) | Get intraday bars for a symbol. |
-| <code>public async Task&lt;IReadOnlyList&lt;FinnhubEarning&gt;&gt; GetEarningsAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:304](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L304) | Get basic earnings data for a symbol. |
-| <code>public async Task&lt;FinnhubCompanyProfile?&gt; GetCompanyProfileAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:337](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L337) | Get company profile data. |
-
-## FinnhubSymbolSearchProvider
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Finnhub.FinnhubSymbolSearchProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProvider.cs:26](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProvider.cs#L26).
-
-Symbol search provider using the Finnhub API. Provides symbol search and company profiles with generous free tier (60 calls/min).
-
-```csharp
-public sealed class FinnhubSymbolSearchProvider : BaseSymbolSearchProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProvider.cs:28](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProvider.cs#L28) |  |
-| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProvider.cs:29](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProvider.cs#L29) |  |
-| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProvider.cs:30](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProvider.cs#L30) |  |
-| <code>public override IReadOnlyList&lt;string&gt; SupportedAssetTypes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProvider.cs:40](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProvider.cs#L40) |  |
-| <code>public override IReadOnlyList&lt;string&gt; SupportedExchanges =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProvider.cs:46](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProvider.cs#L46) |  |
-| <code>public FinnhubSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null) : base(apiKey, httpClient, log);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProvider.cs:52](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProvider.cs#L52) |  |
-
-## FredEconomicObservationsResult
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Fred.FredEconomicObservationsResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs:15](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs#L15).
-
-Unmodified response evidence is available to the host&#x27;s evidence retainer; missing observations stay explicit.
-
-```csharp
-public sealed record FredEconomicObservationsResult(IReadOnlyList<BondMarketObservationInput> Observations, IReadOnlyList<DateOnly> MissingDates, string RawResponseJson, string ResponseSha256);
-```
-
-## FredEconomicSeriesDefinition
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Fred.FredEconomicSeriesDefinition</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs:11](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs#L11).
-
-A reviewed mapping from a FRED series to an exact contractual index and explicit source units.
-
-```csharp
-public sealed record FredEconomicSeriesDefinition(string SeriesId, string IndexName, BondMarketObservationKind Kind, BondMarketValueUnit Unit, string SourceName, string? Currency = null);
 ```

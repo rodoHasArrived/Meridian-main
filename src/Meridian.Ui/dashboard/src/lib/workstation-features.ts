@@ -34,7 +34,7 @@ type FeaturePurpose = Pick<WorkstationFeatureDefinition, "description" | "keywor
 // existing browse model. Both navigation and search consume those same routes.
 const ACCOUNTING_FEATURE_PURPOSES: Record<string, FeaturePurpose> = {
   today: { description: "Review today's accounting work, close blockers, and next actions.", keywords: ["daily close", "accounting overview"] },
-  "operations-continuity": { description: "Follow the close checklist, handoffs, decisions, and retained evidence.", keywords: ["close workflow", "handoff", "month end"] },
+  "operations-continuity": { description: "Follow the close checklist, next steps, decisions, and retained evidence.", keywords: ["close workflow", "handoff", "month end"] },
   "close-calendar": { description: "Review accounting periods, close dates, and upcoming deadlines.", keywords: ["period close", "month end", "deadlines"] },
   ledger: { description: "Explore posted ledger balances, trial balance and retained disposal tax results.", keywords: ["general ledger", "trial balance", "account balances", "disposal tax", "tax character", "recognized gain or loss", "deferred loss"] },
   "factor-paydown": { description: "Preview factor paydown and prepare an evidence-bound review draft.", keywords: ["principal paydown", "factor", "basis relief", "bond paydown", "MBS paydown"] },
@@ -59,16 +59,16 @@ export const WORKSPACE_NAVIGATION_FEATURES: Readonly<Record<WorkspaceKey, readon
     feature("tradingOrders", "Orders", "Review trading orders and their execution status.", ["order status", "executions", "fills"]),
     feature("tradingPositions", "Positions", "Inspect trading positions and current exposure.", ["holdings", "open positions"]),
     feature("tradingRisk", "Risk", "Review trading risk and the limits affecting execution.", ["risk limits", "exposure", "buying power"]),
-    feature("tradingReadiness", "Readiness", "Review paper cockpit blockers, operator work items, and promotion evidence.", ["ready to trade", "trading blockers", "paper trading checks"], { paletteLabel: "Readiness console" })
   ],
   portfolio: [
     feature("portfolio", "Overview", "Review portfolio holdings, exposure, and performance.", [], { match: "exact" }),
     feature("portfolioAttribution", "Attribution", "Explore what contributed to portfolio performance.", ["performance attribution", "returns", "profit and loss"]),
     feature("portfolioAssetDetail", "Asset detail", "Inspect an asset's positions, activity, and supporting records.", ["asset positions", "holding details", "cash-flow scenarios", "contractual cash flows", "prepayment scenarios", "call put scenarios", "retained cash-flow runs"]),
-    feature("portfolioBrokerageSync", "Brokerage sync", "Review household brokerage account sync posture and recovery actions.", ["sync broker", "brokerage account", "account synchronization"]),
+    feature("portfolioBrokerageSync", "Brokerage sync", "Review household brokerage account sync status and recovery actions.", ["sync broker", "brokerage account", "account synchronization"]),
     feature("portfolioCashLadder", "Cash ladder", "Review projected cash flows and upcoming funding needs.", ["cash forecast", "cash flow", "liquidity", "funding schedule", "coupon income", "bond maturities", "bond cash flows"]),
     feature("portfolioFamilyOffice", "Family office", "Review family net worth, entity ownership, asset-class exposure, commitments, breaks, and stale valuations.", ["net worth", "household", "family assets"]),
-    feature("portfolioLoanBook", "Loan book", "Review lending exposure, loan balances, and servicing activity.", ["loans", "loan portfolio", "lending", "debt"])
+    feature("portfolioLoanBook", "Loan book", "Review lending exposure, loan balances, and servicing activity.", ["loans", "loan portfolio", "lending", "debt"]),
+    feature("portfolioNav", "NAV", "Compare net asset value with a prior date, in total and by asset class.", ["net asset value", "nav change", "prior period", "month over month"])
   ],
   accounting: ACCOUNTING_NAVIGATION_ITEMS.map((item) => {
     const purpose = ACCOUNTING_FEATURE_PURPOSES[item.id];
@@ -80,9 +80,9 @@ export const WORKSPACE_NAVIGATION_FEATURES: Readonly<Record<WorkspaceKey, readon
     feature("reportingScheduled", "Scheduled Reports", "Review recurring reports and their delivery schedules.", ["automated reports", "recurring reports", "report schedule"]),
     feature("reportingRunParameters", "Run Report", "Choose a report, set its parameters, and review it before running.", ["run a report", "generate report", "create report"]),
     feature("reportingOperationsRecord", "Operations record", "Trace source records through accounting evidence and report-pack publication.", ["source to report", "audit trail", "operations workflow"]),
-    feature("reportingReportPacks", "Report packs", "Open approval-ready report packet review and governed outputs.", ["report packet", "review reports", "delivery evidence"]),
+    feature("reportingReportPacks", "Report packs", "Open approval-ready report packet review and outputs.", ["report packet", "review reports", "delivery evidence"]),
     feature("reportingEvidence", "Evidence", "Inspect packet completeness, stale evidence, and lineage.", ["audit evidence", "provenance", "report lineage"], { paletteLabel: "Evidence workbench" }),
-    feature("reportingExports", "Exports", "Run on-demand reports and review generated export run posture.", ["download reports", "export report", "report files"])
+    feature("reportingExports", "Exports", "Run on-demand reports and review generated export run status.", ["download reports", "export report", "report files"])
   ],
   strategy: [
     feature("strategy", "Overview", "Review strategy runs, comparisons, and research progress.", [], { match: "exact" }),
@@ -95,8 +95,8 @@ export const WORKSPACE_NAVIGATION_FEATURES: Readonly<Record<WorkspaceKey, readon
   ],
   data: [
     feature("data", "Overview", "Review data collection, provider health, and data quality.", [], { match: "exact" }),
-    feature("dataImport", "Import data", "Load a file, preview its records, and validate the import before committing it to a governed data workflow.", ["upload data", "import file", "csv import"]),
-    feature("dataProviders", "Providers", "Review provider catalog, onboarding posture, connection health, and routing evidence.", ["data provider health", "data connections", "connection status"]),
+    feature("dataImport", "Import data", "Load a file, preview its records, and validate the import before committing it to a data workflow.", ["upload data", "import file", "csv import"]),
+    feature("dataProviders", "Providers", "Review provider catalog, onboarding status, connection health, and routing evidence.", ["data provider health", "data connections", "connection status"]),
     feature("dataQuotes", "Market data", "Inspect quotes, trades, depth, charts, and staged tickets.", ["live quotes", "prices", "market charts", "ticker"], { paletteLabel: "Live quotes" }),
     { ...feature("dataQuotes", "Options screening", "Explore calls and puts, construct a strategy basket, and inspect dated broker assessments.", ["options", "delta", "option chain", "broker assessment", "strategy basket"], { id: "data-options", paletteLabel: "Options screening" }), route: marketDataDeskPath("options") },
     feature("dataOperations", "Ingestion operations", "Preview, trigger, and review historical data backfill jobs.", ["historical prices", "price history", "historical data", "backfill", "ingestion operations"], { id: "data-backfills", paletteLabel: "Backfill queues" }),
@@ -120,6 +120,8 @@ export const WORKSPACE_NAVIGATION_FEATURES: Readonly<Record<WorkspaceKey, readon
 
 /** Existing deep-link views and useful wired routes outside the primary rail. */
 const FEATURE_SHORTCUTS: readonly WorkstationFeatureDefinition[] = [
+  { id: "today", label: "Today", description: "Review the ranked operator queue across workspaces.", keywords: ["daily control tower", "home", "queue"], route: "/today" },
+  { id: "operational-readiness", label: "Operational readiness", description: "Review cross-workspace blockers and next actions in Today.", keywords: ["readiness console", "ready to trade", "trading blockers", "paper trading checks"], route: "/today?view=readiness" },
   { id: "accounting-bond-analytics", label: "Bond analytics", description: "Select a bond to calculate price, yield, accrued interest, duration, convexity and DV01.", keywords: ["fixed income", "bond yield", "duration", "convexity", "dv01"], route: `${WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}?tab=evidence&bondAction=analytics`, capabilityIds: ["bond-analytics-migration"] },
   { id: "accounting-bond-conventions", label: "Bond convention migration", description: "Select a bond, preview convention differences and stage a draft for independent review.", keywords: ["coupon units", "bond migration", "day count", "conventions"], route: `${WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}?tab=evidence&bondAction=migration`, capabilityIds: ["bond-analytics-migration"] },
   { id: "accounting-bond-ladders", label: "Issuer and maturity ladders", description: "Browse retained bonds by issuer or maturity window, then open instrument details.", keywords: ["bond ladder", "issuer ladder", "maturity ladder", "fixed income"], route: `${WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}#bond-ladders`, capabilityIds: ["issuer-maturity-ladders"] },
@@ -129,7 +131,7 @@ const FEATURE_SHORTCUTS: readonly WorkstationFeatureDefinition[] = [
   { id: "data-alerts", label: "Price alerts", description: "Create local quote-threshold alerts from the Market Data desk alerts view.", keywords: ["price notification", "quote alert", "price threshold"], route: `${WORKSTATION_ROUTE_CATALOG.dataQuotes}?view=alerts` },
   { id: "strategy-formula-workbench", label: "Formula Workbench", description: "Author cell-based strategy formulas from the Quant Lab formulas tab.", keywords: ["strategy formulas"], route: `${WORKSTATION_ROUTE_CATALOG.strategyQuantLab}?view=formulas` },
   feature("settingsAlpacaProviderGuidedSetup", "Alpaca guided setup", "Configure and verify paper credentials before reviewing advanced runtime evidence.", ["connect alpaca", "alpaca credentials", "paper account setup"], { id: "settings-provider-setup" }),
-  feature("reportingReportBuilder", "Report Builder", "Design a governed report and review its output configuration.", ["build report", "custom report", "report design"]),
+  feature("reportingReportBuilder", "Report Builder", "Design a report and review its output configuration.", ["build report", "custom report", "report design"]),
   feature("reportingRunStatus", "Report Run Status", "Review report jobs, completed runs, and failures needing attention.", ["report queue", "report progress", "report history"]),
   feature("reportingGovernance", "Reporting Governance", "Review report access, approval, lifecycle, and audit controls.", ["report permissions", "report approvals", "report audit"])
 ];

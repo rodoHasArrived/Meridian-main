@@ -38,35 +38,35 @@ export type DataOperationsWorkstream =
 export const DATA_ROUTE_VIEW_COPY: Record<DataOperationsWorkstream, { title: string; description: string }> = {
   overview: {
     title: "Data overview",
-    description: "Provider posture, data quality, and analytics posture. Providers, backfills, exports, and SQL have focused routes."
+    description: "Check that data providers are healthy and that data is arriving."
   },
   providers: {
     title: "Provider catalog",
-    description: "Source health, credentials, routing trust, verification, and recovery actions."
+    description: "Check each provider's health and credentials, and fix the ones that need it."
   },
   import: {
     title: "Data import",
-    description: "Template-led retained-file preview, validation evidence, and downstream handoff."
+    description: "Preview and validate a file before importing it."
   },
   backfills: {
     title: "Backfill queue",
-    description: "Historical repair jobs with operator-visible status, ranges, and result evidence."
+    description: "Track jobs that fill gaps in historical data."
   },
   operations: {
     title: "Ingestion operations",
-    description: "Resumable import and backfill recovery with checkpointed evidence and audited actions."
+    description: "Resume or recover imports and backfills that stopped."
   },
   assurance: {
     title: "Storage assurance",
-    description: "Unified storage posture with preview-first, confirmation-gated maintenance actions."
+    description: "Check storage health and run maintenance after previewing its effect."
   },
   exports: {
     title: "Export packages",
-    description: "Governed export runs and downstream handoff evidence."
+    description: "Review export runs and where each one was delivered."
   },
   query: {
     title: "SQL query",
-    description: "Read-only SQL workbench over the workstation store."
+    description: "Run read-only SQL queries against workstation data."
   }
 };
 
@@ -129,14 +129,14 @@ export function buildDataLoadingState(
   const focusedDescription = backfillFocus
     ? "Waiting for historical repair jobs, provider pressure, and review-required backfills."
     : providersFocus
-      ? "Waiting for provider status, credential posture, and setup evidence."
+      ? "Waiting for provider status, credential status, and setup evidence."
       : importFocus
-        ? "Waiting for governed upload templates and retained-file preview readiness."
+        ? "Waiting for upload templates and retained-file preview readiness."
         : exportsFocus
-          ? "Waiting for retained export records and handoff readiness."
+          ? "Waiting for retained export records and delivery readiness."
           : queryFocus
-            ? "Waiting for the read-only query workspace and catalog posture."
-            : "Waiting for provider posture, market data health, and export evidence.";
+            ? "Waiting for the read-only query workspace and catalog status."
+            : "Waiting for provider health, market data health, and export evidence.";
 
   return {
     title: focusedTitle,
@@ -145,14 +145,14 @@ export function buildDataLoadingState(
     detail: backfillFocus
       ? "Queued and review-required jobs will appear here as soon as workspace data is available."
       : providersFocus
-        ? "Provider health, credential verification, and routing posture will appear when workspace data is available."
+        ? "Provider health, credential verification, and routing status will appear when workspace data is available."
         : importFocus
           ? "Upload templates, field guidance, and retained-source preview controls will appear when workspace data is available."
           : exportsFocus
             ? "Export packages and selected export details will appear when workspace data is available."
             : queryFocus
               ? "Saved query, recent query, and result controls will appear when the workspace is ready."
-              : "Provider health, data-quality handoffs, and export readiness will appear when workspace data is available.",
+              : "Provider health, data-quality next steps, and export readiness will appear when workspace data is available.",
     regionLabel: backfillFocus
       ? "Data backfill loading state"
       : importFocus
@@ -229,7 +229,7 @@ export function buildRouteFocusCardState({
       ariaLabel: "Provider route focus",
       eyebrow: "Provider Setup",
       title: "Provider status and setup",
-      description: "Credential posture, verification evidence, routing trust, and provider setup stay on the provider route.",
+      description: "Credential status, verification evidence, routing trust, and provider setup stay on the provider route.",
       rows: [
         { id: "provider-status", label: "Provider status", value: "Catalog and readiness" },
         { id: "credentials", label: "Credentials", value: "Masked and auditable" },
@@ -245,12 +245,12 @@ export function buildRouteFocusCardState({
       role: "region",
       ariaLabel: "Data import route focus",
       eyebrow: "File Intake",
-      title: "Governed file import",
-      description: "Choose a server-provided template, preview a retained source file, and review validation evidence before downstream handoff.",
+      title: "File import",
+      description: "Choose a server-provided template, preview a retained source file, and review validation evidence before sending it downstream.",
       rows: [
         { id: "template", label: "Template", value: "Server-owned catalog" },
         { id: "preview", label: "Preview", value: "Retained source evidence" },
-        { id: "handoff", label: "Handoff", value: "Validation and reconciliation" }
+        { id: "handoff", label: "Next step", value: "Validation and reconciliation" }
       ],
       action: null
     };
@@ -263,10 +263,10 @@ export function buildRouteFocusCardState({
       ariaLabel: "Exports route focus",
       eyebrow: "Export Records",
       title: "Export package review",
-      description: "Retained export records and handoff readiness are isolated from provider setup and query work.",
+      description: "Retained export records and delivery readiness are isolated from provider setup and query work.",
       rows: [
         { id: "records", label: "Records", value: "Recent exports" },
-        { id: "handoff", label: "Handoff", value: "Reporting and package outputs" },
+        { id: "handoff", label: "Next step", value: "Reporting and package outputs" },
         { id: "selected-export", label: "Inspector", value: "Selected export detail" }
       ],
       action: null
@@ -296,11 +296,11 @@ export function buildRouteFocusCardState({
     ariaLabel: "Data workspace route focus",
     eyebrow: "Workspace evidence",
     title: "Provider and export readiness",
-    description: "Keep provider recovery, backfill pressure, and export handoffs visible while Data prepares inputs for Accounting and Reporting.",
+    description: "Keep provider recovery, backfill pressure, and export deliveries visible while Data prepares inputs for Accounting and Reporting.",
     rows: [
       { id: "primary-checks", label: "Primary checks", value: "Providers / backfills / exports" },
       { id: "security-coverage", label: "Security coverage", value: "Accounting" },
-      { id: "operator-handoff", label: "Operator handoff", value: "Reporting export evidence" }
+      { id: "operator-handoff", label: "Operator next step", value: "Reporting export evidence" }
     ],
     action: {
       label: "Open Security Master",

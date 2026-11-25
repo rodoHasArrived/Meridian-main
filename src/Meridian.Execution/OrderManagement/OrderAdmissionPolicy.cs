@@ -18,13 +18,15 @@ internal sealed class OrderAdmissionPolicy
     private readonly ExecutionMode _executionMode;
     private readonly ISecurityMasterGate? _securityMasterGate;
     private readonly ExecutionOperatorControlService? _operatorControls;
-    private readonly ILiveOrderReadinessGate? _liveReadinessGate;
+    private readonly OrderAuthorityResolver _authority;
     private readonly IPortfolioState? _portfolioState;
     private readonly ILogger _logger;
     private readonly IOrderSessionPolicy? _sessionPolicy;
     private readonly IOrderMarketReferenceSource? _marketReferences;
     private readonly IOrderInstrumentCoverageSource? _instrumentCoverage;
     private readonly TimeProvider _clock;
+    private readonly ILiveStrategyOrderAuthorization? _liveStrategyAuthorization;
+    private readonly bool _requireLiveStrategyAuthorization;
 
     internal OrderAdmissionPolicy(
         IExecutionGateway gateway,
@@ -37,7 +39,11 @@ internal sealed class OrderAdmissionPolicy
         IOrderSessionPolicy? sessionPolicy = null,
         IOrderMarketReferenceSource? marketReferences = null,
         IOrderInstrumentCoverageSource? instrumentCoverage = null,
-        TimeProvider? clock = null)
+        TimeProvider? clock = null,
+        IStrategyRunAuthoritySource? runAuthority = null,
+        OrderAuthorityOptions? authorityOptions = null,
+        ILiveStrategyOrderAuthorization? liveStrategyAuthorization = null,
+        bool requireLiveStrategyAuthorization = false)
     {
         ArgumentNullException.ThrowIfNull(gateway);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -48,12 +54,15 @@ internal sealed class OrderAdmissionPolicy
             : BrokerageOrderPlacementGate.ResolveExecutionMode(configuration, gateway.GatewayId);
         _securityMasterGate = securityMasterGate;
         _operatorControls = operatorControls;
-        _liveReadinessGate = liveReadinessGate;
         _portfolioState = portfolioState;
         _sessionPolicy = sessionPolicy;
         _marketReferences = marketReferences;
         _instrumentCoverage = instrumentCoverage;
         _clock = clock ?? TimeProvider.System;
+        _liveStrategyAuthorization = liveStrategyAuthorization;
+        _requireLiveStrategyAuthorization = requireLiveStrategyAuthorization;
+        _authority = new OrderAuthorityResolver(
+            _executionMode, liveReadinessGate, runAuthority, authorityOptions, _clock, securityMasterGate);
     }
 
     /// <summary>
@@ -61,10 +70,15 @@ internal sealed class OrderAdmissionPolicy
     /// request snapshots metadata and legs once for risk and routing; paper control evaluation
     /// retains the existing original-request override behavior.
     /// </summary>
-    internal PreparedOrderAdmission Prepare(OrderRequest request, string orderId)
+    internal PreparedOrderAdmission Prepare(OrderRequest request, string orderId, OrderSubmissionAuthority? authority = null)
     {
         ArgumentNullException.ThrowIfNull(request);
+        // Legacy callers carry identity in metadata; typed callers have already stamped the same
+        // keys from their authority, so the reads below agree with it either way.
+        authority ??= OrderSubmissionAuthority.Unattributed(request.Metadata);
         request = request.ClientOrderId is null ? request with { ClientOrderId = orderId } : request;
+        if (_portfolioState is PaperTradingPortfolio { UsesCanonicalAccounting: true } canonical && request.FundAccountId is null)
+            request = request with { FundAccountId = Guid.Parse(canonical.PrimaryAccountId) };
         request = StripInternalRiskMetadata(request);
         var brokerName = _gateway.GatewayId;
 
@@ -80,7 +94,7 @@ internal sealed class OrderAdmissionPolicy
         var safeRequest = SanitizeAndSnapshotRequest(request, orderId);
         var controlRequest = _executionMode is ExecutionMode.Live ? safeRequest : request;
         return new PreparedOrderAdmission(
-            orderId, request, safeRequest, controlRequest, brokerName, actor, correlationId, runId, sessionId);
+            orderId, request, safeRequest, controlRequest, brokerName, actor, correlationId, runId, sessionId, authority);
     }
 
     /// <summary>
@@ -104,6 +118,16 @@ internal sealed class OrderAdmissionPolicy
                     }));
         }
 
+        if (_portfolioState is PaperTradingPortfolio { UsesCanonicalAccounting: true } scoped
+            && prepared.SafeRequest.FundAccountId != Guid.Parse(scoped.PrimaryAccountId))
+            return new OrderAdmissionDecision(prepared.SafeRequest, false, null, null,
+                new OrderAdmissionRefusal("This canonical paper host can execute only for its configured accounting account.",
+                    "canonical accounting account", "CANONICAL_ACCOUNT_MISMATCH"));
+
+        if (_portfolioState is PaperTradingPortfolio paper && !paper.CanAdmitCanonicalOrders(DateTimeOffset.UtcNow, out var recoveryBlocker))
+            return new OrderAdmissionDecision(prepared.SafeRequest, false, null, null,
+                new OrderAdmissionRefusal(recoveryBlocker, "canonical accounting recovery", "CANONICAL_RECOVERY_NOT_READY"));
+
         var safeRequest = validated.Request;
         prepared = prepared with { SafeRequest = safeRequest };
         if (!GatewayResolvedOrder.TryResolve(validated, _gateway, out var resolved, out var rejectionReason))
@@ -112,8 +136,30 @@ internal sealed class OrderAdmissionPolicy
                 new OrderAdmissionRefusal(rejectionReason, "notional metadata gate"));
         }
 
+        if (_portfolioState is PaperTradingPortfolio { UsesCanonicalAccounting: true } canonical)
+        {
+            var canonicalRefusal = resolved.Sizing is not OrderSizing.Quantity
+                || OrderRiskSizingPolicy.ResolveContractMultiplier(safeRequest) != 1m
+                ? "Canonical accounting requires unit quantity with a multiplier of one."
+                : await canonical.ValidateCanonicalOrderAsync(safeRequest, ct).ConfigureAwait(false);
+            if (canonicalRefusal is not null)
+                return new OrderAdmissionDecision(safeRequest, false, null, null,
+                    new OrderAdmissionRefusal(canonicalRefusal, "canonical accounting authority", "CANONICAL_AUTHORITY_REJECTED"));
+        }
+
         var usesFaceValue = resolved.Sizing is OrderSizing.FaceValuePercentageOfPar;
         var riskRequest = resolved.ToRiskRequest();
+        var rootAuthority = OrderAuthorityResolver.Root(prepared.Authority);
+        if (_executionMode == ExecutionMode.Paper && rootAuthority.Origin == OrderCommandOrigin.OperatorTicket &&
+            (_instrumentCoverage is not null || _requireLiveStrategyAuthorization) &&
+            (_gateway is not PaperTradingGateway ||
+             safeRequest.Type is not (OrderType.Market or OrderType.Limit) ||
+             safeRequest.TimeInForce != TimeInForce.Day ||
+             resolved.Sizing is not OrderSizing.Quantity ||
+             !await RequiresMarketReferenceAsync(safeRequest, ct).ConfigureAwait(false)))
+            return new OrderAdmissionDecision(riskRequest, usesFaceValue, null, null,
+                new OrderAdmissionRefusal("Paper tickets support single-leg USD equities in shares with Day Market or Limit orders.",
+                    "paper ticket coverage", "PAPER_TICKET_UNSUPPORTED"));
         if (safeRequest.SessionIntent == OrderSessionIntent.QueueNextSession && _gateway is PaperTradingGateway)
             return new OrderAdmissionDecision(riskRequest, usesFaceValue, null, null,
                 new OrderAdmissionRefusal("The local paper simulator does not support next-session queuing.",
@@ -130,19 +176,20 @@ internal sealed class OrderAdmissionPolicy
                 new OrderAdmissionRefusal(placementGate.RejectReason, "execution placement gate"));
         }
 
-        LiveOrderReadinessDecision? readiness = null;
-        if (_executionMode is ExecutionMode.Live)
+        // Order authority sits where the live readiness gate always ran; for legacy (unattributed)
+        // orders it is exactly that gate, so the refusal order of the other gates is unchanged.
+        var authority = await _authority.EvaluatePreflightAsync(prepared, ct, observationOnly).ConfigureAwait(false);
+        var readiness = authority.Readiness;
+        if (!authority.IsApproved)
+            return new OrderAdmissionDecision(riskRequest, usesFaceValue, null, readiness, authority.Refusal);
+
+        if (UsesLiveStrategyAuthorization && !observationOnly)
         {
-            readiness = await EvaluateLiveOrderReadinessAsync(prepared, ct, observationOnly).ConfigureAwait(false);
-            if (!readiness.IsApproved)
-            {
+            await using var authorization = await AcquireLiveStrategyAuthorizationAsync(
+                riskRequest, rootAuthority.RunId, rootAuthority.StrategyArtifactId, resolved, ct).ConfigureAwait(false);
+            if (authorization.Refusal is { } reason)
                 return new OrderAdmissionDecision(riskRequest, usesFaceValue, null, readiness,
-                    new OrderAdmissionRefusal(
-                        readiness.Reason ?? "Live order readiness gate rejected the order.",
-                        "live order readiness gate",
-                        "LIVE_ORDER_READINESS_REJECTED",
-                        OrderAuditMetadata.BuildLiveOrderReadinessRejectedAuditMetadata(readiness)));
-            }
+                    new OrderAdmissionRefusal(reason, "order authority", "LIVE_AUTHORIZATION_REFUSED"));
         }
 
         var controlDecision = _operatorControls?.EvaluateOrder(prepared.ControlRequest, _portfolioState, prepared.RunId, observationOnly);
@@ -171,6 +218,68 @@ internal sealed class OrderAdmissionPolicy
     /// </summary>
     internal ExecutionControlDecision? EvaluateDispatchControls(PreparedOrderAdmission prepared) =>
         _operatorControls?.EvaluateOrder(prepared.ControlRequest, _portfolioState, prepared.RunId);
+
+    /// <summary>
+    /// Re-checks typed order authority after risk validation and before the order becomes
+    /// visible; see <see cref="OrderAuthorityResolver.EvaluateDispatchAsync"/>.
+    /// </summary>
+    internal Task<OrderAdmissionRefusal?> EvaluateDispatchAuthorityAsync(PreparedOrderAdmission prepared, CancellationToken ct) =>
+        _authority.EvaluateDispatchAsync(prepared, ct);
+
+    internal bool UsesLiveStrategyAuthorization => _executionMode == ExecutionMode.Live &&
+        (_liveStrategyAuthorization is not null || _requireLiveStrategyAuthorization);
+
+    internal async Task<LiveStrategyOrderAuthorizationLease> AcquireLiveStrategyAuthorizationAsync(
+        OrderRequest request, string? runId, string? artifactId, GatewayResolvedOrder? resolved, CancellationToken ct)
+    {
+        if (!UsesLiveStrategyAuthorization)
+            return new(null);
+        if (_liveStrategyAuthorization is null || string.IsNullOrWhiteSpace(runId) || string.IsNullOrWhiteSpace(artifactId))
+            return new("Live dispatch requires authorization for the exact retained strategy artifact.");
+
+        try
+        {
+            if (!await RequiresMarketReferenceAsync(request, ct).ConfigureAwait(false))
+                return new("Live authorization requires measurable USD equity order notional.");
+
+            return await _liveStrategyAuthorization.AcquireAsync(runId, artifactId, request.FundAccountId,
+                request.Symbol, () => MeasureLiveNotional(request, resolved), ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            _logger.LogWarning(ex, "Live strategy authorization verification failed for run {RunId}.", runId);
+            return new("The live strategy authorization could not be verified.");
+        }
+    }
+
+    private decimal? MeasureLiveNotional(OrderRequest request, GatewayResolvedOrder? resolved)
+    {
+        var reference = _marketReferences?.GetReference(request.Symbol, request.Side);
+        if (!IsFreshReference(reference))
+            return null;
+
+        var routed = resolved?.Sizing as OrderSizing.BrokerNotional;
+        if (routed is not null)
+            return routed.Amount;
+
+        var priced = resolved is null
+            ? OrderRiskSizingPolicy.ResolveBrokerageOrderNotional(request)
+            : OrderRiskSizingPolicy.ResolveBrokerageOrderNotional(resolved);
+        var marked = request.Quantity * reference!.Price;
+        return priced.HasValue ? Math.Max(priced.Value, marked) : marked;
+    }
+
+    internal async Task<OrderAdmissionRefusal?> EvaluateReplacementAuthorityAsync(
+        OrderState original, OrderRequest replacement, CancellationToken ct)
+    {
+        if (!UsesLiveStrategyAuthorization || original.RunId is not { } runId ||
+            original.FundAccountId is not { } account)
+            return null;
+        const string actor = "strategy-runtime";
+        var grant = new ExecutionAccountGrant(account, actor, ExecutionAccountGrantSources.StrategyRun, _clock.GetUtcNow());
+        var authority = OrderSubmissionAuthority.ForStrategyRun(actor, grant, runId, original.StrategyArtifactId);
+        return await EvaluateDispatchAuthorityAsync(Prepare(replacement, original.OrderId, authority), ct).ConfigureAwait(false);
+    }
 
     internal static OrderAdmissionRefusal ControlRefusal(ExecutionControlDecision decision, string source) =>
         new(decision.RejectReason, source, decision.RejectCode ?? "OPERATOR_CONTROL_REJECTED",
@@ -201,9 +310,14 @@ internal sealed class OrderAdmissionPolicy
     private OrderAdmissionRefusal? EvaluateMarketReference(OrderRequest request)
     {
         var reference = _marketReferences?.GetReference(request.Symbol, request.Side);
+        return IsFreshReference(reference) ? null :
+            new("A fresh executable-side equity quote is required before routing.", "market reference", "REFERENCE_UNAVAILABLE");
+    }
+
+    private bool IsFreshReference(OrderMarketReference? reference)
+    {
         var now = _clock.GetUtcNow();
-        return reference is null || reference.Price <= 0m || reference.ObservedAt > now || now - reference.ObservedAt >= TimeSpan.FromSeconds(30)
-            ? new("A fresh executable-side equity quote is required before routing.", "market reference", "REFERENCE_UNAVAILABLE") : null;
+        return reference is { Price: > 0m } && reference.ObservedAt <= now && now - reference.ObservedAt < TimeSpan.FromSeconds(30);
     }
 
     private async Task<OrderCheck?> EvaluateSessionCoreAsync(OrderRequest request, CancellationToken ct) =>
@@ -234,53 +348,6 @@ internal sealed class OrderAdmissionPolicy
         return notional > configuration.MaxOrderNotional
             ? $"Order notional exceeds configured maximum of {configuration.MaxOrderNotional}."
             : null;
-    }
-
-    private async Task<LiveOrderReadinessDecision> EvaluateLiveOrderReadinessAsync(
-        PreparedOrderAdmission prepared,
-        CancellationToken ct,
-        bool observationOnly = false)
-    {
-        if (string.IsNullOrWhiteSpace(prepared.RunId))
-        {
-            return LiveOrderReadinessDecision.Rejected(
-                "Live order placement requires runId metadata for a W7-approved live run.");
-        }
-
-        if (_liveReadinessGate is null)
-        {
-            return LiveOrderReadinessDecision.Rejected(
-                "Live order placement requires a live order readiness gate before broker routing.");
-        }
-
-        var request = prepared.SafeRequest;
-        var readinessRequest = new LiveOrderReadinessRequest(
-            RunId: prepared.RunId.Trim(),
-            BrokerName: prepared.BrokerName,
-            Symbol: request.Symbol,
-            Side: request.Side,
-            OrderType: request.Type,
-            Quantity: request.Quantity,
-            StrategyId: request.StrategyId,
-            Actor: prepared.Actor,
-            CorrelationId: prepared.CorrelationId,
-            FundAccountId: request.FundAccountId);
-        var decision = observationOnly
-            ? (_liveReadinessGate as ILiveOrderReadinessPreview)?.Observe(readinessRequest)
-                ?? LiveOrderReadinessDecision.Rejected("Live readiness is unassessed: refresh the account's readiness evidence before previewing.")
-            : await _liveReadinessGate.EvaluateAsync(readinessRequest, ct).ConfigureAwait(false);
-
-        if (!decision.IsApproved)
-        {
-            return string.IsNullOrWhiteSpace(decision.Reason)
-                ? decision with { Reason = "Live order readiness gate rejected the order." }
-                : decision;
-        }
-
-        return string.IsNullOrWhiteSpace(decision.EvidenceReference)
-            ? LiveOrderReadinessDecision.Rejected(
-                "Live order readiness gate approved the order without a retained evidence reference.")
-            : decision with { EvidenceReference = decision.EvidenceReference.Trim() };
     }
 
     private OrderRequest SanitizeAndSnapshotRequest(OrderRequest request, string orderId)
@@ -344,7 +411,8 @@ internal sealed record PreparedOrderAdmission(
     string? Actor,
     string? CorrelationId,
     string? RunId,
-    string? SessionId);
+    string? SessionId,
+    OrderSubmissionAuthority Authority);
 
 internal sealed record OrderAdmissionDecision(
     OrderRequest RiskRequest,

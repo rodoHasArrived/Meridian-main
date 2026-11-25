@@ -377,12 +377,12 @@ export function EvidenceWorkbenchScreen() {
                                 <span>{artifact.kind}</span>
                                 <Badge variant="success">{artifact.sizeLabel}</Badge>
                               </div>
-                              <div className="mt-2 flex flex-wrap gap-2 text-[0.7rem]">
+                              <div className="mt-2 flex flex-wrap gap-2 text-xs">
                                 <span>{artifact.retainedLabel}</span>
                                 <span>{artifact.extractionLabel}</span>
                               </div>
                               <TechnicalDetails label="Technical details" className="mt-2 text-foreground">
-                                <dl className="grid gap-2 font-mono text-[0.7rem] sm:grid-cols-2">
+                                <dl className="grid gap-2 font-mono text-xs sm:grid-cols-2">
                                   <div className="sm:col-span-2">
                                     <dt className="font-semibold text-muted-foreground">Artifact path</dt>
                                     <dd className="mt-1 break-all">{artifact.relativePath}</dd>
@@ -425,13 +425,13 @@ export function EvidenceWorkbenchScreen() {
                                 <Badge variant="outline">{requestList.statusLabel}</Badge>
                               </div>
                               <p className="mt-1 text-xs leading-5 text-primary/90">{requestList.summary}</p>
-                              <div className="mt-2 grid gap-1 font-mono text-[0.7rem] sm:grid-cols-2">
+                              <div className="mt-2 grid gap-1 font-mono text-xs sm:grid-cols-2">
                                 <span className="break-all">{requestList.requestCountLabel}</span>
                                 <span className="break-all">{requestList.evidenceKindsLabel}</span>
                                 <span className="break-all sm:col-span-2">{requestList.blockedOutputsLabel}</span>
                               </div>
                               <TechnicalDetails label="Technical details" className="mt-2 text-foreground">
-                                <div className="break-all font-mono text-[0.7rem]">{requestList.targetLabel}</div>
+                                <div className="break-all font-mono text-xs">{requestList.targetLabel}</div>
                               </TechnicalDetails>
                             </li>
                           ))}
@@ -453,7 +453,7 @@ export function EvidenceWorkbenchScreen() {
                               </div>
                               <p className="mt-1 text-xs leading-5 text-primary/90">{request.summary}</p>
                               <TechnicalDetails label="Technical details" className="mt-2 text-foreground">
-                                <dl className="grid gap-2 font-mono text-[0.7rem] sm:grid-cols-2">
+                                <dl className="grid gap-2 font-mono text-xs sm:grid-cols-2">
                                   <div>
                                     <dt className="font-semibold text-muted-foreground">Evidence identifier</dt>
                                     <dd className="mt-1 break-all">{request.evidenceLabel}</dd>
@@ -677,7 +677,7 @@ function EvidenceProofChainPanel({ panel }: { panel: EvidenceProofChainPanelView
                   <Badge variant={row.reviewLabel.startsWith("0 ") ? "outline" : "warning"}>{row.reviewLabel}</Badge>
                   <Badge variant={row.missingLabel.startsWith("0 ") ? "outline" : "danger"}>{row.missingLabel}</Badge>
                 </div>
-                <div className="mt-2 break-words font-mono text-[0.7rem] text-muted-foreground">{row.kindsLabel}</div>
+                <div className="mt-2 break-words font-mono text-xs text-muted-foreground">{row.kindsLabel}</div>
               </li>
             ))}
           </ul>
@@ -840,9 +840,9 @@ function EvidenceNodeDetailPanel({ detail, id }: { detail: EvidenceNodeDetailVie
                     <span>{artifact.kind}</span>
                     <Badge variant={artifact.retainedLabel === "Retained" ? "success" : "outline"}>{artifact.retainedLabel}</Badge>
                   </div>
-                  <div className="mt-2 text-[0.7rem] text-muted-foreground">Generated {artifact.generatedLabel}</div>
+                  <div className="mt-2 text-xs text-muted-foreground">Generated {artifact.generatedLabel}</div>
                   <TechnicalDetails label="Technical details" className="mt-2">
-                    <dl className="grid gap-2 font-mono text-[0.7rem] text-muted-foreground sm:grid-cols-2">
+                    <dl className="grid gap-2 font-mono text-xs text-muted-foreground sm:grid-cols-2">
                       <div className="sm:col-span-2">
                         <dt className="font-semibold">Artifact path</dt>
                         <dd className="mt-1 break-all">{artifact.target}</dd>
@@ -929,7 +929,8 @@ const linkKinds: EvidenceDocumentLinkKind[] = [
   "ReconciliationCase",
   "ReportLine",
   "CloseTask",
-  "IntercompanyAgreement"
+  "IntercompanyAgreement",
+  "LegalEntity"
 ];
 
 function EvidenceVaultQueueFilters({
@@ -1165,7 +1166,7 @@ function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidence
               </label>
             </div>
             <p className="text-xs leading-5 text-muted-foreground">
-              Extraction and initial review posture are assigned by the server after intake. Record an operator decision through document review.
+              Extraction and initial review status are assigned by the server after intake. Record an operator decision through document review.
             </p>
           </div>
           <div className="space-y-3">
@@ -1199,10 +1200,11 @@ function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidence
               <label className="grid gap-1 text-xs font-medium text-muted-foreground">
                 Linked object id
                 <Input aria-label="Linked object id" value={objectId} onChange={(event) => setObjectId(event.currentTarget.value)} disabled={vm.intakeCommand.busy}
-                  required={linkKind === "IntercompanyAgreement"}
-                  pattern={linkKind === "IntercompanyAgreement" ? "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}" : undefined} />
+                  required={linkKind === "IntercompanyAgreement" || linkKind === "LegalEntity"}
+                  pattern={linkKind === "IntercompanyAgreement" || linkKind === "LegalEntity" ? "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}" : undefined} />
               </label>
             </div>
+            {linkKind === "LegalEntity" ? <p className="text-xs leading-5 text-muted-foreground">Link the external review to the exact legal entity record ID. Use Agreement classification, then accept the document review before attesting a lifecycle change.</p> : null}
             {linkKind === "IntercompanyAgreement" ? <p className="text-xs leading-5 text-muted-foreground">
               Link the signed document to its saved agreement record ID. Use Agreement classification, then accept the document review before attaching it to that agreement.
             </p> : null}
@@ -1524,7 +1526,7 @@ function EvidenceVaultDocumentSupportRequests({ detail }: { detail: EvidenceVaul
               </div>
               <p className="mt-1 leading-5">{request.summary}</p>
               <TechnicalDetails label="Technical details" className="mt-2">
-                <dl className="grid gap-2 font-mono text-[0.7rem] text-muted-foreground sm:grid-cols-2">
+                <dl className="grid gap-2 font-mono text-xs text-muted-foreground sm:grid-cols-2">
                   <div>
                     <dt className="font-semibold">Evidence identifier</dt>
                     <dd className="mt-1 break-all">{request.evidenceLabel}</dd>
@@ -1642,7 +1644,7 @@ function EvidenceVaultRequestListPanel({ panel }: { panel: EvidenceVaultRequestL
                         </div>
                         <p className="mt-1 leading-5 text-muted-foreground">{request.summary}</p>
                         <TechnicalDetails label="Technical details" className="mt-2">
-                          <dl className="grid gap-2 text-[0.7rem] text-muted-foreground sm:grid-cols-2">
+                          <dl className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
                             <div>
                               <dt className="font-semibold">Evidence identifier</dt>
                               <dd className="mt-1 break-all font-mono">{request.evidenceLabel}</dd>

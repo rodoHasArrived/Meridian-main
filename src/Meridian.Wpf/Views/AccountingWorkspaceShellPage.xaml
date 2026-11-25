@@ -69,6 +69,7 @@
         <views:WorkspaceCommandBarControl x:Name="CommandBar"
                                           Grid.Row="0"
                                           CommandInvoked="OnCommandBarCommandInvoked"
+                                          ResetLayoutCommand="{Binding ResetLayoutCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                           AutomationProperties.AutomationId="WorkspaceCommandSurfaceAccounting" />
 
         <controls:WorkspaceAttentionRibbon Grid.Row="1"
@@ -106,9 +107,9 @@
                                            HorizontalAlignment="Center" />
                             </Border>
                             <StackPanel Margin="12,0,0,0">
-                                <TextBlock Text="Accounting"
+                                <TextBlock Text="Accounting Workspace"
                                            Style="{StaticResource PageTitleStyle}" />
-                                <TextBlock Text="Operations, accounting, reconciliation, reporting, and audit review stay aligned inside one control surface."
+                                <TextBlock Text="See what is blocking the close, who owns it, and the next action."
                                            Style="{StaticResource CardDescriptionStyle}"
                                            TextWrapping="Wrap" />
                             </StackPanel>
@@ -136,7 +137,7 @@
                                            FontSize="12"
                                            Foreground="{StaticResource AccountingHeroSummaryBrush}"
                                            TextWrapping="Wrap"
-                                           Text="Fund operations posture is ready for review." />
+                                           Text="Fund operations are ready for review." />
                                 <TextBlock x:Name="AccountingHeroDetailText"
                                            Margin="0,8,0,0"
                                            FontSize="12"
@@ -155,7 +156,7 @@
                             BorderBrush="{StaticResource ConsoleBorderBrush}"
                             BorderThickness="1">
                         <StackPanel>
-                            <TextBlock Text="Next Handoff"
+                            <TextBlock Text="Next step"
                                        FontSize="11"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -444,7 +445,7 @@
                             <TextBlock x:Name="QueueScopeBadgeText"
                                        FontSize="11"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       Text="Awaiting fund scope" />
+                                       Text="No scope selected" />
                         </Border>
                     </Grid>
 
@@ -557,7 +558,7 @@
                                        FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       Text="No fund selected" />
+                                       Text="No scope selected" />
                             <TextBlock x:Name="FundSummaryDetailText"
                                        Margin="0,6,0,0"
                                        FontSize="12"

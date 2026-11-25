@@ -1,13 +1,13 @@
+import { PageHeading } from "@/components/ui/page-heading";
+import { KpiProvider, useKpiModels } from "@/lib/kpi-context";
 import { ExecutionAlertSettingsPanel } from "./settings-screen.execution-alerts";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
 import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-panel";
-import { StatStrip } from "@/components/meridian/stat-strip";
 import { SettingsChangeImpactBanner } from "@/screens/settings-change-impact";
 import { listScopedAccessAssignments } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { selectSharedProviderHealth } from "@/lib/cross-screen-counts";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
-import { resolveFigureEvidence, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { SettingsMutationConfirmDialog, type SettingsMutationConfirmation } from "@/screens/settings-mutation-confirm-dialog";
 import { resolveSettingsRouteState, SETTINGS_ROUTE_VIEW_COPY, type SettingsRouteViewId } from "@/screens/settings-route-state";
 import { buildApprovalPolicyRuleDraft, buildCloseCalendarItemDraft, buildLedgerMappingAssignmentDraft, buildRolePermissionProfileDraft, settingsRoleDisplayLabel } from "@/screens/settings-screen.operations-form-options";
@@ -20,6 +20,7 @@ import { buildProfileFieldValueState, createProfileBackedSecurityState, isWriteS
 import type { ProviderOpenApiImportState } from "./settings-provider-integration";
 import { createProviderOpenApiImportState, providerRuntimeStateKey } from "./settings-provider-integration";
 import { SettingsAccessPostureSection, SettingsAppearanceSection } from "@/screens/settings-screen.profile-sections";
+import { SettingsNotificationsSection } from "@/screens/settings-screen.notification-preferences";
 import { SettingsAlpacaSection, SettingsRobinhoodSection } from "@/screens/settings-screen.brokerage-sections";
 import { SettingsDiagnosticsSection } from "@/screens/settings-screen.diagnostics-section";
 import { SettingsBackendCapabilitySection, SettingsRuntimeCapabilitiesSection } from "@/screens/settings-screen.capability-sections";
@@ -58,17 +59,6 @@ interface SettingsScreenProps {
   loading?: boolean;
   error?: string | null;
   workspaceErrors?: Partial<Record<WorkspaceKey, string>>;
-}
-
-// Storage-health headline metric tone — mirrors the view-model's storage tone mapping so the
-// MetricCard accent matches the "Storage health" system item.
-function settingsStorageHealthTone(
-  health: SystemOverviewResponse["storageHealth"] | undefined
-): "default" | "success" | "warning" | "danger" {
-  if (health === "Healthy") return "success";
-  if (health === "Warning") return "warning";
-  if (health === "Critical") return "danger";
-  return "default";
 }
 
 function inferSettingsTaskView({
@@ -148,7 +138,19 @@ function inferSettingsTaskView({
   return "access";
 }
 
-export function SettingsScreen({
+export function SettingsScreen(props: SettingsScreenProps) {
+  const crossScreenCounts = useSharedCrossScreenCounts();
+  return (
+    <KpiProvider models={{
+      overview: props.overview, portfolio: props.portfolio, trading: props.trading,
+      strategy: props.strategy, data: props.data, accounting: props.accounting, crossScreenCounts
+    }}>
+      <SettingsScreenContent {...props} />
+    </KpiProvider>
+  );
+}
+
+function SettingsScreenContent({
   fundAccountId,
   session,
   overview,
@@ -180,20 +182,15 @@ export function SettingsScreen({
 }: SettingsScreenProps) {
   const location = useLocation();
   const sharedCounts = useSharedCrossScreenCounts();
-  const figureContext = useWorkspaceFigureContext();
   const providerHealth = selectSharedProviderHealth(sharedCounts, data?.providers);
-  // Provider health is not an overview figure: it comes from the shared cross-screen counts, or
-  // from the Data rows when those counts are unavailable. It states that payload's evidence, so a
-  // failed counts reload shows as stale here even when the overview reloaded.
-  const providerHealthFromSharedCounts = Boolean(sharedCounts?.providers);
-  const providerHealthEvidence = resolveFigureEvidence(figureContext, providerHealthFromSharedCounts ? "crossScreenCounts" : "data");
+  const kpiModels = useKpiModels();
   const vm = buildSettingsScreenViewModel({
     session,
     overview,
     crossScreenCounts: sharedCounts,
     strategy,
     trading,
-    portfolio,
+    portfolio: kpiModels.portfolio ?? portfolio,
     data,
     accounting,
     reporting,
@@ -353,7 +350,7 @@ export function SettingsScreen({
   const [ledgerMappingAssignment, setLedgerMappingAssignment] = useState<LedgerMappingAssignmentState>(() => ({
     accountId: "",
     ledgerGroupId: "",
-    rationale: "Assign ledger group for governed posting, reconciliation, reporting, and close control.",
+    rationale: "Assign ledger group for controlled posting, reconciliation, reporting, and close control.",
     busy: false,
     message: null,
     details: [],
@@ -365,7 +362,7 @@ export function SettingsScreen({
     description: "",
     baseRole: "",
     permissionNames: [],
-    rationale: "Create a scoped authority profile for governed fund operations.",
+    rationale: "Create a scoped authority profile for fund operations.",
     busy: false,
     message: null,
     details: [],
@@ -385,7 +382,7 @@ export function SettingsScreen({
     approvalLimitAmount: "",
     approvalLimitCurrency: "USD",
     segregationOfDutiesRule: "",
-    rationale: "Grant scoped authority with audit evidence for governed fund operations.",
+    rationale: "Grant scoped authority with audit evidence for fund operations.",
     includeRevoked: false,
     loading: Boolean(rolePermissionCatalog),
     busy: false,
@@ -405,7 +402,7 @@ export function SettingsScreen({
     requiresChecklistControlApprovals: true,
     evidenceRequirement: "",
     severity: "Critical",
-    rationale: "Update approval policy for governed fund-operations close control.",
+    rationale: "Update approval policy for fund-operations close control.",
     busy: false,
     message: null,
     details: [],
@@ -437,30 +434,6 @@ export function SettingsScreen({
     [allProviderRows]
   );
   const routeCopy = SETTINGS_ROUTE_VIEW_COPY[activeTaskView];
-  const settingsStatMetrics = [
-    {
-      id: "providers-healthy",
-      label: "Providers healthy",
-      value: providerHealth ? `${providerHealth.healthy} / ${providerHealth.total}` : "—",
-      delta: "",
-      tone: !providerHealth
-        ? "default" as const
-        : providerHealth.total > 0 && providerHealth.healthy === providerHealth.total ? "success" as const : "warning" as const,
-      ...(providerHealth
-        ? {
-            provenance: {
-              source: providerHealthFromSharedCounts ? "Cross-screen counts" : "Data workspace",
-              // Outside the shell the counts payload's own as-of time is the only one it carries.
-              asOf: providerHealthEvidence.asOf ?? (providerHealthFromSharedCounts ? sharedCounts?.asOf ?? null : null)
-            },
-            ...(providerHealthEvidence.freshness ? { freshness: providerHealthEvidence.freshness } : {})
-          }
-        : {})
-    },
-    { id: "active-runs", label: "Active runs", value: overview ? String(overview.activeRuns) : "—", delta: "", tone: "default" as const },
-    { id: "open-positions", label: "Open positions", value: overview ? String(overview.openPositions) : "—", delta: "", tone: "default" as const },
-    { id: "storage-health", label: "Storage health", value: overview?.storageHealth ?? "—", delta: "", tone: settingsStorageHealthTone(overview?.storageHealth) }
-  ];
   const showChooserSection = activeTaskView === "chooser";
   const showPreferencesSection = activeTaskView === "preferences";
   const showAccessSection = activeTaskView === "access";
@@ -703,25 +676,16 @@ export function SettingsScreen({
   const { activeProviderDisplayName, createProviderRuntimeHandoff, inlineProviderManagementEnabled, loadProviderRuntimeEvidence, providerCapabilityFilter, providerHealthFilter, providerRuntimeState, providerSearch, providerSort, providerVerificationFilter, replayProviderRuntimeQuarantine, resolveProviderRuntimeQuarantineRecord, runProviderRuntimeDueSync, setProviderCapabilityFilter, setProviderHealthFilter, setProviderSearch, setProviderSort, setProviderVerificationFilter, showProviderAdvancedControls, showProviderFilters, submitProviderOpenApiImport, updateProviderOpenApiImportState, visibleProviderGroups } = useSettingsProviderSectionState({ activeProviderId, activeTaskView, allProviderRows, featureCapabilities, legacyEmbeddedSettingsView, providerOpenApiImportState, session, setProviderOpenApiImportState, vm });
 
   return (
-    <div className="space-y-5">
-      {/* Route heading first ("where am I?"); workspace-wide metrics follow. */}
+    <div className="flex flex-col gap-3">
       <section
         id="settings-overview"
         role="region"
         aria-label="Settings workbench context"
         className="flex flex-wrap items-end justify-between gap-3"
       >
-        <div className="min-w-0">
-          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
-            {routeCopy.title}
-          </h2>
-          <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
-            {routeCopy.description}
-          </p>
-        </div>
+        <PageHeading title={routeCopy.title} purpose={routeCopy.description} descriptionKey={`settings:${activeTaskView}`} />
       </section>
 
-      <StatStrip metrics={settingsStatMetrics} label="Operator control posture metrics" source="System overview" figureSource="overview" />
       <SettingsChangeImpactBanner />
 
       {showChooserSection ? <SettingsTaskChooser viewModel={vm} /> : null}
@@ -733,6 +697,10 @@ export function SettingsScreen({
 
       {showPreferencesSection ? (
       <SettingsAppearanceSection />
+      ) : null}
+
+      {showPreferencesSection ? (
+      <SettingsNotificationsSection />
       ) : null}
 
       {showAccessSection ? (

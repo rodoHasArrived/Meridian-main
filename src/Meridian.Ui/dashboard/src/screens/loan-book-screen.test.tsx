@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import * as directLendingApi from "@/lib/api/direct-lending.api";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { LoanBookScreen } from "@/screens/loan-book-screen";
 import type { LoanPortfolioSummary } from "@/types/direct-lending.types";
 import hostPortfolio from "@/test/fixtures/loan-portfolio.host.json";
@@ -17,6 +19,11 @@ afterEach(() => {
   vi.resetAllMocks();
   window.history.replaceState(null, "", "/");
 });
+
+function HeaderRefreshHarness() {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence((value) => value + 1)}>Header refresh</button><LoanBookScreen /></GlobalRefreshProvider>;
+}
 
 // The scenario selector lists each facility by name as well, so table assertions exclude its
 // <option> elements with `{ selector: ":not(option)" }`.
@@ -78,7 +85,7 @@ describe("LoanBookScreen", () => {
   });
   it("renders and refreshes the host-serialized numeric enums and currency buckets", async () => {
     api.getLoanPortfolioSummary.mockResolvedValue(hostPortfolio);
-    render(<LoanBookScreen />);
+    render(<HeaderRefreshHarness />);
     expect(await screen.findByText("Harbour USD", { selector: ":not(option)" })).toBeInTheDocument();
     expect(screen.getByText("Harbour EUR", { selector: ":not(option)" })).toBeInTheDocument();
     expect(screen.getByText("Defaulted", { selector: "span.mds-badge" })).toHaveClass("mds-badge--danger");
@@ -88,7 +95,7 @@ describe("LoanBookScreen", () => {
     const refreshed = structuredClone(hostPortfolio);
     refreshed.currencyTotals[1].totalCollateralValue = 600_000;
     api.getLoanPortfolioSummary.mockResolvedValue(refreshed);
-    await userEvent.click(screen.getByRole("button", { name: "Refresh the loan book" }));
+    await userEvent.click(screen.getByRole("button", { name: "Header refresh" }));
     expect(await screen.findByRole("group", { name: "Collateral value (EUR): €600,000.00" })).toBeInTheDocument();
   });
 
@@ -126,6 +133,7 @@ describe("LoanBookScreen", () => {
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("Loan book could not be loaded");
     expect(alert).toHaveTextContent("Direct lending service is unavailable.");
+    expect(screen.getByRole("button", { name: "Retry loading the loan book" })).toBeEnabled();
     // An outage must not render as a portfolio with zero facilities.
     expect(screen.queryByRole("table", { name: "Direct lending facilities" })).not.toBeInTheDocument();
   });
@@ -141,10 +149,11 @@ describe("LoanBookScreen", () => {
   it("re-reads the portfolio when refreshed", async () => {
     api.getLoanPortfolioSummary.mockResolvedValue(summary());
 
-    render(<LoanBookScreen />);
+    render(<HeaderRefreshHarness />);
     await screen.findByText("Senior Term Facility A", { selector: ":not(option)" });
+    expect(screen.queryByRole("button", { name: /Refresh the loan book|Retry/ })).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole("button", { name: "Refresh the loan book" }));
+    await userEvent.click(screen.getByRole("button", { name: "Header refresh" }));
 
     await waitFor(() => expect(api.getLoanPortfolioSummary).toHaveBeenCalledTimes(2));
   });

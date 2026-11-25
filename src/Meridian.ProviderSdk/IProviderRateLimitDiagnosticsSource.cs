@@ -26,7 +26,19 @@ public sealed record ProviderRateLimitDiagnosticSnapshot(
     string? Reason = null,
     bool StateAvailable = true)
 {
-    public int RemainingRequests => Math.Max(0, MaxRequestsPerWindow - RequestsInWindow);
+    /// <summary>True when the window represents a usable provider quota. Local safeguards may have their own limits.</summary>
+    public bool QuotaKnown { get; init; } = true;
+
+    /// <summary>Legacy request-named counters contain this unit (requests or weighted credits).</summary>
+    public string QuotaUnit { get; init; } = "requests";
+    public int? DailyUnitsUsed { get; init; }
+    public int? DailyMaximum { get; init; }
+    public DateTimeOffset? DailyResetsAt { get; init; }
+    public string? DailyResetPolicy { get; init; }
+
+    public int RemainingRequests => DailyMaximum is { } daily && DailyUnitsUsed is { } used
+        ? Math.Min(Math.Max(0, MaxRequestsPerWindow - RequestsInWindow), Math.Max(0, daily - used))
+        : Math.Max(0, MaxRequestsPerWindow - RequestsInWindow);
 }
 
 /// <summary>
