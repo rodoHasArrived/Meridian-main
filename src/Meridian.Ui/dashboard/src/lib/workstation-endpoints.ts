@@ -410,10 +410,13 @@ export function securityMasterWorkbenchDiscardEndpoint(securityId: string): stri
   return securityMasterWorkbenchPath(UI_API_ROUTES.SecurityMasterWorkbenchDiscard, securityId);
 }
 
-/** Review inbox: revisions awaiting action across every security (review P5/D1). */
-export function securityMasterWorkbenchPendingRevisionsEndpoint(states?: readonly string[]): string {
+/** Review inbox: revisions awaiting action across every security (review P5/D1), or one security's. */
+export function securityMasterWorkbenchPendingRevisionsEndpoint(states?: readonly string[], securityId?: string | null): string {
   const route = UI_API_ROUTES.SecurityMasterWorkbenchPendingRevisions;
-  return states && states.length > 0 ? `${route}?state=${encodeURIComponent(states.join(","))}` : route;
+  const query: string[] = [];
+  if (states && states.length > 0) query.push(`state=${encodeURIComponent(states.join(","))}`);
+  if (securityId) query.push(`securityId=${encodeURIComponent(securityId)}`);
+  return query.length > 0 ? `${route}?${query.join("&")}` : route;
 }
 
 /** Held amendments (review A2), optionally narrowed to one security and one status (default Held). */

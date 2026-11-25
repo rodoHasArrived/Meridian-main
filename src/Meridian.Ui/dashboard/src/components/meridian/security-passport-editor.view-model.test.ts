@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  attachPendingDrafts,
   buildConflictRows,
   classifyConflictResolution,
+  toPassportConflicts,
   buildPassportActions,
   buildPassportStateBadge,
   buildTrustPosture,
@@ -160,5 +162,68 @@ describe("conflict resolution outcome (review D3 \"Use B\")", () => {
     );
     expect(row.canAct).toBe(false);
     expect(row.pendingDraftLabel).toBe("Awaiting draft rev-9 — resolves when it is published");
+  });
+});
+
+describe("conflict list from the trust snapshot", () => {
+  const assessment = (conflictId: string, status: "Open" | "Resolved" | "Dismissed", recommendedWinner: string) =>
+    ({
+      conflict: {
+        conflictId,
+        securityId: "sec",
+        conflictKind: "FieldValue",
+        fieldPath: "EconomicDefinition.Coupon",
+        providerA: "golden-copy",
+        valueA: "5.00",
+        providerB: "vendor-b",
+        valueB: "5.25",
+        detectedAt: "2026-11-24T00:00:00Z",
+        status
+      },
+      currentWinningValue: "5.00",
+      challengerValue: "5.25",
+      currentWinningSource: "golden-copy",
+      challengerSource: "vendor-b",
+      recommendation: "PreserveWinner",
+      recommendedResolution: "Keep",
+      recommendedWinner,
+      impactSeverity: "High",
+      impactSummary: "",
+      impactDetail: "",
+      isBulkEligible: false
+    }) as const;
+
+  it("lists open conflicts with the recommended winner as the policy winner", () => {
+    const conflicts = toPassportConflicts([
+      assessment("k1", "Open", "golden-copy"),
+      assessment("k2", "Open", "vendor-b"),
+      assessment("k3", "Resolved", "golden-copy")
+    ]);
+    expect(conflicts).toEqual([
+      { conflictId: "k1", fieldLabel: "EconomicDefinition.Coupon", policyWinnerSource: "golden-copy", challengerSource: "vendor-b", severity: "High" },
+      { conflictId: "k2", fieldLabel: "EconomicDefinition.Coupon", policyWinnerSource: "vendor-b", challengerSource: "golden-copy", severity: "High" }
+    ]);
+    expect(toPassportConflicts(undefined)).toEqual([]);
+  });
+
+  it("links each conflict to the pending Use B draft the server reports for it", () => {
+    const base = { securityId: "sec", actor: "alice", createdAt: "", updatedAt: "", fieldPath: null, fieldValue: null, justification: null,
+      fundProfileId: null, baseVersion: null, ageHours: 1 };
+    const linked = attachPendingDrafts(
+      [
+        { conflictId: "k1", fieldLabel: "Coupon", policyWinnerSource: "a", challengerSource: "b" },
+        { conflictId: "k2", fieldLabel: "Maturity", policyWinnerSource: "a", challengerSource: "b" }
+      ],
+      [
+        { ...base, revisionId: "rev-1", state: "Submitted", conflictId: "k1", conflictCandidateSource: "b" },
+        { ...base, revisionId: "rev-ordinary", state: "Draft" },
+        { ...base, revisionId: "rev-old", state: "Rejected", conflictId: "k2" }
+      ]
+    );
+    expect(linked[0]).toMatchObject({ pendingRevisionId: "rev-1", pendingRevisionState: "Submitted" });
+    expect(linked[1].pendingRevisionId).toBeUndefined();
+
+    const [row] = buildConflictRows([linked[0]], { isBusy: false });
+    expect(row).toMatchObject({ canAct: false, pendingRevisionId: "rev-1", pendingRevisionState: "Submitted" });
   });
 });

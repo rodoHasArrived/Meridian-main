@@ -110,6 +110,14 @@ The browser panel takes the assignee as typed input, because the dashboard has n
 pre-fills it with the session actor. Before this change the browser marked a "Use B" conflict resolved even though it stays open until the staged draft
 publishes; it now shows it as awaiting that draft.
 
+The browser passport editor's conflict list now comes from the trust snapshot's open `conflictAssessments`;
+`SecurityPassportEditorLauncher` had not passed any conflicts before. The
+launcher also reads `GET /api/security-master/workbench/revisions?securityId=…`. That route now takes an optional
+`securityId`, and each row carries `conflictId` and `conflictCandidateSource` for a "Use B" draft, read server-side
+from the draft's marker by `SecurityMasterWorkbenchCommandService.TryReadConflictCandidate`. A conflict therefore stays
+marked "Awaiting draft …" across reloads, and **Continue draft** makes that draft the editor's working revision. The
+WPF editor takes a conflict id as input rather than listing conflicts, so it has no equivalent list to mark.
+
 Validation: the `Meridian.Ui.Tests` client, parser and presentation tests ran on Linux. The new and existing WPF
 view-model tests (`SecurityMasterReviewQueueViewModelTests`, `SecurityPassportEditorViewModelTests`) ran in a Linux
 harness that compiles the view-model sources directly. The full WPF build (XAML included) and the WPF test project run

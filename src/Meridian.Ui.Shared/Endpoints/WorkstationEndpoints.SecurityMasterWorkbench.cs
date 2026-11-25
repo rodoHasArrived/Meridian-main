@@ -230,10 +230,13 @@ public static partial class WorkstationEndpoints
         .Produces(StatusCodes.Status422UnprocessableEntity);
 
         // Review inbox (review P5/D1): revisions awaiting action across every security, oldest first,
-        // so a reviewer who is not the drafter can find and act on a colleague's submitted draft.
+        // so a reviewer who is not the drafter can find and act on a colleague's submitted draft. With
+        // securityId the list narrows to that security (the passport editor uses it to show which open
+        // conflicts already wait on a "Use B" draft).
         group.MapGet(SecurityMasterSubroute(UiApiRoutes.SecurityMasterWorkbenchPendingRevisions), async (
             string? state,
             int? limit,
+            Guid? securityId,
             HttpContext context,
             [FromServices] ISecurityMasterRevisionStore? revisions) =>
         {
@@ -261,29 +264,45 @@ public static partial class WorkstationEndpoints
             }
 
             var now = DateTimeOffset.UtcNow;
-            var rows = await revisions
-                .ListByStatesAsync(states, Math.Clamp(limit ?? 200, 1, 1000), context.RequestAborted)
-                .ConfigureAwait(false);
+            var take = Math.Clamp(limit ?? 200, 1, 1000);
+            IReadOnlyList<SecurityMasterRevisionRecord> rows = securityId is { } scopedSecurityId && scopedSecurityId != Guid.Empty
+                ? (await revisions.ListBySecurityAsync(scopedSecurityId, context.RequestAborted).ConfigureAwait(false))
+                    .Where(row => states.Contains(row.State))
+                    .OrderBy(static row => row.UpdatedAt)
+                    .Take(take)
+                    .ToArray()
+                : await revisions.ListByStatesAsync(states, take, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(
-                rows.Select(row => new SecurityMasterPendingRevisionDto(
-                        row.RevisionId,
-                        row.SecurityId,
-                        row.State,
-                        row.Actor,
-                        row.CreatedAt,
-                        row.UpdatedAt,
-                        row.FieldPath,
-                        row.FieldValueRecorded ? row.FieldValue : null,
-                        row.FieldJustification,
-                        row.FundProfileId,
-                        row.BaseVersion,
-                        Math.Round((now - row.UpdatedAt).TotalHours, 1)))
+                rows.Select(row => ToPendingRevisionDto(row, now))
                     .ToArray(),
                 jsonOptions);
         })
         .WithName("SecurityMasterWorkbenchPendingRevisions")
         .Produces<IReadOnlyList<SecurityMasterPendingRevisionDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden);
+
+        static SecurityMasterPendingRevisionDto ToPendingRevisionDto(SecurityMasterRevisionRecord row, DateTimeOffset now)
+        {
+            var isCandidateDraft = SecurityMasterWorkbenchCommandService.TryReadConflictCandidate(
+                row.FieldJustification, out var conflictId, out var candidateSource);
+            return new SecurityMasterPendingRevisionDto(
+                row.RevisionId,
+                row.SecurityId,
+                row.State,
+                row.Actor,
+                row.CreatedAt,
+                row.UpdatedAt,
+                row.FieldPath,
+                row.FieldValueRecorded ? row.FieldValue : null,
+                row.FieldJustification,
+                row.FundProfileId,
+                row.BaseVersion,
+                Math.Round((now - row.UpdatedAt).TotalHours, 1))
+            {
+                ConflictId = isCandidateDraft ? conflictId : null,
+                ConflictCandidateSource = isCandidateDraft ? candidateSource : null
+            };
+        }
 
         group.MapPost(SecurityMasterSubroute(UiApiRoutes.SecurityMasterWorkbenchDiscard), async (
             Guid securityId,

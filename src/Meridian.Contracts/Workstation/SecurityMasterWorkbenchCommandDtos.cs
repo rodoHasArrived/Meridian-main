@@ -237,4 +237,14 @@ public sealed record SecurityMasterPendingRevisionDto(
     string? Justification,
     string? FundProfileId,
     long? BaseVersion,
-    double AgeHours);
+    double AgeHours)
+{
+    /// <summary>
+    /// Set when this revision is a review D3 "Use B" draft: the conflict it adopts a candidate for. The
+    /// conflict stays open until this draft publishes.
+    /// </summary>
+    public Guid? ConflictId { get; init; }
+
+    /// <summary>The source whose value the "Use B" draft adopts; null for ordinary revisions.</summary>
+    public string? ConflictCandidateSource { get; init; }
+}

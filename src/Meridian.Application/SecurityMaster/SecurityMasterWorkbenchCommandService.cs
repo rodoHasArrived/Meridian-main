@@ -597,6 +597,26 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         System.Text.RegularExpressions.RegexOptions.CultureInvariant);
 
     /// <summary>
+    /// Reads the "Use B" marker from a draft's justification: the conflict the draft adopts a candidate
+    /// for, and that candidate's source. False for every other revision. Lets read surfaces link a pending
+    /// draft to its conflict without each client parsing the justification text.
+    /// </summary>
+    public static bool TryReadConflictCandidate(string? justification, out Guid conflictId, out string source)
+    {
+        conflictId = Guid.Empty;
+        source = string.Empty;
+        if (string.IsNullOrEmpty(justification)
+            || ConflictCandidateMarkerPattern.Match(justification) is not { Success: true } match
+            || !Guid.TryParse(match.Groups["id"].Value, out conflictId))
+        {
+            return false;
+        }
+
+        source = match.Groups["source"].Value.Trim();
+        return true;
+    }
+
+    /// <summary>
     /// The workbench path a conflict's governed field maps to. Economic terms and pinned profile fields
     /// live in the asset-specific terms the canonical merge writes; common terms (currency, country of
     /// risk) have no governed field-edit path yet, so they still need a governed amendment.

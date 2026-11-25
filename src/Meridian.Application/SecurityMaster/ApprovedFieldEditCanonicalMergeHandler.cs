@@ -376,14 +376,11 @@ public sealed class ApprovedFieldEditCanonicalMergeHandler : ISecurityMasterRevi
     private async Task TryResolveAdoptedCandidateConflictAsync(SecurityMasterRevisionPublishedEvent evt, SecurityMasterRevisionRecord revision)
     {
         if (_conflictService is null
-            || revision.FieldJustification is not { } justification
-            || SecurityMasterWorkbenchCommandService.ConflictCandidateMarkerPattern.Match(justification) is not { Success: true } match
-            || !Guid.TryParse(match.Groups["id"].Value, out var conflictId))
+            || !SecurityMasterWorkbenchCommandService.TryReadConflictCandidate(revision.FieldJustification, out var conflictId, out var source))
         {
             return;
         }
 
-        var source = match.Groups["source"].Value.Trim();
         try
         {
             await _conflictService.ResolveAsync(

@@ -36,6 +36,10 @@ export interface SecurityMasterPendingRevision {
   fundProfileId: string | null;
   baseVersion: number | null;
   ageHours: number;
+  /** Set on a review D3 "Use B" draft: the conflict it adopts a candidate for (open until it publishes). */
+  conflictId?: string | null;
+  /** The source whose value a "Use B" draft adopts. */
+  conflictCandidateSource?: string | null;
 }
 
 /** Withdraws an abandoned Draft or gate-rejected Submitted revision. `actor` is server-derived. */
@@ -238,12 +242,16 @@ function parseErrorBody(responseBody: string | null): WorkbenchErrorBody {
   }
 }
 
-/** Lists revisions awaiting action across every security, oldest first (default: Submitted and Approved). */
+/**
+ * Lists revisions awaiting action, oldest first (default: Submitted and Approved): across every security,
+ * or only `securityId`'s when given.
+ */
 export function listPendingSecurityMasterRevisions(
   states: readonly SecurityMasterRevisionState[] = ["Submitted", "Approved"],
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  securityId?: string | null
 ): Promise<SecurityMasterPendingRevision[]> {
-  return apiGetJson<SecurityMasterPendingRevision[]>(securityMasterWorkbenchPendingRevisionsEndpoint(states), { signal });
+  return apiGetJson<SecurityMasterPendingRevision[]>(securityMasterWorkbenchPendingRevisionsEndpoint(states, securityId), { signal });
 }
 
 /** Discards a revision so its staged overlay value no longer blocks the security's other edits. */

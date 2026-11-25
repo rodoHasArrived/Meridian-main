@@ -514,6 +514,23 @@ export function SecurityPassportEditor({
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-medium">{row.fieldLabel}</span>
                       {row.pendingDraftLabel ? <Badge variant="outline">{row.pendingDraftLabel}</Badge> : null}
+                      {row.pendingRevisionId && revision?.revisionId !== row.pendingRevisionId ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={isBusy}
+                          onClick={() =>
+                            setRevision({
+                              revisionId: row.pendingRevisionId as string,
+                              state: row.pendingRevisionState ?? "Draft",
+                              version: expectedVersion
+                            })
+                          }
+                        >
+                          Continue draft
+                        </Button>
+                      ) : null}
                       <Badge variant={SEVERITY_VARIANT[row.severityTone]}>{row.severityLabel}</Badge>
                       <span className="text-muted-foreground">
                         winner <code>{row.policyWinnerSource}</code> · challenger <code>{row.challengerSource}</code>

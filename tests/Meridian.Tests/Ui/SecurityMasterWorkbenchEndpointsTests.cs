@@ -391,6 +391,63 @@ public sealed class SecurityMasterWorkbenchEndpointsTests
 
     // ---- helpers ------------------------------------------------------------------------------
 
+    [Fact]
+    public async Task PendingRevisions_ForOneSecurity_LinkUseBDraftsToTheirConflict()
+    {
+        var securityId = Guid.NewGuid();
+        var otherSecurityId = Guid.NewGuid();
+        var conflictId = Guid.NewGuid();
+        var revisions = new InMemorySecurityMasterRevisionStore();
+        var useB = await revisions.CreateDraftAsync(securityId, "alice.ops", "EconomicDefinition.Coupon", DateTimeOffset.UtcNow,
+            $"[adopt-conflict-candidate {conflictId:D} vendor-b] Adopt vendor-b's value for Coupon. Vendor confirmed.");
+        var ordinary = await revisions.CreateDraftAsync(securityId, "bob.ops", "EconomicDefinition.Maturity", DateTimeOffset.UtcNow, "Term sheet.");
+        await revisions.CreateDraftAsync(otherSecurityId, "carol.ops", "EconomicDefinition.Coupon", DateTimeOffset.UtcNow, "Elsewhere.");
+        await using var app = await CreateAppAsync(Substitute.For<ISecurityMasterWorkbenchCommandService>(), UserPermission.ViewSecurityMaster,
+            revisions: revisions);
+
+        var rows = await app.GetTestClient().GetFromJsonAsync<SecurityMasterPendingRevisionDto[]>(
+            $"/api/security-master/workbench/revisions?state=Draft,Submitted,Approved&securityId={securityId:D}", Json);
+
+        rows.Should().NotBeNull();
+        rows!.Select(row => row.RevisionId).Should().BeEquivalentTo([useB.RevisionId, ordinary.RevisionId], "only this security's revisions are listed");
+        var candidate = rows.Single(row => row.RevisionId == useB.RevisionId);
+        candidate.ConflictId.Should().Be(conflictId);
+        candidate.ConflictCandidateSource.Should().Be("vendor-b");
+        var plain = rows.Single(row => row.RevisionId == ordinary.RevisionId);
+        plain.ConflictId.Should().BeNull();
+        plain.ConflictCandidateSource.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task PendingRevisions_WithoutSecurity_StillListsEverySecurity()
+    {
+        var revisions = new InMemorySecurityMasterRevisionStore();
+        await revisions.CreateDraftAsync(Guid.NewGuid(), "alice.ops", "EconomicDefinition.Coupon", DateTimeOffset.UtcNow, "One.");
+        await revisions.CreateDraftAsync(Guid.NewGuid(), "bob.ops", "EconomicDefinition.Coupon", DateTimeOffset.UtcNow, "Two.");
+        await using var app = await CreateAppAsync(Substitute.For<ISecurityMasterWorkbenchCommandService>(), UserPermission.ViewSecurityMaster,
+            revisions: revisions);
+
+        var rows = await app.GetTestClient().GetFromJsonAsync<SecurityMasterPendingRevisionDto[]>(
+            "/api/security-master/workbench/revisions?state=Draft", Json);
+
+        rows.Should().HaveCount(2);
+    }
+
+    [Theory]
+    [InlineData("[adopt-conflict-candidate 3f2504e0-4f89-11d3-9a0c-0305e82c3301 vendor-b] Adopt it.", true, "vendor-b")]
+    [InlineData("Ordinary justification.", false, "")]
+    [InlineData(null, false, "")]
+    [InlineData("[adopt-conflict-candidate not-a-guid vendor-b]", false, "")]
+    public void TryReadConflictCandidate_ReadsOnlyTheUseBMarker(string? justification, bool expected, string expectedSource)
+    {
+        SecurityMasterWorkbenchCommandService.TryReadConflictCandidate(justification, out var conflictId, out var source).Should().Be(expected);
+        source.Should().Be(expectedSource);
+        if (expected)
+        {
+            conflictId.Should().Be(Guid.Parse("3f2504e0-4f89-11d3-9a0c-0305e82c3301"));
+        }
+    }
+
     private static UpdateSecurityFieldRequest FieldRequest(Guid securityId)
         => new(
             SecurityId: securityId,
@@ -427,7 +484,8 @@ public sealed class SecurityMasterWorkbenchEndpointsTests
         UserPermission permissions,
         string? sessionActor = SessionActor,
         IFundProfileTenantGuard? fundGuard = null,
-        IFundProfileTenancyRegistry? fundRegistry = null)
+        IFundProfileTenancyRegistry? fundRegistry = null,
+        ISecurityMasterRevisionStore? revisions = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
@@ -440,6 +498,11 @@ public sealed class SecurityMasterWorkbenchEndpointsTests
         if (fundRegistry is not null)
         {
             builder.Services.AddSingleton(fundRegistry);
+        }
+
+        if (revisions is not null)
+        {
+            builder.Services.AddSingleton(revisions);
         }
 
         var app = builder.Build();
