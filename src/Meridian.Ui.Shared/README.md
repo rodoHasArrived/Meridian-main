@@ -6,10 +6,46 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-20
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Ui.Shared
+
+## Cancel-all incident reads
+
+`GET /api/execution/cancel-incidents?fundAccountId=...` lists recent retained incident summaries;
+`GET /api/execution/cancel-incidents/{incidentId}?fundAccountId=...` reopens every retained order
+attributed to that account. Both require global and scoped trading-read authority, a concrete
+tenant/company, and authoritative ownership of the account's fund. Administrator access does not
+override tenant ownership. Missing storage is unavailable, not an empty history. List limits apply
+to incidents, never to an incident's order rows; exact-ID reads remain available for older incidents.
+The incident order table registers saved table views under `ViewTrades`, matching these routes;
+layout access does not replace the incident reads' account and tenant ownership checks.
+
+The HTTP projection separates evidence completion from cancellation success, preserves unknown
+quantities as null, and emits financial quantities as exact decimal strings. Raw broker-wide errors
+and local storage paths remain internal. Generic audit feeds expose safe cancel-all summaries;
+the account-authorized incident is the order-detail authority. These reads do not contact the broker,
+resume execution, post journals, or establish current exposure. Focused coverage lives in
+`ExecutionCancelIncidentEndpointsTests`.
+
+Hosted scoped Designer backtests publish their immutable executable artifact before retaining the
+first run. The shared service composes `StrategyArtifactRegistry` and binds its ID through the
+existing account/evidence run hash. Repeated historical experiments keep separate input hashes
+while the unchanged executable can share an artifact. The scoped draft/version, simulated
+provenance and paper-only review rules continue to apply; see `DesignerPaperRehearsalTests`.
+
+Asset Detail reads full canonical terms through `SecurityInstrumentTermsEndpoints` and
+`SecurityInstrumentTermsReadService`. The schema-guided read preserves exact scalar JSON text,
+all nested/unknown properties and raw blocks, with version/fingerprint and matching source evidence.
+Unsupported envelopes and ambiguous fields remain inspectable and explicitly require review.
+
+The workstation `market-valuation` endpoint checks the authenticated tenant/company, authoritative
+book ownership and scoped access before resolving any position or price. It delegates to
+`AssetPositionMarketValuationService` with only retained identities; clients supply no amounts.
+Results are exact decimal strings with model, scope, freshness, receipt and blocker evidence.
+These reads do not approve a valuation or create ledger entries. Their HTTP behavior is covered by
+`SecurityInstrumentTermsEndpointsTests` and `AssetMarketValuation_` endpoint tests.
 
 The book receipt queue composes approved historical positions, accepted Asset Operations schedules,
 canonical statement cash and retained reconciliation/journal links. Expected, received and posted
@@ -1226,6 +1262,14 @@ import, and `sample`/`skip` lead with the starter kit's desk. Activation outcome
 `workspace-opened` (and `data-imported` for sample workspaces) are only recorded when a client
 reports the completed work to `POST /api/workstation/first-run/outcomes/complete`, so the
 checklist reflects finished work rather than page visits.
+
+## Provider data quality rules
+
+`GET /api/providers/{providerName}/validation-profile` returns the effective and default values,
+profile source, startup streaming values, and retained audit history. `PUT` requires an authenticated
+actor with `ManageProviders` and `ModifyConfig`. A relaxation requires a reason and explicit
+confirmation. A reset removes the override. The profile and its before/after audit entry are
+saved together, and a stale requested revision returns a conflict before either can change.
 
 ## Provider connection templates
 

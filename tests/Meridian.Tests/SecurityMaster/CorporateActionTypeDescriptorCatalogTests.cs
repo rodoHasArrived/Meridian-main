@@ -14,12 +14,52 @@ namespace Meridian.Tests.SecurityMaster;
 public sealed class CorporateActionTypeDescriptorCatalogTests
 {
     [Fact]
-    public void All_ContainsTwentyNineDescriptors_WithUniqueCanonicalNames()
+    public void All_ContainsThirtySixDescriptors_WithUniqueCanonicalNames()
     {
-        CorporateActionTypeDescriptorCatalog.All.Should().HaveCount(29);
+        CorporateActionTypeDescriptorCatalog.All.Should().HaveCount(36);
         CorporateActionTypeDescriptorCatalog.All
             .Select(static descriptor => descriptor.CanonicalName)
             .Should().OnlyHaveUniqueItems();
+    }
+
+    [Fact]
+    public void StockDividend_PreservesExtraShareSemantics_WithoutAutomaticPostingOrSplitAdjustment()
+    {
+        var descriptor = CorporateActionTypeDescriptorCatalog.Find(CorporateActionEventTypes.StockDividend)!;
+        descriptor.RequiredFields.Should().Contain(CorporateActionField.DistributionRatio);
+        descriptor.AdjustmentBehavior.Should().Be(CorporateActionAdjustmentBehavior.None);
+        descriptor.LedgerPostingKind.Should().Be(CorporateActionLedgerPostingKind.None);
+        descriptor.IsPriceAffecting.Should().BeTrue("price relevance does not grant an automatic adjustment");
+        CorporateActionEventTypes.Normalize("DIVSTOCK").Should().Be(CorporateActionEventTypes.StockDividend);
+    }
+
+    [Theory]
+    [InlineData(CorporateActionEventTypes.UnitSplit, true)]
+    [InlineData(CorporateActionEventTypes.SecurityRedemption, false)]
+    [InlineData(CorporateActionEventTypes.WorthlessRemoval, false)]
+    [InlineData(CorporateActionEventTypes.PartialCall, false)]
+    [InlineData(CorporateActionEventTypes.Reorganization, true)]
+    [InlineData(CorporateActionEventTypes.CapitalGainsDistribution, true)]
+    public void SourceOnlyFamilies_HaveNoAutomaticAdjustmentOrLedgerPosting(
+        string eventType, bool isPriceAffecting)
+    {
+        var descriptor = CorporateActionTypeDescriptorCatalog.Find(eventType)!;
+
+        descriptor.AdjustmentBehavior.Should().Be(CorporateActionAdjustmentBehavior.None);
+        descriptor.LedgerPostingKind.Should().Be(CorporateActionLedgerPostingKind.None);
+        descriptor.IsPriceAffecting.Should().Be(isPriceAffecting);
+        CorporateActionTerms.PayloadOnlyEventTypes.Should().Contain(eventType);
+    }
+
+    [Fact]
+    public void SecurityRedemption_DoesNotReclassifyTheLegacyBondRedemptionAlias()
+    {
+        CorporateActionEventTypes.Normalize("Redemption").Should().Be(CorporateActionEventTypes.BondMaturityRedemption);
+        CorporateActionEventTypes.Normalize("SecurityRedemption").Should().Be(CorporateActionEventTypes.SecurityRedemption);
+        CorporateActionEventTypes.Normalize("ProviderRedemption").Should().Be(CorporateActionEventTypes.SecurityRedemption);
+        CorporateActionTypeDescriptorCatalog.Find(CorporateActionEventTypes.SecurityRedemption)!
+            .RequiredFields.Should().NotContain(CorporateActionField.RedemptionPricePercentOfPar,
+                "an unspecified source rate must not be interpreted as a bond redemption percentage");
     }
 
     [Fact]

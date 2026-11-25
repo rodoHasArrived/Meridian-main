@@ -26,7 +26,7 @@ public static partial class ExecutionEndpoints
             var entries = await auditTrail
                 .GetRecentAsync(take ?? 100, context.RequestAborted)
                 .ConfigureAwait(false);
-            return Results.Json(entries, jsonOptions);
+            return Results.Json(entries.Select(ExecutionAuditPublicProjection.Project).ToArray(), jsonOptions);
         })
         .WithName("GetExecutionAudit").RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<ExecutionAuditEntry>>(200);

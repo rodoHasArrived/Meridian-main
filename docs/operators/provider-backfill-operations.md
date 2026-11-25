@@ -157,6 +157,19 @@ Keep provider lookup details in Reference lane files:
 - [provider-capability-matrix.md](../reference/provider-capability-matrix.md)
 - [provider-validation-matrix.md](../reference/provider-validation-matrix.md)
 
+## Data quality rules
+
+Open **Data → Providers**, select a provider, and open **Data quality rules**. The panel shows
+effective and default values, the saved profile source, and the recorded before/after audit.
+Workstation backfills and gap repair read daily staleness tolerance at job start, including jobs
+waiting in the workstation queue. Daily provider fallback uses the saved threshold for each candidate.
+Deployment-scheduled backfills and live ingestion use their startup profiles.
+
+Operators with `ManageProviders` and `ModifyConfig` can edit the profile or remove its override
+with **Reset to deployment default**. A relaxation requires a reason and confirmation of the
+affected future jobs. The panel shows saved streaming values alongside effective ones while a
+host restart is pending. Saving and auditing a change use the same configuration write.
+
 ## Multi-symbol ordering and resume semantics
 
 Current `HistoricalBackfillService` behavior is deterministic only within the configured execution

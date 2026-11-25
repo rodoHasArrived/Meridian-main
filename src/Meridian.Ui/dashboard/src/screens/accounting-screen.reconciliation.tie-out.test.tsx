@@ -73,6 +73,39 @@ function renderMount(reconciliation: AccountingSystemReconciliationSummary | nul
 const comparisonName = "Cash reconciliation broker statement versus ledger comparison";
 
 describe("Accounting reconciliation tie-out proof", () => {
+  it("renders separately declared source currencies and withholds a cross-currency comparison", () => {
+    const retained = { ...row("currency", "Cash", "Variance", 500, 500),
+      externalCurrency: "EUR", meridianCurrency: "USD", externalDebitExact: "500.0001", externalCreditExact: "0",
+      meridianDebitExact: "500.0001", meridianCreditExact: "0", varianceExact: "0" };
+    renderMount(JSON.parse(JSON.stringify(systemReconciliation([retained], 1))) as AccountingSystemReconciliationSummary);
+
+    const comparison = screen.getByRole("region", { name: comparisonName });
+    expect(within(comparison).getByText("500.0001 EUR")).toBeInTheDocument();
+    expect(within(comparison).getByText("500.0001 USD")).toBeInTheDocument();
+    expect(comparison).toHaveTextContent("multiple currencies (EUR, USD)");
+    expect(comparison).toHaveTextContent("Can't assess");
+    expect(comparison).not.toHaveTextContent("Balanced");
+    expect(screen.queryByRole("region", { name: "Tie-out proof" })).not.toBeInTheDocument();
+  });
+
+  it("keeps exact API strings visible while suppressing a lossy numeric proof", () => {
+    const retained = { ...row("precise", "Cash", "Variance", 9007199254740992, 9007199254740992),
+      currency: "EUR", externalDebitExact: "9007199254740993.125", externalCreditExact: "0",
+      meridianDebitExact: "9007199254740993.124", meridianCreditExact: "0", varianceExact: "0.001" };
+    const payload = { ...systemReconciliation([retained], 1), totalExternalDebitsExact: retained.externalDebitExact,
+      totalExternalCreditsExact: "0", totalMeridianDebitsExact: retained.meridianDebitExact, totalMeridianCreditsExact: "0" };
+    renderMount(JSON.parse(JSON.stringify(payload)) as AccountingSystemReconciliationSummary);
+
+    const comparison = screen.getByRole("region", { name: comparisonName });
+    expect(within(comparison).getAllByText("9,007,199,254,740,993.125 EUR")).toHaveLength(2);
+    expect(within(comparison).getAllByText("9,007,199,254,740,993.124 EUR")).toHaveLength(2);
+    expect(comparison).toHaveTextContent("Out by 0.001 EUR");
+    expect(comparison).toHaveTextContent("Tie-out proof unavailable:");
+    expect(comparison).not.toHaveTextContent("Balanced");
+    expect(comparison).not.toHaveTextContent("USD");
+    expect(screen.queryByRole("region", { name: "Tie-out proof" })).not.toBeInTheDocument();
+  });
+
   it("ties out exactly when the summary reads Balanced", () => {
     renderMount(systemReconciliation([row("r-cash", "Cash", "Matched", 500, 500)], 0));
 
@@ -95,7 +128,7 @@ describe("Accounting reconciliation tie-out proof", () => {
       row("r-interest", "Interest", "MissingMeridian", 142, 0)
     ], 2));
 
-    expect(within(screen.getByRole("region", { name: comparisonName })).getByText("Out by $122")).toBeInTheDocument();
+    expect(within(screen.getByRole("region", { name: comparisonName })).getByText("Out by 122.00 USD")).toBeInTheDocument();
     const proof = screen.getByRole("region", { name: "Tie-out proof" });
     expect(proof).toHaveAttribute("data-tie-out-status", "exception");
     expect(within(proof).getByText("Exception")).toBeInTheDocument();
@@ -140,11 +173,12 @@ describe("Accounting reconciliation tie-out proof", () => {
     const reconciliation = systemReconciliation([row("r-cash", "Cash", "Matched", 500, 500)], 0);
     renderMount({ ...reconciliation, totalMeridianDebits: Number.NaN });
 
-    const proof = screen.getByRole("region", { name: "Tie-out proof" });
-    expect(proof).toHaveAttribute("data-tie-out-status", "indeterminate");
-    expect(proof).not.toHaveTextContent("Tied out");
-    expect(within(proof).getByText("Not tied — input missing")).toBeInTheDocument();
-    expect(proof).toHaveTextContent("Cannot tie out. Internal ledger has no value.");
+    const comparison = screen.getByRole("region", { name: comparisonName });
+    expect(comparison).toHaveTextContent("Unavailable");
+    expect(comparison).toHaveTextContent("Can't assess");
+    expect(comparison).toHaveTextContent("Comparison unavailable:");
+    expect(comparison).not.toHaveTextContent("Balanced");
+    expect(screen.queryByRole("region", { name: "Tie-out proof" })).not.toBeInTheDocument();
   });
 
   it("shows a neutral, unavailable comparison without external GL or cash-flow evidence", () => {

@@ -39,6 +39,8 @@ public abstract record CorporateActionTerms(string EventType)
                 new SplitCorporateActionTerms(eventType, action.SplitRatio),
             CorporateActionEventTypes.SpinOff =>
                 new SecurityDistributionCorporateActionTerms(eventType, action.NewSecurityId, action.DistributionRatio),
+            CorporateActionEventTypes.StockDividend =>
+                new SecurityDistributionCorporateActionTerms(eventType, action.SecurityId, action.DistributionRatio),
             CorporateActionEventTypes.RightsDistribution =>
                 new SecurityDistributionCorporateActionTerms(
                     eventType,
@@ -121,6 +123,12 @@ public abstract record CorporateActionTerms(string EventType)
         CorporateActionEventTypes.PaymentInKind,
         CorporateActionEventTypes.OptionContractAdjustment,
         CorporateActionEventTypes.CryptoFork,
+        CorporateActionEventTypes.UnitSplit,
+        CorporateActionEventTypes.SecurityRedemption,
+        CorporateActionEventTypes.WorthlessRemoval,
+        CorporateActionEventTypes.PartialCall,
+        CorporateActionEventTypes.Reorganization,
+        CorporateActionEventTypes.CapitalGainsDistribution,
     };
 
     private static SecurityIncomeComponent? ParseComponent(string? value)

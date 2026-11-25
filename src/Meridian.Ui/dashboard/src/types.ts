@@ -14,6 +14,7 @@ export type * from "./types/intercompany-rate-fixings";
 export type * from "./types/intercompany-confirmations";
 export type * from "./types/intercompany-accrual-schedules";
 export * from "./types/brokerage-recovery";
+export type * from "./types/cancel-incidents.types";
 export * from "./types/close-preparation";
 export * from "./types/ledger-amount-proof";
 export * from "./types/ledger-tax-results";
@@ -49,6 +50,8 @@ export * from "./types/workstation-corporate-actions";
 
 export * from "./types/factor-paydown";
 export * from "./types/asset-accounting-workflow";
+export type * from "./types/asset-market-valuation";
+export type * from "./types/security-instrument-terms";
 export * from "./types/bond-analytics.types";
 export * from "./types/bond-settlement.types";
 export * from "./types/security-curves.types";

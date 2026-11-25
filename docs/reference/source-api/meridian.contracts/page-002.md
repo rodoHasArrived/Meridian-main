@@ -831,7 +831,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingApprovalQueueConfigurationDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:244](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L244).
+Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:245](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L245).
 
 ```csharp
 public sealed record AccountingApprovalQueueConfigurationDto(string QueueId, string DisplayName, string WorkflowKind, string RequiredApprovalRole, int RequiredApprovalCount, string SegregationPolicy, string EvidenceRequirement);

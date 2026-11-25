@@ -595,10 +595,11 @@ public sealed class KillSwitchBrokerTruthTests
     /// stage the exact disagreement between the broker's book and the OMS's in-memory dictionary
     /// that the union sweep exists to resolve.
     /// </summary>
-    private sealed class UnionSweepBrokerageGateway :
+    internal sealed class UnionSweepBrokerageGateway :
         IBrokerageGateway,
         IExecutionGatewayModeProvider,
-        IExplicitOrderCancellationGateway
+        IExplicitOrderCancellationGateway,
+        INotionalOrderSizingGateway
     {
         private readonly Channel<ExecutionReport> _reports = Channel.CreateUnbounded<ExecutionReport>();
         private readonly List<string> _cancelRequests = new();
@@ -613,6 +614,10 @@ public sealed class KillSwitchBrokerTruthTests
 
         public BrokerOrder? BrokerOrderAppearingOnVerification { get; set; }
 
+        public bool BlockVerification { get; init; }
+        public TaskCompletionSource VerificationEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource ReleaseVerification { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
         /// <summary>Order ids this double refuses to cancel, standing in for a broker that says no.</summary>
         public HashSet<string> RefuseToCancel { get; } = new(StringComparer.Ordinal);
 
@@ -621,6 +626,12 @@ public sealed class KillSwitchBrokerTruthTests
         public HashSet<string> FillDuringCancel { get; } = new(StringComparer.Ordinal);
 
         public HashSet<string> TerminalRejectDuringCancel { get; } = new(StringComparer.Ordinal);
+
+        public HashSet<string> LoseCancellationAcknowledgement { get; } = new(StringComparer.Ordinal);
+
+        public bool SupportsNativeNotional { get; init; }
+
+        public bool RoutesNotionalMetadata(OrderRequest request) => SupportsNativeNotional;
 
         public Dictionary<string, decimal> PartialFillDuringCancel { get; } = new(StringComparer.Ordinal);
 
@@ -730,6 +741,9 @@ public sealed class KillSwitchBrokerTruthTests
                 }
             }
 
+            if (LoseCancellationAcknowledgement.Contains(brokerOrderId))
+                return Task.FromException<ExecutionReport>(new IOException("Broker cancellation acknowledgement was lost."));
+
             return Task.FromResult(new ExecutionReport
             {
                 OrderId = brokerOrderId,
@@ -796,12 +810,18 @@ public sealed class KillSwitchBrokerTruthTests
         public Task<IReadOnlyList<BrokerPosition>> GetPositionsAsync(CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<BrokerPosition>>([]);
 
-        public Task<IReadOnlyList<BrokerOrder>> GetOpenOrdersAsync(CancellationToken ct = default)
+        public async Task<IReadOnlyList<BrokerOrder>> GetOpenOrdersAsync(CancellationToken ct = default)
         {
             var readCount = Interlocked.Increment(ref _openOrdersReadCount);
             if (OpenOrdersFailure is { } failure)
             {
-                return Task.FromException<IReadOnlyList<BrokerOrder>>(failure);
+                throw failure;
+            }
+
+            if (BlockVerification && readCount >= 2)
+            {
+                VerificationEntered.TrySetResult();
+                await ReleaseVerification.Task.WaitAsync(ct);
             }
 
             List<BrokerOrder> snapshot;
@@ -819,7 +839,7 @@ public sealed class KillSwitchBrokerTruthTests
                 snapshot.Add(appearing);
             }
 
-            return Task.FromResult<IReadOnlyList<BrokerOrder>>(snapshot);
+            return snapshot;
         }
 
         public Task<BrokerHealthStatus> CheckHealthAsync(CancellationToken ct = default) =>

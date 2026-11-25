@@ -32,6 +32,10 @@ export interface SecurityDetailFieldViewModel {
   label: string;
   value: string;
   displayValue: string;
+  sourceDisplayValue: string;
+  overrideDisplayValue: string;
+  inspectionId: string;
+  impactDescription: string;
   isOverridden: boolean;
   overrideValue: string | undefined;
   isEditing: boolean;
@@ -407,13 +411,20 @@ function buildSecurityDetailFieldViewModel({
   const isOverridden = override !== undefined && override !== "";
   const isEditing = editingKey === field.key;
   const value = isOverridden ? override : (derived ?? "");
+  const formatValue = (raw: string) => field.format ? field.format(raw) : raw;
   const syncDisabledReason = buildOverrideSyncDisabledReason(serverStatus);
   return {
     def: field,
     key: field.key,
     label: field.label,
     value,
-    displayValue: value === "" ? "—" : (field.format ? field.format(value) : value),
+    displayValue: value === "" ? "—" : formatValue(value),
+    sourceDisplayValue: derived == null || derived === "" ? "Not supplied" : formatValue(derived),
+    overrideDisplayValue: isOverridden ? formatValue(override) : "No override",
+    inspectionId: `security-detail-${stableDomId(securityId)}-${stableDomId(field.key)}-inspection`,
+    impactDescription: field.key === "marketPrice"
+      ? "This manually entered unit price also values the local lot tracker. Its estimated P/L uses quantity × price and recorded costs."
+      : "This operator layer changes the value shown in Security details. Governed Passport terms use the separate draft and approval workflow.",
     isOverridden,
     overrideValue: override,
     isEditing,
@@ -591,6 +602,7 @@ export interface LotsTrackerDraftStatusViewModel {
 export interface LotsTrackerViewModel {
   title: string;
   description: string;
+  valuationDescription: string;
   formLabel: string;
   draftFields: LotsTrackerDraftFieldsViewModel;
   draftStatus: LotsTrackerDraftStatusViewModel;
@@ -638,8 +650,11 @@ export function buildLotsTrackerViewModel({
   ));
 
   return {
-    title: "Lots tracker",
-    description: `Record purchase lots for ${securityId} to track quantity, cost basis, and unrealised P/L. Lots are stored locally per security.`,
+    title: "Local lot tracker",
+    description: `Purchase lots for ${securityId} are stored in this browser per security, without account or book scope. These records do not post to the ledger.`,
+    valuationDescription: marketPriceOverride == null
+      ? "Estimated P/L needs a manually entered Market Price in Security details. The tracker uses quantity × unit price; accrued interest, factors and contract multipliers are excluded."
+      : `Manual valuation price: ${formatCurrency(marketPriceOverride, currency)} per unit. Estimated P/L uses quantity × price less recorded costs; accrued interest, factors and contract multipliers are excluded.`,
     formLabel: `Add purchase lot for ${securityId}`,
     draftFields: buildLotsDraftFields(securityId, draft),
     draftStatus: buildLotsDraftStatus(securityId, addCommand.disabledReason),
@@ -650,7 +665,7 @@ export function buildLotsTrackerViewModel({
       { id: "total-cost", label: "Total cost (incl. fees)", value: formatCurrency(total.totalCostWithFees, currency) },
       {
         id: "unrealised-pnl",
-        label: "Unrealised P/L",
+        label: "Estimated unrealised P/L",
         value: total.unrealisedPnl == null ? "-" : formatCurrency(total.unrealisedPnl, currency),
         tone: total.unrealisedPnl == null ? undefined : total.unrealisedPnl >= 0 ? "success" : "danger"
       }

@@ -62,6 +62,51 @@ public sealed class ConfigurationChangeTrackingTests : IDisposable
     }
 
     [Fact]
+    public async Task FeatureCapabilityOverrideSaveIsRecordedAsPendingChange()
+    {
+        var store = await CreateStore();
+        await store.SaveFeatureCapabilityOverridesAsync(new Dictionary<string, bool> { ["Synthetic"] = true });
+        var status = store.GetChangeStatus();
+        status.Changes.Should().ContainSingle(change => change.Path == "featureCapabilities.overrides");
+        status.PendingChanges.Should().ContainSingle(change => change.Path == "featureCapabilities.overrides");
+        status.RequiresRestart.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task FeatureCapabilityOverrideSaveIntoMissingFileIsRecorded()
+    {
+        Directory.CreateDirectory(_root);
+        var store = new ConfigStore(Path.Combine(_root, "appsettings.json"));
+        await store.SaveFeatureCapabilityOverridesAsync(new Dictionary<string, bool> { ["Synthetic"] = true });
+        store.GetChangeStatus().Changes.Should().Contain(change => change.Path == "featureCapabilities.overrides");
+    }
+
+    [Fact]
+    public async Task FeatureCapabilitySaveRetainsPendingChangesWithoutReportingUnrelatedOpaqueKeys()
+    {
+        var store = await CreateStore(new AppConfig(FeatureCapabilities: new(new()
+        {
+            ["fixture-opaque-capability"] = true
+        })));
+        await store.UpdateAsync(config => config with { DataSource = DataSourceKind.IB });
+        var config = store.Load() with
+        {
+            AdditionalSections = new()
+            {
+                ["featureCapabilities.fixture-opaque-field"] = JsonSerializer.SerializeToElement(true)
+            }
+        };
+        await File.WriteAllTextAsync(store.ConfigPath, JsonSerializer.Serialize(config, AppConfigJsonOptions.Write));
+
+        await store.SaveFeatureCapabilityOverridesAsync(new Dictionary<string, bool> { ["Synthetic"] = true });
+
+        var status = store.GetChangeStatus();
+        status.PendingChanges.Should().Contain(change => change.Path == "dataSource");
+        status.PendingChanges.Should().Contain(change => change.Path == "featureCapabilities.overrides");
+        JsonSerializer.Serialize(status).Should().NotContain("fixture-opaque-field").And.NotContain("fixture-opaque-capability");
+    }
+
+    [Fact]
     public async Task WholeSaveRefusesMalformedAuthoritativeFileWithoutReplacingIt()
     {
         var store = await CreateStore();
