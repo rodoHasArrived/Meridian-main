@@ -1,11 +1,11 @@
 {
-  "total_files": 1301,
+  "total_files": 1302,
   "orphaned_count": 392,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:1e157162b5ad1bea9c99d07749c05ca14b689933baf192285b4ab7dd5a48fd69",
+  "signal_digest": "sha256:efccbf3bca74fa6527da7eb6e6dd00e7e3a33c099d1316f4bcbd1202aa39d545",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2625,6 +2625,13 @@
     },
     {
       "path": "docs/engineering/plans/god-file-burn-down-plan.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/governed-strategy-oms-execution-plan.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
