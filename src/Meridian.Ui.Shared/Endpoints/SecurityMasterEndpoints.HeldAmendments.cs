@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -27,11 +28,11 @@ public static partial class SecurityMasterEndpoints
             var rows = await store
                 .ListAsync(securityId, string.IsNullOrWhiteSpace(status) ? AppSecurityMaster.SecurityMasterHeldAmendmentStatus.Held : status.Trim(), ct)
                 .ConfigureAwait(false);
-            return Results.Json(rows, jsonOptions);
+            return Results.Json(rows.Select(SecurityMasterReviewQueueProjection.ToDto).ToArray(), jsonOptions);
         })
         .WithName("ListSecurityMasterHeldAmendments")
         .RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
-        .Produces<IReadOnlyList<AppSecurityMaster.SecurityMasterHeldAmendment>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<SecurityMasterHeldAmendmentDto>>(StatusCodes.Status200OK);
 
         group.MapPost(UiApiRoutes.SecurityMasterHeldAmendmentDiscard, async (
             Guid heldAmendmentId,

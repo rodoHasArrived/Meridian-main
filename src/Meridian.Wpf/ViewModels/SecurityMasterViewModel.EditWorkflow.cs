@@ -243,5 +243,13 @@ public sealed partial class SecurityMasterViewModel
         _workflowCts?.Dispose();
         _workflowCts = null;
         _workflowPollingTask = null;
+
+        // Leaving the page cancels any queue load in flight; the queues stay usable when it returns.
+        ReviewInbox?.Dispose();
+        HeldAmendments?.Dispose();
+        ExceptionQueue?.Dispose();
     }
+
+    /// <summary>Loads the review inbox when the page opens, as the browser inbox does on mount.</summary>
+    public Task LoadReviewInboxAsync() => ReviewInbox?.RefreshAsync() ?? Task.CompletedTask;
 }

@@ -51,6 +51,14 @@ public interface IWorkstationSecurityMasterApiClient : ICashDividendAttestationA
     Task<ApiResponse<SecurityMasterPublishResultDto>> PublishRevisionAsync(
         Guid securityId, PublishSecurityMasterRevisionRequest request, CancellationToken ct = default);
 
+    /// <summary>
+    /// Withdraws a Draft or Submitted revision so its staged value stops blocking the field. The
+    /// discarded revision comes back Rejected.
+    /// </summary>
+    Task<ApiResponse<SecurityMasterEditResultDto>> DiscardRevisionAsync(
+        Guid securityId, DiscardSecurityMasterRevisionRequest request, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<SecurityMasterEditResultDto>.Fail("Discarding a revision is unavailable in this host.", 501));
+
     // ── Asset-class registry (schema-driven term editors) ─────────────────────
     /// <summary>
     /// The asset-class registry definition the passport editor builds its term picker from. Null
@@ -162,6 +170,11 @@ public sealed partial class WorkstationSecurityMasterApiClient : IWorkstationSec
         Guid securityId, PublishSecurityMasterRevisionRequest request, CancellationToken ct = default)
         => _apiClient.PostWithResponseAsync<SecurityMasterPublishResultDto>(
             SecurityIdRoute(UiApiRoutes.SecurityMasterWorkbenchPublish, securityId), request, ct);
+
+    public Task<ApiResponse<SecurityMasterEditResultDto>> DiscardRevisionAsync(
+        Guid securityId, DiscardSecurityMasterRevisionRequest request, CancellationToken ct = default)
+        => _apiClient.PostWithResponseAsync<SecurityMasterEditResultDto>(
+            SecurityIdRoute(UiApiRoutes.SecurityMasterWorkbenchDiscard, securityId), request, ct);
 
     public async Task<SecurityAssetClassDefinitionDto?> GetAssetClassDefinitionAsync(string assetClass, CancellationToken ct = default)
     {

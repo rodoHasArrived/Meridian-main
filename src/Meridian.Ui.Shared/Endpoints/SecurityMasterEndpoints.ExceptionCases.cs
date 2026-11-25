@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.AspNetCore.Builder;
@@ -16,9 +17,6 @@ public sealed record CashFlowShadowCompareRequest(IReadOnlyList<Guid> SecurityId
 /// <summary>An observed pool factor for an effective date.</summary>
 public sealed record RecordFactorObservationRequest(DateOnly EffectiveDate, decimal Factor, string Source, string? EvidenceRef);
 
-/// <summary>Body assigning an exception case.</summary>
-public sealed record AssignSecurityMasterExceptionCaseRequest(string Assignee);
-
 public static partial class SecurityMasterEndpoints
 {
     /// <summary>
@@ -32,10 +30,11 @@ public static partial class SecurityMasterEndpoints
         {
             var rows = await cases.ListAsync(string.IsNullOrWhiteSpace(status) ? SecurityMasterExceptionCaseStatus.Open : status.Trim(), ct).ConfigureAwait(false);
             var now = DateTimeOffset.UtcNow;
-            return Results.Json(rows.Select(row => new { row, slaBreached = row.IsBreached(now), ageHours = Math.Round((now - row.OpenedAt).TotalHours, 1) }), jsonOptions);
+            return Results.Json(rows.Select(row => SecurityMasterReviewQueueProjection.ToQueueItem(row, now)).ToArray(), jsonOptions);
         })
         .WithName("ListSecurityMasterExceptionCases")
-        .RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster);
+        .RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .Produces<IReadOnlyList<SecurityMasterExceptionCaseQueueItemDto>>(StatusCodes.Status200OK);
 
         group.MapPost(UiApiRoutes.SecurityMasterExceptionCasesSync, async (
             HttpContext context, [FromServices] AppSecurityMaster.SecurityMasterExceptionCaseSync sync, CancellationToken ct) =>
@@ -43,9 +42,11 @@ public static partial class SecurityMasterEndpoints
             var authorization = RequireSecurityMasterMutationPermission(context);
             if (authorization is not null)
                 return authorization;
-            return Results.Json(await sync.SyncAsync(ct).ConfigureAwait(false), jsonOptions);
+            var result = await sync.SyncAsync(ct).ConfigureAwait(false);
+            return Results.Json(new SecurityMasterExceptionSyncResultDto(result.Opened, result.Refreshed, result.Closed), jsonOptions);
         })
-        .WithName("SyncSecurityMasterExceptionCases");
+        .WithName("SyncSecurityMasterExceptionCases")
+        .Produces<SecurityMasterExceptionSyncResultDto>(StatusCodes.Status200OK);
 
         group.MapPost(UiApiRoutes.SecurityMasterExceptionCaseAssign, async (
             Guid caseId, AssignSecurityMasterExceptionCaseRequest request, HttpContext context,
@@ -60,7 +61,9 @@ public static partial class SecurityMasterEndpoints
                 ? Results.NoContent()
                 : Results.Conflict(new { error = $"Case '{caseId:D}' is not open." });
         })
-        .WithName("AssignSecurityMasterExceptionCase");
+        .WithName("AssignSecurityMasterExceptionCase")
+        .Produces(StatusCodes.Status204NoContent)
+        .Produces(StatusCodes.Status409Conflict);
 
         // Review B1: read-only diff of the legacy and contractual cash-flow engines; no behaviour switch.
         group.MapPost(UiApiRoutes.SecurityMasterCashFlowShadowCompare, async (

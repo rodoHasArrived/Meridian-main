@@ -379,6 +379,117 @@ public sealed class SecurityPassportEditorViewModelTests
         viewModel.SaveDraftCommand.CanExecute(null).Should().BeFalse("the published edit must not be re-stageable");
     }
 
+    [Fact]
+    public async Task SaveDraft_WhenFieldAlreadyStaged_NamesTheFirstStagerInTheBanner()
+    {
+        var client = new Mock<IWorkstationSecurityMasterApiClient>();
+        client
+            .Setup(c => c.UpdateFieldAsync(SecurityId, It.IsAny<UpdateSecurityFieldRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ApiResponse<SecurityMasterEditResultDto>.Fail(
+                "{\"error\":\"field-already-staged\",\"message\":\"already staged\",\"fieldPath\":\"EconomicDefinition.Coupon\","
+                + "\"revisionId\":\"33333333-3333-3333-3333-333333333333\",\"stagedBy\":\"alice.ops\",\"state\":\"Draft\"}",
+                409));
+        var viewModel = new SecurityPassportEditorViewModel(client.Object)
+        {
+            SecurityId = SecurityId,
+            Version = 7,
+            FieldPath = "EconomicDefinition.Coupon",
+            NewValue = "5.25",
+            Justification = "Prospectus supplement"
+        };
+
+        await viewModel.SaveDraftCommand.ExecuteAsync(null);
+
+        viewModel.BannerIsError.Should().BeTrue();
+        viewModel.BannerText.Should().Be(
+            "alice.ops already has an open revision on EconomicDefinition.Coupon. Publish or discard it before staging another value.");
+        viewModel.RevisionId.Should().BeNull("a refused stage creates no working revision");
+        viewModel.FieldPath.Should().Be("EconomicDefinition.Coupon", "the operator's input survives the refusal");
+    }
+
+    [Fact]
+    public async Task ResolveConflict_WithPendingRevision_AdoptsTheStagedDraftAsTheWorkingRevision()
+    {
+        var conflictId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var pendingRevisionId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var client = new Mock<IWorkstationSecurityMasterApiClient>();
+        client
+            .Setup(c => c.ResolveConflictAsync(SecurityId, It.IsAny<ResolveSourceConflictRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ApiResponse<SecurityMasterConflictResolutionDto>.Ok(
+                new SecurityMasterConflictResolutionDto(conflictId, "ProviderA", "ProviderB", true, "Vendor B confirmed.", 7)
+                {
+                    PendingRevisionId = pendingRevisionId
+                }));
+        var viewModel = new SecurityPassportEditorViewModel(client.Object)
+        {
+            SecurityId = SecurityId,
+            Version = 7,
+            ConflictId = conflictId,
+            ChosenWinnerSource = "ProviderB",
+            ConflictReason = "Vendor B confirmed.",
+            AcknowledgePolicyDeviation = true
+        };
+
+        await viewModel.ResolveConflictCommand.ExecuteAsync(null);
+
+        viewModel.RevisionId.Should().Be(pendingRevisionId);
+        viewModel.RevisionState.Should().Be(SecurityMasterRevisionStateDto.Draft);
+        viewModel.Version.Should().Be(7, "staging a draft does not advance the passport");
+        viewModel.StatusText.Should().Contain("ProviderB").And.Contain("approved and published");
+        viewModel.SubmitCommand.CanExecute(null).Should().BeTrue("the staged draft goes through the ordinary approval path");
+        viewModel.DiscardRevisionCommand.CanExecute(null).Should().BeTrue();
+        viewModel.ConflictId.Should().BeNull("the request is complete; re-sending it would stage a second draft");
+    }
+
+    [Fact]
+    public async Task DiscardRevision_PostsTheWorkingRevision_AndFreesTheField()
+    {
+        var revisionId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+        DiscardSecurityMasterRevisionRequest? captured = null;
+        var client = new Mock<IWorkstationSecurityMasterApiClient>();
+        client
+            .Setup(c => c.DiscardRevisionAsync(SecurityId, It.IsAny<DiscardSecurityMasterRevisionRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<Guid, DiscardSecurityMasterRevisionRequest, CancellationToken>((_, request, _) => captured = request)
+            .ReturnsAsync(ApiResponse<SecurityMasterEditResultDto>.Ok(
+                EditResult(SecurityMasterRevisionStateDto.Rejected, 7) with { RevisionId = revisionId }));
+        var viewModel = new SecurityPassportEditorViewModel(client.Object)
+        {
+            SecurityId = SecurityId,
+            Version = 7,
+            RevisionId = revisionId,
+            RevisionState = SecurityMasterRevisionStateDto.Approved
+        };
+        viewModel.DiscardRevisionCommand.CanExecute(null).Should().BeFalse("an approved revision is published, not discarded");
+
+        viewModel.RevisionState = SecurityMasterRevisionStateDto.Submitted;
+        viewModel.DiscardRevisionCommand.CanExecute(null).Should().BeTrue();
+        await viewModel.DiscardRevisionCommand.ExecuteAsync(null);
+
+        captured.Should().NotBeNull();
+        captured!.RevisionId.Should().Be(revisionId);
+        captured.Actor.Should().BeEmpty("the server derives the actor from the session");
+        viewModel.RevisionId.Should().BeNull();
+        viewModel.RevisionState.Should().Be(SecurityMasterRevisionStateDto.Rejected);
+        viewModel.HasUnsavedWork.Should().BeFalse();
+        viewModel.StatusText.Should().Contain("discarded");
+    }
+
+    [Fact]
+    public void Parameter_WithRevision_OpensTheEditorOnThatRevision()
+    {
+        var revisionId = Guid.Parse("66666666-6666-6666-6666-666666666666");
+        var viewModel = new SecurityPassportEditorViewModel(new Mock<IWorkstationSecurityMasterApiClient>().Object)
+        {
+            Parameter = new SecurityPassportEditorParameter(SecurityId, 12, "ACME", RevisionId: revisionId,
+                RevisionState: SecurityMasterRevisionStateDto.Approved)
+        };
+
+        viewModel.RevisionId.Should().Be(revisionId);
+        viewModel.RevisionState.Should().Be(SecurityMasterRevisionStateDto.Approved);
+        viewModel.PublishCommand.CanExecute(null).Should().BeTrue("a reviewer opening an approved revision can publish it");
+        viewModel.StatusText.Should().Contain(revisionId.ToString("D"));
+    }
+
     private static SecurityMasterEditResultDto EditResult(SecurityMasterRevisionStateDto state, long version)
         => new(
             SecurityId: SecurityId,

@@ -462,6 +462,149 @@
                     </StackPanel>
                 </StackPanel>
             </Border>
+
+            <!-- Cross-security review queues (shared Security Master routes; no desktop-local state) -->
+            <Border Style="{StaticResource SectionCardStyle}"
+                    Margin="0,0,0,20"
+                    AutomationProperties.AutomationId="SecurityMasterReviewQueues"
+                    Visibility="{Binding HasReviewQueues, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel>
+                    <TextBlock Text="Review queues" Style="{StaticResource CardHeaderStyle}" />
+                    <TextBlock Text="Revisions awaiting action, amendments held by source ranking, and Security Master exceptions across every security."
+                               Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" Margin="0,4,0,8" />
+                    <TabControl>
+                        <TabItem Header="Review inbox" DataContext="{Binding ReviewInbox}" AutomationProperties.Name="Security Master review inbox">
+                            <StackPanel Margin="12">
+                                <WrapPanel Margin="0,0,0,8">
+                                    <Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource SecondaryButtonStyle}" Padding="12,6" />
+                                </WrapPanel>
+                                <TextBlock Text="{Binding ErrorText}" Foreground="{StaticResource ErrorColorBrush}" TextWrapping="Wrap" Margin="0,0,0,8"
+                                           Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                           AutomationProperties.LiveSetting="Assertive" />
+                                <DataGrid ItemsSource="{Binding Rows}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="320"
+                                          AutomationProperties.Name="Pending Security Master revisions">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="200" FontFamily="{DynamicResource MeridianDataFontFamily}" />
+                                        <DataGridTextColumn Header="Proposed value" Binding="{Binding ProposedValue}" Width="180" />
+                                        <DataGridTextColumn Header="Drafted by" Binding="{Binding DraftedBy}" Width="140" />
+                                        <DataGridTextColumn Header="State" Binding="{Binding State}" Width="90" />
+                                        <DataGridTextColumn Header="Waiting" Binding="{Binding Waiting}" Width="80" />
+                                        <DataGridTemplateColumn Header="Actions" Width="170">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Button Content="Open" Margin="0,0,6,0" Padding="8,2"
+                                                                Command="{Binding DataContext.OpenCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                                CommandParameter="{Binding}"
+                                                                AutomationProperties.Name="Open revision in passport editor" />
+                                                        <Button Content="Discard" Padding="8,2"
+                                                                Command="{Binding DataContext.DiscardCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                                CommandParameter="{Binding}"
+                                                                Visibility="{Binding CanDiscard, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                                AutomationProperties.Name="Discard revision" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <TextBlock Text="{Binding StatusText}" Opacity="0.8" Margin="0,8,0,0" TextWrapping="Wrap" AutomationProperties.Name="Review inbox status" />
+                            </StackPanel>
+                        </TabItem>
+                        <TabItem Header="Held amendments" DataContext="{Binding HeldAmendments}" AutomationProperties.Name="Held Security Master amendments">
+                            <StackPanel Margin="12">
+                                <TextBlock Text="A lower-ranked source tried to overwrite a value a higher-ranked source supplied, so its amendment was held. Open the security and resolve the named conflict to adopt the held value, or discard the row."
+                                           Opacity="0.7" TextWrapping="Wrap" Margin="0,0,0,8" />
+                                <WrapPanel Margin="0,0,0,8">
+                                    <StackPanel Width="150" Margin="0,0,8,0">
+                                        <TextBlock Text="Status" Opacity="0.8" />
+                                        <ComboBox ItemsSource="{Binding StatusFilters}" SelectedItem="{Binding StatusFilter}" AutomationProperties.Name="Held amendment status" />
+                                    </StackPanel>
+                                    <Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource SecondaryButtonStyle}" Padding="12,6" VerticalAlignment="Bottom" />
+                                </WrapPanel>
+                                <TextBlock Text="{Binding ErrorText}" Foreground="{StaticResource ErrorColorBrush}" TextWrapping="Wrap" Margin="0,0,0,8"
+                                           Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                           AutomationProperties.LiveSetting="Assertive" />
+                                <DataGrid ItemsSource="{Binding Rows}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="320"
+                                          AutomationProperties.Name="Held amendment rows">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Source" Binding="{Binding SourceSystem}" Width="120" />
+                                        <DataGridTextColumn Header="Dominated fields" Binding="{Binding DominatedFields}" Width="220" FontFamily="{DynamicResource MeridianDataFontFamily}" />
+                                        <DataGridTextColumn Header="Conflicts" Binding="{Binding ConflictCount}" Width="75" />
+                                        <DataGridTextColumn Header="Held at" Binding="{Binding HeldAt}" Width="150" />
+                                        <DataGridTextColumn Header="Version" Binding="{Binding HeldAtVersion}" Width="70" />
+                                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" />
+                                        <DataGridTemplateColumn Header="Actions" Width="200">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Button Content="Open security" Margin="0,0,6,0" Padding="8,2"
+                                                                Command="{Binding DataContext.OpenSecurityCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                                CommandParameter="{Binding}"
+                                                                AutomationProperties.Name="Open security to resolve its conflict" />
+                                                        <Button Content="Discard" Padding="8,2"
+                                                                Command="{Binding DataContext.DiscardCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                                CommandParameter="{Binding}"
+                                                                Visibility="{Binding CanDiscard, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                                AutomationProperties.Name="Discard held amendment" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <TextBlock Text="{Binding StatusText}" Opacity="0.8" Margin="0,8,0,0" TextWrapping="Wrap" AutomationProperties.Name="Held amendments status" />
+                            </StackPanel>
+                        </TabItem>
+                        <TabItem Header="Exception queue" DataContext="{Binding ExceptionQueue}" AutomationProperties.Name="Security Master exception queue">
+                            <StackPanel Margin="12">
+                                <WrapPanel Margin="0,0,0,8">
+                                    <StackPanel Width="120" Margin="0,0,8,0">
+                                        <TextBlock Text="Status" Opacity="0.8" />
+                                        <ComboBox ItemsSource="{Binding StatusFilters}" SelectedItem="{Binding StatusFilter}" AutomationProperties.Name="Exception case status" />
+                                    </StackPanel>
+                                    <Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource SecondaryButtonStyle}" Padding="12,6" Margin="0,0,8,0" VerticalAlignment="Bottom" />
+                                    <Button Content="Sync cases" Command="{Binding SyncCommand}" Style="{StaticResource SecondaryButtonStyle}" Padding="12,6" Margin="0,0,16,0" VerticalAlignment="Bottom"
+                                            ToolTip="Open, refresh and close cases to match current conflicts, ambiguities and violations." />
+                                    <StackPanel Width="180" Margin="0,0,8,0">
+                                        <TextBlock Text="Assign selected case to" Opacity="0.8" />
+                                        <TextBox Text="{Binding Assignee, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Assignee" />
+                                    </StackPanel>
+                                    <Button Content="Assign" Command="{Binding AssignCommand}" Style="{StaticResource SecondaryButtonStyle}" Padding="12,6" VerticalAlignment="Bottom" />
+                                </WrapPanel>
+                                <TextBlock Text="{Binding ErrorText}" Foreground="{StaticResource ErrorColorBrush}" TextWrapping="Wrap" Margin="0,0,0,8"
+                                           Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                           AutomationProperties.LiveSetting="Assertive" />
+                                <DataGrid ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedCase}" AutoGenerateColumns="False" IsReadOnly="True"
+                                          HeadersVisibility="Column" SelectionMode="Single" MaxHeight="320"
+                                          AutomationProperties.Name="Exception case rows">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" Width="80" />
+                                        <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="120" />
+                                        <DataGridTextColumn Header="Case" Binding="{Binding Title}" Width="240" />
+                                        <DataGridTextColumn Header="Assignee" Binding="{Binding Assignee}" Width="120" />
+                                        <DataGridTextColumn Header="SLA" Binding="{Binding Sla}" Width="220" />
+                                        <DataGridTextColumn Header="Age" Binding="{Binding Age}" Width="70" />
+                                        <DataGridTemplateColumn Header="Actions" Width="120">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button Content="Open security" Padding="8,2"
+                                                            Command="{Binding DataContext.OpenSecurityCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                            CommandParameter="{Binding}"
+                                                            Visibility="{Binding HasSecurity, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                            AutomationProperties.Name="Open the case's security" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <TextBlock Text="{Binding SelectedCase.Detail}" Opacity="0.8" Margin="0,8,0,0" TextWrapping="Wrap" AutomationProperties.Name="Selected case detail" />
+                                <TextBlock Text="{Binding StatusText}" Opacity="0.8" Margin="0,8,0,0" TextWrapping="Wrap" AutomationProperties.Name="Exception queue status" />
+                            </StackPanel>
+                        </TabItem>
+                    </TabControl>
+                </StackPanel>
+            </Border>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1.2*" />

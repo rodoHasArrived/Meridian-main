@@ -697,6 +697,16 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
     public SecurityMaster.BondReferenceLadderViewModel ReferenceLadders { get; }
     public SecurityMaster.CashDividendAttestationViewModel CashDividendAttestation { get; }
 
+    /// <summary>
+    /// Cross-security review queues over the shared Security Master routes (web-UI parity for the browser
+    /// review inbox; first desktop consumer of held amendments and the exception queue). Null when the
+    /// host registers no review-queue client.
+    /// </summary>
+    public SecurityMaster.SecurityMasterReviewInboxViewModel? ReviewInbox { get; }
+    public SecurityMaster.SecurityMasterHeldAmendmentsViewModel? HeldAmendments { get; }
+    public SecurityMaster.SecurityMasterExceptionQueueViewModel? ExceptionQueue { get; }
+    public bool HasReviewQueues => ReviewInbox is not null;
+
     public SecurityPassportEditorViewModel PassportEditor
     {
         get => _passportEditor;
@@ -1646,7 +1656,8 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         ISmService service,
         WpfServices.DesktopAuthenticationSession? authenticationSession = null,
         WpfServices.IWorkstationContractualCashFlowApiClient? cashFlowClient = null,
-        Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy? governedTermAmendmentPolicy = null)
+        Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy? governedTermAmendmentPolicy = null,
+        Meridian.Ui.Services.Services.SecurityMaster.ISecurityMasterReviewQueueApiClient? reviewQueueClient = null)
     {
         _loggingService = loggingService;
         _cashFlowClient = cashFlowClient;
@@ -1674,6 +1685,13 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         _passportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient, _cashFlowClient);
         ReferenceLadders = new SecurityMaster.BondReferenceLadderViewModel(_workstationSecurityMasterApiClient);
         CashDividendAttestation = new SecurityMaster.CashDividendAttestationViewModel(_workstationSecurityMasterApiClient);
+        if (reviewQueueClient is not null)
+        {
+            ReviewInbox = new SecurityMaster.SecurityMasterReviewInboxViewModel(reviewQueueClient, OpenPendingRevisionAsync);
+            HeldAmendments = new SecurityMaster.SecurityMasterHeldAmendmentsViewModel(reviewQueueClient, OpenSecurityFromQueueAsync);
+            ExceptionQueue = new SecurityMaster.SecurityMasterExceptionQueueViewModel(
+                reviewQueueClient, OpenSecurityFromQueueAsync, authenticationSession?.CurrentActor);
+        }
 
         CreateNewCommand = new RelayCommand(OnCreateNew, () => CanModifySecurityMaster);
         EditSelectedCommand = new RelayCommand(OnEditSelected, () => HasSelectedSecurity && CanModifySecurityMaster);
@@ -1804,6 +1822,9 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         }
 
         CashDividendAttestation.Dispose();
+        ReviewInbox?.Dispose();
+        HeldAmendments?.Dispose();
+        ExceptionQueue?.Dispose();
         Stop();
     }
 

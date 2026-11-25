@@ -108,20 +108,54 @@ public sealed partial class SecurityMasterViewModel
             && !PassportEditor.IsBusy;
         if (!preserveInProgressWork)
         {
-            PassportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient, _cashFlowClient)
-            {
-                Parameter = new SecurityPassportEditorParameter(
-                    SecurityId: economic.SecurityId,
-                    Version: economic.Version,
-                    Symbol: snapshot.Security?.DisplayName ?? string.Empty,
-                    AssetClass: economic.AssetClass,
-                    TrustPosture: snapshot.TrustPosture?.Tone.ToString() ?? string.Empty,
-                    FundProfileId: snapshot.DownstreamImpact?.IsScoped == true ? snapshot.DownstreamImpact.FundProfileId : null)
-            };
+            PassportEditor = CreatePassportEditor(snapshot, economic, revisionId: null, revisionState: null);
         }
 
         IsPassportEditorOpen = true;
     }
+
+    private SecurityPassportEditorViewModel CreatePassportEditor(
+        SecurityMasterTrustSnapshotDto snapshot,
+        SecurityMasterEconomicDefinitionDrillInDto economic,
+        Guid? revisionId,
+        SecurityMasterRevisionStateDto? revisionState)
+        => new(_workstationSecurityMasterApiClient, _cashFlowClient)
+        {
+            Parameter = new SecurityPassportEditorParameter(
+                SecurityId: economic.SecurityId,
+                Version: economic.Version,
+                Symbol: snapshot.Security?.DisplayName ?? string.Empty,
+                AssetClass: economic.AssetClass,
+                TrustPosture: snapshot.TrustPosture?.Tone.ToString() ?? string.Empty,
+                FundProfileId: snapshot.DownstreamImpact?.IsScoped == true ? snapshot.DownstreamImpact.FundProfileId : null,
+                RevisionId: revisionId,
+                RevisionState: revisionState)
+        };
+
+    /// <summary>
+    /// Review inbox "Open": selects the security and opens the passport editor on the pending revision, so a
+    /// reviewer who is not the drafter can approve, publish or discard it. An editor already holding that
+    /// revision is kept; one busy with a write is never replaced.
+    /// </summary>
+    private async Task OpenPendingRevisionAsync(SecurityMaster.SecurityMasterPendingRevisionRow row)
+    {
+        await LoadSelectedTrustSnapshotAsync(row.SecurityId).ConfigureAwait(true);
+        var snapshot = SelectedTrustSnapshot;
+        if (snapshot?.EconomicDefinition is not { } economic || economic.SecurityId != row.SecurityId || PassportEditor.IsBusy)
+        {
+            return;
+        }
+
+        if (PassportEditor.SecurityId != row.SecurityId || PassportEditor.RevisionId != row.RevisionId)
+        {
+            PassportEditor = CreatePassportEditor(snapshot, economic, row.RevisionId, row.State);
+        }
+
+        IsPassportEditorOpen = true;
+    }
+
+    /// <summary>Held-amendment and exception-queue "Open security": selects it so its conflicts can be resolved.</summary>
+    private Task OpenSecurityFromQueueAsync(Guid securityId) => LoadSelectedTrustSnapshotAsync(securityId);
 
     private void NotifySelectionCommandsChanged()
     {
