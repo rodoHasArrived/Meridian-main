@@ -298,6 +298,13 @@ Backfill resume depends on verified date coverage: `HistoricalBackfillService` s
 
 Backfill resume checkpoints are written only after the final pipeline flush succeeds, and a flush failure fails the run, so a crash or flush error can no longer skip dates on resume that never reached disk. `PersistentDedupLedger` rolls its cache entry back when the ledger write fails or is cancelled (a retry is no longer dropped as a duplicate) and fsyncs compacted ledgers before the rename. Scheduled catch-up skips an empty window instead of queueing From > To.
 
+`--wal-repair` operates on `_wal` under the resolved storage root the pipeline writes to. It refuses
+to run, with a storage error exit code and no changes, while a Meridian process holds that WAL
+directory. A repair keeps the original of every segment it rewrites under `_wal/quarantine/`,
+reports interrupted final writes separately from corruption, and exits with the data-corruption
+code only when corrupt records were found. `--wal-repair --dry-run` validates every record's
+checksum, changes nothing, exits zero, and may be used while Meridian is running.
+
 Backfill runs publish into an `EventPipeline` with `BoundedChannelFullMode.Wait`, so a
 provider that outpaces the JSONL sink is back-pressured instead of silently evicting queued bars.
 

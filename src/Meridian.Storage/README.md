@@ -1463,6 +1463,29 @@ marked running is retained as an interrupted/ambiguous failure instead of being 
 
 ### Market data and evidence
 
+A write-ahead log directory has one writer. `WriteAheadLog.InitializeAsync` holds an exclusive
+`writer.lock` in the directory until disposal, and a second writer fails with
+`WalDirectoryInUseException` after `WalOptions.WriterLockTimeout`; a crashed holder is released by
+the operating system, and read-only enumeration that never initializes takes no lock. `RepairAsync`
+on an uninitialized instance takes the same lock, so a repair cannot rewrite a segment a live writer
+has open. Before a repair rewrites a segment it copies the original to `quarantine/` inside the WAL
+directory. An unterminated, unparseable final line is reported as an incomplete tail, not
+corruption, and never causes a rewrite; `RepairAsync(dryRun: true)` runs the same
+checksum-validating scan without changing anything or taking the lock.
+
+`AtomicFileWriter.SyncDirectoryStrictAsync` throws when a directory cannot be opened or fsynced,
+and is used where the next step relies on an entry being durable: a new WAL segment's entry, the
+archive before its WAL segment is deleted, the repair quarantine copy, and a new JSONL file's entry
+at the end of the sink flush that precedes the WAL commit. A filesystem that cannot fsync
+directories at all (EINVAL or ENOTSUP) is logged and counted but not refused.
+`SyncDirectoryAsync`, and the directory sync inside the atomic write methods after their rename,
+remain best effort. Every failed directory fsync increments `mdc_storage_dir_fsync_failures_total`.
+
+WAL sequence recovery never reuses a sequence. A segment containing corrupt lines is bounded by the
+base sequence in its file name plus its record line count, so records that no longer validate still
+push the next sequence past them; healthy segments and segments with only an incomplete tail keep
+contiguous numbering.
+
 Market data and evidence records enter through storage sinks. File-backed writes use the
 write-ahead log or atomic file helpers so a crash is less likely to leave a half-written record.
 Storage sink flush behavior uses the Core-owned `Meridian.Core.Services.IFlushable` contract rather
