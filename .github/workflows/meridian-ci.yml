@@ -66,16 +66,75 @@ jobs:
             echo "dotnet=true" >> "$GITHUB_OUTPUT"
           fi
 
-  verify-dotnet:
-    name: verify-dotnet
-    needs: [changes, verify-browser]
+  # The host embeds the workstation bundle at MSBuild evaluation time, so the .NET shards
+  # need the bundle but not the browser test verdict. Building it here lets .NET start
+  # without waiting for the browser lane; quality-gate still requires both lanes.
+  build-workstation:
+    name: build-workstation
+    outputs:
+      workstation-artifact-id: ${{ steps.workstation.outputs.artifact-id }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      npm_config_prefer_offline: "true"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      # Lockfile install, contract generation, production build and bundle validation: the
+      # same preparation a standalone verify-dotnet lane performs for itself.
+      - name: Build and validate workstation assets
+        run: python build/scripts/ensure-workstation-assets.py
+
+      - name: Upload same-revision workstation assets
+        id: workstation
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: workstation-${{ github.sha }}-${{ github.run_attempt }}
+          path: src/Meridian.Ui/wwwroot/workstation/
+          if-no-files-found: error
+          retention-days: 14
+
+  # One complete verify-dotnet lane per runner, each restricted to a deterministic slice of
+  # the test roster. Every runner keeps the reviewed two test processes; only the number of
+  # runners changes. The verify-dotnet job below is the lane's single verdict.
+  dotnet-shards:
+    name: dotnet-shard (${{ matrix.shard }}/3)
+    needs: [changes, build-workstation]
     if: needs.changes.outputs.dotnet == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    strategy:
+      # A failing shard must not hide failures in the others.
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    outputs:
+      artifact-id-1: ${{ steps.evidence.outputs.artifact-id-1 }}
+      artifact-id-2: ${{ steps.evidence.outputs.artifact-id-2 }}
+      artifact-id-3: ${{ steps.evidence.outputs.artifact-id-3 }}
     env:
       # Build shared projects once, then overlap two isolated test processes.
       # Local runs remain sequential unless explicitly configured.
       MERIDIAN_CI_TEST_MAX_PARALLEL: "2"
+      MERIDIAN_CI_DOTNET_SHARD: ${{ matrix.shard }}/3
 
     steps:
       - name: Check out repository
@@ -105,12 +164,12 @@ jobs:
             ${{ runner.os }}-nuget-v1-
 
       # Use the producer's immutable artifact ID, including when only failed
-      # jobs are rerun and the successful browser upload belongs to an earlier
+      # jobs are rerun and the successful bundle upload belongs to an earlier
       # attempt. No cross-run cache supplies runtime assets.
       - name: Download same-revision workstation assets
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          artifact-ids: ${{ needs.verify-browser.outputs.workstation-artifact-id }}
+          artifact-ids: ${{ needs.build-workstation.outputs.workstation-artifact-id }}
           path: src/Meridian.Ui/wwwroot/workstation
 
       - name: Run .NET lane
@@ -118,11 +177,12 @@ jobs:
           MERIDIAN_DEPENDENCY_CACHE_HIT: ${{ steps.nuget.outputs.cache-hit || 'false' }}
         run: bash scripts/ci.sh --lane verify-dotnet
 
-      - name: Upload .NET lane artifacts
+      - name: Upload .NET shard artifacts
+        id: upload
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: meridian-ci-dotnet-${{ github.run_number }}-${{ github.run_attempt }}
+          name: meridian-ci-dotnet-shard-${{ matrix.shard }}-${{ github.run_number }}-${{ github.run_attempt }}
           path: |
             artifacts/build-logs/
             artifacts/test-results/dotnet/
@@ -131,10 +191,82 @@ jobs:
           compression-level: 1
           retention-days: 14
 
+      # Each matrix leg sets only its own output, so a rerun of one failed shard keeps the
+      # immutable evidence IDs of the shards that already passed.
+      - name: Record shard evidence identity
+        id: evidence
+        if: always() && steps.upload.outputs.artifact-id != ''
+        env:
+          SHARD: ${{ matrix.shard }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+        run: echo "artifact-id-${SHARD}=${ARTIFACT_ID}" >> "$GITHUB_OUTPUT"
+
+  verify-dotnet:
+    name: verify-dotnet
+    needs: [changes, dotnet-shards]
+    # A failed or cancelled shard must still produce a failing verdict, never a skipped one.
+    if: always() && needs.changes.outputs.dotnet == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      # A shard that never uploaded leaves its ID empty. Its own artifact, if any, stays
+      # downloadable; the roster check below then fails on the missing summary.
+      - name: Download shard evidence
+        if: needs.dotnet-shards.outputs.artifact-id-1 != '' && needs.dotnet-shards.outputs.artifact-id-2 != '' && needs.dotnet-shards.outputs.artifact-id-3 != ''
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ format('{0},{1},{2}', needs.dotnet-shards.outputs.artifact-id-1, needs.dotnet-shards.outputs.artifact-id-2, needs.dotnet-shards.outputs.artifact-id-3) }}
+          path: artifacts/dotnet-shards
+
+      # The shards' own exit codes are not enough: this proves that together they ran the
+      # complete default roster exactly once, for one commit, with no failing entry.
+      - name: Require the complete roster across shards
+        run: >-
+          python build/scripts/ci/merge-dotnet-shard-summaries.py
+          --shards-dir artifacts/dotnet-shards
+          --expected-shards 3
+          --json-output artifacts/test-results/dotnet/ci-dotnet-test-summary.json
+          --summary-output artifacts/test-results/dotnet/ci-dotnet-test-summary.md
+          --github-step-summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Require every shard to succeed
+        if: always()
+        env:
+          SHARDS_RESULT: ${{ needs.dotnet-shards.result }}
+        run: |
+          set -euo pipefail
+          if [[ "$SHARDS_RESULT" != "success" ]]; then
+            echo "One or more .NET shards did not succeed: ${SHARDS_RESULT}." >&2
+            exit 1
+          fi
+
+      - name: Upload .NET lane artifacts
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: meridian-ci-dotnet-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            artifacts/dotnet-shards/
+            artifacts/test-results/dotnet/
+          if-no-files-found: ignore
+          compression-level: 1
+          retention-days: 14
+
   verify-browser:
     name: verify-browser
-    outputs:
-      workstation-artifact-id: ${{ steps.workstation.outputs.artifact-id }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -166,15 +298,6 @@ jobs:
         env:
           MERIDIAN_DEPENDENCY_CACHE_HIT: ${{ steps.node.outputs.cache-hit || 'false' }}
         run: bash scripts/ci.sh --lane verify-browser
-
-      - name: Upload verified workstation assets
-        id: workstation
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: workstation-${{ github.sha }}-${{ github.run_attempt }}
-          path: src/Meridian.Ui/wwwroot/workstation/
-          if-no-files-found: error
-          retention-days: 14
 
       - name: Upload browser lane artifacts
         if: always()

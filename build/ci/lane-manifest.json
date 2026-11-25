@@ -42,7 +42,7 @@
         "artifacts/ci-summary/"
       ],
       "timeoutMinutes": 45,
-      "pathTriggerNotes": "Covers solution restore, formatting, warning-suppression inventory, file-size ratchet, web-workstation .NET build, and non-integration .NET tests. Only recognized narrative/asset-only PRs skip this lane; metadata and unknown paths require it.",
+      "pathTriggerNotes": "Covers solution restore, formatting, warning-suppression inventory, file-size ratchet, web-workstation .NET build, and non-integration .NET tests. Hosted runs split the test roster across three runner shards and the verify-dotnet job accepts them only when together they ran the complete roster once. Only recognized narrative/asset-only PRs skip this lane; metadata and unknown paths require it.",
       "requiredCheckRole": "evidence"
     },
     {
@@ -57,7 +57,7 @@
         "artifacts/test-results/browser/"
       ],
       "timeoutMinutes": 25,
-      "pathTriggerNotes": "Covers lockfile-strict dashboard install, UI route/catalog generation, lint, strict typecheck, tests, production bundle build and asset validation. Supplies the same-revision assets to the .NET lane.",
+      "pathTriggerNotes": "Covers lockfile-strict dashboard install, UI route/catalog generation, lint, strict typecheck, tests, production bundle build and asset validation. The hosted .NET shards take their same-revision assets from the separate build-workstation job, so they do not wait for this lane.",
       "requiredCheckRole": "evidence"
     },
     {

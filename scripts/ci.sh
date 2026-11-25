@@ -102,6 +102,22 @@ if [[ "$local_jobs" != auto || "$cold_outputs" == true ]]; then
   exit 2
 fi
 
+# An unset shard means the complete lane. A malformed one must stop the lane rather than
+# silently run everything, or nothing, under a shard's name.
+dotnet_shard_index=0
+if [[ -n "${MERIDIAN_CI_DOTNET_SHARD:-}" ]]; then
+  if [[ "$selected_lane" != "verify-dotnet" ]]; then
+    echo "MERIDIAN_CI_DOTNET_SHARD applies only to verify-dotnet." >&2
+    exit 2
+  fi
+  if [[ ! "$MERIDIAN_CI_DOTNET_SHARD" =~ ^([1-9][0-9]*)/([1-9][0-9]*)$ ]] ||
+     (( BASH_REMATCH[1] > BASH_REMATCH[2] )); then
+    echo "MERIDIAN_CI_DOTNET_SHARD must be INDEX/TOTAL with 1 <= INDEX <= TOTAL." >&2
+    exit 2
+  fi
+  dotnet_shard_index="${BASH_REMATCH[1]}"
+fi
+
 export MERIDIAN_CI_ARTIFACT_ROOT="${MERIDIAN_CI_ARTIFACT_ROOT:-artifacts}"
 if [[ -n "${MERIDIAN_CI_ISOLATION_KEY:-}" ]]; then
   # MSBuild imports these environment properties, including during dotnet format.
@@ -188,6 +204,29 @@ verify_dotnet() {
   run_step "Restore .NET solution" \
     dotnet restore Meridian.sln -p:EnableWindowsTargeting=true
 
+  # Hosted CI runs the test roster as several runner shards (MERIDIAN_CI_DOTNET_SHARD=K/N).
+  # The static checks and the web-host build are whole-tree facts, so the first shard owns
+  # them once; an unsharded run, including every local run, still performs all of them.
+  if [[ "$dotnet_shard_index" -le 1 ]]; then
+    verify_dotnet_static
+  else
+    echo "Shard ${MERIDIAN_CI_DOTNET_SHARD}: static checks and the web-host build run in shard 1."
+  fi
+
+  local test_output_args=()
+  if [[ -n "${MERIDIAN_CI_ISOLATION_KEY:-}" ]]; then
+    test_output_args+=(--isolation-key "$MERIDIAN_CI_ISOLATION_KEY")
+  fi
+  run_step "Run .NET non-integration test projects" \
+    "$python_cmd" build/scripts/ci/run-dotnet-ci-tests.py \
+      --configuration Release \
+      --filter "Category!=Integration&Category!=Performance" \
+      --results-dir "${MERIDIAN_CI_ARTIFACT_ROOT}/test-results/dotnet" \
+      --summary-output "${MERIDIAN_CI_ARTIFACT_ROOT}/test-results/dotnet/ci-dotnet-test-summary.md" \
+      --json-output "${MERIDIAN_CI_ARTIFACT_ROOT}/test-results/dotnet/ci-dotnet-test-summary.json" "${test_output_args[@]}"
+}
+
+verify_dotnet_static() {
   run_step "Verify .NET formatting" \
     dotnet format whitespace Meridian.sln --verify-no-changes --verbosity minimal --no-restore
 
@@ -223,18 +262,6 @@ verify_dotnet() {
 
   run_step "Build web workstation .NET lane" \
     bash -c 'set -euo pipefail; dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore -p:EnableWindowsTargeting=true -p:UseAppHost=false 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/web-workstation-build.log"'
-
-  local test_output_args=()
-  if [[ -n "${MERIDIAN_CI_ISOLATION_KEY:-}" ]]; then
-    test_output_args+=(--isolation-key "$MERIDIAN_CI_ISOLATION_KEY")
-  fi
-  run_step "Run .NET non-integration test projects" \
-    "$python_cmd" build/scripts/ci/run-dotnet-ci-tests.py \
-      --configuration Release \
-      --filter "Category!=Integration&Category!=Performance" \
-      --results-dir "${MERIDIAN_CI_ARTIFACT_ROOT}/test-results/dotnet" \
-      --summary-output "${MERIDIAN_CI_ARTIFACT_ROOT}/test-results/dotnet/ci-dotnet-test-summary.md" \
-      --json-output "${MERIDIAN_CI_ARTIFACT_ROOT}/test-results/dotnet/ci-dotnet-test-summary.json" "${test_output_args[@]}"
 }
 
 verify_browser() {

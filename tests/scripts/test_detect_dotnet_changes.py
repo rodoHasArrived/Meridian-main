@@ -122,8 +122,12 @@ class QualityGateChangeDetectionTests(unittest.TestCase):
     def test_workflow_limits_skipping_to_prs_and_keeps_gate_always_reporting(self):
         self.assertEqual(self.jobs['quality-gate']['if'], 'always()')
         self.assertIn('changes', self.jobs['quality-gate']['needs'])
-        self.assertEqual(self.jobs['verify-dotnet']['needs'], ['changes', 'verify-browser'])
-        self.assertEqual(self.jobs['verify-dotnet']['if'], "needs.changes.outputs.dotnet == 'true'")
+        # The roster executes in dotnet-shards; verify-dotnet is its verdict and must report
+        # a failure, never a skip, when a required shard failed or was cancelled.
+        self.assertEqual(self.jobs['dotnet-shards']['needs'], ['changes', 'build-workstation'])
+        self.assertEqual(self.jobs['dotnet-shards']['if'], "needs.changes.outputs.dotnet == 'true'")
+        self.assertEqual(self.jobs['verify-dotnet']['needs'], ['changes', 'dotnet-shards'])
+        self.assertEqual(self.jobs['verify-dotnet']['if'], "always() && needs.changes.outputs.dotnet == 'true'")
         checkout, detect = self.jobs['changes']['steps']
         self.assertEqual(checkout['if'], "github.event_name == 'pull_request'")
         self.assertEqual(checkout['with']['fetch-depth'], '0')

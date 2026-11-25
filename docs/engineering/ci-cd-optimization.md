@@ -430,6 +430,36 @@ that includes distinct subjects, refs and commits. This is not a durable FIFO qu
 who need every request executed must wait for completion before submitting the next.
 Production certification and release serialization retain their existing policies.
 
+### Critical-path restructuring — November 25, 2026
+
+Job timings from pull-request run
+[45483483086](https://github.com/rodoHasArrived/Meridian-main/actions/runs/45483483086)
+(31 minutes to `quality-gate`) showed that the gate's length was scheduling, not work:
+`verify-dotnet` (17 minutes) declared `needs: verify-browser` (13 minutes) only to obtain
+the workstation bundle, and its 11.75 minutes of tests ran as about 1,420 process-seconds
+through two processes on one runner. Two changes follow from that one observation; neither
+removes or narrows a validation.
+
+- **`build-workstation`** builds and validates the bundle with
+  `build/scripts/ensure-workstation-assets.py` and uploads it by immutable artifact ID. The
+  .NET shards consume it and start without waiting for browser tests. `verify-browser` still
+  builds, validates and retains its own bundle, and `quality-gate` still requires both lanes.
+- **`dotnet-shards`** runs the unchanged roster on three runners, each a complete
+  `scripts/ci.sh --lane verify-dotnet` restricted to a deterministic slice by
+  `MERIDIAN_CI_DOTNET_SHARD`. Shard 1 owns formatting, ratchets and the web-host build. The
+  `verify-dotnet` job keeps its name, its evidence artifact name and its place in
+  `quality-gate`; it fails unless the shards together ran every roster entry exactly once.
+
+This is runner fan-out, not the process-count promotion governed below: every runner keeps two
+test processes and `tests/xunit.runner.json` is unchanged. It adds one small Ubuntu job, two
+additional .NET runners and one short verdict job per run that needs .NET. The October 5
+review recorded queue delay before assignment; if hosted capacity is again the constraint,
+reduce the `shard` matrix and `--expected-shards` together, which the workflow contract test
+keeps consistent. Rollback is reverting this change. The expected gate time is an estimate
+from one run until post-merge runs are measured, and `service-backed-integrations` (19
+minutes, one serial `Meridian.Tests` step that also produces certification evidence) is
+unchanged and now the longest job in the workflow.
+
 ### Benchmark promotion criteria
 
 Hosted defaults remain two .NET test processes and eight browser files per batch; local .NET

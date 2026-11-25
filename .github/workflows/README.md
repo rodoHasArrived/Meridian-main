@@ -142,7 +142,23 @@ fatal even if those diagnostic builds pass, and no test shards start. The runner
 the solution enables every selected project in `Release` without remapping its configuration.
 Explicit `--project` overrides and other configurations keep the serial build path.
 
-`verify-dotnet` sets `MERIDIAN_CI_TEST_MAX_PARALLEL=2` on its hosted runner. Restore,
+Hosted `verify-dotnet` runs as three runner shards (`dotnet-shard (K/3)`), each a complete
+`bash scripts/ci.sh --lane verify-dotnet` restricted by `MERIDIAN_CI_DOTNET_SHARD=K/3` to a
+deterministic slice of the roster. `run-dotnet-ci-tests.py --shard K/N` derives the slices from
+the roster and its duration hints alone, so every shard computes the same disjoint partition and
+builds only the test projects its slice needs. Every shard restores; shard 1 also owns the
+formatting check, static ratchets and web-host build, which are whole-tree facts. The
+`verify-dotnet` job is the lane's single verdict: `merge-dotnet-shard-summaries.py` rejects the
+run unless all three shards reported for one commit, together ran every default roster entry
+exactly once, and no entry failed. It publishes the combined summary and the shard evidence as
+`meridian-ci-dotnet-<run>-<attempt>`. A local or unsharded run still executes the whole lane.
+
+The shards consume the bundle from `build-workstation`, which installs from the lockfile, builds
+and validates the workstation assets without waiting for the browser tests. `quality-gate` still
+requires `verify-browser` and `verify-dotnet`, so a bundle whose browser lane fails cannot merge.
+
+Each shard sets `MERIDIAN_CI_TEST_MAX_PARALLEL=2` on its hosted runner; the runner fan-out does
+not change the reviewed per-runner process count. Restore,
 formatting, static checks, the web-host build, and test-project build retain their order; only
 the already-built test shards overlap. The runner defaults to one test process locally and accepts an explicit
 `--max-parallel` override. Each shard writes separate TRX and console logs; its temporary
@@ -179,7 +195,7 @@ hosted job and shard timings separately from runner queue delays before claiming
 
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
-| Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET`, browser workstation, docs/source/AI, and workflow-hygiene lanes in parallel, then reports the stable `quality-gate` aggregator. Calls shared PostgreSQL integrations and always reports their separate `integration-gate` companion. Required-check changes need administrator rollout and human review. | Lane summaries, build logs, TRX summaries, docs outputs, workflow-hygiene and PostgreSQL integration evidence |
+| Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET` (three runner shards behind one `verify-dotnet` verdict), browser workstation, docs/source/AI, and workflow-hygiene lanes in parallel, then reports the stable `quality-gate` aggregator. Calls shared PostgreSQL integrations and always reports their separate `integration-gate` companion. Required-check changes need administrator rollout and human review. | Lane summaries, build logs, TRX summaries, docs outputs, workflow-hygiene and PostgreSQL integration evidence |
 | Service-backed Integrations | `service-backed-integrations.yml` | Reusable calls from Meridian CI and Production Certification | Runs the Meridian, Direct Lending and Demo integration projects independently against disposable PostgreSQL, validates every TRX and all three required prefixes, and retains coverage plus schema evidence. Fork PRs use the event commit and read-only permissions without production secrets. | TRX/Cobertura/skip evidence, PostgreSQL schema dump and table/migration-ledger inventories |
 | CI | `ci.yml` | Pull requests, pushes to `main`, merge groups, nightly, manual | Runs Secret Scan on PRs, main pushes and merge groups. Nightly/manual `main` runs retain full coverage and scenario evidence; canonical Meridian CI owns .NET/browser/docs checks. | Secret scan SARIF/evidence and nightly coverage artifacts |
 | CodeQL | `codeql.yml` | Pull requests, pushes to `main`, weekly schedule, manual, reusable release gate | Runs GitHub CodeQL static analysis for C# and JavaScript/TypeScript. C# uses an explicit .NET 10 restore/build (`build-mode: manual`); JavaScript/TypeScript uses `build-mode: none`. | Security alerts and retained SARIF evidence |

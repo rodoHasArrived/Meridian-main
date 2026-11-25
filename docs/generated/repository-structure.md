@@ -1180,6 +1180,7 @@ Meridian-main
 │       │   ├── integration_evidence.py
 │       │   ├── local_gate.py
 │       │   ├── maintenance_refresh.py
+│       │   ├── merge-dotnet-shard-summaries.py
 │       │   ├── publish-certified-release.py
 │       │   ├── release-envelope.py
 │       │   ├── release-preflight.py
@@ -16273,6 +16274,7 @@ Meridian-main
 │   │   ├── test_documentation_reference_integration.py
 │   │   ├── test_documentation_workflow.py
 │   │   ├── test_documentation_workflow_consolidation.py
+│   │   ├── test_dotnet_ci_shards.py
 │   │   ├── test_endpoint_benchmark.py
 │   │   ├── test_export_project_artifact_workflow.py
 │   │   ├── test_fund_economics_golden_consistency.py

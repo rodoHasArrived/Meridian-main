@@ -34,7 +34,7 @@ class MeridianCiCacheContractTests(unittest.TestCase):
         return match.group()
 
     def test_nuget_cache_hash_covers_case_sensitive_config_and_shared_build_inputs(self) -> None:
-        cache = self._step_block(self._job_block("verify-dotnet"), "Cache NuGet packages")
+        cache = self._step_block(self._job_block("dotnet-shards"), "Cache NuGet packages")
         hash_call = re.search(r"hashFiles\(([^)]+)\)", cache)
         self.assertIsNotNone(hash_call, "NuGet cache must track dependency inputs")
         patterns = set(re.findall(r"['\"]([^'\"]+)['\"]", hash_call.group(1)))
@@ -65,10 +65,11 @@ class MeridianCiCacheContractTests(unittest.TestCase):
             ("verify-workflows", "Run workflow hygiene lane"),
         ):
             with self.subTest(lane=lane):
-                job = self._job_block(lane)
+                # The .NET lane executes in runner shards; verify-dotnet is their verdict.
+                job = self._job_block("dotnet-shards" if lane == "verify-dotnet" else lane)
                 step = self._step_block(job, step_name)
                 if lane == "verify-dotnet":
-                    self.assertIn("    needs: [changes, verify-browser]", job)
+                    self.assertIn("    needs: [changes, build-workstation]", job)
                     self.assertIn("    if: needs.changes.outputs.dotnet == 'true'", job)
                 else:
                     self.assertNotRegex(job, r"(?m)^    (?:if|needs):")
