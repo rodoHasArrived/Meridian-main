@@ -48,6 +48,23 @@ public interface ISecurityMasterStore
     Task<SecurityDetailDto?> GetDetailAsync(Guid securityId, CancellationToken ct = default);
     Task<SecurityProjectionRecord?> GetProjectionAsync(Guid securityId, CancellationToken ct = default);
     Task<SecurityProjectionRecord?> GetByIdentifierAsync(SecurityIdentifierKind kind, string value, string? provider, DateTimeOffset asOfUtc, bool includeInactive, CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns every distinct security that claims <paramref name="value"/> at
+    /// <paramref name="asOfUtc"/> through an identifier, an enabled alias or a primary identifier,
+    /// across all providers. Used for canonical resolution, which must report ambiguity rather
+    /// than pick one. The default implementation can only return the provider-less first match.
+    /// </summary>
+    async Task<IReadOnlyList<Guid>> FindSecurityIdsByIdentifierAsync(
+        SecurityIdentifierKind kind,
+        string value,
+        DateTimeOffset asOfUtc,
+        bool includeInactive,
+        CancellationToken ct = default)
+    {
+        var record = await GetByIdentifierAsync(kind, value, provider: null, asOfUtc, includeInactive, ct).ConfigureAwait(false);
+        return record is null ? [] : [record.SecurityId];
+    }
     /// <summary>
     /// Returns projections outside <paramref name="excludedSecurityIds"/> that claim at least one
     /// normalized kind/value pair in <paramref name="identifiers"/>. The caller applies validity-

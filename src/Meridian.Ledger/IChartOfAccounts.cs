@@ -12,6 +12,16 @@ public interface IChartOfAccounts
         string? symbol = null);
 
     /// <summary>
+    /// Resolves a per-security role (Securities, Short Securities Payable, Dividend Receivable,
+    /// Accrued Interest Receivable). The account is keyed by <see cref="LedgerSecurityKey.SecurityId"/>
+    /// when resolved; the ticker is retained for display only.
+    /// </summary>
+    LedgerAccount Resolve(
+        LedgerAccountRole role,
+        string? financialAccountId,
+        LedgerSecurityKey security);
+
+    /// <summary>
     /// Returns <c>true</c> when <paramref name="account"/> is exactly an account this chart can
     /// resolve: a registered name and type, with symbol and financial-account scope that satisfy the
     /// role's registration. Implementations must not infer a role from a name prefix or number.

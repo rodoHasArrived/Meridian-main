@@ -47,7 +47,7 @@ internal sealed partial class SimulatedPortfolio
             var amount = shares * item.Action.DividendPerShare!.Value;
             var accountId = account.Account.AccountId;
             PostCanonicalDividend(item, contentHash, "declaration", account,
-                _chart.Resolve(LedgerAccountRole.DividendReceivable, accountId, item.Symbol),
+                _chart.Resolve(LedgerAccountRole.DividendReceivable, accountId, SimulationKey(item.Symbol)),
                 _chart.Resolve(LedgerAccountRole.DividendIncome, accountId), amount, item.Action.ExDate);
             account.DividendEntitlements.Add(item.Action.CorpActId, (amount, shares));
             // Non-cash recognition participates in income attribution, not in cash movement.
@@ -71,7 +71,7 @@ internal sealed partial class SimulatedPortfolio
             var accountId = account.Account.AccountId;
             PostCanonicalDividend(item, contentHash, "settlement", account,
                 _chart.Resolve(LedgerAccountRole.Cash, accountId),
-                _chart.Resolve(LedgerAccountRole.DividendReceivable, accountId, item.Symbol), entitlement.Amount, item.Action.PayDate!.Value);
+                _chart.Resolve(LedgerAccountRole.DividendReceivable, accountId, SimulationKey(item.Symbol)), entitlement.Amount, item.Action.PayDate!.Value);
             account.DividendEntitlements.Remove(item.Action.CorpActId);
             account.Cash += entitlement.Amount;
             _cashFlows.Add(new DividendCashFlow(At(item.Action.PayDate.Value), entitlement.Amount,

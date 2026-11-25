@@ -78,7 +78,8 @@ public static class BacktestLedgerIntegrityValidator
             {
                 var ledgerAccount = chart.Resolve(
                     lot.IsShort ? LedgerAccountRole.ShortSecuritiesPayable : LedgerAccountRole.Securities,
-                    account.AccountId, lot.Symbol);
+                    // Backtest ledgers are run-local and keyed by ticker; see SimulatedPortfolio.SimulationKey.
+                    account.AccountId, LedgerSecurityKey.Unresolved(lot.Symbol));
                 expectedBalances[ledgerAccount] = expectedBalances.GetValueOrDefault(ledgerAccount) + lot.CostBasis();
             }
         }

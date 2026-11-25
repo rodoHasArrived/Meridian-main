@@ -15,4 +15,8 @@ public sealed class SecurityResolverCompatibilityAdapter : ISecurityResolver
     public Task<Guid?> ResolveAsync(
         Meridian.Contracts.SecurityMaster.ResolveSecurityRequest request, CancellationToken ct = default)
         => _resolver.ResolveAsync(request, ct);
+
+    public Task<Meridian.Contracts.SecurityMaster.CanonicalSecurityResolution> ResolveCanonicalAsync(
+        Meridian.Contracts.SecurityMaster.ResolveCanonicalSecurityRequest request, CancellationToken ct = default)
+        => _resolver.ResolveCanonicalAsync(request, ct);
 }

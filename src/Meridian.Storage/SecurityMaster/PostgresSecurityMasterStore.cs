@@ -276,6 +276,67 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         return securityId is null ? null : await GetProjectionCoreAsync(connection, securityId.Value, ct).ConfigureAwait(false);
     }
 
+    public async Task<IReadOnlyList<Guid>> FindSecurityIdsByIdentifierAsync(
+        SecurityIdentifierKind kind,
+        string value,
+        DateTimeOffset asOfUtc,
+        bool includeInactive,
+        CancellationToken ct = default)
+    {
+        var normalizedIdentifierValue = SecurityIdentifierNormalizer.NormalizeValue(kind, value);
+        if (normalizedIdentifierValue.Length == 0)
+            return [];
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        // Provider-less and ambiguity-preserving: every security that claims the value through an
+        // identifier, an enabled alias, or a primary identifier at the instant is a candidate.
+        command.CommandText = $"""
+            select distinct candidate.security_id
+            from (
+                select i.security_id
+                from {Qualified("security_identifiers")} i
+                where i.identifier_kind = @identifier_kind
+                  and i.normalized_identifier_value = @normalized_identifier_value
+                  and i.valid_from <= @as_of
+                  and (i.valid_to is null or i.valid_to > @as_of)
+                union
+                select a.security_id
+                from {Qualified("security_aliases")} a
+                where a.alias_kind = @identifier_kind
+                  and a.normalized_alias_value = @normalized_identifier_value
+                  and a.valid_from <= @as_of
+                  and (a.valid_to is null or a.valid_to > @as_of)
+                  and a.is_enabled = true
+                union
+                select s.security_id
+                from {Qualified("securities")} s
+                where s.primary_identifier_kind = @identifier_kind
+                  and s.normalized_primary_identifier_value = @normalized_identifier_value
+                  and not exists (
+                      select 1
+                      from {Qualified("security_identifiers")} i
+                      where i.security_id = s.security_id
+                        and i.identifier_kind = @identifier_kind
+                        and i.normalized_identifier_value = @normalized_identifier_value)
+            ) candidate
+            join {Qualified("securities")} s on s.security_id = candidate.security_id
+            where (@include_inactive = true or s.status = 'Active')
+            order by candidate.security_id
+            limit 16;
+            """;
+        command.Parameters.AddWithValue("identifier_kind", kind.ToString());
+        command.Parameters.AddWithValue("normalized_identifier_value", normalizedIdentifierValue);
+        command.Parameters.AddWithValue("as_of", asOfUtc.UtcDateTime);
+        command.Parameters.AddWithValue("include_inactive", includeInactive);
+
+        var results = new List<Guid>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            results.Add(reader.GetGuid(0));
+        return results;
+    }
+
     public async Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);

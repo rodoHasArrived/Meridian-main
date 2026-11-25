@@ -101,7 +101,9 @@ public static class RetainedPostingEquivalence
             // Name and Symbol compared ordinally. A line whose account differs only in casing
             // therefore lands in a different balance bucket, so the type's own equality is the
             // authority here rather than the trimmed case-insensitive helper used for free text.
-            if (retainedLine.Account != candidateLine.Account)
+            // Retained journals keep their keys: a pre-SecurityId ticker-keyed line is equivalent to its
+            // rebuilt SecurityId-keyed form (Security Master review F2).
+            if (!LedgerSecurityKeyMigration.IsRetainedEquivalent(candidateLine.Account, retainedLine.Account))
                 return Differs($"line {index} account", out difference);
 
             if (!AmountsMatch(retainedLine.Debit, candidateLine.Debit)

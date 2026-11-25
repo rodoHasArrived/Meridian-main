@@ -29,4 +29,23 @@ public sealed class SecurityResolver : ISecurityResolver
 
         return record?.SecurityId;
     }
+
+    /// <inheritdoc />
+    public async Task<CanonicalSecurityResolution> ResolveCanonicalAsync(
+        ResolveCanonicalSecurityRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var asOf = request.AsOfUtc ?? DateTimeOffset.UtcNow;
+        if (string.IsNullOrWhiteSpace(request.IdentifierValue))
+            return CanonicalSecurityResolution.FromCandidates(request, asOf, []);
+
+        var candidates = await _store.FindSecurityIdsByIdentifierAsync(
+            request.IdentifierKind,
+            request.IdentifierValue,
+            asOf,
+            includeInactive: !request.ActiveOnly,
+            ct).ConfigureAwait(false);
+        return CanonicalSecurityResolution.FromCandidates(request, asOf, candidates);
+    }
 }

@@ -28,10 +28,10 @@ public static class StructuredNoteAccountingTemplate
     /// value, already converted from the class's raw quote convention by the valuation projector.
     /// Generated instances remain subject to the existing governed valuation draft lifecycle.
     /// </summary>
-    public static JournalTemplate Create(string symbol, string? financialAccountId, bool gain)
+    public static JournalTemplate Create(string symbol, Guid securityId, string? financialAccountId, bool gain)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
-        var carrying = LedgerAccounts.Securities(symbol, financialAccountId);
+        var carrying = LedgerAccounts.Securities(LedgerSecurityKey.Resolved(securityId, symbol), financialAccountId);
         var scope = financialAccountId ?? symbol;
         return new JournalTemplate(
             $"{TemplateId}-{(gain ? "gain" : "loss")}",

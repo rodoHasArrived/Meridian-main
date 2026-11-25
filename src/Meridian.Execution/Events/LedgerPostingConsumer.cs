@@ -815,10 +815,10 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
             var lines = new List<(LedgerAccount Account, decimal Debit, decimal Credit)>();
             if (closing is not null)
                 lines.AddRange(SecurityTradePostingProjector.Project(closing with { LoanRepaid = 0m },
-                    evt.Symbol, accountId, _chartOfAccounts));
+                    SecurityKey(evt, securityGate), accountId, _chartOfAccounts));
             if (opening is not null)
                 lines.AddRange(SecurityTradePostingProjector.Project(opening with { BorrowedAmount = 0m },
-                    evt.Symbol, accountId, _chartOfAccounts));
+                    SecurityKey(evt, securityGate), accountId, _chartOfAccounts));
             var description = FormattableString.Invariant(
                 $"{(evt.Side == Sdk.OrderSide.Buy ? "Buy" : "Sell")} {evt.FilledQuantity} {evt.Symbol} @ {evt.FillPrice:F4}");
             journals.Add(CreateJournal(evt, securityGate, TradeFillActivityType,
@@ -874,7 +874,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
 
         const string activityType = "trade-accrued-interest";
         var cashAccount = _chartOfAccounts.Resolve(LedgerAccountRole.Cash, accountId);
-        var receivable = LedgerAccounts.AccruedInterestReceivable(evt.Symbol, accountId);
+        var receivable = LedgerAccounts.AccruedInterestReceivable(SecurityKey(evt, securityGate), accountId);
         var lines = new List<(LedgerAccount Account, decimal Debit, decimal Credit)>();
         if (evt.Side == Sdk.OrderSide.Buy)
         {
@@ -944,7 +944,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
         };
         var accountId = NormalizeOptional(evt.FinancialAccountId);
         var cashAccount = _chartOfAccounts.Resolve(LedgerAccountRole.Cash, accountId);
-        var securitiesAccount = _chartOfAccounts.Resolve(LedgerAccountRole.Securities, accountId, evt.Symbol);
+        var securitiesAccount = _chartOfAccounts.Resolve(LedgerAccountRole.Securities, accountId, SecurityKey(evt, securityGate));
         var lines = new List<(LedgerAccount Account, decimal Debit, decimal Credit)>();
 
         if (evt.Side == Sdk.OrderSide.Buy && preCoverAccountingShape)
@@ -1338,7 +1338,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
                 if (expectedLine.EntryId != retainedLine.EntryId
                     || expectedLine.JournalEntryId != retainedLine.JournalEntryId
                     || expectedLine.Timestamp != retainedLine.Timestamp
-                    || expectedLine.Account != retainedLine.Account
+                    || !LedgerSecurityKeyMigration.IsRetainedEquivalent(expectedLine.Account, retainedLine.Account)
                     || expectedLine.Debit != retainedLine.Debit
                     || expectedLine.Credit != retainedLine.Credit
                     || !string.Equals(expectedLine.Description, retainedLine.Description, StringComparison.Ordinal)
@@ -1465,6 +1465,16 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
 
     private static string FormatDecimal(decimal value)
         => value.ToString("G29", CultureInfo.InvariantCulture);
+
+    /// <summary>
+    /// Per-security accounts are keyed by the Security Master identity the posting gate resolved
+    /// (Security Master review F2); the fill ticker is kept for display only.
+    /// </summary>
+    private static LedgerSecurityKey SecurityKey(TradeExecutedEvent evt, LedgerPostingSecurityGateResult securityGate)
+        => LedgerSecurityKey.Resolved(
+            securityGate.SecurityId
+                ?? throw new InvalidDataException($"Fill '{evt.FillId:D}' has no resolved Security Master identity."),
+            evt.Symbol);
 
     private sealed record LedgerPostingSecurityGateResult(
         bool CanPost,

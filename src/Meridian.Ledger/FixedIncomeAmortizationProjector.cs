@@ -33,7 +33,12 @@ public static class FixedIncomeAmortizationProjector
         var couponIncome = string.IsNullOrWhiteSpace(financialAccountId)
             ? LedgerAccounts.CouponIncome
             : LedgerAccounts.CouponIncomeFor(financialAccountId);
-        var accruedInterest = LedgerAccounts.AccruedInterestReceivable(symbol, financialAccountId);
+        var accruedInterest = LedgerAccounts.AccruedInterestReceivable(
+            // Keep the receivable on the carrying account's instrument key (SecurityId when resolved).
+            input.CarryingValueAccount.SecurityId is { } securityId
+                ? LedgerSecurityKey.Resolved(securityId, symbol)
+                : LedgerSecurityKey.Unresolved(symbol),
+            financialAccountId);
         var lines = new List<(LedgerAccount account, decimal debit, decimal credit)>();
 
         if (input.CouponAccrual > 0m)

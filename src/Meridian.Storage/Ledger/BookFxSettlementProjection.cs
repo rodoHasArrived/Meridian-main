@@ -38,7 +38,7 @@ internal static class BookFxSettlementProjection
             throw new ArgumentException("Every required settlement leg must identify a different journal.");
         var account = result.ReceivableAccountName;
         if (account.StartsWith("Cash", StringComparison.OrdinalIgnoreCase)
-            || account == LedgerAccounts.Securities(result.Symbol, result.FinancialAccountId).Name)
+            || account == LedgerAccounts.SecuritiesAccountName)
             throw new ArgumentException("The GAAP receivable must identify the approved settlement receivable account.");
         return result;
     }
@@ -122,7 +122,7 @@ internal static class BookFxSettlementProjection
         if (history.Count != 1 || history[0] is not { CanonicalLots.Count: > 0 } disposition
             || disposition.JournalEntryId != scope.Journal.JournalEntryId || disposition.MutationBatchId == Guid.Empty
             || disposition.WashSaleBasisIncreases.Count != 0
-            || disposition.Account != LedgerAccounts.Securities(input.Symbol, input.FinancialAccountId)
+            || !LedgerSecurityKeyMigration.IsRetainedEquivalent(SecuritiesAccount(input, input.FinancialAccountId), disposition.Account)
             || disposition.CanonicalLots.Any(lot => lot.LedgerBookId != scope.BookId || lot.SecurityId != input.SecurityId)
             || disposition.Lots.Sum(lot => lot.Quantity) != (isGaap ? input.TradeQuantity : input.SettledQuantity)
             || disposition.Lots.Sum(lot => lot.CostBasis) != (isGaap ? input.GaapCostBasis : input.CashRelievedBasis))
@@ -138,7 +138,7 @@ internal static class BookFxSettlementProjection
         var original = input.TransactionCurrency;
         var account = input.FinancialAccountId;
         var receivable = new LedgerAccount(input.ReceivableAccountName, LedgerAccountType.Asset, FinancialAccountId: account);
-        var securities = LedgerAccounts.Securities(input.Symbol, account);
+        var securities = SecuritiesAccount(input, account);
         var cash = LedgerAccounts.CashFor(account);
         var cashAlternative = LedgerAccounts.CashInCurrency(original, account);
         var expected = new List<ExpectedLine>(3);
@@ -180,8 +180,13 @@ internal static class BookFxSettlementProjection
         }
     }
 
+    // Keyed by the reviewed SecurityId (Security Master review F2); the ticker is display-only.
+    private static LedgerAccount SecuritiesAccount(RetainBookFxSettlementSetRequestDto input, string? financialAccountId)
+        => LedgerAccounts.Securities(LedgerSecurityKey.Resolved(input.SecurityId, input.Symbol), financialAccountId);
+
     private static bool Matches(LedgerEntry posted, ExpectedLine line, string functional)
-        => (posted.Account == line.Account || posted.Account == line.AlternateAccount)
+        => (LedgerSecurityKeyMigration.IsRetainedEquivalent(line.Account, posted.Account)
+                || (line.AlternateAccount is { } alternate && posted.Account == alternate))
             && (line.IsDebit ? posted.Debit == line.FunctionalAmount && posted.Credit == 0m
                 : posted.Credit == line.FunctionalAmount && posted.Debit == 0m)
             && posted.Currency is { } currency && currency.FunctionalCurrency == functional
