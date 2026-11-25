@@ -54,8 +54,8 @@ public sealed class LedgerSecurityKeyTests
         var beforeRename = LedgerSecurityKey.Resolved(MetaSecurityId, "FB");
         var afterRename = LedgerSecurityKey.Resolved(MetaSecurityId, "META");
 
-        chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, "broker-1", LedgerSecurityKey.Unresolved(beforeRename))
-            .Should().Be(chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, "broker-1", LedgerSecurityKey.Unresolved(afterRename)));
+        chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, "broker-1", beforeRename)
+            .Should().Be(chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, "broker-1", afterRename));
         LedgerAccounts.DividendReceivable(beforeRename, "broker-1")
             .Should().Be(LedgerAccounts.DividendReceivable(afterRename, "broker-1"));
         LedgerAccounts.AccruedInterestReceivable(beforeRename)

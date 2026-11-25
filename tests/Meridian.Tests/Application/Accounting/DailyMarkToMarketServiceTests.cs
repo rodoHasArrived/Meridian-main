@@ -33,12 +33,12 @@ public sealed class DailyMarkToMarketServiceTests
         var ledger = new Meridian.Ledger.Ledger();
         ledger.PostLines(AsOf.AddDays(-10), "Buy 100 AAPL @ 150",
         [
-            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")), 15_000m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Resolved(AaplSecurityId, "AAPL")), 15_000m, 0m),
             (LedgerAccounts.Cash, 0m, 15_000m)
         ]);
         ledger.PostLines(AsOf.AddDays(-10), "Buy 50 MSFT @ 200",
         [
-            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("MSFT")), 10_000m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Resolved(MsftSecurityId, "MSFT")), 10_000m, 0m),
             (LedgerAccounts.Cash, 0m, 10_000m)
         ]);
 
@@ -77,9 +77,9 @@ public sealed class DailyMarkToMarketServiceTests
         posted.Should().OnlyContain(approval => approval.Status == AutomatedJournalApprovalStatus.Posted);
 
         // The books now carry market values — the substance of a true NAV.
-        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"))).Should().Be(16_000m);
-        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("MSFT"))).Should().Be(9_500m);
-        (ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"))) + ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("MSFT"))))
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(AaplSecurityId, "AAPL"))).Should().Be(16_000m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(MsftSecurityId, "MSFT"))).Should().Be(9_500m);
+        (ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(AaplSecurityId, "AAPL"))) + ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(MsftSecurityId, "MSFT"))))
             .Should().Be(run.Projection.TotalMarketValue);
     }
 
@@ -89,7 +89,7 @@ public sealed class DailyMarkToMarketServiceTests
         var ledger = new Meridian.Ledger.Ledger();
         ledger.PostLines(AsOf.AddDays(-10), "Buy 100 AAPL @ 150",
         [
-            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-1"), 15_000m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Resolved(AaplSecurityId, "AAPL"), "broker-1"), 15_000m, 0m),
             (LedgerAccounts.CashAccount("broker-1"), 0m, 15_000m)
         ]);
         var prices = new MapPriceSource().Add("AAPL", 160m, new DateOnly(2026, 07, 03));
@@ -102,7 +102,7 @@ public sealed class DailyMarkToMarketServiceTests
         dayOne.Projection!.Lines.Should().ContainSingle()
             .Which.MarkAdjustment.Should().Be(1_000m);
         PostApprovals(dayOne.Approvals, ledger, AsOf);
-        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-1")).Should().Be(16_000m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(AaplSecurityId, "AAPL"), "broker-1")).Should().Be(16_000m);
 
         prices.Add("AAPL", 160m, new DateOnly(2026, 07, 04));
         var dayTwo = await service.PrepareAsync(Request(AsOf.AddDays(1), position));
@@ -121,7 +121,7 @@ public sealed class DailyMarkToMarketServiceTests
         changed.MarkAdjustment.Should().Be(500m, "only the movement from the prior carrying value is posted");
         PostApprovals(dayThree.Approvals, ledger, AsOf.AddDays(2));
 
-        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-1")).Should().Be(16_500m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(AaplSecurityId, "AAPL"), "broker-1")).Should().Be(16_500m);
         carryingValues.CallCount.Should().Be(3, "each run performs exactly one batch hydration");
         ledger.GetJournalEntries(new LedgerQuery(ActivityType: "fair-value-mark"))
             .Should().HaveCount(2, "the unchanged middle day creates no journal");
@@ -133,7 +133,7 @@ public sealed class DailyMarkToMarketServiceTests
         var ledger = new Meridian.Ledger.Ledger();
         ledger.PostLines(AsOf.AddDays(-10), "Buy 100 AAPL @ 150",
         [
-            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-1"), 15_000m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Resolved(AaplSecurityId, "AAPL"), "broker-1"), 15_000m, 0m),
             (LedgerAccounts.CashAccount("broker-1"), 0m, 15_000m)
         ]);
         var prices = new MapPriceSource().Add(
@@ -151,7 +151,7 @@ public sealed class DailyMarkToMarketServiceTests
                 "an identical retry must resolve to the same durable idempotency identity");
 
         PostApprovals(first.Approvals, ledger, AsOf);
-        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-1")).Should().Be(16_000m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(AaplSecurityId, "AAPL"), "broker-1")).Should().Be(16_000m);
 
         prices.Add(
             "AAPL", 161m, new DateOnly(2026, 07, 03), evidenceReference: "price://aapl/revision-2");
@@ -169,7 +169,7 @@ public sealed class DailyMarkToMarketServiceTests
             "the corrected revision posts only the movement beyond the first posted mark");
 
         PostApprovals(corrected.Approvals, ledger, AsOf);
-        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-1")).Should().Be(16_100m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(AaplSecurityId, "AAPL"), "broker-1")).Should().Be(16_100m);
     }
 
     [Fact]
