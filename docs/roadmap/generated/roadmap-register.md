@@ -2573,7 +2573,7 @@ W11-PACK-002: in_progress; health green; evidence in_progress. Prototype only. A
 ### Status References
 
 - Decisions: DEC-PACK-SPLIT-001
-- PR references (not inferred acceptance): none recorded
+- PR references (not inferred acceptance): [#3760](https://github.com/rodoHasArrived/Meridian-main/pull/3760)
 - [Retained implementation detail and boundaries](../../engineering/plans/security-master-class-plumbing-codegen.md)
 - Evidence: [docs/engineering/plans/security-master-class-plumbing-codegen.md](../../engineering/plans/security-master-class-plumbing-codegen.md)
 - Evidence: [tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingGenerationTests.cs](../../../tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingGenerationTests.cs)
