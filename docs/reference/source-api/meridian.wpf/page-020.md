@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradingWorkspaceShellPageBase
+
+Qualified name: <code>Meridian.Wpf.Views.TradingWorkspaceShellPageBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:372](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L372).
+
+Binds derived pages to the trading workspace shell definition.
+
+```csharp
+public class TradingWorkspaceShellPageBase : WorkspaceShellPageBase<TradingWorkspaceShellStateProvider, TradingWorkspaceShellViewModel>
+```
+
 ## WatchlistPage
 
 Qualified name: <code>Meridian.Wpf.Views.WatchlistPage</code>. Kind: `class`.
@@ -1078,21 +1090,3 @@ Provides a tabbed host for workstation workflows.
 ```csharp
 public sealed class WorkflowTabHostControl : TabControl
 ```
-
-## AccountingPreparerAttestationPresentation
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.AccountingPreparerAttestationPresentation</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/AccountingPreparerAttestationPresentation.cs:6](../../../../src/Meridian.Wpf/Workstation/Models/AccountingPreparerAttestationPresentation.cs#L6).
-
-Displays native accounting decision classification without inferring review or coverage.
-
-```csharp
-public static class AccountingPreparerAttestationPresentation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;string&gt; Describe(LedgerAmountProofDto proof, out string summary, IReadOnlyList&lt;Guid&gt;? reportJournalEntryIds = null);</code> | [src/Meridian.Wpf/Workstation/Models/AccountingPreparerAttestationPresentation.cs:10](../../../../src/Meridian.Wpf/Workstation/Models/AccountingPreparerAttestationPresentation.cs#L10) |  |

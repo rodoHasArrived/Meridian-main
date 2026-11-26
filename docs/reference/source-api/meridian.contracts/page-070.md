@@ -693,6 +693,18 @@ Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:127](../../.
 public sealed record PromoteShadowBookRequestDto(int ExpectedVersion, string CertificateId, string Rationale, IReadOnlyList<string> EvidenceIds);
 ```
 
+## ProposeHistoricalIdentifierWindowRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProposeHistoricalIdentifierWindowRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L62).
+
+Proposes a HISTORICAL identifier window — an identifier the security carried before it was ingested — as a governed Draft revision. Bulk imports stamp every identifier&#x27;s ValidFrom with the ingest time (an untrusted file is no authority for valid time), so a window before the ingest date can only enter the golden record through this proposal: it must cite an Evidence Vault reference and a justification, an independent second operator approves it through the workbench maker-checker gate, and publish applies it as a governed amendment with the proposed ValidFrom. The proposed identifier is never primary.
+
+```csharp
+public sealed record ProposeHistoricalIdentifierWindowRequest(Guid SecurityId, long ExpectedVersion, Meridian.Contracts.SecurityMaster.SecurityIdentifierKind Kind, string Value, string? Provider, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, string EvidenceReference, string Justification, string Actor, string? FundProfileId = null);
+```
+
 ## ProviderCorporateActionEvidenceCandidateDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ProviderCorporateActionEvidenceCandidateDto</code>. Kind: `record`.
@@ -701,14 +713,4 @@ Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:463](../../../.
 
 ```csharp
 public sealed record ProviderCorporateActionEvidenceCandidateDto(string CandidateId, string CandidateType, string? Symbol, Guid? SecurityId, string? SecurityDisplayName, ProviderLedgerReconciliationCheckStatusDto Status, string RequiredFeed, string EvidenceSource, string ProviderId, string ExternalAccountId, string? ProviderEventId, DateTimeOffset ObservedAt, decimal? Amount, decimal? Quantity, string? Currency, string Reason);
-```
-
-## ProviderCorporateActionLedgerEffectDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProviderCorporateActionLedgerEffectDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:481](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L481).
-
-```csharp
-public sealed record ProviderCorporateActionLedgerEffectDto(string CandidateId, string CandidateType, string? Symbol, Guid? SecurityId, string? ProviderEventId, string LedgerEffectKind, DateOnly? EffectiveDate, decimal? Factor, decimal? CashAmount, decimal? PrincipalAmount, decimal? IncomeAmount, string? Currency, ProviderLedgerReconciliationCheckStatusDto Status, string Reason, IReadOnlyList<ExpectedJournalPreviewLineDto> JournalLines);
 ```

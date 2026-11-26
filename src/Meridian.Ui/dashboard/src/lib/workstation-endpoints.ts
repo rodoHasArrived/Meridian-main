@@ -390,6 +390,10 @@ export function securityMasterWorkbenchFieldEndpoint(securityId: string): string
   return securityMasterWorkbenchPath(UI_API_ROUTES.SecurityMasterWorkbenchField, securityId);
 }
 
+export function securityMasterWorkbenchHistoricalIdentifierWindowEndpoint(securityId: string): string {
+  return securityMasterWorkbenchPath(UI_API_ROUTES.SecurityMasterWorkbenchHistoricalIdentifierWindow, securityId);
+}
+
 export function securityMasterWorkbenchResolveConflictEndpoint(securityId: string): string {
   return securityMasterWorkbenchPath(UI_API_ROUTES.SecurityMasterWorkbenchResolveConflict, securityId);
 }

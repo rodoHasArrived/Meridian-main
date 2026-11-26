@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IRetentionAssuranceClient
+
+Qualified name: <code>Meridian.Wpf.ViewModels.IRetentionAssuranceClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:718](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L718).
+
+Defines retention configuration persistence, policy validation, dry runs, and audited cleanup execution.
+
+```csharp
+public interface IRetentionAssuranceClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>RetentionConfiguration Configuration { get; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:720](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L720) |  |
+| <code>Task SaveConfigurationAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:722](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L722) |  |
+| <code>RetentionValidationResult ValidateRetentionPolicy(RetentionPolicy policy);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:724](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L724) |  |
+| <code>Task&lt;RetentionDryRunResult&gt; PerformDryRunAsync(RetentionPolicy policy, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:726](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L726) |  |
+| <code>Task&lt;RetentionAuditReport&gt; ExecuteRetentionCleanupAsync(RetentionDryRunResult dryRun, bool verifyChecksums, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:728](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L728) |  |
+
 ## IScheduleManagerClient
 
 Qualified name: <code>Meridian.Wpf.ViewModels.IScheduleManagerClient</code>. Kind: `interface`.
@@ -1638,29 +1660,3 @@ Declared public members:
 | <code>public Brush CredentialStatusBrush { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:651](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L651) |  |
 | <code>public Visibility StreamingVisibility { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:652](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L652) |  |
 | <code>public Visibility HistoricalVisibility { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:653](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L653) |  |
-
-## ProviderDataProjectionViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.ProviderDataProjectionViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:7](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L7).
-
-Desktop presentation shell over the provider-neutral shared projection.
-
-```csharp
-public sealed class ProviderDataProjectionViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderDataProjectionViewModel(ProviderDataReadModelService providerData);</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:12](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L12) |  |
-| <code>public ObservableCollection&lt;ProviderNewsReadModel&gt; News { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:17](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L17) |  |
-| <code>public ObservableCollection&lt;ProviderScannerReadModel&gt; ScannerResults { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:18](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L18) |  |
-| <code>public ObservableCollection&lt;ProviderPnlReadModel&gt; PnlStreams { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:19](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L19) |  |
-| <code>public ObservableCollection&lt;ProviderCalendarReadModel&gt; Calendars { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:20](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L20) |  |
-| <code>public ObservableCollection&lt;ProviderMarketRuleReadModel&gt; MarketRules { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:21](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L21) |  |
-| <code>public ObservableCollection&lt;ProviderInstrumentDiscoveryReadModel&gt; Instruments { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:22](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L22) |  |
-| <code>public ProviderDataProjectionSnapshot? Projection { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:23](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L23) |  |
-| <code>public void Refresh(string tenantId, string companyId);</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:25](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L25) |  |

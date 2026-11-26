@@ -6,6 +6,60 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PreflightResult
+
+Qualified name: <code>Meridian.Application.Services.PreflightResult</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Application/Services/PreflightChecker.cs:773](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L773).
+
+Result of all pre-flight checks.
+
+```csharp
+public readonly record struct PreflightResult(bool AllChecksPassed, bool HasWarnings, IReadOnlyList<PreflightCheckResult> Checks, double TotalDurationMs, DateTimeOffset CheckedAt)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string GetSummary();</code> | [src/Meridian.Application/Services/PreflightChecker.cs:784](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L784) | Gets a summary string of the pre-flight results. |
+
+## ServiceCategory
+
+Qualified name: <code>Meridian.Application.Services.ServiceCategory</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Services/ServiceRegistry.cs:17](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L17).
+
+Service categories for organization and discovery.
+
+```csharp
+public enum ServiceCategory : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Setup</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:20](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L20) | Configuration and setup services. |
+| <code>Validation</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:23](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L23) | Validation and preflight check services. |
+| <code>Diagnostics</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:26](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L26) | Diagnostic and error handling services. |
+| <code>Lifecycle</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:29](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L29) | Application lifecycle services. |
+| <code>Data</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:32](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L32) | Data query and manipulation services. |
+| <code>Calendar</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:35](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L35) | Trading calendar services. |
+| <code>Reporting</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:38](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L38) | Reporting and progress display services. |
+
+## ServiceInfo
+
+Qualified name: <code>Meridian.Application.Services.ServiceInfo</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/ServiceRegistry.cs:49](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L49).
+
+Service metadata for discovery and documentation.
+
+```csharp
+public sealed record ServiceInfo(string Name, ServiceCategory Category, string Description, Type ServiceType, bool IsAsync = true);
+```
+
 ## ServiceRegistry
 
 Qualified name: <code>Meridian.Application.Services.ServiceRegistry</code>. Kind: `class`.
@@ -994,77 +1048,3 @@ A setting&#x27;s displayed value, provenance and activation impact.
 ```csharp
 public sealed record EffectiveConfigurationEntry(string Key, string Value, string Source, ConfigurationChangeImpact Impact);
 ```
-
-## EffectiveConfigurationProjection
-
-Qualified name: <code>Meridian.Application.UI.EffectiveConfigurationProjection</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Http/EffectiveConfigurationProjection.cs:13](../../../../src/Meridian.Application/Http/EffectiveConfigurationProjection.cs#L13).
-
-Projects declared configuration settings without traversing operator-defined keys or values.
-
-```csharp
-public static class EffectiveConfigurationProjection
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;EffectiveConfigurationEntry&gt; Build(AppConfig config, IReadOnlyList&lt;EnvironmentOverrideInfo&gt; environmentVariables);</code> | [src/Meridian.Application/Http/EffectiveConfigurationProjection.cs:18](../../../../src/Meridian.Application/Http/EffectiveConfigurationProjection.cs#L18) |  |
-
-## IConfigurationRuntimeApplier
-
-Qualified name: <code>Meridian.Application.UI.IConfigurationRuntimeApplier</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:15](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L15).
-
-A running host component that can apply part of a saved configuration without a restart.
-
-```csharp
-public interface IConfigurationRuntimeApplier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string Name { get; }</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:18](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L18) | Short name used in logs. |
-| <code>bool ReconcilePendingPaths =&gt; …;</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:21](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L21) | Reconciles previously deferred paths when the next save touches this runtime. |
-| <code>bool Handles(string path);</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:24](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L24) | Whether this applier owns the flattened setting path (for example DataSources.FailoverRules.0.FailoverThreshold). |
-| <code>Task&lt;IReadOnlyList&lt;ConfigurationApplyEntry&gt;&gt; ApplyAsync(AppConfig previous, AppConfig next, IReadOnlyList&lt;string&gt; changedPaths, CancellationToken ct);</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:30](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L30) | Applies a saved configuration. Returns one entry per handled path in changedPaths. Implementations must be idempotent: the same change can arrive from a UI save and a file watcher. |
-
-## StatusEndpointHandlers
-
-Qualified name: <code>Meridian.Application.UI.StatusEndpointHandlers</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:21](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L21).
-
-Shared handlers for status endpoints used by the ASP.NET Core workstation host. Contains the business logic for generating health, status, and monitoring responses.
-
-```csharp
-public sealed class StatusEndpointHandlers
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const double HighDropRateThreshold = 5.0;</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:39](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L39) |  |
-| <code>public const double CriticalDropRateThreshold = 20.0;</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:40](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L40) |  |
-| <code>public const int StaleDataThresholdSeconds = 60;</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:41](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L41) |  |
-| <code>public StatusEndpointHandlers(Func&lt;MetricsSnapshot&gt; metricsProvider, Func&lt;PipelineStatistics&gt; pipelineProvider, Func&lt;IReadOnlyList&lt;DepthIntegrityEvent&gt;&gt; integrityProvider, Func&lt;ErrorRingBuffer?&gt;? errorBufferProvider = null, DateTimeOffset? startTime = null, Func&lt;DegradedModeStatus?&gt;? degradedModeProvider = null);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:43](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L43) |  |
-| <code>public void RegisterExtendedProviders(Func&lt;Task&lt;DetailedHealthReport&gt;&gt;? detailedHealth = null, Func&lt;BackpressureStatus&gt;? backpressure = null, Func&lt;ProviderLatencySummary&gt;? providerLatency = null, Func&lt;ConnectionHealthSnapshot&gt;? connectionHealth = null);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:62](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L62) | Registers extended providers for detailed health, backpressure, and provider latency endpoints. |
-| <code>public TimeSpan Uptime =&gt; …;</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:77](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L77) | Gets the current uptime. |
-| <code>public HealthCheckResponse GetHealthCheck();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:82](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L82) | Generates a comprehensive health check response. |
-| <code>public int GetHealthStatusCode(HealthCheckResponse response);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:234](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L234) | Gets the HTTP status code for a health check response. |
-| <code>public (bool IsReady, string Message) CheckReadiness();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:248](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L248) | Checks if the service is ready to receive traffic. |
-| <code>public StatusResponse GetStatus();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:258](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L258) | Gets the full status response. |
-| <code>public async Task&lt;string&gt; GetPrometheusMetricsAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:319](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L319) | Gets Prometheus metrics in text format, covering both the legacy hand-written series and the prometheus-net default registry. |
-| <code>public string GetPrometheusMetrics();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:345](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L345) | Gets the legacy hand-written Prometheus series in text format. |
-| <code>public ErrorsResponseDto GetErrors(int count = 10, string? levelFilter = null, string? symbolFilter = null);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:395](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L395) | Gets the errors response with optional filtering. |
-| <code>public BackpressureStatusDto GetBackpressure();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:457](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L457) | Gets the backpressure status. |
-| <code>public (ProviderLatencySummaryDto? Summary, string? Error) GetProviderLatency();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:501](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L501) | Gets provider latency summary. |
-| <code>public (ConnectionHealthSnapshotDto? Snapshot, string? Error) GetConnectionHealth();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:536](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L536) | Gets connection health snapshot. |
-| <code>public async Task&lt;(DetailedHealthReport? Report, string? Error)&gt; GetDetailedHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:570](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L570) | Gets detailed health report (async). |
-| <code>public static IReadOnlyList&lt;BackfillProviderInfo&gt; GetBackfillProviderInfo();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:591](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L591) | Gets the list of available backfill providers (static info). |

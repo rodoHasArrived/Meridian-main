@@ -33,6 +33,15 @@ governed Passport editing, and cash-flow scenarios. The selected tab is URL-back
 tabs; switching assets resets inputs, aborts supported reads, and rejects stale responses. Search and bounded, clearable recent
 history keep the tab and route scope. Security Master links carry the exact security ID.
 
+The Passport tab's editor can also propose a governed historical identifier window
+(`security-passport-historical-window.tsx` with its pure view-model): identifier kind, value,
+provider, valid from/to, Evidence Vault reference and justification, checked against the same rules
+the server applies. Staging it sets the editor's working revision, so Submit, Approve and Publish
+carry it through the maker-checker gate; a second proposal waits until that revision is published or
+discarded. `npm run e2e:historical-window` (`scripts/e2e-historical-identifier-window.mjs`) drives
+this flow end to end in Chromium against the Vite dev server, mocking only the API edge; set
+`MERIDIAN_CHROMIUM_PATH` when the installed Chromium does not match the dashboard's Playwright.
+
 The Instrument Dossier embeds the same asset panel with path-owned instrument identity. Its
 outer tab remains in `tab`; embedded asset tabs use `assetTab` and retain book/account/date scope.
 The dossier owns instrument switching and recovery navigation. Delayed reads for an earlier

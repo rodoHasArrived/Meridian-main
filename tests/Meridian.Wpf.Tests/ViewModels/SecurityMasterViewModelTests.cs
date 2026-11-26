@@ -2542,6 +2542,9 @@ public sealed class SecurityMasterViewModelTests
         public Task<ApiResponse<SecurityMasterEditResultDto>> UpdateFieldAsync(Guid securityId, UpdateSecurityFieldRequest request, CancellationToken ct = default)
             => Task.FromResult(ApiResponse<SecurityMasterEditResultDto>.Fail("not supported in stub", 501));
 
+        public Task<ApiResponse<SecurityMasterEditResultDto>> ProposeHistoricalIdentifierWindowAsync(Guid securityId, ProposeHistoricalIdentifierWindowRequest request, CancellationToken ct = default)
+            => Task.FromResult(ApiResponse<SecurityMasterEditResultDto>.Fail("not supported in stub", 501));
+
         public Task<ApiResponse<SecurityMasterConflictResolutionDto>> ResolveConflictAsync(Guid securityId, ResolveSourceConflictRequest request, CancellationToken ct = default)
             => Task.FromResult(ApiResponse<SecurityMasterConflictResolutionDto>.Fail("not supported in stub", 501));
 

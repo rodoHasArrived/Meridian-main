@@ -767,6 +767,27 @@ Declared public members:
 | <code>public SecurityMasterCanonicalMergeOutcomeDto? TakeOutcome(Guid revisionId) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs:72](../../../../src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs#L72) |  |
 | <code>public async Task HandleAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs:75](../../../../src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs#L75) |  |
 
+## ApprovedHistoricalIdentifierWindowHandler
+
+Qualified name: <code>Meridian.Application.SecurityMaster.ApprovedHistoricalIdentifierWindowHandler</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/ApprovedHistoricalIdentifierWindowHandler.cs:25](../../../../src/Meridian.Application/SecurityMaster/ApprovedHistoricalIdentifierWindowHandler.cs#L25).
+
+Published-revision side effect (Order = 6, after the field-edit merge and before the projection rebuild): applies an approved historical identifier window proposal (SecurityMasterHistoricalIdentifierWindow) to the canonical record through IGovernedPublicationAmender, adding the identifier with the PROPOSED ValidFrom/ValidTo. The amendment itself is effective at publish time (an amendment cannot predate the security), while the identifier&#x27;s validity window carries the history, so as-of resolution before the ingest date finds it. Bulk imports keep restamping identifier validity with the ingest time; this handler is the only write path that backdates an identifier, and the publication amender accepts it only for a revision the durable store holds as Approved. The added identifier is never primary. Idempotent: a retried publish whose window already landed finds the identical identifier on the projection and skips the amendment. A failure leaves the revision Approved and the publish retryable, per the handler seam&#x27;s contract. No-op without a Security Master backend.
+
+```csharp
+public sealed class ApprovedHistoricalIdentifierWindowHandler : ISecurityMasterRevisionPublishedHandler, ISecurityMasterCanonicalMergeOutcomeReporter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ApprovedHistoricalIdentifierWindowHandler(ISecurityMasterRevisionStore revisions, ILogger&lt;ApprovedHistoricalIdentifierWindowHandler&gt; logger, ISecurityMasterStore? projectionStore = null, IGovernedPublicationAmender? amender = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Application/SecurityMaster/ApprovedHistoricalIdentifierWindowHandler.cs:34](../../../../src/Meridian.Application/SecurityMaster/ApprovedHistoricalIdentifierWindowHandler.cs#L34) |  |
+| <code>public int Order =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ApprovedHistoricalIdentifierWindowHandler.cs:49](../../../../src/Meridian.Application/SecurityMaster/ApprovedHistoricalIdentifierWindowHandler.cs#L49) | After the field-edit merge (5), before the projection rebuild (10). |
+| <code>public SecurityMasterCanonicalMergeOutcomeDto? TakeOutcome(Guid revisionId) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ApprovedHistoricalIdentifierWindowHandler.cs:52](../../../../src/Meridian.Application/SecurityMaster/ApprovedHistoricalIdentifierWindowHandler.cs#L52) |  |
+| <code>public async Task HandleAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ApprovedHistoricalIdentifierWindowHandler.cs:55](../../../../src/Meridian.Application/SecurityMaster/ApprovedHistoricalIdentifierWindowHandler.cs#L55) |  |
+
 ## CanonicalRegistryCoverageSource
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CanonicalRegistryCoverageSource</code>. Kind: `class`.
@@ -1113,15 +1134,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public CorporateActionIngestOrchestrator(IEnumerable&lt;ICorporateActionProvider&gt; providers, ISecurityMasterStore store, ISecurityMasterEventStore eventStore, ISecurityMasterCorporateActionCommandService commandService, ILogger&lt;CorporateActionIngestOrchestrator&gt; logger, ICorporateActionOperationsService? operationsService = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:104](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L104) |  |
 | <code>public async Task&lt;CorporateActionIngestResult&gt; IngestAsync(CorporateActionIngestRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:120](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L120) |  |
-
-## CorporateActionIngestRequest
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:17](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L17).
-
-Request for a corporate-action ingest sweep. When Symbols is null or empty the sweep covers every active security with a ticker identifier. Announcements whose distinct agreeing sources reach MinimumSourcesToApply are confidence-scored, but production ingest still records a durable proposal for explicit operator acceptance.
-
-```csharp
-public sealed record CorporateActionIngestRequest(IReadOnlyList<string>? Symbols = null, bool DryRun = false, int MinimumSourcesToApply = 2, string? Actor = null, string? CorrelationId = null);
-```

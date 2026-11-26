@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingPreparerAttestationPresentation
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.AccountingPreparerAttestationPresentation</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/AccountingPreparerAttestationPresentation.cs:6](../../../../src/Meridian.Wpf/Workstation/Models/AccountingPreparerAttestationPresentation.cs#L6).
+
+Displays native accounting decision classification without inferring review or coverage.
+
+```csharp
+public static class AccountingPreparerAttestationPresentation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;string&gt; Describe(LedgerAmountProofDto proof, out string summary, IReadOnlyList&lt;Guid&gt;? reportJournalEntryIds = null);</code> | [src/Meridian.Wpf/Workstation/Models/AccountingPreparerAttestationPresentation.cs:10](../../../../src/Meridian.Wpf/Workstation/Models/AccountingPreparerAttestationPresentation.cs#L10) |  |
+
 ## AuditTimelineEntryModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.AuditTimelineEntryModel</code>. Kind: `record`.
@@ -716,14 +734,4 @@ Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:36
 
 ```csharp
 public sealed record WorkstationRecoveryActionModel(string Label, string Detail, string Target = "", string Tone = WorkspaceTone.Info);
-```
-
-## WorkstationSignoffRequirementModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationSignoffRequirementModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:42](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L42).
-
-```csharp
-public sealed record WorkstationSignoffRequirementModel(string Role, string Status, string Detail = "", string Tone = WorkspaceTone.Warning);
 ```
