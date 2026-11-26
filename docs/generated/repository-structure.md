@@ -133,6 +133,8 @@ Meridian-main
 │   │   ├── meridian-roadmap-strategist.md
 │   │   ├── meridian-simulated-user-panel.md
 │   │   └── meridian-test-writer.md
+│   ├── hooks
+│   │   └── format-csharp.sh
 │   ├── skills
 │   │   ├── _shared
 │   │   │   └── project-context.md
@@ -5204,6 +5206,7 @@ Meridian-main
 │   │   │   ├── MeridianDeploymentPosture.cs
 │   │   │   ├── MoneyMarketStartup.cs
 │   │   │   ├── PersistenceConfigurationStatus.cs
+│   │   │   ├── PipelineWorkload.cs
 │   │   │   ├── PortfolioRecordsServiceRegistration.cs
 │   │   │   ├── ProductionRegistrationGuardService.cs
 │   │   │   ├── ProductionServiceRegistrationPolicy.cs
@@ -13360,7 +13363,8 @@ Meridian-main
 │   │   │   │   ├── SimulationCommandsTests.cs
 │   │   │   │   ├── StatementImportCommandsTests.cs
 │   │   │   │   ├── SymbolCommandsTests.cs
-│   │   │   │   └── ValidateConfigCommandTests.cs
+│   │   │   │   ├── ValidateConfigCommandTests.cs
+│   │   │   │   └── WalRepairCommandTests.cs
 │   │   │   ├── Composition
 │   │   │   │   ├── Startup
 │   │   │   │   │   ├── ModeRunners
@@ -13749,6 +13753,7 @@ Meridian-main
 │   │   │   │   ├── QuickBooks
 │   │   │   │   │   ├── QuickBooksCredentialLifecycleTests.cs
 │   │   │   │   │   └── QuickBooksOnlineProviderCredentialConnectionStoreTests.cs
+│   │   │   │   ├── CredentialDirectorySyncTests.cs
 │   │   │   │   ├── ExternalGlConnectionLifecycleTests.cs
 │   │   │   │   ├── ExternalGlCredentialConcurrencyTests.cs
 │   │   │   │   ├── ExternalGlCredentialRecoveryTests.cs
@@ -14356,6 +14361,7 @@ Meridian-main
 │   │   │   │   ├── WebSocketResiliencePolicyTests.cs
 │   │   │   │   └── WebSocketSendSessionTests.cs
 │   │   │   └── Shared
+│   │   │       ├── DirectorySyncFaults.cs
 │   │   │       ├── SymbolNormalizationTests.cs
 │   │   │       └── TempDirectoryFixture.cs
 │   │   ├── Instruments
@@ -15062,6 +15068,7 @@ Meridian-main
 │   │   │   ├── ArchiveCompressionCrashTests.cs
 │   │   │   ├── ArchiveMaintenanceScheduleManagerDurabilityTests.cs
 │   │   │   ├── AssetAccountingPostingEvidenceValidatorTests.cs
+│   │   │   ├── AtomicFileWriterDirectorySyncTests.cs
 │   │   │   ├── AtomicFileWriterLogPrivacyTests.cs
 │   │   │   ├── AtomicFileWriterTests.cs
 │   │   │   ├── AtomicSnapshotTestWriter.cs
@@ -15283,8 +15290,10 @@ Meridian-main
 │   │   │   ├── WriteAheadLogChecksumTests.cs
 │   │   │   ├── WriteAheadLogChecksumVersionTests.cs
 │   │   │   ├── WriteAheadLogCorruptionModeTests.cs
+│   │   │   ├── WriteAheadLogDirectorySyncTests.cs
 │   │   │   ├── WriteAheadLogFlushFaultTests.cs
 │   │   │   ├── WriteAheadLogFuzzTests.cs
+│   │   │   ├── WriteAheadLogOwnershipTests.cs
 │   │   │   ├── WriteAheadLogProcessTests.cs
 │   │   │   ├── WriteAheadLogTests.cs
 │   │   │   └── XlsxWorkbookWriterTests.cs

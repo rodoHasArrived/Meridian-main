@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterGovernanceProfileGuard
+
+Qualified name: <code>Meridian.Application.Composition.SecurityMasterGovernanceProfileGuard</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs:22](../../../../src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs#L22).
+
+Refuses to start a host whose configuration contradicts its Security Master governance profile: an Institutional profile with one of the three requirements explicitly set to false, a production composition with SecurityMasterWorkbench:GovernanceProfile explicitly set to Standard, or a profile key that stopped declaring Institutional after this process had already run it. The refusal names each contradicted key.
+
+```csharp
+public sealed class SecurityMasterGovernanceProfileGuard : IStartupRefusalGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterGovernanceProfileGuard(ISecurityMasterGovernanceRequirements requirements);</code> | [src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs:26](../../../../src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs#L26) |  |
+| <code>public Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs:31](../../../../src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs#L31) |  |
+| <code>public Task StopAsync(CancellationToken cancellationToken) =&gt; …;</code> | [src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs:59](../../../../src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs#L59) |  |
+
+## SecurityMasterGovernanceServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Application.Composition.SecurityMasterGovernanceServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs:93](../../../../src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs#L93).
+
+Registers the Security Master governance requirements seam.
+
+```csharp
+public static class SecurityMasterGovernanceServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddSecurityMasterGovernanceRequirements(this IServiceCollection services);</code> | [src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs:111](../../../../src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs#L111) | Registers ISecurityMasterGovernanceRequirements, the IGovernedTermAmendmentPolicy that reads it, and the startup guard that refuses a configuration contradicting the governance profile. Idempotent; every host that enforces a Security Master governance requirement calls it (StorageFeatureRegistration, the workstation shared services and the WPF desktop). |
+
 ## SecurityMasterTermsCapabilityServiceCollectionExtensions
 
 Qualified name: <code>Meridian.Application.Composition.SecurityMasterTermsCapabilityServiceCollectionExtensions</code>. Kind: `class`.
@@ -986,47 +1024,3 @@ Declared public members:
 | <code>public ProviderCredentialAuditReplayHostedService(IProviderCredentialStore store, ILogger&lt;ProviderCredentialAuditReplayHostedService&gt; logger);</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialAuditReplayHostedService.cs:18](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialAuditReplayHostedService.cs#L18) |  |
 | <code>public async Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialAuditReplayHostedService.cs:26](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialAuditReplayHostedService.cs#L26) |  |
 | <code>public Task StopAsync(CancellationToken cancellationToken) =&gt; …;</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialAuditReplayHostedService.cs:49](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialAuditReplayHostedService.cs#L49) |  |
-
-## ProviderCredentialResolver
-
-Qualified name: <code>Meridian.Application.Config.Credentials.ProviderCredentialResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:42](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L42).
-
-Centralized credential resolver for all market data providers. Resolves credentials from multiple sources with environment variables taking precedence.
-
-```csharp
-public sealed class ProviderCredentialResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderCredentialResolver(ILogger? log = null);</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:46](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L46) |  |
-| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:55](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L55) | Creates a credential context for a provider type using declared credential attributes plus any config values supplied for fallback. |
-| <code>public string? ResolveOpenFigi(string? configApiKey = null);</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:75](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L75) | Resolves OpenFIGI API key from environment or config. |
-| <code>public (string? ApiKey, string? ApiSecret, string? ClientId) ResolveNyse(string? configApiKey = null, string? configApiSecret = null, string? configClientId = null);</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:83](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L83) | Resolves NYSE credentials from environment or config. |
-| <code>public (string Username, string Password) ResolveRabbitMq(string? configUsername = null, string? configPassword = null);</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:97](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L97) | Resolves RabbitMQ credentials from environment or config. |
-| <code>public string? ResolveAzureServiceBus(string? configConnectionString = null);</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:117](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L117) | Resolves Azure Service Bus connection string from environment or config. |
-| <code>public string? ResolveCredential(string envVarName, string? configValue, string credentialName);</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:151](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L151) | Resolves a single credential value with environment variable taking precedence. |
-| <code>public void ValidateRequired(string providerName, params(string Name, string? Value, string EnvVar)[] credentials);</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:181](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L181) | Validates that required credentials are present for a provider. |
-| <code>public IReadOnlyDictionary&lt;string, bool&gt; GetCredentialStatus();</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:198](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L198) | Gets a summary of configured credentials (without revealing values). |
-
-## IBGatewayProbe
-
-Qualified name: <code>Meridian.Application.Config.IBGatewayProbe</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Config/IBGatewayProbe.cs:12](../../../../src/Meridian.Application/Config/IBGatewayProbe.cs#L12).
-
-Probes localhost for a listening IB Gateway/TWS instance on the default API ports. Shared by the configuration services so detection behavior, ports, and timeouts stay consistent instead of drifting across copy-pasted probes.
-
-```csharp
-public static class IBGatewayProbe
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool IsAvailable();</code> | [src/Meridian.Application/Config/IBGatewayProbe.cs:24](../../../../src/Meridian.Application/Config/IBGatewayProbe.cs#L24) | Returns true when any default IB API port accepts a TCP connection on loopback. |
