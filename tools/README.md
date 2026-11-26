@@ -23,9 +23,6 @@ remain active; similarly named commands can validate different inputs or produce
 | `build/scripts/ci/` | CI ratchets and lane helpers | God-file, raw-evidence, duplicate-helper and similar ratchets with baselines in `build/config/`; called from `scripts/ci.sh`. |
 | `make/` | Optional GNU Make wrappers | `*.mk` fragments included by the root `Makefile`; each target delegates to `scripts/ci.sh`, `buildctl.py` or a direct `dotnet`/`npm` command. |
 
-`plugins/` is not automation: it holds vendored Copilot plugin snapshots (see
-[plugins/README.md](../plugins/README.md)).
-
 Add shared logic to the owning implementation and keep command wrappers thin. Consolidate
 implementations only after their contract tests establish equivalent behavior; preserve distinct
 fixture, evidence, and output contracts.

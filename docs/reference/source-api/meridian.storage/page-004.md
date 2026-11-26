@@ -6,114 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## FundStructureLegacyImportResult
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureLegacyImportResult</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:152](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L152).
-
-```csharp
-public enum FundStructureLegacyImportResult : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Imported = 0</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:154](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L154) |  |
-| <code>AlreadyImported = 1</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:155](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L155) |  |
-| <code>StoreNotEmpty = 2</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:156](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L156) |  |
-
-## FundStructureMigrationRunner
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureMigrationRunner</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:8](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L8).
-
-Applies the PostgreSQL migrations used by fund structure persistence.
-
-```csharp
-public sealed class FundStructureMigrationRunner
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FundStructureMigrationRunner(FundStructureStoreOptions options);</code> | [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:12](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L12) |  |
-| <code>public Task EnsureMigratedAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:30](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L30) |  |
-
-## FundStructureStoreOptions
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureStoreOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs:6](../../../../src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs#L6).
-
-Configures the PostgreSQL connection and schema for fund structure storage.
-
-```csharp
-public sealed class FundStructureStoreOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ConnectionString { get; set; } = string.Empty;</code> | [src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs:8](../../../../src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs#L8) |  |
-| <code>public string Schema { get; set; } = &quot;fund_structure&quot;;</code> | [src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs:9](../../../../src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs#L9) |  |
-
-## FundStructureTenantBackfillEvidence
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillEvidence</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:10](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L10).
-
-```csharp
-public sealed record FundStructureTenantBackfillEvidence(Guid BookId, string FundProfileId, Guid NodeId, string? TenantId, string? CompanyId, JsonElement RetainedBook, JsonElement? RetainedRegistryEntry);
-```
-
-## FundStructureTenantBackfillException
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillException</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:22](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L22).
-
-```csharp
-public sealed record FundStructureTenantBackfillException(Guid NodeId, string NodeKind, string Reason, IReadOnlyList<string> CandidateTenantIds);
-```
-
-## FundStructureTenantBackfillReceipt
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillReceipt</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:28](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L28).
-
-```csharp
-public sealed record FundStructureTenantBackfillReceipt(Guid RunId, string PlanHash, string OperatorId, string ReviewReference, DateTimeOffset AppliedAt, int StampedRows, int QuarantinedRows, JsonElement Plan);
-```
-
-## FundStructureTenantBackfillRow
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:6](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L6).
-
-Maintenance-only snapshot; this is not an operator-session read API.
-
-```csharp
-public sealed record FundStructureTenantBackfillRow(string Table, Guid Id, string Kind, bool IsNode, string? TenantId, IReadOnlyList<Guid> Parents, IReadOnlyList<Guid> Children, JsonElement RetainedRow, bool IsInferred = false);
-```
-
-## FundStructureTenantBackfillSnapshot
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:14](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L14).
-
-```csharp
-public sealed record FundStructureTenantBackfillSnapshot(string SourceIdentity, string SchemaIdentity, IReadOnlyList<FundStructureTenantBackfillRow> Rows, IReadOnlyList<FundStructureTenantBackfillEvidence> Evidence, IReadOnlyList<JsonElement> RetainedQuarantine, bool SupportsAtomicApply = true);
-```
-
 ## FundStructureTenantBackfillStamp
 
 Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillStamp</code>. Kind: `record`.
@@ -128,7 +20,7 @@ public sealed record FundStructureTenantBackfillStamp(string Table, Guid Id, str
 
 Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantMap</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:129](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L129).
+Source: [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:115](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L115).
 
 Which fund-structure nodes a store attributes to a tenant.
 
@@ -140,7 +32,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static FundStructureTenantMap Unpartitioned { get; } = new (IsPartitioned : false, new Dictionary&lt;Guid, string&gt;());</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:134](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L134) | A store that does not model tenant ownership. |
+| <code>public static FundStructureTenantMap Unpartitioned { get; } = new (IsPartitioned : false, new Dictionary&lt;Guid, string&gt;());</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:120](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L120) | A store that does not model tenant ownership. |
 
 ## FundStructureTenantQuarantineResolution
 
@@ -243,10 +135,8 @@ Declared public members:
 | <code>Task&lt;IReadOnlyList&lt;FundStructureAssignmentDto&gt;&gt; GetAllAssignmentsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:70](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L70) |  |
 | <code>Task UpsertLinkedAccountIdAsync(Guid accountId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:73](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L73) |  |
 | <code>Task&lt;IReadOnlyList&lt;Guid&gt;&gt; GetAllLinkedAccountIdsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:74](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L74) |  |
-| <code>Task&lt;bool&gt; IsEmptyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:77](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L77) |  |
-| <code>Task&lt;FundStructureTenantMap&gt; GetNodeTenantsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:96](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L96) | The tenant stamped on each node this store partitions, for the nodes that carry one. |
-| <code>Task StampNodeTenantAsync(Guid nodeId, string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:101](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L101) | Stamps nodeId as owned by tenantId. |
-| <code>Task&lt;FundStructureLegacyImportResult&gt; ImportLegacySnapshotIfEmptyAsync(FundStructureLegacyImportRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:109](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L109) | Imports one legacy JSON snapshot as a single database transaction when the store is empty. The source hash is committed in the same transaction so startup can safely recover a process failure between database commit and source-file archival. |
+| <code>Task&lt;FundStructureTenantMap&gt; GetNodeTenantsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:93](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L93) | The tenant stamped on each node this store partitions, for the nodes that carry one. |
+| <code>Task StampNodeTenantAsync(Guid nodeId, string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:98](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L98) | Stamps nodeId as owned by tenantId. |
 
 ## IFundStructureTenantBackfillSession
 
@@ -565,10 +455,8 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;FundStructureAssignmentDto&gt;&gt; GetAllAssignmentsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs:788](../../../../src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs#L788) |  |
 | <code>public async Task UpsertLinkedAccountIdAsync(Guid accountId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs:809](../../../../src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs#L809) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;Guid&gt;&gt; GetAllLinkedAccountIdsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs:834](../../../../src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs#L834) |  |
-| <code>public async Task&lt;FundStructureLegacyImportResult&gt; ImportLegacySnapshotIfEmptyAsync(FundStructureLegacyImportRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs:864](../../../../src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs#L864) |  |
-| <code>public async Task&lt;FundStructureTenantMap&gt; GetNodeTenantsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs:1011](../../../../src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs#L1011) |  |
-| <code>public async Task StampNodeTenantAsync(Guid nodeId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs:1038](../../../../src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs#L1038) |  |
-| <code>public async Task&lt;bool&gt; IsEmptyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs:1057](../../../../src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs#L1057) |  |
+| <code>public async Task&lt;FundStructureTenantMap&gt; GetNodeTenantsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs:883](../../../../src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs#L883) |  |
+| <code>public async Task StampNodeTenantAsync(Guid nodeId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs:910](../../../../src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs#L910) |  |
 
 ## PostgresFundStructureTenantBackfillStore
 
@@ -1114,3 +1002,133 @@ Information about a data source.
 ```csharp
 public sealed record SourceInfo(string Id, string Name, SourceType Type, int Priority = 1, string[]? AssetClasses = null, string[]? DataTypes = null, double? LatencyMs = null, double? Reliability = null, decimal? CostPerEvent = null, bool Enabled = true);
 ```
+
+## SourceType
+
+Qualified name: <code>Meridian.Storage.Interfaces.SourceType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:68](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L68).
+
+Type of data source.
+
+```csharp
+public enum SourceType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Live</code> | [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:71](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L71) | Live real-time data source. |
+| <code>Historical</code> | [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:73](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L73) | Historical backfill data source. |
+| <code>Consolidated</code> | [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:75](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L75) | Consolidated/derived data source. |
+
+## SymbolInfo
+
+Qualified name: <code>Meridian.Storage.Interfaces.SymbolInfo</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:81](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L81).
+
+Information about a symbol.
+
+```csharp
+public sealed record SymbolInfo(string Symbol, string Canonical, string[]? Aliases = null, string? AssetClass = null, string? Exchange = null, string? Currency = null, string? Sedol = null, string? Isin = null, string? Figi = null, string? Sector = null, string? Industry = null, Dictionary<string, string>? Metadata = null);
+```
+
+## AccountingPostingCommandValidator
+
+Qualified name: <code>Meridian.Storage.Ledger.AccountingPostingCommandValidator</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs:15](../../../../src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs#L15).
+
+Normalizes ledger posting commands and validates their required identities and accounting context.
+
+```csharp
+public static class AccountingPostingCommandValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static LedgerJournalEntryWrite NormalizeAndValidate(LedgerJournalEntryWrite write, bool requirePostingCommand = false, bool requireExpectedVersion = false, bool allowPreparerAttestation = false);</code> | [src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs:22](../../../../src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs#L22) |  |
+| <code>public static string? ReadRetainedPostingActor(JournalEntryMetadata metadata);</code> | [src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs:843](../../../../src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs#L843) | Unversioned legacy metadata never supplies command actor attribution. |
+
+## AtomicLotReferenceVersions
+
+Qualified name: <code>Meridian.Storage.Ledger.AtomicLotReferenceVersions</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:504](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L504).
+
+Approved reference versions bound to a new acquisition or disposal command.
+
+```csharp
+public sealed record AtomicLotReferenceVersions(long SecurityMasterVersion, long BookPositionVersion);
+```
+
+## AtomicTaxLotJournalCommand
+
+Qualified name: <code>Meridian.Storage.Ledger.AtomicTaxLotJournalCommand</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:506](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L506).
+
+```csharp
+public sealed record AtomicTaxLotJournalCommand(Guid MutationBatchId, Guid LedgerBookId, LedgerJournalEntryWrite Journal, Guid SourceEventId, string IdempotencyKey, string CanonicalFingerprint, long ExpectedPeriodVersion, AtomicTaxLotMutationKind MutationKind, IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence, LedgerTaxLotRecord? AcquisitionLot = null, IReadOnlyList<LedgerTaxLotDisposalSelection>? DisposalSelections = null, Guid? CorrectsMutationBatchId = null, string? ReliefMethod = null, string? PolicyRevision = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? DisposalSalePrice = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? Amortization = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? CorporateAction = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] OpenLotDirection Direction = OpenLotDirection.Long, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] AtomicLotReferenceVersions? ReferenceVersions = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static AtomicTaxLotJournalCommand Create(Guid mutationBatchId, Guid ledgerBookId, LedgerJournalEntryWrite journal, Guid sourceEventId, string idempotencyKey, long expectedPeriodVersion, AtomicTaxLotMutationKind mutationKind, IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; retainedEvidence, LedgerTaxLotRecord? acquisitionLot = null, IReadOnlyList&lt;LedgerTaxLotDisposalSelection&gt;? disposalSelections = null, Guid? correctsMutationBatchId = null, string? reliefMethod = null, string? policyRevision = null, decimal? disposalSalePrice = null, Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? amortization = null, Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? corporateAction = null, Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? capitalReturn = null, OpenLotDirection direction = OpenLotDirection.Long, AtomicLotReferenceVersions? referenceVersions = null, Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? factorPaydown = null);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:536](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L536) |  |
+| <code>public AtomicTaxLotJournalCommand WithComputedFingerprint() =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:583](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L583) |  |
+
+## AtomicTaxLotJournalFingerprint
+
+Qualified name: <code>Meridian.Storage.Ledger.AtomicTaxLotJournalFingerprint</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs:16](../../../../src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs#L16).
+
+Produces the stable identity for an atomic journal/tax-lot command. The supplied fingerprint is deliberately excluded, so AtomicTaxLotJournalCommand.WithComputedFingerprint can never recursively hash an already populated value.
+
+```csharp
+public static class AtomicTaxLotJournalFingerprint
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string Compute(AtomicTaxLotJournalCommand command);</code> | [src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs:20](../../../../src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs#L20) |  |
+
+## AtomicTaxLotJournalResult
+
+Qualified name: <code>Meridian.Storage.Ledger.AtomicTaxLotJournalResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:614](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L614).
+
+```csharp
+public sealed record AtomicTaxLotJournalResult(Guid MutationBatchId, AtomicTaxLotMutationKind MutationKind, string CanonicalFingerprint, bool IsExactReplay, LedgerJournalEntryRecord Journal, IReadOnlyList<LedgerTaxLotRecord> MutatedLots, IReadOnlyList<LedgerTaxLotMutationRecord> Mutations, IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence, Guid? CorrectsMutationBatchId = null, string? ReliefMethod = null, string? PolicyRevision = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? CorporateAction = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null);
+```
+
+## AtomicTaxLotMutationKind
+
+Qualified name: <code>Meridian.Storage.Ledger.AtomicTaxLotMutationKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:478](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L478).
+
+```csharp
+public enum AtomicTaxLotMutationKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Acquisition = 0</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:480](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L480) |  |
+| <code>Disposal = 1</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:481](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L481) |  |
+| <code>BasisRedistribution = 2</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:483](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L483) |  |
+| <code>Amortization = 3</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:484](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L484) |  |
+| <code>CorporateAction = 4</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:485](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L485) |  |
+| <code>CapitalReturn = 5</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:486](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L486) |  |
+| <code>FactorPaydown = 6</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:489](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L489) |  |

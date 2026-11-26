@@ -6,35 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## GapAnalyzerConfig
-
-Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.GapAnalyzerConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:538](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L538).
-
-Configuration for gap analysis.
-
-```csharp
-public sealed record GapAnalyzerConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int GapThresholdSeconds { get; init; } = 60;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:543](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L543) | Minimum gap duration in seconds to be considered a gap. |
-| <code>public int TradingStartHour { get; init; } = 13;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:548](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L548) | Trading start hour (UTC). |
-| <code>public int TradingStartMinute { get; init; } = 30;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:553](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L553) | Trading start minute. |
-| <code>public int TradingEndHour { get; init; } = 20;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:558](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L558) | Trading end hour (UTC). |
-| <code>public int TradingEndMinute { get; init; } = 0;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:563](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L563) | Trading end minute. |
-| <code>public long ExpectedEventsPerHour { get; init; } = 1000;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:568](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L568) | Expected events per hour for estimation. |
-| <code>public bool IncludeExtendedHours { get; init; } = true;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:573](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L573) | Include pre-market and after-hours in timeline. |
-| <code>public double PreMarketHours { get; init; } = 5.5;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:578](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L578) | Pre-market hours before regular trading. |
-| <code>public double AfterHoursHours { get; init; } = 4.0;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:583](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L583) | After-hours duration after regular trading. |
-| <code>public int MaxGapsPerSymbol { get; init; } = 1000;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:588](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L588) | Maximum gaps to retain per symbol. |
-| <code>public int RetentionDays { get; init; } = 30;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:593](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L593) | Days to retain gap history. |
-| <code>public static GapAnalyzerConfig Default =&gt; …;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:595](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L595) |  |
-
 ## GapSeverity
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.GapSeverity</code>. Kind: `enum`.
@@ -909,4 +880,16 @@ Weekly data quality report.
 
 ```csharp
 public sealed record WeeklyQualityReport(DateOnly WeekStart, DateOnly WeekEnd, DateTimeOffset GeneratedAt, IReadOnlyList<DailyQualityReport> DailyReports, double AverageScore, double ScoreTrend, IReadOnlyList<string> TopIssues, IReadOnlyList<string> Improvements, IReadOnlyList<string> Recommendations, WeeklyStatistics Statistics);
+```
+
+## WeeklyStatistics
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.WeeklyStatistics</code>. Kind: `record`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:381](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L381).
+
+Weekly statistics.
+
+```csharp
+public sealed record WeeklyStatistics(long TotalEvents, long EventsPerDay, int TotalGaps, int GapsPerDay, int TotalAnomalies, double AverageScore, double BestDayScore, double WorstDayScore, DateOnly BestDay, DateOnly WorstDay);
 ```

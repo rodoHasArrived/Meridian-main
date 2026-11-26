@@ -31,8 +31,7 @@ public static partial class WorkstationEndpoints
                 context,
                 request,
                 workflowService,
-                jsonOptions,
-                legacyStatementToReportContract: false).ConfigureAwait(false))
+                jsonOptions).ConfigureAwait(false))
         .WithName("StartStatementReconciliationReportWorkflow").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<StatementReconciliationReportWorkflowDto>(201)
         .Produces<StatementReconciliationReportWorkflowDto>(202)
@@ -50,8 +49,7 @@ public static partial class WorkstationEndpoints
                 workflowId,
                 context,
                 workflowService,
-                jsonOptions,
-                legacyStatementToReportContract: false).ConfigureAwait(false))
+                jsonOptions).ConfigureAwait(false))
         .WithName("GetStatementReconciliationReportWorkflow").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<StatementReconciliationReportWorkflowDto>(200)
         .Produces(403)
@@ -66,8 +64,7 @@ public static partial class WorkstationEndpoints
                 workflowId,
                 context,
                 workflowService,
-                jsonOptions,
-                legacyStatementToReportContract: false).ConfigureAwait(false))
+                jsonOptions).ConfigureAwait(false))
         .WithName("ResumeStatementReconciliationReportWorkflow").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<StatementReconciliationReportWorkflowDto>(200)
         .Produces<StatementReconciliationReportWorkflowDto>(202)
@@ -92,89 +89,13 @@ public static partial class WorkstationEndpoints
         .Produces(403)
         .Produces(404)
         .Produces(503);
-
-        // Retained workflows and generated clients can contain the pre-rename routes. Project their
-        // original wire contract directly over the same canonical service; there is no second
-        // workflow, store, renderer, or state transition path behind these compatibility aliases.
-#pragma warning disable CS0618 // Endpoint metadata intentionally retains the pre-rename contract.
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementToReport), async (
-            HttpContext context,
-            HttpRequest request,
-            [FromServices] StatementReconciliationReportWorkflowService? workflowService) =>
-            await StartStatementReconciliationReportAsync(
-                context,
-                request,
-                workflowService,
-                jsonOptions,
-                legacyStatementToReportContract: true).ConfigureAwait(false))
-        .WithName("StartLegacyStatementToReportWorkflow").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<StatementToReportWorkflowDto>(201)
-        .Produces<StatementToReportWorkflowDto>(202)
-        .Produces<StatementToReportWorkflowDto>(500)
-        .ProducesValidationProblem()
-        .Produces(403)
-        .Produces(503)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementToReportById), async (
-            string workflowId,
-            HttpContext context,
-            [FromServices] StatementReconciliationReportWorkflowService? workflowService) =>
-            await GetStatementReconciliationReportAsync(
-                workflowId,
-                context,
-                workflowService,
-                jsonOptions,
-                legacyStatementToReportContract: true).ConfigureAwait(false))
-        .WithName("GetLegacyStatementToReportWorkflow").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
-        .Produces<StatementToReportWorkflowDto>(200)
-        .Produces(403)
-        .Produces(404)
-        .Produces(503);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementToReportResume), async (
-            string workflowId,
-            HttpContext context,
-            [FromServices] StatementReconciliationReportWorkflowService? workflowService) =>
-            await ResumeStatementReconciliationReportAsync(
-                workflowId,
-                context,
-                workflowService,
-                jsonOptions,
-                legacyStatementToReportContract: true).ConfigureAwait(false))
-        .WithName("ResumeLegacyStatementToReportWorkflow").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces<StatementToReportWorkflowDto>(200)
-        .Produces<StatementToReportWorkflowDto>(202)
-        .Produces<StatementToReportWorkflowDto>(500)
-        .Produces(403)
-        .Produces(404)
-        .Produces(503)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementToReportArtifact), async (
-            string workflowId,
-            string artifactId,
-            HttpContext context,
-            [FromServices] StatementReconciliationReportWorkflowService? workflowService) =>
-            await DownloadStatementReconciliationReportArtifactAsync(
-                workflowId,
-                artifactId,
-                context,
-                workflowService).ConfigureAwait(false))
-        .WithName("DownloadLegacyStatementToReportArtifact").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
-        .Produces(200)
-        .Produces(403)
-        .Produces(404)
-        .Produces(503);
-#pragma warning restore CS0618
     }
 
     private static async Task<IResult> StartStatementReconciliationReportAsync(
         HttpContext context,
         HttpRequest request,
         StatementReconciliationReportWorkflowService? workflowService,
-        JsonSerializerOptions jsonOptions,
-        bool legacyStatementToReportContract)
+        JsonSerializerOptions jsonOptions)
     {
         if (!HasReconciliationMutationPermission(context))
             return EndpointHelpers.Forbidden();
@@ -253,16 +174,14 @@ public static partial class WorkstationEndpoints
         return StatementReconciliationReportWorkflowResult(
             execution.Workflow,
             jsonOptions,
-            created: true,
-            legacyStatementToReportContract);
+            created: true);
     }
 
     private static async Task<IResult> GetStatementReconciliationReportAsync(
         string workflowId,
         HttpContext context,
         StatementReconciliationReportWorkflowService? workflowService,
-        JsonSerializerOptions jsonOptions,
-        bool legacyStatementToReportContract)
+        JsonSerializerOptions jsonOptions)
     {
         if (!HasReconciliationMutationPermission(context))
             return EndpointHelpers.Forbidden();
@@ -294,9 +213,7 @@ public static partial class WorkstationEndpoints
                 return ownershipProblem;
 
             return Results.Json(
-                legacyStatementToReportContract
-                    ? ToLegacyStatementToReportWorkflow(workflow)
-                    : workflow,
+                workflow,
                 jsonOptions);
         }
         catch (UnauthorizedAccessException)
@@ -313,8 +230,7 @@ public static partial class WorkstationEndpoints
         string workflowId,
         HttpContext context,
         StatementReconciliationReportWorkflowService? workflowService,
-        JsonSerializerOptions jsonOptions,
-        bool legacyStatementToReportContract)
+        JsonSerializerOptions jsonOptions)
     {
         if (!HasReconciliationMutationPermission(context))
             return EndpointHelpers.Forbidden();
@@ -355,8 +271,7 @@ public static partial class WorkstationEndpoints
                 : StatementReconciliationReportWorkflowResult(
                     execution.Workflow,
                     jsonOptions,
-                    created: false,
-                    legacyStatementToReportContract);
+                    created: false);
         }
         catch (UnauthorizedAccessException)
         {
@@ -430,8 +345,7 @@ public static partial class WorkstationEndpoints
     private static IResult StatementReconciliationReportWorkflowResult(
         StatementReconciliationReportWorkflowDto workflow,
         JsonSerializerOptions jsonOptions,
-        bool created,
-        bool legacyStatementToReportContract = false)
+        bool created)
     {
         var statusCode = workflow.Status switch
         {
@@ -441,18 +355,10 @@ public static partial class WorkstationEndpoints
             _ => StatusCodes.Status202Accepted
         };
         return Results.Json(
-            legacyStatementToReportContract
-                ? ToLegacyStatementToReportWorkflow(workflow)
-                : workflow,
+            workflow,
             jsonOptions,
             statusCode: statusCode);
     }
-
-#pragma warning disable CS0618 // Intentionally project the retained pre-rename wire contract.
-    internal static StatementToReportWorkflowDto ToLegacyStatementToReportWorkflow(
-        StatementReconciliationReportWorkflowDto workflow)
-        => StatementToReportWorkflowService.ToLegacyWorkflow(workflow);
-#pragma warning restore CS0618
 
     private static IResult StatementReconciliationReportNotRegistered()
         => Results.Problem(

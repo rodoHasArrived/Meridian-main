@@ -52,7 +52,6 @@ class TrackedAgentDefinitionsTests(unittest.TestCase):
             "meridian-provider-builder",
             "meridian-browser-workstation",
             "meridian-cleanup",
-            "meridian-archive-organizer",
             "meridian-docs",
             "meridian-implementation-assurance",
             # AGENTS.md:131 makes `git status --short` a start gate for any agent that

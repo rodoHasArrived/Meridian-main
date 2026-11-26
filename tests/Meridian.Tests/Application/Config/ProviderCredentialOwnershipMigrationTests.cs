@@ -236,8 +236,7 @@ public sealed class ProviderCredentialOwnershipMigrationTests : IDisposable
 
         var republish = () => store.SaveOAuthTokenAsync("Alpaca", new OAuthToken("access-2", "Bearer", DateTimeOffset.UtcNow.AddHours(1), "refresh-2"));
         await republish.Should().ThrowAsync<ProviderCredentialConflictException>().WithMessage("*transferred to an owned connection*");
-        await store.ImportOAuthTokensAsync(new Dictionary<string, OAuthToken> { ["alpaca"] = token });
-        (await store.ReadOAuthTokensAsync()).Should().BeEmpty("a legacy snapshot never republishes a transferred token provider-wide");
+        (await store.ReadOAuthTokensAsync()).Should().BeEmpty("a transferred token is never republished provider-wide");
 
         await store.RollbackMigrationAsync("alpaca", Owner, "migration-cache", "controller");
         (await store.ReadOAuthTokensAsync()).Should().ContainSingle().Which.Value.Should().Be(token);

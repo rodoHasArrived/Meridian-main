@@ -380,7 +380,7 @@ tests use real period-close projections and reversals, different internal/extern
 account names, and a competing certified mapping profile.
 
 Issue #2752 originally referred to `docs/status/accounting-productization-checklist.md`.
-That historical snapshot is retained in the [archived checklist](../../archive/docs/summaries/accounting-productization-checklist.md).
+That historical snapshot is retained in the [archived checklist](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/summaries/accounting-productization-checklist.md).
 Current acceptance is tracked in the [active implementation list](../product/implementation-todo-list.md#acct-checklist-06-external-gl-provider-depth).
 Implementation acceptance requires passing validation on the current PR head;
 contract tests do not constitute customer-tenant smoke tests or vendor approval.
