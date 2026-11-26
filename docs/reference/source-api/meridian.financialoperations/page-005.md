@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISecurityMasterRevisionWorkflowAuthority
+
+Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.ISecurityMasterRevisionWorkflowAuthority</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/OperationsContinuity/SecurityMasterRevisionWorkflowAuthority.cs:8](../../../../src/Meridian.FinancialOperations/OperationsContinuity/SecurityMasterRevisionWorkflowAuthority.cs#L8).
+
+```csharp
+public interface ISecurityMasterRevisionWorkflowAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityMasterRevisionWorkflowAuthority?&gt; ResolveAsync(Guid revisionId, string actor, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/SecurityMasterRevisionWorkflowAuthority.cs:10](../../../../src/Meridian.FinancialOperations/OperationsContinuity/SecurityMasterRevisionWorkflowAuthority.cs#L10) |  |
+
 ## LedgerCommitDisposition
 
 Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.LedgerCommitOutcome.LedgerCommitDisposition</code>. Kind: `enum`.
@@ -616,7 +632,7 @@ Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCock
 public sealed partial class PrivateCapitalCloseCockpitService
 ```
 
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:14](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L14).
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:16](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L16).
 
 Assembles private-capital close readiness, approvals, and evidence for the close cockpit.
 
@@ -628,8 +644,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PrivateCapitalCloseCockpitService(IManualJournalEntryWorkbenchService? manualJournalEntryWorkbenchService, IOperationsContinuityWorkflowService? operationsContinuityWorkflowService, IDailyValuationScheduleStatusSource? dailyValuationScheduleStatusSource = null, IAutomatedJournalScheduleStatusSource? automatedJournalScheduleStatusSource = null, IRecurringJournalQueueSource? recurringJournalQueueSource = null, IIntercompanyBalanceScheduleSource? intercompanyBalances = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:52](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L52) |  |
-| <code>public async Task&lt;PrivateCapitalCloseCockpitDto&gt; GetCockpitAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:68](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L68) |  |
+| <code>public PrivateCapitalCloseCockpitService(IManualJournalEntryWorkbenchService? manualJournalEntryWorkbenchService, IOperationsContinuityWorkflowService? operationsContinuityWorkflowService, IDailyValuationScheduleStatusSource? dailyValuationScheduleStatusSource = null, IAutomatedJournalScheduleStatusSource? automatedJournalScheduleStatusSource = null, IRecurringJournalQueueSource? recurringJournalQueueSource = null, IIntercompanyBalanceScheduleSource? intercompanyBalances = null, Func&lt;Guid, Guid, CancellationToken, Task&lt;LedgerPeriodDto?&gt;&gt;? lookupRecurringPeriod = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:55](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L55) |  |
+| <code>public async Task&lt;PrivateCapitalCloseCockpitDto&gt; GetCockpitAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:73](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L73) |  |
 
 Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs:5](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs#L5).
 
@@ -1005,21 +1021,3 @@ Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconcil
 ```csharp
 public sealed record CanonicalReconciliationRecord(string RecordId, BrokerCustodianFeedDescriptor Feed, CanonicalReconciliationRecordKind RecordKind, string InstrumentId, string? Symbol, decimal Quantity, decimal Price, decimal MarketValue, decimal CashAmount, string Currency, DateOnly TradeDate, DateOnly? SettlementDate, string ActivityType, string ExternalReference, IReadOnlyDictionary<string, string> Evidence);
 ```
-
-## CanonicalReconciliationRecordKind
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.CanonicalReconciliationRecordKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:10](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L10).
-
-```csharp
-public enum CanonicalReconciliationRecordKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Position</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L12) |  |
-| <code>Cash</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L13) |  |
-| <code>Transaction</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:14](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L14) |  |

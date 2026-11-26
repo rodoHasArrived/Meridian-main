@@ -16,11 +16,11 @@ public sealed partial class RecurringJournalStoreTests
         var children = new List<(Process Process, Task<string> Error, string Ready, string Outcome)>();
         try
         {
-            var gate = Path.Combine(_directory, "obligation-start.gate");
+            var gate = Path.Combine(StateDirectory, "obligation-start.gate");
             foreach (var schedule in new[] { "schedule-a", "schedule-b" })
             {
-                var ready = Path.Combine(_directory, schedule + ".ready");
-                var outcome = Path.Combine(_directory, schedule + ".outcome");
+                var ready = Path.Combine(StateDirectory, schedule + ".ready");
+                var outcome = Path.Combine(StateDirectory, schedule + ".outcome");
                 var start = new ProcessStartInfo("dotnet")
                 {
                     UseShellExecute = false,
@@ -32,7 +32,7 @@ public sealed partial class RecurringJournalStoreTests
                     "exec", "--depsfile", Path.Combine(AppContext.BaseDirectory, "Meridian.Tests.deps.json"),
                     "--runtimeconfig", Path.Combine(AppContext.BaseDirectory, "Meridian.Tests.runtimeconfig.json"),
                     typeof(ProcessTestHelperMarker).Assembly.Location, "recurring-pin-obligation",
-                    _directory, schedule, Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), Obligation(), ready, gate, outcome
+                    StateDirectory, schedule, Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), Obligation(), ready, gate, outcome
                 })
                     start.ArgumentList.Add(argument);
                 var process = Process.Start(start) ?? throw new InvalidOperationException("Recurring obligation helper did not start.");

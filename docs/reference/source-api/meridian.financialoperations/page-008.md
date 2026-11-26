@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReconciliationFeedAdapter
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IReconciliationFeedAdapter</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs:26](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs#L26).
+
+Reads source feed data into canonical reconciliation records.
+
+```csharp
+public interface IReconciliationFeedAdapter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string SourceSystem { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs:28](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs#L28) |  |
+| <code>Task&lt;IReadOnlyList&lt;CanonicalReconciliationFeedRecord&gt;&gt; ReadAsync(string sourcePath, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs:30](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs#L30) |  |
+
 ## IReconciliationFxRateProvider
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IReconciliationFxRateProvider</code>. Kind: `interface`.
@@ -855,13 +874,3 @@ Enum declarations:
 | <code>InspectLedgerTransaction = 2</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:31](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L31) |  |
 | <code>VerifySettlementDate = 3</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:32](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L32) |  |
 | <code>RequestBrokerClarification = 4</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:33](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L33) |  |
-
-## StatementBreakRecord
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementBreakRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:250](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L250).
-
-```csharp
-public sealed record StatementBreakRecord(string BreakId, string RunId, string ImportId, string SourceRowHash, StatementBreakClassificationType BreakType, ReconciliationBreakSeverity Severity, StatementBreakRecommendedAction RecommendedAction, decimal AbsoluteVariance, bool IsMaterial, bool IsUnresolved, string Status, string Rationale, DateTimeOffset CreatedAtUtc);
-```

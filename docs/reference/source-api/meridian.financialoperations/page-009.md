@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementBreakRecord
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementBreakRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:250](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L250).
+
+```csharp
+public sealed record StatementBreakRecord(string BreakId, string RunId, string ImportId, string SourceRowHash, StatementBreakClassificationType BreakType, ReconciliationBreakSeverity Severity, StatementBreakRecommendedAction RecommendedAction, decimal AbsoluteVariance, bool IsMaterial, bool IsUnresolved, string Status, string Rationale, DateTimeOffset CreatedAtUtc);
+```
+
 ## StatementBreakWorkflowPolicy
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementBreakWorkflowPolicy</code>. Kind: `record`.
@@ -844,28 +854,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static StatementValidationPolicyDto Default { get; } = new ();</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:458](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L458) |  |
-
-## StatementValidationRequestDto
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementValidationRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:401](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L401).
-
-```csharp
-public sealed record StatementValidationRequestDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StatementValidationRequestDto(string SourcePath, string AccountId, DateOnly? StatementPeriodStart, DateOnly? StatementPeriodEnd, string MappingProfileId, string ToleranceProfileId, IReadOnlyDictionary&lt;string, string&gt;? FieldMappings = null, IReadOnlyList&lt;string&gt;? RequiredFields = null, StatementValidationPolicyDto? Policy = null);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:403](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L403) |  |
-| <code>public string SourcePath { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:425](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L425) |  |
-| <code>public string AccountId { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:426](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L426) |  |
-| <code>public DateOnly? StatementPeriodStart { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:427](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L427) |  |
-| <code>public DateOnly? StatementPeriodEnd { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:428](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L428) |  |
-| <code>public string MappingProfileId { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:429](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L429) |  |
-| <code>public string ToleranceProfileId { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:430](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L430) |  |
-| <code>public IReadOnlyDictionary&lt;string, string&gt; FieldMappings { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:431](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L431) |  |
-| <code>public IReadOnlyList&lt;string&gt; RequiredFields { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:432](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L432) |  |
-| <code>public StatementValidationPolicyDto Policy { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:433](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L433) |  |

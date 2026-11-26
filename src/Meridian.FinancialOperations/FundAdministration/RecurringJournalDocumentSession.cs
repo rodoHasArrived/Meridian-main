@@ -111,7 +111,7 @@ internal sealed class RecurringJournalDocumentSession(IRecurringJournalDocumentL
             var templateActivation = document.Activations.Last(item => item.TemplateId is not null && Same(item.TemplateId, schedule.Schedule.TemplateId));
             var template = document.Templates.Single(item => Same(item.TemplateId, templateActivation.TemplateId!) && item.Version == templateActivation.TemplateVersion);
             if ((schedule.ContentHash == occurrence.ScheduleDefinition.ContentHash && template.ContentHash == occurrence.TemplateDefinition.ContentHash)
-                || occurrence.State == RecurringOccurrenceState.DefinitionChanged)
+                || occurrence.State == RecurringOccurrenceState.DefinitionChanged || occurrence.FindNoDraftOutcome() is not null)
                 return occurrence;
             const string reason = "The schedule or template definition changed. Explicitly restore the retained definitions before retrying this occurrence.";
             return occurrence with
@@ -230,6 +230,9 @@ internal sealed class RecurringJournalDocumentSession(IRecurringJournalDocumentL
         var template = GetCurrentTemplate(schedule.Schedule.TemplateId);
         var key = RecurringJournalIdentity.OccurrenceKey(scheduleId, date);
         var existing = _document.Occurrences.SingleOrDefault(item => item.OccurrenceKey == key);
+        if (existing?.FindNoDraftOutcome() is { } settled)
+            return await SetOutcomeCoreAsync(existing, settled.State, settled.Reason, settled.PeriodId,
+                settled.LockOwner, settled.ReopenPath, now, ct).ConfigureAwait(false);
         if (existing is not null && (existing.ScheduleDefinition.Version != schedule.Version
             || existing.TemplateDefinition.Version != template.Version
             || existing.ScheduleDefinition.ContentHash != schedule.ContentHash

@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CanonicalReconciliationRecordKind
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.CanonicalReconciliationRecordKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:10](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L10).
+
+```csharp
+public enum CanonicalReconciliationRecordKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Position</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L12) |  |
+| <code>Cash</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L13) |  |
+| <code>Transaction</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:14](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L14) |  |
+
 ## CanonicalReconciliationSourceKind
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.CanonicalReconciliationSourceKind</code>. Kind: `enum`.
@@ -930,23 +948,3 @@ Declared public members:
 | <code>public StatementMappingProfileRegistry BuildRegistry() =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileCatalog.cs:58](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileCatalog.cs#L58) | Synchronous form for the dependency-injection factory, which cannot await. Every await on the file store&#x27;s read path uses ConfigureAwait(false), so blocking here holds one thread for a single startup read and cannot deadlock on a UI or request context. Prefer BuildRegistryAsync wherever the caller can await. |
 | <code>public static StatementParseIssue? CheckDrift(StatementMappingProfileDocument profile, StatementFormatFingerprint fingerprint);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileCatalog.cs:80](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileCatalog.cs#L80) | Compares a parsed source&#x27;s column set to the profile&#x27;s last accepted fingerprint and reports added/removed columns, so a custodian silently changing its export layout is surfaced before rows map incorrectly. |
 | <code>public async Task RecordAcceptedFingerprintAsync(string? profileId, StatementFormatFingerprint fingerprint, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileCatalog.cs:118](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileCatalog.cs#L118) | Records the accepted column set after a successful commit. Built-in profiles are immutable, so drift tracking applies to operator-owned profiles only. |
-
-## StatementMappingProfileDocument
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementMappingProfileDocument</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs#L9).
-
-The declarative, versioned mapping-profile document. Profiles are data, not code: operators onboard a new custodian or broker format by creating a document instead of waiting for a release. Documents are persisted as JSON (ADR-014 source-generated) and materialized into runtime StatementMappingProfile records.
-
-```csharp
-public sealed record StatementMappingProfileDocument(int SchemaVersion, string ProfileId, string DisplayName, string Format, StatementProfileCsvOptions? Csv, string? Culture, IReadOnlyList<string>? DateFormats, IReadOnlyList<StatementProfileFieldMapping> Fields, IReadOnlyList<StatementProfileActivityCode> ActivityCodes, string? LastAcceptedFingerprint = null, bool IsBuiltIn = false, string? Notes = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int CurrentSchemaVersion = 1;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs:23](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs#L23) |  |
-| <code>public const string CsvFormat = &quot;csv&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs:24](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs#L24) |  |
-| <code>public const string OfxFormat = &quot;ofx&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs:25](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs#L25) |  |

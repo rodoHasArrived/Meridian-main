@@ -14,11 +14,13 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
         IOperationsContinuityWorkflowService? operationsContinuityWorkflowService,
         IDailyValuationScheduleStatusSource? dailyValuationScheduleStatusSource = null,
         IAutomatedJournalScheduleStatusSource? automatedJournalScheduleStatusSource = null,
-        IRecurringJournalQueueSource? recurringJournalQueueSource = null)
+        IRecurringJournalQueueSource? recurringJournalQueueSource = null,
+        Func<Guid, Guid, CancellationToken, Task<LedgerPeriodDto?>>? lookupRecurringPeriod = null)
         => new(manualJournalEntryWorkbenchService, operationsContinuityWorkflowService, dailyValuationScheduleStatusSource,
             automatedJournalScheduleStatusSource, recurringJournalQueueSource,
             manualJournalEntryWorkbenchService is not null && operationsContinuityWorkflowService is not null
-                ? new PostedFixtureSchedule() : null);
+                ? new PostedFixtureSchedule() : null,
+            lookupRecurringPeriod);
 
     /// <summary>Supplies explicit test ownership around genuine balanced posted intercompany fixtures.</summary>
     private sealed class PostedFixtureSchedule : IIntercompanyBalanceScheduleSource

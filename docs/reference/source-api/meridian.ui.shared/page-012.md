@@ -716,7 +716,7 @@ public sealed record FxConversionReference(string BaseCurrency, string QuoteCurr
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FxRevaluationCalculation</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:373](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L373).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:374](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L374).
 
 Unrealized FX revaluation of foreign-currency asset and liability accounts without a security symbol at the effective date. The foreign balance is the sum of the legs recorded in that currency. Its carrying value combines the book-currency amounts on those legs with earlier revaluations, so each occurrence drafts only the change since the last one. The rate must come with its evidence (quote date, derivation and table revision) and be no older than the schedule term maxRateAgeDays; a missing, undated or stale rate blocks the draft. The memo records the evidence of every rate used.
 
@@ -728,10 +728,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string CalculationKind = &quot;fx-revaluation&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:377](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L377) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:379](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L379) |  |
-| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:381](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L381) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:383](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L383) |  |
+| <code>public const string CalculationKind = &quot;fx-revaluation&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:378](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L378) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:380](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L380) |  |
+| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:382](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L382) |  |
+| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:384](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L384) |  |
 
 ## GovernanceReportingReleaseAuthorizationVerifier
 

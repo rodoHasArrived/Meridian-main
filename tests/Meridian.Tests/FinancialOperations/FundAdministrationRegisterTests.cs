@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.FinancialOperations.FundAdministration;
 using Meridian.Ledger;
@@ -10,15 +11,16 @@ public sealed class FundAdministrationRegisterTests : IDisposable
     private static readonly Guid Book = Guid.Parse("cccccccc-0000-4000-8000-000000000001");
     private static readonly DateTimeOffset Now = new(2026, 1, 5, 0, 0, 0, TimeSpan.Zero);
     private readonly string _root = Path.Combine(Path.GetTempPath(), "meridian-registers-" + Guid.NewGuid().ToString("N"));
+    private string FixedAssetDirectory => Path.Combine(_root, "fixed-assets");
 
     [Fact]
     public async Task FixedAssetRegister_SurvivesRestart_ReplacesByAssetId_AndKeepsBooksApart()
     {
         var id = Guid.NewGuid();
-        await new FileFixedAssetRegister(_root).UpsertAsync(Entry(id, 48_000m));
-        await new FileFixedAssetRegister(_root).UpsertAsync(Entry(id, 48_000m) with { RetiredOn = new DateOnly(2027, 6, 30) });
+        await new FileFixedAssetRegister(FixedAssetDirectory).UpsertAsync(Entry(id, 48_000m));
+        await new FileFixedAssetRegister(FixedAssetDirectory).UpsertAsync(Entry(id, 48_000m) with { RetiredOn = new DateOnly(2027, 6, 30) });
 
-        var restarted = new FileFixedAssetRegister(_root);
+        var restarted = new FileFixedAssetRegister(FixedAssetDirectory);
         // Depreciation already posted on the registered terms is never recomputed, so the terms are fixed.
         var reprice = () => restarted.UpsertAsync(Entry(id, 36_000m));
         var extend = () => restarted.UpsertAsync(Entry(id, 48_000m, months: 72));
@@ -36,13 +38,56 @@ public sealed class FundAdministrationRegisterTests : IDisposable
     [Fact]
     public async Task FixedAssetRegister_RejectsAnAssetThatCannotBeScheduled()
     {
-        var register = new FileFixedAssetRegister(_root);
+        var register = new FileFixedAssetRegister(FixedAssetDirectory);
         var noLife = () => register.UpsertAsync(Entry(Guid.NewGuid(), 36_000m, months: 0));
         var retiredEarly = () => register.UpsertAsync(Entry(Guid.NewGuid(), 36_000m) with { RetiredOn = new DateOnly(2025, 12, 31) });
 
         await noLife.Should().ThrowAsync<ArgumentException>();
         await retiredEarly.Should().ThrowAsync<ArgumentException>();
         (await register.ListAsync("tenant", "company", "fund", Book)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task FixedAssetRegister_AcceptsARetainedEmptyRegisterForDepreciation()
+    {
+        Directory.CreateDirectory(FixedAssetDirectory);
+        await File.WriteAllTextAsync(Path.Combine(FixedAssetDirectory, "fixed-asset-register.json"), """{"assets":[]}""");
+        var register = new FileFixedAssetRegister(FixedAssetDirectory);
+
+        (await register.ListForDepreciationAsync("tenant", "company", "fund", Book)).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FixedAssetRegister_RefusesToReplaceAMissingInitializedRegister(bool loseDirectory)
+    {
+        var path = Path.Combine(FixedAssetDirectory, "fixed-asset-register.json");
+        await new FileFixedAssetRegister(FixedAssetDirectory).UpsertAsync(Entry(Guid.NewGuid(), 48_000m));
+        if (loseDirectory)
+            Directory.Delete(FixedAssetDirectory, recursive: true);
+        else
+            File.Delete(path);
+        var restarted = new FileFixedAssetRegister(FixedAssetDirectory);
+
+        var registerNewAsset = () => restarted.UpsertAsync(Entry(Guid.NewGuid(), 12_000m));
+
+        await registerNewAsset.Should().ThrowAsync<InvalidOperationException>().WithMessage("*register is missing*");
+        File.Exists(path).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task FixedAssetRegister_RefusesToReplaceAnExistingJsonNull()
+    {
+        Directory.CreateDirectory(FixedAssetDirectory);
+        var path = Path.Combine(FixedAssetDirectory, "fixed-asset-register.json");
+        await File.WriteAllTextAsync(path, "null");
+        var register = new FileFixedAssetRegister(FixedAssetDirectory);
+
+        var registerNewAsset = () => register.UpsertAsync(Entry(Guid.NewGuid(), 12_000m));
+
+        await registerNewAsset.Should().ThrowAsync<JsonException>().WithMessage("*contains JSON null*");
+        (await File.ReadAllTextAsync(path)).Should().Be("null");
     }
 
     [Fact]

@@ -67,7 +67,7 @@ public sealed partial class RecurringJournalStoreTests
         await SeedTwoSchedulesAsync();
         var owners = await Task.WhenAll(new[] { "schedule-a", "schedule-b" }.Select(async schedule =>
         {
-            await using var session = await new FileRecurringJournalStore(_directory).OpenSessionAsync();
+            await using var session = await new FileRecurringJournalStore(StateDirectory).OpenSessionAsync();
             var claim = await session.ClaimAsync(schedule, Date, 1, 1, At);
             try
             {
@@ -97,7 +97,7 @@ public sealed partial class RecurringJournalStoreTests
             await session.ClaimAsync("schedule-a", Date, 1, 1, At);
             await session.ClaimAsync("schedule-b", Date, 1, 1, At);
         }
-        var path = Path.Combine(_directory, "recurring-journals.json");
+        var path = Path.Combine(StateDirectory, "recurring-journals.json");
         var envelope = JsonSerializer.Deserialize(await File.ReadAllBytesAsync(path), RecurringJournalJsonContext.Default.RecurringJournalEnvelope)!;
         var first = envelope.Document.Occurrences[0] with
         {
@@ -126,7 +126,7 @@ public sealed partial class RecurringJournalStoreTests
         await SeedAsync();
         await using (var session = await Store().OpenSessionAsync())
             await session.ClaimAsync("schedule-a", Date, 1, 1, At);
-        var original = await File.ReadAllBytesAsync(Path.Combine(_directory, "recurring-journals.json"));
+        var original = await File.ReadAllBytesAsync(Path.Combine(StateDirectory, "recurring-journals.json"));
         var envelope = JsonSerializer.Deserialize(original, RecurringJournalJsonContext.Default.RecurringJournalEnvelope)!;
 
         envelope.Document.Occurrences.Single().EconomicObligationKeys.Should().BeNull();

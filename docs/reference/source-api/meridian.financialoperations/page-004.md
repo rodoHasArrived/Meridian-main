@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerTextPosting
+
+Qualified name: <code>Meridian.FinancialOperations.LedgerTextJournal.LedgerTextPosting</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextTransaction.cs:10](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextTransaction.cs#L10).
+
+```csharp
+public sealed record LedgerTextPosting(int LineNumber, LedgerAccount Account, decimal Amount, bool WasInferred);
+```
+
 ## LedgerTextReportOptions
 
 Qualified name: <code>Meridian.FinancialOperations.LedgerTextJournal.LedgerTextReportOptions</code>. Kind: `record`.
@@ -961,19 +971,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;OperationsWorkflowAuditDto&gt; AppendAsync(OperationsWorkflowAuditDraft draft, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:32](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L32) |  |
 | <code>Task&lt;IReadOnlyList&lt;OperationsWorkflowAuditDto&gt;&gt; GetTimelineAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:33](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L33) |  |
-
-## ISecurityMasterRevisionWorkflowAuthority
-
-Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.ISecurityMasterRevisionWorkflowAuthority</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/SecurityMasterRevisionWorkflowAuthority.cs:8](../../../../src/Meridian.FinancialOperations/OperationsContinuity/SecurityMasterRevisionWorkflowAuthority.cs#L8).
-
-```csharp
-public interface ISecurityMasterRevisionWorkflowAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityMasterRevisionWorkflowAuthority?&gt; ResolveAsync(Guid revisionId, string actor, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/SecurityMasterRevisionWorkflowAuthority.cs:10](../../../../src/Meridian.FinancialOperations/OperationsContinuity/SecurityMasterRevisionWorkflowAuthority.cs#L10) |  |

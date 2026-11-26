@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyFeeAccrualSourceBuilder
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyFeeAccrualSourceBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs:13](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs#L13).
+
+Pure builders behind the governed fixed management-fee accrual: overlap detection and the source-side draft. Direction comes from the agreement&#x27;s declared roles (service provider or recipient); nothing posts or approves.
+
+```csharp
+public static class IntercompanyFeeAccrualSourceBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ProviderRole = &quot;Service provider&quot;;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs:15](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs#L15) |  |
+| <code>public static string? FindPostedOverlap(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, Guid feeArrangementId, DateOnly from, DateOnly to);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs:21](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs#L21) | A posted fee of the profile whose window intersects &#91;from, to) and has not been reversed, by the same correction lineage as interest: a source-linked exact inverse, or a reversed delivered counterpart. |
+| <code>public static int PostedGeneration(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, Guid feeArrangementId, DateOnly from, DateOnly to) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs:36](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs#L36) | How many fee journals are already posted for exactly this window; a recomputation after a reversal gets its own identity. |
+| <code>public static Guid DraftId(string tenantId, IntercompanyFeeAccrualRequestDto request, int generation = 0) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs:61](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs#L61) | One window of one fee profile in one book has one live draft identity; a recomputation updates it. |
+| <code>public static bool IsProvider(IntercompanyAgreementDraftDto terms, Guid entity);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs:69](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs#L69) | True when the source entity holds the declared service-provider role of the agreement. |
+| <code>public static IntercompanyFeeAccrualProposalDto BuildDraft(IntercompanyFeeAccrualRequestDto request, string tenantId, string? companyId, string actor, LedgerBookRecord book, LedgerAccountingPeriod period, ResolvedIntercompanyAccountingArrangementDto posting, IntercompanyFeeAccrualPreviewDto computation, IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; bindings, IReadOnlyList&lt;ChartOfAccountsNodeDto&gt; chart, ConsolidationFxAmountDto? fx, DateTimeOffset now, int generation = 0);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs:81](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs#L81) | The source-side draft: the provider debits its fee receivable and credits fee revenue; the recipient debits fee expense and credits its fee payable. Its counterpart arrives only through the proposal pipeline after posting. |
+
 ## IntercompanyJournalFamily
 
 Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyJournalFamily</code>. Kind: `class`.
@@ -963,13 +986,3 @@ Declared public members:
 | <code>public LedgerTextJournalDocument Parse(IReadOnlyList&lt;string&gt; lines) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalReportService.cs:8](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalReportService.cs#L8) |  |
 | <code>public string RenderReport(IReadOnlyList&lt;string&gt; lines, LedgerTextReportOptions options) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalReportService.cs:11](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalReportService.cs#L11) |  |
 | <code>public string RenderReport(LedgerTextJournalDocument document, LedgerTextReportOptions options) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalReportService.cs:14](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalReportService.cs#L14) |  |
-
-## LedgerTextPosting
-
-Qualified name: <code>Meridian.FinancialOperations.LedgerTextJournal.LedgerTextPosting</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextTransaction.cs:10](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextTransaction.cs#L10).
-
-```csharp
-public sealed record LedgerTextPosting(int LineNumber, LedgerAccount Account, decimal Amount, bool WasInferred);
-```

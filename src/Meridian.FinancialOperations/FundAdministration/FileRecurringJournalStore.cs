@@ -17,11 +17,13 @@ public sealed class FileRecurringJournalStore : IRecurringJournalStore, IRecurri
     private readonly string _directory;
     private string StatePath => Path.Combine(_directory, "recurring-journals.json");
     private string MarkerPath => Path.Combine(_directory, "initialized");
+    // A sibling marker survives loss of the registry directory itself.
+    private string ProvisionedPath => _directory + ".provisioned";
 
     public FileRecurringJournalStore(string directory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
-        _directory = Path.GetFullPath(directory);
+        _directory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
     }
 
     /// <summary>
@@ -32,27 +34,34 @@ public sealed class FileRecurringJournalStore : IRecurringJournalStore, IRecurri
     {
         Directory.CreateDirectory(_directory);
         await using var lease = await AcquireAsync(ct).ConfigureAwait(false);
-        if (File.Exists(MarkerPath))
+        if (RetainedPathExists(MarkerPath) || RetainedPathExists(ProvisionedPath))
         {
             _ = await ReadAsync(ct).ConfigureAwait(false);
             return;
         }
 
-        if (File.Exists(StatePath))
+        if (RetainedPathExists(StatePath))
             _ = await ReadSnapshotAsync(ct).ConfigureAwait(false);
         else
             await WriteAsync(Empty(), ct).ConfigureAwait(false);
         await AtomicFileWriter.WriteAsync(MarkerPath, Marker, ct).ConfigureAwait(false);
+        await EnsureProvisioningWitnessAsync(ct).ConfigureAwait(false);
     }
 
     public async Task<IRecurringJournalSession> OpenSessionAsync(CancellationToken ct = default)
     {
         // Directory creation on read would disguise an unavailable mount or an incorrect data root.
-        if (!Directory.Exists(_directory))
-            throw new InvalidOperationException("The durable recurring journal store is unavailable or has not been provisioned.");
+        if (!RetainedPathExists(_directory))
+        {
+            if (RetainedPathExists(ProvisionedPath))
+                throw new InvalidOperationException("The previously provisioned recurring journal directory is unavailable. Restore it before continuing.");
+            throw new RecurringJournalStoreNotProvisionedException();
+        }
         var lease = await AcquireAsync(ct).ConfigureAwait(false);
         try
         {
+            if (!RetainedPathExists(MarkerPath) && !RetainedPathExists(StatePath) && !RetainedPathExists(ProvisionedPath))
+                throw new RecurringJournalStoreNotProvisionedException();
             return new RecurringJournalDocumentSession(new FileLease(this, lease), await ReadAsync(ct).ConfigureAwait(false));
         }
         catch
@@ -95,9 +104,32 @@ public sealed class FileRecurringJournalStore : IRecurringJournalStore, IRecurri
 
     private async Task<RecurringJournalDocument> ReadAsync(CancellationToken ct)
     {
-        if (!File.Exists(MarkerPath) || await File.ReadAllTextAsync(MarkerPath, ct).ConfigureAwait(false) != Marker)
+        if (!RetainedPathExists(MarkerPath) || await File.ReadAllTextAsync(MarkerPath, ct).ConfigureAwait(false) != Marker)
             throw new InvalidOperationException("The durable recurring journal initialization marker is unavailable or invalid.");
-        return await ReadSnapshotAsync(ct).ConfigureAwait(false);
+        var document = await ReadSnapshotAsync(ct).ConfigureAwait(false);
+        await EnsureProvisioningWitnessAsync(ct).ConfigureAwait(false);
+        return document;
+    }
+
+    private async Task EnsureProvisioningWitnessAsync(CancellationToken ct)
+    {
+        if (!RetainedPathExists(ProvisionedPath))
+            await AtomicFileWriter.WriteAsync(ProvisionedPath, Marker, ct).ConfigureAwait(false);
+        else if (await File.ReadAllTextAsync(ProvisionedPath, ct).ConfigureAwait(false) != Marker)
+            throw new InvalidOperationException("The durable recurring journal provisioning marker is invalid.");
+    }
+
+    private static bool RetainedPathExists(string path)
+    {
+        try
+        {
+            _ = File.GetAttributes(path);
+            return true;
+        }
+        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+        {
+            return false;
+        }
     }
 
     private async Task<RecurringJournalDocument> ReadSnapshotAsync(CancellationToken ct)

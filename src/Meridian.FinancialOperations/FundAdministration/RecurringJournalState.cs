@@ -94,10 +94,21 @@ public sealed record RecurringOccurrenceRecord(
     /// <summary>Write-once daily economic obligations owned by this claim, independent of definition versions.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<string>? EconomicObligationKeys { get; init; }
+
+    /// <summary>A retained no-draft outcome stays settled through definition and claim transitions.</summary>
+    public RecurringOccurrenceTransition? FindNoDraftOutcome()
+    {
+        var outcome = History.LastOrDefault(item => item.State is RecurringOccurrenceState.NoDraftRequired or RecurringOccurrenceState.Drafted);
+        return outcome?.State == RecurringOccurrenceState.NoDraftRequired ? outcome : null;
+    }
 }
 
 /// <summary>A definition change cannot silently reinterpret a retained approval draft.</summary>
 public sealed class RecurringJournalDefinitionChangedException(string message) : InvalidOperationException(message);
+
+/// <summary>No recurring journal registry has been provisioned in the selected accounting data root.</summary>
+public sealed class RecurringJournalStoreNotProvisionedException() : InvalidOperationException(
+    "The durable recurring journal store has not been provisioned.");
 
 /// <summary>
 /// Opens sessions for reading and updating recurring journal schedules and templates.
