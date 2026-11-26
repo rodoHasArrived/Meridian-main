@@ -215,6 +215,8 @@ public sealed class FileStatementRunMatchArtifactStore : IStatementRunMatchArtif
                         $"Statement run '{artifact.RunId}' already retains a different match artifact.");
                 }
 
+                // An earlier attempt may have stopped after its rename but before the sync.
+                await SyncPublishedAsync(path).ConfigureAwait(false);
                 return;
             }
 
@@ -227,9 +229,6 @@ public sealed class FileStatementRunMatchArtifactStore : IStatementRunMatchArtif
                     StatementDurabilityJsonContext.Default.StatementRunMatchArtifact);
                 await _atomicFileWriter.WriteAsync(temporaryPath, json, ct).ConfigureAwait(false);
                 File.Move(temporaryPath, path, overwrite: false);
-                await _atomicFileWriter
-                    .SyncDirectoryAsync(Path.GetDirectoryName(path)!, CancellationToken.None)
-                    .ConfigureAwait(false);
             }
             catch (IOException) when (File.Exists(path))
             {
@@ -255,12 +254,19 @@ public sealed class FileStatementRunMatchArtifactStore : IStatementRunMatchArtif
                     File.Delete(temporaryPath);
                 }
             }
+
+            await SyncPublishedAsync(path).ConfigureAwait(false);
         }
         finally
         {
             gate.Release();
         }
     }
+
+    // Strict: returning acknowledges the record (callers act on it). Both the new-publication and
+    // the retained-record paths sync, so a retry after a throw confirms an earlier rename.
+    private Task SyncPublishedAsync(string path) =>
+        _atomicFileWriter.SyncDirectoryOrThrowAsync(Path.GetDirectoryName(path)!, CancellationToken.None);
 
     private string ArtifactPath(string runId)
         => Path.Combine(_root, ReconciliationRecordFileName.For(runId), "workflow-match-artifact.json");
@@ -464,6 +470,8 @@ public sealed class FileStatementCaseworkCommitStore : IStatementCaseworkCommitS
             {
                 ValidateEnvelope(retained);
                 EnsureSameInput(retained, envelope.CommandId, envelope.InputHashSha256);
+                // An earlier attempt may have stopped after its rename but before the sync.
+                await SyncPublishedAsync(path).ConfigureAwait(false);
                 return retained;
             }
 
@@ -476,10 +484,7 @@ public sealed class FileStatementCaseworkCommitStore : IStatementCaseworkCommitS
                     StatementDurabilityJsonContext.Default.StatementCaseworkCommitEnvelope);
                 await _atomicFileWriter.WriteAsync(temporaryPath, json, ct).ConfigureAwait(false);
                 File.Move(temporaryPath, path, overwrite: false);
-                await _atomicFileWriter
-                    .SyncDirectoryAsync(Path.GetDirectoryName(path)!, CancellationToken.None)
-                    .ConfigureAwait(false);
-                return envelope;
+                retained = envelope;
             }
             catch (IOException) when (File.Exists(path))
             {
@@ -492,7 +497,6 @@ public sealed class FileStatementCaseworkCommitStore : IStatementCaseworkCommitS
                         $"Statement casework commit '{envelope.CommandId}' exists without a readable envelope.");
                 ValidateEnvelope(retained);
                 EnsureSameInput(retained, envelope.CommandId, envelope.InputHashSha256);
-                return retained;
             }
             finally
             {
@@ -501,6 +505,9 @@ public sealed class FileStatementCaseworkCommitStore : IStatementCaseworkCommitS
                     File.Delete(temporaryPath);
                 }
             }
+
+            await SyncPublishedAsync(path).ConfigureAwait(false);
+            return retained;
         }
         finally
         {
@@ -580,6 +587,8 @@ public sealed class FileStatementCaseworkCommitStore : IStatementCaseworkCommitS
                         $"Statement casework completion '{commandId}' conflicts with the retained envelope.");
                 }
 
+                // An earlier attempt may have stopped after its rename but before the sync.
+                await SyncPublishedAsync(path).ConfigureAwait(false);
                 return;
             }
 
@@ -596,9 +605,6 @@ public sealed class FileStatementCaseworkCommitStore : IStatementCaseworkCommitS
                         ct)
                     .ConfigureAwait(false);
                 File.Move(temporaryPath, path, overwrite: false);
-                await _atomicFileWriter
-                    .SyncDirectoryAsync(Path.GetDirectoryName(path)!, CancellationToken.None)
-                    .ConfigureAwait(false);
             }
             catch (IOException) when (File.Exists(path))
             {
@@ -624,6 +630,8 @@ public sealed class FileStatementCaseworkCommitStore : IStatementCaseworkCommitS
                     File.Delete(temporaryPath);
                 }
             }
+
+            await SyncPublishedAsync(path).ConfigureAwait(false);
         }
         finally
         {
@@ -738,6 +746,11 @@ public sealed class FileStatementCaseworkCommitStore : IStatementCaseworkCommitS
             ?? throw new InvalidDataException(
                 $"Statement durability artifact '{path}' retained a null payload.");
     }
+
+    // Strict: returning acknowledges the record (callers act on it). Both the new-publication and
+    // the retained-record paths sync, so a retry after a throw confirms an earlier rename.
+    private Task SyncPublishedAsync(string path) =>
+        _atomicFileWriter.SyncDirectoryOrThrowAsync(Path.GetDirectoryName(path)!, CancellationToken.None);
 
     private string EnvelopePath(string commandId)
         => Path.Combine(_root, "envelopes", $"{CommandFileName(commandId)}.json");

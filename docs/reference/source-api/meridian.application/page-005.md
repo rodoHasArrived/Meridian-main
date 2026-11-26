@@ -6,6 +6,79 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAgreementRules
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAgreementRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:8](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L8).
+
+```csharp
+public static partial class IntercompanyAgreementRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IntercompanyAgreementDraftDto Normalize(IntercompanyAgreementDraftDto draft) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:10](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L10) |  |
+| <code>public static void ValidateShape(IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:30](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L30) |  |
+| <code>public static void ValidateComplete(IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:46](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L46) |  |
+| <code>public static void ValidateImmutableParties(IntercompanyAgreementDraftDto initial, IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:80](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L80) |  |
+| <code>public static void ValidateExistence(IntercompanyAgreementDraftDto draft, IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt; revisions, LegalEntitySummaryDto first, LegalEntitySummaryDto second);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:88](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L88) |  |
+| <code>public static string ReviewedHash(IntercompanyAgreementReviewPayloadDto payload) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:133](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L133) |  |
+| <code>public static string CommandHash(IntercompanyAgreementCommandDto command) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:135](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L135) |  |
+| <code>public static bool SameEvidence(IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; first, IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; second) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:137](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L137) |  |
+| <code>public static bool SameActor(string? first, string? second) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:139](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L139) |  |
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs:7](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs#L7).
+
+```csharp
+public static partial class IntercompanyAgreementRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaximumFixingLagBusinessDays = 10;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs:133](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs#L133) | Upper bound on a declared in-advance fixing lag. |
+
+## IntercompanyAgreementService
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAgreementService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:9](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L9).
+
+Agreement commands execute under the store&#x27;s durable authority lock, including approval rechecks.
+
+```csharp
+public sealed partial class IntercompanyAgreementService(IIntercompanyAgreementStore store, IIntercompanyAgreementAccessAuthority access, IIntercompanyAgreementEvidenceAuthority evidence, TimeProvider? timeProvider = null, IEntityLifecycleStore? lifecycleStore = null, IFundStructureStore? structureStore = null) : IIntercompanyAgreementService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; CreateAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:16](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L16) |  |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; CreateProposalAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:18](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L18) |  |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; SaveDraftAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:20](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L20) |  |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; SubmitAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:22](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L22) |  |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; ApproveAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:24](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L24) |  |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; RejectAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:26](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L26) |  |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; WithdrawAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:28](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L28) |  |
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs:6](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs#L6).
+
+```csharp
+public sealed partial class IntercompanyAgreementService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IntercompanyAgreementDetailDto?&gt; GetAsync(IntercompanyAgreementCallContext context, Guid agreementId, DateOnly? asOf = null, DateTimeOffset? knownAtUtc = null, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs:8](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs#L8) |  |
+| <code>public async Task&lt;IntercompanyAgreementListDto&gt; ListAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs:22](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs#L22) |  |
+
 ## IntercompanyAgreementTimeline
 
 Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAgreementTimeline</code>. Kind: `class`.
@@ -959,40 +1032,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public void RecordAttempt(string provider, bool success) =&gt; …;</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:1008](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L1008) |  |
-
-## StatusSnapshot
-
-Qualified name: <code>Meridian.Application.Monitoring.StatusSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Monitoring/StatusSnapshot.cs:9](../../../../src/Meridian.Application/Monitoring/StatusSnapshot.cs#L9).
-
-```csharp
-public sealed record StatusSnapshot(DateTimeOffset TimestampUtc, long Published, long Dropped, long Integrity, bool IbEnabled, int SymbolCount, IReadOnlyDictionary<string, int> DepthSubscriptions, IReadOnlyDictionary<string, int> TradeSubscriptions)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static StatusSnapshot FromRuntime(AppConfig cfg, IMarketDataClient ib, SubscriptionOrchestrator subs, IEventMetrics? metrics = null);</code> | [src/Meridian.Application/Monitoring/StatusSnapshot.cs:20](../../../../src/Meridian.Application/Monitoring/StatusSnapshot.cs#L20) |  |
-
-## StatusWriter
-
-Qualified name: <code>Meridian.Application.Monitoring.StatusWriter</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Monitoring/StatusWriter.cs:15](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L15).
-
-Periodically writes a small status snapshot JSON file for dashboards.
-
-```csharp
-public sealed class StatusWriter : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StatusWriter(string path, Func&lt;AppConfig&gt; configProvider, IEventMetrics? metrics = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:31](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L31) |  |
-| <code>public void Start(TimeSpan interval);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:39](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L39) |  |
-| <code>public async Task WriteOnceAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:73](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L73) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:98](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L98) |  |

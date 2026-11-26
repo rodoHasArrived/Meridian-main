@@ -6,6 +6,50 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderCredentialResolver
+
+Qualified name: <code>Meridian.Application.Config.Credentials.ProviderCredentialResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:42](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L42).
+
+Centralized credential resolver for all market data providers. Resolves credentials from multiple sources with environment variables taking precedence.
+
+```csharp
+public sealed class ProviderCredentialResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderCredentialResolver(ILogger? log = null);</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:46](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L46) |  |
+| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:55](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L55) | Creates a credential context for a provider type using declared credential attributes plus any config values supplied for fallback. |
+| <code>public string? ResolveOpenFigi(string? configApiKey = null);</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:75](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L75) | Resolves OpenFIGI API key from environment or config. |
+| <code>public (string? ApiKey, string? ApiSecret, string? ClientId) ResolveNyse(string? configApiKey = null, string? configApiSecret = null, string? configClientId = null);</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:83](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L83) | Resolves NYSE credentials from environment or config. |
+| <code>public (string Username, string Password) ResolveRabbitMq(string? configUsername = null, string? configPassword = null);</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:97](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L97) | Resolves RabbitMQ credentials from environment or config. |
+| <code>public string? ResolveAzureServiceBus(string? configConnectionString = null);</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:117](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L117) | Resolves Azure Service Bus connection string from environment or config. |
+| <code>public string? ResolveCredential(string envVarName, string? configValue, string credentialName);</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:151](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L151) | Resolves a single credential value with environment variable taking precedence. |
+| <code>public void ValidateRequired(string providerName, params(string Name, string? Value, string EnvVar)[] credentials);</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:181](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L181) | Validates that required credentials are present for a provider. |
+| <code>public IReadOnlyDictionary&lt;string, bool&gt; GetCredentialStatus();</code> | [src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs:198](../../../../src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs#L198) | Gets a summary of configured credentials (without revealing values). |
+
+## IBGatewayProbe
+
+Qualified name: <code>Meridian.Application.Config.IBGatewayProbe</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Config/IBGatewayProbe.cs:12](../../../../src/Meridian.Application/Config/IBGatewayProbe.cs#L12).
+
+Probes localhost for a listening IB Gateway/TWS instance on the default API ports. Shared by the configuration services so detection behavior, ports, and timeouts stay consistent instead of drifting across copy-pasted probes.
+
+```csharp
+public static class IBGatewayProbe
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsAvailable();</code> | [src/Meridian.Application/Config/IBGatewayProbe.cs:24](../../../../src/Meridian.Application/Config/IBGatewayProbe.cs#L24) | Returns true when any default IB API port accepts a TCP connection on loopback. |
+
 ## PipelineOptions
 
 Qualified name: <code>Meridian.Application.Config.PipelineOptions</code>. Kind: `record`.
@@ -1279,76 +1323,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IntercompanyAccrualPreviewDto Preview(IntercompanyAccrualComputationInput input);</code> | [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs:25](../../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs#L25) |  |
-
-## IntercompanyAgreementRules
-
-Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAgreementRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:8](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L8).
-
-```csharp
-public static partial class IntercompanyAgreementRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IntercompanyAgreementDraftDto Normalize(IntercompanyAgreementDraftDto draft) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:10](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L10) |  |
-| <code>public static void ValidateShape(IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:30](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L30) |  |
-| <code>public static void ValidateComplete(IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:46](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L46) |  |
-| <code>public static void ValidateImmutableParties(IntercompanyAgreementDraftDto initial, IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:80](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L80) |  |
-| <code>public static void ValidateExistence(IntercompanyAgreementDraftDto draft, IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt; revisions, LegalEntitySummaryDto first, LegalEntitySummaryDto second);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:88](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L88) |  |
-| <code>public static string ReviewedHash(IntercompanyAgreementReviewPayloadDto payload) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:133](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L133) |  |
-| <code>public static string CommandHash(IntercompanyAgreementCommandDto command) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:135](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L135) |  |
-| <code>public static bool SameEvidence(IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; first, IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; second) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:137](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L137) |  |
-| <code>public static bool SameActor(string? first, string? second) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:139](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L139) |  |
-
-Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs:7](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs#L7).
-
-```csharp
-public static partial class IntercompanyAgreementRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int MaximumFixingLagBusinessDays = 10;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs:133](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs#L133) | Upper bound on a declared in-advance fixing lag. |
-
-## IntercompanyAgreementService
-
-Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAgreementService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:9](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L9).
-
-Agreement commands execute under the store&#x27;s durable authority lock, including approval rechecks.
-
-```csharp
-public sealed partial class IntercompanyAgreementService(IIntercompanyAgreementStore store, IIntercompanyAgreementAccessAuthority access, IIntercompanyAgreementEvidenceAuthority evidence, TimeProvider? timeProvider = null, IEntityLifecycleStore? lifecycleStore = null, IFundStructureStore? structureStore = null) : IIntercompanyAgreementService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; CreateAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:16](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L16) |  |
-| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; CreateProposalAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:18](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L18) |  |
-| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; SaveDraftAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:20](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L20) |  |
-| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; SubmitAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:22](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L22) |  |
-| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; ApproveAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:24](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L24) |  |
-| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; RejectAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:26](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L26) |  |
-| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; WithdrawAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:28](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L28) |  |
-
-Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs:6](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs#L6).
-
-```csharp
-public sealed partial class IntercompanyAgreementService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IntercompanyAgreementDetailDto?&gt; GetAsync(IntercompanyAgreementCallContext context, Guid agreementId, DateOnly? asOf = null, DateTimeOffset? knownAtUtc = null, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs:8](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs#L8) |  |
-| <code>public async Task&lt;IntercompanyAgreementListDto&gt; ListAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs:22](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs#L22) |  |

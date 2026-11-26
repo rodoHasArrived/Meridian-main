@@ -730,7 +730,8 @@ Declared public members:
 | <code>Task WriteAsync(string destinationPath, string content, CancellationToken ct = default);</code> | [src/Meridian.Core/IO/IAtomicFileWriter.cs:12](../../../../src/Meridian.Core/IO/IAtomicFileWriter.cs#L12) |  |
 | <code>Task WriteAsync(string destinationPath, byte[] content, CancellationToken ct = default);</code> | [src/Meridian.Core/IO/IAtomicFileWriter.cs:14](../../../../src/Meridian.Core/IO/IAtomicFileWriter.cs#L14) |  |
 | <code>Task AppendLinesAsync(string destinationPath, IEnumerable&lt;string&gt; lines, CancellationToken ct = default);</code> | [src/Meridian.Core/IO/IAtomicFileWriter.cs:16](../../../../src/Meridian.Core/IO/IAtomicFileWriter.cs#L16) |  |
-| <code>Task SyncDirectoryAsync(string directory, CancellationToken ct = default);</code> | [src/Meridian.Core/IO/IAtomicFileWriter.cs:18](../../../../src/Meridian.Core/IO/IAtomicFileWriter.cs#L18) |  |
+| <code>Task SyncDirectoryAsync(string directory, CancellationToken ct = default);</code> | [src/Meridian.Core/IO/IAtomicFileWriter.cs:22](../../../../src/Meridian.Core/IO/IAtomicFileWriter.cs#L22) | Best-effort directory fsync for an operation that has already committed: a failure is recorded but not thrown, so a committed write is never reported as failed. |
+| <code>Task SyncDirectoryOrThrowAsync(string directory, CancellationToken ct = default);</code> | [src/Meridian.Core/IO/IAtomicFileWriter.cs:28](../../../../src/Meridian.Core/IO/IAtomicFileWriter.cs#L28) | Directory fsync that throws when durability cannot be confirmed. Use before an acknowledgement or before removing the only other copy, where a retry is idempotent. |
 
 ## RetryBackoff
 

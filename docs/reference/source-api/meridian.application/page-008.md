@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionIngestOrchestrator
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestOrchestrator</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:95](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L95).
+
+Fans out to every registered ICorporateActionProvider for mastered symbols, normalizes announcements, computes cross-provider consensus over full economic value keys, and records every distinct observation in the durable proposal inbox. Provider agreement is retained as evidence and never appends or approves accounting by itself. The legacy append path remains only for hosts/tests that have not registered durable operations.
+
+```csharp
+public sealed class CorporateActionIngestOrchestrator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionIngestOrchestrator(IEnumerable&lt;ICorporateActionProvider&gt; providers, ISecurityMasterStore store, ISecurityMasterEventStore eventStore, ISecurityMasterCorporateActionCommandService commandService, ILogger&lt;CorporateActionIngestOrchestrator&gt; logger, ICorporateActionOperationsService? operationsService = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:104](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L104) |  |
+| <code>public async Task&lt;CorporateActionIngestResult&gt; IngestAsync(CorporateActionIngestRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:120](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L120) |  |
+
+## CorporateActionIngestRequest
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:17](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L17).
+
+Request for a corporate-action ingest sweep. When Symbols is null or empty the sweep covers every active security with a ticker identifier. Announcements whose distinct agreeing sources reach MinimumSourcesToApply are confidence-scored, but production ingest still records a durable proposal for explicit operator acceptance.
+
+```csharp
+public sealed record CorporateActionIngestRequest(IReadOnlyList<string>? Symbols = null, bool DryRun = false, int MinimumSourcesToApply = 2, string? Actor = null, string? CorrelationId = null);
+```
+
 ## CorporateActionIngestResult
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestResult</code>. Kind: `record`.
@@ -937,40 +968,3 @@ Declared public members:
 | <code>Task&lt;OperatorOverridesDto&gt; RecordOperatorOverrideDecisionAsync(Guid securityId, OperatorOverrideDecision decision, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:76](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L76) | Records a direct operator-override approval decision (the legacy decision route) under the per-security gate, refusing with InvalidOperationException whenever the decision belongs to the governed revision lifecycle instead: staged (Draft/Submitted) revisions are pending, or the overlay carries revision-backed values. Hosts that wire the workbench must route the legacy decision endpoint through this seam so a ModifySecurityMaster actor cannot directly approve values whose revisions were never reviewed. |
 | <code>Task&lt;SecurityMasterEditResultDto&gt; ApproveRevisionAsync(ApproveSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:80](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L80) | Approves a submitted revision through the operations-continuity approval gate. |
 | <code>Task&lt;SecurityMasterPublishResultDto&gt; PublishRevisionAsync(PublishSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:87](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L87) | Publishes an approved revision: fans out to the ordered revision-published handlers and returns any restatement candidates the period-aware handler surfaced. |
-
-## ISecurityMasterWorkbenchQueryService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterWorkbenchQueryService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:9](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L9).
-
-Supplies trust, passport, and operating-model views and bulk conflict resolution for the workbench.
-
-```csharp
-public interface ISecurityMasterWorkbenchQueryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityMasterTrustSnapshotDto?&gt; GetTrustSnapshotAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:11](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L11) |  |
-| <code>Task&lt;InstrumentPassportDto?&gt; GetInstrumentPassportAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:16](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L16) |  |
-| <code>Task&lt;SecurityMasterOperatingModelDto?&gt; GetOperatingModelAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:21](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L21) |  |
-| <code>Task&lt;BulkResolveSecurityMasterConflictsResult&gt; BulkResolveConflictsAsync(BulkResolveSecurityMasterConflictsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:26](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L26) |  |
-
-## Releaser
-
-Qualified name: <code>Meridian.Application.SecurityMaster.KeyedGatePool.Releaser</code>. Kind: `struct`.
-
-Source: [src/Meridian.Application/SecurityMaster/KeyedGatePool.cs:85](../../../../src/Meridian.Application/SecurityMaster/KeyedGatePool.cs#L85).
-
-```csharp
-public readonly struct Releaser : IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public void Dispose();</code> | [src/Meridian.Application/SecurityMaster/KeyedGatePool.cs:98](../../../../src/Meridian.Application/SecurityMaster/KeyedGatePool.cs#L98) |  |

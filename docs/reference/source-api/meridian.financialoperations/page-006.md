@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CanonicalReconciliationSourceKind
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.CanonicalReconciliationSourceKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:3](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L3).
+
+```csharp
+public enum CanonicalReconciliationSourceKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Broker</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:5](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L5) |  |
+| <code>Custodian</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:6](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L6) |  |
+| <code>InternalBook</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:7](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L7) |  |
+
+## CashToleranceRule
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.CashToleranceRule</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs:21](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs#L21).
+
+```csharp
+public sealed record CashToleranceRule(string RuleId, decimal AbsoluteCashTolerance, decimal? BasisPointCashTolerance, TimeSpan SettlementDateTolerance)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Allows(decimal expectedAmountBase, decimal actualAmountBase, TimeSpan settlementDateDelta, out decimal allowedTolerance);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs:27](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs#L27) |  |
+
 ## AlpacaActivityStatementConnector
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.Alpaca.AlpacaActivityStatementConnector</code>. Kind: `class`.
@@ -916,35 +950,3 @@ Declared public members:
 | <code>public const int CurrentSchemaVersion = 1;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs:23](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs#L23) |  |
 | <code>public const string CsvFormat = &quot;csv&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs:24](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs#L24) |  |
 | <code>public const string OfxFormat = &quot;ofx&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs:25](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs#L25) |  |
-
-## StatementMappingProfileLoader
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementMappingProfileLoader</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs:7](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs#L7).
-
-Validates declarative mapping-profile documents and materializes them into the runtime StatementMappingProfile records the reconciliation engine already consumes.
-
-```csharp
-public static class StatementMappingProfileLoader
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;string&gt; Validate(StatementMappingProfileDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs:19](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs#L19) |  |
-| <code>public static StatementMappingProfile ToRuntimeProfile(StatementMappingProfileDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs:125](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs#L125) | Materializes the document into the runtime profile the existing reconciliation paths consume. Aliases, culture, and CSV options are connector-level concerns and are not carried into the runtime shape. |
-| <code>public static StatementFieldMapping? FindDocumentField(StatementMappingProfileDocument document, StatementCanonicalField canonicalField);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs:151](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs#L151) |  |
-
-## StatementMappingProfileSnapshot
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementMappingProfileSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs:48](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs#L48).
-
-Persisted snapshot shape for the file-backed profile store.
-
-```csharp
-public sealed record StatementMappingProfileSnapshot(int Version, IReadOnlyList<StatementMappingProfileDocument> Profiles);
-```

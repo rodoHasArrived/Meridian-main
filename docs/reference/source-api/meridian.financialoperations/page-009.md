@@ -6,6 +6,57 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementBreakWorkflowPolicy
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementBreakWorkflowPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:39](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L39).
+
+Materiality and workflow settings used to decide severity and whether a break should become casework.
+
+```csharp
+public sealed record StatementBreakWorkflowPolicy(decimal PositionQuantityMateriality = 0.0001m, decimal CashMateriality = 0.01m, decimal TransactionMateriality = 0.01m, decimal FeeOrTaxMateriality = 0.01m, bool CreateCasesForLowSeverityBreaks = false)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static StatementBreakWorkflowPolicy Default { get; } = new ();</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:46](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L46) |  |
+
+## StatementCanonicalField
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementCanonicalField</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:5](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L5).
+
+```csharp
+public enum StatementCanonicalField
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Account</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:7](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L7) |  |
+| <code>SecurityIdentifier</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:8](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L8) |  |
+| <code>Quantity</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L9) |  |
+| <code>Price</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:10](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L10) |  |
+| <code>CashAmount</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L11) |  |
+| <code>ActivityType</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L12) |  |
+| <code>TradeDate</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L13) |  |
+| <code>SettlementDate</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:14](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L14) |  |
+| <code>Currency</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:15](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L15) |  |
+| <code>FeesCommission</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:16](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L16) |  |
+| <code>ExternalTransactionId</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:17](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L17) |  |
+| <code>AccountId</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:18](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L18) |  |
+| <code>ExternalAccountId</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:19](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L19) |  |
+| <code>SecurityId</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:20](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L20) |  |
+| <code>UnresolvedIdentifier</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:21](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L21) |  |
+| <code>MarketValue</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:22](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L22) |  |
+| <code>Amount</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:23](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L23) |  |
+| <code>ExternalReference</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:24](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L24) |  |
+
 ## StatementCaseLink
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementCaseLink</code>. Kind: `record`.
@@ -818,31 +869,3 @@ Declared public members:
 | <code>public IReadOnlyDictionary&lt;string, string&gt; FieldMappings { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:431](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L431) |  |
 | <code>public IReadOnlyList&lt;string&gt; RequiredFields { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:432](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L432) |  |
 | <code>public StatementValidationPolicyDto Policy { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:433](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L433) |  |
-
-## StatementValidationResultDto
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementValidationResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:436](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L436).
-
-```csharp
-public sealed record StatementValidationResultDto(string SourcePath, string AccountId, string ImportFingerprint, bool IsBlocked, IReadOnlyList<StatementValidationIssueDto> Issues);
-```
-
-## StatementValidationService
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementValidationService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L9).
-
-Validates statement entities against configured rules and reference-data checks.
-
-```csharp
-public sealed class StatementValidationService(IStatementValidationReferenceData referenceData)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;StatementValidationResultDto&gt; ValidateAsync(StatementValidationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:54](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L54) |  |

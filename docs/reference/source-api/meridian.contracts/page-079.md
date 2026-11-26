@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunPaperStatus
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunPaperStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:93](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L93).
+
+Paper-execution status fields attached to a running or recently completed paper run. Surfaced on StrategyRunSummary and StrategyRunDetail when StrategyRunMode is Paper.
+
+```csharp
+public sealed record StrategyRunPaperStatus(string SimulationFeedId, bool IsActive, int FillCount, int OpenOrderCount, decimal? RealizedPnl, decimal? UnrealizedPnl, DateTimeOffset? LastMarketEventAt, bool HasLedgerCoverage = false);
+```
+
 ## StrategyRunPromotionState
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunPromotionState</code>. Kind: `enum`.
@@ -629,14 +641,4 @@ Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:129]
 
 ```csharp
 public sealed record TradingExecutionReconciliationReadinessDto(TradingAcceptanceGateStatusDto Status, string GatewayId, string BrokerDisplayName, bool BrokerHealthy, bool BrokerConnected, int MatchedOpenOrderCount, int BreakCount, DateTimeOffset ReconciledAt, string Detail, IReadOnlyList<TradingExecutionReconciliationBreakDto> Breaks);
-```
-
-## TradingLiveOperationRequirementDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.TradingLiveOperationRequirementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:141](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L141).
-
-```csharp
-public sealed record TradingLiveOperationRequirementDto(string RequirementId, string Label, TradingAcceptanceGateStatusDto Status, string Detail, string ChecklistItem, string? EvidenceReference, bool ChecklistSatisfied, bool EvidenceSatisfied, string? BlockerCode = null);
 ```

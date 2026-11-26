@@ -429,6 +429,7 @@ COMMANDS:
     --check-schemas         Check stored data schema compatibility
     --fund-tenant-backfill  Review/apply retained fund tenant evidence (--action preview|apply)
     --wal-repair            Scan WAL files for corruption and rewrite only valid records
+                            (every workload; --workload collector|backfill for one)
     --simulate-feed         Emit a synthetic event for smoke testing
     --selftest              Run comprehensive system self-tests
     --dry-run               Full validation without starting collection

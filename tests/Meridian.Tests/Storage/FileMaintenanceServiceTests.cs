@@ -122,6 +122,37 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
             "the salvaged records reproduce the retained checksum");
     }
 
+    [Fact]
+    public async Task RepairAsync_TruncateCorrupted_QuarantineSyncFailure_LeavesSourceUntouchedAndRetrySucceeds()
+    {
+        // The rewrite drops the rejected lines from the source, so it must not run until their
+        // quarantine copy is durable.
+        var dataPath = Path.Combine(TestDataRoot, "MSFT_trade_20260110.jsonl");
+        await AtomicFileWriter.WriteWithChecksumAsync(dataPath, Encoding.UTF8.GetBytes("{\"seq\":1}\n{\"seq\":2}\n"));
+        var content = "{\"seq\":1}\nnot-json-1\n{\"seq\":2}\n";
+        await File.WriteAllTextAsync(dataPath, content);
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+        var options = new RepairOptions(RepairStrategy.TruncateCorrupted, BackupBeforeRepair: false);
+
+        RepairResult failed;
+        using (DirectorySyncFaults.FailIn(TestDataRoot))
+            failed = await service.RepairAsync(options);
+
+        failed.FilesRepaired.Should().Be(0);
+        failed.Errors.Should().NotBeEmpty();
+        (await File.ReadAllTextAsync(dataPath)).Should().Be(content);
+
+        var retried = await service.RepairAsync(options);
+
+        retried.FilesRepaired.Should().Be(1);
+        retried.Errors.Should().BeEmpty();
+        (await File.ReadAllLinesAsync(dataPath)).Where(l => !string.IsNullOrWhiteSpace(l))
+            .Should().Equal("{\"seq\":1}", "{\"seq\":2}");
+        var quarantinePath = retried.RecoveryCopies.Should().ContainSingle(path => path.EndsWith(".corrupt-lines")).Subject;
+        (await File.ReadAllLinesAsync(quarantinePath)).Where(l => !string.IsNullOrWhiteSpace(l))
+            .Should().Equal("not-json-1");
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
