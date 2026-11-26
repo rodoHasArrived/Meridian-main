@@ -58,7 +58,7 @@ RUN dotnet publish src/Meridian/Meridian.csproj \
 # -----------------------------------------------------------------------------
 # Stage 2: Runtime
 # -----------------------------------------------------------------------------
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:11.0-alpine AS runtime
 
 # Install required packages
 RUN apk add --no-cache \
