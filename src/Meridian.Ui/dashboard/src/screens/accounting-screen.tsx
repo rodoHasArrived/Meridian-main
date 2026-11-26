@@ -1,4 +1,8 @@
 import { BookCheck, Landmark, Network, RefreshCcw, Search, ShieldCheck, WalletCards } from "lucide-react";
+import { useSignedInUsername } from "@/hooks/use-signed-in-username";
+import { SecurityMasterReviewInboxPanel } from "@/components/meridian/security-master-review-inbox";
+import { SecurityMasterHeldAmendmentsPanel } from "@/components/meridian/security-master-held-amendments";
+import { SecurityMasterExceptionQueuePanel } from "@/components/meridian/security-master-exception-queue";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "@/styles/accounting-screen.css";
@@ -106,7 +110,10 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
   // only opening the queue itself advances it, not any other Accounting route.
   const breakQueueVisit = useSinceLastVisit(BREAK_QUEUE_VISIT_SURFACE, undefined, { record: false });
   const navigate = useNavigate();
-  const operatorIdentity = session?.displayName.trim() || null;
+  // Who is acting: the signed-in username, not the session displayName (a desk label that changes with
+  // the latest strategy run and would drop identity-keyed recovery drafts). The server still derives the
+  // recorded actor itself; this only keys browser-side state and fills request hints.
+  const operatorIdentity = useSignedInUsername();
   const workstream = resolveAccountingWorkstream(pathname);
   const taskMode = buildAccountingTaskMode(pathname);
   const sectionVisibility = buildAccountingSectionVisibility(taskMode, hash);
@@ -1850,6 +1857,15 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                     <ReferenceDataWorkbenchPanel
                       view={securityMaster.referenceDataWorkbenchView}
                       onSelect={securityMaster.selectReferenceDataEndpoint}
+                    />
+                    <SecurityMasterReviewInboxPanel
+                      onOpenSecurity={(securityId) => void securityMaster.selectSecurity(securityId)}
+                    />
+                    <SecurityMasterHeldAmendmentsPanel
+                      onOpenSecurity={(securityId) => void securityMaster.selectSecurity(securityId)}
+                    />
+                    <SecurityMasterExceptionQueuePanel
+                      onOpenSecurity={(securityId) => void securityMaster.selectSecurity(securityId)}
                     />
                   </div>
                 </TabPanel>

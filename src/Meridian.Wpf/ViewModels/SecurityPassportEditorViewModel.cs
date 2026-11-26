@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -10,6 +9,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Contracts.CashFlows;
+using Meridian.Ui.Services.Services.SecurityMaster;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels.SecurityMaster;
 
@@ -59,9 +59,10 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
         TrustPosture = context.TrustPosture;
         FundProfileId = context.FundProfileId;
 
-        // A freshly-loaded passport has no working revision yet.
-        RevisionId = null;
-        RevisionState = null;
+        // A freshly-loaded passport has no working revision unless the launch names one (the review inbox
+        // opens a colleague's pending revision so the reviewer can approve, publish or discard it).
+        RevisionId = context.RevisionId is { } revisionId && revisionId != Guid.Empty ? revisionId : null;
+        RevisionState = RevisionId is null ? null : context.RevisionState;
         BannerText = null;
         BannerIsError = false;
 
@@ -69,9 +70,12 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
         // prior security's draft, conflict, or approval data must never post against this passport.
         ResetWriteInputs();
 
+        var subject = string.IsNullOrWhiteSpace(Symbol) ? SecurityId.ToString("D") : Symbol;
         StatusText = SecurityId == Guid.Empty
             ? string.Empty
-            : $"Editing {(string.IsNullOrWhiteSpace(Symbol) ? SecurityId.ToString("D") : Symbol)} at v{Version}.";
+            : RevisionId is { } opened
+                ? $"Editing {subject} at v{Version}; revision {opened:D} is {RevisionState?.ToString() ?? "pending"}."
+                : $"Editing {subject} at v{Version}.";
 
         // Bond and CD passports get the same calculated analytics and convention-migration review the
         // browser Evidence tab offers, over the shared contracts; other asset classes show nothing.
@@ -183,6 +187,7 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
     [NotifyCanExecuteChangedFor(nameof(SubmitCommand))]
     [NotifyCanExecuteChangedFor(nameof(ApproveCommand))]
     [NotifyCanExecuteChangedFor(nameof(PublishCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DiscardRevisionCommand))]
     private Guid _securityId;
 
     [ObservableProperty] private string _symbol = string.Empty;
@@ -194,12 +199,15 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
     [ObservableProperty] private long _version;
 
     // ── Working revision ──────────────────────────────────────────────────────
-    [ObservableProperty] private Guid? _revisionId;
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DiscardRevisionCommand))]
+    private Guid? _revisionId;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SubmitCommand))]
     [NotifyCanExecuteChangedFor(nameof(ApproveCommand))]
     [NotifyCanExecuteChangedFor(nameof(PublishCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DiscardRevisionCommand))]
     private SecurityMasterRevisionStateDto? _revisionState;
 
     [ObservableProperty]
@@ -208,6 +216,7 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
     [NotifyCanExecuteChangedFor(nameof(SubmitCommand))]
     [NotifyCanExecuteChangedFor(nameof(ApproveCommand))]
     [NotifyCanExecuteChangedFor(nameof(PublishCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DiscardRevisionCommand))]
     private bool _isBusy;
 
     [ObservableProperty] private string _statusText = string.Empty;
@@ -351,6 +360,13 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
 
     private bool CanPublish() => HasLoadedPassport && !IsBusy && RevisionState == SecurityMasterRevisionStateDto.Approved;
 
+    /// <summary>Same eligibility as the browser inbox: an abandoned Draft or a gate-rejected Submitted revision.</summary>
+    private bool CanDiscardRevision()
+        => HasLoadedPassport
+           && !IsBusy
+           && RevisionId is { } id && id != Guid.Empty
+           && RevisionState is { } state && SecurityMasterReviewQueuePresentation.CanDiscard(state);
+
     // ── Commands ──────────────────────────────────────────────────────────────
     [RelayCommand(CanExecute = nameof(CanSaveDraft))]
     private async Task SaveDraftAsync(CancellationToken ct)
@@ -440,6 +456,20 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
         }, ApplyPublishResult, ct);
     }
 
+    [RelayCommand(CanExecute = nameof(CanDiscardRevision))]
+    private async Task DiscardRevisionAsync(CancellationToken ct)
+    {
+        await RunAsync("Discarding revision…", () =>
+        {
+            var request = new DiscardSecurityMasterRevisionRequest(
+                SecurityId: SecurityId,
+                RevisionId: RevisionId ?? Guid.Empty,
+                Actor: string.Empty,
+                Reason: string.IsNullOrWhiteSpace(Justification) ? "Discarded from the passport editor." : Justification.Trim());
+            return _client.DiscardRevisionAsync(SecurityId, request, ct);
+        }, ApplyDiscardResult, ct);
+    }
+
     // ── Result handling ───────────────────────────────────────────────────────
     // A field edit returns the passport stream version (the optimistic-concurrency token).
     private void ApplyEditResult(SecurityMasterEditResultDto result)
@@ -466,6 +496,22 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
     private void ApplyConflictResolutionResult(SecurityMasterConflictResolutionDto result)
     {
         Version = result.NewVersion;
+        if (result.PendingRevisionId is { } pendingRevisionId && pendingRevisionId != Guid.Empty)
+        {
+            // Review D3 "Use B": the chosen source's value is not the current one, so the server staged a
+            // governed draft carrying it instead of refusing. The conflict stays open and resolves to the
+            // chosen source when that draft is approved and published, so adopt it as the working revision.
+            RevisionId = pendingRevisionId;
+            RevisionState = SecurityMasterRevisionStateDto.Draft;
+            ConflictId = null;
+            ChosenWinnerSource = string.Empty;
+            ConflictReason = string.Empty;
+            AcknowledgePolicyDeviation = false;
+            StatusText = $"Staged draft {pendingRevisionId:D} adopting {result.ChosenWinnerSource}'s value. "
+                + "The conflict resolves to that source when the draft is approved and published.";
+            return;
+        }
+
         // The conflict is resolved (a terminal passport-level write); clear its inputs so the completed
         // request is not treated as preserve-worthy work and cannot re-execute against the new version.
         ConflictId = null;
@@ -475,6 +521,17 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
         StatusText = result.IsPolicyDeviation
             ? $"Conflict resolved to {result.ChosenWinnerSource} (policy deviation from {result.PolicyWinnerSource}) at v{result.NewVersion}."
             : $"Conflict resolved to {result.ChosenWinnerSource} at v{result.NewVersion}.";
+    }
+
+    // Discard withdraws the working revision (it comes back Rejected). Field inputs stay, so the operator
+    // can stage a corrected value once the field is free.
+    private void ApplyDiscardResult(SecurityMasterEditResultDto result)
+    {
+        RevisionId = null;
+        RevisionState = result.State;
+        WorkflowId = null;
+        ExpectedWorkflowVersion = 0;
+        StatusText = $"Revision {result.RevisionId:D} discarded; the field is free to stage again.";
     }
 
     private void ApplyPublishResult(SecurityMasterPublishResultDto result)
@@ -536,62 +593,12 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
     }
 
     /// <summary>
-    /// Maps a workbench write failure to an operator-facing message, mirroring the browser classifier:
-    /// 409 version-conflict (with current version) vs revision-state conflict, 422 workflow-required vs
-    /// unprocessable, and 401/403.
+    /// Maps a workbench write failure to an operator-facing message through the shared classifier, which
+    /// mirrors the browser: 409 version-conflict (with current version), field-already-staged (naming the
+    /// first stager) or revision-state conflict; 422 workflow-required vs unprocessable; and 401/403.
     /// </summary>
     internal static string ClassifyWorkbenchError(int statusCode, string? errorBody)
-    {
-        var (code, message, currentVersion) = ParseErrorBody(errorBody);
-        return statusCode switch
-        {
-            401 => "Your session is no longer authenticated. Sign in again to continue editing.",
-            403 => "You don't have permission to edit this security passport.",
-            409 when code == "version-conflict" => currentVersion is { } v
-                ? $"This passport changed (now v{v}). Reload before retrying so your edit is not lost."
-                : "This passport changed. Reload before retrying so your edit is not lost.",
-            409 => message ?? "This revision is no longer in a state that allows the action. Reload the revision.",
-            422 when code == "workflow-required" => "Select an approval workflow and an independent reviewer before submitting.",
-            422 => message ?? "The request was understood but could not be processed. Check the required fields.",
-            0 => message ?? "The workbench could not be reached.",
-            _ => message ?? $"The request failed ({statusCode})."
-        };
-    }
-
-    private static (string? Code, string? Message, long? CurrentVersion) ParseErrorBody(string? errorBody)
-    {
-        if (string.IsNullOrWhiteSpace(errorBody))
-        {
-            return (null, null, null);
-        }
-
-        try
-        {
-            using var document = JsonDocument.Parse(errorBody);
-            var root = document.RootElement;
-            if (root.ValueKind != JsonValueKind.Object)
-            {
-                return (null, errorBody, null);
-            }
-
-            string? code = root.TryGetProperty("error", out var errorElement) && errorElement.ValueKind == JsonValueKind.String
-                ? errorElement.GetString()
-                : null;
-            string? message = root.TryGetProperty("message", out var messageElement) && messageElement.ValueKind == JsonValueKind.String
-                ? messageElement.GetString()
-                : null;
-            long? currentVersion = root.TryGetProperty("currentVersion", out var versionElement)
-                && versionElement.ValueKind == JsonValueKind.Number
-                && versionElement.TryGetInt64(out var parsed)
-                ? parsed
-                : null;
-            return (code, message, currentVersion);
-        }
-        catch (JsonException)
-        {
-            return (null, errorBody, null);
-        }
-    }
+        => SecurityMasterWorkbenchFailure.Parse(statusCode, errorBody).DescribeWorkbenchWrite();
 }
 
 /// <summary>
@@ -605,4 +612,6 @@ public sealed record SecurityPassportEditorParameter(
     string? Symbol = null,
     string? AssetClass = null,
     string? TrustPosture = null,
-    string? FundProfileId = null);
+    string? FundProfileId = null,
+    Guid? RevisionId = null,
+    SecurityMasterRevisionStateDto? RevisionState = null);

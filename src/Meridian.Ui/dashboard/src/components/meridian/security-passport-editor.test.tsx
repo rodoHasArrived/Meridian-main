@@ -204,4 +204,52 @@ describe("SecurityPassportEditor", () => {
     await waitFor(() => expect(resolveConflict).toHaveBeenCalledTimes(1));
     expect(resolveConflict.mock.calls[0][1]).toMatchObject({ chosenWinnerSource: "vendor-a", acknowledgePolicyDeviation: true });
   });
+
+  it("adopts a Use B staged draft as the working revision and keeps the conflict open", async () => {
+    const user = userEvent.setup();
+    const resolveConflict = vi.fn().mockResolvedValue({
+      conflictId: "k1",
+      policyWinnerSource: "golden-copy",
+      chosenWinnerSource: "vendor-a",
+      isPolicyDeviation: true,
+      reason: "Vendor is correct.",
+      newVersion: 7,
+      pendingRevisionId: "rev-staged-1"
+    });
+    const submit = vi.fn().mockResolvedValue({
+      securityId: SECURITY_ID,
+      revisionId: "rev-staged-1",
+      newVersion: 3,
+      state: "Submitted",
+      changeEntry: {}
+    });
+    render(
+      <SecurityPassportEditor
+        securityId={SECURITY_ID}
+        symbol="ACME"
+        version={7}
+        service={{ resolveConflict, submit }}
+        conflicts={[{ conflictId: "k1", fieldLabel: "Coupon", policyWinnerSource: "golden-copy", challengerSource: "vendor-a", severity: "High" }]}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /override/i }));
+    await user.type(screen.getByLabelText(/reason \(required\)/i), "Vendor is correct.");
+    await user.click(screen.getByRole("checkbox", { name: /acknowledge deviation/i }));
+    await user.click(screen.getByRole("button", { name: /^resolve$/i }));
+
+    const status = await screen.findByRole("status");
+    expect(status).toHaveTextContent("Draft staged");
+    expect(status).toHaveTextContent("Staged draft rev-staged-1 adopting vendor-a's value.");
+    expect(screen.getByText("Awaiting draft rev-staged-1 — resolves when it is published")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^accept$/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /override/i })).toBeDisabled();
+
+    // The staged draft is the working revision, so it submits through the ordinary approval path.
+    await user.type(screen.getByLabelText(/approval workflow id/i), "wf-1");
+    await user.click(screen.getByRole("button", { name: "Submit for approval" }));
+    await waitFor(() => expect(submit).toHaveBeenCalledTimes(1));
+    expect(submit.mock.calls[0][1]).toMatchObject({ revisionId: "rev-staged-1", workflowId: "wf-1" });
+  });
 });
+

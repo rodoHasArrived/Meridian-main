@@ -17,8 +17,12 @@ public partial class SecurityMasterPage : Page
         _viewModel = viewModel;
         DataContext = _viewModel;
 
+        Loaded += SecurityMasterPage_Loaded;
         Unloaded += (_, _) => _viewModel.Stop();
     }
+
+    private async void SecurityMasterPage_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => _viewModel.LoadReviewInboxAsync(), nameof(SecurityMasterPage_Loaded)).ConfigureAwait(true);
 
     private async void ResultsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ResultsList_SelectionChangedCoreAsync(sender, e), nameof(ResultsList_SelectionChanged)).ConfigureAwait(true);

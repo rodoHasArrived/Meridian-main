@@ -6,6 +6,113 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingDeliveryReleaseAuthorizationFactory
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDeliveryReleaseAuthorizationFactory</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L15).
+
+Creates the delivery authorization envelope from the immutable governed run. The proof is a stable content digest, not a caller credential: authorization still requires a fresh comparison with the authoritative governance repository through GovernanceReportingReleaseAuthorizationVerifier.
+
+```csharp
+public static class ReportingDeliveryReleaseAuthorizationFactory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ReportingDeliveryReleaseAuthorization Create(GovernedReportingRun run);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:17](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L17) |  |
+| <code>public static bool HasValidSelfProof(ReportingDeliveryReleaseAuthorization authorization);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:68](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L68) |  |
+| <code>public static bool Matches(ReportingDeliveryReleaseAuthorization supplied, ReportingDeliveryReleaseAuthorization authoritative);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:74](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L74) |  |
+
+## ReportingDeliveryWorkerReadinessState
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDeliveryWorkerReadinessState</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs#L7).
+
+Process-local liveness receipt for the server-owned secure reporting distribution worker. A snapshot observes its heartbeat, failure count, and initial-start window together.
+
+```csharp
+public sealed class ReportingDeliveryWorkerReadinessState
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs:19](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs#L19) |  |
+| <code>public int ConsecutiveFailures =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs:21](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs#L21) |  |
+| <code>public DateTimeOffset? LastSuccessfulCycleUtc =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs:25](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs#L25) |  |
+| <code>public bool IsHealthy(DateTimeOffset nowUtc, TimeSpan maximumHeartbeatAge) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs:27](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs#L27) |  |
+
+## ReportingDeploymentReadinessService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDeploymentReadinessService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:145](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L145).
+
+Read-only deployment gate shared by the reporting capability endpoint and runtime readiness. The gate deliberately inspects the resolved persistence graph rather than treating a connection string alone as proof that governance, artifacts, schedules, and delivery are durable.
+
+```csharp
+public sealed class ReportingDeploymentReadinessService(IServiceProvider services) : IReportingDeploymentReadinessService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingDeploymentCapabilityDto Evaluate() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:353](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L353) |  |
+| <code>public IReadOnlyList&lt;string&gt; GetScheduleWorkerCycleBlockingReasons();</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:648](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L648) |  |
+
+## ReportingDerivedAccessGrantCredential
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDerivedAccessGrantCredential</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L9).
+
+```csharp
+public sealed record ReportingDerivedAccessGrantCredential(string GrantId, string Token);
+```
+
+## ReportingDistributionAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDistributionAuthority</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L11).
+
+Server-resolved authority for one secure reporting distribution command.
+
+```csharp
+public sealed record ReportingDistributionAuthority(string ActorId, string TenantId, string? CompanyId, ImmutableArray<string> PrincipalIds, bool CanView, bool CanDeliver, bool CanAdminister, string CorrelationId, ReportingAccessPrincipalScope? DelegatedPrincipal = null);
+```
+
+## ReportingGovernanceApiProjector
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingGovernanceApiProjector</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceApiProjector.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceApiProjector.cs#L11).
+
+Projects domain governance records into version-stable workstation API contracts.
+
+```csharp
+public static class ReportingGovernanceApiProjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static GovernedReportingRunDto ProjectRun(GovernedReportingRun run) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceApiProjector.cs:13](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceApiProjector.cs#L13) |  |
+| <code>public static GovernedReportingRunDto ProjectRun(GovernedReportingRun run, ReportingGovernanceCallerContext? caller);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceApiProjector.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceApiProjector.cs#L16) |  |
+| <code>public static ReportingGovernanceRestatementDto ProjectRestatement(ReportingRestatementRequest request) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceApiProjector.cs:77](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceApiProjector.cs#L77) |  |
+| <code>public static ReportingGovernanceRestatementDto ProjectRestatement(ReportingRestatementRequest request, ReportingGovernanceCallerContext? caller);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceApiProjector.cs:80](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceApiProjector.cs#L80) |  |
+| <code>public static ReportingGovernanceRestatementApprovalDto ProjectRestatementApproval(ReportingRestatementApprovalResult result) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceApiProjector.cs:111](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceApiProjector.cs#L111) |  |
+| <code>public static ReportingGovernanceRestatementApprovalDto ProjectRestatementApproval(ReportingRestatementApprovalResult result, ReportingGovernanceCallerContext? caller);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceApiProjector.cs:115](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceApiProjector.cs#L115) |  |
+| <code>public static ReportingGovernanceSeriesHistoryDto ProjectSeriesHistory(ReportingGovernanceSeriesHistory history, ReportingGovernanceCallerContext caller);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceApiProjector.cs:125](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceApiProjector.cs#L125) |  |
+| <code>public static IReadOnlyList&lt;ReportingGovernanceRestatementDto&gt; ProjectRestatements(IReadOnlyList&lt;ReportingRestatementRequest&gt; requests, ReportingGovernanceCallerContext caller);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceApiProjector.cs:137](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceApiProjector.cs#L137) |  |
+
 ## ReportingGovernanceCallerContext
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingGovernanceCallerContext</code>. Kind: `record`.
@@ -757,133 +864,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddSecureReportingDistribution(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionServiceCollectionExtensions.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionServiceCollectionExtensions.cs#L15) |  |
-
-## ReportingStarterKitService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingStarterKitService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:170](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L170).
-
-Lists reporting starter kits and provisions their scoped templates and seed schedules.
-
-```csharp
-public sealed class ReportingStarterKitService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingStarterKitService(IReportingStarterKitCatalog catalog, IReportingTemplateCatalog templateCatalog, ReportingScheduleService? scheduleService = null, IReportingStarterKitStore? store = null, GovernedReportingTemplateCatalog? governedTemplateCatalog = null, Func&lt;DateTimeOffset&gt;? clock = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:191](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L191) |  |
-| <code>public IReadOnlyList&lt;ReportingStarterKitDto&gt; ListKits() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:207](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L207) |  |
-| <code>public ReportingStarterKitStateDto GetState() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:214](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L214) | Compatibility read for callers without tenant context. It intentionally returns an empty state rather than exposing any tenant&#x27;s provisioned starter kit. |
-| <code>public ReportingStarterKitStateDto GetState(ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:216](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L216) |  |
-| <code>public IReadOnlySet&lt;string&gt; GetEnabledTemplateIds() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:236](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L236) |  |
-| <code>public IReadOnlySet&lt;string&gt; GetEnabledTemplateIds(ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:239](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L239) |  |
-| <code>public ReportingStarterKitProvisionResultDto Provision(string kitId, string actor, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:247](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L247) |  |
-| <code>public static ReportingStarterKitDto ToDto(ReportingStarterKitDefinition kit) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:341](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L341) |  |
-
-## ReportingStarterKitStoreOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingStarterKitStoreOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L9).
-
-```csharp
-public sealed record ReportingStarterKitStoreOptions(string SnapshotPath);
-```
-
-## ReportingStateCorruptionException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingStateCorruptionException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingStateCorruptionException.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportingStateCorruptionException.cs#L9).
-
-Raised when durable reporting state cannot be read safely. Reporting state is deliberately fail-closed: callers must not interpret corrupt or inaccessible state as an empty store because doing so could bypass approvals, schedules, or delivery history.
-
-```csharp
-public sealed class ReportingStateCorruptionException : IOException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingStateCorruptionException(string statePath, Exception? innerException = null) : base($&quot;Durable reporting state at &#x27;{statePath}&#x27; is unreadable or corrupt. Operator recovery is required before reporting can continue.&quot;, innerException);</code> | [src/Meridian.Ui.Shared/Services/ReportingStateCorruptionException.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportingStateCorruptionException.cs#L11) |  |
-| <code>public string StatePath { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingStateCorruptionException.cs:17](../../../../src/Meridian.Ui.Shared/Services/ReportingStateCorruptionException.cs#L17) |  |
-
-## ReportLedgerAmountProvenanceService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportLedgerAmountProvenanceService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs:10](../../../../src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs#L10).
-
-Resolves generated amounts exclusively from the report&#x27;s retained ledger population.
-
-```csharp
-public sealed partial class ReportLedgerAmountProvenanceService(IReportingRunStore? runs, PostedLedgerAmountProvenanceService postedAmounts)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool IsReportSubject(string subjectId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs:14](../../../../src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs#L14) |  |
-| <code>public IReadOnlyList&lt;ReportLedgerAmountBindingDto&gt; List(string runId, ReportAccessQueryContext access);</code> | [src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs#L16) |  |
-| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectId, LedgerAmountScopeDto scope, ReportAccessQueryContext? access, CancellationToken ct = default, AmountPassportIdentityDto? passport = null, IReadOnlyList&lt;AmountPassportRecordDto&gt;? history = null);</code> | [src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs:34](../../../../src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs#L34) |  |
-
-Source: [src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.Passport.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.Passport.cs#L7).
-
-```csharp
-public sealed partial class ReportLedgerAmountProvenanceService
-```
-
-## ReportPackDeliveryArtifactContent
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackDeliveryArtifactContent</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:19](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L19).
-
-```csharp
-public sealed record ReportPackDeliveryArtifactContent(string ArtifactName, string ContentType, byte[] Content);
-```
-
-## ReportPackDeliveryService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackDeliveryService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:666](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L666).
-
-Coordinates report-pack delivery attempts, retained packages, and artifact access.
-
-```csharp
-public sealed partial class ReportPackDeliveryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportPackDeliveryService(ReportPackWorkflowService workflowService, IReportPackDeliveryRecordStore? store = null);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:675](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L675) |  |
-| <code>public IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; ListAttempts(int limit = 100);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:685](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L685) |  |
-| <code>public IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; GetHistory(Guid reportId, int limit = 100);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:698](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L698) |  |
-| <code>public ReportPackDeliveryPackageDto GetPackage(Guid reportId, Guid attemptId, string? token);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:711](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L711) |  |
-| <code>public ReportPackDeliveryPackageDto GetPortalPackage(string packageId, string? token);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:720](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L720) |  |
-| <code>public ReportPackDeliveryArtifactContent GetArtifact(Guid reportId, Guid attemptId, string artifactName, string? token);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:741](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L741) |  |
-| <code>public ReportPackDeliveryAttemptDto Deliver(Guid reportId, ReportPackDeliveryRequestDto request, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:784](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L784) |  |
-| <code>public ReportPackDeliveryAttemptDto? DeliverLatestForTemplate(string templateId, ReportingScheduleDeliveryTargetDto target, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:803](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L803) |  |
-| <code>public ReportPackDeliveryAttemptDto DeliverReportingRun(ReportingOutputManifest manifest, ReportingScheduleDeliveryTargetDto target, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:838](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L838) |  |
-| <code>public ReportPackDeliveryAttemptDto RecordFailure(Guid reportId, ReportPackDeliveryFailureRequestDto request, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:892](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L892) |  |
-| <code>public static IReadOnlyList&lt;string&gt; ValidateDeliverablePackage(ReportPackDeliveryAttemptDto? attempt);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:912](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L912) |  |
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.Evidence.cs:6](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.Evidence.cs#L6).
-
-```csharp
-public sealed partial class ReportPackDeliveryService
-```
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.Guards.cs:6](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.Guards.cs#L6).
-
-```csharp
-public sealed partial class ReportPackDeliveryService
-```

@@ -607,6 +607,13 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
                 sourceLastUpdatedUtc, factorSchedule, terms, BlockedReason: SecurityInterestSupport.NegativeInterestReason)
             { Blocker = SecurityInterestSupport.NegativeInterestBlocker };
         }
+        catch (HistoricalFixingMissingException ex)
+        {
+            return new StructuredCashFlowProjectionDto(
+                security.SecurityId, sourceKind, scenario, asOf, [], staleness,
+                sourceLastUpdatedUtc, factorSchedule, terms, BlockedReason: ex.Message)
+            { Blocker = new SecurityCashFlowBlockerDto(HistoricalFixingMissingException.Code, ex.Message) };
+        }
         catch (RateUnitUnavailableException ex)
         {
             // A retained rate without a declared unit blocks every leg: a partial net schedule would
@@ -734,6 +741,19 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         // A period that has already reset uses the fixing recorded for its reset date when the leg
         // carries a reset schedule; otherwise the retained current fixing, as before.
         var recordedFixing = accrualStart <= asOfDate ? leg.FixingOn(accrualStart) : null;
+        // A period that already reset must use the fixing observed for it. Substituting the latest
+        // fixing (or a forecast) for a missing HISTORICAL fixing priced past interest at a rate
+        // nobody observed, signalled only by a RateSource label (review P3). Refuse instead, with
+        // the same code the contractual engine uses, when the leg declares its reset dates or the
+        // retained current fixing is dated after this period's reset.
+        if (accrualStart <= asOfDate && recordedFixing is null)
+        {
+            var declaresResets = leg.HasDeclaredResetSchedule || leg.ResetSchedule is { Count: > 0 };
+            var currentFixingIsLater = leg.CurrentIndexResetDate is { } currentReset && accrualStart < currentReset;
+            if (declaresResets || currentFixingIsLater)
+                throw new HistoricalFixingMissingException(leg.LegId, accrualStart);
+        }
+
         var hasReset = accrualStart <= asOfDate && leg.CurrentIndexRate is not null;
         var index = recordedFixing
             ?? (!hasReset && curve?.RateAt(accrualStart) is decimal projected
@@ -839,6 +859,14 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
     }
 
     private sealed class NegativeInterestUnsupportedException : Exception { }
+
+    /// <summary>A period that has already reset has no observed fixing; nothing is substituted.</summary>
+    private sealed class HistoricalFixingMissingException(string legId, DateOnly resetDate)
+        : Exception($"Leg '{legId}' has no observed fixing for its reset on {resetDate:yyyy-MM-dd}; the latest fixing or a forecast is not a substitute for a historical fixing. No cash flows were generated.")
+    {
+        /// <summary>Shared with <c>ContractualCashFlowEngine</c>'s refusal code.</summary>
+        public const string Code = "HistoricalFixingMissing";
+    }
 
     private sealed class RateUnitUnavailableException(string message) : Exception(message);
 

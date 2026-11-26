@@ -2671,6 +2671,40 @@ versions, propose and decide requests, `IIntercompanyConfirmationClosePolicyStor
 opt-in confirmation contributor; with no active policy the gate returns null and the decision is unchanged.
 `FundOperationsNavigationContext` gains an optional, additive `JournalEntryId` for journal deep links.
 
+## Security Master review queues and provider-integration actor flags (2026-11-25)
+
+- `Workstation/SecurityMasterReviewQueueDtos.cs`: `SecurityMasterHeldAmendmentDto`,
+  `SecurityMasterExceptionCaseDto`, `SecurityMasterExceptionCaseQueueItemDto` (the row plus
+  `SlaBreached` and `AgeHours`), `SecurityMasterExceptionSyncResultDto`,
+  `AssignSecurityMasterExceptionCaseRequest` and the held-amendment and exception-case status
+  constants. The browser and WPF share these shapes.
+- `SecurityMasterPendingRevisionDto` gains `ConflictId` and `ConflictCandidateSource`, set when a
+  revision was staged by adopting a conflict candidate.
+- `Integrations/ProviderIntegrationActorFlags.cs`: `ProviderIntegrationActorFlagDto` (its `FlagId`
+  is derived from the record path, field path and recorded value), the scan request and result DTOs,
+  `IProviderIntegrationActorFlagStore`, and `ProviderIntegrationActorLabelClassifier`, which names the
+  actor and timestamp fields and classifies session desk labels, strategy desk labels, Settings
+  placeholders and blank actors.
+
+## Security Master and entity master contracts (2026-11-25)
+
+Added by the Security Master review backlog (PR #3736):
+
+- `ISecurityResolver.ResolveCanonicalAsync` (a default interface method), `SecurityResolutionStatus`,
+  `SecurityCanonicalResolution` and `SecurityIdentityClaim`. `ISecurityMasterStore` gains a default
+  `FindIdentityClaimsAsync`.
+- `SecurityEconomicDispositions` (`SecurityMaster/SecurityEconomicDisposition.cs`) declares, for each
+  consumer and coupon structure, whether the economics are supported, not applicable or blocked, with
+  a typed issue code. `SM_COUPON_STRUCTURE_UNSUPPORTED` is the code for unlisted structures.
+- `ResolveConflictRequest` carries the policy decision (`PolicyWinnerSource`, `PolicyRule`,
+  `IsPolicyDeviation`, `IsDismissal`). The conflict-resolution DTO returns a `PendingRevisionId` when
+  "Use B" stages a draft.
+- `SecurityMasterEventPayloads.ValidFromMetadataKey` (`validFrom`) for valid-time terms.
+- `SecurityFactorSource.Observation` for factor observations.
+- `EntityMaster/EntityMasterDtos.cs`: legal entities with optional unique LEI and CIK, valid-dated
+  parent and issuer links, `IEntityMasterStore` and `EntityMasterRules`
+  ([ADR-033](../../docs/adr/033-entity-master-bounded-context.md)).
+
 ## Validation
 
 ```bash

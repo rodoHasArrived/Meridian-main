@@ -313,6 +313,7 @@ public sealed class SecurityMasterTermsFormatBackfillMigrationTests
         const string untaggedTerms = """{"schemaVersion":1,"shareClass":"Common"}""";
         await fixture.UpsertAsPreStampingWriterAsync(store, Projection(securityId, untaggedTerms, version: 1));
         await fixture.Runner().EnsureMigratedAsync();
+        await fixture.MigrateToLatestAsync();
 
         // A retained pre-tag event at a newer version than the row, carrying the untagged terms.
         var projected = SecurityEconomicDefinitionAdapter.ToEconomicRecord(Projection(securityId, untaggedTerms, version: 2));
@@ -370,6 +371,7 @@ public sealed class SecurityMasterTermsFormatBackfillMigrationTests
         await fixture.UpsertAsPreStampingWriterAsync(store, stored);
         await fixture.Runner().EnsureMigratedAsync();
         (await fixture.TermsAsync(securityId)).Should().Be("""{"shareClass": "Common", "termsFormat": "flat", "schemaVersion": 1}""");
+        await fixture.MigrateToLatestAsync();
 
         // A retained pre-tag event at a newer version than the row, carrying the untagged terms.
         var projected = SecurityEconomicDefinitionAdapter.ToEconomicRecord(Projection(securityId, untaggedTerms, version: 2));
@@ -548,6 +550,22 @@ public sealed class SecurityMasterTermsFormatBackfillMigrationTests
         }
 
         public Task WriteMigrationAsync(string sql) => File.WriteAllTextAsync(Path.Combine(scripts, BackfillMigration), sql);
+
+        /// <summary>
+        /// Adds every migration after 068 and migrates: the current event store writes the change
+        /// outbox (migration 072) with each append, as it does on any fully migrated deployment.
+        /// </summary>
+        public async Task MigrateToLatestAsync()
+        {
+            var source = Path.Combine(AppContext.BaseDirectory, "SecurityMaster", "Migrations");
+            foreach (var file in Directory.GetFiles(source, "*.sql"))
+            {
+                if (StringComparer.Ordinal.Compare(Path.GetFileName(file), BackfillMigration) > 0)
+                    File.Copy(file, Path.Combine(scripts, Path.GetFileName(file)), overwrite: true);
+            }
+
+            await Runner().EnsureMigratedAsync();
+        }
 
         public Task<string> ReceiptsAsync() => ScalarAsync(
             $"select coalesce(jsonb_agg(to_jsonb(r) order by filename), '[]'::jsonb)::text from {Schema}.schema_migrations r");

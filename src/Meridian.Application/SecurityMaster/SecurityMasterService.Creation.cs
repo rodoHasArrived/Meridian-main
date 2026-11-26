@@ -39,7 +39,8 @@ public sealed partial class SecurityMasterService
             request.UpdatedBy,
             request.SourceSystem,
             request.Reason,
-            projection.Version);
+            projection.Version,
+            validFrom: request.EffectiveFrom);
 
         // Creation is the first canonical write of every governed field the record supplies, so it
         // seeds the per-field attribution the same way an amend does — diffed against an empty

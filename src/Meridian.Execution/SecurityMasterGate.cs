@@ -27,7 +27,10 @@ public sealed class SecurityMasterGate : ISecurityMasterGate
             return new SecurityMasterGateResult(false, "Symbol must not be empty.");
         }
 
-        var securityId = await _resolver.ResolveAsync(
+        // Canonical resolution: provider is identity only for provider-scoped kinds, so a ticker
+        // mastered by a provider ingest (Polygon, EDGAR) is admitted, and a ticker claimed by more
+        // than one active security is refused by name rather than resolved to an arbitrary one.
+        var resolution = await _resolver.ResolveCanonicalAsync(
             new ResolveSecurityRequest(
                 IdentifierKind: SecurityIdentifierKind.Ticker,
                 IdentifierValue: symbol,
@@ -36,17 +39,35 @@ public sealed class SecurityMasterGate : ISecurityMasterGate
                 ActiveOnly: true),
             ct).ConfigureAwait(false);
 
-        if (securityId.HasValue)
+        switch (resolution.Status)
         {
-            return new SecurityMasterGateResult(true)
-            {
-                SecurityId = securityId.Value == Guid.Empty ? null : securityId
-            };
-        }
+            case SecurityResolutionStatus.Resolved:
+                return new SecurityMasterGateResult(true)
+                {
+                    SecurityId = resolution.SecurityId is { } id && id != Guid.Empty ? id : null
+                };
 
-        _logger.LogWarning("Security Master gate: symbol '{Symbol}' not found or inactive", LogSanitizer.Sanitize(symbol));
-        return new SecurityMasterGateResult(
-            false,
-            $"Symbol '{symbol}' is not registered as an active security in the Security Master.");
+            case SecurityResolutionStatus.Ambiguous:
+                var candidates = string.Join(", ", resolution.CandidateSecurityIds);
+                _logger.LogWarning(
+                    "Security Master gate: symbol '{Symbol}' is claimed by several active securities ({Candidates})",
+                    LogSanitizer.Sanitize(symbol),
+                    candidates);
+                return new SecurityMasterGateResult(
+                    false,
+                    $"Symbol '{symbol}' is ambiguous: it is claimed by more than one active security ({candidates}). Resolve the duplicate in the Security Master before trading it.");
+
+            case SecurityResolutionStatus.Inactive:
+                _logger.LogWarning("Security Master gate: symbol '{Symbol}' resolves only to inactive securities", LogSanitizer.Sanitize(symbol));
+                return new SecurityMasterGateResult(
+                    false,
+                    $"Symbol '{symbol}' is registered in the Security Master but no longer active.");
+
+            default:
+                _logger.LogWarning("Security Master gate: symbol '{Symbol}' not found", LogSanitizer.Sanitize(symbol));
+                return new SecurityMasterGateResult(
+                    false,
+                    $"Symbol '{symbol}' is not registered as an active security in the Security Master.");
+        }
     }
 }

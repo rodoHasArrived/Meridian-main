@@ -213,6 +213,7 @@ public sealed class ApprovedFieldEditCanonicalMergeHandler : ISecurityMasterRevi
             $"The approved value was merged into the canonical terms at version {detail.Version}.", detail.Version);
 
         await TryResolveWorkbenchChallengerConflictsAsync(evt, fieldPath, mergeStartedAt).ConfigureAwait(false);
+        await TryResolveAdoptedCandidateConflictAsync(evt, revision).ConfigureAwait(false);
     }
 
     private void Record(
@@ -365,6 +366,40 @@ public sealed class ApprovedFieldEditCanonicalMergeHandler : ISecurityMasterRevi
         catch (JsonException)
         {
             return null;
+        }
+    }
+
+    /// <summary>
+    /// Review D3: a draft staged by resolving a conflict to its non-current candidate carries a marker
+    /// naming the conflict and the adopted source. Once its value is canonical, the conflict resolves
+    /// to that source (the persisted-value check in the resolve path verifies it). Best-effort, like the
+    /// cleanup below: a failure leaves the conflict open for an operator.
+    /// </summary>
+    private async Task TryResolveAdoptedCandidateConflictAsync(SecurityMasterRevisionPublishedEvent evt, SecurityMasterRevisionRecord revision)
+    {
+        if (_conflictService is null
+            || !SecurityMasterWorkbenchCommandService.TryReadConflictCandidate(revision.FieldJustification, out var conflictId, out var source))
+        {
+            return;
+        }
+
+        try
+        {
+            await _conflictService.ResolveAsync(
+                new ResolveConflictRequest(
+                    conflictId,
+                    Resolution: "Resolve",
+                    ResolvedBy: evt.Actor,
+                    Reason: $"Resolved by approved workbench revision {evt.RevisionId:D}, which adopted {source}'s value.",
+                    ChosenWinnerSource: source),
+                CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(
+                ex,
+                "Resolving conflict {ConflictId} after revision {RevisionId} adopted {Source}'s value failed; it stays open for operator resolution.",
+                conflictId, evt.RevisionId, source);
         }
     }
 

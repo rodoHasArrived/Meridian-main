@@ -716,6 +716,14 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
     {
         await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
         await connection.OpenAsync();
+        // Migration 071: corporate_actions is append-only; the maintenance switch is the one path that
+        // may rewrite a fingerprint, which is how this test simulates a legacy row.
+        await using (var enable = connection.CreateCommand())
+        {
+            enable.CommandText = "select set_config('meridian.corporate_action_normalization', 'on', false);";
+            await enable.ExecuteScalarAsync();
+        }
+
         await using var clearFingerprint = connection.CreateCommand();
         clearFingerprint.CommandText =
             $"""
@@ -734,6 +742,13 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
         await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
         await connection.OpenAsync();
         await using var transaction = await connection.BeginTransactionAsync();
+        await using (var enable = connection.CreateCommand())
+        {
+            enable.Transaction = transaction;
+            enable.CommandText = "set local meridian.corporate_action_normalization = 'on';";
+            await enable.ExecuteNonQueryAsync();
+        }
+
         await using (var clearFingerprint = connection.CreateCommand())
         {
             clearFingerprint.Transaction = transaction;

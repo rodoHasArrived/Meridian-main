@@ -55,6 +55,15 @@ public interface ILedgerJournalStore
 
     Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default);
 
+    /// <summary>
+    /// The ledger books that have ever held a tax lot of <paramref name="securityId"/> (open or
+    /// closed). Restatement routing for a Security Master revision with no fund scope uses this to
+    /// find every book a correction could affect (review P4, owner decision 2026-11-25).
+    /// </summary>
+    Task<IReadOnlyList<Guid>> ListLedgerBookIdsHoldingSecurityAsync(Guid securityId, CancellationToken ct = default)
+        => Task.FromException<IReadOnlyList<Guid>>(
+            new NotSupportedException("This ledger journal store does not support security-scoped book discovery."));
+
     Task<LedgerAccountTaxLotPolicyRecord> SaveTaxLotPolicyAsync(
         LedgerAccountTaxLotPolicyRecord policy,
         CancellationToken ct = default)

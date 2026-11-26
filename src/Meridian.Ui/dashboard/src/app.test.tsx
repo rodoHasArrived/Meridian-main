@@ -1,4 +1,6 @@
 import { act, screen, waitFor, within } from "@testing-library/react";
+import * as authApi from "@/lib/api/auth.api";
+import { resetSignedInUsernameCache } from "@/hooks/use-signed-in-username";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { StrictMode } from "react";
@@ -906,14 +908,17 @@ describe("App", () => {
   });
 
   it("groups current session context for assistive technology", async () => {
+    resetSignedInUsernameCache();
+    vi.spyOn(authApi, "getSignedInUsername").mockResolvedValue("ops.lead");
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
 
-    const sessionContext = screen.getByRole("group", {
-      name: "Current session: Ops Desk, Operator"
+    // The person is the signed-in username; "Ops Desk" (the session displayName) is the desk label.
+    const sessionContext = await screen.findByRole("group", {
+      name: "Signed in as ops.lead, Operator, desk Ops Desk"
     });
+    expect(within(sessionContext).getByText("ops.lead")).toBeInTheDocument();
     expect(within(sessionContext).getByText("Operator")).toBeInTheDocument();
-    expect(within(sessionContext).getByText("Ops Desk")).toBeInTheDocument();
-    expect(within(sessionContext).getByText("Operator")).toBeInTheDocument();
+    expect(sessionContext).toHaveAttribute("title", "ops.lead · Operator · Ops Desk");
     // The environment badge moved into the trust pill so the masthead fits one row; it
     // leads that pill and is still announced through the session group's name above.
     const strip = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider health" });

@@ -1,4 +1,6 @@
 // Provider connection center section of the Settings screen: its private state/handlers hook and
+import { ProviderIntegrationActorFlagsPanel } from "@/screens/settings-provider-integration-actor-flags";
+import { useSignedInUsername } from "@/hooks/use-signed-in-username";
 // presentational component.
 import { SeverityBadge } from "@/components/operations";
 import { Badge } from "@/components/ui/badge";
@@ -91,7 +93,9 @@ interface UseSettingsProviderSectionStateParams {
   vm: SettingsScreenViewModel;
 }
 
-export function useSettingsProviderSectionState({ activeProviderId, activeTaskView, allProviderRows, featureCapabilities, legacyEmbeddedSettingsView, providerOpenApiImportState, session, setProviderOpenApiImportState, vm }: UseSettingsProviderSectionStateParams) {
+export function useSettingsProviderSectionState({ activeProviderId, activeTaskView, allProviderRows, featureCapabilities, legacyEmbeddedSettingsView, providerOpenApiImportState, setProviderOpenApiImportState, vm }: UseSettingsProviderSectionStateParams) {
+  // Request hints only: the server records the authenticated operator as the actor.
+  const signedInUsername = useSignedInUsername();
   const [providerSearch, setProviderSearch] = useState("");
   const [providerCapabilityFilter, setProviderCapabilityFilter] = useState<"all" | "brokerage" | "data" | "accounting">("all");
   const [providerHealthFilter, setProviderHealthFilter] = useState<"all" | "healthy" | "warning" | "blocked">("all");
@@ -265,7 +269,7 @@ export function useSettingsProviderSectionState({ activeProviderId, activeTaskVi
         scopes: formState.scopes.split(",").map((scope) => scope.trim()).filter(Boolean),
         capabilities,
         openApiDocumentJson: formState.openApiDocumentJson,
-        importedBy: session?.displayName ?? "settings-operator",
+        importedBy: signedInUsername ?? "settings-operator",
         importedAt: importedAt.toISOString(),
         expectedManifestReference: formState.result?.manifestReference?.manifestId === formState.manifestId.trim()
           ? formState.result.manifestReference
@@ -314,7 +318,7 @@ export function useSettingsProviderSectionState({ activeProviderId, activeTaskVi
       const result = await runDueProviderIntegrationSync(row.integrationConnectionId, {
         connectionId: row.integrationConnectionId,
         requestedAt: requestedAt.toISOString(),
-        requestedBy: session?.displayName ?? "settings-operator",
+        requestedBy: signedInUsername ?? "settings-operator",
         maxPages: 2,
         pathParametersByCapability: {},
         queryParametersByCapability: {}
@@ -380,7 +384,7 @@ export function useSettingsProviderSectionState({ activeProviderId, activeTaskVi
       const result = await createProviderIntegrationReconciliationHandoff({
         connectionId: row.integrationConnectionId,
         stagingRecordIds,
-        requestedBy: session?.displayName ?? "settings-operator",
+        requestedBy: signedInUsername ?? "settings-operator",
         requestedAt: requestedAt.toISOString(),
         approvalEvidenceId: providerRuntimeHandoffEvidenceId(row.integrationConnectionId, requestedAt),
         note: "Approved from the Settings Provider Connection Center promotion readiness panel.",
@@ -454,7 +458,7 @@ export function useSettingsProviderSectionState({ activeProviderId, activeTaskVi
         connectionId: row.integrationConnectionId,
         capability: replaySeed.capability,
         quarantineRecordIds,
-        requestedBy: session?.displayName ?? "settings-operator",
+        requestedBy: signedInUsername ?? "settings-operator",
         requestedAt: requestedAt.toISOString(),
         mode: "Original"
       });
@@ -507,7 +511,7 @@ export function useSettingsProviderSectionState({ activeProviderId, activeTaskVi
         syncRunId: record.syncRunId,
         quarantineRecordId: record.quarantineRecordId,
         action,
-        reviewedBy: session?.displayName ?? "settings-operator",
+        reviewedBy: signedInUsername ?? "settings-operator",
         reviewedAt: reviewedAt.toISOString(),
         note: providerRuntimeQuarantineActionNote(action)
       });
@@ -575,6 +579,8 @@ interface SettingsProviderSectionProps {
 }
 
 export function SettingsProviderSection({ vm, showProviderSetupControls, inlineProviderManagementEnabled, showProviderAdvancedControls, onProviderRoutingRefresh, showProviderFilters, providerSearch, setProviderSearch, providerCapabilityFilter, setProviderCapabilityFilter, providerHealthFilter, setProviderHealthFilter, providerVerificationFilter, setProviderVerificationFilter, providerSort, setProviderSort, activeProviderDisplayName, visibleProviderGroups, session, onRefresh, activeTaskView, providerRuntimeState, providerOpenApiImportState, updateProviderOpenApiImportState, submitProviderOpenApiImport, loadProviderRuntimeEvidence, setMutationConfirmation, runProviderRuntimeDueSync, createProviderRuntimeHandoff, replayProviderRuntimeQuarantine, resolveProviderRuntimeQuarantineRecord }: SettingsProviderSectionProps) {
+  // Request hints only: the server records the authenticated operator as the actor.
+  const signedInUsername = useSignedInUsername();
   const retryRouting = vm.providerConnectionCenter.refreshAction;
   return (
     <Card id="provider-connection-center" className="panel-surface scroll-mt-6 border border-border/70">
@@ -619,6 +625,7 @@ export function SettingsProviderSection({ vm, showProviderSetupControls, inlineP
         </div>
       </CardHeader>
       <CardContent className="grid gap-4">
+        {showProviderAdvancedControls ? <ProviderIntegrationActorFlagsPanel /> : null}
         {showProviderFilters ? (
         <section className="grid gap-3 rounded-md border border-border/70 bg-background/35 px-3 py-3">
           <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_11rem_11rem_11rem_9rem]">
@@ -761,7 +768,7 @@ export function SettingsProviderSection({ vm, showProviderSetupControls, inlineP
                     <ProviderIntegrationRuntimePanel
                       row={row}
                       state={providerRuntimeState[providerRuntimeStateKey(row)] ?? emptyProviderRuntimeEvidenceState}
-                      operatorName={session?.displayName ?? "settings-operator"}
+                      operatorName={signedInUsername ?? "settings-operator"}
                       openApiImportState={providerOpenApiImportState[providerRuntimeStateKey(row)] ?? createProviderOpenApiImportState(row)}
                       onOpenApiImportStateChange={(updater) => updateProviderOpenApiImportState(row, updater)}
                       onImportOpenApi={() => void submitProviderOpenApiImport(row)}

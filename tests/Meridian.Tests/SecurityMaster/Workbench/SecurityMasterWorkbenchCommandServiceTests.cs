@@ -1406,10 +1406,31 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         await firstStoreCallEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
         var secondEdit = harness.Service.UpdateSecurityFieldAsync(EditWith("70"));
         releaseFirstStoreCall.TrySetResult();
-        await Task.WhenAll(firstEdit, secondEdit);
+        await firstEdit;
 
+        // Review P5/D1: the serialized second edit now sees the first edit's open revision on the
+        // same field and is refused, naming the first stager, instead of overwriting its overlay.
+        var refusal = await FluentActions.Awaiting(() => secondEdit).Should().ThrowAsync<FieldAlreadyStagedException>();
+        refusal.Which.StagedBy.Should().Be("ops.analyst");
         maxConcurrentCalls.Should().Be(1,
             "the second edit's overlay reads must not begin until the first edit's patch completed");
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_SecondStagingOfAnOpenField_IsRefusedNamingTheFirstStager()
+    {
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("Bond");
+        harness.SetProjectionAssetTerms("Bond", new { issueDate = "2026-01-01", maturity = "2030-01-01", par = 100m });
+        UpdateSecurityFieldRequest Edit(string actor, string value) => new(
+            SecurityId, 3, "assetSpecificTerms.par", value, DateTimeOffset.UtcNow, actor, "Par correction.");
+
+        await harness.Service.UpdateSecurityFieldAsync(Edit("analyst.a", "60"));
+        var second = () => harness.Service.UpdateSecurityFieldAsync(Edit("analyst.b", "70"));
+
+        var refusal = await second.Should().ThrowAsync<FieldAlreadyStagedException>();
+        refusal.Which.StagedBy.Should().Be("analyst.a");
+        refusal.Which.FieldPath.Should().Be("assetSpecificTerms.par");
     }
 
     private static void InterlockedMax(ref int target, int candidate)
@@ -4335,7 +4356,9 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         public Mock<ISecurityMasterWorkbenchQueryService> QueryService { get; } = new(MockBehavior.Loose);
         public Mock<IOperationsContinuityWorkflowService> Workflow { get; } = new(MockBehavior.Loose);
         public Mock<IPeriodAwareRestatementResolver> Restatement { get; } = new(MockBehavior.Loose);
-        public Mock<IAffectedLedgerBookResolver> AffectedBooks { get; } = new(MockBehavior.Loose);
+        // CallBase lets ResolveForSecurityAsync fall through to its default, which delegates to the
+        // ResolveAsync setups below (the fund-scoped path).
+        public Mock<IAffectedLedgerBookResolver> AffectedBooks { get; } = new(MockBehavior.Loose) { CallBase = true };
         public Mock<ISecurityFieldProvenanceStore> FieldProvenance { get; } = new(MockBehavior.Loose);
         public Mock<ISecurityMasterStore> ProjectionStore { get; } = new(MockBehavior.Loose);
         public FakeTimeProvider Time { get; } = new(DateTimeOffset.UtcNow);

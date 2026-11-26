@@ -428,6 +428,11 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
 
             var terms = stored.TermsVersions[^1].Terms;
             var annualRate = ResolveAnnualRate(terms, stored.Servicing.CurrentRateReset);
+            if (DirectLendingServiceSupport.EnsureSupportedAccrualRate(terms, annualRate) is { } negativeRate)
+            {
+                throw new DirectLendingCommandException(negativeRate);
+            }
+
             // PIK posture: interest capitalizes into principal instead of accruing as a
             // cash receivable.
             var policy = terms.PikCapitalization;

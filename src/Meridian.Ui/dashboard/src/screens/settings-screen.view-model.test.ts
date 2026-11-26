@@ -385,7 +385,11 @@ describe("buildSettingsScreenViewModel", () => {
   it("builds session items from session data", () => {
     const vm = buildSettingsScreenViewModel(session, null);
     expect(vm.hasSession).toBe(true);
-    expect(vm.sessionItems.some((i) => i.label === "Display name" && i.value === "Andrew Rowden")).toBe(true);
+    // displayName is the session's desk label, not the person.
+    expect(vm.sessionItems.some((i) => i.label === "Desk" && i.value === "Andrew Rowden")).toBe(true);
+    expect(vm.sessionItems.some((i) => i.label === "Signed in as")).toBe(false);
+    const signedIn = buildSettingsScreenViewModel({ session, overview: null, signedInUsername: "fm.operator" });
+    expect(signedIn.sessionItems[0]).toEqual({ label: "Signed in as", value: "fm.operator", tone: "default" });
     expect(vm.sessionItems.some((i) => i.label === "Environment" && i.value === "paper")).toBe(true);
     expect(vm.sessionItems.some((i) => i.label === "Commands issued" && i.value === "42")).toBe(true);
     expect(vm.headerChips).toEqual([
@@ -986,17 +990,20 @@ describe("buildSettingsScreenViewModel", () => {
     const vm = buildSettingsScreenViewModel({
       session,
       overview,
+      signedInUsername: "fm.operator",
       brokerageConnection: alpacaConnection,
       evaluatedAt: new Date("2026-05-07T12:00:00Z")
     });
 
+    // The person is the signed-in username; the session displayName ("Andrew Rowden" here) is a desk label.
     expect(vm.profileAuthenticationPanel).toMatchObject({
       regionLabel: "Profile and authentication status",
       title: "Profile and access status",
+      summary: "fm.operator is signed in as Fund Manager with verified brokerage authority for Settings.",
       statusLabel: "Access ready",
       statusTone: "success",
-      avatarInitials: "AR",
-      operatorName: "Andrew Rowden",
+      avatarInitials: "FO",
+      operatorName: "fm.operator",
       roleLabel: "Fund Manager",
       environmentLabel: "PAPER",
       workspaceLabel: "Settings",
@@ -1006,7 +1013,7 @@ describe("buildSettingsScreenViewModel", () => {
       notice: null
     });
     expect(vm.profileAuthenticationPanel.facts).toEqual(expect.arrayContaining([
-      expect.objectContaining({ id: "operator", value: "Andrew Rowden", tone: "default" }),
+      expect.objectContaining({ id: "operator", value: "fm.operator", tone: "default" }),
       expect.objectContaining({ id: "environment", value: "PAPER", tone: "success" }),
       expect.objectContaining({ id: "brokerage", value: "Brokerage verified", tone: "success" })
     ]));
@@ -1023,6 +1030,25 @@ describe("buildSettingsScreenViewModel", () => {
         actionHref: "/settings/diagnostics"
       })
     ]));
+  });
+
+  it("does not present the desk label as the operator before the username loads", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      brokerageConnection: alpacaConnection,
+      evaluatedAt: new Date("2026-05-07T12:00:00Z")
+    });
+
+    expect(vm.profileAuthenticationPanel).toMatchObject({
+      summary: "The signed-in operator is signed in as Fund Manager with verified brokerage authority for Settings.",
+      avatarInitials: "--",
+      operatorName: "Operator not identified"
+    });
+    expect(vm.profileAuthenticationPanel.steps.find((step) => step.id === "operator-session")?.detail).toBe(
+      "Signed in as Fund Manager; the operator's username has not loaded."
+    );
+    expect(JSON.stringify(vm.profileAuthenticationPanel)).not.toContain("Andrew Rowden");
   });
 
   it("blocks Access readiness when connected brokerage evidence is delayed or stale", () => {

@@ -1,4 +1,5 @@
 import { PageHeading } from "@/components/ui/page-heading";
+import { useSignedInUsername } from "@/hooks/use-signed-in-username";
 import { KpiProvider, useKpiModels } from "@/lib/kpi-context";
 import { ExecutionAlertSettingsPanel } from "./settings-screen.execution-alerts";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
@@ -184,8 +185,10 @@ function SettingsScreenContent({
   const sharedCounts = useSharedCrossScreenCounts();
   const providerHealth = selectSharedProviderHealth(sharedCounts, data?.providers);
   const kpiModels = useKpiModels();
+  const signedInUsername = useSignedInUsername();
   const vm = buildSettingsScreenViewModel({
     session,
+    signedInUsername,
     overview,
     crossScreenCounts: sharedCounts,
     strategy,

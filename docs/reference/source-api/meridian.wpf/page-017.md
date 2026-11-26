@@ -6,6 +6,270 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TickerStripViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.TickerStripViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:85](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L85).
+
+ViewModel for the always-on-top ticker strip window. Polls the remote workstation API for live bid/ask/last data for each watchlist symbol.
+
+```csharp
+public sealed class TickerStripViewModel : BindableBase, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ObservableCollection&lt;TickerItemViewModel&gt; Items { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:99](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L99) |  |
+| <code>public bool IsVisible { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:101](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L101) |  |
+| <code>public TickerStripViewModel(WpfServices.MessagingService messagingService, SymbolManagementService symbolManagementService, WpfServices.ConfigService configService, IRemoteWorkstationClient remoteClient);</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:107](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L107) |  |
+| <code>public void Start();</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:128](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L128) | Starts polling. Call once after the strip window is shown. |
+| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L137) | Stops polling. Call when the strip window is hidden or closed. |
+| <code>public void UpdateSymbol(string symbol, decimal bid, decimal ask, decimal last, bool uptick);</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L147) | Applies a price update to the matching ticker item (or creates one if new). Must be called on the UI thread. |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:281](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L281) |  |
+
+## TierDisplayItem
+
+Qualified name: <code>Meridian.Wpf.ViewModels.TierDisplayItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1173](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1173).
+
+Presents a storage tier&#x27;s path, size, file count, and retention policy.
+
+```csharp
+public sealed class TierDisplayItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1175](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1175) |  |
+| <code>public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1176](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1176) |  |
+| <code>public string SizeText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1177](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1177) |  |
+| <code>public string FileCountText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1178](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1178) |  |
+| <code>public string RetentionText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1179](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1179) |  |
+
+## TimeSeriesAlignmentViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.TimeSeriesAlignmentViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:17](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L17).
+
+Coordinates symbol, frequency, timezone, and gap-strategy selection for alignment and export.
+
+```csharp
+public sealed class TimeSeriesAlignmentViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TimeSeriesAlignmentViewModel() : this(TimeSeriesAlignmentService.Instance.AlignDataAsync, TimeSeriesAlignmentService.Instance.ValidateOptions, TimeSeriesAlignmentService.Instance.PreviewAlignmentAsync);</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:58](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L58) |  |
+| <code>public ObservableCollection&lt;AlignmentOptionChoice&gt; FrequencyOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:142](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L142) |  |
+| <code>public ObservableCollection&lt;AlignmentOptionChoice&gt; PresetOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:143](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L143) |  |
+| <code>public ObservableCollection&lt;AlignmentOptionChoice&gt; GapStrategyOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:144](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L144) |  |
+| <code>public ObservableCollection&lt;AlignmentOptionChoice&gt; TimezoneOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:145](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L145) |  |
+| <code>public ObservableCollection&lt;AlignmentOptionChoice&gt; ExportFormatOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:146](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L146) |  |
+| <code>public IReadOnlyList&lt;AlignmentOptionChoice&gt; InputKindOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L147) |  |
+| <code>public IReadOnlyList&lt;AlignmentOptionChoice&gt; AdjustmentOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:148](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L148) |  |
+| <code>public ObservableCollection&lt;string&gt; SelectedSymbols { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:149](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L149) |  |
+| <code>public ObservableCollection&lt;AlignmentHistoryEntry&gt; RecentAlignments { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:150](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L150) |  |
+| <code>public IRelayCommand AddSymbolsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:151](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L151) |  |
+| <code>public IRelayCommand&lt;string&gt; RemoveSymbolCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:152](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L152) |  |
+| <code>public IAsyncRelayCommand RunAlignmentCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:153](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L153) |  |
+| <code>public IAsyncRelayCommand PreviewAlignmentCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:154](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L154) |  |
+| <code>public IRelayCommand CancelAlignmentCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:155](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L155) |  |
+| <code>public IRelayCommand SavePresetCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:156](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L156) |  |
+| <code>public string AlignmentName { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:158](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L158) |  |
+| <code>public string SelectedFrequencyKey { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:170](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L170) |  |
+| <code>public string SelectedPresetKey { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:182](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L182) |  |
+| <code>public DateTime? FromDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:195](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L195) |  |
+| <code>public DateTime? ToDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:207](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L207) |  |
+| <code>public string SymbolInput { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:219](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L219) |  |
+| <code>public string SelectedGapStrategyKey { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:231](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L231) |  |
+| <code>public string SelectedTimezoneKey { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:243](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L243) |  |
+| <code>public string ProviderInput { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:255](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L255) |  |
+| <code>public string SelectedInputKindKey { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:265](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L265) |  |
+| <code>public string SelectedAdjustmentKey { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:275](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L275) |  |
+| <code>public bool MarketHoursOnly { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:285](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L285) |  |
+| <code>public bool HasPreview { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:295](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L295) |  |
+| <code>public string PreviewDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:301](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L301) |  |
+| <code>public bool CanEditAlignment =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:307](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L307) |  |
+| <code>public bool IncludeClose { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:309](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L309) |  |
+| <code>public bool IncludeOpen { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:321](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L321) |  |
+| <code>public bool IncludeHigh { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:333](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L333) |  |
+| <code>public bool IncludeLow { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:345](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L345) |  |
+| <code>public bool IncludeVolume { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:357](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L357) |  |
+| <code>public string SelectedExportFormatKey { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:369](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L369) |  |
+| <code>public bool IsRunning { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:381](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L381) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:393](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L393) |  |
+| <code>public bool HasResults { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:399](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L399) |  |
+| <code>public string ResultRowsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:405](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L405) |  |
+| <code>public string ResultSymbolsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:411](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L411) |  |
+| <code>public string ResultGapsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:417](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L417) |  |
+| <code>public string ResultFormatText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:423](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L423) |  |
+| <code>public string ResultOutputPathText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:429](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L429) |  |
+| <code>public bool IsAlignmentServiceUnavailable { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:439](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L439) | Set once the host reports that it has no alignment execution service (HTTP 501). Further runs cannot succeed, so the run action is disabled and the readiness card says so. |
+| <code>public bool CanRunAlignment =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:445](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L445) |  |
+| <code>public bool IsRecentAlignmentsEmpty =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:446](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L446) |  |
+| <code>public string SelectedSymbolsCountText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:447](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L447) |  |
+| <code>public string SelectedFieldsText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:448](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L448) |  |
+| <code>public string DateScopeText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:449](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L449) |  |
+| <code>public string AlignmentReadinessTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:450](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L450) |  |
+| <code>public string AlignmentReadinessDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:453](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L453) |  |
+
+## TradingHoursViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.TradingHoursViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:20](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L20).
+
+ViewModel for the Trading Hours page. Fetches live market state from the calendar API; falls back to a local Eastern-Time calculation when the backend is offline. All status-banner logic, timezone handling, and holiday data loading live here.
+
+```csharp
+public sealed class TradingHoursViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Brush MarketStatusDotFill { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:26](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L26) |  |
+| <code>public string MarketStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:29](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L29) |  |
+| <code>public Brush MarketStatusTextForeground { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:32](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L32) |  |
+| <code>public string MarketStatusReasonText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:35](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L35) |  |
+| <code>public string NextSessionText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:38](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L38) |  |
+| <code>public string MarketStatusTimeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:41](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L41) |  |
+| <code>public string SessionBriefingToneLabel { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:44](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L44) |  |
+| <code>public string SessionBriefingTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:47](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L47) |  |
+| <code>public string SessionBriefingDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:50](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L50) |  |
+| <code>public string SessionBriefingTargetText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:53](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L53) |  |
+| <code>public Brush NyseRegularStatusDotFill { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:57](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L57) |  |
+| <code>public string NyseRegularStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:60](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L60) |  |
+| <code>public Brush NyseRegularStatusForeground { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:63](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L63) |  |
+| <code>public Brush NasdaqRegularStatusDotFill { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:66](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L66) |  |
+| <code>public string NasdaqRegularStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:69](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L69) |  |
+| <code>public Brush NasdaqRegularStatusForeground { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:72](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L72) |  |
+| <code>public string HolidaysHeaderText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:76](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L76) |  |
+| <code>public bool HasHolidays { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:79](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L79) |  |
+| <code>public bool IsHolidayEmptyStateVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:82](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L82) |  |
+| <code>public string HolidayEmptyStateTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:85](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L85) |  |
+| <code>public string HolidayEmptyStateDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:88](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L88) |  |
+| <code>public ObservableCollection&lt;HolidayDisplayItem&gt; Holidays { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:90](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L90) |  |
+| <code>public TradingHoursViewModel(ApiClientService apiClient);</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:92](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L92) |  |
+| <code>public async Task LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:99](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L99) |  |
+| <code>public void ApplyMarketStatusForTests(string state, string reason, DateTimeOffset? nextSession = null);</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:105](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L105) |  |
+
+## HolidayDisplayItem
+
+Qualified name: <code>Meridian.Wpf.ViewModels.TradingHoursViewModel.HolidayDisplayItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:361](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L361).
+
+Presents a market holiday&#x27;s date, name, trading state, reason, and next session.
+
+```csharp
+public sealed class HolidayDisplayItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string DateText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:363](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L363) |  |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:364](../../../../src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs#L364) |  |
+
+## TradingWorkspaceShellViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.TradingWorkspaceShellViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:13](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L13).
+
+Loads trading workspace summaries for the active fund, paper and live runs, and portfolio metrics.
+
+```csharp
+public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TradingWorkspaceShellViewModel(TradingWorkspaceShellPresentationService? presentationService = null, TradingSafetyCommandService? safetyCommands = null, PaperSessionReconciliationViewModel? paperReconciliation = null) : base(ShellNavigationCatalog.GetWorkspaceShell(&quot;trading&quot;) !);</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:75](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L75) |  |
+| <code>public event EventHandler? RefreshRequested;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:87](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L87) |  |
+| <code>public bool IsLoading { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:91](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L91) |  |
+| <code>public bool HasError { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:97](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L97) |  |
+| <code>public string ErrorMessage { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:103](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L103) |  |
+| <code>public string ActiveFundText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:109](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L109) |  |
+| <code>public string ActiveFundDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:115](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L115) |  |
+| <code>public string PaperRunsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:121](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L121) |  |
+| <code>public string LiveRunsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:127](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L127) |  |
+| <code>public string TotalEquityText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:133](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L133) |  |
+| <code>public string DrawdownText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:139](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L139) |  |
+| <code>public string PositionLimitText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:145](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L145) |  |
+| <code>public string OrderRateText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:151](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L151) |  |
+| <code>public string CapitalCashText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:157](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L157) |  |
+| <code>public string CapitalGrossExposureText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:163](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L163) |  |
+| <code>public string CapitalNetExposureText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:169](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L169) |  |
+| <code>public string CapitalFinancingText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:175](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L175) |  |
+| <code>public string CapitalControlsDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:181](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L181) |  |
+| <code>public string TradingActiveRunText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:187](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L187) |  |
+| <code>public string TradingActiveRunMetaText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:193](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L193) |  |
+| <code>public string WatchlistStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:199](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L199) |  |
+| <code>public string MarketCoreText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:205](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L205) |  |
+| <code>public string RiskRailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:211](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L211) |  |
+| <code>public string DeskActionStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:217](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L217) |  |
+| <code>public string TradingStatusSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:223](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L223) |  |
+| <code>public string TradingStatusBadgeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:229](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L229) |  |
+| <code>public TradingWorkspaceStatusTone TradingStatusBadgeTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:235](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L235) |  |
+| <code>public string PromotionStatusLabelText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:241](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L241) |  |
+| <code>public string PromotionStatusDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:247](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L247) |  |
+| <code>public TradingWorkspaceStatusTone PromotionStatusTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:253](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L253) |  |
+| <code>public string AuditStatusLabelText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:259](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L259) |  |
+| <code>public string AuditStatusDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:265](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L265) |  |
+| <code>public TradingWorkspaceStatusTone AuditStatusTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:271](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L271) |  |
+| <code>public string ValidationStatusLabelText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:277](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L277) |  |
+| <code>public string ValidationStatusDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:283](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L283) |  |
+| <code>public TradingWorkspaceStatusTone ValidationStatusTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:289](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L289) |  |
+| <code>public string TradingWorkflowTargetText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:295](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L295) |  |
+| <code>public string TradingWorkflowPrimaryButtonText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:301](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L301) |  |
+| <code>public string TradingHeroFocusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:307](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L307) |  |
+| <code>public string TradingHeroSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:313](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L313) |  |
+| <code>public string TradingHeroDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:319](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L319) |  |
+| <code>public string TradingHeroBadgeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:325](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L325) |  |
+| <code>public TradingWorkspaceStatusTone TradingHeroBadgeTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:331](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L331) |  |
+| <code>public string TradingHeroHandoffTitleText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:337](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L337) |  |
+| <code>public string TradingHeroHandoffDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:343](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L343) |  |
+| <code>public string TradingHeroPrimaryActionText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:349](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L349) |  |
+| <code>public string TradingHeroSecondaryActionText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:355](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L355) |  |
+| <code>public Visibility TradingHeroSecondaryActionVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:361](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L361) |  |
+| <code>public string TradingHeroTargetText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:367](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L367) |  |
+| <code>public IReadOnlyList&lt;TradingActivePositionItem&gt; ActivePositions { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:373](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L373) |  |
+| <code>public WorkstationTableModel&lt;TradingActivePositionItem&gt; ActivePositionsTable { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:379](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L379) |  |
+| <code>public TradingActivePositionItem? SelectedActivePosition { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:385](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L385) |  |
+| <code>public Visibility NoPositionsVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:407](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L407) |  |
+| <code>public string SelectedActivePositionTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:413](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L413) |  |
+| <code>public string SelectedActivePositionDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:417](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L417) |  |
+| <code>public string SelectedActivePositionPnlText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:421](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L421) |  |
+| <code>public string SelectedActivePositionModeText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:425](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L425) |  |
+| <code>public string SelectedActivePositionEvidenceText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:429](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L429) |  |
+| <code>public string SelectedActivePositionActionDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:433](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L433) |  |
+| <code>public bool HasSelectedActivePosition =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:437](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L437) |  |
+| <code>public Visibility SelectedActivePositionVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:439](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L439) |  |
+| <code>public Visibility NoSelectedActivePositionVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:443](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L443) |  |
+| <code>public PaperSessionReconciliationViewModel? PaperReconciliation { get; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:451](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L451) |  |
+| <code>public async Task StartAsync();</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:453](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L453) |  |
+| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:470](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L470) |  |
+| <code>public async Task RefreshAsync();</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:486](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L486) |  |
+| <code>public void ExecuteCommandAction(string actionId) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:519](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L519) |  |
+| <code>public void ExecuteHeroPrimaryAction() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:557](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L557) |  |
+| <code>public void ExecuteHeroSecondaryAction() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:560](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L560) |  |
+| <code>public void ExecuteWorkflowNextAction() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:563](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L563) |  |
+
 ## TrendStatistics
 
 Qualified name: <code>Meridian.Wpf.ViewModels.TrendStatistics</code>. Kind: `struct`.
@@ -1056,148 +1320,4 @@ Source: [src/Meridian.Wpf/Views/Pages.cs:102](../../../../src/Meridian.Wpf/Views
 
 ```csharp
 public partial class CredentialManagementPage : Page
-```
-
-## DashboardPage
-
-Qualified name: <code>Meridian.Wpf.Views.DashboardPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/DashboardPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/DashboardPage.xaml.cs#L13).
-
-Dashboard page — thin code-behind. All state, business logic, and timer management live in DashboardViewModel.
-
-```csharp
-public partial class DashboardPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DashboardPage(WpfServices.NavigationService navigationService, WpfServices.ConnectionService connectionService, WpfServices.StatusService statusService, WpfServices.MessagingService messagingService, WpfServices.NotificationService notificationService);</code> | [src/Meridian.Wpf/Views/DashboardPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/DashboardPage.xaml.cs#L17) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:6](../../../../src/Meridian.Wpf/Views/Pages.cs#L6).
-
-```csharp
-public partial class DashboardPage : Page
-```
-
-## DataBrowserPage
-
-Qualified name: <code>Meridian.Wpf.Views.DataBrowserPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/DataBrowserPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/DataBrowserPage.xaml.cs#L12).
-
-Hosts paged market-record browsing and filtering.
-
-```csharp
-public partial class DataBrowserPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DataBrowserPage();</code> | [src/Meridian.Wpf/Views/DataBrowserPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/DataBrowserPage.xaml.cs#L17) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:92](../../../../src/Meridian.Wpf/Views/Pages.cs#L92).
-
-```csharp
-public partial class DataBrowserPage : Page
-```
-
-## DataCalendarPage
-
-Qualified name: <code>Meridian.Wpf.Views.DataCalendarPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/DataCalendarPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/DataCalendarPage.xaml.cs#L13).
-
-Data Calendar page — thin code-behind. All state, data loading, and year navigation live in DataCalendarViewModel.
-
-```csharp
-public partial class DataCalendarPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DataCalendarPage(DataCalendarService calendarService);</code> | [src/Meridian.Wpf/Views/DataCalendarPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/DataCalendarPage.xaml.cs#L17) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:51](../../../../src/Meridian.Wpf/Views/Pages.cs#L51).
-
-```csharp
-public partial class DataCalendarPage : Page
-```
-
-## DataExportPage
-
-Qualified name: <code>Meridian.Wpf.Views.DataExportPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/DataExportPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/DataExportPage.xaml.cs#L14).
-
-Page for exporting collected market data and configuring integrations. Code-behind is limited to: – constructor DI and DataContext wiring – secret input read for the database password All business logic lives in DataExportViewModel.
-
-```csharp
-public partial class DataExportPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DataExportPage();</code> | [src/Meridian.Wpf/Views/DataExportPage.xaml.cs:18](../../../../src/Meridian.Wpf/Views/DataExportPage.xaml.cs#L18) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:37](../../../../src/Meridian.Wpf/Views/Pages.cs#L37).
-
-```csharp
-public partial class DataExportPage : Page
-```
-
-## DataQualityPage
-
-Qualified name: <code>Meridian.Wpf.Views.DataQualityPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/DataQualityPage.xaml.cs:18](../../../../src/Meridian.Wpf/Views/DataQualityPage.xaml.cs#L18).
-
-Hosts symbol-quality monitoring and issue drilldowns.
-
-```csharp
-public partial class DataQualityPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DataQualityPage(DataQualityViewModel viewModel, NavigationService navigationService);</code> | [src/Meridian.Wpf/Views/DataQualityPage.xaml.cs:25](../../../../src/Meridian.Wpf/Views/DataQualityPage.xaml.cs#L25) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:27](../../../../src/Meridian.Wpf/Views/Pages.cs#L27).
-
-```csharp
-public partial class DataQualityPage : Page
-```
-
-## DataSamplingPage
-
-Qualified name: <code>Meridian.Wpf.Views.DataSamplingPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/DataSamplingPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/DataSamplingPage.xaml.cs#L10).
-
-Hosts market-data sample configuration, generation, and recent sample review.
-
-```csharp
-public partial class DataSamplingPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DataSamplingPage();</code> | [src/Meridian.Wpf/Views/DataSamplingPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/DataSamplingPage.xaml.cs#L14) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:38](../../../../src/Meridian.Wpf/Views/Pages.cs#L38).
-
-```csharp
-public partial class DataSamplingPage : Page
 ```

@@ -10,8 +10,10 @@ namespace Meridian.Application.SecurityMaster;
 /// rather than silent mutation. The authoritative lock state is the ledger accounting-period status
 /// (<see cref="ILedgerPeriodLockReader"/>) — the same authority <c>LedgerPeriodPostingGuard</c> enforces.
 ///
-/// <para>Routing per book (D3 matrix): <c>Open</c> → immediate propagation (lower-order publish
-/// handlers already applied it), no restatement; <c>SoftClosed</c> → the downstream effect posts as a
+/// <para>Routing per book (D3 matrix): <c>Open</c> → no restatement. Note that "open" does not mean
+/// downstream results were recomputed: lower-order publish handlers merge field edits and refresh
+/// caches only, and nothing re-derives cash-flow receipts, drafts, lots or journals built on the
+/// superseded version. <c>SoftClosed</c> → the downstream effect posts as a
 /// governed adjustment (a later slice), and only already-<i>published</i> report packs become
 /// restatement candidates; <c>HardClosed</c> or any indeterminate/default-deny state → no posting and
 /// a mandatory restatement proposal. When a hard-closed book has exposure but no candidate can be

@@ -1979,6 +1979,57 @@ posts. See [contractual projections](../../docs/domain/contractual-cash-flow-pro
 | `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
+## Review queues and actor flags (2026-11-25)
+
+- `SecurityMasterWorkbenchCommandService.TryReadConflictCandidate` is public and static. It reads the
+  conflict id and candidate source from a revision justification, and both the pending-revision route
+  and `ApprovedFieldEditCanonicalMergeHandler` use it, so the inbox and the publish-time conflict
+  resolution agree on which conflict a draft came from.
+- `Integrations/ProviderIntegrationActorFlagService.ScanAsync` scans the tenant's integration store and
+  appends a flag for each actor value the classifier does not accept as a person, recording the
+  authenticated operator who ran the scan. Re-running it appends nothing new.
+
+## Security Master architecture-review backlog (2026-11-25)
+
+The 2026-11-24 Security Master review backlog (PR #3736) added these Application services under
+`SecurityMaster/`. Each refuses rather than guesses.
+
+- **Canonical resolution (P1).** `SecurityResolver` answers a provider-less request through
+  `ResolveCanonicalAsync` and returns `Resolved`, `Ambiguous`, `NotFound` or `Inactive`. With the
+  redirect store composed, an inactive merged-away security resolves to its survivor.
+- **Source admission (P2).** `SecurityMasterService` holds a whole amendment when a field's value
+  comes from a source the conflict-authority policy ranks above the amending source
+  (`SourcePrecedenceAdmissionPolicy`, ranked per source). The held amendment is stored and surfaced
+  as a refusal with a 409 status; approved workbench publications are not held.
+- **Conflict decisions and "Use B" (A5, D3).** Conflict resolution records the policy winner, rule and
+  whether the operator deviated from it; a dismissal records no winner. Adopting a conflict candidate
+  stages a pending governed draft. When that draft is published, the canonical-merge handler resolves
+  the conflict.
+- **Change record (P4, A6).** Publishing a workbench revision writes a durable restatement decision.
+  A revision with no ledger-book scope routes to every book holding the security. Corporate-action
+  normalization sets the database switch that the append-only guard checks.
+- **Review inbox and staging guard (P5, D1).** Pending revisions list by state. Staging a field
+  already held by another open revision raises `FieldAlreadyStagedException`.
+- **Merge (C1).** `SecurityMasterMergeService` retires a duplicate into a survivor through a redirect.
+- **Import dry run (C4).** `SecurityMasterImportPlanner` reports what an import would create, amend or
+  refuse, without writing anything.
+- **Valid time (E1).** Create, amend and deactivate stamp `validFrom` metadata.
+  `SecurityMasterValidTimeQuery` reads "terms valid at V, as known at T"
+  ([ADR-034](../../docs/adr/034-bitemporal-security-master-terms.md)).
+- **Exception queue (D2).** `SecurityMasterExceptionCaseSync` opens and closes global cases for
+  conflicts, identifier ambiguity and data quality.
+- **Factor observations (C3).** `SecurityFactorObservationService` appends pool-factor observations.
+  A restated observation raises a `FactorRestatement` case, and the factor-history projector ranks
+  observations first.
+- **Economics (P3).** The cash-flow service raises `HistoricalFixingMissingException` when a
+  historical fixing is absent, instead of projecting a zero. The new cash-flow engine is
+  shadow-compared against the existing one (`CashFlowEngineShadowComparer`) and does not replace it.
+
+To keep each file under the 2,000-line ratchet, the bond coupon round-trip guards live in
+`SecurityMasterService.BondCouponRoundTrip.cs` and the principal-schedule checks live in
+`SecurityMasterWorkbenchCommandService.PrincipalSchedule.cs`; both are partial-class splits with no
+behavior change.
+
 ## TODO checklist
 
 <!-- source-todos:begin module=SRC-APP -->

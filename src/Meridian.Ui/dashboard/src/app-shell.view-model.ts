@@ -141,6 +141,8 @@ export interface BuildAppShellViewStateOptions {
   payload: AppShellWorkspacePayload;
   /** The shared operator inbox for the attention list, or null while loading or unavailable. */
   inboxItems?: readonly OperatorTriageItem[] | null;
+  /** The signed-in operator, for copy that names the person rather than the session's desk label. */
+  signedInUsername?: string | null;
 }
 
 export function buildAppShellViewState({
@@ -157,7 +159,8 @@ export function buildAppShellViewState({
   usingDevelopmentFixtures = false,
   dataProvenance,
   payload,
-  inboxItems = null
+  inboxItems = null,
+  signedInUsername = null
 }: BuildAppShellViewStateOptions): AppShellViewState {
   const activeWorkspace = getWorkspaceForPath(pathname);
   const location = resolveAppShellLocation(pathname);
@@ -181,6 +184,7 @@ export function buildAppShellViewState({
     dataProvenance,
     workspaceErrors,
     session: payload.session,
+    signedInUsername,
     data: payload.data,
     crossScreenCounts: payload.crossScreenCounts ?? null
   });

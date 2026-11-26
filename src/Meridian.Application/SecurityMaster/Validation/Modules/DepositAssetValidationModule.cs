@@ -11,7 +11,9 @@ internal static class DepositAssetValidationModule
     private static ISecurityAssetClassValidator Create(ISecurityAssetProfileCatalog assetProfileCatalog)
         => new JsonAssetClassValidator(
             "Deposit",
-            [
-                FieldRule.OptionalNonNegative("interestRate", "SM_DEPOSIT_INTEREST_RATE_INVALID", "Deposit interest rate is invalid", "Deposit interest rates must be zero or greater.")
-            ]);
+            // Deposit interestRate, Repo repoRate and Bond spreadBps are SIGNED in
+            // SecurityRateFieldUnits (negative-rate deposits, repo specials, negative spreads), so
+            // no non-negative rule governs them here; the rate table's bounds apply at consumption.
+            // SignedRateValidatorParityTests keeps the two declarations from contradicting again.
+            []);
 }

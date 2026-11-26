@@ -164,7 +164,10 @@
                 <Button Content="Save draft" Command="{Binding SaveDraftCommand}" Margin="0,0,8,0" Padding="12,6" />
                 <Button Content="Submit for approval" Command="{Binding SubmitCommand}" Margin="0,0,8,0" Padding="12,6" />
                 <Button Content="Approve" Command="{Binding ApproveCommand}" Margin="0,0,8,0" Padding="12,6" />
-                <Button Content="Publish" Command="{Binding PublishCommand}" Padding="12,6" />
+                <Button Content="Publish" Command="{Binding PublishCommand}" Margin="0,0,8,0" Padding="12,6" />
+                <Button Content="Discard revision" Command="{Binding DiscardRevisionCommand}" Padding="12,6"
+                        ToolTip="Withdraw a Draft or Submitted revision so its staged value stops blocking the field."
+                        AutomationProperties.Name="Discard revision" />
             </StackPanel>
 
 

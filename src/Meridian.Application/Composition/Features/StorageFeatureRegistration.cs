@@ -112,6 +112,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<Meridian.Contracts.CashFlows.IBondExerciseNoticeStore>(sp => sp.GetRequiredService<FileBondExerciseNoticeStore>());
         services.TryAddSingleton<Meridian.Contracts.CashFlows.IExerciseNoticeVerifier>(sp => sp.GetRequiredService<FileBondExerciseNoticeStore>());
         services.TryAddScoped<Meridian.Contracts.CashFlows.IContractualCashFlowPreviewService, ContractualCashFlowPreviewService>();
+        // Review B1: read-only shadow comparison of the legacy and contractual cash-flow engines.
+        services.TryAddScoped<Meridian.Application.SecurityMaster.CashFlow.CashFlowEngineShadowComparer>();
         services.TryAddSingleton<Meridian.Contracts.CashFlows.IContractualCashFlowRunStore, FileContractualCashFlowRunStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
         services.TryAddSingleton<DatabaseMigrationReadinessReceipt>();
@@ -157,6 +159,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ProviderIntegrationReconciliationHandoffService>();
         services.TryAddSingleton<ProviderIntegrationQuarantineReviewService>();
         services.TryAddSingleton<ProviderIntegrationQuarantineReplayService>();
+        services.TryAddSingleton<ProviderIntegrationActorFlagService>();
         if (configuration.IsConfigured("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING"))
         {
             services.TryAddSingleton(new ScopedAccessStoreOptions
@@ -412,6 +415,23 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IUflProjectionRebuilder, UflProjectionRebuilder>();
             // Re-serializes retained snapshots through the replay decoder (ADR-024 amendment 2026-11-13, after migration 068).
             services.AddSingleton<ISecurityMasterSnapshotRegenerationService, SecurityMasterSnapshotRegenerationService>();
+            // Review A2: held ingest amendments survive restarts on the PostgreSQL composition.
+            services.AddSingleton<ISecurityMasterHeldAmendmentStore, PostgresSecurityMasterHeldAmendmentStore>();
+            // Review A4/P4: gap-safe change outbox written with every economic event append.
+            services.AddSingleton<ISecurityMasterChangeOutbox, PostgresSecurityMasterChangeOutbox>();
+            // Review C1: survivorship redirects followed by identifier resolution.
+            services.AddSingleton<ISecurityMasterRedirectStore, PostgresSecurityMasterRedirectStore>();
+            // ADR-033 entity master: its own schema and migration set on the Security Master database.
+            services.AddSingleton(new Meridian.Storage.EntityMaster.EntityMasterOptions
+            {
+                ConnectionString = securityMasterOptions.ConnectionString
+            });
+            services.AddSingleton<Meridian.Contracts.EntityMaster.IEntityMasterStore, Meridian.Storage.EntityMaster.PostgresEntityMasterStore>();
+            // Review D2: deployment-global Security Master exception cases.
+            services.AddSingleton<ISecurityMasterExceptionCaseStore, PostgresSecurityMasterExceptionCaseStore>();
+            // Review C3: append-only pool-factor observations.
+            services.AddSingleton<ISecurityFactorObservationStore, PostgresSecurityFactorObservationStore>();
+            services.AddSingleton<SecurityMasterMergeService>();
             services.AddSingleton<ISecurityMasterService, SecurityMasterService>();
             // Three typed write paths over one service: ISecurityMasterService is the operator-direct path
             // (refused while governed term amendments are required, by setting or by the Institutional profile), ISecurityMasterAmender
@@ -471,6 +491,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             // Security Master bulk import services
             services.AddSingleton<SecurityMasterCsvParser>();
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
+            services.AddSingleton<SecurityMasterImportPlanner>();
+            // ADR-034 bitemporal term reads.
+            services.AddSingleton<SecurityMasterValidTimeQuery>();
             services.AddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
 
             // The composed migrate-on-read pipeline (v0 stamping + cross-family economic-terms v2 -> v1 flattening)
@@ -611,6 +634,17 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityMasterSnapshotRegenerationService, NullSecurityMasterSnapshotRegenerationService>();
         // Passport Workbench conflict-authority policy is storage-independent (pure precedence logic).
         services.TryAddSingleton<ISecurityMasterConflictAuthorityPolicy, SecurityMasterConflictAuthorityPolicy>();
+        // Golden-record write admission (review A2): per-source precedence from the same workbench
+        // ladder. With no ladder configured nothing is held, so behavior is unchanged by default.
+        services.AddOptions<SecurityMasterWorkbenchOptions>();
+        services.TryAddSingleton<ISecurityMasterSourceAdmissionPolicy, SourcePrecedenceAdmissionPolicy>();
+        services.TryAddSingleton<ISecurityMasterHeldAmendmentStore, InMemorySecurityMasterHeldAmendmentStore>();
+        services.TryAddSingleton<ISecurityMasterRedirectStore, InMemorySecurityMasterRedirectStore>();
+        services.TryAddSingleton<Meridian.Contracts.EntityMaster.IEntityMasterStore, Meridian.Storage.EntityMaster.InMemoryEntityMasterStore>();
+        services.TryAddSingleton<ISecurityMasterExceptionCaseStore, InMemorySecurityMasterExceptionCaseStore>();
+        services.TryAddSingleton<SecurityMasterExceptionCaseSync>();
+        services.TryAddSingleton<ISecurityFactorObservationStore, InMemorySecurityFactorObservationStore>();
+        services.TryAddSingleton<SecurityFactorObservationService>();
         if (!configuration.IsConfigured(AssetOperationsStartup.ConnectionStringVariable))
         {
             services.TryAddSingleton<InMemoryAssetOperationsProjectionStore>();

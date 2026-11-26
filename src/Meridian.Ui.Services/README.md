@@ -122,6 +122,13 @@ review; nothing posts, and the server refuses approval by the proposer. A reques
 reused only for an identical retry, read-only operators get no mutation commands, and responses
 for another book, schedule, date or request are refused.
 
+`Services/SecurityMaster/SecurityMasterReviewQueueApiClient` is the desktop transport for the Security Master
+review queues: the cross-security review inbox, amendments held by source ranking, and the exception queue. It uses
+the browser's routes and the shared DTOs in `Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs`.
+`SecurityMasterReviewQueuePresentation` holds the inbox age format, discard eligibility and SLA cell text.
+`SecurityMasterWorkbenchFailure` turns a refusal body into the operator's sentence. For example, a 409
+`field-already-staged` names the first stager.
+
 `WorkstationOnboardingApiClient` and `OnboardingShadowWorkspace` bring shadow-mode onboarding
 (W11-SHADOW-001) to the desktop over the browser's onboarding routes. The panel covers:
 

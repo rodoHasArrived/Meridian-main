@@ -135,7 +135,15 @@ public sealed record SecurityMasterConflictResolutionDto(
     string ChosenWinnerSource,
     bool IsPolicyDeviation,
     string Reason,
-    long NewVersion);
+    long NewVersion)
+{
+    /// <summary>
+    /// Set when the chosen source's value is not the current canonical value: instead of refusing, the
+    /// workbench staged this pending draft carrying that value (review D3). The conflict stays open and
+    /// resolves to <see cref="ChosenWinnerSource"/> when the draft is approved and published.
+    /// </summary>
+    public Guid? PendingRevisionId { get; init; }
+}
 
 /// <summary>
 /// Result of publishing a revision. When the edit affects a hard-closed period with report-pack
@@ -212,3 +220,31 @@ public sealed record SecurityMasterRevisionPublishedEvent(
     IReadOnlyList<Guid> AffectedLedgerBookIds,
     string Actor,
     string? CorrelationId);
+
+/// <summary>
+/// One governed revision awaiting action, across securities (review P5/D1 review inbox). The drafter
+/// is <see cref="Actor"/>; under the Institutional profile a different principal must approve.
+/// </summary>
+public sealed record SecurityMasterPendingRevisionDto(
+    Guid RevisionId,
+    Guid SecurityId,
+    SecurityMasterRevisionStateDto State,
+    string Actor,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt,
+    string? FieldPath,
+    string? FieldValue,
+    string? Justification,
+    string? FundProfileId,
+    long? BaseVersion,
+    double AgeHours)
+{
+    /// <summary>
+    /// Set when this revision is a review D3 "Use B" draft: the conflict it adopts a candidate for. The
+    /// conflict stays open until this draft publishes.
+    /// </summary>
+    public Guid? ConflictId { get; init; }
+
+    /// <summary>The source whose value the "Use B" draft adopts; null for ordinary revisions.</summary>
+    public string? ConflictCandidateSource { get; init; }
+}

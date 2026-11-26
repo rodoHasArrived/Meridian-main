@@ -36,6 +36,8 @@ public sealed record SecurityMasterExceptionSlaConfig
 /// records and do not carry a canonical tenant/company owner. This service therefore never projects
 /// those global records into a caller-owned reconciliation case. A scoped producer that genuinely
 /// owns a case may retain it in the shared queue; this service only reads those already-owned rows.
+/// The deployment-global records themselves are worked in the dedicated Security Master exception
+/// queue (<c>SecurityMasterExceptionCaseSync</c>, migration 074; review D2), not here.
 /// </remarks>
 public sealed class SecurityMasterExceptionCaseworkService
 {

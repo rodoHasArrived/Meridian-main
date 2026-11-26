@@ -90,6 +90,17 @@ export function resolveDataSourceTone(
   return environment === "live" ? "blocked" : "ready";
 }
 
+/**
+ * Who the environment line is about: the signed-in operator on their desk, or the desk session while
+ * the username is unknown. The session displayName is a desk label, never presented as the person.
+ */
+function describeSessionSubject(session: SessionInfo, signedInUsername: string | null): string {
+  const operator = signedInUsername?.trim();
+  return operator
+    ? `${operator} on the ${session.displayName} session`
+    : `The ${session.displayName} session`;
+}
+
 export function buildTrustStripState({
   loading,
   bootstrapFailed,
@@ -97,6 +108,7 @@ export function buildTrustStripState({
   dataProvenance,
   workspaceErrors,
   session,
+  signedInUsername = null,
   data,
   crossScreenCounts = null
 }: {
@@ -106,6 +118,8 @@ export function buildTrustStripState({
   dataProvenance?: DataProvenanceKind;
   workspaceErrors: AppShellWorkspaceErrorMap;
   session: SessionInfo | null;
+  /** The signed-in operator. The session's `displayName` is a desk label, not the person. */
+  signedInUsername?: string | null;
   data: DataWorkspaceResponse | null;
   /** The shell's cross-screen counts; used for provider health on routes without the Data workspace. */
   crossScreenCounts?: WorkstationCrossScreenCounts | null;
@@ -142,11 +156,11 @@ export function buildTrustStripState({
       ? resolvedProvenance === "unknown"
         ? "Session data is unverified; a session environment does not establish real-data provenance."
         : "Non-real data is loaded; the session environment does not change its provenance."
-    : session?.environment === "research"
-      ? `Session ${session.displayName} is operating in research mode, shown as Demo.`
-      : session
-        ? `Session ${session.displayName} is operating in ${environmentValue.toLowerCase()} mode.`
-        : "Session environment is not loaded; Demo is the safe default.";
+    : session
+      ? `${describeSessionSubject(session, signedInUsername)} ${session.environment === "research"
+        ? "is operating in research mode, shown as Demo."
+        : `is operating in ${environmentValue.toLowerCase()} mode.`}`
+      : "Session environment is not loaded; Demo is the safe default.";
 
   const dataSourceValue = resolvedProvenance.toUpperCase();
   const dataSourceTone = resolveDataSourceTone(resolvedProvenance, session?.environment);

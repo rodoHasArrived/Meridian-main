@@ -93,7 +93,7 @@ describe("WorkstationTopbar", () => {
     expect(screen.getByRole("link", { name: "Mode Paper Open settings." })).toHaveAttribute("href", "/settings");
     expect(screen.getByText("Provider")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Activity" })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: "Current session: Avery Stone, Portfolio operator" }))
+    expect(screen.getByRole("group", { name: "Current session: desk Avery Stone, Portfolio operator" }))
       .toBeInTheDocument();
   });
 

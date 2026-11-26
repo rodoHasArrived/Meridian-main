@@ -2,11 +2,34 @@
 
 # `security-master-contracts` data objects - page 7 of 8
 
-Objects 481-560 of 615. References crossing pages remain available in the dependency manifest.
+Objects 481-560 of 621. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityMasterConflictFieldCategory["SecurityMasterConflictFieldCategory"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityMasterConflictKinds["SecurityMasterConflictKinds"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityMasterConflictRouting["SecurityMasterConflictRouting"] {
+        +IReadOnlySet~string~ ProviderEvidenceSegments
+        +IReadOnlySet~string~ TermContainers
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendRequestDto["SecurityMasterCorporateActionAppendRequestDto"] {
+        +string Actor
+        +CorporateActionDto CorporateAction
+        +string? CorrelationId
+        +string? FundProfileId
+        +string? Reason
+        +Guid SecurityId
+        +string? SourceRecordId
+        +string SourceSystem
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto["SecurityMasterCorporateActionAppendResultDto"] {
+        +SecurityMasterCorporateActionAuditDto Audit
+        +CorporateActionDto CorporateAction
+        +SecurityMasterCorporateActionRestatementDto? Restatement
+    }
     class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAuditDto["SecurityMasterCorporateActionAuditDto"] {
         +string Actor
         +string AuditId
@@ -268,6 +291,8 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityRecurringAccrualProfile["SecurityRecurringAccrualProfile"] {
     }
+    class Meridian_Contracts_SecurityMaster_SecurityResolutionStatus["SecurityResolutionStatus"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityScheduleDecimal["SecurityScheduleDecimal"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityScheduleDiagnostic["SecurityScheduleDiagnostic"] {
@@ -370,35 +395,8 @@ classDiagram
         +IReadOnlyDictionary~string__JsonElement~? Row
         +string TableName
     }
-    class Meridian_Contracts_SecurityMaster_SecurityTermsUpgradeKind["SecurityTermsUpgradeKind"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingGraphDto["SecurityUnderlyingGraphDto"] {
-        +DateTimeOffset AsOfUtc
-        +IReadOnlyList~SecurityUnderlyingLinkDto~ Dependents
-        +IReadOnlyList~string~ Gaps
-        +Guid SecurityId
-        +IReadOnlyList~SecurityUnderlyingLinkDto~ Underlyings
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDeriver["SecurityUnderlyingLinkDeriver"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto["SecurityUnderlyingLinkDto"] {
-        +DateTimeOffset CreatedAt
-        +string CreatedBy
-        +Guid LinkId
-        +string? Notes
-        +string? Reference
-        +SecurityUnderlyingRole Role
-        +Guid SecurityId
-        +SecurityUnderlyingLinkSource Source
-        +Guid? UnderlyingSecurityId
-        +DateTimeOffset ValidFrom
-        +DateTimeOffset? ValidTo
-        +decimal? Weight
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkSource["SecurityUnderlyingLinkSource"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingRole["SecurityUnderlyingRole"] {
-    }
+    Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAuditDto
+    Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionRestatementDto
     Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionCandidateDto --> Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionBlockerDto
     Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionCandidateDto --> Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionDisposition
     Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionReportDto --> Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionCandidateDto
@@ -429,7 +427,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityTermBinding --> Meridian_Contracts_SecurityMaster_SecurityTermRead
     Meridian_Contracts_SecurityMaster_SecurityTermsProjectionReadDto --> Meridian_Contracts_SecurityMaster_SecurityTermsProjectionChildRowsDto
     Meridian_Contracts_SecurityMaster_SecurityTermsProjectionReadDto --> Meridian_Contracts_SecurityMaster_SecurityTermsProjectionSatelliteRowDto
-    Meridian_Contracts_SecurityMaster_SecurityUnderlyingGraphDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto
-    Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkSource
-    Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingRole
 ```

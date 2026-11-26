@@ -432,9 +432,20 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
             issues.Add(CreateIssue("SM_COUPON_TERMS_MISSING", "security-master", security.Symbol, accountId, $"Security '{security.Symbol}' is missing coupon type.", ReconciliationBreakSeverity.High));
         }
 
-        if (terms.CouponType?.Equals("Floating", StringComparison.OrdinalIgnoreCase) == true)
+        // Review A3: the coupon structure dispatches through the declared disposition table. A
+        // structure the table blocks (Floating without resets, Step, InflationLinked, or one it does
+        // not list) raises its typed issue; none passes coverage and then generates a silent zero.
+        if (!string.IsNullOrWhiteSpace(terms.CouponType)
+            && SecurityEconomicDispositions.ForCouponStructure(SecurityEconomicDispositions.AccountingAccrual, terms.CouponType)
+                is { Kind: SecurityEconomicDispositionKind.Blocked } blocked)
         {
-            issues.Add(CreateIssue("SM_RATE_RESET_TERMS_MISSING", "security-master", security.Symbol, accountId, $"Security '{security.Symbol}' is floating-rate and requires reset terms before expected accruals can be generated.", ReconciliationBreakSeverity.High));
+            issues.Add(CreateIssue(
+                blocked.Code!,
+                "security-master",
+                security.Symbol,
+                accountId,
+                $"Security '{security.Symbol}' {blocked.Reason} No coupon accrual or receipt was generated.",
+                ReconciliationBreakSeverity.High));
         }
 
         if (terms.CouponRate is null && terms.CouponType?.Equals("ZeroCoupon", StringComparison.OrdinalIgnoreCase) != true)
@@ -485,6 +496,9 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
 
         return issues;
     }
+
+    /// <summary>Issue code for a declared coupon structure that expected-accrual generation cannot handle.</summary>
+    public const string CouponStructureUnsupported = SecurityEconomicDispositions.CouponStructureUnsupported;
 
     private static void GenerateFixedCouponEvents(
         SecurityMasterAccountingEventRequest request,

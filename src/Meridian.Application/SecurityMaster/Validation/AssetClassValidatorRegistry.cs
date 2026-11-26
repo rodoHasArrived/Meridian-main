@@ -89,6 +89,9 @@ internal sealed class JsonAssetClassValidator : ISecurityAssetClassValidator
 
     public string AssetClass { get; }
 
+    /// <summary>The declared rules, for parity tests against other field declarations.</summary>
+    internal IReadOnlyList<ISecurityValidationRule> Rules => _rules;
+
     public IReadOnlyList<SecurityValidationIssueDto> Validate(SecurityValidationContext context)
     {
         var issues = new List<SecurityValidationIssueDto>();

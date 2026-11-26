@@ -425,6 +425,11 @@ identity the caller put in metadata (`actor`, `runId`, `correlationId`, `session
   Security Master (`SECURITY_MASTER_REJECTED_AT_DISPATCH`). A refusal releases risk reservations and
   consumed approvals, the same way an operator-control refusal does. Untyped orders have no dispatch
   recheck.
+- **Security Master identity.** `SecurityMasterGate` resolves the order's ticker through the
+  canonical `ISecurityResolver.ResolveCanonicalAsync` path, active securities only. Besides an
+  unregistered ticker, it refuses one claimed by more than one active security (the reason lists the
+  candidate IDs) and one registered only to inactive securities. When the resolver is composed with
+  the merge redirect store, a ticker of a merged-away security resolves to its survivor.
 
 The live authorization lease binds the active run, retained artifact, and account through the
 broker send. Scoped Designer paper intents retain the exact strategy version, review, and

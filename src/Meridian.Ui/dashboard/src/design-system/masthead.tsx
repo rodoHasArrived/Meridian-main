@@ -23,6 +23,8 @@ export interface DesignSystemMastheadProps {
   onOpenCommandPalette: () => void;
   trustStrip: AppShellTrustStripState;
   session: SessionInfo | null;
+  /** The signed-in operator. The session's `displayName` is a desk label, not the person. */
+  signedInUsername?: string | null;
   actions?: ReactNode;
   provenance?: DataProvenanceKind;
   onRetryLiveData?: () => void;
@@ -46,6 +48,7 @@ export function DesignSystemMasthead({
   onOpenCommandPalette,
   trustStrip,
   session,
+  signedInUsername = null,
   actions,
   provenance = trustStripProvenance(trustStrip),
   onRetryLiveData,
@@ -116,12 +119,17 @@ export function DesignSystemMasthead({
           <div
             className="workstation-session-card mds-session-card"
             role="group"
-            aria-label={`Current session: ${session.displayName}, ${session.role}`}
-            title={`${session.displayName} · ${session.role}`}
+            aria-label={signedInUsername
+              ? `Signed in as ${signedInUsername}, ${session.role}, desk ${session.displayName}`
+              : `Current session: desk ${session.displayName}, ${session.role}`}
+            title={signedInUsername
+              ? `${signedInUsername} · ${session.role} · ${session.displayName}`
+              : `${session.displayName} · ${session.role}`}
           >
             {/* The environment is the masthead environment badge's leading, never-shrinking
-                segment, so the masthead fits one row; the group label still names it. */}
-            <span className="workstation-session-name">{session.displayName}</span>
+                segment, so the masthead fits one row; the group label still names it. The person
+                is the signed-in username; the desk label shows until it loads. */}
+            <span className="workstation-session-name">{signedInUsername ?? session.displayName}</span>
             <span className="workstation-session-role text-muted-foreground">{session.role}</span>
           </div>
         ) : (

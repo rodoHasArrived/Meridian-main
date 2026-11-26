@@ -6,6 +6,111 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationFundScopeTenantAccessor
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationFundScopeTenantAccessor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:106](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L106).
+
+SEC-005 slice 4c-ii: supplies the storage layer (which must not depend on ASP.NET Core) with the caller&#x27;s server-resolved tenant for the current request, so the Postgres ledger store can apply tenant read predicates without threading a caller-tenant argument through every read method. Depends only on the singleton-safe IHttpContextAccessor (AsyncLocal-backed), so it is safe to inject into the singleton ledger store without a captive scoped dependency. Returns null when the request has no concrete tenant; strict stores reject that unresolved authority.
+
+```csharp
+public sealed class WorkstationFundScopeTenantAccessor : IFundScopeTenantAccessor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkstationFundScopeTenantAccessor(IHttpContextAccessor httpContextAccessor);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:110](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L110) |  |
+| <code>public string? ResolveCallerTenant();</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:116](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L116) |  |
+
+## WorkstationTenantCompanyScopeEndpointFilters
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationTenantCompanyScopeEndpointFilters</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:178](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L178).
+
+Unconditional isolation gate for workstation routes whose durable identity is tenant plus company. Unlike the broader rollout-controlled fund-write gate, this filter never permits or merely logs an incomplete scope.
+
+```csharp
+public static class WorkstationTenantCompanyScopeEndpointFilters
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RouteHandlerBuilder RequireWorkstationTenantCompanyScope(this RouteHandlerBuilder builder);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:183](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L183) |  |
+
+## WorkstationTenantContext
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationTenantContext</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L14).
+
+Request-scoped operator and tenant context resolved from authenticated workstation middleware.
+
+```csharp
+public sealed record WorkstationTenantContext(string? TenantId, string? CompanyId, string? Actor, string? RoleProfileName, UserPermission Permissions)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool HasTenantScope =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L21) |  |
+
+## WorkstationTenantScopeEndpointFilters
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationTenantScopeEndpointFilters</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:142](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L142).
+
+Adds tenant-scope metadata and request filters to route groups and individual endpoints.
+
+```csharp
+public static class WorkstationTenantScopeEndpointFilters
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RouteGroupBuilder RequireWorkstationTenantScope(this RouteGroupBuilder group);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:146](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L146) |  |
+| <code>public static RouteHandlerBuilder RequireWorkstationTenantScope(this RouteHandlerBuilder builder);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:153](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L153) |  |
+
+## WorkstationTenantScopeMetadata
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationTenantScopeMetadata</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:137](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L137).
+
+Marks endpoints that require an authenticated workstation tenant scope.
+
+```csharp
+public sealed class WorkstationTenantScopeMetadata;
+```
+
+## AccountCashForecastEvidenceAdapter
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashForecastEvidenceAdapter</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L37).
+
+Exact supported source economics and accepted review, scoped to a single account/book.
+
+```csharp
+public sealed class AccountCashForecastEvidenceAdapter(IEvidenceArtifactStore store)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task VerifyMonitoringAsync(BondMonitoringCaptureRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:47](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L47) |  |
+| <code>public async Task VerifyAsync(AccountCashForecastRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:71](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L71) |  |
+
 ## AccountCashForecastSourceAuthorityException
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashForecastSourceAuthorityException</code>. Kind: `class`.
@@ -849,138 +954,3 @@ Server-derived authority; this type is never bound from an HTTP request body.
 ```csharp
 public sealed record SinglePrincipalAttestationAuthority(string Actor, OperationsActionOriginDto Origin, bool CanRead, bool CanAdministerDeclaration = false, bool CanAttest = false, bool CanRevoke = false, bool CanModifyTarget = false, bool CanModifyDraftTarget = false);
 ```
-
-## SinglePrincipalAttestationException
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.SinglePrincipalAttestationException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:19](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L19).
-
-```csharp
-public sealed class SinglePrincipalAttestationException(string code, string message) : InvalidOperationException(message)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Code { get; } = code;</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:22](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L22) |  |
-
-## SinglePrincipalAttestationStore
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.SinglePrincipalAttestationStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.ApprovalBoundary.cs:6](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.ApprovalBoundary.cs#L6).
-
-```csharp
-public sealed partial class SinglePrincipalAttestationStore : IPreparerAttestationReferenceClassifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;bool&gt; IsPreparerReceiptReferenceAsync(string tenantId, string companyId, string? reference, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.ApprovalBoundary.cs:13](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.ApprovalBoundary.cs#L13) | Classifies exact identities only for denying their use as ordinary approval. This trusted server seam is not an operator read endpoint and never returns receipt contents or authority. Retained assertions remain preparer assertions after withdrawal or revocation. |
-
-Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:30](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L30).
-
-Scoped, default-off storage for non-posting evidence acknowledgments and explicit draft checks. Declarations, assertions, revocations and their audit events share one atomic snapshot and a cross-process lease. No method creates an ordinary approval, changes evidence review status or grants domain authority.
-
-```csharp
-public sealed partial class SinglePrincipalAttestationStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string PolicyHash { get; } = Digest(SinglePrincipalAttestationPolicy.Version + &quot;\n&quot; + SinglePrincipalAttestationPolicy.EvidenceAcknowledgment + &quot;\n&quot; + SinglePrincipalAttestationPolicy.Confirmation + &quot;\nNo approval, posting, waiver, certification or release authority.&quot;);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:41](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L41) |  |
-| <code>public static string DraftPolicyHash { get; } = Digest(SinglePrincipalAttestationPolicy.DraftVersion + &quot;\n&quot; + SinglePrincipalAttestationPolicy.EvidenceAcknowledgment + &quot;\n&quot; + SinglePrincipalAttestationPolicy.DraftCheck + &quot;\n&quot; + SinglePrincipalAttestationPolicy.Confirmation + &quot;\n&quot; + SinglePrincipalAttestationPolicy.DraftConfirmation + &quot;\nNo approval, posting, waiver, certification or release authority.&quot;);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:45](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L45) |  |
-| <code>public SinglePrincipalAttestationStore(string dataRoot, Func&lt;SinglePrincipalAttestationScopeDto, SinglePrincipalAttestationAuthority, RecordPreparerAttestationRequestDto, CancellationToken, Task&lt;SinglePrincipalAttestationSubjectSnapshotDto?&gt;&gt; resolveSubject, bool policyEnabled = false, Func&lt;string, string, CancellationToken, Task&gt;? stateWriter = null, bool draftChecksEnabled = false);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:53](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L53) |  |
-| <code>public async Task&lt;SinglePrincipalAttestationStateDto&gt; GetAsync(SinglePrincipalAttestationScopeDto scope, SinglePrincipalAttestationAuthority authority, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:71](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L71) |  |
-| <code>public async Task&lt;SinglePrincipalDeclarationDto&gt; ChangeDeclarationAsync(SinglePrincipalAttestationScopeDto scope, SinglePrincipalAttestationAuthority authority, ChangeSinglePrincipalDeclarationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:82](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L82) |  |
-| <code>public async Task&lt;PreparerAttestationReceiptDto&gt; AttestAsync(SinglePrincipalAttestationScopeDto scope, SinglePrincipalAttestationAuthority authority, RecordPreparerAttestationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:123](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L123) |  |
-| <code>public async Task&lt;PreparerAttestationRevocationDto&gt; RevokeAsync(SinglePrincipalAttestationScopeDto scope, SinglePrincipalAttestationAuthority authority, RevokePreparerAttestationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:186](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L186) |  |
-
-Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Export.cs:11](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Export.cs#L11).
-
-```csharp
-public sealed partial class SinglePrincipalAttestationStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;PreparerAttestationProofFile&gt; GetReceiptExportAsync(SinglePrincipalAttestationScopeDto scope, SinglePrincipalAttestationAuthority authority, Guid receiptId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Export.cs:17](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Export.cs#L17) | Reproduces historical assertion evidence without granting current authority. Current read permission is still required; withdrawal and revocation do not rewrite these bytes. |
-
-Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Persistence.cs:8](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Persistence.cs#L8).
-
-```csharp
-public sealed partial class SinglePrincipalAttestationStore
-```
-
-## StatementImportEvidenceBridge
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementImportEvidenceBridge</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:34](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L34).
-
-Retains statement-connector imports in Evidence Vault without moving reconciliation ownership out of Financial Operations.
-
-```csharp
-public sealed class StatementImportEvidenceBridge(IEvidenceArtifactStore store, string dataRoot) : IStatementImportEvidenceRetainer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;StatementImportCommitResultDto&gt; RetainAsync(StatementImportCommitResultDto result, StatementImportEvidenceBridgeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:40](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L40) |  |
-
-## StatementImportEvidenceBridgeRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementImportEvidenceBridgeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:5](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L5).
-
-```csharp
-public sealed record StatementImportEvidenceBridgeRequest(string SourceKind, string SourceInstitution, string FundAccountId, string ExternalAccountId, DateOnly PeriodStart, DateOnly PeriodEnd, string ImportedBy)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? TenantId { get; init; }</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:14](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L14) |  |
-| <code>public string? CompanyId { get; init; }</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:15](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L15) |  |
-| <code>public string? WorkflowId { get; init; }</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:16](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L16) |  |
-
-## StatementReconciliationReportArtifactDownload
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportArtifactDownload</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:30](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L30).
-
-```csharp
-public sealed record StatementReconciliationReportArtifactDownload(StatementReconciliationReportArtifactDto Descriptor, byte[] Content);
-```
-
-## StatementReconciliationReportFetchIngestionAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportFetchIngestionAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs:15](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs#L15).
-
-Adapts scheduled connector fetches into the existing statement reconciliation report workflow. The scheduler uses this authority to re-resolve persisted account ownership before provider access, and ingestion resolves it again before treating the fetched document as authoritative. Success is reported only after Operations Continuity and canonical casework publication have been retained.
-
-```csharp
-public sealed class StatementReconciliationReportFetchIngestionAuthority(StatementReconciliationReportWorkflowService workflow, IStatementReconciliationIntakeAuthority intakeAuthority) : IStatementFetchIngestionAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;StatementAccountingScope&gt; AuthorizeAsync(StatementFetchAuthorizationCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs:19](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs#L19) |  |
-| <code>public async Task&lt;StatementImportCommitResultDto&gt; IngestAsync(StatementFetchIngestionCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs#L37) |  |

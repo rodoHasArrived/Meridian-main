@@ -453,6 +453,9 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_ResolveConflictRequest["ResolveConflictRequest"] {
         +string? ChosenWinnerSource
         +Guid ConflictId
+        +bool? IsPolicyDeviation
+        +string? PolicyRule
+        +string? PolicyWinnerSource
         +string? Reason
         +string Resolution
         +string ResolvedBy

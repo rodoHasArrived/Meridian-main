@@ -374,6 +374,25 @@ Declared public members:
 | <code>public async Task&lt;ProviderIntegrationActivationResultDto&gt; ActivateAsync(ProviderIntegrationActivationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs:23](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs#L23) |  |
 | <code>public async Task&lt;ProviderIntegrationActivationResultDto&gt; ActivateAsync(string? tenantId, ProviderIntegrationActivationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs:28](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs#L28) |  |
 
+## ProviderIntegrationActorFlagService
+
+Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationActorFlagService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationActorFlagService.cs:12](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActorFlagService.cs#L12).
+
+Flags provider-integration records whose stored actor does not name a person (a session desk label, a Settings placeholder, or blank). Flags are appended beside the records; nothing is rewritten, so immutable manifest versions keep their content digests and pinned references.
+
+```csharp
+public sealed class ProviderIntegrationActorFlagService(IProviderIntegrationManifestStore store, TimeProvider? timeProvider = null, ILogger<ProviderIntegrationActorFlagService>? logger = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ProviderIntegrationActorFlagScanResultDto&gt; ScanAsync(string tenantId, string flaggedBy, IReadOnlyCollection&lt;string&gt;? extraLabels = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActorFlagService.cs:24](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActorFlagService.cs#L24) | Scans the tenant&#x27;s integration store and appends a flag for each unverified actor not already flagged. flaggedBy is the authenticated operator running the scan. |
+| <code>public Task&lt;IReadOnlyList&lt;ProviderIntegrationActorFlagDto&gt;&gt; ListAsync(string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActorFlagService.cs:72](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActorFlagService.cs#L72) |  |
+
 ## ProviderIntegrationDryRunService
 
 Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationDryRunService</code>. Kind: `class`.
@@ -1001,24 +1020,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static StatusSnapshot FromRuntime(AppConfig cfg, IMarketDataClient ib, SubscriptionOrchestrator subs, IEventMetrics? metrics = null);</code> | [src/Meridian.Application/Monitoring/StatusSnapshot.cs:20](../../../../src/Meridian.Application/Monitoring/StatusSnapshot.cs#L20) |  |
-
-## StatusWriter
-
-Qualified name: <code>Meridian.Application.Monitoring.StatusWriter</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Monitoring/StatusWriter.cs:15](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L15).
-
-Periodically writes a small status snapshot JSON file for dashboards.
-
-```csharp
-public sealed class StatusWriter : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StatusWriter(string path, Func&lt;AppConfig&gt; configProvider, IEventMetrics? metrics = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:31](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L31) |  |
-| <code>public void Start(TimeSpan interval);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:39](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L39) |  |
-| <code>public async Task WriteOnceAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:73](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L73) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:98](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L98) |  |

@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 5 of 8
 
-Objects 321-400 of 615. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 621. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -415,6 +415,12 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_SecurityCanonicalAssetHomes["SecurityCanonicalAssetHomes"] {
         +IReadOnlyList~string~ SecuritizedLabels
     }
+    class Meridian_Contracts_SecurityMaster_SecurityCanonicalResolution["SecurityCanonicalResolution"] {
+        +IReadOnlyList~Guid~ CandidateSecurityIds
+        +SecurityCanonicalResolution NotFound
+        +Guid? SecurityId
+        +SecurityResolutionStatus Status
+    }
     class Meridian_Contracts_SecurityMaster_SecurityCashFlowBehavior["SecurityCashFlowBehavior"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityCashFlowBehaviorExtensions["SecurityCashFlowBehaviorExtensions"] {
@@ -432,14 +438,6 @@ classDiagram
         +StructuredCashFlowScenario Scenario
         +SecurityDetailDto Security
         +SecurityCashFlowSourceDto Source
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityCashFlowSourceDto["SecurityCashFlowSourceDto"] {
-        +DateTimeOffset? ClientConfirmedAt
-        +string? ClientConfirmedBy
-        +bool IsClientOverride
-        +DateTimeOffset? LastUpdatedUtc
-        +Guid SecurityId
-        +StructuredCashFlowSourceKind SourceKind
     }
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarUsage --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarPurpose
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnostic --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnosticCode
@@ -499,5 +497,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetTermEditorKind
     Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetTermRole
     Meridian_Contracts_SecurityMaster_SecurityAssetTermUiHint --> Meridian_Contracts_SecurityMaster_SecurityAssetTermEditorKind
-    Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityCashFlowSourceDto
 ```

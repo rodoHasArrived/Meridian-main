@@ -463,6 +463,19 @@ public static class UiApiRoutes
     public const string SecurityMasterOperatorOverrideDecision = "/api/security-master/{securityId:guid}/operator-overrides/decision";
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
+    public const string SecurityMasterHeldAmendments = "/api/security-master/held-amendments";
+    public const string SecurityMasterMerge = "/api/security-master/{securityId:guid}/merge";
+    public const string SecurityMasterTermsAsOf = "/api/security-master/{securityId:guid}/terms-as-of";
+    public const string SecurityMasterCashFlowShadowCompare = "/api/security-master/cash-flows/shadow-compare";
+    public const string SecurityMasterFactorObservations = "/api/security-master/{securityId:guid}/factor-observations";
+    public const string SecurityMasterExceptionCases = "/api/security-master/exception-cases";
+    public const string SecurityMasterExceptionCasesSync = "/api/security-master/exception-cases/sync";
+    public const string SecurityMasterExceptionCaseAssign = "/api/security-master/exception-cases/{caseId:guid}/assign";
+    public const string EntityMasterEntities = "/api/entity-master/entities";
+    public const string EntityMasterEntity = "/api/entity-master/entities/{entityId:guid}";
+    public const string EntityMasterEntityParent = "/api/entity-master/entities/{entityId:guid}/parent";
+    public const string EntityMasterSecurityIssuer = "/api/entity-master/securities/{securityId:guid}/issuer";
+    public const string SecurityMasterHeldAmendmentDiscard = "/api/security-master/held-amendments/{heldAmendmentId:guid}/discard";
 
     // Passport Workbench governed-write surface (see docs/engineering/blueprints/security-master-passport-workbench.md).
     public const string SecurityMasterWorkbenchField = "/api/security-master/{securityId:guid}/workbench/field";
@@ -471,7 +484,9 @@ public static class UiApiRoutes
     public const string SecurityMasterWorkbenchApprove = "/api/security-master/{securityId:guid}/workbench/approve";
     public const string SecurityMasterWorkbenchDiscard = "/api/security-master/{securityId:guid}/workbench/discard";
     public const string SecurityMasterWorkbenchPublish = "/api/security-master/{securityId:guid}/workbench/publish";
+    public const string SecurityMasterWorkbenchPendingRevisions = "/api/security-master/workbench/revisions";
     public const string SecurityMasterImport = "/api/security-master/import";
+    public const string SecurityMasterImportPlan = "/api/security-master/import/plan";
     public const string SecurityMasterIngestStatus = "/api/security-master/ingest/status";
     public const string SecurityMasterEdgarIngest = "/api/security-master/ingest/edgar";
 
@@ -814,6 +829,8 @@ public static class UiApiRoutes
     public const string WorkstationProviderIntegrationQuarantineReview = "/api/workstation/provider-integrations/connections/{connectionId}/quarantine";
     public const string WorkstationProviderIntegrationQuarantineResolve = "/api/workstation/provider-integrations/quarantine/resolve";
     public const string WorkstationProviderIntegrationQuarantineReplay = "/api/workstation/provider-integrations/quarantine/replay";
+    public const string WorkstationProviderIntegrationActorFlags = "/api/workstation/provider-integrations/actor-flags";
+    public const string WorkstationProviderIntegrationActorFlagsScan = "/api/workstation/provider-integrations/actor-flags/scan";
     public const string WorkstationGovernance = "/api/workstation/governance";
     public const string WorkstationAccounting = "/api/workstation/accounting";
     public const string WorkstationBookReceiptQueue = "/api/workstation/accounting/receipt-queue";

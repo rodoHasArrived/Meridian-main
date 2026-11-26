@@ -258,7 +258,7 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService, 
             ? string.Empty
             : fileExtension.StartsWith(".", StringComparison.Ordinal) ? fileExtension : $".{fileExtension}";
 
-    private static CreateSecurityRequest StampImportAuthority(
+    internal static CreateSecurityRequest StampImportAuthority(
         CreateSecurityRequest request,
         string actor,
         DateTimeOffset ingestedAtUtc)

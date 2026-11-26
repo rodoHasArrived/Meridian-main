@@ -24,6 +24,15 @@ public interface IAffectedLedgerBookResolver
     /// </summary>
     Task<IReadOnlyList<Guid>> ResolveAsync(
         SecurityMasterDownstreamImpactDto impact, CancellationToken ct = default);
+
+    /// <summary>
+    /// Resolves the books for a revision of <paramref name="securityId"/>. A fund-scoped impact
+    /// resolves as <see cref="ResolveAsync"/>; an UNSCOPED impact routes to every ledger book that has
+    /// held a lot of the security (review P4, owner decision 2026-11-25) instead of to none.
+    /// </summary>
+    Task<IReadOnlyList<Guid>> ResolveForSecurityAsync(
+        Guid securityId, SecurityMasterDownstreamImpactDto impact, CancellationToken ct = default)
+        => ResolveAsync(impact, ct);
 }
 
 /// <summary>
@@ -39,9 +48,10 @@ public interface IAffectedLedgerBookResolver
 /// <para><b>Granularity:</b> the display-oriented <see cref="SecurityMasterDownstreamImpactDto"/> does
 /// not carry per-book identifiers, so resolution is at fund-book granularity — conservative by design,
 /// since over-including a fund's books yields an extra restatement <i>proposal</i> (operator-reviewed,
-/// never auto-applied) whereas under-including would risk a silent mutation of a closed book. Narrowing
-/// to the specific posting books that referenced the security (via journal-line dimensions) and
-/// cross-fund expansion for unscoped impacts are deferred to later slices.</para>
+/// never auto-applied) whereas under-including would risk a silent mutation of a closed book. An
+/// UNSCOPED impact resolves through <see cref="ResolveForSecurityAsync"/> to every book that has held
+/// a lot of the security (review P4). Narrowing to the specific posting books that referenced the
+/// security via journal-line dimensions remains a later slice.</para>
 /// </remarks>
 public sealed class LedgerBookAffectedResolver : IAffectedLedgerBookResolver
 {
@@ -54,6 +64,32 @@ public sealed class LedgerBookAffectedResolver : IAffectedLedgerBookResolver
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _journalStore = journalStore;
+    }
+
+    public async Task<IReadOnlyList<Guid>> ResolveForSecurityAsync(
+        Guid securityId, SecurityMasterDownstreamImpactDto impact, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(impact);
+        if (!string.IsNullOrWhiteSpace(impact.FundProfileId) || _journalStore is null)
+        {
+            return await ResolveAsync(impact, ct).ConfigureAwait(false);
+        }
+
+        try
+        {
+            // Unscoped: the display impact cannot name the funds, but the lots can. Every book that
+            // has held the security routes through the period-lock check; over-inclusion yields an
+            // operator-reviewed proposal, never a silent mutation of a closed book.
+            return await _journalStore.ListLedgerBookIdsHoldingSecurityAsync(securityId, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(
+                ex,
+                "Resolving ledger books holding {SecurityId} for an unscoped revision failed; period-aware routing sees no books for this publish.",
+                securityId);
+            return [];
+        }
     }
 
     public async Task<IReadOnlyList<Guid>> ResolveAsync(

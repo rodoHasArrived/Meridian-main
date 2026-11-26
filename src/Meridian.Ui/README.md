@@ -347,6 +347,24 @@ endpoints, and the workstation identifier-kind union includes `LoanX` and `Clip`
 The generated route table includes the income cash-flow, factor-history and term-block
 Security Master routes.
 
+The Accounting screen hosts the Security Master review inbox (`security-master-review-inbox.tsx`),
+which lists pending workbench revisions from the shared `GET /api/security-master/workbench/revisions`
+route and discards a revision through the governed workbench API. A `field-already-staged` refusal
+names who already staged the field. Below the inbox, the held-amendments panel
+(`security-master-held-amendments.tsx`) and the exception-queue panel
+(`security-master-exception-queue.tsx`) read `GET /api/security-master/held-amendments` and
+`GET /api/security-master/exception-cases`. The exception queue pre-fills its assignee with the
+signed-in username from `/api/auth/me`.
+
+The passport editor shows its security's open conflicts from the trust snapshot. A conflict that
+already has a staged "Use B" draft is marked "Awaiting draft …", and **Continue draft** opens that
+draft. Settings' advanced provider route has an "Unverified actors" panel over
+`/api/workstation/provider-integrations/actor-flags`.
+
+The shell, Settings, and the Accounting and Data screens name the operator by the signed-in
+username, read once through `useSignedInUsername()`. The session `displayName` is a desk label and is
+shown only as the desk.
+
 The host-served bundle includes Trading's governed approvals panel showing each parked order's
 economic terms from the shared escalation contract. Rebuild it from `dashboard/` after source changes.
 

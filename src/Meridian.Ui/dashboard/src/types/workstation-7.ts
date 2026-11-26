@@ -122,6 +122,25 @@ export interface SecurityMasterTrustSnapshot {
   corporateActionDescriptors?: CorporateActionDescriptor[] | null;
   governance?: SecurityMasterGovernance | null;
   cashFlowBlocker?: SecurityMasterScheduleBlocker | null;
+  /** Open source conflicts with the server's policy recommendation (the passport editor's conflict list). */
+  conflictAssessments?: SecurityMasterConflictAssessment[] | null;
+}
+
+/** Mirrors `SecurityMasterConflictAssessmentDto`. */
+export interface SecurityMasterConflictAssessment {
+  conflict: SecurityMasterConflict;
+  currentWinningValue: string | null;
+  challengerValue: string | null;
+  currentWinningSource: string;
+  challengerSource: string;
+  recommendation: "PreserveWinner" | "Challenger" | "DismissAsEquivalent" | "ManualReview" | string;
+  recommendedResolution: string;
+  recommendedWinner: string;
+  impactSeverity: "Unknown" | "None" | "Low" | "Medium" | "High" | string;
+  impactSummary: string;
+  impactDetail: string;
+  isBulkEligible: boolean;
+  bulkIneligibilityReason?: string | null;
 }
 
 /** Effective host requirements; absent means unavailable, never a Standard-profile assumption. */

@@ -2045,6 +2045,37 @@ ordinary lifecycle transitions cannot replace the preparation link or relax sour
 | `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
+## Provider-integration actor flags (2026-11-25)
+
+`Integrations/FileProviderIntegrationManifestStore.ActorFlags.cs` implements
+`IProviderIntegrationActorFlagStore`. `ScanStoredActorValuesAsync` reads the store's JSON records
+(skipping `actor-flags`, other tenants' partitions and lock files, and unreadable files) and reports
+each actor field with its owning subject (sync run, then connection, then manifest) and the nearest
+timestamp. `TryAppendActorFlagAsync` writes a flag under `actor-flags/` only if none exists for that
+id, under an entity lock. Flags never modify the flagged record, so manifest versions stay
+digest-verified.
+
+## Security Master and entity master persistence (2026-11-25)
+
+Security Master migrations 069–075 (PR #3736). Each has an in-memory store alongside its PostgreSQL
+store.
+
+- **069:** persisted conflict policy decisions.
+- **070:** held amendments (`PostgresSecurityMasterHeldAmendmentStore`).
+- **071:** an append-only guard on corporate actions. It allows the null-fingerprint backfill, and
+  rewrites of `event_type` and `fingerprint` only while `meridian.corporate_action_normalization` is
+  `on`.
+- **072:** the change outbox. Rows are written in the same transaction as the event append and
+  claimed with `SKIP LOCKED`.
+- **073:** merge redirects. Survivors resolve with a bounded depth of 8.
+- **074:** exception cases.
+- **075:** factor observations, append-only.
+
+`EntityMaster/EntityMasterStores.cs` holds the entity-master stores. Its migration set
+(`EntityMaster/Migrations/001_entity_master.sql`, schema `entity_master`) is applied on first use and
+is registered in `database/schema-control.json`
+([ADR-033](../../docs/adr/033-entity-master-bounded-context.md)).
+
 ## TODO checklist
 
 <!-- source-todos:begin module=SRC-STORAGE -->

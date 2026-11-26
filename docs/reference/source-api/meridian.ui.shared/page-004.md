@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EndpointIndependentAuthenticationMetadata
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.EndpointIndependentAuthenticationMetadata</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:96](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L96).
+
+Declares that a route authenticates its caller by its own independent mechanism -- a provider HMAC signature, an opaque one-use grant token -- rather than by the ambient principal. The read-only-role method cap stands aside for it, because that cap judges commands issued *as* the ambient principal and this route&#x27;s caller is never that principal. Standing aside grants nothing: the route&#x27;s own check still decides the request, and it runs strictly later than the cap. Without this a deployment that names a read-only anonymous role would refuse a correctly signed delivery receipt before the signature was ever examined -- the same failure the API-key and bootstrap exemptions in LoginSessionMiddleware already avoid, for the same reason. Applied per route after reading the handler, never by convention, and never to a route whose only authentication is the ambient principal.
+
+```csharp
+public sealed class EndpointIndependentAuthenticationMetadata
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public EndpointIndependentAuthenticationMetadata(string reason);</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:98](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L98) |  |
+| <code>public string Reason { get; }</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:105](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L105) | How this route authenticates its caller, e.g. &quot;provider HMAC signature headers&quot;. |
+
 ## EndpointNonMutatingMetadata
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.EndpointNonMutatingMetadata</code>. Kind: `class`.
@@ -1195,47 +1214,14 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Tax.cs:13](../../../..
 public static partial class LedgerEndpoints
 ```
 
-## LiveDataEndpoints
+## LinkSecurityIssuerRequest
 
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.LiveDataEndpoints</code>. Kind: `class`.
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.LinkSecurityIssuerRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs#L16).
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.EntityMaster.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.EntityMaster.cs#L16).
 
-Extension methods for registering live data API endpoints. Provides access to collected real-time market data (trades, quotes, order book, order flow).
-
-```csharp
-public static class LiveDataEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapLiveDataEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs#L21) | Maps all live data API endpoints. |
-
-## LoginSessionMiddleware
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:27](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L27).
-
-Middleware that enforces session-based authentication. Sanitized lifecycle probes (/healthz, /readyz, /livez) and the loopback-scoped Prometheus scrape path (/metrics) are always exempt. The initial-account bootstrap surface (/setup/account, /api/auth/bootstrap) is exempt while no account exists; those endpoints gate themselves on the loopback-only, one-use MDC_BOOTSTRAP_TOKEN. The login page (/login) and auth API endpoints (/api/auth/*) are exempt when authentication is configured. Unauthenticated API requests receive a 401 JSON response. Unauthenticated browser (non-/api) requests are redirected to /login. Authentication is optional in Development/Test and required elsewhere by default.
+Body linking a security to its issuer from a date.
 
 ```csharp
-public sealed class LoginSessionMiddleware
+public sealed record LinkSecurityIssuerRequest(Guid IssuerEntityId, DateOnly ValidFrom);
 ```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string SessionAuthenticationType = &quot;MeridianLoginSession&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:54](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L54) | Authentication type stamped on HttpContext.User for validated login sessions, so Identity.IsAuthenticated is true for exactly the principals a session established. |
-| <code>public const string SessionCookieName = &quot;mdc-session&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:57](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L57) | Name of the HTTP-only session cookie set after successful login. |
-| <code>public const string CurrentUserKey = &quot;CurrentUser&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:63](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L63) | Key for the authenticated username stored in Microsoft.AspNetCore.Http.HttpContext.Items. Set by the middleware after successful session validation. |
-| <code>public const string CurrentUserRoleKey = &quot;CurrentUserRole&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:69](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L69) | Key for the authenticated user&#x27;s Meridian.Identity.Auth.UserRole stored in Microsoft.AspNetCore.Http.HttpContext.Items. |
-| <code>public const string CurrentUserRoleProfileNameKey = &quot;CurrentUserRoleProfileName&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:75](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L75) | Key for the authenticated user&#x27;s role-profile name stored in Microsoft.AspNetCore.Http.HttpContext.Items. |
-| <code>public const string CurrentUserCompanyIdKey = &quot;CurrentUserCompanyId&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:81](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L81) | Key for the authenticated user&#x27;s company id stored in Microsoft.AspNetCore.Http.HttpContext.Items. |
-| <code>public const string CurrentTenantIdKey = &quot;CurrentTenantId&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:87](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L87) | Key for the tenant scope resolved for the authenticated request. Until tenant ids diverge from company ids, this carries the authenticated company id. |
-| <code>public const string CurrentUserPermissionsKey = &quot;CurrentUserPermissions&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:93](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L93) | Key for the authenticated user&#x27;s Meridian.Identity.Auth.UserPermission flags stored in Microsoft.AspNetCore.Http.HttpContext.Items. |
-| <code>public LoginSessionMiddleware(RequestDelegate next, AuthenticationConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:98](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L98) |  |
-| <code>public async Task InvokeAsync(HttpContext context, LoginSessionService sessionService);</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:104](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L104) |  |

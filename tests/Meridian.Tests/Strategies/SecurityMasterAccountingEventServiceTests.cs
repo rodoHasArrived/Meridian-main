@@ -754,6 +754,51 @@ public sealed class SecurityMasterAccountingEventServiceTests
         projector.Requests.Select(static request => request.ExpectedPositionVersion).Should().Equal(7, 8);
     }
 
+    [Theory]
+    [InlineData("Step")]
+    [InlineData("InflationLinked")]
+    [InlineData("SomeFutureStructure")]
+    public void Generate_UnsupportedCouponStructure_BlocksWithTypedIssueInsteadOfSilentZero(string couponType)
+    {
+        // Step and inflation-linked coupons once passed coverage and then generated no coupon events
+        // and no issue at all, which read as a plausible zero accrual for a coupon-bearing bond.
+        var service = new SecurityMasterAccountingEventService();
+        var fixedSecurity = CreateFixedCouponSecurity("Bond");
+        var security = fixedSecurity with
+        {
+            FixedIncomeTerms = fixedSecurity.FixedIncomeTerms! with { CouponType = couponType }
+        };
+
+        var result = service.Generate(CreateRequest(security: security));
+
+        result.AccrualCalculations.Should().BeEmpty();
+        result.ExpectedEvents.Should().NotContain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.AccrueInterestIncome);
+        result.Issues.Should().ContainSingle(issue =>
+            issue.Code == SecurityMasterAccountingEventService.CouponStructureUnsupported
+            && issue.Severity == ReconciliationBreakSeverity.High
+            && issue.Reason.Contains(couponType, StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("Fixed")]
+    [InlineData("fixed")]
+    [InlineData("ZeroCoupon")]
+    public void Generate_RecognizedCouponStructure_DoesNotRaiseUnsupportedStructureIssue(string couponType)
+    {
+        var service = new SecurityMasterAccountingEventService();
+        var fixedSecurity = CreateFixedCouponSecurity("Bond");
+        var security = fixedSecurity with
+        {
+            FixedIncomeTerms = fixedSecurity.FixedIncomeTerms! with { CouponType = couponType }
+        };
+
+        var result = service.Generate(CreateRequest(security: security));
+
+        result.Issues.Should().NotContain(issue =>
+            issue.Code == SecurityMasterAccountingEventService.CouponStructureUnsupported);
+    }
+
     private static SecurityMasterAccountingSecurity CreateFixedCouponSecurity(string assetClass)
         => new(
             BondSecurityId,

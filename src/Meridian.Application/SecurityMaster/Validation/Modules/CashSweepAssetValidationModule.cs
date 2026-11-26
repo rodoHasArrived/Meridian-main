@@ -11,7 +11,6 @@ internal static class CashSweepAssetValidationModule
     private static ISecurityAssetClassValidator Create(ISecurityAssetProfileCatalog assetProfileCatalog)
         => new JsonAssetClassValidator(
             "CashSweep",
-            [
-                FieldRule.OptionalNonNegative("yieldRate", "SM_CASH_SWEEP_YIELD_RATE_INVALID", "Cash sweep yield is invalid", "Cash sweep yield rates must be zero or greater.")
-            ]);
+            // yieldRate is signed in SecurityRateFieldUnits (negative-yield sweep vehicles).
+            []);
 }

@@ -91,6 +91,9 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.AddSingleton<CashFinancingReadService>();
         services.AddSingleton<IWorkstationReconciliationApiClient, WorkstationReconciliationApiClient>();
         services.AddSingleton<IWorkstationSecurityMasterApiClient, WorkstationSecurityMasterApiClient>();
+        // Security Master review inbox, held amendments and exception queue: the browser's shared routes.
+        services.AddSingleton<Meridian.Ui.Services.Services.SecurityMaster.ISecurityMasterReviewQueueApiClient,
+            Meridian.Ui.Services.Services.SecurityMaster.SecurityMasterReviewQueueApiClient>();
         services.AddSingleton<IWorkstationContractualCashFlowApiClient, WorkstationContractualCashFlowApiClient>();
         // Operator accounting-configuration traffic goes through the server's governed HTTP
         // surface (audit finding P8) so the server stays the single writer and stamps the

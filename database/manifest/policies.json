@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 325,
-    "warning": 325
+    "total": 330,
+    "warning": 330
   },
   "failed": false,
   "findings": [
@@ -174,6 +174,16 @@
       },
       "message": "Business table banking.pending_payments does not have a table comment.",
       "object": "banking.pending_payments",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "entity_master",
+        "table": "entity_master_schema_migrations"
+      },
+      "message": "Business table entity_master.entity_master_schema_migrations does not have a table comment.",
+      "object": "entity_master.entity_master_schema_migrations",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -1960,6 +1970,16 @@
     {
       "details": {
         "schema": "security_master",
+        "table": "security_master_change_outbox"
+      },
+      "message": "Business table security_master.security_master_change_outbox does not have a table comment.",
+      "object": "security_master.security_master_change_outbox",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
         "table": "security_master_conflicts"
       },
       "message": "Business table security_master.security_master_conflicts does not have a table comment.",
@@ -1970,10 +1990,30 @@
     {
       "details": {
         "schema": "security_master",
+        "table": "security_master_held_amendments"
+      },
+      "message": "Business table security_master.security_master_held_amendments does not have a table comment.",
+      "object": "security_master.security_master_held_amendments",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
         "table": "security_master_quality_reports"
       },
       "message": "Business table security_master.security_master_quality_reports does not have a table comment.",
       "object": "security_master.security_master_quality_reports",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "security_master_redirects"
+      },
+      "message": "Business table security_master.security_master_redirects does not have a table comment.",
+      "object": "security_master.security_master_redirects",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -3367,6 +3407,18 @@
     },
     {
       "details": {
+        "directory": "src/Meridian.Storage/EntityMaster/Migrations",
+        "drift_policy": "reapply",
+        "migration_set": "entity-master",
+        "schema": "entity_master"
+      },
+      "message": "Migration set entity-master uses legacy reapply-on-drift behavior.",
+      "object": "entity-master",
+      "rule_id": "legacy-reapply-migration",
+      "severity": "warning"
+    },
+    {
+      "details": {
         "directory": "src/Meridian.Storage/FundAccounts/Migrations",
         "drift_policy": "reapply",
         "migration_set": "fund-accounts",
@@ -3624,5 +3676,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "d47434675b0947dacf23fb0f126d3b53e0d0bd7b39ca9695eacd1d5ca0bb6cfb"
+  "fingerprint": "7eebf1c696e15833e8e82a05d6fd7d8c01edc6625903fb7c06975023ec9edf1c"
 }

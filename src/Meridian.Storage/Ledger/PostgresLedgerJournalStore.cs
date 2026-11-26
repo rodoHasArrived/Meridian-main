@@ -829,6 +829,29 @@ public sealed partial class PostgresLedgerJournalStore :
             : null;
     }
 
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<Guid>> ListLedgerBookIdsHoldingSecurityAsync(Guid securityId, CancellationToken ct = default)
+    {
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select distinct ledger_book_id
+            from {Qualified("tax_lots")}
+            where security_id = @security_id
+            order by ledger_book_id;
+            """;
+        command.Parameters.AddWithValue("security_id", securityId);
+        var books = new List<Guid>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            books.Add(reader.GetGuid(0));
+        }
+
+        return books;
+    }
+
     public async Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(
         string? fundProfileId = null,
         Guid? fundStructureNodeId = null,

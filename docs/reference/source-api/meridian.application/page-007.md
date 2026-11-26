@@ -6,6 +6,23 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderRuntimeCredentialApplyOutcome
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialApplyOutcome</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:7](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L7).
+
+```csharp
+public enum ProviderRuntimeCredentialApplyOutcome
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Applied</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:10](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L10) | Running instances now resolve credentials under the bound scope. |
+| <code>PendingRestart</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:12](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L12) | No in-process recycle exists; the host must be restarted deliberately. |
+
 ## ProviderRuntimeCredentialMutationGuard
 
 Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialMutationGuard</code>. Kind: `class`.
@@ -807,6 +824,91 @@ Declared public members:
 | <code>public async Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs:44](../../../../src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs#L44) |  |
 | <code>public Task StopAsync(CancellationToken cancellationToken) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs:97](../../../../src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs#L97) |  |
 
+## CashFlowEngineShadowComparer
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CashFlow.CashFlowEngineShadowComparer</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:52](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L52).
+
+Review B1 (owner decision 2026-11-25: shadow-compare only). Runs the legacy SecurityMasterCashFlowService and the declared ContractualCashFlowEngine preview over the same securities and reports where they disagree, by payment date, without changing which engine any consumer uses. The decision to route undeclared records through the contractual engine rests on this report. Amounts are compared unsigned per date (interest and principal), at a cent tolerance, from the valuation date forward.
+
+```csharp
+public sealed class CashFlowEngineShadowComparer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CashFlowEngineShadowComparer(ISecurityMasterCashFlowService legacy, IContractualCashFlowPreviewService contractual);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:59](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L59) |  |
+| <code>public async Task&lt;CashFlowShadowReport&gt; CompareAsync(IReadOnlyList&lt;Guid&gt; securityIds, DateOnly valuationDate, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:65](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L65) |  |
+| <code>public async Task&lt;CashFlowShadowComparison&gt; CompareAsync(Guid securityId, DateOnly valuationDate, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:77](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L77) |  |
+
+## CashFlowShadowComparison
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CashFlow.CashFlowShadowComparison</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:26](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L26).
+
+The comparison of one security.
+
+```csharp
+public sealed record CashFlowShadowComparison(Guid SecurityId, CashFlowShadowOutcome Outcome, int LegacyPaymentDates, int ContractualPaymentDates, IReadOnlyList<CashFlowShadowDifference> Differences, string? LegacyBlocker, IReadOnlyList<string> ContractualBlockers);
+```
+
+## CashFlowShadowDifference
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CashFlow.CashFlowShadowDifference</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:18](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L18).
+
+One payment date on which the engines disagree.
+
+```csharp
+public sealed record CashFlowShadowDifference(DateOnly Date, decimal LegacyInterest, decimal ContractualInterest, decimal LegacyPrincipal, decimal ContractualPrincipal);
+```
+
+## CashFlowShadowOutcome
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CashFlow.CashFlowShadowOutcome</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:7](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L7).
+
+How the two cash-flow engines compare for one security (review B1).
+
+```csharp
+public enum CashFlowShadowOutcome
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Match</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:9](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L9) |  |
+| <code>Differs</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:10](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L10) |  |
+| <code>LegacyOnlyBlocked</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:11](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L11) |  |
+| <code>ContractualOnlyBlocked</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:12](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L12) |  |
+| <code>BothBlocked</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:13](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L13) |  |
+| <code>NotFound</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:14](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L14) |  |
+
+## CashFlowShadowReport
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CashFlow.CashFlowShadowReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:36](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L36).
+
+A diff report across securities.
+
+```csharp
+public sealed record CashFlowShadowReport(DateOnly ValuationDate, DateTimeOffset GeneratedAt, IReadOnlyList<CashFlowShadowComparison> Securities)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int Count(CashFlowShadowOutcome outcome) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:41](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L41) |  |
+
 ## ContractualCashFlowPreviewService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CashFlow.ContractualCashFlowPreviewService</code>. Kind: `class`.
@@ -1024,104 +1126,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;CorporateActionCashDividendEligibilityDto&gt; ResolveAsync(CorporateActionProcessingCaseDto processingCase, CorporateActionCaseAccountingProjectionDto projection, AssetAccountingEventSpineDto spine, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCashDividendEligibilityResolver.cs:31](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCashDividendEligibilityResolver.cs#L31) |  |
-
-## CorporateActionCommandService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionCommandService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs:33](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs#L33).
-
-Validates corporate-action input and appends accepted actions to Security Master history.
-
-```csharp
-public sealed class CorporateActionCommandService : ICorporateActionCommandService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionCommandService(ISecurityMasterEventStore eventStore, ILogger&lt;CorporateActionCommandService&gt; logger, ISecurityMasterStore? store = null, ICorporateActionRestatementTrigger? restatementTrigger = null, ICorporateActionOperationsService? durableOperations = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs:41](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs#L41) |  |
-| <code>public async Task&lt;CorporateActionAppendResult&gt; AppendAsync(Guid securityId, CorporateActionDto action, string? actor, string source, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs:55](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs#L55) |  |
-| <code>public static string? Validate(CorporateActionDto action) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs:124](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs#L124) |  |
-
-## CorporateActionInboxApplyRequest
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionInboxApplyRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:6](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L6).
-
-Operator request to apply one staged inbox proposal.
-
-```csharp
-public sealed record CorporateActionInboxApplyRequest(Guid SecurityId, string ActionType, DateOnly ExDate);
-```
-
-## CorporateActionInboxDto
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionInboxDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:45](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L45).
-
-Snapshot of the corporate-action inbox: staged (not auto-applied) proposals from the most recent ingest sweep, with enough run context for the workbench badge and review list.
-
-```csharp
-public sealed record CorporateActionInboxDto(DateTimeOffset? LastIngestAt, int StagedCount, int AppliedLastRun, int DuplicatesSkippedLastRun, IReadOnlyList<CorporateActionProposal> Staged, IReadOnlyList<string> Errors)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;CorporateActionProviderFetchOutcome&gt; FetchOutcomes { get; init; } = [];</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:53](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L53) |  |
-
-## CorporateActionInboxState
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionInboxState</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:61](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L61).
-
-Holds the latest corporate-action ingest outcome so the workbench can badge and list staged proposals between sweeps. In-memory by design: proposals are re-derivable by re-running ingest, and applied actions are already durable in the event store.
-
-```csharp
-public sealed class CorporateActionInboxState
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public void Record(CorporateActionIngestResult result);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:67](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L67) |  |
-| <code>public bool TryTakeStaged(Guid securityId, string actionType, DateOnly exDate, out CorporateActionProposal proposal);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:81](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L81) | Removes and returns the staged proposal matching (security, action type, ex-date) so an operator apply consumes it exactly once. Auto-applied proposals are not takeable. |
-| <code>public CorporateActionInboxDto GetInbox();</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:106](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L106) |  |
-
-## CorporateActionIngestOrchestrator
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestOrchestrator</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:95](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L95).
-
-Fans out to every registered ICorporateActionProvider for mastered symbols, normalizes announcements, computes cross-provider consensus over full economic value keys, and records every distinct observation in the durable proposal inbox. Provider agreement is retained as evidence and never appends or approves accounting by itself. The legacy append path remains only for hosts/tests that have not registered durable operations.
-
-```csharp
-public sealed class CorporateActionIngestOrchestrator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionIngestOrchestrator(IEnumerable&lt;ICorporateActionProvider&gt; providers, ISecurityMasterStore store, ISecurityMasterEventStore eventStore, ISecurityMasterCorporateActionCommandService commandService, ILogger&lt;CorporateActionIngestOrchestrator&gt; logger, ICorporateActionOperationsService? operationsService = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:104](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L104) |  |
-| <code>public async Task&lt;CorporateActionIngestResult&gt; IngestAsync(CorporateActionIngestRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:120](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L120) |  |
-
-## CorporateActionIngestRequest
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:17](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L17).
-
-Request for a corporate-action ingest sweep. When Symbols is null or empty the sweep covers every active security with a ticker identifier. Announcements whose distinct agreeing sources reach MinimumSourcesToApply are confidence-scored, but production ingest still records a durable proposal for explicit operator acceptance.
-
-```csharp
-public sealed record CorporateActionIngestRequest(IReadOnlyList<string>? Symbols = null, bool DryRun = false, int MinimumSourcesToApply = 2, string? Actor = null, string? CorrelationId = null);
-```

@@ -273,9 +273,13 @@ public sealed class SecurityMasterQueryServiceEquityTermsTests
     }
 
     [Fact]
-    public async Task GetByIdentifierAsync_UniverseFallback_RejectsOmittedProviderForProviderScopedIdentifier()
+    public async Task GetByIdentifierAsync_UniverseFallback_OmittedProviderResolvesCanonically()
     {
-        var projection = CreateIsinProjection(Guid.NewGuid(), provider: "xnas", includeIdentifier: true);
+        // Review P1: provider is identity only for ProviderSymbol. An ISIN recorded with a provider
+        // (its ingest feed or venue) must still resolve for a provider-less consumer; an EXPLICIT
+        // wrong provider is still refused (see the next test).
+        var securityId = Guid.NewGuid();
+        var projection = CreateIsinProjection(securityId, provider: "xnas", includeIdentifier: true);
         var store = CreateUniverseFallbackStore(projection);
         var service = CreateQueryService(store);
 
@@ -284,7 +288,24 @@ public sealed class SecurityMasterQueryServiceEquityTermsTests
             "US0378331005",
             provider: null);
 
-        result.Should().BeNull();
+        result.Should().NotBeNull();
+        result!.SecurityId.Should().Be(securityId);
+    }
+
+    [Fact]
+    public async Task GetByIdentifierAsync_UniverseFallback_TwoClaimantsWithoutProvider_ResolvesToNeither()
+    {
+        var first = CreateIsinProjection(Guid.NewGuid(), provider: "xnas", includeIdentifier: true);
+        var second = CreateIsinProjection(Guid.NewGuid(), provider: "xnys", includeIdentifier: true);
+        var store = CreateUniverseFallbackStore(first, second);
+        var service = CreateQueryService(store);
+
+        var result = await service.GetByIdentifierAsync(
+            SecurityIdentifierKind.Isin,
+            "US0378331005",
+            provider: null);
+
+        result.Should().BeNull("an identifier claimed by two active securities must not resolve to whichever loaded first");
     }
 
     [Fact]
@@ -507,7 +528,7 @@ public sealed class SecurityMasterQueryServiceEquityTermsTests
         return new SecurityMasterQueryService(eventStore, store, rebuilder);
     }
 
-    private static ISecurityMasterStore CreateUniverseFallbackStore(SecurityProjectionRecord projection)
+    private static ISecurityMasterStore CreateUniverseFallbackStore(params SecurityProjectionRecord[] projections)
     {
         var store = Substitute.For<ISecurityMasterStore>();
         store.GetByIdentifierAsync(
@@ -519,7 +540,7 @@ public sealed class SecurityMasterQueryServiceEquityTermsTests
                 Arg.Any<CancellationToken>())
             .Returns((SecurityProjectionRecord?)null);
         store.LoadAllAsync(Arg.Any<CancellationToken>())
-            .Returns([projection]);
+            .Returns(projections);
         return store;
     }
 

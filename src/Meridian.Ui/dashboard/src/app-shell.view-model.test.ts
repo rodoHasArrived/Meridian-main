@@ -554,7 +554,7 @@ describe("app shell view model", () => {
 
     expect(researchRealState.trustStrip.items.find((item) => item.id === "mode")).toMatchObject({
       value: "Demo",
-      detail: "Session Ops is operating in research mode, shown as Demo."
+      detail: "The Ops session is operating in research mode, shown as Demo."
     });
     expect(researchRealState.trustStrip.items.find((item) => item.id === "source")).toMatchObject({
       value: "REAL",

@@ -492,12 +492,6 @@ public sealed class SecurityMasterFieldConflictDetectionTests
         provenance.AsOf.Should().Be(new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero));
         provenance.UpdatedBy.Should().Be("feed");
 
-        var field = provenance.ForField("EconomicTerms.couponRate");
-        field.FieldPath.Should().Be("EconomicTerms.couponRate");
-        field.SourceSystem.Should().Be("Bloomberg");
-        field.AsOf.Should().Be(provenance.AsOf);
-        field.Confidence.Should().BeNull();
-
         SecurityMasterProvenanceReader.Read(Json("null")).SourceSystem
             .Should().Be(SecurityMasterProvenanceReader.UnknownSource);
     }

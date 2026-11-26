@@ -124,7 +124,8 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
         var conflictId = open.Single(c => IsPairConflict(c, securityA, securityB)).ConflictId;
 
         var resolved = await serviceA.ResolveAsync(
-            new ResolveConflictRequest(conflictId, "Resolve", "operator@meridian.test", "Edgar is golden.", ChosenWinnerSource: "Edgar"),
+            new ResolveConflictRequest(conflictId, "Resolve", "operator@meridian.test", "Edgar is golden.", ChosenWinnerSource: "Edgar",
+                PolicyWinnerSource: "Bloomberg", PolicyRule: "source-precedence", IsPolicyDeviation: true),
             CancellationToken.None);
         resolved.Should().NotBeNull();
         resolved!.Status.Should().Be("Resolved");
@@ -138,6 +139,10 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
         reloaded.ResolvedBy.Should().Be("operator@meridian.test");
         reloaded.ResolvedReason.Should().Be("Edgar is golden.");
         reloaded.ResolvedAt.Should().NotBeNull();
+        // Review A5: the policy decision is reconstructible from the database alone.
+        reloaded.PolicyWinnerSource.Should().Be("Bloomberg");
+        reloaded.PolicyRule.Should().Be("source-precedence");
+        reloaded.IsPolicyDeviation.Should().BeTrue();
 
         // The resolved conflict is excluded from the open list and cannot be re-resolved.
         var openAfter = await serviceB.GetOpenConflictsAsync(CancellationToken.None);
@@ -635,18 +640,19 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
         var conflict = open.Single(c =>
             c.SecurityId == securityId && c.ConflictKind == SecurityMasterConflictKinds.CommonTermMismatch);
 
-        // A dismissal asserts equivalence, not attribution: no field provenance is written, but the
-        // acknowledged source (required by the workbench's DismissAsEquivalent flow) is persisted on
-        // the conflict row so the durable record matches what the workbench reported.
+        // A dismissal asserts equivalence, not attribution (review D3): no field provenance is
+        // written and the row records NO winner and no deviation. The acknowledged candidate only
+        // drives the persisted-value check; storing it as the winner read as a decision for it.
         var dismissed = await service.ResolveAsync(
             new ResolveConflictRequest(
                 conflict.ConflictId, "Dismiss", "operator@meridian.test", "Values equivalent.",
-                ChosenWinnerSource: "provB"),
+                ChosenWinnerSource: "provB", PolicyWinnerSource: "provA", PolicyRule: "source-precedence", IsPolicyDeviation: true),
             CancellationToken.None);
         dismissed.Should().NotBeNull();
         dismissed!.Status.Should().Be("Dismissed");
-        dismissed.ResolvedWinnerSource.Should().Be("provB",
-            "the workbench reports the acknowledged source, so the authoritative row must carry it too");
+        dismissed.ResolvedWinnerSource.Should().BeNull("a dismissal chooses no winner");
+        dismissed.IsPolicyDeviation.Should().BeNull("a dismissal cannot deviate from a winner it does not choose");
+        dismissed.PolicyWinnerSource.Should().Be("provA");
 
         var provenanceStore = new PostgresSecurityFieldProvenanceStore(_fixture.Options);
         var lineage = await provenanceStore.GetAsync(securityId, CancellationToken.None);

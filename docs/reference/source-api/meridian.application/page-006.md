@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatusWriter
+
+Qualified name: <code>Meridian.Application.Monitoring.StatusWriter</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Monitoring/StatusWriter.cs:15](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L15).
+
+Periodically writes a small status snapshot JSON file for dashboards.
+
+```csharp
+public sealed class StatusWriter : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StatusWriter(string path, Func&lt;AppConfig&gt; configProvider, IEventMetrics? metrics = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:31](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L31) |  |
+| <code>public void Start(TimeSpan interval);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:39](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L39) |  |
+| <code>public async Task WriteOnceAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:73](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L73) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:98](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L98) |  |
+
 ## DeadLetterSink
 
 Qualified name: <code>Meridian.Application.Pipeline.DeadLetterSink</code>. Kind: `class`.
@@ -1025,20 +1046,3 @@ Declared public members:
 | <code>public void MarkBound(string providerId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:44](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L44) |  |
 | <code>public void MarkApplied(string providerId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:50](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L50) |  |
 | <code>public (DateTimeOffset? BoundAt, DateTimeOffset? AppliedAt, bool PendingRestart) Get(string providerId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:56](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L56) |  |
-
-## ProviderRuntimeCredentialApplyOutcome
-
-Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialApplyOutcome</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:7](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L7).
-
-```csharp
-public enum ProviderRuntimeCredentialApplyOutcome
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Applied</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:10](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L10) | Running instances now resolve credentials under the bound scope. |
-| <code>PendingRestart</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:12](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L12) | No in-process recycle exists; the host must be restarted deliberately. |

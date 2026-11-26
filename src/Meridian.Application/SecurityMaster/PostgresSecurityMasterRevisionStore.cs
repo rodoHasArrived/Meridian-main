@@ -165,6 +165,41 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
         return revisions;
     }
 
+    public async Task<IReadOnlyList<SecurityMasterRevisionRecord>> ListByStatesAsync(
+        IReadOnlyCollection<SecurityMasterRevisionStateDto> states, int limit, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(states);
+        if (states.Count == 0)
+        {
+            return [];
+        }
+
+        await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
+        await using var command = lease.Connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select {RevisionColumns}
+            from {Qualified(RevisionsTable)}
+            where state = any(@states)
+            order by updated_at, revision_id
+            limit @limit;
+            """;
+        command.Parameters.Add(new Npgsql.NpgsqlParameter("states", NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Text)
+        {
+            Value = states.Select(static state => state.ToString()).ToArray()
+        });
+        command.Parameters.AddWithValue("limit", Math.Max(1, limit));
+
+        var revisions = new List<SecurityMasterRevisionRecord>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            revisions.Add(MapRevision(reader));
+        }
+
+        return revisions;
+    }
+
     public async Task<SecurityMasterRevisionRecord> TransitionAsync(
         Guid revisionId, SecurityMasterRevisionStateDto expected, SecurityMasterRevisionStateDto next,
         string actor, Guid? workflowIdForSubmit = null, CancellationToken ct = default)

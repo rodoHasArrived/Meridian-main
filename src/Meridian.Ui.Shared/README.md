@@ -4383,6 +4383,53 @@ version-5 evidence and the existing journal approval/posting path remain unchang
 | `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
+## Security Master review-backlog routes (2026-11-25)
+
+Added by PR #3736. Mutating routes declare `ModifySecurityMaster`. Read routes declare View or Modify
+access.
+
+- **Workbench:**
+  - `GET /api/security-master/workbench/revisions` is the pending-revision inbox. `state` takes a
+    comma-separated list (default `Submitted,Approved`; an unknown state is 400). An optional
+    `securityId` narrows the list to one security, which the passport editors use to reload open
+    drafts with their conflicts. Each row carries `conflictId` and `conflictCandidateSource` when
+    it was staged from a conflict resolution.
+  - `POST /api/security-master/{securityId}/workbench/discard` discards an open revision.
+  - A second open revision staging the same field returns 409 `field-already-staged`.
+- **Held amendments** (`SecurityMasterEndpoints.HeldAmendments.cs`): lists held amendments and
+  discards a held one. An amendment that gets held is answered with 409.
+- **Merge:** `POST /api/security-master/{securityId}/merge`.
+- **Import dry run:** `POST /api/security-master/import/plan`.
+- **Valid time:** `GET /api/security-master/{securityId}/terms-as-of?validAt=&knownAt=`.
+- **Exception queue** (`SecurityMasterEndpoints.ExceptionCases.cs`): list, sync and assign.
+- **Wire shape:** the held-amendment and exception-case routes return the
+  `Meridian.Contracts.Workstation` review-queue DTOs through
+  `SecurityMasterReviewQueueProjection`, so the browser and WPF read one shape. Queue items add
+  `slaBreached` and `ageHours` computed at read time.
+- **Cash-flow engine comparison:** `POST /api/security-master/cash-flows/shadow-compare`.
+- **Factor observations:** `GET` and `POST /api/security-master/{securityId}/factor-observations`.
+  Factor history reads observations first.
+- **Entity master** (`SecurityMasterEndpoints.EntityMaster.cs`): `/api/entity-master/...`, with
+  endpoint names prefixed `EntityMaster`.
+- **Status codes:** DirectLending maps `NegativeInterestUnsupported` to 422.
+
+The pricing-hierarchy and entitlement route mappings moved to
+`SecurityMasterEndpoints.PricingEntitlements.cs` (a partial-class split under the 2,000-line ratchet;
+routes and filters are unchanged).
+
+## Provider-integration actors (2026-11-25)
+
+- **Server-derived actors:** the provider-integration commands that record an actor (OpenAPI import,
+  setup save, manual-CSV and REST dry runs, activation, run-due sync, schema-drift check, identity
+  resolution, reconciliation handoff, quarantine resolve and replay) take it from
+  `EndpointAuthorization.TryResolveActor` and return 401 without one. A body-supplied actor or the
+  session desk label is never recorded as the person.
+- **Actor flags:** `GET /api/workstation/provider-integrations/actor-flags` (read permission) lists
+  append-only flags. `POST .../actor-flags/scan` (configure permission) runs
+  `ProviderIntegrationActorFlagService`, which flags stored actor values that name a desk label, a
+  Settings placeholder or nothing. Flags record the scanning operator, are never duplicated, and
+  never rewrite the flagged record, so digest-bound manifest versions stay intact.
+
 ## TODO checklist
 
 <!-- source-todos:begin module=SRC-UI-SHARED -->

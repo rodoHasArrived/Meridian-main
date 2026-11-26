@@ -18,6 +18,7 @@ import {
 } from "@/lib/api/security-master-workbench.api";
 import {
   buildConflictRows,
+  classifyConflictResolution,
   buildPassportActions,
   buildPassportStateBadge,
   buildTrustPosture,
@@ -143,6 +144,7 @@ export function SecurityPassportEditor({
   const [banner, setBanner] = useState<PassportBannerViewModel | null>(null);
   const [liveVersion, setLiveVersion] = useState(version);
   const [resolvedConflictIds, setResolvedConflictIds] = useState<readonly string[]>([]);
+  const [pendingDraftByConflict, setPendingDraftByConflict] = useState<Readonly<Record<string, string>>>({});
   const [overrideConflictId, setOverrideConflictId] = useState<string | null>(null);
   const [overrideDraft, setOverrideDraft] = useState<OverrideDraft>({
     chosenWinnerSource: "",
@@ -198,6 +200,7 @@ export function SecurityPassportEditor({
     setLiveVersion(version);
     setBanner(null);
     setResolvedConflictIds([]);
+    setPendingDraftByConflict({});
     setOverrideConflictId(null);
     setFieldPath("");
     setNewValue("");
@@ -219,10 +222,14 @@ export function SecurityPassportEditor({
   const conflictRows = useMemo(
     () =>
       buildConflictRows(
-        conflicts.map((c) => ({ ...c, isResolved: c.isResolved || resolvedConflictIds.includes(c.conflictId) })),
+        conflicts.map((c) => ({
+          ...c,
+          isResolved: c.isResolved || resolvedConflictIds.includes(c.conflictId),
+          pendingRevisionId: c.pendingRevisionId ?? pendingDraftByConflict[c.conflictId] ?? null
+        })),
         { isBusy }
       ),
-    [conflicts, resolvedConflictIds, isBusy]
+    [conflicts, resolvedConflictIds, pendingDraftByConflict, isBusy]
   );
 
   const run = useCallback(
@@ -309,9 +316,17 @@ export function SecurityPassportEditor({
           reason,
           acknowledgePolicyDeviation: acknowledgeDeviation
         });
-        setLiveVersion(result.newVersion);
-        setResolvedConflictIds((ids) => (ids.includes(conflictId) ? ids : [...ids, conflictId]));
+        const outcome = classifyConflictResolution(result);
+        setLiveVersion(outcome.newVersion);
         setOverrideConflictId(null);
+        if (outcome.kind === "draft-staged") {
+          // The conflict stays open; the staged draft goes through the ordinary submit/approve/publish path.
+          setRevision({ revisionId: outcome.pendingRevisionId, state: "Draft", version: outcome.newVersion });
+          setPendingDraftByConflict((drafts) => ({ ...drafts, [conflictId]: outcome.pendingRevisionId }));
+          setBanner(outcome.banner);
+          return;
+        }
+        setResolvedConflictIds((ids) => (ids.includes(conflictId) ? ids : [...ids, conflictId]));
       });
     },
     [run, client, securityId, expectedVersion]
@@ -354,10 +369,10 @@ export function SecurityPassportEditor({
       <CardContent className="space-y-4">
         {banner ? (
           <div
-            role="alert"
+            role={banner.tone === "info" ? "status" : "alert"}
             className={cn("flex items-start gap-2 rounded-md border px-3 py-2 text-sm", BANNER_CLASS[banner.tone])}
           >
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+            {banner.tone === "info" ? null : <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />}
             <div className="space-y-1">
               <p className="font-medium">{banner.title}</p>
               <p>{banner.message}</p>
@@ -498,6 +513,24 @@ export function SecurityPassportEditor({
                   <li key={row.conflictId} className="rounded-md border px-3 py-2 text-sm">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-medium">{row.fieldLabel}</span>
+                      {row.pendingDraftLabel ? <Badge variant="outline">{row.pendingDraftLabel}</Badge> : null}
+                      {row.pendingRevisionId && revision?.revisionId !== row.pendingRevisionId ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={isBusy}
+                          onClick={() =>
+                            setRevision({
+                              revisionId: row.pendingRevisionId as string,
+                              state: row.pendingRevisionState ?? "Draft",
+                              version: expectedVersion
+                            })
+                          }
+                        >
+                          Continue draft
+                        </Button>
+                      ) : null}
                       <Badge variant={SEVERITY_VARIANT[row.severityTone]}>{row.severityLabel}</Badge>
                       <span className="text-muted-foreground">
                         winner <code>{row.policyWinnerSource}</code> · challenger <code>{row.challengerSource}</code>
