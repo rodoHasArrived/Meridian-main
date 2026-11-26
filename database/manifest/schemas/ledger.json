@@ -4843,6 +4843,18 @@
       "target_schema": "ledger"
     },
     {
+      "fingerprint": "f37f516d5bd45da831e75d189622cdc01e79b8a2ae431b37034e51b2620d4ca5",
+      "kind": "normal",
+      "source": "ledger.operations_workflow_purpose_check on ledger.operations_continuity_workflows",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.operations_continuity_workflows.workflow_json",
+      "target_kind": "table column",
+      "target_name": "operations_continuity_workflows",
+      "target_schema": "ledger"
+    },
+    {
       "fingerprint": "3d86d46c218bdda04fbc7318c2d4970f595643fb12c3068561472361a69e5e1d",
       "kind": "normal",
       "source": "ledger.period_close_events_period_id_fkey on ledger.period_close_events",
@@ -5663,7 +5675,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "4384bc698b76f2460e750e2f546486fe58326da5f9e71ad0622f98b416c3b3d8",
+  "fingerprint": "c28a2c135ad88f1fef218522d68104969783aa83e843ebb3f37ce720a7ec473a",
   "foreign_tables": [],
   "functions": [
     {
@@ -6159,6 +6171,37 @@
       "security_definer": false,
       "security_labels": [],
       "signature": "protect_open_lot_current_factor()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "4d0e52cefd09a4facea7ad3a902e6374bbcd093a2fc8228100004f6728568182",
+      "fingerprint": "4417893c9932c986c3d47408f81bfe8b0b5b2a6324628550b40be02601302d88",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "protect_operations_workflow_subject",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "protect_operations_workflow_subject()",
       "strict": false,
       "volatility": "volatile"
     },
@@ -32188,6 +32231,26 @@
       "constraints": [
         {
           "columns": [
+            "workflow_json"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK ((NOT workflow_json ? 'purpose'::text OR jsonb_typeof(workflow_json -> 'purpose'::text) = 'string'::text) AND (COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = ANY (ARRAY['Close'::text, 'SecurityMasterRevision'::text])) AND (COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'Close'::text AND (workflow_json ->> 'subjectRevisionId'::text) IS NULL AND (workflow_json ->> 'subjectMaker'::text) IS NULL AND (workflow_json ->> 'subjectEvidenceId'::text) IS NULL AND (workflow_json ->> 'subjectEvidenceSha256'::text) IS NULL OR COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'SecurityMasterRevision'::text AND (workflow_json ->> 'subjectRevisionId'::text) IS NOT NULL AND (workflow_json ->> 'subjectMaker'::text) IS NOT NULL AND length(TRIM(BOTH FROM workflow_json ->> 'subjectMaker'::text)) > 0 AND (workflow_json ->> 'subjectEvidenceId'::text) IS NOT NULL AND length(TRIM(BOTH FROM workflow_json ->> 'subjectEvidenceId'::text)) > 0 AND (workflow_json ->> 'subjectEvidenceSha256'::text) IS NOT NULL AND (workflow_json ->> 'subjectEvidenceSha256'::text) ~ '^[a-f0-9]{64}$'::text))",
+          "delete_action": null,
+          "fingerprint": "bb6d5ff970d1ec2fdde2f38a8d7c7f11453ceb082862382dc54523aef19afa31",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "operations_workflow_purpose_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
             "workflow_id"
           ],
           "comment": null,
@@ -32209,7 +32272,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "a58c2e170e7d6a88108e8369e1fb7437a1ea527a0c3806387c9e4062b5219c6c",
+      "fingerprint": "5eb57ed1f520d98512677b114ab60ba11878fa84669a296799896949704901b3",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -32328,9 +32391,9 @@
         },
         {
           "comment": null,
-          "definition": "CREATE UNIQUE INDEX ux_operations_continuity_open_workflow ON ledger.operations_continuity_workflows USING btree (fund_account_id, period_id) WHERE (derived_status <> 'Closed'::text)",
+          "definition": "CREATE UNIQUE INDEX ux_operations_continuity_open_workflow ON ledger.operations_continuity_workflows USING btree (fund_account_id, period_id) WHERE ((derived_status <> 'Closed'::text) AND (COALESCE((workflow_json ->> 'purpose'::text), 'Close'::text) = 'Close'::text))",
           "expression": null,
-          "fingerprint": "af6e075f52eb3fde4b7605917f3c3d5e3a27982a21123b38207397f7ca4151a5",
+          "fingerprint": "4d83c31ac66ad65b8f19310adb2c34a61edd5e8cdf7bffbbaf5ec124447a38f2",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -32342,7 +32405,29 @@
           "name": "ux_operations_continuity_open_workflow",
           "options": [],
           "owner": "meridian",
-          "predicate": "derived_status <> 'Closed'::text",
+          "predicate": "derived_status <> 'Closed'::text AND COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'Close'::text",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ux_operations_continuity_revision_subject ON ledger.operations_continuity_workflows USING btree ((((workflow_json ->> 'subjectRevisionId'::text))::uuid)) WHERE ((workflow_json ->> 'purpose'::text) = 'SecurityMasterRevision'::text)",
+          "expression": "(workflow_json ->> 'subjectRevisionId'::text)::uuid",
+          "fingerprint": "8e48061f0612b2fec7adbe8cdc03d18b2166450bc83ec1224fe89dc86656b07d",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "((workflow_json ->> 'subjectRevisionId'::text)::uuid)"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ux_operations_continuity_revision_subject",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "(workflow_json ->> 'purpose'::text) = 'SecurityMasterRevision'::text",
           "primary": false,
           "ready": true,
           "security_labels": [],
@@ -32363,7 +32448,25 @@
       "schema": "ledger",
       "security_labels": [],
       "sequence": null,
-      "triggers": []
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER operations_workflow_subject_immutable BEFORE UPDATE ON ledger.operations_continuity_workflows FOR EACH ROW EXECUTE FUNCTION ledger.protect_operations_workflow_subject()",
+          "definition_hash": "08edfce8fe454a57baa448d0bb7076b3db155495e701ad1910efbad81833e447",
+          "enabled": "origin",
+          "events": [
+            "update"
+          ],
+          "fingerprint": "d73d8e8f7d6eb348c2aa7a9b0be6cd7356845f62dd64d84599403d5ee2ea5816",
+          "function_schema": "ledger",
+          "function_signature": "protect_operations_workflow_subject()",
+          "level": "row",
+          "name": "operations_workflow_subject_immutable",
+          "relation": "operations_continuity_workflows",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -63720,6 +63823,26 @@
       "constraints": [
         {
           "columns": [
+            "workflow_json"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK ((NOT workflow_json ? 'purpose'::text OR jsonb_typeof(workflow_json -> 'purpose'::text) = 'string'::text) AND (COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = ANY (ARRAY['Close'::text, 'SecurityMasterRevision'::text])) AND (COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'Close'::text AND (workflow_json ->> 'subjectRevisionId'::text) IS NULL AND (workflow_json ->> 'subjectMaker'::text) IS NULL AND (workflow_json ->> 'subjectEvidenceId'::text) IS NULL AND (workflow_json ->> 'subjectEvidenceSha256'::text) IS NULL OR COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'SecurityMasterRevision'::text AND (workflow_json ->> 'subjectRevisionId'::text) IS NOT NULL AND (workflow_json ->> 'subjectMaker'::text) IS NOT NULL AND length(TRIM(BOTH FROM workflow_json ->> 'subjectMaker'::text)) > 0 AND (workflow_json ->> 'subjectEvidenceId'::text) IS NOT NULL AND length(TRIM(BOTH FROM workflow_json ->> 'subjectEvidenceId'::text)) > 0 AND (workflow_json ->> 'subjectEvidenceSha256'::text) IS NOT NULL AND (workflow_json ->> 'subjectEvidenceSha256'::text) ~ '^[a-f0-9]{64}$'::text))",
+          "delete_action": null,
+          "fingerprint": "bb6d5ff970d1ec2fdde2f38a8d7c7f11453ceb082862382dc54523aef19afa31",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "operations_workflow_purpose_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
             "workflow_id"
           ],
           "comment": null,
@@ -63741,7 +63864,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "a58c2e170e7d6a88108e8369e1fb7437a1ea527a0c3806387c9e4062b5219c6c",
+      "fingerprint": "5eb57ed1f520d98512677b114ab60ba11878fa84669a296799896949704901b3",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -63860,9 +63983,9 @@
         },
         {
           "comment": null,
-          "definition": "CREATE UNIQUE INDEX ux_operations_continuity_open_workflow ON ledger.operations_continuity_workflows USING btree (fund_account_id, period_id) WHERE (derived_status <> 'Closed'::text)",
+          "definition": "CREATE UNIQUE INDEX ux_operations_continuity_open_workflow ON ledger.operations_continuity_workflows USING btree (fund_account_id, period_id) WHERE ((derived_status <> 'Closed'::text) AND (COALESCE((workflow_json ->> 'purpose'::text), 'Close'::text) = 'Close'::text))",
           "expression": null,
-          "fingerprint": "af6e075f52eb3fde4b7605917f3c3d5e3a27982a21123b38207397f7ca4151a5",
+          "fingerprint": "4d83c31ac66ad65b8f19310adb2c34a61edd5e8cdf7bffbbaf5ec124447a38f2",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -63874,7 +63997,29 @@
           "name": "ux_operations_continuity_open_workflow",
           "options": [],
           "owner": "meridian",
-          "predicate": "derived_status <> 'Closed'::text",
+          "predicate": "derived_status <> 'Closed'::text AND COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'Close'::text",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ux_operations_continuity_revision_subject ON ledger.operations_continuity_workflows USING btree ((((workflow_json ->> 'subjectRevisionId'::text))::uuid)) WHERE ((workflow_json ->> 'purpose'::text) = 'SecurityMasterRevision'::text)",
+          "expression": "(workflow_json ->> 'subjectRevisionId'::text)::uuid",
+          "fingerprint": "8e48061f0612b2fec7adbe8cdc03d18b2166450bc83ec1224fe89dc86656b07d",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "((workflow_json ->> 'subjectRevisionId'::text)::uuid)"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ux_operations_continuity_revision_subject",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "(workflow_json ->> 'purpose'::text) = 'SecurityMasterRevision'::text",
           "primary": false,
           "ready": true,
           "security_labels": [],
@@ -63895,7 +64040,25 @@
       "schema": "ledger",
       "security_labels": [],
       "sequence": null,
-      "triggers": []
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER operations_workflow_subject_immutable BEFORE UPDATE ON ledger.operations_continuity_workflows FOR EACH ROW EXECUTE FUNCTION ledger.protect_operations_workflow_subject()",
+          "definition_hash": "08edfce8fe454a57baa448d0bb7076b3db155495e701ad1910efbad81833e447",
+          "enabled": "origin",
+          "events": [
+            "update"
+          ],
+          "fingerprint": "d73d8e8f7d6eb348c2aa7a9b0be6cd7356845f62dd64d84599403d5ee2ea5816",
+          "function_schema": "ledger",
+          "function_signature": "protect_operations_workflow_subject()",
+          "level": "row",
+          "name": "operations_workflow_subject_immutable",
+          "relation": "operations_continuity_workflows",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -70810,6 +70973,23 @@
       "level": "row",
       "name": "protect_open_lot_backfill_evidence",
       "relation": "open_lot_backfill_reviews",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER operations_workflow_subject_immutable BEFORE UPDATE ON ledger.operations_continuity_workflows FOR EACH ROW EXECUTE FUNCTION ledger.protect_operations_workflow_subject()",
+      "definition_hash": "08edfce8fe454a57baa448d0bb7076b3db155495e701ad1910efbad81833e447",
+      "enabled": "origin",
+      "events": [
+        "update"
+      ],
+      "fingerprint": "d73d8e8f7d6eb348c2aa7a9b0be6cd7356845f62dd64d84599403d5ee2ea5816",
+      "function_schema": "ledger",
+      "function_signature": "protect_operations_workflow_subject()",
+      "level": "row",
+      "name": "operations_workflow_subject_immutable",
+      "relation": "operations_continuity_workflows",
       "schema": "ledger",
       "timing": "before"
     },
