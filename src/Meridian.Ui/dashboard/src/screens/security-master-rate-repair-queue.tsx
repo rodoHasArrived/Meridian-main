@@ -3,7 +3,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { TimeText } from "@/components/ui/time-text";
 import { ApiError, describeApiError } from "@/lib/api-errors";
+import { formatTimestamp } from "@/lib/format";
 import { assertFrozenRateRepairUnchanged, assertRateRepairProposal, commandRateRepairBatch, createRateRepairBatch, discoverRateRepairs, getRateRepairBatch, listRateRepairBatches,
   type CreateRateRepairBatch, type RateRepairBatch, type RateRepairCommand, type RateRepairCommandName,
   type RateRepairDiscovery } from "@/lib/api/security-rate-repair.api";
@@ -182,7 +184,7 @@ function RateRepairQueue({ initialSearch, selectedBatchId, onSelectBatch }: {
         <Select value={selectedBatchId ?? ""} disabled={locked || Boolean(pendingCreate)} onChange={event => selectContext(event.target.value || undefined)}>
           <option value="">New repair proposal</option>
           {selectedBatchId && !batches.some(row => row.batchId === selectedBatchId) ? <option value={selectedBatchId}>{selectedBatchId}</option> : null}
-          {batches.map(row => <option key={row.batchId} value={row.batchId}>{row.cohort.sourceSystem} · {row.items.length} records · {row.createdAtUtc} · {row.batchId}</option>)}
+          {batches.map(row => <option key={row.batchId} value={row.batchId}>{row.cohort.sourceSystem} · {row.items.length} records · {formatTimestamp(row.createdAtUtc)} · {row.batchId}</option>)}
         </Select>
       </label>
       <Button variant="outline" disabled={locked || Boolean(pendingCreate)} onClick={() => setRefreshKey(current => current + 1)}>Refresh candidates and batches</Button>
@@ -196,7 +198,7 @@ function RateRepairQueue({ initialSearch, selectedBatchId, onSelectBatch }: {
     {selectedBatchId ? batch && batch.batchId === selectedBatchId ? <RateRepairBatchReview batch={batch} busy={busy} needsRefresh={needsRefresh} onCommand={(name, input) => void command(name, input)} /> : null
       : discovery ? <>
         <p className="text-sm">Source scope: {discovery.scopeLabel}. {discovery.candidates.length} distinct returned candidates from {discovery.scannedCount} source rows examined across {pageCount} {pageCount === 1 ? "page" : "pages"}; overlapping pages may repeat source rows.</p>
-        <p className="text-xs text-muted-foreground">Live observations fetched from <time dateTime={discovery.asOfUtc}>{discovery.asOfUtc}</time> through <time dateTime={lastPageAt}>{lastPageAt}</time>. This paged scan is not an inventory snapshot.</p>
+        <p className="text-xs text-muted-foreground">Live observations fetched from <TimeText value={discovery.asOfUtc} /> through <TimeText value={lastPageAt} />. This paged scan is not an inventory snapshot.</p>
         {discovery.nextSkip !== null ? <p role="status" className="text-sm text-warning">More source rows are available. These counts cover only the pages fetched.</p>
           : discovery.isComplete ? <p role="status" className="text-sm">The current source scan reached its end.</p> : <p role="status" className="text-sm text-warning">Source coverage is incomplete. Missing or unresolved projections remain unavailable, not zero.</p>}
         {scanNotice ? <StatusBanner tone="warning" title="Discovery changed" detail={scanNotice} role="alert" /> : null}

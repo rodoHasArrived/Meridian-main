@@ -5,6 +5,7 @@ import { SecurityImpactPreview } from "@/components/meridian/security-impact-pre
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { TimeText } from "@/components/ui/time-text";
 import type { RateRepairBatch, RateRepairCommand, RateRepairCommandName, RateRepairItem } from "@/lib/api/security-rate-repair.api";
 
 const commands: Array<{ name: RateRepairCommandName; label: string }> = [
@@ -54,7 +55,7 @@ function RetainedBatchReview({ batch, busy, needsRefresh, onCommand }: {
     <div><h3 id={`${id}-title`} className="font-semibold">Frozen repair batch</h3><p className="mt-1 text-sm">{counts.join(" · ")}. Each record keeps its own draft, independent decision and receipt.</p></div>
     <dl className="grid gap-3 rounded border border-border bg-secondary/10 p-3 text-sm lg:grid-cols-3">
       <div><dt className="text-xs text-muted-foreground">Batch / version</dt><dd className="break-all font-mono">{batch.batchId} · {batch.version}</dd></div>
-      <div><dt className="text-xs text-muted-foreground">Maker / retained at</dt><dd>{batch.createdBy}<time className="block text-xs" dateTime={batch.createdAtUtc}>{batch.createdAtUtc}</time></dd></div>
+      <div><dt className="text-xs text-muted-foreground">Maker / retained at</dt><dd>{batch.createdBy}<TimeText className="block text-xs" value={batch.createdAtUtc} /></dd></div>
       <div><dt className="text-xs text-muted-foreground">Declared unit / effective from</dt><dd>{batch.unit}<time className="block text-xs" dateTime={batch.effectiveFrom}>{batch.effectiveFrom}</time></dd></div>
       <div><dt className="text-xs text-muted-foreground">Source field / schema / role</dt><dd>{batch.cohort.sourceSystem} · {batch.cohort.sourceField} · {batch.cohort.sourceSchemaVersion} · {batch.cohort.rateRole}</dd></div>
       <div><dt className="text-xs text-muted-foreground">Accounting scope</dt><dd className="break-all">{batch.scope.fundProfileId} · {batch.scope.periodId}<span className="block font-mono text-xs">Account {batch.scope.fundAccountId}<br />Book {batch.scope.ledgerBookId}</span></dd></div>
