@@ -227,7 +227,7 @@
     <!-- Client-grade document rendering for fund-ops deliverables (PDF via QuestPDF, XLSX via
          ClosedXML). Housed in Meridian.Documents so heavy OpenXML/rendering closures stay out of
          the core ledger assembly. -->
-    <PackageVersion Include="QuestPDF" Version="2025.7.4" />
+    <PackageVersion Include="QuestPDF" Version="2026.9.2" />
     <PackageVersion Include="ClosedXML" Version="0.105.1" />
 
     <!-- Microsoft.IdentityModel.JsonWebTokens / System.IdentityModel.Tokens.Jwt:
