@@ -250,6 +250,51 @@ recovery with zero corrupted records. The alert reads the counter total, not a r
 firing for the life of the process that found the damage — it will not go quiet on its own while
 the corruption is still unreconciled.
 
+## Directory Fsync Failures
+
+Alert: `MeridianDirectoryFsyncFailures` — severity warning, priority P2. No objective is attached.
+
+Meridian could not open or fsync a storage directory (`operation="open"` or `"fsync"` on
+`mdc_storage_directory_fsync_failures_total`). A rename, create, or delete in that directory is not
+guaranteed to survive a power loss. The counter is recorded on Linux and macOS only; Windows
+journals directory metadata itself and never records a failure.
+
+What already happened depends on the path:
+
+- **Strict paths have already failed their operation.** Each of these syncs the directory before
+  it acknowledges a write or deletes the only other copy, and throws when the sync fails. Nothing
+  was acknowledged or deleted, and the caller saw an error:
+  - WAL segment creation, and the WAL archive step before truncation;
+  - `JsonlStorageSink` flushes that create a new file;
+  - dedup-ledger commits;
+  - tier migration and JSONL archiving, before the source is deleted.
+- **Best-effort paths are in place but not confirmed durable.** These include the sync after an
+  atomic write's rename and after a delete that has already happened. The change is visible now,
+  but a power loss before the volume recovers could undo it.
+
+`operation="fsync_unsupported"` is excluded from this alert. It means the filesystem cannot fsync a
+directory at all (`EINVAL`, `EBADF`, or `ENOTSUP`), for example procfs or some FUSE and 9p mounts.
+Meridian keeps running there, but no directory change on that mount is ever durable. If that
+series is non-zero, move the data root to a local filesystem.
+
+**Probable causes:** I/O errors on the device; disk full; file-descriptor exhaustion
+(`EMFILE`/`ENFILE`) that persisted after the one automatic retry; a failing volume.
+
+**Immediate actions**
+
+1. Check kernel and storage logs (`dmesg`, `journalctl -k`) for I/O errors on the data-root volume.
+2. Search Meridian logs for the Error lines `Directory fsync failed (errno …)` and
+   `Unable to open directory for fsync (errno …)`. The errno identifies the cause: 5 `EIO`,
+   28 `ENOSPC`, 24 `EMFILE`, 23 `ENFILE`. The same `Directory fsync failed` template at Warning
+   level is the unsupported-filesystem case, not this alert.
+3. Check free disk space and the process's open-file limit (`ulimit -n`, `/proc/<pid>/limits`).
+4. Once the volume is healthy, restart Meridian. Operations that failed on a strict path were never
+   acknowledged, so WAL recovery or the operation's next scheduled run retries them.
+
+**Resolved when:** the volume is healthy and the restarted process records no further `open` or
+`fsync` failures. Like `MeridianStorageWriteErrors`, the rule reads the counter total, so it keeps
+firing until the process restarts.
+
 ## Low Data Quality
 
 Alert: `MeridianLowDataQuality` — severity warning, priority P3, objective
@@ -375,7 +420,7 @@ applies these changes when the file changes, but the UI cannot see that process 
 | `MeridianHighDropRate`, `MeridianPipelineBackpressure`, `MeridianHighProviderLatency` | Provider Platform |
 | `MeridianNoEventsPublished`, `MeridianLowDataQuality`, `MeridianDataFreshnessViolation`, `MeridianSlaComplianceLow` | Provider Platform |
 | `MeridianProviderDisconnected` | Provider Platform |
-| `MeridianStorageWriteErrors` | Storage |
+| `MeridianStorageWriteErrors`, `MeridianDirectoryFsyncFailures` | Storage |
 
 ## Troubleshooting
 

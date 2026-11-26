@@ -449,7 +449,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Platform.Monitoring.Core.AlertRunbookEntry</code>. Kind: `class`.
 
-Source: [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:379](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L379).
+Source: [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:403](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L403).
 
 Maps a Prometheus alert rule to its operator runbook entry.
 
@@ -461,15 +461,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string AlertName { get; set; } = string.Empty;</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:382](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L382) | Alert rule name (matches Prometheus alert name). |
-| <code>public string Severity { get; set; } = string.Empty;</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:385](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L385) | Alert severity (critical, warning, info). |
-| <code>public string IncidentPriority { get; set; } = string.Empty;</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:388](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L388) | Incident priority (P1, P2, P3). |
-| <code>public string Summary { get; set; } = string.Empty;</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:391](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L391) | Short summary of the alert condition. |
-| <code>public string RunbookUrl { get; set; } = string.Empty;</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:394](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L394) | Path to the runbook section for this alert. |
-| <code>public string? SloId { get; set; }</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:397](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L397) | SLO ID this alert maps to, if any. |
-| <code>public string[] ProbableCauses { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:400](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L400) | Probable causes of this alert condition. |
-| <code>public string[] ImmediateActions { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:403](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L403) | Immediate mitigation actions. |
-| <code>public string? RollbackCriteria { get; set; }</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:406](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L406) | Criteria for determining when a rollback is needed. |
+| <code>public string AlertName { get; set; } = string.Empty;</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:406](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L406) | Alert rule name (matches Prometheus alert name). |
+| <code>public string Severity { get; set; } = string.Empty;</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:409](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L409) | Alert severity (critical, warning, info). |
+| <code>public string IncidentPriority { get; set; } = string.Empty;</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:412](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L412) | Incident priority (P1, P2, P3). |
+| <code>public string Summary { get; set; } = string.Empty;</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:415](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L415) | Short summary of the alert condition. |
+| <code>public string RunbookUrl { get; set; } = string.Empty;</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:418](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L418) | Path to the runbook section for this alert. |
+| <code>public string? SloId { get; set; }</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:421](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L421) | SLO ID this alert maps to, if any. |
+| <code>public string[] ProbableCauses { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:424](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L424) | Probable causes of this alert condition. |
+| <code>public string[] ImmediateActions { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:427](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L427) | Immediate mitigation actions. |
+| <code>public string? RollbackCriteria { get; set; }</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:430](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L430) | Criteria for determining when a rollback is needed. |
 
 ## AlertRunbookRegistry
 
@@ -488,12 +488,12 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static AlertRunbookRegistry Instance =&gt; …;</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:30](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L30) |  |
-| <code>public void Register(AlertRunbookEntry entry);</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:306](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L306) | Registers or updates an alert-runbook entry. |
-| <code>public AlertRunbookEntry? GetByAlertName(string alertName);</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:315](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L315) | Gets the runbook entry for an alert by name. |
-| <code>public string? GetRunbookUrl(string alertName);</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:323](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L323) | Gets the runbook URL for an alert, or null if not mapped. |
-| <code>public IReadOnlyList&lt;AlertRunbookEntry&gt; GetAll();</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:331](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L331) | Gets all registered entries. |
-| <code>public IReadOnlyList&lt;AlertRunbookEntry&gt; GetBySeverity(string severity);</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:339](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L339) | Gets entries filtered by severity. |
-| <code>public MonitoringAlert EnrichWithRunbook(MonitoringAlert alert);</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:351](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L351) | Enriches a MonitoringAlert with runbook information by returning a copy with augmented context. |
+| <code>public void Register(AlertRunbookEntry entry);</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:330](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L330) | Registers or updates an alert-runbook entry. |
+| <code>public AlertRunbookEntry? GetByAlertName(string alertName);</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:339](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L339) | Gets the runbook entry for an alert by name. |
+| <code>public string? GetRunbookUrl(string alertName);</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:347](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L347) | Gets the runbook URL for an alert, or null if not mapped. |
+| <code>public IReadOnlyList&lt;AlertRunbookEntry&gt; GetAll();</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:355](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L355) | Gets all registered entries. |
+| <code>public IReadOnlyList&lt;AlertRunbookEntry&gt; GetBySeverity(string severity);</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:363](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L363) | Gets entries filtered by severity. |
+| <code>public MonitoringAlert EnrichWithRunbook(MonitoringAlert alert);</code> | [src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs:375](../../../../src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs#L375) | Enriches a MonitoringAlert with runbook information by returning a copy with augmented context. |
 
 ## HealthCheckAggregator
 
