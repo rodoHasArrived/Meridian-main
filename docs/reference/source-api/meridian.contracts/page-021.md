@@ -262,6 +262,99 @@ Declared public members:
 | <code>public static bool operator == (VenueCode left, VenueCode right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:65](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L65) |  |
 | <code>public static bool operator != (VenueCode left, VenueCode right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:68](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L68) |  |
 
+## CreateLegalEntityRequest
+
+Qualified name: <code>Meridian.Contracts.EntityMaster.CreateLegalEntityRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:18](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L18).
+
+Request to register a legal entity.
+
+```csharp
+public sealed record CreateLegalEntityRequest(string LegalName, string? Lei, string? Cik, string? Jurisdiction, Guid? EntityId = null);
+```
+
+## EntityMasterRules
+
+Qualified name: <code>Meridian.Contracts.EntityMaster.EntityMasterRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:82](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L82).
+
+Shared validation for entity-master writes.
+
+```csharp
+public static class EntityMasterRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string? NormalizeLei(string? lei);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:85](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L85) | Normalizes an LEI (ISO 17442: 20 alphanumerics); null when absent. |
+| <code>public static string? NormalizeCik(string? cik);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:96](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L96) | Normalizes a CIK to its 10-digit zero-padded form; null when absent. |
+
+## EntityParentLinkDto
+
+Qualified name: <code>Meridian.Contracts.EntityMaster.EntityParentLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:26](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L26).
+
+A direct-parent relationship valid over &#91;ValidFrom, ValidTo).
+
+```csharp
+public sealed record EntityParentLinkDto(Guid EntityId, Guid ParentEntityId, DateOnly ValidFrom, DateOnly? ValidTo, DateTimeOffset RecordedAt, string RecordedBy);
+```
+
+## IEntityMasterStore
+
+Qualified name: <code>Meridian.Contracts.EntityMaster.IEntityMasterStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:47](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L47).
+
+Entity master persistence (ADR-033). Parent and issuer links carry valid-time windows; a new link for an entity or security closes the open one at the new link&#x27;s valid-from, so history is kept.
+
+```csharp
+public interface IEntityMasterStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;LegalEntityDto&gt; CreateEntityAsync(CreateLegalEntityRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:49](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L49) |  |
+| <code>Task&lt;LegalEntityDto?&gt; GetEntityAsync(Guid entityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:51](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L51) |  |
+| <code>Task&lt;LegalEntityDto?&gt; FindByLeiAsync(string lei, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:53](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L53) |  |
+| <code>Task&lt;LegalEntityDto?&gt; FindByCikAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:55](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L55) |  |
+| <code>Task&lt;EntityParentLinkDto&gt; SetParentAsync(Guid entityId, Guid parentEntityId, DateOnly validFrom, string actor, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:57](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L57) |  |
+| <code>Task&lt;EntityParentLinkDto?&gt; GetParentAsync(Guid entityId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:59](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L59) |  |
+| <code>Task&lt;SecurityIssuerLinkDto&gt; LinkIssuerAsync(Guid securityId, Guid issuerEntityId, DateOnly validFrom, string actor, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:61](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L61) |  |
+| <code>Task&lt;SecurityIssuerLinkDto?&gt; GetIssuerAsync(Guid securityId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:63](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L63) |  |
+| <code>async Task&lt;LegalEntityDto?&gt; GetUltimateParentAsync(Guid entityId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:66](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L66) | Follows parent links as of asOf to the top of the hierarchy (bounded depth). |
+
+## LegalEntityDto
+
+Qualified name: <code>Meridian.Contracts.EntityMaster.LegalEntityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:8](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L8).
+
+ADR-033: a legal entity in the entity master, the bounded context shared by Security Master issuers, counterparties and fund structure. Identified by EntityId; LEI and CIK are optional external identifiers, each unique when present.
+
+```csharp
+public sealed record LegalEntityDto(Guid EntityId, string LegalName, string? Lei, string? Cik, string? Jurisdiction, DateTimeOffset RecordedAt, string RecordedBy);
+```
+
+## SecurityIssuerLinkDto
+
+Qualified name: <code>Meridian.Contracts.EntityMaster.SecurityIssuerLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:35](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L35).
+
+A security&#x27;s issuer link valid over &#91;ValidFrom, ValidTo).
+
+```csharp
+public sealed record SecurityIssuerLinkDto(Guid SecurityId, Guid IssuerEntityId, DateOnly ValidFrom, DateOnly? ValidTo, DateTimeOffset RecordedAt, string RecordedBy);
+```
+
 ## CreateEnvironmentDraftRequest
 
 Qualified name: <code>Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest</code>. Kind: `record`.
@@ -793,133 +886,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Zip = 0</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:56](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L56) |  |
 | <code>TarGz = 1</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:57](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L57) |  |
-
-## EtlPreviewDisposition
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlPreviewDisposition</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:46](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L46).
-
-```csharp
-public enum EtlPreviewDisposition : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Ready = 0</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:48](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L48) |  |
-| <code>Warning = 1</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:49](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L49) |  |
-| <code>Error = 2</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:50](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L50) |  |
-
-## EtlPreviewResult
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlPreviewResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:437](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L437).
-
-Aggregates previewed ETL files and errors for a source and partner schema.
-
-```csharp
-public sealed class EtlPreviewResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;success&quot;)] public bool Success { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:440](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L440) |  |
-| <code>[JsonPropertyName(&quot;sourceKind&quot;)] public EtlSourceKind SourceKind { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:443](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L443) |  |
-| <code>[JsonPropertyName(&quot;schemaId&quot;)] public required string SchemaId { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:446](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L446) |  |
-| <code>[JsonPropertyName(&quot;files&quot;)] public IReadOnlyList&lt;EtlFilePreview&gt; Files { get; init; } = [];</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:449](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L449) |  |
-| <code>[JsonPropertyName(&quot;errors&quot;)] public IReadOnlyList&lt;string&gt; Errors { get; init; } = [];</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:452](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L452) |  |
-
-## EtlRecordDisposition
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlRecordDisposition</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:61](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L61).
-
-```csharp
-public enum EtlRecordDisposition : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Accepted = 0</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:63](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L63) |  |
-| <code>Rejected = 1</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:64](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L64) |  |
-| <code>SkippedDuplicate = 2</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:65](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L65) |  |
-| <code>SkippedOutOfRange = 3</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:66](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L66) |  |
-
-## EtlRejectRecord
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlRejectRecord</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:285](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L285).
-
-Captures a rejected ETL record with its source position and rejection reason.
-
-```csharp
-public sealed class EtlRejectRecord
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;sourceFileName&quot;)] public required string SourceFileName { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:288](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L288) |  |
-| <code>[JsonPropertyName(&quot;recordIndex&quot;)] public long RecordIndex { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:291](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L291) |  |
-| <code>[JsonPropertyName(&quot;rejectCode&quot;)] public required string RejectCode { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:294](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L294) |  |
-| <code>[JsonPropertyName(&quot;rejectMessage&quot;)] public required string RejectMessage { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:297](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L297) |  |
-| <code>[JsonPropertyName(&quot;rawLine&quot;)] public string? RawLine { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:300](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L300) |  |
-| <code>[JsonPropertyName(&quot;capturedAtUtc&quot;)] public DateTime CapturedAtUtc { get; init; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:303](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L303) |  |
-
-## EtlRemoteFile
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlRemoteFile</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:307](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L307).
-
-A file discovered on a remote ETL source (e.g. an SFTP server).
-
-```csharp
-public sealed class EtlRemoteFile
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;path&quot;)] public required string Path { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:310](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L310) |  |
-| <code>[JsonPropertyName(&quot;name&quot;)] public required string Name { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:313](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L313) |  |
-| <code>[JsonPropertyName(&quot;sizeBytes&quot;)] public long SizeBytes { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:316](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L316) |  |
-| <code>[JsonPropertyName(&quot;lastModifiedUtc&quot;)] public DateTimeOffset? LastModifiedUtc { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:319](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L319) |  |
-
-## EtlSourceDefinition
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlSourceDefinition</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:135](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L135).
-
-Configures an ETL input location, file selection, credentials, and post-processing policy.
-
-```csharp
-public sealed class EtlSourceDefinition
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;kind&quot;)] public required EtlSourceKind Kind { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:138](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L138) |  |
-| <code>[JsonPropertyName(&quot;location&quot;)] public required string Location { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:141](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L141) |  |
-| <code>[JsonPropertyName(&quot;filePattern&quot;)] public string? FilePattern { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:144](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L144) |  |
-| <code>[JsonPropertyName(&quot;username&quot;)] public string? Username { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:147](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L147) |  |
-| <code>[JsonPropertyName(&quot;secretRef&quot;)] public string? SecretRef { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:150](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L150) |  |
-| <code>[JsonPropertyName(&quot;deleteAfterSuccess&quot;)] public bool DeleteAfterSuccess { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:153](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L153) |  |
-| <code>[JsonPropertyName(&quot;postProcessingAction&quot;)] public EtlSourcePostProcessingAction PostProcessingAction { get; init; } = EtlSourcePostProcessingAction.LeaveInPlace;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:156](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L156) |  |
-| <code>[JsonPropertyName(&quot;archiveLocation&quot;)] public string? ArchiveLocation { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:159](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L159) |  |
-| <code>[JsonPropertyName(&quot;errorLocation&quot;)] public string? ErrorLocation { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:162](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L162) |  |
-| <code>[JsonPropertyName(&quot;hostKeySha256Fingerprint&quot;)] public string? HostKeySha256Fingerprint { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:165](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L165) |  |

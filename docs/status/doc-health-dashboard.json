@@ -1,11 +1,11 @@
 {
-  "total_files": 1288,
+  "total_files": 1291,
   "orphaned_count": 379,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 86,
-  "signal_digest": "sha256:ac8c621f9cc5297bb585c7c90e2f0e10a89d713e3058397e40ae223446384207",
+  "signal_digest": "sha256:863c5abb68c02f887c7ddef8b8337ece3d3de422975ed3f574a3d9c2df5ad65a",
   "orphaned_files": [
     ".agents/skills/meridian-blueprint/SKILL.md",
     ".agents/skills/meridian-brainstorm/SKILL.md",
@@ -1212,6 +1212,20 @@
     },
     {
       "path": "docs/adr/032-intercompany-confirmation-close-policy.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/adr/033-entity-master-bounded-context.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/adr/034-bitemporal-security-master-terms.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3060,6 +3074,13 @@
     },
     {
       "path": "docs/generated/database/modules/banking.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/generated/database/modules/entity_master.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

@@ -6,6 +6,108 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AuditTrailExportLimitException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AuditTrailExportLimitException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:10](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L10).
+
+```csharp
+public sealed class AuditTrailExportLimitException(string message) : InvalidOperationException(message);
+```
+
+## AutomatedJournalDividendPositionResolution
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDividendPositionResolution</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:12](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L12).
+
+Authoritative position history resolved for one dividend cycle.
+
+```csharp
+public sealed record AutomatedJournalDividendPositionResolution(IReadOnlyList<DividendAccrualPosition> Positions, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string> Blockers)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:17](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L17) |  |
+
+## AutomatedJournalDraftIntakeDisposition
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeDisposition</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:71](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L71).
+
+One event the intake did not turn into a new draft, with the reason it was skipped.
+
+```csharp
+public enum AutomatedJournalDraftIntakeDisposition
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ProjectionFailed = 0</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:73](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L73) |  |
+| <code>ExistingDraftReady = 1</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:74](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L74) |  |
+| <code>ExistingDraftNeedsFix = 2</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:75](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L75) |  |
+| <code>ExistingDraftRejected = 3</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:76](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L76) |  |
+| <code>ExistingDraftGoverned = 4</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:77](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L77) |  |
+| <code>ExistingDraftTerminal = 5</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:78](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L78) |  |
+| <code>ExistingDraftReassessmentRequired = 6</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:79](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L79) |  |
+
+## AutomatedJournalDraftIntakeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:35](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L35).
+
+Batch of automated economic events (dividends, interest, fees, withholding) to admit into the manual journal workbench queue for the named fund profile.
+
+```csharp
+public sealed record AutomatedJournalDraftIntakeRequest(string FundProfileId, string Currency, IReadOnlyList<AutomatedJournalEvent> Events, string Actor, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null, string? BatchCorrelationId = null);
+```
+
+## AutomatedJournalDraftIntakeResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:100](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L100).
+
+Outcome of an automated journal intake run. Created drafts land in the workbench queue as ManualJournalEntryStatusDto.Draft (or NeedsFix when validation flags them) awaiting human submit/approve; skips are reported, never silent.
+
+```csharp
+public sealed record AutomatedJournalDraftIntakeResult(IReadOnlyList<ManualJournalEntryDraftDto> Created, IReadOnlyList<AutomatedJournalDraftIntakeSkip> Skipped)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int NeedsFixCount =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:105](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L105) | Created drafts that need account-mapping or other fixes before submission. |
+
+## AutomatedJournalDraftIntakeService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:116](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L116).
+
+Admits automated journal events into the close-cockpit approval queue: projects each event through AutomatedJournalDraftProjector, maps ledger accounts onto the fund&#x27;s chart of accounts, and saves the balanced result through the manual journal workbench so it inherits validation, audit, and the human submit/approve lifecycle. Intake is idempotent per event: the draft id derives from the event idempotency key, and events whose draft already exists are skipped rather than duplicated or overwritten.
+
+```csharp
+public sealed class AutomatedJournalDraftIntakeService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AutomatedJournalDraftIntakeService(IManualJournalEntryWorkbenchService workbench, IManualJournalEntryDraftStore draftStore, IAccountingConfigurationService configurationService);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:122](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L122) |  |
+| <code>public async Task&lt;AutomatedJournalDraftIntakeResult&gt; IntakeAsync(AutomatedJournalDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:132](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L132) |  |
+| <code>public Task&lt;AutomatedJournalDraftIntakeResult&gt; IntakeDraftsAsync(AutomatedJournalPreparedDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:180](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L180) | Admits prebuilt drafts (for example period-close closing entries) into the workbench queue with the same idempotent dedup, chart mapping, and human approve lifecycle as event-projected drafts. |
+
 ## AutomatedJournalDraftIntakeSkip
 
 Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeSkip</code>. Kind: `record`.
@@ -918,109 +1020,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public CapitalAccountWorkbenchService(IManualJournalEntryWorkbenchService manualJournalEntryWorkbenchService, ReportPackWorkflowService? reportPackWorkflowService = null);</code> | [src/Meridian.Ui.Shared/Services/CapitalAccountWorkbenchService.cs:31](../../../../src/Meridian.Ui.Shared/Services/CapitalAccountWorkbenchService.cs#L31) |  |
 | <code>public async Task&lt;CapitalAccountWorkbenchDto&gt; GetWorkbenchAsync(string? fundProfileId = null, Guid? ledgerBookId = null, string? fundEventId = null, string? capitalAccountId = null, string? investorId = null, string? currency = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalAccountWorkbenchService.cs:39](../../../../src/Meridian.Ui.Shared/Services/CapitalAccountWorkbenchService.cs#L39) |  |
-
-## CapitalCallCommitmentInput
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallCommitmentInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs:13](../../../../src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs#L13).
-
-Compatibility projection of one commitment-register line backing a capital call. Native intake resolves its terms from the approved durable commitment revision; caller totals are consistency checks. Each line carries retained register evidence; called-to-date is never taken from the caller — it is recomputed server-side from commitment-scoped posting receipts before any native draft is produced.
-
-```csharp
-public sealed record CapitalCallCommitmentInput(string CommitmentId, string CapitalAccountId, string InvestorId, decimal TotalCommitment, DateOnly CommitmentDate, CommitmentStatus Status = CommitmentStatus.Active, DateOnly? InvestmentPeriodEndDate = null, IReadOnlyList<string>? EvidenceLinks = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs:23](../../../../src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs#L23) |  |
-
-## CapitalCallDefaultTermsInput
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallDefaultTermsInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:14](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L14).
-
-The default terms of one commitment on a capital call. The ledger holds the call and its receipts but not the due date, default rate, day-count convention or grace period, so the operator attests them here with retained evidence (the fund agreement or call notice).
-
-```csharp
-public sealed record CapitalCallDefaultTermsInput(string CommitmentId, string CapitalAccountId, string InvestorId, DateOnly DueDate, decimal DefaultInterestRateAnnual, DefaultInterestConvention Convention, int GraceDays, IReadOnlyList<string>? EvidenceLinks = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:24](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L24) |  |
-
-## CapitalCallFundingInput
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallFundingInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs:12](../../../../src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs#L12).
-
-One operator-attested cash receipt against an issued capital call. The amount is what the LP remitted (full or partial); the fundable ceiling is never taken from the caller — it is recomputed server-side as posted issuance minus posted funding for the capital account before any draft is produced. Each line must carry retained remittance/bank evidence.
-
-```csharp
-public sealed record CapitalCallFundingInput(string CommitmentId, string CapitalAccountId, string InvestorId, decimal FundedAmount, IReadOnlyList<string>? EvidenceLinks = null, string? FundingReceiptId = null, string? BankLineId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs:21](../../../../src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs#L21) |  |
-
-## CapitalCallNoticeRecipientBinding
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallNoticeRecipientBinding</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:15](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L15).
-
-Deployment-owned investor-to-recipient mapping; investor IDs are never assumed to be user IDs.
-
-```csharp
-public sealed record CapitalCallNoticeRecipientBinding(string TenantId, string CompanyId, string FundProfileId, string InvestorId, string RecipientPrincipalId, string? ReviewGroupPrincipalId = null);
-```
-
-## CapitalCallNoticeReportingService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallNoticeReportingService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:136](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L136).
-
-Creates a governed Draft notice; approval, release, grants, and delivery use existing Reporting controls.
-
-```csharp
-public sealed class CapitalCallNoticeReportingService(CapitalCallNoticeSourceValidator source, ILedgerJournalStore journals, ReportingRunCommandService reporting, IReportingRunStore? runStore = null, IReportingGovernanceRepository? governance = null, IReportingDeliveryStore? deliveries = null, IReportingAuthoritativeSource? authoritativeSource = null, IReportingReconciliationEvidenceRetentionStore? reconciliationRetention = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string TemplateId = &quot;capital-call-notice&quot;;</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:146](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L146) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;PrivateCapitalNoticeSummaryDto&gt;&gt; ReadNoticeSummariesAsync(PrivateCapitalScopeDto scope, ReportAccessQueryContext access, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:150](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L150) | Projects retained notice associations; callers cannot attach an arbitrary reporting run to a call. |
-| <code>public async Task&lt;ReportingRunResultDto&gt; GenerateAsync(PrivateCapitalScopeDto scope, string callId, string investorId, Guid operationId, string actor, ReportAccessQueryContext access, ReportingGovernanceCallerContext caller, string? commitmentId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:206](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L206) |  |
-
-## CapitalCallNoticeSourceValidator
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallNoticeSourceValidator</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:24](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L24).
-
-Resolves notice inputs from retained authority, including the independently posted issuance.
-
-```csharp
-public sealed class CapitalCallNoticeSourceValidator(IPrivateCapitalStore capitalStore, IEnumerable<CapitalCallNoticeRecipientBinding>? recipientBindings = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;(PrivateCapitalCallDto Call, PrivateCapitalCallLineDto Line, PrivateCapitalCommitmentDto Commitment, string Recipient, string ReviewGroup)&gt; ResolveAsync(PrivateCapitalScopeDto scope, string callId, string investorId, string? commitmentId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:30](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L30) |  |
-| <code>public async Task ValidateAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext access, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:66](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L66) |  |
-| <code>public static void ValidateRows(ReportingRunParametersDto parameters, ImmutableArray&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; rows);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:92](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L92) |  |

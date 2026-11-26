@@ -6,6 +6,124 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationWorkflowReadScope
+
+Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationWorkflowReadScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:28](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L28).
+
+Which workspace families a caller may read in the shared workflow summary. The summary is shell furniture that composes one card per canonical workspace, so its route admits the union of the per-workspace read permissions — otherwise a reporting or strategy reader loses the whole strip. Admission is therefore not authorization: without this projection a caller admitted by any one family receives every family&#x27;s card, and the strategy and accounting cards carry real record content (candidate strategy names, promotion state and reasons, open break counts, ledger continuity posture). Cards backed by no record content — Portfolio, Reporting and Settings, which vary only on whether an operating context is selected — are not gated here; there is nothing in them to withhold. There is deliberately no default: every caller of WorkstationWorkflowSummaryService.GetAsync states a scope, because the desktop lane reaches that service in process with no endpoint filter in between, and an optional argument there is a grant to whichever caller forgets it. Browser requests resolve theirs through ForRequest; the desktop resolves its operator&#x27;s through its own authenticated session.
+
+```csharp
+public sealed record WorkstationWorkflowReadScope(bool Trading, bool Accounting, bool Strategy, bool Data)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly WorkstationWorkflowReadScope All = new (Trading : true, Accounting : true, Strategy : true, Data : true);</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:38](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L38) | Every family readable. For a caller whose authority is already established to cover all of them, and for tests; never a stand-in for a scope that was not resolved. |
+| <code>public bool NeedsStrategyRuns =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:49](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L49) | True when any family whose card is built from strategy runs is readable. Trading and Accounting both read the governed (paper and live) runs and Strategy reads the backtest queue, so a caller holding none of the three needs no run load at all. |
+| <code>public static WorkstationWorkflowReadScope ForRequest(HttpContext context) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:71](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L71) | The families the current request may read. Each is the permission set already declared by the route that serves that family&#x27;s data directly, so the summary card and the surface it summarises admit the same callers and neither becomes the other&#x27;s second door: Trading — UserPermission.ViewTrades, as the trading read surface. Accounting — the reconciliation break queue&#x27;s set, which the accounting card&#x27;s open-break and continuity posture is drawn from. Strategy — the run-ledger routes&#x27; UserPermission.ViewStrategies and UserPermission.ManageStrategies. Data — the Data workspace&#x27;s own set. The card summarises that workspace and its next action opens it, so the two admit the same callers; the workspace payload reads the same provider metrics the card counts, so nothing reaches the card that the workspace withholds. UserPermission.AdminMaintenance is not a universal override: it appears only in the accounting set, because the reconciliation break queue accepts it and the trading, strategy and data workspaces do not. A profile carrying it alone administers maintenance routines; it is not thereby entitled to strategy candidates or trading posture. |
+
+## WorkstationWorkflowSummaryService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationWorkflowSummaryService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs:12](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs#L12).
+
+Builds a shell-facing workflow summary that keeps next-action ordering shared across hosts.
+
+```csharp
+public sealed class WorkstationWorkflowSummaryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkstationWorkflowSummaryService(StrategyRunReadService runReadService, StrategyRunContinuityService? continuityService = null, IReconciliationRunService? reconciliationRunService = null, Meridian.Application.UI.ConfigStore? configStore = null, IWorkflowActionCatalog? actionCatalog = null, IOperationsContinuityWorkflowService? operationsContinuityWorkflowService = null, IFundProfileTenancyRegistry? tenancyRegistry = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs:22](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs#L22) |  |
+| <code>public async Task&lt;OperatorWorkflowHomeSummary&gt; GetAsync(WorkstationWorkflowReadScope readScope, bool hasOperatingContext = false, string? operatingContextDisplayName = null, string? fundProfileId = null, string? fundAccountId = null, string? fundDisplayName = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs:43](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs#L43) |  |
+
+## IQuoteStreamBroadcaster
+
+Qualified name: <code>Meridian.Ui.Shared.Streaming.IQuoteStreamBroadcaster</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs:10](../../../../src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs#L10).
+
+Fan-out hub for workstation quote streams. Implements IQuoteUpdateNotifier so the collector can wake it on quote changes, and hands SSE connections a per-topic, coalesced snapshot feed via TrySubscribe.
+
+```csharp
+public interface IQuoteStreamBroadcaster : IQuoteUpdateNotifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>QuoteStreamSubscription? TrySubscribe(StreamTopic topic, string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs:17](../../../../src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs#L17) | Subscribe to a topic&#x27;s coalesced snapshot feed. Returns null when the session&#x27;s concurrent-stream cap is exceeded. Dispose the subscription to unsubscribe and release the session&#x27;s stream slot. |
+
+## QuoteStreamBroadcaster
+
+Qualified name: <code>Meridian.Ui.Shared.Streaming.QuoteStreamBroadcaster</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:18](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L18).
+
+Event-driven quote fan-out. A thin quote-typed configuration of StreamBroadcaster{T}: woken by the collector via NotifyQuoteChanged, it rebuilds each active topic&#x27;s snapshot on the shared coalescing loop (latest-wins) and pushes it to every subscriber of that topic. One snapshot build is shared across all subscribers of a topic, and the market-data storage hot path is untouched: NotifyQuoteChanged only sets a wake signal.
+
+```csharp
+public sealed class QuoteStreamBroadcaster : IQuoteStreamBroadcaster, IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public QuoteStreamBroadcaster(IServiceProvider services, StreamConnectionRegistry registry, QuoteStreamOptions options) : this(services, registry, options, LiveDataEndpoints.TryBuildQuotesSnapshotResponse);</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:22](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L22) |  |
+| <code>public void NotifyQuoteChanged(string symbol) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:52](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L52) |  |
+| <code>public QuoteStreamSubscription? TrySubscribe(StreamTopic topic, string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:55](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L55) |  |
+| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:66](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L66) |  |
+
+## QuoteStreamOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Streaming.QuoteStreamOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:7](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L7).
+
+Tuning knobs for the workstation quote-stream fan-out. Bindable from configuration under SectionName.
+
+```csharp
+public sealed class QuoteStreamOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SectionName = &quot;Workstation:QuoteStream&quot;;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:10](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L10) | Configuration section name. |
+| <code>public int CoalesceIntervalMs { get; set; } = 250;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:16](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L16) | Maximum push cadence: dirty topics are rebuilt and fanned out at most this often. Also the floor for how quickly a change reaches subscribers. |
+| <code>public int MaxConcurrentStreamsPerSession { get; set; } = 4;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:19](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L19) | Maximum concurrent stream connections per session. |
+| <code>public int SubscriberChannelCapacity { get; set; } = 1;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L25) | Per-subscriber channel capacity. 1 means latest-snapshot-wins (drop-oldest), so a slow client can never block the broadcaster — it only drops intermediate snapshots. |
+
+## QuoteStreamSubscription
+
+Qualified name: <code>Meridian.Ui.Shared.Streaming.QuoteStreamSubscription</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs:12](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs#L12).
+
+A live subscription to a quote topic. Read coalesced snapshots from Reader; dispose to unsubscribe and release the session&#x27;s stream slot. Disposal is idempotent.
+
+```csharp
+public sealed class QuoteStreamSubscription : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ChannelReader&lt;QuotesSnapshotResponse&gt; Reader { get; }</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs:23](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs#L23) | Coalesced snapshot feed for this subscription&#x27;s topic. |
+| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs#L25) |  |
+
 ## ReportRunStreamBroadcaster
 
 Qualified name: <code>Meridian.Ui.Shared.Streaming.ReportRunStreamBroadcaster</code>. Kind: `class`.

@@ -6,6 +6,93 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderIntegrationSyncPlanRequestDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationSyncPlanRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:625](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L625).
+
+```csharp
+public sealed record ProviderIntegrationSyncPlanRequestDto(string ConnectionId, DateTimeOffset EvaluatedAt);
+```
+
+## ProviderIntegrationSyncRunDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationSyncRunDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:547](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L547).
+
+```csharp
+public sealed record ProviderIntegrationSyncRunDto(string SyncRunId, string ManifestId, string ConnectionId, string ProviderId, ProviderCapabilityKindDto Capability, string EndpointKey, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt, ProviderIntegrationProcessingStatusDto Status, int RecordsReceived, int RecordsAccepted, int RecordsQuarantined, string? RawPayloadId, IReadOnlyList<ValidationIssueDto> Issues)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderIntegrationManifestReferenceDto? ManifestReference { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:564](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L564) | Exact immutable manifest applied to this evidence; null for unverified legacy records. |
+| <code>public ProviderIntegrationManifestReferenceDto? OriginalManifestReference { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:567](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L567) | Original ingestion mapping, preserved through remediation and subsequent replay. |
+| <code>public string? SourceSyncRunId { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:569](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L569) |  |
+| <code>public ProviderIntegrationReplayModeDto? ReplayMode { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:571](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L571) |  |
+
+## ProviderIntegrationSyncRunEvidenceDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationSyncRunEvidenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:574](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L574).
+
+```csharp
+public sealed record ProviderIntegrationSyncRunEvidenceDto(string SyncRunId, ProviderCapabilityKindDto Capability, string EndpointKey, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt, ProviderIntegrationProcessingStatusDto Status, int RecordsReceived, int RecordsAccepted, int RecordsQuarantined, int DurableStagingRecordCount, int DurableQuarantinedRecordCount, int CriticalIssueCount, int WarningIssueCount, string? RawPayloadId, IReadOnlyList<ValidationIssueDto> Issues)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderIntegrationManifestReferenceDto? ManifestReference { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:591](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L591) |  |
+| <code>public ProviderIntegrationManifestReferenceDto? OriginalManifestReference { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:593](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L593) |  |
+| <code>public string? SourceSyncRunId { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:595](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L595) |  |
+| <code>public ProviderIntegrationReplayModeDto? ReplayMode { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:597](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L597) |  |
+
+## ProviderIntegrationSyncRunHistoryDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationSyncRunHistoryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:618](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L618).
+
+```csharp
+public sealed record ProviderIntegrationSyncRunHistoryDto(string ConnectionId, IReadOnlyList<ProviderIntegrationSyncRunEvidenceDto> SyncRuns, int TotalSyncRuns, int ReturnedSyncRuns, DateTimeOffset? LatestStartedAt);
+```
+
+## ProviderIntegrationTemplateCatalogEntryDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationTemplateCatalogEntryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:250](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L250).
+
+```csharp
+public sealed record ProviderIntegrationTemplateCatalogEntryDto(string ManifestId, string ProviderId, string DisplayName, IntegrationTypeDto IntegrationType, IReadOnlyList<ProviderCapabilityKindDto> Capabilities, string Summary, bool RequiresCredentials);
+```
+
+## ProviderMappingConfidenceDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderMappingConfidenceDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:115](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L115).
+
+```csharp
+public enum ProviderMappingConfidenceDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Low = 0</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:117](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L117) |  |
+| <code>Medium = 1</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:118](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L118) |  |
+| <code>High = 2</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:119](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L119) |  |
+| <code>Approved = 3</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:120](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L120) |  |
+
 ## QuarantinedRecordDto
 
 Qualified name: <code>Meridian.Contracts.Integrations.QuarantinedRecordDto</code>. Kind: `record`.
@@ -703,98 +790,3 @@ Enum declarations:
 | <code>Correction = 6</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:38](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L38) |  |
 | <code>ReportOutput = 7</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:39](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L39) |  |
 | <code>AuditSupport = 8</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:40](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L40) |  |
-
-## AccountingPostingEvidenceReferenceDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AccountingPostingEvidenceReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:43](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L43).
-
-```csharp
-public sealed record AccountingPostingEvidenceReferenceDto(string EvidenceId, string Uri, AccountingPostingEvidenceKindDto Kind, string SourceSystem, DateTimeOffset RetainedAtUtc, string RetainedBy, string? SubjectId = null, string? ContentHash = null, string? Description = null, string? SourceReference = null, string? Reviewer = null, DateTimeOffset? ReviewedAtUtc = null, DateOnly? EffectiveDate = null, long? EvidenceVersion = null, string? ReviewStatus = null, string? SubjectType = null);
-```
-
-## AccountingPostingIntentDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AccountingPostingIntentDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:9](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L9).
-
-```csharp
-public enum AccountingPostingIntentDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Originating = 0</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:11](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L11) |  |
-| <code>Adjustment = 1</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:12](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L12) |  |
-| <code>Reversal = 2</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:13](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L13) |  |
-| <code>Rebook = 3</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:14](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L14) |  |
-| <code>Restatement = 4</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:15](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L15) |  |
-| <code>AutomatedDraft = 5</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:16](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L16) |  |
-
-## AccountingReadinessStateDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AccountingReadinessStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:115](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L115).
-
-```csharp
-public enum AccountingReadinessStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotStarted = 0</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:117](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L117) |  |
-| <code>NeedsAttention = 1</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:118](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L118) |  |
-| <code>Blocked = 2</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:119](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L119) |  |
-| <code>ReadyForReview = 3</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:120](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L120) |  |
-| <code>Certified = 4</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:121](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L121) |  |
-
-## AccountingReportPackageBundleDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AccountingReportPackageBundleDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:913](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L913).
-
-```csharp
-public sealed record AccountingReportPackageBundleDto(FinancialStatementPackageDto FinancialStatements, IReadOnlyList<InvestorCapitalStatementDto> InvestorCapitalStatements, RealizedGainLossReportDto RealizedGainLoss, NavPackageDto NavPackage, ReportCertificationDto Certification, IReadOnlyList<AccountingConfigurationValidationIssueDto>? ValidationIssues = null, IReadOnlyList<ReportExportArtifactDto>? ExportArtifacts = null, Guid? CloseWorkflowId = null, string? TenantId = null, string? CompanyId = null, IReadOnlyList<AccountingCloseReadinessItemDto>? CloseReadinessItems = null, ReportDimensionScopeDto? DimensionScope = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;AccountingConfigurationValidationIssueDto&gt; ValidationIssues { get; init; } = ValidationIssues??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:927](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L927) |  |
-| <code>public IReadOnlyList&lt;ReportExportArtifactDto&gt; ExportArtifacts { get; init; } = ExportArtifacts??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:930](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L930) |  |
-| <code>public IReadOnlyList&lt;AccountingCloseReadinessItemDto&gt; CloseReadinessItems { get; init; } = CloseReadinessItems??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:933](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L933) |  |
-
-## AccountingReportPackageRequestDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AccountingReportPackageRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:850](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L850).
-
-```csharp
-public sealed record AccountingReportPackageRequestDto(string FundProfileId, string PeriodId, string Actor, Guid? LedgerBookId = null, Guid? CloseWorkflowId = null, string? CapitalAccountId = null, string? InvestorId = null, decimal BeginningCapital = 0m, decimal Contributions = 0m, decimal Distributions = 0m, decimal RealizedGainLoss = 0m, decimal Nav = 0m, string Currency = "USD", string? RestatementReasonCode = null, string? PriorPackageId = null, IReadOnlyList<string>? EvidenceLinks = null, string? CorrelationId = null, LedgerDimensionSetDto? Dimensions = null, string? TenantId = null, string? CompanyId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:872](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L872) |  |
-
-## AccountingRuleConditionDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AccountingRuleConditionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:368](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L368).
-
-```csharp
-public sealed record AccountingRuleConditionDto(string ConditionId, string Field, AccountingRuleConditionOperatorDto Operator, string? Value = null, string? SecondValue = null, bool IsRequired = true, string? Description = null);
-```

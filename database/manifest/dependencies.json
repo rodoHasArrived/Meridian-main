@@ -6058,6 +6058,42 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.CreateLegalEntityRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.EntityMasterRules"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.EntityParentLinkDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.IEntityMasterStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.LegalEntityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.SecurityIssuerLinkDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest"
     },
     {
@@ -15850,6 +15886,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCanonicalResolution"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowBehavior"
     },
     {
@@ -16066,6 +16108,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDisposition"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDispositionKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDispositions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleKind"
     },
     {
@@ -16181,6 +16241,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentityClaim"
     },
     {
       "kind": "contract-set-member",
@@ -16631,6 +16697,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRecordRateUnit"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityResolutionStatus"
     },
     {
       "kind": "contract-set-member",
@@ -22277,6 +22349,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterOperatorMetadataDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterPendingRevisionDto"
     },
     {
       "kind": "contract-set-member",
@@ -33586,6 +33664,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCanonicalResolution"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowBehavior"
     },
     {
@@ -33802,6 +33886,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDisposition"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDispositionKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDispositions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleKind"
     },
     {
@@ -33917,6 +34019,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentityClaim"
     },
     {
       "kind": "contract-set-member",
@@ -34367,6 +34475,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRecordRateUnit"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityResolutionStatus"
     },
     {
       "kind": "contract-set-member",
@@ -51009,6 +51123,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityCanonicalResolution",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityResolutionStatus"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowCalculationReceipt",
       "target": "contract:Meridian.Contracts.FixedIncome.BondCalculationContext"
     },
@@ -51227,6 +51347,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDisposition",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDispositionKind"
     },
     {
       "kind": "contract-reference",
@@ -58605,6 +58731,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SecurityMasterPendingRevisionDto",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterRevisionStateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.SecurityMasterPublishResultDto",
       "target": "contract:Meridian.Contracts.Workstation.RestatementCandidateDto"
     },
@@ -61575,6 +61707,111 @@
       "label": "",
       "source": "database:banking.fk_bank_transactions_pending_payment on banking.bank_transactions",
       "target": "database:banking.pending_payments_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.ck_entity_parent_links_distinct on entity_master.entity_parent_links",
+      "target": "database:entity_master.entity_parent_links.entity_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.ck_entity_parent_links_distinct on entity_master.entity_parent_links",
+      "target": "database:entity_master.entity_parent_links.parent_entity_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.ck_entity_parent_links_window on entity_master.entity_parent_links",
+      "target": "database:entity_master.entity_parent_links.valid_from"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.ck_entity_parent_links_window on entity_master.entity_parent_links",
+      "target": "database:entity_master.entity_parent_links.valid_to"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.ck_legal_entities_cik on entity_master.legal_entities",
+      "target": "database:entity_master.legal_entities.cik"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.ck_legal_entities_lei on entity_master.legal_entities",
+      "target": "database:entity_master.legal_entities.lei"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.ck_security_issuer_links_window on entity_master.security_issuer_links",
+      "target": "database:entity_master.security_issuer_links.valid_from"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.ck_security_issuer_links_window on entity_master.security_issuer_links",
+      "target": "database:entity_master.security_issuer_links.valid_to"
+    },
+    {
+      "constraint": "entity_parent_links_entity_id_fkey",
+      "kind": "foreign-key",
+      "label": "entity_id",
+      "source": "database:entity_master.entity_parent_links",
+      "target": "database:entity_master.legal_entities"
+    },
+    {
+      "constraint": "entity_parent_links_parent_entity_id_fkey",
+      "kind": "foreign-key",
+      "label": "parent_entity_id",
+      "source": "database:entity_master.entity_parent_links",
+      "target": "database:entity_master.legal_entities"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.entity_parent_links_entity_id_fkey on entity_master.entity_parent_links",
+      "target": "database:entity_master.legal_entities.entity_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.entity_parent_links_entity_id_fkey on entity_master.entity_parent_links",
+      "target": "database:entity_master.legal_entities_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.entity_parent_links_parent_entity_id_fkey on entity_master.entity_parent_links",
+      "target": "database:entity_master.legal_entities.entity_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.entity_parent_links_parent_entity_id_fkey on entity_master.entity_parent_links",
+      "target": "database:entity_master.legal_entities_pkey"
+    },
+    {
+      "constraint": "security_issuer_links_issuer_entity_id_fkey",
+      "kind": "foreign-key",
+      "label": "issuer_entity_id",
+      "source": "database:entity_master.security_issuer_links",
+      "target": "database:entity_master.legal_entities"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.security_issuer_links_issuer_entity_id_fkey on entity_master.security_issuer_links",
+      "target": "database:entity_master.legal_entities.entity_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:entity_master.security_issuer_links_issuer_entity_id_fkey on entity_master.security_issuer_links",
+      "target": "database:entity_master.legal_entities_pkey"
     },
     {
       "constraint": "account_balance_snapshot_account_id_fkey",
@@ -67837,6 +68074,60 @@
       "target": "database:security_master.security_curves.rate_policy"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_security_factor_observations_factor on security_master.security_factor_observations",
+      "target": "database:security_master.security_factor_observations.factor"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_security_master_exception_cases_closed on security_master.security_master_exception_cases",
+      "target": "database:security_master.security_master_exception_cases.closed_at"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_security_master_exception_cases_closed on security_master.security_master_exception_cases",
+      "target": "database:security_master.security_master_exception_cases.status"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_security_master_exception_cases_status on security_master.security_master_exception_cases",
+      "target": "database:security_master.security_master_exception_cases.status"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_security_master_held_amendments_closed on security_master.security_master_held_amendments",
+      "target": "database:security_master.security_master_held_amendments.closed_at"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_security_master_held_amendments_closed on security_master.security_master_held_amendments",
+      "target": "database:security_master.security_master_held_amendments.status"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_security_master_held_amendments_status on security_master.security_master_held_amendments",
+      "target": "database:security_master.security_master_held_amendments.status"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_security_master_redirects_distinct on security_master.security_master_redirects",
+      "target": "database:security_master.security_master_redirects.retired_security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_security_master_redirects_distinct on security_master.security_master_redirects",
+      "target": "database:security_master.security_master_redirects.survivor_security_id"
+    },
+    {
       "constraint": "commitment_guarantee_covenant_projection_security_id_fkey",
       "kind": "foreign-key",
       "label": "security_id",
@@ -70224,6 +70515,36 @@
       "target": "migration-module:banking"
     },
     {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:entity_master",
+      "target": "database:entity_master.entity_master_schema_migrations"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:entity_master",
+      "target": "database:entity_master.entity_parent_links"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:entity_master",
+      "target": "database:entity_master.legal_entities"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:entity_master",
+      "target": "database:entity_master.security_issuer_links"
+    },
+    {
+      "kind": "hosts-migration-module",
+      "label": "",
+      "source": "schema:entity_master",
+      "target": "migration-module:entity-master"
+    },
+    {
       "kind": "module-contract-map",
       "label": "explicit module mapping",
       "source": "schema:fund_accounts",
@@ -71784,6 +72105,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.security_factor_observations"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.security_field_provenance"
     },
     {
@@ -71814,7 +72141,25 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.security_master_change_outbox"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.security_master_conflicts"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.security_master_exception_cases"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.security_master_held_amendments"
     },
     {
       "kind": "contains",
@@ -71827,6 +72172,12 @@
       "label": "",
       "source": "schema:security_master",
       "target": "database:security_master.security_master_quality_reports_id_seq"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.security_master_redirects"
     },
     {
       "kind": "contains",
@@ -72010,7 +72361,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "4278fa622003c2dc8c59bc6f9c73511ab7a7d509d817dddccfa2485d98a793f1",
+  "fingerprint": "5a61d15719bce72c0c216d06e3be9bade52b4e6ada7c5cf1555a5ff949df26f6",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -78116,6 +78467,42 @@
       "id": "contract:Meridian.Contracts.Domain.VenueCode",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Domain.VenueCode"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.EntityMaster.CreateLegalEntityRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.CreateLegalEntityRequest"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.EntityMaster.EntityMasterRules",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.EntityMasterRules"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.EntityMaster.EntityParentLinkDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.EntityParentLinkDto"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.EntityMaster.IEntityMasterStore",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.IEntityMasterStore"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.EntityMaster.LegalEntityDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.LegalEntityDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.EntityMaster.SecurityIssuerLinkDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.SecurityIssuerLinkDto"
     },
     {
       "classification": "request",
@@ -87910,6 +88297,12 @@
       "label": "Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityCanonicalResolution",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityCanonicalResolution"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowBehavior",
       "kind": "contract-type",
@@ -88126,6 +88519,24 @@
       "label": "Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDisposition",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityEconomicDisposition"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDispositionKind",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityEconomicDispositionKind"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDispositions",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityEconomicDispositions"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleKind",
       "kind": "contract-type",
@@ -88244,6 +88655,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentityClaim",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityIdentityClaim"
     },
     {
       "classification": "record",
@@ -88694,6 +89111,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityRecordRateUnit",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityRecordRateUnit"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityResolutionStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityResolutionStatus"
     },
     {
       "classification": "class",
@@ -94343,6 +94766,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterPendingRevisionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterPendingRevisionDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.SecurityMasterProviderSymbolMappingDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.SecurityMasterProviderSymbolMappingDto"
@@ -97093,6 +97522,120 @@
       "kind": "database-table",
       "label": "banking.schema_migrations",
       "schema": "banking"
+    },
+    {
+      "id": "database:entity_master.ck_entity_parent_links_distinct on entity_master.entity_parent_links",
+      "kind": "database-object",
+      "label": "entity_master.ck_entity_parent_links_distinct on entity_master.entity_parent_links"
+    },
+    {
+      "id": "database:entity_master.ck_entity_parent_links_window on entity_master.entity_parent_links",
+      "kind": "database-object",
+      "label": "entity_master.ck_entity_parent_links_window on entity_master.entity_parent_links"
+    },
+    {
+      "id": "database:entity_master.ck_legal_entities_cik on entity_master.legal_entities",
+      "kind": "database-object",
+      "label": "entity_master.ck_legal_entities_cik on entity_master.legal_entities"
+    },
+    {
+      "id": "database:entity_master.ck_legal_entities_lei on entity_master.legal_entities",
+      "kind": "database-object",
+      "label": "entity_master.ck_legal_entities_lei on entity_master.legal_entities"
+    },
+    {
+      "id": "database:entity_master.ck_security_issuer_links_window on entity_master.security_issuer_links",
+      "kind": "database-object",
+      "label": "entity_master.ck_security_issuer_links_window on entity_master.security_issuer_links"
+    },
+    {
+      "id": "database:entity_master.entity_master_schema_migrations",
+      "kind": "database-table",
+      "label": "entity_master.entity_master_schema_migrations",
+      "schema": "entity_master"
+    },
+    {
+      "id": "database:entity_master.entity_parent_links",
+      "kind": "database-table",
+      "label": "entity_master.entity_parent_links",
+      "schema": "entity_master"
+    },
+    {
+      "id": "database:entity_master.entity_parent_links.entity_id",
+      "kind": "database-object",
+      "label": "entity_master.entity_parent_links.entity_id"
+    },
+    {
+      "id": "database:entity_master.entity_parent_links.parent_entity_id",
+      "kind": "database-object",
+      "label": "entity_master.entity_parent_links.parent_entity_id"
+    },
+    {
+      "id": "database:entity_master.entity_parent_links.valid_from",
+      "kind": "database-object",
+      "label": "entity_master.entity_parent_links.valid_from"
+    },
+    {
+      "id": "database:entity_master.entity_parent_links.valid_to",
+      "kind": "database-object",
+      "label": "entity_master.entity_parent_links.valid_to"
+    },
+    {
+      "id": "database:entity_master.entity_parent_links_entity_id_fkey on entity_master.entity_parent_links",
+      "kind": "database-object",
+      "label": "entity_master.entity_parent_links_entity_id_fkey on entity_master.entity_parent_links"
+    },
+    {
+      "id": "database:entity_master.entity_parent_links_parent_entity_id_fkey on entity_master.entity_parent_links",
+      "kind": "database-object",
+      "label": "entity_master.entity_parent_links_parent_entity_id_fkey on entity_master.entity_parent_links"
+    },
+    {
+      "id": "database:entity_master.legal_entities",
+      "kind": "database-table",
+      "label": "entity_master.legal_entities",
+      "schema": "entity_master"
+    },
+    {
+      "id": "database:entity_master.legal_entities.cik",
+      "kind": "database-object",
+      "label": "entity_master.legal_entities.cik"
+    },
+    {
+      "id": "database:entity_master.legal_entities.entity_id",
+      "kind": "database-object",
+      "label": "entity_master.legal_entities.entity_id"
+    },
+    {
+      "id": "database:entity_master.legal_entities.lei",
+      "kind": "database-object",
+      "label": "entity_master.legal_entities.lei"
+    },
+    {
+      "id": "database:entity_master.legal_entities_pkey",
+      "kind": "database-object",
+      "label": "entity_master.legal_entities_pkey"
+    },
+    {
+      "id": "database:entity_master.security_issuer_links",
+      "kind": "database-table",
+      "label": "entity_master.security_issuer_links",
+      "schema": "entity_master"
+    },
+    {
+      "id": "database:entity_master.security_issuer_links.valid_from",
+      "kind": "database-object",
+      "label": "entity_master.security_issuer_links.valid_from"
+    },
+    {
+      "id": "database:entity_master.security_issuer_links.valid_to",
+      "kind": "database-object",
+      "label": "entity_master.security_issuer_links.valid_to"
+    },
+    {
+      "id": "database:entity_master.security_issuer_links_issuer_entity_id_fkey on entity_master.security_issuer_links",
+      "kind": "database-object",
+      "label": "entity_master.security_issuer_links_issuer_entity_id_fkey on entity_master.security_issuer_links"
     },
     {
       "id": "database:fund_accounts.account_balance_snapshot",
@@ -103241,6 +103784,36 @@
       "label": "security_master.ck_security_curves_rate_policy on security_master.security_curves"
     },
     {
+      "id": "database:security_master.ck_security_factor_observations_factor on security_master.security_factor_observations",
+      "kind": "database-object",
+      "label": "security_master.ck_security_factor_observations_factor on security_master.security_factor_observations"
+    },
+    {
+      "id": "database:security_master.ck_security_master_exception_cases_closed on security_master.security_master_exception_cases",
+      "kind": "database-object",
+      "label": "security_master.ck_security_master_exception_cases_closed on security_master.security_master_exception_cases"
+    },
+    {
+      "id": "database:security_master.ck_security_master_exception_cases_status on security_master.security_master_exception_cases",
+      "kind": "database-object",
+      "label": "security_master.ck_security_master_exception_cases_status on security_master.security_master_exception_cases"
+    },
+    {
+      "id": "database:security_master.ck_security_master_held_amendments_closed on security_master.security_master_held_amendments",
+      "kind": "database-object",
+      "label": "security_master.ck_security_master_held_amendments_closed on security_master.security_master_held_amendments"
+    },
+    {
+      "id": "database:security_master.ck_security_master_held_amendments_status on security_master.security_master_held_amendments",
+      "kind": "database-object",
+      "label": "security_master.ck_security_master_held_amendments_status on security_master.security_master_held_amendments"
+    },
+    {
+      "id": "database:security_master.ck_security_master_redirects_distinct on security_master.security_master_redirects",
+      "kind": "database-object",
+      "label": "security_master.ck_security_master_redirects_distinct on security_master.security_master_redirects"
+    },
+    {
       "id": "database:security_master.commercial_paper_projection",
       "kind": "database-table",
       "label": "security_master.commercial_paper_projection",
@@ -105212,6 +105785,17 @@
       "label": "security_master.security_events_payload_version_check on security_master.security_events"
     },
     {
+      "id": "database:security_master.security_factor_observations",
+      "kind": "database-table",
+      "label": "security_master.security_factor_observations",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_factor_observations.factor",
+      "kind": "database-object",
+      "label": "security_master.security_factor_observations.factor"
+    },
+    {
       "id": "database:security_master.security_field_provenance",
       "kind": "database-table",
       "label": "security_master.security_field_provenance",
@@ -105292,10 +105876,48 @@
       "label": "security_master.security_identifiers_security_id_fkey on security_master.security_identifiers"
     },
     {
+      "id": "database:security_master.security_master_change_outbox",
+      "kind": "database-table",
+      "label": "security_master.security_master_change_outbox",
+      "schema": "security_master"
+    },
+    {
       "id": "database:security_master.security_master_conflicts",
       "kind": "database-table",
       "label": "security_master.security_master_conflicts",
       "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_master_exception_cases",
+      "kind": "database-table",
+      "label": "security_master.security_master_exception_cases",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_master_exception_cases.closed_at",
+      "kind": "database-object",
+      "label": "security_master.security_master_exception_cases.closed_at"
+    },
+    {
+      "id": "database:security_master.security_master_exception_cases.status",
+      "kind": "database-object",
+      "label": "security_master.security_master_exception_cases.status"
+    },
+    {
+      "id": "database:security_master.security_master_held_amendments",
+      "kind": "database-table",
+      "label": "security_master.security_master_held_amendments",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_master_held_amendments.closed_at",
+      "kind": "database-object",
+      "label": "security_master.security_master_held_amendments.closed_at"
+    },
+    {
+      "id": "database:security_master.security_master_held_amendments.status",
+      "kind": "database-object",
+      "label": "security_master.security_master_held_amendments.status"
     },
     {
       "id": "database:security_master.security_master_quality_reports",
@@ -105308,6 +105930,22 @@
       "kind": "database-sequence",
       "label": "security_master.security_master_quality_reports_id_seq",
       "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_master_redirects",
+      "kind": "database-table",
+      "label": "security_master.security_master_redirects",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_master_redirects.retired_security_id",
+      "kind": "database-object",
+      "label": "security_master.security_master_redirects.retired_security_id"
+    },
+    {
+      "id": "database:security_master.security_master_redirects.survivor_security_id",
+      "kind": "database-object",
+      "label": "security_master.security_master_redirects.survivor_security_id"
     },
     {
       "id": "database:security_master.security_master_revisions",
@@ -105707,6 +106345,11 @@
       "label": "direct-lending"
     },
     {
+      "id": "migration-module:entity-master",
+      "kind": "migration-module",
+      "label": "entity-master"
+    },
+    {
       "id": "migration-module:fund-accounts",
       "kind": "migration-module",
       "label": "fund-accounts"
@@ -105757,6 +106400,11 @@
       "label": "banking"
     },
     {
+      "id": "schema:entity_master",
+      "kind": "database-schema",
+      "label": "entity_master"
+    },
+    {
       "id": "schema:fund_accounts",
       "kind": "database-schema",
       "label": "fund_accounts"
@@ -105803,11 +106451,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4407,
-    "contract_set_memberships": 5812,
-    "edges": 11962,
-    "foreign_keys": 221,
+    "contract_references": 4410,
+    "contract_set_memberships": 5831,
+    "edges": 12020,
+    "foreign_keys": 224,
     "logical_references": 6,
-    "nodes": 5877
+    "nodes": 5932
   }
 }
