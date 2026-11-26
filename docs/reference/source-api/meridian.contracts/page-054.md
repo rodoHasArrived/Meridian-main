@@ -323,7 +323,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermsCodecBindings</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:121](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L121).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:128](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L128).
 
 The single statement of which flat key carries which member of a per-class record, for the classes whose flat codec is generated (ADR-027 stage 3). Both codec arms are generated from this table: the decode arm in SecurityMasterMapping.GeneratedDecode.cs and the writer arm in Interop.SecurityMaster.GeneratedWriter.fs. Neither file is edited by hand; SecurityFlatCodecGenerationTests regenerates both and fails when the committed source differs. A member with no row is one the class&#x27;s flat row does not carry, and decodes as absent. Key types and requiredness are the schema&#x27;s (SecurityAssetTermsSchema); a row names only what the schema does not say: the member, the reader&#x27;s tolerance, and the few values a class fixes or derives.
 
@@ -335,8 +335,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IReadOnlyList&lt;SecurityClassCodecBinding&gt; Classes { get; } = SecurityAssetClassModules.All.Where(static module =&gt; module.CodecBinding is not null).OrderBy(static module =&gt; module.CodecOrder).Select(static module =&gt; module.CodecBinding !).ToArray();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:124](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L124) | The generated classes, in their retained declaration order. |
-| <code>public static IReadOnlyDictionary&lt;string, SecurityClassCodecBinding&gt; ByAssetClass { get; } = Classes.ToDictionary(static binding =&gt; binding.AssetClass, StringComparer.Ordinal);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:130](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L130) | The generated classes by name. |
+| <code>public static IReadOnlyList&lt;SecurityClassCodecBinding&gt; Classes { get; } = SecurityAssetClassModules.All.Where(static module =&gt; module.CodecBinding is not null).OrderBy(static module =&gt; module.CodecOrder).Select(static module =&gt; module.CodecBinding !).ToArray();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:131](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L131) | The generated classes, in their retained declaration order. |
+| <code>public static IReadOnlyDictionary&lt;string, SecurityClassCodecBinding&gt; ByAssetClass { get; } = Classes.ToDictionary(static binding =&gt; binding.AssetClass, StringComparer.Ordinal);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:137](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L137) | The generated classes by name. |
 
 ## SecurityAssetTermsFieldEditValidator
 
