@@ -6,40 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ProviderConnectionDto
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs:85](../../../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs#L85).
-
-Provider connection DTO exposed to clients.
-
-```csharp
-public sealed record ProviderConnectionDto(string ConnectionId, string ProviderFamilyId, string DisplayName, string ConnectionType, string ConnectionMode, bool Enabled, string? CredentialReference, string? InstitutionId, string? ExternalAccountId, ProviderRouteScopeDto? Scope, string[] Tags, string? Description, bool ProductionReady, string? TenantId = null, string? CredentialEnvironment = null);
-```
-
-## ProviderConnectionHealthResponse
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionHealthResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:16](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L16).
-
-Minimal typed projection of GET /api/providers/health used by operator clients. A null connection value means no runtime diagnostic probe exists; it must not be treated as false.
-
-```csharp
-public sealed record ProviderConnectionHealthResponse([property : JsonPropertyName("providers")] IReadOnlyList<ProviderConnectionHealthSnapshotDto> Providers, [property : JsonPropertyName("timestamp")] DateTimeOffset Timestamp);
-```
-
-## ProviderConnectionHealthSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionHealthSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:20](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L20).
-
-```csharp
-public sealed record ProviderConnectionHealthSnapshotDto([property : JsonPropertyName("providerId")] string ProviderId, [property : JsonPropertyName("displayName")] string DisplayName, [property : JsonPropertyName("isEnabled")] bool IsEnabled, [property : JsonPropertyName("isConnected")] bool? IsConnected, [property : JsonPropertyName("connectionState")] string ConnectionState, [property : JsonPropertyName("diagnosticsAvailable")] bool DiagnosticsAvailable, [property : JsonPropertyName("lastFailureKind")] string? LastFailureKind, [property : JsonPropertyName("reconnectAttempts")] int? ReconnectAttempts = null);
-```
-
 ## ProviderConnectionTemplateDto
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTemplateDto</code>. Kind: `record`.
@@ -657,4 +623,40 @@ Request to configure a provider through the legacy provider setup route. Secrets
 
 ```csharp
 public sealed record ProviderSetupRequest(string? Kind, string? DisplayName, string? ApiKey, string? ApiSecret, string? Endpoint, string[]? Capabilities, string? Environment = null);
+```
+
+## ProviderSetupResult
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderSetupResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderSetupApiModels.cs:21](../../../../src/Meridian.Contracts/Api/ProviderSetupApiModels.cs#L21).
+
+Safe provider setup result. This response never includes raw provider credentials.
+
+```csharp
+public sealed record ProviderSetupResult(bool Success, string? ProviderId, string ProviderName, string Message, string? Error, string? ConnectionId = null, string[]? BindingIds = null, ProviderCredentialStateDto? CredentialState = null, ProviderCredentialSourceDto? CredentialSource = null, string? CredentialReference = null, string? Environment = null, string[]? Warnings = null);
+```
+
+## ProviderStatusResponse
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderStatusResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:129](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L129).
+
+Response containing provider connection status.
+
+```csharp
+public record ProviderStatusResponse(string ProviderId, string Name, string ProviderType, bool? IsConnected, bool IsEnabled, int Priority, int ActiveSubscriptions, DateTimeOffset? LastHeartbeat, string? LifecycleState = null, string? WebSocketState = null, bool? IsReconnecting = null, DateTimeOffset? LastHeartbeatReceivedAt = null, DateTimeOffset? LastMessageReceivedAt = null, DateTimeOffset? LastReconnectAttemptAt = null, int? ReconnectAttempts = null, string? LastFailureKind = null, int? FailedSubscriptions = null, int? RecoveringSubscriptions = null, DateTimeOffset? LastSubscriptionMessageAt = null, string? ConnectionState = null, bool DiagnosticsAvailable = false, IReadOnlyList<ProviderStreamStatusResponse>? Streams = null);
+```
+
+## ProviderStreamStatusResponse
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderStreamStatusResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:119](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L119).
+
+Response containing provider connection status.
+
+```csharp
+public record ProviderStreamStatusResponse(string AssetClass, string Feed, string Entitlement, string LifecycleState, bool IsConnected, bool IsDegraded, string? DegradationReason);
 ```

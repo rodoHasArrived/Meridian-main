@@ -461,12 +461,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ICertificateOfDepositReferenceService, CertificateOfDepositProjectionService>();
             services.AddSingleton<IDirectLoanReferenceService, DirectLoanProjectionService>();
             services.AddSingleton<IStructuredCreditReferenceService, StructuredCreditProjectionService>();
-            // Keep a caller-supplied resolver, including one registered through the legacy
-            // Application contract; aliases below expose the same instance to new consumers.
-#pragma warning disable CS0618 // Detect legacy host registrations at the compatibility boundary.
-            if (!services.Any(descriptor => descriptor.ServiceType == typeof(Meridian.Application.SecurityMaster.ISecurityResolver)
-                || descriptor.ServiceType == typeof(Meridian.Contracts.SecurityMaster.ISecurityResolver)))
-#pragma warning restore CS0618
+            // Keep a caller-supplied resolver.
+            if (!services.Any(descriptor => descriptor.ServiceType == typeof(Meridian.Contracts.SecurityMaster.ISecurityResolver)))
             {
                 services.AddSingleton<SecurityResolver>();
                 services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityResolver>(sp =>

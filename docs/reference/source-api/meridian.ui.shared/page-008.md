@@ -200,64 +200,6 @@ Declared public members:
 | --- | --- | --- |
 | <code>public bool SupportsReviewedRowCases =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.RowCases.cs:10](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.RowCases.cs#L10) |  |
 
-## StatementToReportArtifactDownload
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementToReportArtifactDownload</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:26](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L26).
-
-Compatibility artifact result for callers compiled against the pre-rename operation.
-
-```csharp
-public sealed record StatementToReportArtifactDownload(StatementToReportArtifactDto Descriptor, byte[] Content);
-```
-
-## StatementToReportStartCommand
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementToReportStartCommand</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:13](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L13).
-
-Compatibility command for callers compiled against the pre-rename operation.
-
-```csharp
-public sealed record StatementToReportStartCommand(StatementImportCommitRequest Import, string TenantId, string? CompanyId);
-```
-
-## StatementToReportWorkflowExecution
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementToReportWorkflowExecution</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:20](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L20).
-
-Compatibility execution result for callers compiled against the pre-rename operation.
-
-```csharp
-public sealed record StatementToReportWorkflowExecution(StatementImportCommitResultDto? ImportResult, StatementToReportWorkflowDto Workflow);
-```
-
-## StatementToReportWorkflowService
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementToReportWorkflowService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:35](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L35).
-
-Source- and binary-compatible adapter over the single statement reconciliation report workflow. It retains the old public API and wire links without owning storage, orchestration, or rendering.
-
-```csharp
-public sealed class StatementToReportWorkflowService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StatementToReportWorkflowService(IStatementImportCommitService imports, IStatementImportEvidenceRetainer evidence, IStatementRunWorkflowService statementRuns, string dataRoot, ILogger&lt;StatementToReportWorkflowService&gt;? logger = null) : this(new StatementReconciliationReportWorkflowService(imports, evidence, statementRuns, dataRoot));</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:39](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L39) |  |
-| <code>public async Task&lt;StatementToReportWorkflowExecution&gt; StartAsync(StatementToReportStartCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:59](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L59) |  |
-| <code>public async Task&lt;StatementToReportWorkflowDto?&gt; GetAsync(string workflowId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:75](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L75) |  |
-| <code>public async Task&lt;StatementToReportWorkflowExecution?&gt; ResumeAsync(string workflowId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:85](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L85) |  |
-| <code>public async Task&lt;StatementToReportArtifactDownload?&gt; DownloadArtifactAsync(string workflowId, string artifactId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:99](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L99) |  |
-
 ## StrategyRunEvidenceContributor
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.StrategyRunEvidenceContributor</code>. Kind: `class`.
@@ -1033,3 +975,65 @@ Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:71](../
 ```csharp
 public sealed record ApprovalDecision(bool RequiresDualControl, IReadOnlyList<ApprovalStep> Steps);
 ```
+
+## ApprovalPolicy
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ApprovalPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:65](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L65).
+
+```csharp
+public sealed record ApprovalPolicy(decimal DualControlThreshold, IReadOnlyDictionary<string, decimal> CurrencyThresholds, IReadOnlyDictionary<string, decimal> AccountThresholds, IReadOnlySet<string> HighRiskCounterparties);
+```
+
+## ApprovalStep
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ApprovalStep</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:57](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L57).
+
+```csharp
+public sealed record ApprovalStep(string StepId, string Role, string Approver, bool IsRequired, bool IsApproved, DateTimeOffset? DecidedAt);
+```
+
+## AssetAccountingSourceReader
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AssetAccountingSourceReader</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:392](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L392).
+
+Enumerates the independently retained asset-event spine for the exact book and period.
+
+```csharp
+public sealed class AssetAccountingSourceReader(IAssetAccountingEventProjectionStore store) : ILedgerAccountingSourceReader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerAccountingSourceKind SourceKind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:394](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L394) |  |
+| <code>public async Task&lt;LedgerAccountingSourcePopulation&gt; ReadAsync(LedgerAccountingCompletenessQuery query, LedgerAccountingPeriod period, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:396](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L396) |  |
+
+## AuditTrailExplorerService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AuditTrailExplorerService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:15](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L15).
+
+Projects execution audit records into the shared cross-object audit timeline contract.
+
+```csharp
+public sealed class AuditTrailExplorerService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaximumExportEntries = 250_000;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:17](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L17) |  |
+| <code>public bool HasSource =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:21](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L21) |  |
+| <code>public AuditTrailExplorerService(ExecutionAuditTrailService? auditTrail = null, IOperationsContinuityWorkflowService? operationsContinuity = null, PaperSessionPersistenceService? paperSessions = null);</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:23](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L23) |  |
+| <code>public Task&lt;AuditTrailExplorerResultDto&gt; SearchAsync(AuditTrailExplorerQueryDto? query = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:33](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L33) |  |
+| <code>public Task&lt;AuditTrailExplorerResultDto&gt; SearchAuthorizedAsync(AuditTrailExplorerQueryDto? query, Func&lt;OperationsContinuityWorkflowSummaryDto, CancellationToken, Task&lt;bool&gt;&gt; canReadWorkflow, CancellationToken ct = default, Func&lt;Guid, Task&lt;bool&gt;&gt;? canReadPaperAccount = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:39](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L39) | HTTP reads authorize each operations source before loading its timeline. |
+| <code>public Task&lt;AuditTrailExplorerResultDto&gt; ExportAuthorizedAsync(AuditTrailExplorerQueryDto? query, Func&lt;OperationsContinuityWorkflowSummaryDto, CancellationToken, Task&lt;bool&gt;&gt; canReadWorkflow, CancellationToken ct = default, Func&lt;Guid, Task&lt;bool&gt;&gt;? canReadPaperAccount = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:45](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L45) | Every authorized retained match; the browser/1,000-row browse cap is never an export limit. |

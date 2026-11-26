@@ -760,74 +760,6 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;PrivateCapitalStoredRecord&gt;&gt; ReadAsync(PrivateCapitalScope scope, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/FilePrivateCapitalRecordStore.cs:23](../../../../src/Meridian.Storage/FundAccounts/FilePrivateCapitalRecordStore.cs#L23) |  |
 | <code>public async Task AppendAsync(PrivateCapitalScope scope, Func&lt;IReadOnlyList&lt;PrivateCapitalStoredRecord&gt;, IReadOnlyList&lt;PrivateCapitalStoredRecord&gt;&gt; prepare, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/FilePrivateCapitalRecordStore.cs:35](../../../../src/Meridian.Storage/FundAccounts/FilePrivateCapitalRecordStore.cs#L35) |  |
 
-## FundAccountLegacyBankStatement
-
-Qualified name: <code>Meridian.Storage.FundAccounts.FundAccountLegacyBankStatement</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:115](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L115).
-
-```csharp
-public sealed record FundAccountLegacyBankStatement(BankStatementBatchDto Batch, IReadOnlyList<BankStatementLineDto> Lines);
-```
-
-## FundAccountLegacyCustodianStatement
-
-Qualified name: <code>Meridian.Storage.FundAccounts.FundAccountLegacyCustodianStatement</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:111](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L111).
-
-```csharp
-public sealed record FundAccountLegacyCustodianStatement(CustodianStatementBatchDto Batch, IReadOnlyList<CustodianPositionLineDto> Lines);
-```
-
-## FundAccountLegacyImportAccount
-
-Qualified name: <code>Meridian.Storage.FundAccounts.FundAccountLegacyImportAccount</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:102](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L102).
-
-```csharp
-public sealed record FundAccountLegacyImportAccount(AccountSummaryDto Account, IReadOnlyList<AccountBalanceSnapshotDto> BalanceSnapshots, IReadOnlyList<FundAccountLegacyCustodianStatement> CustodianStatements, IReadOnlyList<FundAccountLegacyBankStatement> BankStatements, IReadOnlyList<FundAccountLegacyReconciliationRun> ReconciliationRuns, IReadOnlyList<AccountSyncHistoryEntryDto> SyncHistory, IReadOnlyList<MarginSnapshotDto> MarginSnapshots);
-```
-
-## FundAccountLegacyImportRequest
-
-Qualified name: <code>Meridian.Storage.FundAccounts.FundAccountLegacyImportRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:98](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L98).
-
-```csharp
-public sealed record FundAccountLegacyImportRequest(string SourceHash, IReadOnlyList<FundAccountLegacyImportAccount> Accounts);
-```
-
-## FundAccountLegacyImportResult
-
-Qualified name: <code>Meridian.Storage.FundAccounts.FundAccountLegacyImportResult</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:123](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L123).
-
-```csharp
-public enum FundAccountLegacyImportResult : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Imported = 0</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:125](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L125) |  |
-| <code>AlreadyImported = 1</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:126](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L126) |  |
-| <code>StoreNotEmpty = 2</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:127](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L127) |  |
-
-## FundAccountLegacyReconciliationRun
-
-Qualified name: <code>Meridian.Storage.FundAccounts.FundAccountLegacyReconciliationRun</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:119](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L119).
-
-```csharp
-public sealed record FundAccountLegacyReconciliationRun(AccountReconciliationRunDto Run, IReadOnlyList<AccountReconciliationResultDto> Results);
-```
-
 ## FundAccountMigrationRunner
 
 Qualified name: <code>Meridian.Storage.FundAccounts.FundAccountMigrationRunner</code>. Kind: `class`.
@@ -904,8 +836,6 @@ Declared public members:
 | <code>Task&lt;IReadOnlyList&lt;AccountSyncHistoryEntryDto&gt;&gt; GetSyncHistoryAsync(Guid accountId, string? capability, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:77](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L77) |  |
 | <code>Task UpsertMarginSnapshotAsync(MarginSnapshotDto snapshot, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:80](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L80) |  |
 | <code>Task&lt;IReadOnlyList&lt;MarginSnapshotDto&gt;&gt; GetMarginSnapshotsAsync(Guid accountId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:81](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L81) |  |
-| <code>Task&lt;bool&gt; IsEmptyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:84](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L84) |  |
-| <code>Task&lt;FundAccountLegacyImportResult&gt; ImportLegacySnapshotIfEmptyAsync(FundAccountLegacyImportRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:91](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L91) | Imports one legacy JSON snapshot as a single database transaction when the store is empty. The source hash is committed in the same transaction so startup can safely recover a process failure between database commit and source-file archival. |
 
 ## IPrivateCapitalRecordStore
 
@@ -963,8 +893,6 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;AccountSyncHistoryEntryDto&gt;&gt; GetSyncHistoryAsync(Guid accountId, string? capability, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs:1313](../../../../src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs#L1313) |  |
 | <code>public async Task UpsertMarginSnapshotAsync(MarginSnapshotDto snapshot, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs:1373](../../../../src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs#L1373) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;MarginSnapshotDto&gt;&gt; GetMarginSnapshotsAsync(Guid accountId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs:1496](../../../../src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs#L1496) |  |
-| <code>public async Task&lt;FundAccountLegacyImportResult&gt; ImportLegacySnapshotIfEmptyAsync(FundAccountLegacyImportRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs:1571](../../../../src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs#L1571) |  |
-| <code>public async Task&lt;bool&gt; IsEmptyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs:1708](../../../../src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs#L1708) |  |
 
 ## PostgresPrivateCapitalRecordStore
 
@@ -1012,4 +940,116 @@ An immutable retained record; command receipts share the financial transaction.
 
 ```csharp
 public sealed record PrivateCapitalStoredRecord(string Kind, Guid Id, string Payload);
+```
+
+## FileEntityLifecycleStore
+
+Qualified name: <code>Meridian.Storage.FundStructure.FileEntityLifecycleStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs:8](../../../../src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs#L8).
+
+Local immutable revision files published by rename after fsync; never rewrites history.
+
+```csharp
+public sealed class FileEntityLifecycleStore(string directory) : IEntityLifecycleStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyList&lt;EntityLifecycleRevisionDto&gt;&gt; GetHistoryAsync(string tenantId, Guid entityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs:16](../../../../src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs#L16) |  |
+| <code>public async Task&lt;EntityLifecycleRevisionDto?&gt; GetLatestAsync(string tenantId, Guid entityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs:34](../../../../src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs#L34) |  |
+| <code>public async Task&lt;EntityLifecycleRevisionDto?&gt; GetRevisionAsync(string tenantId, Guid entityId, long revision, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs:37](../../../../src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs#L37) |  |
+| <code>public async Task&lt;EntityLifecycleRevisionDto&gt; AppendAsync(EntityLifecycleRevisionDto revision, long expectedRevision, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs:40](../../../../src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs#L40) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireReadLeaseAsync(string tenantId, IReadOnlyList&lt;Guid&gt; entityIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs:67](../../../../src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs#L67) |  |
+
+## FileIntercompanyAccountingArrangementStore
+
+Qualified name: <code>Meridian.Storage.FundStructure.FileIntercompanyAccountingArrangementStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:8](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L8).
+
+Local durable agreement history. Writers share a bounded cross-process lease and publish atomically.
+
+```csharp
+public sealed class FileIntercompanyAccountingArrangementStore(string rootDirectory) : IIntercompanyAccountingArrangementStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:12](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L12) |  |
+| <code>public async Task&lt;IntercompanyAccountingArrangementHistoryDto?&gt; GetAsync(string tenantId, Guid agreementId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:21](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L21) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyAccountingArrangementDto&gt;&gt; ListAsync(string tenantId, Guid? organizationId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:32](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L32) |  |
+| <code>public Task&lt;IntercompanyAccountingArrangementDto&gt; AppendAsync(string tenantId, long expectedVersion, IntercompanyAccountingArrangementEventDto item, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:50](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L50) |  |
+| <code>public async Task&lt;IntercompanyAccountingArrangementDto&gt; MutateAsync(string tenantId, Guid agreementId, Guid requestId, string requestDigest, Func&lt;IntercompanyAccountingArrangementHistoryDto?, CancellationToken, Task&lt;IntercompanyAccountingArrangementEventDto&gt;&gt; build, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:58](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L58) |  |
+
+## FileIntercompanyRateFixingStore
+
+Qualified name: <code>Meridian.Storage.FundStructure.FileIntercompanyRateFixingStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs:9](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs#L9).
+
+Local durable fixing history: every version of every fixing, published atomically per tenant.
+
+```csharp
+public sealed class FileIntercompanyRateFixingStore(string rootDirectory, IFundScopeTenantAccessor tenants) : IIntercompanyRateFixingStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IntercompanyRateFixingDto?&gt; GetAsync(string tenantId, Guid fixingId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs:16](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs#L16) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyRateFixingDto&gt;&gt; ListAsync(string tenantId, string indexReference, DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs:22](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs#L22) |  |
+| <code>public async Task&lt;IntercompanyRateFixingDto&gt; AppendAsync(IntercompanyRateFixingDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs:31](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs#L31) |  |
+
+## FundStructureMigrationRunner
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureMigrationRunner</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:8](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L8).
+
+Applies the PostgreSQL migrations used by fund structure persistence.
+
+```csharp
+public sealed class FundStructureMigrationRunner
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FundStructureMigrationRunner(FundStructureStoreOptions options);</code> | [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:12](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L12) |  |
+| <code>public Task EnsureMigratedAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:30](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L30) |  |
+
+## FundStructureStoreOptions
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureStoreOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs:6](../../../../src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs#L6).
+
+Configures the PostgreSQL connection and schema for fund structure storage.
+
+```csharp
+public sealed class FundStructureStoreOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ConnectionString { get; set; } = string.Empty;</code> | [src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs:8](../../../../src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs#L8) |  |
+| <code>public string Schema { get; set; } = &quot;fund_structure&quot;;</code> | [src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs:9](../../../../src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs#L9) |  |
+
+## FundStructureTenantBackfillEvidence
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:10](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L10).
+
+```csharp
+public sealed record FundStructureTenantBackfillEvidence(Guid BookId, string FundProfileId, Guid NodeId, string? TenantId, string? CompanyId, JsonElement RetainedBook, JsonElement? RetainedRegistryEntry);
 ```

@@ -6,48 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ISecurityMasterRevisionStore
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterRevisionStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:12](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L12).
-
-Durable lifecycle state for a governed Security Master passport revision (SecurityMasterRevisionStateDto: Draft → Submitted → Approved → Published / Rejected). The store is the authority a publish consults to confirm a revision was actually approved through the governed gate, so an arbitrary revision id can never trigger downstream publish side effects.
-
-```csharp
-public interface ISecurityMasterRevisionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:15](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L15) | Creates a new SecurityMasterRevisionStateDto.Draft revision for a security. |
-| <code>Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId = null, SecurityMasterRevisionFieldValue? fieldValue = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:23](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L23) | Creates a Draft revision carrying the field-edit metadata (path, effective date, justification, and the optional fund-profile scope) so a later publish can emit the correct effective-from and changed-field set, and resolve the scoped downstream impact, for period-aware / restatement analysis instead of defaulting to publish time and an unscoped (empty) impact. |
-| <code>Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId, SecurityMasterRevisionFieldValue? fieldValue, SecurityMasterRevisionFieldBase fieldBase, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:38](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L38) | Creates a field-edit Draft that also records the canonical state the proposal was drafted against (fieldBase), so publish can refuse it if that field changed since. Stores that do not persist the base fall back to the overload without it. |
-| <code>Task&lt;SecurityMasterRevisionRecord?&gt; GetAsync(Guid revisionId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:51](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L51) | Returns the revision, or null when no revision with that id exists. |
-| <code>Task&lt;IReadOnlyList&lt;SecurityMasterRevisionRecord&gt;&gt; ListBySecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:58](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L58) | All revisions recorded for one security, in no guaranteed order. Used by the approval seam to decide whether a security-level override decision would co-approve values staged by OTHER, not-yet-approved revisions. |
-| <code>Task&lt;IReadOnlyList&lt;SecurityMasterRevisionRecord&gt;&gt; ListByStatesAsync(IReadOnlyCollection&lt;SecurityMasterRevisionStateDto&gt; states, int limit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:65](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L65) | Revisions in any of states across ALL securities, oldest first, at most limit. Feeds the review inbox (review P5/D1): a reviewer other than the drafter must be able to find a colleague&#x27;s submitted draft. |
-| <code>Task&lt;SecurityMasterRevisionRecord&gt; TransitionAsync(Guid revisionId, SecurityMasterRevisionStateDto expected, SecurityMasterRevisionStateDto next, string actor, Guid? workflowIdForSubmit = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:77](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L77) | Atomically transitions a revision from expected to next. Throws SecurityMasterRevisionStateException when the revision is missing or its current state is not expected (a concurrent or out-of-order transition). When workflowIdForSubmit is supplied on a Draft→Submitted transition, it is durably bound to the revision so approval can be restricted to that same workflow lane. |
-
-## ISecurityMasterSourceAdmissionPolicy
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterSourceAdmissionPolicy</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L15).
-
-Review P2 / A2: golden-record write admission. Decides whether an incoming source may overwrite a field whose incumbent value another source supplied. Ranking is per source (owner decision 2026-11-25), taken from SecurityMasterWorkbenchOptions.SourcePrecedence and SecurityMasterWorkbenchOptions.GoldenCopySource.
-
-```csharp
-public interface ISecurityMasterSourceAdmissionPolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>bool IncumbentOutranks(string? incumbentSource, string? challengerSource);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:22](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L22) | True when incumbentSource outranks challengerSource, so the challenger&#x27;s value must be held for review instead of applied. Unranked sources are never held and never hold others (owner decision: unranked sources keep applying as before). |
-
 ## ISecurityMasterTermsCapabilityVerifier
 
 Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterTermsCapabilityVerifier</code>. Kind: `interface`.
@@ -999,3 +957,37 @@ Declared public members:
 | <code>public const string FactorRestatementCategory = &quot;FactorRestatement&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityFactorObservationService.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityFactorObservationService.cs#L18) |  |
 | <code>public SecurityFactorObservationService(ISecurityFactorObservationStore observations, ISecurityMasterExceptionCaseStore? cases = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityFactorObservationService.cs:24](../../../../src/Meridian.Application/SecurityMaster/SecurityFactorObservationService.cs#L24) |  |
 | <code>public async Task&lt;SecurityFactorObservationResult&gt; RecordAsync(Guid securityId, DateOnly effectiveDate, decimal factor, string source, string? evidenceRef, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityFactorObservationService.cs:30](../../../../src/Meridian.Application/SecurityMaster/SecurityFactorObservationService.cs#L30) |  |
+
+## SecurityMasterActiveImportStatus
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterActiveImportStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:13](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs#L13).
+
+Active Security Master ingest progress.
+
+```csharp
+public sealed record SecurityMasterActiveImportStatus(string FileExtension, int Total, int Processed, int Imported, int Skipped, int Failed, DateTimeOffset StartedAtUtc, DateTimeOffset UpdatedAtUtc);
+```
+
+## SecurityMasterAmendmentHeldException
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterAmendmentHeldException</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:172](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L172).
+
+Raised when an ingest amendment is held rather than applied (review A2). Nothing from the amendment was persisted; a conflict is open for each dominated field and the request is retained as HeldAmendmentId for governed replay. Derives from InvalidOperationException so existing ingest failure classification still treats it as a refused write.
+
+```csharp
+public sealed class SecurityMasterAmendmentHeldException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterAmendmentHeldException(Guid securityId, Guid heldAmendmentId, string sourceSystem, IReadOnlyList&lt;string&gt; dominatedFieldPaths) : base($&quot;Amendment of security &#x27;{securityId:D}&#x27; from &#x27;{sourceSystem}&#x27; was held for review: a higher-ranked source supplied &quot; + $&quot;{string.Join(&quot;, &quot;, dominatedFieldPaths)}. Nothing was applied; resolve the open conflicts or replay held amendment &#x27;{heldAmendmentId:D}&#x27; through a governed draft.&quot;);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:174](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L174) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:184](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L184) |  |
+| <code>public Guid HeldAmendmentId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:186](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L186) |  |
+| <code>public string SourceSystem { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:188](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L188) |  |
+| <code>public IReadOnlyList&lt;string&gt; DominatedFieldPaths { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:190](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L190) |  |

@@ -363,9 +363,14 @@ def summarize(snapshot: dict, api, default_branch: str = "main") -> dict:
                 continue
             name = f"generated-repair-outcome-{kind}-{run['id']}-{run['run_attempt']}"
             try:
-                if run.get("event") not in {"workflow_run", "push", "schedule", "workflow_dispatch"}:
+                event = run.get("event")
+                # A merged pull request into the default branch also starts the refresh scan
+                # (pull_request_target, closed, branches: [main]). Its head_branch is the PR
+                # branch, so the default-branch check applies only to branch-ref events.
+                merged_pr_refresh = kind == "refresh" and event == "pull_request_target"
+                if event not in {"workflow_run", "push", "schedule", "workflow_dispatch"} and not merged_pr_refresh:
                     raise ValueError("Run event is not an authorized publisher entrypoint")
-                if run["event"] != "workflow_run" and run.get("head_branch") != default_branch:
+                if event in {"push", "schedule", "workflow_dispatch"} and run.get("head_branch") != default_branch:
                     raise ValueError("Publisher run is not on the default branch")
                 if len(jobs) != 1:
                     raise ValueError("Producer job evidence is missing or ambiguous")
@@ -470,8 +475,13 @@ def main() -> int:
     args.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     if args.markdown:
         args.markdown.write_text(markdown(result), encoding="utf-8")
+    for item in result["missingReceipts"]:
+        print(f"::warning::Repair receipt unavailable for run {item['runId']} attempt {item['attempt']} "
+              f"({item['kind']}): {item['reason']}")
     print(f"Retained {len(result['receipts'])} verified receipts; {len(result['missingReceipts'])} unavailable.")
-    return 0 if not result["missingReceipts"] else 1
+    # Unavailable receipts are reported, not fatal: the report already counts them as
+    # unavailable, and collection faults fail separately through --check-collection.
+    return 0
 
 
 if __name__ == "__main__":

@@ -6,205 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ProviderCapabilityDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderCapabilityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:165](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L165).
-
-```csharp
-public sealed record ProviderCapabilityDto(ProviderCapabilityKindDto Capability, bool Enabled, bool RequiresCertifiedAdapter, IReadOnlyList<string> RequiredCanonicalFields);
-```
-
-## ProviderCapabilityKindDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderCapabilityKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:21](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L21).
-
-```csharp
-public enum ProviderCapabilityKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Accounts = 0</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:23](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L23) |  |
-| <code>Balances = 1</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:24](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L24) |  |
-| <code>Positions = 2</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:25](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L25) |  |
-| <code>Holdings = 3</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:26](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L26) |  |
-| <code>Transactions = 4</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:27](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L27) |  |
-| <code>TaxLots = 5</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:28](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L28) |  |
-| <code>SecurityReferenceData = 6</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:29](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L29) |  |
-| <code>MarketPrices = 7</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:30](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L30) |  |
-| <code>CorporateActions = 8</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:31](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L31) |  |
-| <code>Documents = 9</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:32](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L32) |  |
-| <code>Alerts = 10</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:33](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L33) |  |
-| <code>Events = 11</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:34](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L34) |  |
-| <code>OrderPreview = 12</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:35](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L35) |  |
-| <code>OrderPlacement = 13</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:36](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L36) |  |
-| <code>OrderCancellation = 14</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:37](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L37) |  |
-| <code>OrderStatus = 15</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:38](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L38) |  |
-| <code>Executions = 16</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:39](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L39) |  |
-
-## ProviderConnectionDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderConnectionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:280](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L280).
-
-```csharp
-public sealed record ProviderConnectionDto(string ConnectionId, string ProviderId, string ManifestId, string ConnectionName, string Environment, ProviderIntegrationActivationStateDto State, string CredentialSecretRef, IReadOnlyList<ProviderCapabilityKindDto> EnabledCapabilities, string OwnerUserId, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string? ApprovalEvidenceId);
-```
-
-## ProviderIntegrationActivationIssueDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationActivationIssueDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:238](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L238).
-
-```csharp
-public sealed record ProviderIntegrationActivationIssueDto(string Code, ProviderIntegrationIssueSeverityDto Severity, string Message, ProviderCapabilityKindDto? Capability, string? SuggestedFix);
-```
-
-## ProviderIntegrationActivationPolicyDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationActivationPolicyDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:230](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L230).
-
-```csharp
-public sealed record ProviderIntegrationActivationPolicyDto(bool RequiresAuthenticationTest, bool RequiresEndpointTest, bool RequiresDryRun, bool RequiresApproval, bool ProductionWriteCapabilitiesAllowed, IReadOnlyList<string> RequiredIssueCodes);
-```
-
-## ProviderIntegrationActivationReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationActivationReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:245](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L245).
-
-```csharp
-public sealed record ProviderIntegrationActivationReadinessDto(bool IsReady, IReadOnlyList<ProviderIntegrationActivationIssueDto> Issues, IReadOnlyList<string> RequiredEvidence);
-```
-
-## ProviderIntegrationActivationRequestDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationActivationRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:794](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L794).
-
-```csharp
-public sealed record ProviderIntegrationActivationRequestDto(string ManifestId, string ConnectionId, string ApprovedBy, DateTimeOffset ApprovedAt, string ApprovalEvidenceId, string? ChangeReason)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderIntegrationManifestReferenceDto? ExpectedManifestReference { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:802](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L802) |  |
-
-## ProviderIntegrationActivationResultDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationActivationResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:805](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L805).
-
-```csharp
-public sealed record ProviderIntegrationActivationResultDto(bool Activated, string ManifestId, string ConnectionId, ProviderIntegrationActivationStateDto ManifestState, ProviderIntegrationActivationStateDto ConnectionState, ProviderIntegrationActivationReadinessDto Readiness, string? ApprovalEvidenceId, string? Message)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderIntegrationManifestReferenceDto? ManifestReference { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:815](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L815) |  |
-
-## ProviderIntegrationActivationStateDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationActivationStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:43](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L43).
-
-```csharp
-public enum ProviderIntegrationActivationStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Draft = 0</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:45](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L45) |  |
-| <code>Tested = 1</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:46](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L46) |  |
-| <code>DryRunPassed = 2</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:47](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L47) |  |
-| <code>PendingApproval = 3</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:48](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L48) |  |
-| <code>Active = 4</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:49](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L49) |  |
-| <code>Paused = 5</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:50](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L50) |  |
-| <code>Failed = 6</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:51](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L51) |  |
-| <code>Retired = 7</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:52](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L52) |  |
-
-## ProviderIntegrationActorFlagDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationActorFlagDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:25](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L25).
-
-An append-only marker that a stored provider-integration actor field does not name a person. Until PR rodoHasArrived/Meridian-main#3754 the provider-integration routes stored the actor the client sent, and the browser sent the session&#x27;s desk label or a Settings placeholder. Those records are never rewritten (nothing recorded who acted, and approvedBy is part of each manifest version&#x27;s content digest); this flag sits beside them instead.
-
-```csharp
-public sealed record ProviderIntegrationActorFlagDto(string FlagId, string RecordPath, string RecordKind, string? SubjectId, string FieldPath, string RecordedValue, string Reason, string? RecordedAt, string FlaggedBy, DateTimeOffset FlaggedAt)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string ComputeFlagId(string recordPath, string fieldPath, string recordedValue);</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:37](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L37) |  |
-
-## ProviderIntegrationActorFlagScanRequestDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationActorFlagScanRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:55](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L55).
-
-Optional scan input: extra session display names to treat as desk labels.
-
-```csharp
-public sealed record ProviderIntegrationActorFlagScanRequestDto(IReadOnlyList<string>? ExtraLabels = null);
-```
-
-## ProviderIntegrationActorFlagScanResultDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationActorFlagScanResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:58](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L58).
-
-Result of scanning a tenant&#x27;s integration store and appending flags.
-
-```csharp
-public sealed record ProviderIntegrationActorFlagScanResultDto(int ActorFieldsScanned, int FlagsAppended, int AlreadyFlagged, IReadOnlyList<ProviderIntegrationActorFlagDto> Flags);
-```
-
-## ProviderIntegrationActorLabelClassifier
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationActorLabelClassifier</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:83](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L83).
-
-Decides whether a stored actor value names a person. Mirrors build/scripts/audit_provider_integration_actors.py; keep the two in sync.
-
-```csharp
-public static class ProviderIntegrationActorLabelClassifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly IReadOnlySet&lt;string&gt; ActorFields = new HashSet&lt;string&gt;(StringComparer.Ordinal) { &quot;approvedBy&quot;, &quot;checkedBy&quot;, &quot;createdBy&quot;, &quot;importedBy&quot;, &quot;ownerUserId&quot;, &quot;requestedBy&quot;, &quot;reviewedBy&quot;, &quot;savedBy&quot; };</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:86](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L86) | The actor fields the provider-integration contracts persist. |
-| <code>public static readonly IReadOnlyList&lt;string&gt; TimestampFields = [&quot;approvedAt&quot;, &quot;savedAt&quot;, &quot;importedAt&quot;, &quot;requestedAt&quot;, &quot;checkedAt&quot;, &quot;reviewedAt&quot;, &quot;createdAt&quot;, &quot;updatedAt&quot;, &quot;startedAt&quot;, &quot;completedAt&quot;];</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:92](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L92) | Sibling fields that say when the flagged action happened. |
-| <code>public static string? Classify(string? value, IReadOnlyCollection&lt;string&gt;? extraLabels = null);</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:99](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L99) | Why value does not name a person, or null when it looks like a real principal. |
-
 ## ProviderIntegrationAuthConfigDto
 
 Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationAuthConfigDto</code>. Kind: `record`.
@@ -252,7 +53,7 @@ public sealed record ProviderIntegrationConnectionMonitorDto(string ConnectionId
 
 Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationContractsJsonContext</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContractsJsonContext.cs:123](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContractsJsonContext.cs#L123).
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContractsJsonContext.cs:119](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContractsJsonContext.cs#L119).
 
 Provides source-generated JSON metadata for provider integration configuration, ingestion, and review contracts.
 
@@ -716,4 +517,154 @@ Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:661
 
 ```csharp
 public sealed record ProviderIntegrationRunDueSyncItemResultDto(ProviderCapabilityKindDto Capability, string? EndpointKey, bool Started, bool Skipped, string Reason, string? SyncRunId, ProviderIntegrationDryRunResultDto? DryRunResult, IReadOnlyList<ValidationIssueDto> Issues);
+```
+
+## ProviderIntegrationRunDueSyncRequestDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationRunDueSyncRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:653](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L653).
+
+```csharp
+public sealed record ProviderIntegrationRunDueSyncRequestDto(string ConnectionId, DateTimeOffset RequestedAt, string RequestedBy, int MaxPages, IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> PathParametersByCapability, IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> QueryParametersByCapability);
+```
+
+## ProviderIntegrationRunDueSyncResultDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationRunDueSyncResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:671](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L671).
+
+```csharp
+public sealed record ProviderIntegrationRunDueSyncResultDto(string ConnectionId, DateTimeOffset RequestedAt, int StartedCount, int SkippedCount, IReadOnlyList<ProviderIntegrationRunDueSyncItemResultDto> Items);
+```
+
+## ProviderIntegrationSchemaDriftCheckRequestDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationSchemaDriftCheckRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:736](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L736).
+
+```csharp
+public sealed record ProviderIntegrationSchemaDriftCheckRequestDto(string ManifestId, string ConnectionId, ProviderCapabilityKindDto Capability, string EndpointKey, string SyncRunId, string RawPayloadId, string CheckedBy, DateTimeOffset CheckedAt);
+```
+
+## ProviderIntegrationSchemaDriftCheckResultDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationSchemaDriftCheckResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:746](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L746).
+
+```csharp
+public sealed record ProviderIntegrationSchemaDriftCheckResultDto(string ManifestId, string ConnectionId, ProviderCapabilityKindDto Capability, string EndpointKey, string SyncRunId, string RawPayloadId, bool DriftDetected, bool ShouldPauseCapability, int RecordsInspected, IReadOnlyList<ProviderIntegrationSchemaDriftIssueDto> Issues);
+```
+
+## ProviderIntegrationSchemaDriftIssueDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationSchemaDriftIssueDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:727](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L727).
+
+```csharp
+public sealed record ProviderIntegrationSchemaDriftIssueDto(string Code, ProviderIntegrationIssueSeverityDto Severity, ProviderCapabilityKindDto Capability, string EndpointKey, string JsonPath, string Message, string SuggestedFix);
+```
+
+## ProviderIntegrationSetupSaveRequestDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationSetupSaveRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:772](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L772).
+
+```csharp
+public sealed record ProviderIntegrationSetupSaveRequestDto(ProviderIntegrationManifestDto Manifest, ProviderConnectionDto Connection, string SavedBy, DateTimeOffset SavedAt, string? ChangeReason)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderIntegrationManifestReferenceDto? ExpectedManifestReference { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:779](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L779) |  |
+
+## ProviderIntegrationSetupSaveResultDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationSetupSaveResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:782](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L782).
+
+```csharp
+public sealed record ProviderIntegrationSetupSaveResultDto(bool Saved, string ManifestId, string ConnectionId, ProviderIntegrationActivationStateDto ManifestState, ProviderIntegrationActivationStateDto ConnectionState, ProviderIntegrationActivationReadinessDto Readiness, string? Message)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderIntegrationManifestReferenceDto? ManifestReference { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:791](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L791) |  |
+
+## ProviderIntegrationStagingCapabilitySummaryDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationStagingCapabilitySummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:424](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L424).
+
+```csharp
+public sealed record ProviderIntegrationStagingCapabilitySummaryDto(ProviderCapabilityKindDto Capability, int RecordCount, int WarningCount);
+```
+
+## ProviderIntegrationStagingIdentityResolutionPreviewDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationStagingIdentityResolutionPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:469](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L469).
+
+```csharp
+public sealed record ProviderIntegrationStagingIdentityResolutionPreviewDto(string ConnectionId, IReadOnlyList<string> SyncRunIds, IReadOnlyList<ProviderIntegrationStagingIdentityResolutionRowDto> Rows, int TotalRows, int AccountReviewRequiredCount, int MissingAccountIdentifierCount, int SecurityResolvedCount, int SecurityReviewRequiredCount, int MissingSecurityIdentifierCount);
+```
+
+## ProviderIntegrationStagingIdentityResolutionRowDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationStagingIdentityResolutionRowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:449](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L449).
+
+```csharp
+public sealed record ProviderIntegrationStagingIdentityResolutionRowDto(string StagingRecordId, string SyncRunId, ProviderCapabilityKindDto Capability, string? ProviderAccountId, ProviderIntegrationIdentityResolutionStatusDto AccountStatus, string? InternalAccountId, string? AccountResolutionNote, ProviderIntegrationIdentityResolutionStatusDto SecurityStatus, string? InternalSecurityId, string? SecurityDisplayName, string? SecurityRoute, IReadOnlyList<ProviderIntegrationIdentityCandidateDto> SecurityCandidates, IReadOnlyList<ValidationIssueDto> Issues)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? EvidenceHash { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:464](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L464) |  |
+| <code>public bool HasIdentifierConflict { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:465](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L465) |  |
+| <code>public ProviderIntegrationIdentityDecisionDto? OperatorResolution { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:466](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L466) |  |
+
+## ProviderIntegrationStagingReviewDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationStagingReviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:429](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L429).
+
+```csharp
+public sealed record ProviderIntegrationStagingReviewDto(string ConnectionId, IReadOnlyList<string> SyncRunIds, IReadOnlyList<IntegrationStagingRecordDto> Records, IReadOnlyList<ProviderIntegrationStagingCapabilitySummaryDto> CapabilitySummaries, IReadOnlyList<ProviderIntegrationQuarantineIssueGroupDto> WarningGroups, int TotalStagedRecords, int ReadyForReconciliationCount, int WarningRecordCount);
+```
+
+## ProviderIntegrationSyncPlanDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationSyncPlanDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:642](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L642).
+
+```csharp
+public sealed record ProviderIntegrationSyncPlanDto(string ConnectionId, string ManifestId, string ProviderId, string ConnectionName, ProviderIntegrationActivationStateDto ConnectionState, DateTimeOffset EvaluatedAt, IReadOnlyList<ProviderIntegrationSyncPlanItemDto> Items, int DueCount, int BlockedCount);
+```
+
+## ProviderIntegrationSyncPlanItemDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationSyncPlanItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:629](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L629).
+
+```csharp
+public sealed record ProviderIntegrationSyncPlanItemDto(ProviderCapabilityKindDto Capability, string? EndpointKey, string ScheduleMode, string Frequency, string Timezone, DateTimeOffset? LastSuccessfulSyncAt, DateTimeOffset? NextEligibleSyncAt, bool IsDue, bool IsBlocked, string Reason, IReadOnlyList<ValidationIssueDto> Issues);
 ```

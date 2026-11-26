@@ -581,7 +581,7 @@ Source: [src/Meridian.Application/ProviderRouting/LegacyProviderRuntimeCredentia
 Contains runtimes that do not yet carry authenticated connection ownership. Every vault access rechecks that the provider family is entirely legacy while holding the configuration lease.
 
 ```csharp
-public sealed class LegacyProviderRuntimeCredentialStore(ConfigStore configStore, IProviderCredentialStore credentialStore, ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : IProviderCredentialStore, ILegacyProviderCredentialImporter
+public sealed class LegacyProviderRuntimeCredentialStore(ConfigStore configStore, IProviderCredentialStore credentialStore, ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : IProviderCredentialStore
 ```
 
 Declared public members:
@@ -596,7 +596,6 @@ Declared public members:
 | <code>public Task&lt;string&gt; SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request, ProviderCredentialReadResult expectedConnection, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/LegacyProviderRuntimeCredentialStore.cs:29](../../../../src/Meridian.Application/ProviderRouting/LegacyProviderRuntimeCredentialStore.cs#L29) |  |
 | <code>public Task DeleteAsync(string providerId, string? actor = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/LegacyProviderRuntimeCredentialStore.cs:33](../../../../src/Meridian.Application/ProviderRouting/LegacyProviderRuntimeCredentialStore.cs#L33) |  |
 | <code>public Task RecordVerificationAsync(ProviderCredentialVerificationUpdate update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/LegacyProviderRuntimeCredentialStore.cs:36](../../../../src/Meridian.Application/ProviderRouting/LegacyProviderRuntimeCredentialStore.cs#L36) |  |
-| <code>public async Task ImportLegacyAsync(IReadOnlyList&lt;ProviderCredentialSaveRequest&gt; requests, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/LegacyProviderRuntimeCredentialStore.cs:39](../../../../src/Meridian.Application/ProviderRouting/LegacyProviderRuntimeCredentialStore.cs#L39) |  |
 
 ## NoInProcessProviderRecycleApplier
 

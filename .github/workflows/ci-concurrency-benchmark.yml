@@ -64,6 +64,7 @@ jobs:
           if-no-files-found: error
   evaluate:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: pairs
     if: always()
     steps:

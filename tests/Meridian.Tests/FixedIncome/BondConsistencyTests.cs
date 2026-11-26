@@ -173,8 +173,6 @@ public sealed class BondConsistencyTests
         ladder.Contributions.Single(row => row.FlowType == flowType).Amount.Should().Be(price);
         ladder.Contributions.Single(row => row.FlowType == "Coupon").Amount.Should().Be(2.5m);
         ladder.Contributions.Should().NotContain(row => row.DueDate > new DateOnly(2026, 7, 1));
-        var legacy = LegacyPortfolioCashLadderEngine.Build(inputs, scenario);
-        legacy.EngineVersion.Should().Be("portfolio-cash-ladder-v1");
     }
 
     [Fact]
