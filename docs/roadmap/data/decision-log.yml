@@ -598,6 +598,11 @@ decisions:
       fba1fdbb on 2026-11-26, so the row moves from ready_for_acceptance to accepted with complete
       evidence. The generated-repair job reports review_required on reviewed source hashes. Thirteen
       of those modules are already stale on main; this PR adds SRC-FSHARP. Recording those reviews is
-      left to the owner and is not part of this acceptance. No release is certified.
+      left to the owner and is not part of this acceptance. No release is certified. Before merging,
+      main landed #3744, which composes the 32 classes from per-class modules and replaced the
+      ToSecurityKind decode switch with a codec registry. The owner chose to adapt minimally on
+      2026-11-26: the decode-dispatch region and the declaration's decode fields were dropped, the
+      remaining five regions are unchanged, and the declaration is checked against
+      SecurityAssetClassModules.
     related_roadmap_items:
       - W11-PACK-002

@@ -22,7 +22,6 @@ internal static class SecurityClassPlumbingGenerator
 {
     public const string SecurityMasterFs = "src/Meridian.FSharp/Domain/SecurityMaster.fs";
     public const string InteropFs = "src/Meridian.FSharp/Interop.SecurityMaster.fs";
-    public const string MappingCs = "src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs";
     public const string CatalogCs = "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs";
 
     public static IReadOnlyList<SecurityClassPlumbingRegion> GenerateAll()
@@ -38,14 +37,8 @@ internal static class SecurityClassPlumbingGenerator
             new("asset-class-keys", SecurityMasterFs, classes.Select(KeyOfArm).ToArray()),
             new("flat-writer-dispatch", InteropFs,
                 classes.Where(static c => !c.HandWrittenWriterArm).Select(c => WriterArm(c, Binding(bindings, c))).ToArray()),
-            new("decode-dispatch", MappingCs,
-                classes.SelectMany(c => DecodeArm(c, bindings.GetValueOrDefault(c.Name))).ToArray()),
             new("asset-class-names", CatalogCs, classes.Select(NameConstant).ToArray()),
         ];
-
-    /// <summary>The catalog row heads the declaration implies; the rows themselves stay hand-written.</summary>
-    public static IReadOnlyList<string> CatalogRowHeads(IReadOnlyList<SecurityAssetClassDeclaration> classes)
-        => classes.Select(static c => $"            AssetClass: SecurityAssetClassNames.{c.Name},").ToArray();
 
     private static SecurityClassCodecBinding Binding(
         IReadOnlyDictionary<string, SecurityClassCodecBinding> bindings, SecurityAssetClassDeclaration declaration)
@@ -98,46 +91,6 @@ internal static class SecurityClassPlumbingGenerator
         }
 
         return $"        | SecurityKind.{c.Name} terms -> GeneratedFlatWriter.write{c.Name} schemaVersion{flags} terms";
-    }
-
-    private static IEnumerable<string> DecodeArm(SecurityAssetClassDeclaration c, SecurityClassCodecBinding? binding)
-    {
-        foreach (var note in c.DecodeNote ?? [])
-        {
-            yield return $"            // {note}";
-        }
-
-        if (c.DecodeExpression is not null)
-        {
-            yield return $"            \"{c.Name}\" => {c.DecodeExpression},";
-            yield break;
-        }
-
-        if (binding is null)
-        {
-            throw new InvalidOperationException(
-                $"{c.Name} has no codec binding, so its decode arm must be declared as an expression.");
-        }
-
-        // The same parameter rules SecurityFlatCodecGenerator uses for the generated method signature.
-        var arguments = binding.ReadsResolvedTerms ? "boundTerms" : "bound";
-        arguments += ", mode, assetClass, json";
-        if (binding.VersionedSchedules || binding.Inputs.HasFlag(SecurityCodecInputs.VersionedTerms))
-        {
-            arguments += ", versionedTerms";
-        }
-
-        if (binding.Inputs.HasFlag(SecurityCodecInputs.EconomicSchedules))
-        {
-            arguments += ", economicSchedules!";
-        }
-
-        if (binding.Inputs.HasFlag(SecurityCodecInputs.ResolvedTermsDocument))
-        {
-            arguments += ", terms";
-        }
-
-        yield return $"            \"{c.Name}\" => {c.DecodeMethod ?? "DecodeGenerated" + c.Name}({arguments}),";
     }
 
     private static readonly HashSet<string> NullaryFamilies = NullaryCases(typeof(AssetFamily));

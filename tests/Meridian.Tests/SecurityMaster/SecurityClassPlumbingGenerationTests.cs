@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.FSharp.Domain;
@@ -15,7 +14,7 @@ namespace Meridian.Tests.SecurityMaster;
 /// <c>MERIDIAN_ACCEPT_GENERATED_CODEC=1</c> to write the regenerated regions instead of comparing.
 /// </summary>
 [Trait("Category", "Unit")]
-public sealed partial class SecurityClassPlumbingGenerationTests
+public sealed class SecurityClassPlumbingGenerationTests
 {
     [Theory]
     [MemberData(nameof(RegionIds))]
@@ -50,14 +49,22 @@ public sealed partial class SecurityClassPlumbingGenerationTests
     }
 
     [Fact]
-    public void TheCatalogRows_AreOneForEachDeclaredClass()
+    public void TheClassModules_AreOneForEachDeclaredClass()
     {
-        var source = File.ReadAllText(Path.Combine(FindRepositoryRoot(), SecurityClassPlumbingGenerator.CatalogCs))
-            .ReplaceLineEndings("\n").Split('\n');
+        // The catalog rows live in the per-class asset modules (#3744); each declared class needs
+        // exactly one module, and a hand-written writer arm is exactly the opaque profile codec.
+        var modules = SecurityAssetClassModules.All;
 
-        source.Where(static line => CatalogRowHeadLine().IsMatch(line))
-            .Should().BeEquivalentTo(SecurityClassPlumbingGenerator.CatalogRowHeads(SecurityAssetClassDeclarations.All),
-                "every declared class needs a hand-written catalog row, and every row a declared class");
+        modules.Select(static module => module.Descriptor.AssetClass)
+            .Should().OnlyHaveUniqueItems()
+            .And.BeEquivalentTo(SecurityAssetClassDeclarations.All.Select(static c => c.Name),
+                "every declared class needs a class module, and every module a declared class");
+        foreach (var declaration in SecurityAssetClassDeclarations.All)
+        {
+            modules.Single(module => module.Descriptor.AssetClass == declaration.Name).UsesOpaqueProfileCodec
+                .Should().Be(declaration.HandWrittenWriterArm,
+                    $"{declaration.Name}'s writer arm is hand-written exactly when its module keeps the opaque profile codec");
+        }
     }
 
     [Fact]
@@ -71,15 +78,13 @@ public sealed partial class SecurityClassPlumbingGenerationTests
     }
 
     [Fact]
-    public void OnlyClassesWithoutACodecBinding_DeclareHandWrittenCodecArms()
+    public void OnlyClassesWithoutACodecBinding_DeclareAHandWrittenWriterArm()
     {
         foreach (var declaration in SecurityAssetClassDeclarations.All)
         {
             var bound = SecurityAssetTermsCodecBindings.ByAssetClass.ContainsKey(declaration.Name);
             declaration.HandWrittenWriterArm.Should().Be(!bound,
                 $"{declaration.Name}'s writer arm is generated exactly when the binding table lists it");
-            (declaration.DecodeExpression is not null).Should().Be(!bound,
-                $"{declaration.Name}'s decode arm is a declared expression exactly when it has no binding");
         }
     }
 
@@ -111,8 +116,7 @@ public sealed partial class SecurityClassPlumbingGenerationTests
         var text = string.Join('\n', extended.SelectMany(static r => r.Lines));
         text.Should().Contain("    | ExampleAsset of ExampleAssetTerms")
             .And.Contain("Family = Some (AssetFamily.OtherFamily \"Example\")")
-            .And.Contain("GeneratedFlatWriter.writeExampleAsset schemaVersion terms")
-            .And.Contain("\"ExampleAsset\" => DecodeGeneratedExampleAsset(bound, mode, assetClass, json),");
+            .And.Contain("GeneratedFlatWriter.writeExampleAsset schemaVersion terms");
     }
 
     public static TheoryData<string> RegionIds()
@@ -154,7 +158,4 @@ public sealed partial class SecurityClassPlumbingGenerationTests
 
         throw new InvalidOperationException("Unable to locate the repository root from the test output directory.");
     }
-
-    [GeneratedRegex(@"^\s*AssetClass: SecurityAssetClassNames\.\w+,\s*$")]
-    private static partial Regex CatalogRowHeadLine();
 }

@@ -40,7 +40,7 @@ in a string list.
 
 | File | Role |
 | --- | --- |
-| `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassDeclarations.cs` | The declaration: one row per compiled class, in F# union order. A row holds only what the catalog and the codec bindings don't already say: the structural classification, the terms type when it isn't `{Name}Terms`, the union-case documentation, and the arms that aren't mechanical (the `Bond` decode wrapper, the StructuredCredit decode note and the profile-backed `CustomAsset`). |
+| `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassDeclarations.cs` | The declaration: one row per compiled class, in F# union order. A row holds only what the catalog and the codec bindings don't already say: the structural classification, the terms type when it isn't `{Name}Terms`, the union-case documentation, and whether the writer arm is hand-written (only the profile-backed `CustomAsset`). |
 | `tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingGenerator.cs` | Generates each region from the declaration. Codec arm parameters come from the binding flags (`ReadsResolvedTerms`, `VersionedSchedules`, `WritesConventionsFlag`, `Inputs`), using the same rules as `SecurityFlatCodecGenerator`. Classification cases are resolved against the F# unions by reflection: a label that names a nullary case renders as that case, and any other label renders as `OtherFamily` or `OtherSubType`. |
 | `tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingGenerationTests.cs` | Regenerates every region and fails when the committed text differs. With `MERIDIAN_ACCEPT_GENERATED_CODEC=1` it writes the regions instead, as `SecurityFlatCodecGenerationTests` does for the flat codec. It also checks the declaration against the catalog, the catalog rows and the compiled union, and shows that one new row plus one binding adds an arm to every region. |
 
@@ -56,16 +56,23 @@ comment markers, so it compiles with the surrounding hand-written code. It is no
 | `asset-class-descriptors`: `AssetClassRegistry` classification rows | same |
 | `asset-class-keys`: `AssetClassRegistry.keyOf` arms | same |
 | `flat-writer-dispatch`: flat-writer arms for every class except `CustomAsset` | `src/Meridian.FSharp/Interop.SecurityMaster.fs` |
-| `decode-dispatch`: `ToSecurityKind` arms | `src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs` |
 | `asset-class-names`: `SecurityAssetClassNames` constants | `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` |
+
+Decoding no longer has a generated switch. Since #3744 ("Compose Security Master asset classes from
+per-class modules"), each class owns a module under `src/Meridian.Contracts/SecurityMaster/AssetModules/`
+with its descriptor, term schema, codec binding, validation rules and storage projection, and
+`ToSecurityKind` dispatches through the modules' codec registry. The generation tests hold the
+declaration to `SecurityAssetClassModules.All`: one module per declared class, and the hand-written
+writer arm exactly where the module keeps the opaque profile codec.
 
 The decode method list (`GeneratedDecodeClasses`) and the codec arms are generated separately by
 `SecurityFlatCodecGenerator` from the binding table.
 
 ### Changing a class
 
-1. Edit or add the row in `SecurityAssetClassDeclarations`. For a new flat class, also add its
-   `SecurityAssetTermsCodecBindings` row and its hand-written catalog row.
+1. Edit or add the row in `SecurityAssetClassDeclarations`. For a new class, also add its class
+   module under `AssetModules/` (descriptor, schema, codec binding) and register it in
+   `SecurityAssetClassModules.All`.
 2. Regenerate:
 
    ```bash
@@ -101,12 +108,12 @@ derive them:
    and the name constants. The catalog's rows place `CustomAsset` after `OtherSecurity`. That order
    is public through `SecurityAssetClassCatalog.AssetClasses`, so it is kept as hand-written
    presentation order and checked as a set. It is not generated.
-3. **Codec dispatch is derived from the binding flags.** The two declared exceptions are `Bond`,
-   which calls a hand-written `DecodeBond` wrapper, and `CustomAsset`, which has no binding. The
-   switch to generated code moved the `CustomAsset` decode arm to the end of the region (union
-   order). This doesn't change behavior, because the arms match distinct string constants.
-4. **Seven of the roughly 18–20 edits are generated** (six regions plus the catalog-row check). The
-   rest are the semantic sites above. Adding a class is now one declaration row, one binding row
+3. **Writer dispatch is derived from the binding flags.** The one declared exception is
+   `CustomAsset`, which has no binding and keeps the opaque profile codec. The decode dispatch was
+   generated too until #3744 replaced the `ToSecurityKind` switch with the class modules' codec
+   registry; the decode region was then dropped (owner decision on 2026-11-26).
+4. **Five regions are generated, and the class modules are checked against the declaration.** The
+   rest are the semantic sites above. Adding a class is now one declaration row, one class module
    and those deliberate edits.
 
 ## Validation

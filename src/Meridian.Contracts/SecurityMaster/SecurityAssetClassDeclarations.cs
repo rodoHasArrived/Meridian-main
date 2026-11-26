@@ -4,8 +4,8 @@ namespace Meridian.Contracts.SecurityMaster;
 /// One Security Master asset class, declared once. The mechanical per-class plumbing is generated
 /// from this declaration (<c>W11-PACK-002</c>, <c>DEC-PACK-CODEGEN-001</c>). A row carries only
 /// what <see cref="SecurityAssetClassCatalog"/> and <see cref="SecurityAssetTermsCodecBindings"/>
-/// do not already say: the structural classification, the case documentation, and the few arms that
-/// are not mechanical.
+/// do not already say: the structural classification, the case documentation, and whether its writer
+/// arm is hand-written.
 /// </summary>
 /// <param name="Name">
 /// The canonical asset-class name. It is also the F# <c>SecurityKind</c> union case, the
@@ -25,15 +25,6 @@ namespace Meridian.Contracts.SecurityMaster;
 /// <param name="IsDerivative">Whether the class is an exchange-traded or OTC derivative.</param>
 /// <param name="TermsType">The F# terms record name, when it is not <c>{Name}Terms</c>.</param>
 /// <param name="CaseDoc">The XML doc lines written above the union case, without the <c>///</c>.</param>
-/// <param name="DecodeMethod">
-/// The decode method, when the class has a codec binding but the switch calls a hand-written
-/// wrapper around it. The arguments are still derived from the binding.
-/// </param>
-/// <param name="DecodeExpression">
-/// The whole decode arm expression, for a class with no codec binding (the profile-backed
-/// <c>CustomAsset</c>).
-/// </param>
-/// <param name="DecodeNote">Comment lines written above the class's decode arm, without the <c>//</c>.</param>
 /// <param name="HandWrittenWriterArm">
 /// Whether the F# writer dispatch arm is hand-written, outside the generated region, because the
 /// class has no codec binding.
@@ -48,9 +39,6 @@ internal sealed record SecurityAssetClassDeclaration(
     bool IsDerivative = false,
     string? TermsType = null,
     IReadOnlyList<string>? CaseDoc = null,
-    string? DecodeMethod = null,
-    string? DecodeExpression = null,
-    IReadOnlyList<string>? DecodeNote = null,
     bool HandWrittenWriterArm = false)
 {
     public string TermsTypeName => TermsType ?? Name + "Terms";
@@ -60,9 +48,9 @@ internal sealed record SecurityAssetClassDeclaration(
 /// The single declaration of every compiled Security Master asset class, in F# union order. It is
 /// the source of the generated regions marked <c>&lt;generated:…&gt;</c> in
 /// <c>Domain/SecurityMaster.fs</c> (the <c>SecurityKind</c> cases, the <c>AssetClassRegistry</c>
-/// key arms and classification rows), <c>Interop.SecurityMaster.fs</c> (the flat-writer dispatch),
-/// <c>SecurityMasterMapping.cs</c> (the <c>ToSecurityKind</c> decode dispatch) and
-/// <see cref="SecurityAssetClassNames"/>. Edit a row here, then regenerate: set
+/// key arms and classification rows), <c>Interop.SecurityMaster.fs</c> (the flat-writer dispatch)
+/// and <see cref="SecurityAssetClassNames"/>. Decoding is dispatched through the per-class asset
+/// modules' codec registry, not a generated switch. Edit a row here, then regenerate: set
 /// <c>MERIDIAN_ACCEPT_GENERATED_CODEC=1</c> and run <c>SecurityClassPlumbingGenerationTests</c>.
 /// Without that variable the tests fail when a generated region differs from this table.
 /// <para>
@@ -82,7 +70,7 @@ internal static class SecurityAssetClassDeclarations
         new("Equity", "Equity", "CommonEquity", "CommonShare"),
         new("Option", Derivative, Listed, "OptionContract", IsDerivative: true),
         new("Future", Derivative, Listed, "FutureContract", IsDerivative: true),
-        new("Bond", "FixedIncome", "CorporateDebt", "CorporateBond", IssuerType: "Corporate", DecodeMethod: "DecodeBond"),
+        new("Bond", "FixedIncome", "CorporateDebt", "CorporateBond", IssuerType: "Corporate"),
         new("FxSpot", "CashEquivalent", "ForeignExchange", "FxSpot"),
         new("Deposit", "CashEquivalent", "BankProduct", "TimeDeposit", IssuerType: "Bank"),
         new("MoneyMarketFund", "Fund", "MoneyMarket", "MoneyMarketFund", IssuerType: "FundVehicle"),
@@ -94,13 +82,7 @@ internal static class SecurityAssetClassDeclarations
         new("OtherSecurity", "Other", null, "OtherSecurity"),
         new("Swap", Derivative, Otc, "SwapContract", IsDerivative: true),
         new("DirectLoan", "PrivateCredit", "PrivateLoan", "DirectLoan"),
-        new("StructuredCredit", "FixedIncome", "SecuritizedCredit", "StructuredCredit", IssuerType: "StructuredVehicle",
-            DecodeNote:
-            [
-                "Typed tranche terms are optional, but a WRITE must not read a malformed supplied value",
-                "as absent (the Strict reads); the declared-schedule containers come from the root, so a",
-                "profile envelope's profileFields never reach them.",
-            ]),
+        new("StructuredCredit", "FixedIncome", "SecuritizedCredit", "StructuredCredit", IssuerType: "StructuredVehicle"),
         new("PrivateFundInterest", "Fund", "PartnershipEquity", "LimitedPartnershipInterest", IssuerType: "FundVehicle"),
         new("PrivateCompanyEquity", "Equity", "PrivateCompanyEquity", "PrivateCompanyEquity", IssuerType: "PrivateCompany"),
         new("RealEstateHolding", "Other", "RealEstate", "RealEstateHolding", IssuerType: "PropertyOrSpv"),
@@ -133,7 +115,6 @@ internal static class SecurityAssetClassDeclarations
                 "Governed profile-backed custom asset (private and other assets modeled via",
                 "approved custom profiles). Terms are carried as an opaque, verbatim document.",
             ],
-            DecodeExpression: "ToCustomAssetKind(bound, mode)",
             HandWrittenWriterArm: true),
     ];
 }

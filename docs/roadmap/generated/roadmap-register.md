@@ -2568,7 +2568,7 @@ W11-EXEC-001: planned; health green; evidence planned_evidence. Record canonical
 
 ### Current Summary
 
-W11-PACK-002: accepted; health green; evidence complete. Accepted by the owner (DEC-PACK-ACCEPT-001). SecurityAssetClassDeclarations generates six marked regions in src, and a unit test fails on drift. Per-class semantic sites stay hand-written and are listed in the plan.
+W11-PACK-002: accepted; health green; evidence complete. Accepted by the owner (DEC-PACK-ACCEPT-001). SecurityAssetClassDeclarations generates five marked regions in src (decode now goes through the
 
 ### Status References
 
@@ -2582,7 +2582,7 @@ W11-PACK-002: accepted; health green; evidence complete. Accepted by the owner (
 
 ### Exit Criteria
 
-- One declaration per class (SecurityAssetClassDeclarations), built on SecurityAssetTermsCodecBindings and SecurityAssetClassCatalog, generates the F# plumbing (SecurityKind union cases, AssetClassRegistry key arms and classification rows, flat-writer dispatch) and the C# plumbing (ToSecurityKind decode dispatch, SecurityAssetClassNames constants).
+- One declaration per class (SecurityAssetClassDeclarations), built on SecurityAssetTermsCodecBindings and SecurityAssetClassCatalog, generates the F# plumbing (SecurityKind union cases, AssetClassRegistry key arms and classification rows, flat-writer dispatch) and the C# SecurityAssetClassNames constants. The ToSecurityKind decode dispatch was generated until
 - The generated code is committed source between generated-region markers. SecurityClassPlumbingGenerationTests regenerates every region and fails when the committed text differs; MERIDIAN_ACCEPT_GENERATED_CODEC=1 writes the regenerated regions, as for the flat codec.
 - The repository owner recorded the switch to generated code (DEC-PACK-CODEGEN-001). The declaration follows the F# union order; the catalog row order stays its hand-written presentation order and is checked as a set.
 - Each remaining per-class site is listed in the plan as a deliberate semantic edit, not generated.
