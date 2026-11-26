@@ -443,6 +443,42 @@ public sealed class ContractualCashFlowEngineTests
         ContractualCashFlowEngine.Verify(run).Should().BeTrue();
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Calendar_revision_preserves_retained_results_without_posting_authority(bool complete)
+    {
+        var end = new DateOnly(2026, 12, 25);
+        var coverage = new CalendarCoverage(Issue, complete ? Maturity : end);
+        var original = new HolidayBusinessDayCalendar("ZZFED", 1, [end], coverage: coverage);
+        var revised = new HolidayBusinessDayCalendar("ZZFED", 2, [end, new DateOnly(2026, 12, 28)], coverage: coverage);
+        var stream = Stream with
+        {
+            PaymentMonths = 0,
+            Conventions = ScheduleConventionTerms.Empty with { PaymentCalendars = ["ZZFED"], BusinessDayConvention = "Following" }
+        };
+        var contract = new ContractualCashFlowContract(Issue, end, "USD", [stream]);
+        var first = ContractualCashFlowEngine.Calculate(contract, Request, new StaticBusinessDayCalendarSource([original]));
+        var second = ContractualCashFlowEngine.Calculate(contract, Request, new StaticBusinessDayCalendarSource([revised]));
+        first.Blockers.Should().BeEmpty();
+        second.Blockers.Should().BeEmpty();
+        first.Events.Single().Date.Should().Be(new DateOnly(2026, 12, 28));
+        second.Events.Single().Date.Should().Be(new DateOnly(2026, 12, 29));
+        first.Events.Single().PeriodId.Should().Be(second.Events.Single().PeriodId);
+        first.Events.Single().CashInterest.Should().Be(second.Events.Single().CashInterest);
+        first.Evidence.Calendars.Single().ContentHash.Should().Be(original.ContentHash);
+        second.Evidence.Calendars.Single().ContentHash.Should().Be(revised.ContentHash);
+        first.Evidence.Warnings.Any(w => w.StartsWith("CalendarCoverageExceeded:", StringComparison.Ordinal)).Should().Be(!complete);
+        second.Evidence.Warnings.Any(w => w.StartsWith("CalendarCoverageExceeded:", StringComparison.Ordinal)).Should().Be(!complete);
+        var run = new ContractualCashFlowRun(Guid.NewGuid(), "Security", Guid.NewGuid(), Request.KnowledgeCutoff, contract, Request, first);
+        ContractualCashFlowEngine.Verify(run).Should().BeTrue();
+        var replay = ContractualCashFlowEngine.Replay(run);
+        replay.Events.Should().Equal(first.Events);
+        first.IsPostable.Should().BeFalse();
+        second.IsPostable.Should().BeFalse();
+        replay.IsPostable.Should().BeFalse();
+    }
+
     private static CashFlowCurveSnapshot Curve(SecurityCurveKind kind, decimal value)
     {
         var id = Guid.NewGuid();
