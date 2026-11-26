@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-23
+last_reviewed: 2026-11-25
 ---
 
 # src/Meridian.FinancialOperations
@@ -1394,6 +1394,16 @@ evidence deletion.
 ## Diagrams
 
 `DIA-ASSURANCE-LOOP`
+
+## Recurring accrual economic-obligation claims (2026-11-25)
+
+The recurring document session shared by the file and PostgreSQL stores pins optional daily-lot
+economic-obligation keys write-once under its exclusive lease before CD intake, and the shared
+document rules refuse a retained obligation owned by more than one occurrence. Keys exclude
+schedule/template/model versions, so overlapping schedules or cadences cannot draft the same daily
+holding accrual twice. Exact retries and process restart retain ownership; claims survive failure and
+corrections use audited reversal/rebook. Optional claim fields are omitted for legacy occurrences.
+See [recurring journal](../../docs/domain/recurring-journal.md#declared-certificateofdeposit-accrual-profile).
 
 ## Roadmap traceability
 

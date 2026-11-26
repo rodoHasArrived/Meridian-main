@@ -378,7 +378,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static RecurringJournalCalculationResult NothingDue(string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:68](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L68) |  |
+| <code>public IReadOnlyList&lt;string&gt; EconomicObligationKeys { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:69](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L69) | Optional stable economic obligations pinned before intake, independent of schedule and model versions. |
+| <code>public static RecurringJournalCalculationResult NothingDue(string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:71](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L71) |  |
 
 ## RecurringJournalPeriodAuthority
 
@@ -427,7 +428,7 @@ Declared public members:
 | <code>public bool SupportsCalculation(string kind) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:24](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L24) | Whether a calculated template of this kind can be run by this host. |
 | <code>public IReadOnlyList&lt;string&gt; MissingCalculationInputs(JournalTemplateCalculation calculation) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:27](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L27) | The inputs a calculated template of this kind must state and does not. |
 | <code>public async Task&lt;IReadOnlyList&lt;AutomatedJournalScheduledRunResult&gt;&gt; RunDueAsync(DateTimeOffset now, string? tenant = null, string? company = null, bool scopeSpecified = false, CancellationToken ct = default, string? scheduleId = null, RecurringJournalScope? exactScope = null, int? expectedScheduleVersion = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:32](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L32) |  |
-| <code>public async Task&lt;RecurringJournalQueueDto&gt; GetQueueAsync(string fundProfileId, Guid ledgerBookId, string entityId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:361](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L361) |  |
+| <code>public async Task&lt;RecurringJournalQueueDto&gt; GetQueueAsync(string fundProfileId, Guid ledgerBookId, string entityId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:379](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L379) |  |
 
 ## RecurringJournalSubjectAuthority
 

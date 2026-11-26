@@ -1921,6 +1921,22 @@ factories, and `AutoResubscribePolicy` awaits `SubscriptionOrchestrator.ApplyAsy
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
+## CertificateOfDeposit accrual context and retained terms (2026-11-25)
+
+`SecurityMasterCashFlowService` captures a declared version-6 CertificateOfDeposit under the
+`bond-cash-flow-context-v6` model with its accrual-policy input; undeclared CDs and every
+Bond/StructuredCredit capture keep the version-5 context and bytes. A declared profile that fails the
+strict terms contract is refused instead of using the normalized legacy walk.
+
+`RetainedSecurityTermsReadBoundary` classifies pre-format terms only in an explicit frozen
+calculation view after its retained packet is verified. Original receipt documents, digests and
+outputs stay unchanged. Malformed, duplicate or unsupported format declarations refuse; live Security
+Master reads and new captures keep the strict declared-format contract. This boundary does not turn
+historical residue into a new accrual-profile declaration. An unreadable live input can retain a
+typed blocked audit receipt with empty resolved terms and no cash events. It records unavailable
+calculation evidence, never an inferred format or zero-flow economic result. See
+[recurring journals](../../docs/domain/recurring-journal.md#declared-certificateofdeposit-accrual-profile).
+
 ## Roadmap traceability
 
 <!-- source-roadmap-traceability:begin module=SRC-APP -->

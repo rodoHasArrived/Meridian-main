@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Integrity;
@@ -89,6 +90,10 @@ public sealed record RecurringOccurrenceRecord(
     /// <summary>Write-once digest of trusted calculated intake evidence, independent of the editable draft store.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? DraftEvidenceDigest { get; init; }
+
+    /// <summary>Write-once daily economic obligations owned by this claim, independent of definition versions.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<string>? EconomicObligationKeys { get; init; }
 }
 
 /// <summary>A definition change cannot silently reinterpret a retained approval draft.</summary>
@@ -138,6 +143,8 @@ public interface IRecurringJournalSession : IAsyncDisposable
         int expectedScheduleVersion, int expectedTemplateVersion, DateTimeOffset now, CancellationToken ct = default);
     Task<RecurringOccurrenceRecord> PinDraftEvidenceAsync(string key, string digest, CancellationToken ct = default)
         => Task.FromException<RecurringOccurrenceRecord>(new NotSupportedException("This recurring registry cannot retain calculated draft evidence authority."));
+    Task<RecurringOccurrenceRecord> PinEconomicObligationsAsync(string occurrenceKey, IReadOnlyList<string> keys, CancellationToken ct = default)
+        => Task.FromException<RecurringOccurrenceRecord>(new NotSupportedException("This recurring registry cannot retain economic obligation authority."));
     Task<RecurringOccurrenceRecord> SetOutcomeAsync(string key, RecurringOccurrenceState state,
         string? reason, string? periodId, string? lockOwner, string? reopenPath,
         DateTimeOffset now, CancellationToken ct = default);
@@ -168,6 +175,43 @@ internal partial class RecurringJournalJsonContext : JsonSerializerContext;
 /// </summary>
 public static class RecurringJournalIdentity
 {
+    /// <summary>
+    /// Frozen ownership of one actual held lot's interest day. Its identity domain and encoding
+    /// stay unchanged across schedule, template, descriptor and calculation-version updates.
+    /// </summary>
+    public static string FixedIncomeInterestObligationKey(RecurringJournalScope scope, Guid securityId,
+        Guid bookPositionId, string lotId, DateOnly accrualDate)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        ArgumentException.ThrowIfNullOrWhiteSpace(scope.TenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(scope.CompanyId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(lotId);
+        if (scope.LedgerBookId == Guid.Empty || securityId == Guid.Empty || bookPositionId == Guid.Empty || accrualDate == default)
+            throw new ArgumentException("Economic obligation identity requires a book, security, position and accrual date.");
+        string[] components = ["fixed-income-interest-v1", scope.TenantId.Trim().ToUpperInvariant(),
+            scope.CompanyId.Trim().ToUpperInvariant(), scope.LedgerBookId.ToString("N"), securityId.ToString("N"),
+            bookPositionId.ToString("N"), lotId, accrualDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)];
+        return Sha256Digest.ComputeUtf8(string.Concat(components.Select(static value =>
+            value.Length.ToString(CultureInfo.InvariantCulture) + ":" + value)));
+    }
+
+    /// <summary>Checks a nonempty set of unique canonical economic identities before it gains authority.</summary>
+    public static void ValidateEconomicObligationKeys(IReadOnlyList<string> keys)
+    {
+        ArgumentNullException.ThrowIfNull(keys);
+        if (keys.Count == 0 || keys.Any(static key => !Sha256Digest.IsCanonical(key))
+            || keys.Distinct(StringComparer.Ordinal).Count() != keys.Count)
+            throw new ArgumentException("Economic obligations require a nonempty set of unique canonical identities.", nameof(keys));
+    }
+
+    /// <summary>The retained set digest is independent of the calculation's enumeration order.</summary>
+    public static string EconomicObligationDigest(IReadOnlyList<string> keys)
+    {
+        ValidateEconomicObligationKeys(keys);
+        return Sha256Digest.ComputeUtf8("recurring-economic-obligations-v1:" +
+            string.Concat(keys.Order(StringComparer.Ordinal)));
+    }
+
     public static string SerializeSchedule(RecurringScheduleDefinition definition)
         => JsonSerializer.Serialize(definition, RecurringJournalJsonContext.Default.RecurringScheduleDefinition);
 

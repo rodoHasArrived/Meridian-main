@@ -230,7 +230,7 @@ internal static class ValuationTestSecurities
             name,
             currency,
             JsonSerializer.SerializeToElement(new { displayName = name, currency }),
-            JsonSerializer.SerializeToElement(terms),
+            SecurityTermsEnvelope.StampDeclaredFormat(JsonSerializer.SerializeToElement(terms)),
             [identifier],
             [],
             1,
