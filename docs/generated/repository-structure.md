@@ -133,6 +133,8 @@ Meridian-main
 │   │   ├── meridian-roadmap-strategist.md
 │   │   ├── meridian-simulated-user-panel.md
 │   │   └── meridian-test-writer.md
+│   ├── hooks
+│   │   └── format-csharp.sh
 │   ├── skills
 │   │   ├── _shared
 │   │   │   └── project-context.md
