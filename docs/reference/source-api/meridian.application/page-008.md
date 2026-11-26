@@ -6,6 +6,63 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionInboxDto
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionInboxDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:45](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L45).
+
+Snapshot of the corporate-action inbox: staged (not auto-applied) proposals from the most recent ingest sweep, with enough run context for the workbench badge and review list.
+
+```csharp
+public sealed record CorporateActionInboxDto(DateTimeOffset? LastIngestAt, int StagedCount, int AppliedLastRun, int DuplicatesSkippedLastRun, IReadOnlyList<CorporateActionProposal> Staged, IReadOnlyList<string> Errors)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;CorporateActionProviderFetchOutcome&gt; FetchOutcomes { get; init; } = [];</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:53](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L53) |  |
+
+## CorporateActionInboxState
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionInboxState</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:61](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L61).
+
+Holds the latest corporate-action ingest outcome so the workbench can badge and list staged proposals between sweeps. In-memory by design: proposals are re-derivable by re-running ingest, and applied actions are already durable in the event store.
+
+```csharp
+public sealed class CorporateActionInboxState
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public void Record(CorporateActionIngestResult result);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:67](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L67) |  |
+| <code>public bool TryTakeStaged(Guid securityId, string actionType, DateOnly exDate, out CorporateActionProposal proposal);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:81](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L81) | Removes and returns the staged proposal matching (security, action type, ex-date) so an operator apply consumes it exactly once. Auto-applied proposals are not takeable. |
+| <code>public CorporateActionInboxDto GetInbox();</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:106](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L106) |  |
+
+## CorporateActionIngestOrchestrator
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestOrchestrator</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:95](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L95).
+
+Fans out to every registered ICorporateActionProvider for mastered symbols, normalizes announcements, computes cross-provider consensus over full economic value keys, and records every distinct observation in the durable proposal inbox. Provider agreement is retained as evidence and never appends or approves accounting by itself. The legacy append path remains only for hosts/tests that have not registered durable operations.
+
+```csharp
+public sealed class CorporateActionIngestOrchestrator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionIngestOrchestrator(IEnumerable&lt;ICorporateActionProvider&gt; providers, ISecurityMasterStore store, ISecurityMasterEventStore eventStore, ISecurityMasterCorporateActionCommandService commandService, ILogger&lt;CorporateActionIngestOrchestrator&gt; logger, ICorporateActionOperationsService? operationsService = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:104](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L104) |  |
+| <code>public async Task&lt;CorporateActionIngestResult&gt; IngestAsync(CorporateActionIngestRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:120](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L120) |  |
+
 ## CorporateActionIngestRequest
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestRequest</code>. Kind: `record`.
@@ -905,69 +962,3 @@ Declared public members:
 | <code>Task&lt;SecurityMasterRevisionRecord?&gt; GetAsync(Guid revisionId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:51](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L51) | Returns the revision, or null when no revision with that id exists. |
 | <code>Task&lt;IReadOnlyList&lt;SecurityMasterRevisionRecord&gt;&gt; ListBySecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:58](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L58) | All revisions recorded for one security, in no guaranteed order. Used by the approval seam to decide whether a security-level override decision would co-approve values staged by OTHER, not-yet-approved revisions. |
 | <code>Task&lt;SecurityMasterRevisionRecord&gt; TransitionAsync(Guid revisionId, SecurityMasterRevisionStateDto expected, SecurityMasterRevisionStateDto next, string actor, Guid? workflowIdForSubmit = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:67](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L67) | Atomically transitions a revision from expected to next. Throws SecurityMasterRevisionStateException when the revision is missing or its current state is not expected (a concurrent or out-of-order transition). When workflowIdForSubmit is supplied on a Draft→Submitted transition, it is durably bound to the revision so approval can be restricted to that same workflow lane. |
-
-## ISecurityMasterTermsCapabilityVerifier
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterTermsCapabilityVerifier</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityVerifier.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityVerifier.cs#L12).
-
-Verifies the persisted floor before a configured writer may serialize or persist terms.
-
-```csharp
-public interface ISecurityMasterTermsCapabilityVerifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task VerifyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityVerifier.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityVerifier.cs#L15) | Performs a fresh check; no successful startup or earlier command is cached. |
-
-## ISecurityMasterWorkbenchCommandService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterWorkbenchCommandService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:12](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L12).
-
-Governed write surface for the Security Master Passport Workbench. Unifies operator-authored field edits, source-conflict resolution, and the draft → submit → approve → publish lifecycle over the existing Security Master write primitives and the conflict-authority policy.
-
-```csharp
-public interface ISecurityMasterWorkbenchCommandService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityMasterEditResultDto&gt; UpdateSecurityFieldAsync(UpdateSecurityFieldRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:19](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L19) | Stages an operator-authored field edit. A non-empty justification is required (operator origin), and a stale ExpectedVersion surfaces as a concurrency failure (HTTP 409). Missing provider data stays review-required — this never fabricates completeness. |
-| <code>Task&lt;SecurityMasterEditResultDto&gt; ProposeHistoricalIdentifierWindowAsync(ProposeHistoricalIdentifierWindowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:29](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L29) | Stages a historical identifier window (kind, value, provider, ValidFrom, ValidTo) with its Evidence Vault reference and justification as a Draft revision. It follows the same submit → approve → publish lifecycle as a field edit, always with an independent reviewer, and publish applies it as a governed amendment that keeps the proposed ValidFrom. Bulk imports cannot backdate identifiers; this is the governed path for windows before ingest. |
-| <code>Task&lt;SecurityMasterConflictResolutionDto&gt; ResolveSourceConflictAsync(ResolveSourceConflictRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:37](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L37) | Records an operator&#x27;s resolution of a source conflict. The conflict-authority policy computes the default winner; if the operator&#x27;s choice diverges, the deviation must be acknowledged and is retained as the audited artifact. |
-| <code>Task&lt;SecurityMasterConflictResolutionDto&gt; ResolveSourceConflictAtCurrentVersionAsync(ResolveSourceConflictRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:48](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L48) | Governed conflict resolution for LEGACY callers that carry no record version (the shared conflict queue&#x27;s browser and WPF actions): resolves the record&#x27;s CURRENT version and runs the full governed path — authority policy, rationale requirement, candidate guard, and the transactional persisted-value check — with that version. The optimistic freshness guard is vacuous by construction here; correctness against concurrent amendments is carried by the conflict store&#x27;s locked persisted-value revalidation. |
-| <code>Task&lt;SecurityMasterEditResultDto&gt; SubmitForApprovalAsync(SubmitSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:55](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L55) | Transitions a draft revision into the governed approval gate. When the request carries a workflow id, submission is routed through IOperationsContinuityWorkflowService. |
-| <code>Task&lt;SecurityMasterEditResultDto&gt; DiscardRevisionAsync(DiscardSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:63](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L63) | Discards a staged (Draft or Submitted) revision: transitions it to Rejected and withdraws the staged override value it governs, so an abandoned draft or gate-rejected submission stops deferring the security-level override decision for every later revision. |
-| <code>Task&lt;OperatorOverridesDto&gt; PatchOperatorOverridesAsync(Guid securityId, OperatorOverridesPatchRequest request, string updatedBy, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:74](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L74) | Applies a raw operator-overrides patch (the generic overrides route&#x27;s free-form sets and removals) under the SAME per-security serialization the field-edit, approve, submit, and discard routes hold. Hosts that wire the workbench must route the generic PATCH endpoint through this seam instead of the bare store: an ungated patch can land between an approval&#x27;s ungoverned-key scan and its recorded security-level decision, silently co-approving a value no reviewer ever saw. |
-| <code>Task&lt;OperatorOverridesDto&gt; RecordOperatorOverrideDecisionAsync(Guid securityId, OperatorOverrideDecision decision, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:86](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L86) | Records a direct operator-override approval decision (the legacy decision route) under the per-security gate, refusing with InvalidOperationException whenever the decision belongs to the governed revision lifecycle instead: staged (Draft/Submitted) revisions are pending, or the overlay carries revision-backed values. Hosts that wire the workbench must route the legacy decision endpoint through this seam so a ModifySecurityMaster actor cannot directly approve values whose revisions were never reviewed. |
-| <code>Task&lt;SecurityMasterEditResultDto&gt; ApproveRevisionAsync(ApproveSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:90](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L90) | Approves a submitted revision through the operations-continuity approval gate. |
-| <code>Task&lt;SecurityMasterPublishResultDto&gt; PublishRevisionAsync(PublishSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:97](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L97) | Publishes an approved revision: fans out to the ordered revision-published handlers and returns any restatement candidates the period-aware handler surfaced. |
-
-## ISecurityMasterWorkbenchQueryService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterWorkbenchQueryService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:9](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L9).
-
-Supplies trust, passport, and operating-model views and bulk conflict resolution for the workbench.
-
-```csharp
-public interface ISecurityMasterWorkbenchQueryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityMasterTrustSnapshotDto?&gt; GetTrustSnapshotAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:11](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L11) |  |
-| <code>Task&lt;InstrumentPassportDto?&gt; GetInstrumentPassportAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:16](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L16) |  |
-| <code>Task&lt;SecurityMasterOperatingModelDto?&gt; GetOperatingModelAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:21](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L21) |  |
-| <code>Task&lt;BulkResolveSecurityMasterConflictsResult&gt; BulkResolveConflictsAsync(BulkResolveSecurityMasterConflictsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:26](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L26) |  |

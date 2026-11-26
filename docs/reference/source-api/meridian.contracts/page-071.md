@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderCorporateActionEvidenceCandidateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProviderCorporateActionEvidenceCandidateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:463](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L463).
+
+```csharp
+public sealed record ProviderCorporateActionEvidenceCandidateDto(string CandidateId, string CandidateType, string? Symbol, Guid? SecurityId, string? SecurityDisplayName, ProviderLedgerReconciliationCheckStatusDto Status, string RequiredFeed, string EvidenceSource, string ProviderId, string ExternalAccountId, string? ProviderEventId, DateTimeOffset ObservedAt, decimal? Amount, decimal? Quantity, string? Currency, string Reason);
+```
+
 ## ProviderCorporateActionLedgerEffectDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ProviderCorporateActionLedgerEffectDto</code>. Kind: `record`.
@@ -762,24 +772,3 @@ Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:996](../../../
 ```csharp
 public sealed record ReconciliationCaseStateTransition(string TransitionId, ReconciliationCaseLifecycleState From, ReconciliationCaseLifecycleState To, string Actor, string? Rationale, DateTimeOffset OccurredAt, IReadOnlyList<string>? EvidenceReferences = null, string? PreviousHash = null, string? EntryHash = null);
 ```
-
-## ReconciliationCaseTransitionAction
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseTransitionAction</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1007](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1007).
-
-```csharp
-public enum ReconciliationCaseTransitionAction : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>StartReview = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1009](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1009) |  |
-| <code>RequestApproval = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1010](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1010) |  |
-| <code>Approve = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1011](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1011) |  |
-| <code>Post = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1012](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1012) |  |
-| <code>Reopen = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1013](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1013) |  |
-| <code>Supersede = 5</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1014](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1014) |  |

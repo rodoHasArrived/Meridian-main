@@ -6,6 +6,60 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReportingCertifiedArtifactProducer
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingCertifiedArtifactProducer</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:134](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L134).
+
+Narrow bridge to the renderer that owns the exact output bytes. Implementations must return the bytes actually rendered for the supplied manifest; callers and HTTP payloads are never an artifact source.
+
+```csharp
+public interface IReportingCertifiedArtifactProducer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;ReportingGovernedArtifactProduction&gt; ProduceAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:136](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L136) |  |
+
+## IReportingCertifiedLedgerPresentationSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingCertifiedLedgerPresentationSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:98](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L98).
+
+Resolves the canonical ledger report pack whose accounting presentation was certified for an exact reporting checkpoint. Returning null means that no authoritative presentation is available and callers that require it must fail closed.
+
+```csharp
+public interface IReportingCertifiedLedgerPresentationSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;ReportingCertifiedLedgerPresentationInput?&gt; ResolveExactAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:100](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L100) |  |
+
+## IReportingDeliveryGrantCredentialDeriver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingDeliveryGrantCredentialDeriver</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:26](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L26).
+
+Derives a stable, opaque delivery credential without persisting its plaintext bearer. The binding key must be the durable delivery idempotency identity plus its committed attempt.
+
+```csharp
+public interface IReportingDeliveryGrantCredentialDeriver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ReportingDerivedAccessGrantCredential Derive(string bindingKey);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L28) |  |
+
 ## IReportingDeploymentReadinessService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingDeploymentReadinessService</code>. Kind: `interface`.
@@ -61,7 +115,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingMigrationStartup</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1724](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1724).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1730](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1730).
 
 Completes the existing checksummed reporting migration workflow before services that query the reporting authority are constructed.
 
@@ -73,7 +127,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1726](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1726) |  |
+| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1732](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1732) |  |
 
 ## IReportingPrimaryDocumentRenderer
 
@@ -416,7 +470,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IThreeWayReconciliationSourceReader</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:29](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L29).
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:42](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L42).
 
 ```csharp
 public interface IThreeWayReconciliationSourceReader
@@ -426,9 +480,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;ThreeWayReconciliationScopeDto&gt; AuthorizeAsync(Guid accountId, ReconciliationBreakQueueScope accessScope, Guid ledgerBookId, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:31](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L31) |  |
-| <code>Task CaptureAsync(ThreeWayReconciliationScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:33](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L33) |  |
-| <code>Task&lt;IReadOnlyList&lt;ThreeWaySourceSnapshotDto&gt;&gt; ReadAsync(ThreeWayReconciliationScopeDto scope, DateTimeOffset cutoffUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:34](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L34) |  |
+| <code>Task&lt;ThreeWayReconciliationScopeDto&gt; AuthorizeAsync(Guid accountId, ReconciliationBreakQueueScope accessScope, Guid ledgerBookId, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:44](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L44) |  |
+| <code>Task CaptureAsync(ThreeWayReconciliationScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:46](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L46) |  |
+| <code>Task&lt;IReadOnlyList&lt;ThreeWaySourceSnapshotDto&gt;&gt; ReadAsync(ThreeWayReconciliationScopeDto scope, DateTimeOffset cutoffUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:47](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L47) |  |
 
 ## ITradingOperatorReadinessProvider
 
@@ -624,7 +678,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.LedgerRecurringJournalCalculationInputs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:127](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L127).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:130](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L130).
 
 Reads calculation inputs from the durable ledger journal store.
 
@@ -636,9 +690,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyLedger&gt; HydrateLedgerAsOfAsync(RecurringJournalScope scope, DateOnly asOf, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:130](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L130) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerTaxLot&gt;&gt; ListOpenLotsAsync(RecurringJournalScope scope, LedgerAccount account, Guid securityId, Guid? bookPositionId, DateOnly asOf, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:133](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L133) |  |
-| <code>public Task&lt;IReadOnlyList&lt;FaceValueAccrualHolding&gt;&gt; ListAccrualHoldingsAsync(RecurringJournalScope scope, Guid securityId, Guid bookPositionId, DateOnly from, DateOnly through, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:170](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L170) |  |
+| <code>public async Task&lt;IReadOnlyLedger&gt; HydrateLedgerAsOfAsync(RecurringJournalScope scope, DateOnly asOf, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:133](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L133) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerTaxLot&gt;&gt; ListOpenLotsAsync(RecurringJournalScope scope, LedgerAccount account, Guid securityId, Guid? bookPositionId, DateOnly asOf, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:136](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L136) |  |
+| <code>public Task&lt;IReadOnlyList&lt;FaceValueAccrualHolding&gt;&gt; ListAccrualHoldingsAsync(RecurringJournalScope scope, Guid securityId, Guid bookPositionId, DateOnly from, DateOnly through, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:173](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L173) |  |
 
 ## LedgerReportingAuthoritativeSource
 
@@ -784,7 +838,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ManagementFeeAccrualCalculation</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:205](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L205).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:208](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L208).
 
 Day-weighted management fee on the net assets the ledger held at the close of the day before the accrual window. Terms: annualRate, yearBasisDays.
 
@@ -796,10 +850,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string CalculationKind = &quot;management-fee-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:207](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L207) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:209](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L209) |  |
-| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:211](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L211) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:213](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L213) |  |
+| <code>public const string CalculationKind = &quot;management-fee-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:210](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L210) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:212](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L212) |  |
+| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:214](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L214) |  |
+| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:216](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L216) |  |
 
 ## ManualJournalEntryWorkbenchService
 
@@ -1020,44 +1074,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;MarginControlCenterDto&gt; GetAsync(Func&lt;MarginEvidenceOwner, bool&gt;? isAccountVisible = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs:31](../../../../src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs#L31) |  |
 | <code>public async Task&lt;MarginCertificationResultDto&gt; CertifyAsync(MarginCertificationRequestDto request, string actor, Func&lt;MarginEvidenceOwner, bool&gt;? isAccountVisible = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs:87](../../../../src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs#L87) |  |
-
-## MarginEvidenceOwner
-
-Qualified name: <code>Meridian.Ui.Shared.Services.MarginEvidenceOwner</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs:11](../../../../src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs#L11).
-
-Who a retained margin snapshot belongs to: the fund account its statement was imported for (null when the evidence predates that record) and the snapshot&#x27;s provider and external account.
-
-```csharp
-public sealed record MarginEvidenceOwner(string? FundAccountId, string ProviderId, string AccountId);
-```
-
-## MarginRequirement
-
-Qualified name: <code>Meridian.Ui.Shared.Services.MarginRequirement</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:27](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L27).
-
-```csharp
-public sealed record MarginRequirement(string Counterparty, decimal RequiredCollateral, decimal InitialMargin, decimal VariationMargin);
-```
-
-## MultiAssetCoverageReadService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.MultiAssetCoverageReadService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs:24](../../../../src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs#L24).
-
-Builds multi-asset coverage summaries from declared instruments and supporting services.
-
-```csharp
-public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public MultiAssetCoverageReadService(ISecurityMasterOperationalReadinessService readinessService, ProviderLedgerReconciliationService? providerLedgerReconciliation = null, FundAccountCloseReadinessService? closeReadiness = null, ISecurityMasterQueryService? securityMasterQuery = null);</code> | [src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs:31](../../../../src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs#L31) |  |
-| <code>public async Task&lt;MultiAssetCoverageSummaryDto&gt; GetCoverageAsync(string? fundAccountId, string? entity, string? assetClass, ReconciliationBreakQueueScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs:43](../../../../src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs#L43) |  |

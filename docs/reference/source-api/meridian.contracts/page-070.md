@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.Workstation.ParameterDiff</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:918](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L918).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:930](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L930).
 
 A single parameter change between two runs.
 
@@ -715,14 +715,4 @@ Proposes a HISTORICAL identifier window — an identifier the security carried b
 
 ```csharp
 public sealed record ProposeHistoricalIdentifierWindowRequest(Guid SecurityId, long ExpectedVersion, Meridian.Contracts.SecurityMaster.SecurityIdentifierKind Kind, string Value, string? Provider, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, string EvidenceReference, string Justification, string Actor, string? FundProfileId = null);
-```
-
-## ProviderCorporateActionEvidenceCandidateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProviderCorporateActionEvidenceCandidateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:463](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L463).
-
-```csharp
-public sealed record ProviderCorporateActionEvidenceCandidateDto(string CandidateId, string CandidateType, string? Symbol, Guid? SecurityId, string? SecurityDisplayName, ProviderLedgerReconciliationCheckStatusDto Status, string RequiredFeed, string EvidenceSource, string ProviderId, string ExternalAccountId, string? ProviderEventId, DateTimeOffset ObservedAt, decimal? Amount, decimal? Quantity, string? Currency, string Reason);
 ```

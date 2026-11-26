@@ -1071,15 +1071,3 @@ Enum declarations:
 | <code>Medium</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:205](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L205) |  |
 | <code>High</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:206](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L206) |  |
 | <code>Critical</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:207](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L207) |  |
-
-## GapAnalysisResult
-
-Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.GapAnalysisResult</code>. Kind: `record`.
-
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:94](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L94).
-
-Gap analysis result with visual timeline data.
-
-```csharp
-public sealed record GapAnalysisResult(string Symbol, DateOnly Date, int TotalGaps, TimeSpan TotalGapDuration, double DataAvailabilityPercent, IReadOnlyList<DataGap> Gaps, IReadOnlyList<TimelineEntry> Timeline, DateTimeOffset AnalyzedAt);
-```

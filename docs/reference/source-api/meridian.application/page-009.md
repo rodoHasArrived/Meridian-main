@@ -6,6 +6,72 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISecurityMasterTermsCapabilityVerifier
+
+Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterTermsCapabilityVerifier</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityVerifier.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityVerifier.cs#L12).
+
+Verifies the persisted floor before a configured writer may serialize or persist terms.
+
+```csharp
+public interface ISecurityMasterTermsCapabilityVerifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task VerifyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityVerifier.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityVerifier.cs#L15) | Performs a fresh check; no successful startup or earlier command is cached. |
+
+## ISecurityMasterWorkbenchCommandService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterWorkbenchCommandService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:12](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L12).
+
+Governed write surface for the Security Master Passport Workbench. Unifies operator-authored field edits, source-conflict resolution, and the draft → submit → approve → publish lifecycle over the existing Security Master write primitives and the conflict-authority policy.
+
+```csharp
+public interface ISecurityMasterWorkbenchCommandService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityMasterEditResultDto&gt; UpdateSecurityFieldAsync(UpdateSecurityFieldRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:19](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L19) | Stages an operator-authored field edit. A non-empty justification is required (operator origin), and a stale ExpectedVersion surfaces as a concurrency failure (HTTP 409). Missing provider data stays review-required — this never fabricates completeness. |
+| <code>Task&lt;SecurityMasterEditResultDto&gt; ProposeHistoricalIdentifierWindowAsync(ProposeHistoricalIdentifierWindowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:29](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L29) | Stages a historical identifier window (kind, value, provider, ValidFrom, ValidTo) with its Evidence Vault reference and justification as a Draft revision. It follows the same submit → approve → publish lifecycle as a field edit, always with an independent reviewer, and publish applies it as a governed amendment that keeps the proposed ValidFrom. Bulk imports cannot backdate identifiers; this is the governed path for windows before ingest. |
+| <code>Task&lt;SecurityMasterConflictResolutionDto&gt; ResolveSourceConflictAsync(ResolveSourceConflictRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:37](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L37) | Records an operator&#x27;s resolution of a source conflict. The conflict-authority policy computes the default winner; if the operator&#x27;s choice diverges, the deviation must be acknowledged and is retained as the audited artifact. |
+| <code>Task&lt;SecurityMasterConflictResolutionDto&gt; ResolveSourceConflictAtCurrentVersionAsync(ResolveSourceConflictRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:48](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L48) | Governed conflict resolution for LEGACY callers that carry no record version (the shared conflict queue&#x27;s browser and WPF actions): resolves the record&#x27;s CURRENT version and runs the full governed path — authority policy, rationale requirement, candidate guard, and the transactional persisted-value check — with that version. The optimistic freshness guard is vacuous by construction here; correctness against concurrent amendments is carried by the conflict store&#x27;s locked persisted-value revalidation. |
+| <code>Task&lt;SecurityMasterEditResultDto&gt; SubmitForApprovalAsync(SubmitSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:55](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L55) | Transitions a draft revision into the governed approval gate. When the request carries a workflow id, submission is routed through IOperationsContinuityWorkflowService. |
+| <code>Task&lt;SecurityMasterEditResultDto&gt; DiscardRevisionAsync(DiscardSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:63](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L63) | Discards a staged (Draft or Submitted) revision: transitions it to Rejected and withdraws the staged override value it governs, so an abandoned draft or gate-rejected submission stops deferring the security-level override decision for every later revision. |
+| <code>Task&lt;OperatorOverridesDto&gt; PatchOperatorOverridesAsync(Guid securityId, OperatorOverridesPatchRequest request, string updatedBy, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:74](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L74) | Applies a raw operator-overrides patch (the generic overrides route&#x27;s free-form sets and removals) under the SAME per-security serialization the field-edit, approve, submit, and discard routes hold. Hosts that wire the workbench must route the generic PATCH endpoint through this seam instead of the bare store: an ungated patch can land between an approval&#x27;s ungoverned-key scan and its recorded security-level decision, silently co-approving a value no reviewer ever saw. |
+| <code>Task&lt;OperatorOverridesDto&gt; RecordOperatorOverrideDecisionAsync(Guid securityId, OperatorOverrideDecision decision, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:86](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L86) | Records a direct operator-override approval decision (the legacy decision route) under the per-security gate, refusing with InvalidOperationException whenever the decision belongs to the governed revision lifecycle instead: staged (Draft/Submitted) revisions are pending, or the overlay carries revision-backed values. Hosts that wire the workbench must route the legacy decision endpoint through this seam so a ModifySecurityMaster actor cannot directly approve values whose revisions were never reviewed. |
+| <code>Task&lt;SecurityMasterEditResultDto&gt; ApproveRevisionAsync(ApproveSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:90](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L90) | Approves a submitted revision through the operations-continuity approval gate. |
+| <code>Task&lt;SecurityMasterPublishResultDto&gt; PublishRevisionAsync(PublishSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:97](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L97) | Publishes an approved revision: fans out to the ordered revision-published handlers and returns any restatement candidates the period-aware handler surfaced. |
+
+## ISecurityMasterWorkbenchQueryService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterWorkbenchQueryService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:9](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L9).
+
+Supplies trust, passport, and operating-model views and bulk conflict resolution for the workbench.
+
+```csharp
+public interface ISecurityMasterWorkbenchQueryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityMasterTrustSnapshotDto?&gt; GetTrustSnapshotAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:11](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L11) |  |
+| <code>Task&lt;InstrumentPassportDto?&gt; GetInstrumentPassportAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:16](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L16) |  |
+| <code>Task&lt;SecurityMasterOperatingModelDto?&gt; GetOperatingModelAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:21](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L21) |  |
+| <code>Task&lt;BulkResolveSecurityMasterConflictsResult&gt; BulkResolveConflictsAsync(BulkResolveSecurityMasterConflictsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:26](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L26) |  |
+
 ## Releaser
 
 Qualified name: <code>Meridian.Application.SecurityMaster.KeyedGatePool.Releaser</code>. Kind: `struct`.
@@ -985,67 +1051,3 @@ Declared public members:
 | <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConcurrencyException.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConcurrencyException.cs#L18) |  |
 | <code>public long ExpectedVersion { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConcurrencyException.cs:20](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConcurrencyException.cs#L20) |  |
 | <code>public long CurrentVersion { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConcurrencyException.cs:22](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConcurrencyException.cs#L22) |  |
-
-## SecurityMasterConflictAuthorityPolicy
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterConflictAuthorityPolicy</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L18).
-
-Deterministic conflict-authority policy. Selects the default winner from the precedence ladder: golden-copy source (the configured authority) wins outright; otherwise the higher-ranked source in SourcePrecedence wins; otherwise (equal rank) the fresher source (by FreshnessAsOf) wins; otherwise the higher confidence score wins. Bulk eligibility is derived from the structured Recommendation: equivalent dismissals stay eligible regardless of winner, while accept-winner/accept-challenger recommendations stay eligible only when the policy winner matches the recommended source (otherwise they fall back to per-row review).
-
-```csharp
-public sealed class SecurityMasterConflictAuthorityPolicy : ISecurityMasterConflictAuthorityPolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterConflictAuthorityPolicy() : this(new SecurityMasterWorkbenchOptions());</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:24](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L24) | Creates the policy with default options (used by tests and minimal hosts). |
-| <code>public SecurityMasterConflictAuthorityPolicy(SecurityMasterWorkbenchOptions options);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:30](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L30) | Creates the policy with a fixed options snapshot. |
-| <code>public SecurityMasterConflictAuthorityPolicy(IOptionsMonitor&lt;SecurityMasterWorkbenchOptions&gt; options);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:36](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L36) | Creates the policy with hot-reloadable options (DI registration). |
-| <code>public SecurityMasterConflictAuthorityDecision Evaluate(SecurityMasterConflictAssessmentDto assessment, IReadOnlyList&lt;InstrumentPassportProviderConfidenceDto&gt; providerConfidence);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:44](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L44) |  |
-
-## SecurityMasterConflictService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterConflictService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:68](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L68).
-
-In-memory conflict detection over the Security Master projection store. Detects identifier ambiguities where multiple providers map the same identifier to different SecurityIds.
-
-```csharp
-public sealed class SecurityMasterConflictService : ISecurityMasterConflictService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterConflictService(ISecurityMasterStore store, ILogger&lt;SecurityMasterConflictService&gt; logger, Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:82](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L82) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;SecurityMasterConflict&gt;&gt; GetOpenConflictsAsync(CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:94](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L94) |  |
-| <code>public Task&lt;SecurityMasterConflict?&gt; GetConflictAsync(Guid conflictId, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:148](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L148) |  |
-| <code>public Task&lt;SecurityMasterConflict?&gt; ResolveAsync(ResolveConflictRequest request, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:154](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L154) |  |
-| <code>public async Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:195](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L195) |  |
-| <code>public async Task RecordConflictsForProjectionsAsync(IReadOnlyList&lt;SecurityProjectionRecord&gt; projections, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:198](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L198) |  |
-| <code>public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:289](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L289) |  |
-| <code>public Task ReconcileOpenFieldConflictsAsync(SecurityProjectionRecord persisted, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:317](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L317) |  |
-
-## SecurityMasterContractRegistrationExtensions
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterContractRegistrationExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs:8](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs#L8).
-
-Bridges existing host registrations to the canonical Security Master contracts.
-
-```csharp
-public static class SecurityMasterContractRegistrationExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddSecurityMasterContractAdapters(this IServiceCollection services);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs:14](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs#L14) | Shares the registered query service through its narrow contracts. Explicit host registrations are preserved. |

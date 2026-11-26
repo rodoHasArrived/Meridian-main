@@ -6,7 +6,6 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-21
 
 last_reviewed: 2026-11-23
 ---

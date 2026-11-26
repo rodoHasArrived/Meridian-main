@@ -548,7 +548,7 @@ public sealed record AssetClassDepthTargetSpec(string KeySuffix, string TargetTy
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:801](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L801).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:803](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L803).
 
 Groups the operational capabilities supported by different asset profiles.
 
@@ -560,10 +560,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static readonly IReadOnlyList&lt;string&gt; IdentityOnly = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;Evidence&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:803](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L803) |  |
-| <code>public static readonly IReadOnlyList&lt;string&gt; FixedIncome = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:811](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L811) |  |
-| <code>public static readonly IReadOnlyList&lt;string&gt; DirectLending = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:825](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L825) |  |
-| <code>public static readonly IReadOnlyList&lt;string&gt; AlternativeAssetOperations = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:839](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L839) |  |
+| <code>public static readonly IReadOnlyList&lt;string&gt; IdentityOnly = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;Evidence&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:805](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L805) |  |
+| <code>public static readonly IReadOnlyList&lt;string&gt; FixedIncome = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:813](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L813) |  |
+| <code>public static readonly IReadOnlyList&lt;string&gt; DirectLending = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:827](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L827) |  |
+| <code>public static readonly IReadOnlyList&lt;string&gt; AlternativeAssetOperations = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:841](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L841) |  |
 
 ## AssetPackAccountingRules
 

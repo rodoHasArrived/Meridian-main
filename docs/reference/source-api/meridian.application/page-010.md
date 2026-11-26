@@ -6,6 +6,70 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterConflictAuthorityPolicy
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterConflictAuthorityPolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L18).
+
+Deterministic conflict-authority policy. Selects the default winner from the precedence ladder: golden-copy source (the configured authority) wins outright; otherwise the higher-ranked source in SourcePrecedence wins; otherwise (equal rank) the fresher source (by FreshnessAsOf) wins; otherwise the higher confidence score wins. Bulk eligibility is derived from the structured Recommendation: equivalent dismissals stay eligible regardless of winner, while accept-winner/accept-challenger recommendations stay eligible only when the policy winner matches the recommended source (otherwise they fall back to per-row review).
+
+```csharp
+public sealed class SecurityMasterConflictAuthorityPolicy : ISecurityMasterConflictAuthorityPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterConflictAuthorityPolicy() : this(new SecurityMasterWorkbenchOptions());</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:24](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L24) | Creates the policy with default options (used by tests and minimal hosts). |
+| <code>public SecurityMasterConflictAuthorityPolicy(SecurityMasterWorkbenchOptions options);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:30](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L30) | Creates the policy with a fixed options snapshot. |
+| <code>public SecurityMasterConflictAuthorityPolicy(IOptionsMonitor&lt;SecurityMasterWorkbenchOptions&gt; options);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:36](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L36) | Creates the policy with hot-reloadable options (DI registration). |
+| <code>public SecurityMasterConflictAuthorityDecision Evaluate(SecurityMasterConflictAssessmentDto assessment, IReadOnlyList&lt;InstrumentPassportProviderConfidenceDto&gt; providerConfidence);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:44](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L44) |  |
+
+## SecurityMasterConflictService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterConflictService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:68](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L68).
+
+In-memory conflict detection over the Security Master projection store. Detects identifier ambiguities where multiple providers map the same identifier to different SecurityIds.
+
+```csharp
+public sealed class SecurityMasterConflictService : ISecurityMasterConflictService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterConflictService(ISecurityMasterStore store, ILogger&lt;SecurityMasterConflictService&gt; logger, Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:82](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L82) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SecurityMasterConflict&gt;&gt; GetOpenConflictsAsync(CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:94](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L94) |  |
+| <code>public Task&lt;SecurityMasterConflict?&gt; GetConflictAsync(Guid conflictId, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:148](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L148) |  |
+| <code>public Task&lt;SecurityMasterConflict?&gt; ResolveAsync(ResolveConflictRequest request, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:154](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L154) |  |
+| <code>public async Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:195](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L195) |  |
+| <code>public async Task RecordConflictsForProjectionsAsync(IReadOnlyList&lt;SecurityProjectionRecord&gt; projections, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:198](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L198) |  |
+| <code>public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:289](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L289) |  |
+| <code>public Task ReconcileOpenFieldConflictsAsync(SecurityProjectionRecord persisted, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:317](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L317) |  |
+
+## SecurityMasterContractRegistrationExtensions
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterContractRegistrationExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs:8](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs#L8).
+
+Bridges existing host registrations to the canonical Security Master contracts.
+
+```csharp
+public static class SecurityMasterContractRegistrationExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddSecurityMasterContractAdapters(this IServiceCollection services);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs:14](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs#L14) | Shares the registered query service through its narrow contracts. Explicit host registrations are preserved. |
+
 ## SecurityMasterCostBasisAdjustmentService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterCostBasisAdjustmentService</code>. Kind: `class`.
@@ -1004,69 +1068,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public SecurityResolver(ISecurityMasterStore store);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L15) |  |
 | <code>public async Task&lt;Guid?&gt; ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:20](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L20) |  |
-
-## StaleFieldProposalException
-
-Qualified name: <code>Meridian.Application.SecurityMaster.StaleFieldProposalException</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:9](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L9).
-
-An approved field-edit revision whose canonical field changed after the proposal was drafted. Publishing it would overwrite a newer value the reviewer never saw, so publication refuses it. The revision stays Approved, and retrying will not help. Discard it and stage the edit again against the current value. The workbench publish route answers 409.
-
-```csharp
-public sealed class StaleFieldProposalException : InvalidOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StaleFieldProposalException(Guid securityId, Guid revisionId, string fieldPath, long baseVersion, long currentVersion) : base($&quot;Revision &#x27;{revisionId:D}&#x27; proposes &#x27;{fieldPath}&#x27; against security &#x27;{securityId:D}&#x27; version {baseVersion}, &quot; + $&quot;but that field changed by version {currentVersion}. Publishing it would overwrite the newer value; &quot; + &quot;discard the revision and stage the edit again against the current value.&quot;);</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:11](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L11) |  |
-| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:23](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L23) |  |
-| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:25](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L25) |  |
-| <code>public string FieldPath { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:27](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L27) |  |
-| <code>public long BaseVersion { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:29](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L29) |  |
-| <code>public long CurrentVersion { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:31](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L31) |  |
-
-## SymbolResolutionMismatchTracker
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SymbolResolutionMismatchTracker</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:10](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L10).
-
-Process-local, bounded comparison evidence for the Legacy-to-Canonical migration. The durable registry remains the symbol source of truth; this tracker exposes only recent operational disagreements for rollout inspection.
-
-```csharp
-public sealed class SymbolResolutionMismatchTracker : ISymbolResolutionMismatchReader
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SymbolResolutionMismatchTracker(int capacity = DefaultCapacity);</code> | [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:18](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L18) |  |
-| <code>public long TotalCount =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:24](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L24) |  |
-| <code>public void Report(SymbolResolutionMismatch mismatch);</code> | [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:26](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L26) |  |
-| <code>public IReadOnlyList&lt;SymbolResolutionMismatch&gt; GetRecent();</code> | [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:39](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L39) |  |
-
-## AssetClassValidatorRegistry
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Validation.AssetClassValidatorRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:24](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L24).
-
-Indexes asset-class validators and resolves the validator for a requested asset class.
-
-```csharp
-public sealed class AssetClassValidatorRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AssetClassValidatorRegistry(IEnumerable&lt;ISecurityAssetClassValidator&gt; validators);</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:28](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L28) |  |
-| <code>public IReadOnlyCollection&lt;string&gt; SupportedAssetClasses =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:38](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L38) |  |
-| <code>public bool TryGetValidator(string assetClass, out ISecurityAssetClassValidator validator) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:40](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L40) |  |
-| <code>public static AssetClassValidatorRegistry CreateDefault() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:43](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L43) |  |
-| <code>public static AssetClassValidatorRegistry CreateDefault(ISecurityAssetProfileCatalog assetProfileCatalog) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:50](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L50) | The default registry: every class&#x27;s hand-written semantic rules composed with the rules generated from its term schema (SchemaTermsAssetClassValidator). |

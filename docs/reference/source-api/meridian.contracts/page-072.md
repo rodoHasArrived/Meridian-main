@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationCaseTransitionAction
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseTransitionAction</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1007](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1007).
+
+```csharp
+public enum ReconciliationCaseTransitionAction : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>StartReview = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1009](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1009) |  |
+| <code>RequestApproval = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1010](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1010) |  |
+| <code>Approve = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1011](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1011) |  |
+| <code>Post = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1012](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1012) |  |
+| <code>Reopen = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1013](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1013) |  |
+| <code>Supersede = 5</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1014](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1014) |  |
+
 ## ReconciliationCaseTransitionCommand
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseTransitionCommand</code>. Kind: `record`.
@@ -502,7 +523,7 @@ public sealed record RejectWorkflow(Guid WorkflowId, FundWorkflowRejectionReason
 
 Qualified name: <code>Meridian.Contracts.Workstation.RenderReportTemplateRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1687](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1687).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1691](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1691).
 
 ```csharp
 public sealed record RenderReportTemplateRequestDto(VersionedReportTemplateIdDto TemplateId, IReadOnlyDictionary<string, string> Parameters, IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null, IReadOnlyList<ReportWriterGridDefinitionDto>? Grids = null);
@@ -512,7 +533,7 @@ public sealed record RenderReportTemplateRequestDto(VersionedReportTemplateIdDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.RenderReportTemplateResponseDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1692](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1692).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1696](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1696).
 
 ```csharp
 public sealed record RenderReportTemplateResponseDto(VersionedReportTemplateIdDto TemplateId, string RenderedContent, IReadOnlyList<string> MissingRequiredParameters, IReadOnlyList<ReportWriterGridRenderDto>? Grids = null, IReadOnlyList<string>? Warnings = null);
@@ -532,7 +553,7 @@ public sealed record ReopenWorkflow(Guid WorkflowId, string Reason, FundWorkflow
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportAccessEvaluationDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1675](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1675).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1679](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1679).
 
 ```csharp
 public sealed record ReportAccessEvaluationDto(bool IsAccessible, string Reason, IReadOnlyList<ReportAccessPrincipalDto> MatchedPrincipals);
@@ -542,7 +563,7 @@ public sealed record ReportAccessEvaluationDto(bool IsAccessible, string Reason,
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportAccessModeDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1648](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1648).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1652](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1652).
 
 ```csharp
 public enum ReportAccessModeDto
@@ -552,15 +573,15 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Private = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1650](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1650) |  |
-| <code>Restricted = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1651](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1651) |  |
-| <code>CompanyWide = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1652](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1652) |  |
+| <code>Private = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1654](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1654) |  |
+| <code>Restricted = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1655](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1655) |  |
+| <code>CompanyWide = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1656](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1656) |  |
 
 ## ReportAccessPolicyDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportAccessPolicyDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1668](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1668).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1672](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1672).
 
 ```csharp
 public sealed record ReportAccessPolicyDto(ReportAccessModeDto Mode = ReportAccessModeDto.CompanyWide, string? OwnerPrincipalId = null, IReadOnlyList<ReportAccessPrincipalDto>? Principals = null, string? CompanyId = null, bool AllowOwnerAccess = true);
@@ -570,7 +591,7 @@ public sealed record ReportAccessPolicyDto(ReportAccessModeDto Mode = ReportAcce
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportAccessPrincipalDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1663](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1663).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1667](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1667).
 
 ```csharp
 public sealed record ReportAccessPrincipalDto(ReportAccessPrincipalKindDto Kind, string PrincipalId, string? DisplayName = null);
@@ -580,7 +601,7 @@ public sealed record ReportAccessPrincipalDto(ReportAccessPrincipalKindDto Kind,
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportAccessPrincipalKindDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1656](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1656).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1660](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1660).
 
 ```csharp
 public enum ReportAccessPrincipalKindDto
@@ -590,9 +611,9 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>User = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1658](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1658) |  |
-| <code>Group = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1659](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1659) |  |
-| <code>Company = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1660](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1660) |  |
+| <code>User = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1662](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1662) |  |
+| <code>Group = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1663](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1663) |  |
+| <code>Company = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1664](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1664) |  |
 
 ## ReportBrandingThemeDto
 
@@ -610,7 +631,7 @@ public sealed record ReportBrandingThemeDto(string ThemeId, string Name, string 
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingAccountingBasisDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1269](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1269).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1273](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1273).
 
 ```csharp
 public enum ReportingAccountingBasisDto
@@ -620,17 +641,17 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Gaap = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1271](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1271) |  |
-| <code>Tax = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1272](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1272) |  |
-| <code>Management = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1273](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1273) |  |
-| <code>Cash = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1274](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1274) |  |
-| <code>Statutory = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1275](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1275) |  |
+| <code>Gaap = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1275](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1275) |  |
+| <code>Tax = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1276](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1276) |  |
+| <code>Management = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1277](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1277) |  |
+| <code>Cash = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1278](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1278) |  |
+| <code>Statutory = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1279](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1279) |  |
 
 ## ReportingConsolidationLevelDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingConsolidationLevelDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1279](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1279).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1283](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1283).
 
 ```csharp
 public enum ReportingConsolidationLevelDto
@@ -640,10 +661,10 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Fund = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1281](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1281) |  |
-| <code>Entity = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1282](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1282) |  |
-| <code>Portfolio = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1283](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1283) |  |
-| <code>Investor = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1284](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1284) |  |
+| <code>Fund = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1285](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1285) |  |
+| <code>Entity = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1286](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1286) |  |
+| <code>Portfolio = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1287](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1287) |  |
+| <code>Investor = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1288](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1288) |  |
 
 ## ReportingDeploymentCapabilityDto
 
@@ -673,27 +694,8 @@ public sealed record ReportingDeploymentComponentDto(string ComponentId = defaul
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingDueScheduleRunResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1255](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1255).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1259](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1259).
 
 ```csharp
 public sealed record ReportingDueScheduleRunResultDto(DateTimeOffset EvaluatedAtUtc, IReadOnlyList<ReportingScheduleRunResultDto> Runs);
 ```
-
-## ReportingEntityScopeKindDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingEntityScopeKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1260](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1260).
-
-```csharp
-public enum ReportingEntityScopeKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>AllEntities = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1262](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1262) |  |
-| <code>Entity = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1263](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1263) |  |
-| <code>Portfolio = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1264](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1264) |  |
-| <code>Investor = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1265](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1265) |  |

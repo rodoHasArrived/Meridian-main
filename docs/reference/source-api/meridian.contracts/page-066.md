@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InstrumentPassportOperationsWorkbenchItemDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.InstrumentPassportOperationsWorkbenchItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:498](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L498).
+
+```csharp
+public sealed record InstrumentPassportOperationsWorkbenchItemDto(string ItemId, string Label, string Value, string Status, string Detail, int EvidenceCount, int BlockingIssueCount, string? Route = null);
+```
+
 ## InstrumentPassportOperationsWorkbenchPanelDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.InstrumentPassportOperationsWorkbenchPanelDto</code>. Kind: `record`.
@@ -655,15 +665,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;MultiAssetPackCoverageDto&gt; AssetPacks { get; init; } = AssetPacks??[];</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1110](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1110) |  |
-
-## MultiAssetDrillThroughTargetDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetDrillThroughTargetDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1042](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1042).
-
-Shared drill-through target for one asset-class coverage row.
-
-```csharp
-public sealed record MultiAssetDrillThroughTargetDto(string TargetId, string TargetType, string Label, string Route, string? EvidenceLink, string Status, string Source);
-```

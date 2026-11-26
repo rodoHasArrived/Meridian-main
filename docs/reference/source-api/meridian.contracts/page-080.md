@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradingControlReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingControlReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:222](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L222).
+
+```csharp
+public sealed record TradingControlReadinessDto(bool CircuitBreakerOpen, string? CircuitBreakerReason, string? CircuitBreakerChangedBy, DateTimeOffset? CircuitBreakerChangedAt, int ManualOverrideCount, int SymbolLimitCount, decimal? DefaultMaxPositionSize)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;TradingControlEvidenceDto&gt; RecentEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:231](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L231) |  |
+| <code>public int ExplainableEvidenceCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:233](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L233) |  |
+| <code>public int UnexplainedEvidenceCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:235](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L235) |  |
+| <code>public IReadOnlyList&lt;string&gt; ExplainabilityWarnings { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:237](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L237) |  |
+
+## TradingExecutionReconciliationBreakDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingExecutionReconciliationBreakDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:119](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L119).
+
+```csharp
+public sealed record TradingExecutionReconciliationBreakDto(string Kind, string Description, string? LocalOrderId, string? BrokerOrderId, string? ClientOrderId, string? Symbol, string? LocalValue, string? BrokerValue);
+```
+
 ## TradingExecutionReconciliationReadinessDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.TradingExecutionReconciliationReadinessDto</code>. Kind: `record`.
@@ -214,7 +243,7 @@ public sealed record ValuationFreshnessPreviewDto(string PolicyVersion, int Asse
 
 Qualified name: <code>Meridian.Contracts.Workstation.VersionedReportTemplateIdDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1428](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1428).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1432](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1432).
 
 ```csharp
 public sealed record VersionedReportTemplateIdDto(string Name, int Version);
@@ -566,26 +595,4 @@ Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:37](../../../..
 
 ```csharp
 public sealed record WorkstationBrokerageSyncRunRequestDto(string? ProviderId = null, string? ExternalAccountId = null, string? RequestedBy = null, DateTimeOffset? Since = null, BrokerageAccountKindDto AccountKind = BrokerageAccountKindDto.Unknown);
-```
-
-## WorkstationBrokerageSyncStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationBrokerageSyncStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L69).
-
-```csharp
-public sealed record WorkstationBrokerageSyncStatusDto(Guid FundAccountId, string? ProviderId, string? ExternalAccountId, WorkstationBrokerageSyncHealth Health, bool IsLinked, bool IsStale, DateTimeOffset? LastAttemptedSyncAt, DateTimeOffset? LastSuccessfulSyncAt, string? LastError, int PositionCount, int OpenOrderCount, int FillCount, int CashTransactionCount, int SecurityMissingCount, IReadOnlyList<string> Warnings, BrokerageAccountKindDto AccountKind = BrokerageAccountKindDto.Unknown);
-```
-
-## WorkstationCrossScreenCount
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationCrossScreenCount</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs#L16).
-
-A single cross-screen count and the plain-language definition it was counted with.
-
-```csharp
-public sealed record WorkstationCrossScreenCount(int Count, string Definition);
 ```

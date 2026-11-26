@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementImportRowOutcomeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementImportRowOutcomeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:105](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L105).
+
+```csharp
+public sealed record StatementImportRowOutcomeDto(string RowId, int NormalizedIndex, string Disposition, string? Reason, string Status, string? RunId, IReadOnlyList<string> CaseIds);
+```
+
 ## StatementImportRowOutcomesPageDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementImportRowOutcomesPageDto</code>. Kind: `record`.
@@ -319,7 +329,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementRunBreakDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:347](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L347).
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:357](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L357).
 
 Open or retained break row scoped to a statement reconciliation run.
 
@@ -336,8 +346,14 @@ Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:299](
 Request to create a statement reconciliation run from an already accessible source file. Endpoint implementations keep import and reconciliation behavior in shared services.
 
 ```csharp
-public sealed record StatementRunCreateDto(string Broker, string SourceInstitution, string FundAccountId, string ExternalAccountId, DateOnly StatementPeriodStart, DateOnly StatementPeriodEnd, string SourcePath, string OriginalFileName, string MappingProfileId, string ToleranceProfileId, string ImportedBy, string? SourceFileHash = null, string? Notes = null);
+public sealed record StatementRunCreateDto(string Broker, string SourceInstitution, string FundAccountId, string ExternalAccountId, DateOnly StatementPeriodStart, DateOnly StatementPeriodEnd, string SourcePath, string OriginalFileName, string MappingProfileId, string ToleranceProfileId, string ImportedBy, string? SourceFileHash = null, string? Notes = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore] public StatementReconciliationAccountingScopeDto? ResolvedAccountingScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:321](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L321) | Server-resolved accounting scope (fund profile, ledger book and period) the run reconciles against. It is never read from the request body: the endpoint resolves it through the statement intake authority from the authenticated tenant, company, account and statement period, and a run is not created without it, so its ledger population is always read from one book. |
 
 ## StatementRunDto
 
@@ -355,7 +371,7 @@ public sealed record StatementRunDto(string? RunId, StatementRunStatus? Status, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementRunExceptionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:362](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L362).
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:372](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L372).
 
 Backward-compatible open exception projection for statement reconciliation queues.
 
@@ -367,7 +383,7 @@ public sealed record StatementRunExceptionDto(string BreakId, string RunId, stri
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementRunReconcileRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:317](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L317).
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:327](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L327).
 
 Request to trigger reconciliation matching for an existing statement run.
 
@@ -406,7 +422,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementRunSummaryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:325](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L325).
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:335](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L335).
 
 Lightweight statement-run index row returned by the workstation reconciliation API.
 
@@ -418,7 +434,7 @@ public sealed record StatementRunSummaryDto(string RunId, string ImportId, State
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementRunValidationDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:339](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L339).
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:349](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L349).
 
 Validation envelope for a statement reconciliation run.
 
@@ -618,24 +634,3 @@ Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:135](
 ```csharp
 public sealed record StorageTierSummaryDto(string Tier, int FileCount, long TotalBytes);
 ```
-
-## StpProcessingState
-
-Qualified name: <code>Meridian.Contracts.Workstation.StpProcessingState</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4).
-
-```csharp
-public enum StpProcessingState : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Received = 0</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
-| <code>Validated = 1</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
-| <code>Approved = 2</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
-| <code>QueuedForSettlement = 3</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
-| <code>Settled = 4</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
-| <code>Exception = 5</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |

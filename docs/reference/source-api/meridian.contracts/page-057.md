@@ -856,7 +856,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:778](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L778).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:780](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L780).
 
 The declared mark-based accounting treatment for an asset class.
 
@@ -868,8 +868,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:780](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L780) |  |
-| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:781](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L781) |  |
+| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:782](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L782) |  |
+| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:783](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L783) |  |
 
 ## SecurityValuationBlockerDto
 

@@ -6,6 +6,72 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StaleFieldProposalException
+
+Qualified name: <code>Meridian.Application.SecurityMaster.StaleFieldProposalException</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:9](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L9).
+
+An approved field-edit revision whose canonical field changed after the proposal was drafted. Publishing it would overwrite a newer value the reviewer never saw, so publication refuses it. The revision stays Approved, and retrying will not help. Discard it and stage the edit again against the current value. The workbench publish route answers 409.
+
+```csharp
+public sealed class StaleFieldProposalException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StaleFieldProposalException(Guid securityId, Guid revisionId, string fieldPath, long baseVersion, long currentVersion) : base($&quot;Revision &#x27;{revisionId:D}&#x27; proposes &#x27;{fieldPath}&#x27; against security &#x27;{securityId:D}&#x27; version {baseVersion}, &quot; + $&quot;but that field changed by version {currentVersion}. Publishing it would overwrite the newer value; &quot; + &quot;discard the revision and stage the edit again against the current value.&quot;);</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:11](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L11) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:23](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L23) |  |
+| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:25](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L25) |  |
+| <code>public string FieldPath { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:27](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L27) |  |
+| <code>public long BaseVersion { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:29](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L29) |  |
+| <code>public long CurrentVersion { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:31](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L31) |  |
+
+## SymbolResolutionMismatchTracker
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SymbolResolutionMismatchTracker</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:10](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L10).
+
+Process-local, bounded comparison evidence for the Legacy-to-Canonical migration. The durable registry remains the symbol source of truth; this tracker exposes only recent operational disagreements for rollout inspection.
+
+```csharp
+public sealed class SymbolResolutionMismatchTracker : ISymbolResolutionMismatchReader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolResolutionMismatchTracker(int capacity = DefaultCapacity);</code> | [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:18](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L18) |  |
+| <code>public long TotalCount =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:24](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L24) |  |
+| <code>public void Report(SymbolResolutionMismatch mismatch);</code> | [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:26](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L26) |  |
+| <code>public IReadOnlyList&lt;SymbolResolutionMismatch&gt; GetRecent();</code> | [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:39](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L39) |  |
+
+## AssetClassValidatorRegistry
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.AssetClassValidatorRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:24](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L24).
+
+Indexes asset-class validators and resolves the validator for a requested asset class.
+
+```csharp
+public sealed class AssetClassValidatorRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AssetClassValidatorRegistry(IEnumerable&lt;ISecurityAssetClassValidator&gt; validators);</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:28](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L28) |  |
+| <code>public IReadOnlyCollection&lt;string&gt; SupportedAssetClasses =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:38](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L38) |  |
+| <code>public bool TryGetValidator(string assetClass, out ISecurityAssetClassValidator validator) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:40](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L40) |  |
+| <code>public static AssetClassValidatorRegistry CreateDefault() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:43](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L43) |  |
+| <code>public static AssetClassValidatorRegistry CreateDefault(ISecurityAssetProfileCatalog assetProfileCatalog) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:50](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L50) | The default registry: every class&#x27;s hand-written semantic rules composed with the rules generated from its term schema (SchemaTermsAssetClassValidator). |
+
 ## FileSecurityValidationSnapshotStore
 
 Qualified name: <code>Meridian.Application.SecurityMaster.Validation.FileSecurityValidationSnapshotStore</code>. Kind: `class`.
@@ -375,7 +441,7 @@ public sealed record ConfigPresetInfo(ConfigPreset Preset, string Name, string D
 
 Qualified name: <code>Meridian.Application.Services.ConfigurationPresets</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:992](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L992).
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:990](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L990).
 
 Role-based configuration presets that configure ~15 settings at once. Reduces time-to-value from 30+ minutes of manual config to a single --preset flag.
 
@@ -387,9 +453,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IReadOnlyList&lt;string&gt; AvailablePresets =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:997](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L997) | Available preset names. |
-| <code>public static IReadOnlyDictionary&lt;string, string&gt; PresetDescriptions =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1005](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1005) | Gets the preset description for display. |
-| <code>public static AppConfig ApplyPreset(string presetName, AppConfig config);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1016](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1016) | Applies a named preset to the given config, returning a new config with preset values. |
+| <code>public static IReadOnlyList&lt;string&gt; AvailablePresets =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:995](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L995) | Available preset names. |
+| <code>public static IReadOnlyDictionary&lt;string, string&gt; PresetDescriptions =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1003](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1003) | Gets the preset description for display. |
+| <code>public static AppConfig ApplyPreset(string presetName, AppConfig config);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1014](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1014) | Applies a named preset to the given config, returning a new config with preset values. |
 
 ## ConfigurationService
 
@@ -909,67 +975,3 @@ Declared public members:
 | <code>public static PreflightCheckResult Passed(string name, string message, Dictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:805](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L805) |  |
 | <code>public static PreflightCheckResult Warning(string name, string message, string? remediation = null, Dictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:808](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L808) |  |
 | <code>public static PreflightCheckResult Failed(string name, string message, string? remediation = null, Dictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:811](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L811) |  |
-
-## PreflightCheckStatus
-
-Qualified name: <code>Meridian.Application.Services.PreflightCheckStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Services/PreflightChecker.cs:818](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L818).
-
-Status of a pre-flight check.
-
-```csharp
-public enum PreflightCheckStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Passed</code> | [src/Meridian.Application/Services/PreflightChecker.cs:820](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L820) |  |
-| <code>Warning</code> | [src/Meridian.Application/Services/PreflightChecker.cs:821](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L821) |  |
-| <code>Failed</code> | [src/Meridian.Application/Services/PreflightChecker.cs:822](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L822) |  |
-
-## PreflightConfig
-
-Qualified name: <code>Meridian.Application.Services.PreflightConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/PreflightChecker.cs:744](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L744).
-
-Configuration for pre-flight checks.
-
-```csharp
-public sealed record PreflightConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public double MinDiskSpaceGb { get; init; } = 1.0;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:747](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L747) | Minimum required disk space in GB. |
-| <code>public double WarnDiskSpaceGb { get; init; } = 5.0;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:750](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L750) | Disk space warning threshold in GB. |
-| <code>public double MinMemoryMb { get; init; } = 256;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:753](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L753) | Minimum required memory in MB. |
-| <code>public double WarnMemoryMb { get; init; } = 512;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:756](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L756) | Memory warning threshold in MB. |
-| <code>public int NetworkTimeoutMs { get; init; } = 5000;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:759](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L759) | Network connectivity check timeout in milliseconds. |
-| <code>public bool CheckNetworkConnectivity { get; init; } = true;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:762](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L762) | Whether to check basic network connectivity (DNS, HTTP endpoints). |
-| <code>public bool CheckProviderConnectivity { get; init; } = true;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:765](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L765) | Whether to check provider endpoint connectivity. |
-| <code>public static PreflightConfig Default =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:767](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L767) |  |
-
-## PreflightException
-
-Qualified name: <code>Meridian.Application.Services.PreflightException</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/PreflightChecker.cs:828](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L828).
-
-Exception thrown when pre-flight checks fail.
-
-```csharp
-public sealed class PreflightException : Exception
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PreflightResult Result { get; }</code> | [src/Meridian.Application/Services/PreflightChecker.cs:830](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L830) |  |
-| <code>public PreflightException(string message, PreflightResult result) : base(message);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:832](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L832) |  |

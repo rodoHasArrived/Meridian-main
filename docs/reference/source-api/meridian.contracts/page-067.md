@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetDrillThroughTargetDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1037](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1037).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1042](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1042).
 
 Shared drill-through target for one asset-class coverage row.
 

@@ -75,6 +75,24 @@ A titled, tabular section of a financial report, shared by every renderer.
 public sealed record LedgerReportTable(string Title, IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyList<string>> Rows);
 ```
 
+## LedgerRunAttribution
+
+Qualified name: <code>Meridian.Ledger.LedgerRunAttribution</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/LedgerRunAttribution.cs:4](../../../../src/Meridian.Ledger/LedgerRunAttribution.cs#L4).
+
+Reads retained execution run ownership; an ordinary strategy label is insufficient.
+
+```csharp
+public static class LedgerRunAttribution
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool TryGetTrustedRunId(JournalEntryMetadata metadata, out string? runId);</code> | [src/Meridian.Ledger/LedgerRunAttribution.cs:6](../../../../src/Meridian.Ledger/LedgerRunAttribution.cs#L6) |  |
+
 ## LedgerScheduledReportExportPackageBuilder
 
 Qualified name: <code>Meridian.Ledger.LedgerScheduledReportExportPackageBuilder</code>. Kind: `class`.
@@ -920,15 +938,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[PostingCalculationNotYetConnected(&quot;Superseded, do not connect: management and performance fees post through the recurring fee-accrual journals (FundEconomicsJournalFactory), which also handle hurdle, crystallization and already-accrued deltas, and investor allocations post through the partnership waterfall intake; posting these lines as well would double-count fees on the same expense and payable accounts.&quot;)] public static PartnershipInvestorAllocationProjection Project(PartnershipInvestorAllocationInput input);</code> | [src/Meridian.Ledger/PartnershipInvestorAccountingProjector.cs:18](../../../../src/Meridian.Ledger/PartnershipInvestorAccountingProjector.cs#L18) |  |
-
-## PartnershipInvestorAllocation
-
-Qualified name: <code>Meridian.Ledger.PartnershipInvestorAllocation</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/PartnershipInvestorAllocation.cs:6](../../../../src/Meridian.Ledger/PartnershipInvestorAllocation.cs#L6).
-
-Investor-level profit/loss allocation resulting from a partnership accounting projection.
-
-```csharp
-public sealed record PartnershipInvestorAllocation(PartnershipInvestor Investor, decimal AllocatedProfitOrLoss, LedgerAccount CapitalAccount);
-```

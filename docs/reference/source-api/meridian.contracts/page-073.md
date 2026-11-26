@@ -6,11 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingEntityScopeKindDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportingEntityScopeKindDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1264](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1264).
+
+```csharp
+public enum ReportingEntityScopeKindDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>AllEntities = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1266](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1266) |  |
+| <code>Entity = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1267](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1267) |  |
+| <code>Portfolio = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1268](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1268) |  |
+| <code>Investor = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1269](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1269) |  |
+
 ## ReportingFinalityDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingFinalityDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1298](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1298).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1302](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1302).
 
 ```csharp
 public enum ReportingFinalityDto
@@ -20,14 +39,14 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Draft = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1300](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1300) |  |
-| <code>Final = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1301](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1301) |  |
+| <code>Draft = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1304](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1304) |  |
+| <code>Final = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1305](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1305) |  |
 
 ## ReportingLedgerBookSelectionDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingLedgerBookSelectionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1321](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1321).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1325](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1325).
 
 ```csharp
 public sealed record ReportingLedgerBookSelectionDto(Guid? LedgerBookId = null, string? LedgerBookCode = null);
@@ -37,7 +56,7 @@ public sealed record ReportingLedgerBookSelectionDto(Guid? LedgerBookId = null, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingOutputFormatDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1288](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1288).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1292](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1292).
 
 ```csharp
 public enum ReportingOutputFormatDto
@@ -47,17 +66,17 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Pdf = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1290](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1290) |  |
-| <code>Xlsx = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1291](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1291) |  |
-| <code>Csv = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1292](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1292) |  |
-| <code>EvidenceVault = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1293](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1293) |  |
-| <code>ClientPackage = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1294](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1294) |  |
+| <code>Pdf = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1294](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1294) |  |
+| <code>Xlsx = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1295](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1295) |  |
+| <code>Csv = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1296](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1296) |  |
+| <code>EvidenceVault = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1297](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1297) |  |
+| <code>ClientPackage = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1298](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1298) |  |
 
 ## ReportingRunAuditEntryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingRunAuditEntryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1385](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1385).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1389](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1389).
 
 ```csharp
 public sealed record ReportingRunAuditEntryDto(string RunId, DateTimeOffset TimestampUtc, string Action, string Actor, string Notes);
@@ -67,7 +86,7 @@ public sealed record ReportingRunAuditEntryDto(string RunId, DateTimeOffset Time
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingRunAuditTrailDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1392](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1392).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1396](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1396).
 
 ```csharp
 public sealed record ReportingRunAuditTrailDto(string RunId, string TemplateId, string AsOfDate, string Status, string Trigger, int AttemptCount, IReadOnlyList<ReportingRunAuditEntryDto> Entries, string? ReportWriterDatasetSourceId = null, string? ReportWriterDatasetSourceLabel = null, int? ReportWriterDatasetRowCount = null, VersionedReportTemplateIdDto? ResolvedTemplate = null, ReportingRunParametersDto? ResolvedParameters = null, ReportingRunReadinessDto? Readiness = null);
@@ -77,7 +96,7 @@ public sealed record ReportingRunAuditTrailDto(string RunId, string TemplateId, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingRunParametersDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1325](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1325).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1329](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1329).
 
 ```csharp
 public sealed record ReportingRunParametersDto(ReportingRunScopeDto Scope, string PeriodId, DateOnly AsOfDate, ReportingLedgerBookSelectionDto LedgerBook, ReportingAccountingBasisDto AccountingBasis, string PresentationCurrency, ReportingConsolidationLevelDto ConsolidationLevel, ReportingOutputFormatDto OutputFormat, ReportingFinalityDto Finality, bool IncludeSupportingSchedules, bool IncludeEvidenceAppendix, IReadOnlyDictionary<string, string>? TemplateParameters = null)
@@ -87,13 +106,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyDictionary&lt;string, string&gt; TemplateParameters { get; init; } = TemplateParameters?? new Dictionary&lt;string, string&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1339](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1339) |  |
+| <code>public IReadOnlyDictionary&lt;string, string&gt; TemplateParameters { get; init; } = TemplateParameters?? new Dictionary&lt;string, string&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1343](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1343) |  |
 
 ## ReportingRunReadinessCheckDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingRunReadinessCheckDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1343](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1343).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1347](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1347).
 
 ```csharp
 public sealed record ReportingRunReadinessCheckDto(string CheckId, string Label, ReportingRunReadinessStatusDto Status, string Summary, int IssueCount, bool BlocksDraft, bool BlocksFinal, string? Route = null, IReadOnlyList<string>? EvidenceReferences = null)
@@ -103,13 +122,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = EvidenceReferences??[];</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1354](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1354) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = EvidenceReferences??[];</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1358](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1358) |  |
 
 ## ReportingRunReadinessDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingRunReadinessDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1357](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1357).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1361](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1361).
 
 ```csharp
 public sealed record ReportingRunReadinessDto(string EvaluationId, DateTimeOffset EvaluatedAtUtc, VersionedReportTemplateIdDto ResolvedTemplate, ReportingRunParametersDto ResolvedParameters, ReportingRunReadinessStatusDto Status, bool CanGenerateDraft, bool CanGenerateFinal, IReadOnlyList<ReportingRunReadinessCheckDto> Checks, IReadOnlyList<string> BlockingReasons, string EvidenceHash);
@@ -119,7 +138,7 @@ public sealed record ReportingRunReadinessDto(string EvaluationId, DateTimeOffse
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingRunReadinessStatusDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1305](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1305).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1309](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1309).
 
 ```csharp
 public enum ReportingRunReadinessStatusDto
@@ -129,16 +148,16 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Ready = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1307](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1307) |  |
-| <code>ReviewRequired = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1308](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1308) |  |
-| <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1309](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1309) |  |
-| <code>Unavailable = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1310](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1310) |  |
+| <code>Ready = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1311](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1311) |  |
+| <code>ReviewRequired = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1312](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1312) |  |
+| <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1313](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1313) |  |
+| <code>Unavailable = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1314](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1314) |  |
 
 ## ReportingRunRequestDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingRunRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1369](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1369).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1373](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1373).
 
 ```csharp
 public sealed record ReportingRunRequestDto(string TemplateId, DateOnly? AsOfDate = null, int MaxRetries = 0, string? JobId = null, string? RequestedBy = null, IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null, string? DatasetSourceId = null, string? RetryReason = null, bool AllowRestatement = false, VersionedReportTemplateIdDto? Template = null, ReportingRunParametersDto? Parameters = null);
@@ -148,7 +167,7 @@ public sealed record ReportingRunRequestDto(string TemplateId, DateOnly? AsOfDat
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingRunResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1382](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1382).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1386](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1386).
 
 ```csharp
 public sealed record ReportingRunResultDto(WorkstationReportingRunPayload Run);
@@ -158,7 +177,7 @@ public sealed record ReportingRunResultDto(WorkstationReportingRunPayload Run);
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingRunScopeDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1313](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1313).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1317](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1317).
 
 ```csharp
 public sealed record ReportingRunScopeDto(string FundProfileId, ReportingEntityScopeKindDto EntityScopeKind = ReportingEntityScopeKindDto.AllEntities, string? EntityId = null, string? PortfolioId = null, string? InvestorId = null, LedgerDimensionSetDto? Dimensions = null);
@@ -217,9 +236,9 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingSchedulePeriodCadenceDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1221](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1221).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1225](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1225).
 
-Period-close cadence for a reporting schedule: one run per monthly, quarterly, or annual period, as of the period end and due DueDaysAfterPeriodEnd days later.
+Period-close cadence for a reporting schedule: one run per monthly, quarterly, annual, weekly, or daily period, as of the period end and due DueDaysAfterPeriodEnd days later.
 
 ```csharp
 public sealed record ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto Frequency, int DueDaysAfterPeriodEnd = 0);
@@ -242,6 +261,8 @@ Enum declarations:
 | <code>Monthly = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1212](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1212) |  |
 | <code>Quarterly = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1213](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1213) |  |
 | <code>Annually = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1214](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1214) |  |
+| <code>Weekly = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1216](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1216) | Calendar ISO week ending Sunday; not resolved against ledger accounting periods. |
+| <code>Daily = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1218](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1218) | Calendar day; not resolved against ledger accounting periods. |
 
 ## ReportingScheduleRecordDto
 
@@ -257,7 +278,7 @@ public sealed record ReportingScheduleRecordDto(string ScheduleId, string Templa
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingScheduleRunResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1249](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1249).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1253](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1253).
 
 ```csharp
 public sealed record ReportingScheduleRunResultDto(ReportingScheduleRecordDto Schedule, WorkstationReportingRunPayload Run, IReadOnlyList<ReportPackDeliveryAttemptDto>? DeliveryAttempts = null, IReadOnlyList<string>? DeliveryWarnings = null);
@@ -286,7 +307,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingScheduleUpsertRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1225](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1225).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1229](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1229).
 
 ```csharp
 public sealed record ReportingScheduleUpsertRequestDto(string ScheduleId, string TemplateId, string CronExpression, DateOnly NextAsOfDate, DateTimeOffset DueAtUtc, int MaxRetries, string RequestedBy, string? Description = null, ReportingScheduleStateDto State = ReportingScheduleStateDto.Active, IReadOnlyList<ReportingScheduleDeliveryTargetDto>? DeliveryTargets = null, IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null, string? DatasetSourceId = null, string? BrandingThemeId = null, ReportBrandingThemeDto? BrandingThemeOverride = null, VersionedReportTemplateIdDto? Template = null, ReportingRunParametersDto? RunParameters = null, string? TimeZoneId = null, ReportingSchedulePeriodCadenceDto? PeriodCadence = null);
@@ -357,7 +378,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportPackAuditEventDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1756](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1756).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1760](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1760).
 
 ```csharp
 public sealed record ReportPackAuditEventDto(DateTimeOffset At, string Actor, string Action, ReportPackWorkflowStateDto FromState, ReportPackWorkflowStateDto ToState, string? Note = null);
@@ -367,7 +388,7 @@ public sealed record ReportPackAuditEventDto(DateTimeOffset At, string Actor, st
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportPackChangedLineDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1758](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1758).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1762](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1762).
 
 ```csharp
 public sealed record ReportPackChangedLineDto(string LineKey, string PreviousValue, string CurrentValue, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
@@ -377,7 +398,7 @@ public sealed record ReportPackChangedLineDto(string LineKey, string PreviousVal
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportPackCreateRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1808](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1808).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1812](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1812).
 
 ```csharp
 public sealed record ReportPackCreateRequestDto(string FundProfileId, string FundAccountId, string Period, VersionedReportTemplateIdDto TemplateId, IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null, ReportAccessPolicyDto? AccessPolicy = null);
@@ -536,7 +557,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportPackEvidenceLinkDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1757](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1757).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1761](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1761).
 
 ```csharp
 public sealed record ReportPackEvidenceLinkDto(string EvidenceId, string Label, string? Route, string Source, DateTimeOffset? CapturedAtUtc = null);
@@ -546,7 +567,7 @@ public sealed record ReportPackEvidenceLinkDto(string EvidenceId, string Label, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportPackLineProvenanceDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1759](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1759).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1763](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1763).
 
 ```csharp
 public sealed record ReportPackLineProvenanceDto(string LineKey, string SourceKind, string SourceId, string EvidenceId, string? RunId = null, string? LedgerEntryId = null, string? ReconciliationCaseId = null, string? ReportValue = null, string? SourceSessionId = null, string? ReconciliationRunId = null, string? ProviderEventId = null, string? SecurityMasterId = null, string? SecurityDefinitionId = null, string? ReconciliationOutcome = null, string? ApprovalId = null, string? FinancialRecordExplorerId = null, string? FinancialRecordHref = null);
@@ -556,7 +577,7 @@ public sealed record ReportPackLineProvenanceDto(string LineKey, string SourceKi
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportPackPublicationManifestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1777](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1777).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1781](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1781).
 
 ```csharp
 public sealed record ReportPackPublicationManifestDto(string ManifestId, string RetainedManifestPath, string EvidenceHash, string SignedOffBy, DateTimeOffset SignedOffAt, IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks, ReportBrandingThemeDto? BrandingTheme = null, string? SignedOffRole = null, string? SignOffReason = null, string? SignOffContext = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
@@ -566,7 +587,7 @@ public sealed record ReportPackPublicationManifestDto(string ManifestId, string 
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportPackPublishRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1790](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1790).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1794](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1794).
 
 Request payload for publishing an approved report pack into retained evidence storage.
 
@@ -578,7 +599,7 @@ public sealed record ReportPackPublishRequestDto(string SignedOffBy, string Evid
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportPackRejectionMetadataDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1823](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1823).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1827](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1827).
 
 Durable rejection decision retained on a report pack after review-state rejection.
 
@@ -590,22 +611,10 @@ public sealed record ReportPackRejectionMetadataDto(string Reason, string Actor,
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportPackRejectRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1803](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1803).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1807](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1807).
 
 Request payload for rejecting an in-review report pack with reviewer metadata and supporting evidence.
 
 ```csharp
 public sealed record ReportPackRejectRequestDto(string Reason, string Actor = "", string ActorRole = "", IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
-```
-
-## ReportPackRestatementMetadataDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackRestatementMetadataDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1816](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1816).
-
-Durable metadata captured when a published report pack is restated.
-
-```csharp
-public sealed record ReportPackRestatementMetadataDto(string ReasonCode, string Approver, Guid PriorVersionReportId, IReadOnlyList<ReportPackChangedLineDto> ChangedLines, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
 ```

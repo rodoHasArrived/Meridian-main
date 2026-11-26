@@ -1,11 +1,11 @@
 {
-  "total_files": 1290,
+  "total_files": 1295,
   "orphaned_count": 379,
   "no_heading_count": 231,
   "stale_count": 0,
-  "todo_count": 303,
+  "todo_count": 304,
   "health_score": 86,
-  "signal_digest": "sha256:b452b43317fbb5f538733bc72d7605db29e2b240bc02c632a7a82e0bbf48679b",
+  "signal_digest": "sha256:bafd93aa1f8efaebe4f2137d1471b791fcbb6be9a2c473c7ec6112a2ba756f56",
   "orphaned_files": [
     ".agents/skills/meridian-blueprint/SKILL.md",
     ".agents/skills/meridian-brainstorm/SKILL.md",
@@ -2688,6 +2688,13 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/plans/governed-strategy-oms-execution-plan.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/plans/intercompany-entity-controls.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2709,7 +2716,35 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/plans/security-master-class-plumbing-codegen.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/security-master-integrity-implementation-plan.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/plans/security-master-review-remediation-plan.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/ui-shared-decomposition-inventory.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/ui-shared-decomposition-plan.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4489,7 +4524,7 @@
     {
       "path": "docs/reference/source-api/meridian.contracts/page-051.md",
       "has_heading": true,
-      "todo_count": 0,
+      "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },

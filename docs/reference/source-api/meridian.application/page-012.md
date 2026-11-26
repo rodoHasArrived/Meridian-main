@@ -6,6 +6,70 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PreflightCheckStatus
+
+Qualified name: <code>Meridian.Application.Services.PreflightCheckStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Services/PreflightChecker.cs:818](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L818).
+
+Status of a pre-flight check.
+
+```csharp
+public enum PreflightCheckStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Passed</code> | [src/Meridian.Application/Services/PreflightChecker.cs:820](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L820) |  |
+| <code>Warning</code> | [src/Meridian.Application/Services/PreflightChecker.cs:821](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L821) |  |
+| <code>Failed</code> | [src/Meridian.Application/Services/PreflightChecker.cs:822](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L822) |  |
+
+## PreflightConfig
+
+Qualified name: <code>Meridian.Application.Services.PreflightConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/PreflightChecker.cs:744](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L744).
+
+Configuration for pre-flight checks.
+
+```csharp
+public sealed record PreflightConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public double MinDiskSpaceGb { get; init; } = 1.0;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:747](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L747) | Minimum required disk space in GB. |
+| <code>public double WarnDiskSpaceGb { get; init; } = 5.0;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:750](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L750) | Disk space warning threshold in GB. |
+| <code>public double MinMemoryMb { get; init; } = 256;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:753](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L753) | Minimum required memory in MB. |
+| <code>public double WarnMemoryMb { get; init; } = 512;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:756](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L756) | Memory warning threshold in MB. |
+| <code>public int NetworkTimeoutMs { get; init; } = 5000;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:759](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L759) | Network connectivity check timeout in milliseconds. |
+| <code>public bool CheckNetworkConnectivity { get; init; } = true;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:762](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L762) | Whether to check basic network connectivity (DNS, HTTP endpoints). |
+| <code>public bool CheckProviderConnectivity { get; init; } = true;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:765](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L765) | Whether to check provider endpoint connectivity. |
+| <code>public static PreflightConfig Default =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:767](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L767) |  |
+
+## PreflightException
+
+Qualified name: <code>Meridian.Application.Services.PreflightException</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/PreflightChecker.cs:828](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L828).
+
+Exception thrown when pre-flight checks fail.
+
+```csharp
+public sealed class PreflightException : Exception
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PreflightResult Result { get; }</code> | [src/Meridian.Application/Services/PreflightChecker.cs:830](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L830) |  |
+| <code>public PreflightException(string message, PreflightResult result) : base(message);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:832](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L832) |  |
+
 ## PreflightResult
 
 Qualified name: <code>Meridian.Application.Services.PreflightResult</code>. Kind: `record struct`.
@@ -979,73 +1043,3 @@ Declared public members:
 | <code>public Task&lt;FundOperatingViewDto?&gt; GetFundOperatingViewAsync(FundOperatingStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:76](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L76) |  |
 | <code>public Task&lt;AccountingStructureViewDto&gt; GetAccountingViewAsync(AccountingStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:79](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L79) |  |
 | <code>public Task&lt;GovernanceCashFlowViewDto?&gt; GetCashFlowViewAsync(GovernanceCashFlowQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:82](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L82) |  |
-
-## ConfigStore
-
-Qualified name: <code>Meridian.Application.UI.ConfigStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Http/ConfigStore.cs:32](../../../../src/Meridian.Application/Http/ConfigStore.cs#L32).
-
-Service for loading and persisting application configuration. Provides access to config files, status files, and provider metrics. This is the single implementation shared by console, web, and desktop hosts.
-
-```csharp
-public sealed class ConfigStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static Func&lt;string&gt; DefaultPathResolver { get; set; } = ResolveDefaultPath;</code> | [src/Meridian.Application/Http/ConfigStore.cs:37](../../../../src/Meridian.Application/Http/ConfigStore.cs#L37) | Default path resolver that returns the nearest standard Meridian configuration path. |
-| <code>public string ConfigPath { get; }</code> | [src/Meridian.Application/Http/ConfigStore.cs:48](../../../../src/Meridian.Application/Http/ConfigStore.cs#L48) | Gets the path to the configuration file. |
-| <code>public ConfigStore() : this(null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:53](../../../../src/Meridian.Application/Http/ConfigStore.cs#L53) | Creates a new ConfigStore with the default configuration path resolution. |
-| <code>public ConfigStore(string? configPath, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:60](../../../../src/Meridian.Application/Http/ConfigStore.cs#L60) | Creates a new ConfigStore with a custom configuration path. |
-| <code>public static AppConfig LoadConfig(string path);</code> | [src/Meridian.Application/Http/ConfigStore.cs:86](../../../../src/Meridian.Application/Http/ConfigStore.cs#L86) | Static method to load configuration from a path. Used by ConfigurationService.LoadAndPrepareConfig() for consolidated config loading. |
-| <code>public AppConfig Load() =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:114](../../../../src/Meridian.Application/Http/ConfigStore.cs#L114) | Instance method to load configuration from the configured path. Delegates to the static LoadConfig method. |
-| <code>public ConfigurationChangeStatus GetChangeStatus() =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:117](../../../../src/Meridian.Application/Http/ConfigStore.cs#L117) | Saved setting impacts and exact-revision collector evidence; contains no setting values. |
-| <code>public static ConfigurationChangeImpact GetSettingImpact(string path) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:180](../../../../src/Meridian.Application/Http/ConfigStore.cs#L180) | Conservative activation requirement for a configuration field, also exposed by effective settings. |
-| <code>public AppConfig LoadRequired() =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:183](../../../../src/Meridian.Application/Http/ConfigStore.cs#L183) | Loads existing configuration without substituting defaults when authoritative state cannot be read. |
-| <code>public async Task&lt;T&gt; UpdateRequiredCheckedAsync&lt;T&gt;(Func&lt;AppConfig, CancellationToken, Task&lt;(AppConfig Config, T Result)&gt;&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:205](../../../../src/Meridian.Application/Http/ConfigStore.cs#L205) | Applies a checked update to persisted configuration. The callback may read local evidence under the same lock as the commit. It must not perform network I/O or reenter configuration writes. |
-| <code>public async Task&lt;T&gt; UpdateAsync&lt;T&gt;(Func&lt;AppConfig, (AppConfig Config, T Result)&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:228](../../../../src/Meridian.Application/Http/ConfigStore.cs#L228) | Read-modify-write of the configuration document under the cross-process configuration lock (PRD-002: concurrent configuration writes). The current document is loaded inside the lock, handed to update, and the returned document is written atomically before the lock is released, so two writers editing different sections can never lose each other&#x27;s change the way a Load() + SaveAsync pair can. |
-| <code>public Task UpdateAsync(Func&lt;AppConfig, AppConfig&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:237](../../../../src/Meridian.Application/Http/ConfigStore.cs#L237) | Result-less form of UpdateAsync{T}. |
-| <code>public async Task&lt;IDisposable&gt; AcquireWriteLeaseAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:278](../../../../src/Meridian.Application/Http/ConfigStore.cs#L278) | Holds the cross-process configuration write lock (the .lock sidecar beside the file) until the returned lease is disposed. For writers that persist the document through their own serializer, such as the WPF shell&#x27;s configuration service, so the installed two-process workstation shares one lock with every UpdateAsync{T} caller. Not reentrant. |
-| <code>public async Task SaveAsync(AppConfig cfg, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:300](../../../../src/Meridian.Application/Http/ConfigStore.cs#L300) | Whole-document replacement: the caller&#x27;s snapshot becomes the configuration, last writer wins. Reserved for callers that own the entire document (the CLI &quot;save this configuration&quot; path and the setup wizard&#x27;s generated output). Section-level edits use UpdateAsync{T}, which reads the current document under the same lock and cannot drop a concurrent change. |
-| <code>public async Task SaveFeatureCapabilityOverridesAsync(IReadOnlyDictionary&lt;string, bool&gt; overrides, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:397](../../../../src/Meridian.Application/Http/ConfigStore.cs#L397) |  |
-| <code>public string? TryLoadStatusJson();</code> | [src/Meridian.Application/Http/ConfigStore.cs:478](../../../../src/Meridian.Application/Http/ConfigStore.cs#L478) |  |
-| <code>public string GetStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:495](../../../../src/Meridian.Application/Http/ConfigStore.cs#L495) |  |
-| <code>public string GetBackfillStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:502](../../../../src/Meridian.Application/Http/ConfigStore.cs#L502) |  |
-| <code>public BackfillResult? TryLoadBackfillStatus();</code> | [src/Meridian.Application/Http/ConfigStore.cs:509](../../../../src/Meridian.Application/Http/ConfigStore.cs#L509) |  |
-| <code>public string GetDataRoot(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:516](../../../../src/Meridian.Application/Http/ConfigStore.cs#L516) |  |
-| <code>public string GetProviderMetricsPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:522](../../../../src/Meridian.Application/Http/ConfigStore.cs#L522) |  |
-| <code>public ProviderMetricsStatus? TryLoadProviderMetrics();</code> | [src/Meridian.Application/Http/ConfigStore.cs:529](../../../../src/Meridian.Application/Http/ConfigStore.cs#L529) |  |
-
-## ConfigurationRuntimeAppliers
-
-Qualified name: <code>Meridian.Application.UI.ConfigurationRuntimeAppliers</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:38](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L38).
-
-Process-wide registry of runtime appliers keyed by configuration file path.
-
-```csharp
-public static class ConfigurationRuntimeAppliers
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IDisposable Attach(string configPath, IConfigurationRuntimeApplier applier);</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:44](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L44) | Attaches an applier for a configuration file until the returned handle is disposed. |
-| <code>public static IReadOnlyList&lt;IConfigurationRuntimeApplier&gt; For(string configPath) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:54](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L54) | Appliers currently attached to a configuration file. |
-
-## EffectiveConfigurationEntry
-
-Qualified name: <code>Meridian.Application.UI.EffectiveConfigurationEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Http/EffectiveConfigurationProjection.cs:10](../../../../src/Meridian.Application/Http/EffectiveConfigurationProjection.cs#L10).
-
-A setting&#x27;s displayed value, provenance and activation impact.
-
-```csharp
-public sealed record EffectiveConfigurationEntry(string Key, string Value, string Source, ConfigurationChangeImpact Impact);
-```

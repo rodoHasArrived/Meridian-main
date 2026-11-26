@@ -6,6 +6,61 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingStarterKitStoreOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingStarterKitStoreOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L9).
+
+```csharp
+public sealed record ReportingStarterKitStoreOptions(string SnapshotPath);
+```
+
+## ReportingStateCorruptionException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingStateCorruptionException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingStateCorruptionException.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportingStateCorruptionException.cs#L9).
+
+Raised when durable reporting state cannot be read safely. Reporting state is deliberately fail-closed: callers must not interpret corrupt or inaccessible state as an empty store because doing so could bypass approvals, schedules, or delivery history.
+
+```csharp
+public sealed class ReportingStateCorruptionException : IOException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingStateCorruptionException(string statePath, Exception? innerException = null) : base($&quot;Durable reporting state at &#x27;{statePath}&#x27; is unreadable or corrupt. Operator recovery is required before reporting can continue.&quot;, innerException);</code> | [src/Meridian.Ui.Shared/Services/ReportingStateCorruptionException.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportingStateCorruptionException.cs#L11) |  |
+| <code>public string StatePath { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingStateCorruptionException.cs:17](../../../../src/Meridian.Ui.Shared/Services/ReportingStateCorruptionException.cs#L17) |  |
+
+## ReportLedgerAmountProvenanceService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportLedgerAmountProvenanceService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs:10](../../../../src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs#L10).
+
+Resolves generated amounts exclusively from the report&#x27;s retained ledger population.
+
+```csharp
+public sealed partial class ReportLedgerAmountProvenanceService(IReportingRunStore? runs, PostedLedgerAmountProvenanceService postedAmounts)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsReportSubject(string subjectId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs:14](../../../../src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs#L14) |  |
+| <code>public IReadOnlyList&lt;ReportLedgerAmountBindingDto&gt; List(string runId, ReportAccessQueryContext access);</code> | [src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs#L16) |  |
+| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectId, LedgerAmountScopeDto scope, ReportAccessQueryContext? access, CancellationToken ct = default, AmountPassportIdentityDto? passport = null, IReadOnlyList&lt;AmountPassportRecordDto&gt;? history = null);</code> | [src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs:34](../../../../src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs#L34) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.Passport.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.Passport.cs#L7).
+
+```csharp
+public sealed partial class ReportLedgerAmountProvenanceService
+```
+
 ## ReportPackDeliveryArtifactContent
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackDeliveryArtifactContent</code>. Kind: `record`.
@@ -20,7 +75,7 @@ public sealed record ReportPackDeliveryArtifactContent(string ArtifactName, stri
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackDeliveryService</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:659](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L659).
+Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:666](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L666).
 
 Coordinates report-pack delivery attempts, retained packages, and artifact access.
 
@@ -32,17 +87,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportPackDeliveryService(ReportPackWorkflowService workflowService, IReportPackDeliveryRecordStore? store = null);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:668](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L668) |  |
-| <code>public IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; ListAttempts(int limit = 100);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:678](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L678) |  |
-| <code>public IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; GetHistory(Guid reportId, int limit = 100);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:691](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L691) |  |
-| <code>public ReportPackDeliveryPackageDto GetPackage(Guid reportId, Guid attemptId, string? token);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:704](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L704) |  |
-| <code>public ReportPackDeliveryPackageDto GetPortalPackage(string packageId, string? token);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:713](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L713) |  |
-| <code>public ReportPackDeliveryArtifactContent GetArtifact(Guid reportId, Guid attemptId, string artifactName, string? token);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:734](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L734) |  |
-| <code>public ReportPackDeliveryAttemptDto Deliver(Guid reportId, ReportPackDeliveryRequestDto request, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:777](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L777) |  |
-| <code>public ReportPackDeliveryAttemptDto? DeliverLatestForTemplate(string templateId, ReportingScheduleDeliveryTargetDto target, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:796](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L796) |  |
-| <code>public ReportPackDeliveryAttemptDto DeliverReportingRun(ReportingOutputManifest manifest, ReportingScheduleDeliveryTargetDto target, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:831](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L831) |  |
-| <code>public ReportPackDeliveryAttemptDto RecordFailure(Guid reportId, ReportPackDeliveryFailureRequestDto request, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:885](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L885) |  |
-| <code>public static IReadOnlyList&lt;string&gt; ValidateDeliverablePackage(ReportPackDeliveryAttemptDto? attempt);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:905](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L905) |  |
+| <code>public ReportPackDeliveryService(ReportPackWorkflowService workflowService, IReportPackDeliveryRecordStore? store = null);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:675](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L675) |  |
+| <code>public IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; ListAttempts(int limit = 100);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:685](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L685) |  |
+| <code>public IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; GetHistory(Guid reportId, int limit = 100);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:698](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L698) |  |
+| <code>public ReportPackDeliveryPackageDto GetPackage(Guid reportId, Guid attemptId, string? token);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:711](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L711) |  |
+| <code>public ReportPackDeliveryPackageDto GetPortalPackage(string packageId, string? token);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:720](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L720) |  |
+| <code>public ReportPackDeliveryArtifactContent GetArtifact(Guid reportId, Guid attemptId, string artifactName, string? token);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:741](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L741) |  |
+| <code>public ReportPackDeliveryAttemptDto Deliver(Guid reportId, ReportPackDeliveryRequestDto request, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:784](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L784) |  |
+| <code>public ReportPackDeliveryAttemptDto? DeliverLatestForTemplate(string templateId, ReportingScheduleDeliveryTargetDto target, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:803](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L803) |  |
+| <code>public ReportPackDeliveryAttemptDto DeliverReportingRun(ReportingOutputManifest manifest, ReportingScheduleDeliveryTargetDto target, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:838](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L838) |  |
+| <code>public ReportPackDeliveryAttemptDto RecordFailure(Guid reportId, ReportPackDeliveryFailureRequestDto request, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:892](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L892) |  |
+| <code>public static IReadOnlyList&lt;string&gt; ValidateDeliverablePackage(ReportPackDeliveryAttemptDto? attempt);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:912](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L912) |  |
 
 Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.Evidence.cs:6](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.Evidence.cs#L6).
 
@@ -778,65 +833,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;SecurityInstrumentTermsDto?&gt; ReadAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs:18](../../../../src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs#L18) |  |
 | <code>public static SecurityInstrumentTermsDto Project(SecurityDetailDto detail, SecurityEconomicDefinitionRecord? economic, ISecurityAssetProfileCatalog? profiles, DateTimeOffset retrievedAtUtc);</code> | [src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs:32](../../../../src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs#L32) |  |
-
-## SecurityMasterExceptionCaseworkService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterExceptionCaseworkService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:40](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L40).
-
-Reads Security Master-tagged cases from the authoritative reconciliation queue.
-
-```csharp
-public sealed class SecurityMasterExceptionCaseworkService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string QualityRunId = &quot;security-master-quality&quot;;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:45](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L45) | Canonical run identifier used by genuinely owner-scoped Security Master quality cases. |
-| <code>public SecurityMasterExceptionCaseworkService(IReconciliationBreakQueueRepository? breakQueueRepository, ILogger&lt;SecurityMasterExceptionCaseworkService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:49](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L49) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueItem&gt;&gt; GetAgingExceptionsAsync(ReconciliationBreakQueueScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:60](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L60) | Returns exact-scope open Security Master cases whose SLA deadline has elapsed. |
-
-## SecurityMasterExceptionSlaConfig
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterExceptionSlaConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:10](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L10).
-
-Per-category SLA configuration for Security Master exceptions.
-
-```csharp
-public sealed record SecurityMasterExceptionSlaConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int IdentifierConflictDays { get; init; } = 5;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:13](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L13) | Days to resolve an identifier conflict before SLA breach. |
-| <code>public int IncompleteRecordDays { get; init; } = 3;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:16](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L16) | Days to resolve an incomplete security record before SLA breach. |
-| <code>public int NewSecurityUnresolvedDays { get; init; } = 1;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:19](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L19) | Days to create a new unresolved security before SLA breach. |
-| <code>public int QualityHardBlockDays { get; init; } = 1;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:22](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L22) | Days to resolve a HardBlock data quality violation before SLA breach. |
-| <code>public int QualityErrorDays { get; init; } = 3;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:25](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L25) | Days to resolve an Error data quality violation before SLA breach. |
-| <code>public int QualityWarningDays { get; init; } = 5;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:28](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L28) | Days to resolve a Warning data quality violation before SLA breach. |
-
-## SecurityMasterReconciliationSlaPolicyProvider
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterReconciliationSlaPolicyProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs:13](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs#L13).
-
-Supplies Security Master-specific SLA policies for reconciliation cases, honoring the per-category windows in SecurityMasterExceptionSlaConfig. The configured calendar-day windows are expressed as business-day equivalents so they integrate with the shared ReconciliationSlaCalculator business-hour model (weekends excluded), consistent with the rest of the reconciliation SLA system.
-
-```csharp
-public sealed class SecurityMasterReconciliationSlaPolicyProvider : IReconciliationSlaPolicyProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterReconciliationSlaPolicyProvider(SecurityMasterExceptionSlaConfig? config = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs:22](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs#L22) |  |
-| <code>public ReconciliationSlaPolicy? ResolvePolicy(ReconciliationBreakQueueItem item);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs:25](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs#L25) |  |
