@@ -13,14 +13,15 @@ namespace Meridian.Application.SecurityMaster;
 /// across restarts or multiple instances. State transitions are compare-and-set at the database so
 /// concurrent or out-of-order lifecycle calls are rejected rather than silently advancing the revision.
 /// </summary>
-public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisionStore, ISecurityMasterMutationParticipant
+public sealed partial class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisionStore, ISecurityMasterMutationParticipant
 {
     private const string RevisionsTable = "security_master_revisions";
 
     private const string RevisionColumns =
         "revision_id, security_id, state, actor, created_at, updated_at, workflow_id, " +
         "field_path, field_effective_from, field_justification, fund_profile_id, " +
-        "field_value, field_value_recorded, base_version, field_base_value, field_base_recorded";
+        "field_value, field_value_recorded, base_version, field_base_value, field_base_recorded, " +
+        "drafted_by, submitted_by, repair_batch_id, repair_evidence_id, repair_evidence_sha256, reviewed_impact_receipt_id, reviewed_canonical_version";
 
     private readonly SecurityMasterOptions _options;
 
@@ -60,6 +61,15 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
         => PostgresSecurityMasterMutation.ExecuteAsync(_options, securityId,
             () => CreateDraftCoreAsync(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification, fundProfileId, fieldValue, ct, fieldBase), ct);
 
+    public Task<SecurityMasterRevisionRecord> CreateDraftAsync(
+        Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom,
+        string fieldJustification, string? fundProfileId, SecurityMasterRevisionFieldValue fieldValue,
+        SecurityMasterRevisionFieldBase fieldBase, SecurityMasterRevisionDraftContext context,
+        CancellationToken ct = default)
+        => PostgresSecurityMasterMutation.ExecuteAsync(_options, securityId,
+            () => CreateDraftCoreAsync(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification,
+                fundProfileId, fieldValue, ct, fieldBase, context), ct);
+
     private async Task<SecurityMasterRevisionRecord> CreateDraftCoreAsync(
         Guid securityId,
         string actor,
@@ -69,7 +79,8 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
         string? fundProfileId,
         SecurityMasterRevisionFieldValue? fieldValue,
         CancellationToken ct,
-        SecurityMasterRevisionFieldBase? fieldBase = null)
+        SecurityMasterRevisionFieldBase? fieldBase = null,
+        SecurityMasterRevisionDraftContext? context = null)
     {
         var now = DateTimeOffset.UtcNow;
         var record = new SecurityMasterRevisionRecord(
@@ -87,7 +98,13 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
             FieldValue: fieldValue?.Value,
             FieldValueRecorded: fieldValue is not null,
             BaseVersion: fieldBase?.BaseVersion,
-            FieldBaseSnapshot: fieldBase?.FieldSnapshot);
+            FieldBaseSnapshot: fieldBase?.FieldSnapshot)
+        {
+            DraftedBy = actor,
+            RepairBatchId = context?.RepairBatchId,
+            RepairEvidenceId = context?.EvidenceId,
+            RepairEvidenceSha256 = context?.EvidenceSha256
+        };
 
         await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
         var connection = lease.Connection;
@@ -97,11 +114,13 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
             insert into {Qualified(RevisionsTable)} (
                 revision_id, security_id, state, actor, created_at, updated_at, workflow_id,
                 field_path, field_effective_from, field_justification, fund_profile_id,
-                field_value, field_value_recorded, base_version, field_base_value, field_base_recorded)
+                field_value, field_value_recorded, base_version, field_base_value, field_base_recorded,
+                drafted_by, repair_batch_id, repair_evidence_id, repair_evidence_sha256)
             values (
                 @revision_id, @security_id, @state, @actor, @created_at, @updated_at, @workflow_id,
                 @field_path, @field_effective_from, @field_justification, @fund_profile_id,
-                @field_value, @field_value_recorded, @base_version, @field_base_value, @field_base_recorded);
+                @field_value, @field_value_recorded, @base_version, @field_base_value, @field_base_recorded,
+                @drafted_by, @repair_batch_id, @repair_evidence_id, @repair_evidence_sha256);
             """;
         command.Parameters.AddWithValue("revision_id", record.RevisionId);
         command.Parameters.AddWithValue("security_id", record.SecurityId);
@@ -120,6 +139,10 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
         command.Parameters.AddWithValue("field_base_value", (object?)record.FieldBaseSnapshot ?? DBNull.Value);
         command.Parameters.AddWithValue("field_base_recorded", record.FieldBaseRecorded);
 
+        command.Parameters.AddWithValue("drafted_by", actor);
+        command.Parameters.AddWithValue("repair_batch_id", (object?)record.RepairBatchId ?? DBNull.Value);
+        command.Parameters.AddWithValue("repair_evidence_id", (object?)record.RepairEvidenceId ?? DBNull.Value);
+        command.Parameters.AddWithValue("repair_evidence_sha256", (object?)record.RepairEvidenceSha256 ?? DBNull.Value);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         return record;
     }
@@ -199,7 +222,8 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
             set state = @next,
                 actor = @actor,
                 updated_at = @updated_at,
-                workflow_id = case when @bind_workflow then @workflow_id::uuid else workflow_id end
+                workflow_id = case when @bind_workflow then @workflow_id::uuid else workflow_id end,
+                submitted_by = case when @next = 'Submitted' then coalesce(submitted_by, @actor) else submitted_by end
             where revision_id = @revision_id and state = @expected
             returning {RevisionColumns};
             """;
@@ -246,7 +270,16 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
         FieldValueRecorded: !reader.IsDBNull(12) && reader.GetBoolean(12),
         // A base is read back only when the row recorded one, so a legacy row stays base-less.
         BaseVersion: !reader.IsDBNull(15) && reader.GetBoolean(15) && !reader.IsDBNull(13) ? reader.GetInt64(13) : null,
-        FieldBaseSnapshot: !reader.IsDBNull(15) && reader.GetBoolean(15) && !reader.IsDBNull(14) ? reader.GetString(14) : null);
+        FieldBaseSnapshot: !reader.IsDBNull(15) && reader.GetBoolean(15) && !reader.IsDBNull(14) ? reader.GetString(14) : null)
+    {
+        DraftedBy = reader.IsDBNull(16) ? null : reader.GetString(16),
+        SubmittedBy = reader.IsDBNull(17) ? null : reader.GetString(17),
+        RepairBatchId = reader.IsDBNull(18) ? null : reader.GetGuid(18),
+        RepairEvidenceId = reader.IsDBNull(19) ? null : reader.GetString(19),
+        RepairEvidenceSha256 = reader.IsDBNull(20) ? null : reader.GetString(20),
+        ReviewedImpactReceiptId = reader.IsDBNull(21) ? null : reader.GetString(21),
+        ReviewedCanonicalVersion = reader.IsDBNull(22) ? null : reader.GetInt64(22)
+    };
 
     private string Qualified(string table) => $"{_options.Schema}.{table}";
 }

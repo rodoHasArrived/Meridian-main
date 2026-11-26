@@ -18,8 +18,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService
     /// </summary>
     private void EnsureReviewerIsIndependentOfDrafter(string reviewer, SecurityMasterRevisionRecord draft)
     {
-        if (_requireIndependentReviewer()
-            && string.Equals(reviewer.Trim(), draft.Actor?.Trim(), StringComparison.OrdinalIgnoreCase))
+        if ((_requireIndependentReviewer() || draft.RepairBatchId is not null)
+            && string.Equals(reviewer.Trim(), (draft.DraftedBy ?? draft.Actor)?.Trim(), StringComparison.OrdinalIgnoreCase))
         {
             throw new ArgumentException(
                 "The reviewer must be independent from the actor who drafted the revision; self-approval is not permitted.",
@@ -34,8 +34,10 @@ public sealed partial class SecurityMasterWorkbenchCommandService
     private void EnsureApproverIsIndependentOfSubmitter(ApproveSecurityMasterRevisionRequest request, SecurityMasterRevisionRecord submitted)
     {
         var approvingReviewer = string.IsNullOrWhiteSpace(request.Reviewer) ? request.Actor : request.Reviewer;
-        if (_requireIndependentReviewer()
-            && string.Equals(approvingReviewer?.Trim(), submitted.Actor?.Trim(), StringComparison.OrdinalIgnoreCase))
+        if ((_requireIndependentReviewer() || submitted.RepairBatchId is not null)
+            && (string.Equals(approvingReviewer?.Trim(), (submitted.SubmittedBy ?? submitted.Actor)?.Trim(), StringComparison.OrdinalIgnoreCase)
+                || (!string.IsNullOrWhiteSpace(submitted.DraftedBy)
+                    && string.Equals(approvingReviewer?.Trim(), submitted.DraftedBy.Trim(), StringComparison.OrdinalIgnoreCase))))
         {
             throw new ArgumentException(
                 "The approving reviewer must be independent from the actor who submitted the revision; self-approval is not permitted.",

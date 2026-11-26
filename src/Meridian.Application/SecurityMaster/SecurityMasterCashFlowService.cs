@@ -78,6 +78,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
     /// the host composed none; an unknown calendar id never falls back to weekends only.
     /// </summary>
     internal IBusinessDayCalendarSource? CalendarSource => _calendars;
+    internal SecurityMasterOptions? ImpactGuardOptions => (_store as ISecurityMasterImpactGuardParticipant)?.ImpactGuardOptions;
 
     public Task<SecurityCashFlowSourceDto?> GetCashFlowSourceAsync(Guid securityId, CancellationToken ct = default)
         => _store.GetSourceAsync(securityId, ct);

@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ILedgerBookControlPreflight
+
+Qualified name: <code>Meridian.Storage.Ledger.ILedgerBookControlPreflight</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:52](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L52).
+
+Preflight participants must resolve their own authoritative facts, never caller claims.
+
+```csharp
+public interface ILedgerBookControlPreflight
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string ControlName =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:54](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L54) |  |
+| <code>Task&lt;LedgerBookControlPreflightLease&gt; CheckAsync(LedgerBookRecord book, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:55](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L55) |  |
+
 ## ILedgerBookControlStore
 
 Qualified name: <code>Meridian.Storage.Ledger.ILedgerBookControlStore</code>. Kind: `interface`.
@@ -879,14 +898,4 @@ Source: [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:123](../../../
 
 ```csharp
 public sealed partial class LedgerPeriodCloseSnapshotJsonContext : JsonSerializerContext;
-```
-
-## LedgerPeriodCloseSnapshotPayload
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodCloseSnapshotPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:114](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L114).
-
-```csharp
-public sealed record LedgerPeriodCloseSnapshotPayload(int SchemaVersion, LedgerAccountingPeriod Period, PeriodCloseEventRecord CloseEvent, IReadOnlyList<LedgerJournalEntryRecord> Entries);
 ```

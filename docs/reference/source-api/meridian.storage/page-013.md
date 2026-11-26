@@ -6,6 +6,33 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DateRange
+
+Qualified name: <code>Meridian.Storage.Services.DateRange</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:837](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L837).
+
+```csharp
+public sealed record DateRange(DateTimeOffset Start, DateTimeOffset End);
+```
+
+## DefragOptions
+
+Qualified name: <code>Meridian.Storage.Services.DefragOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:945](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L945).
+
+```csharp
+public sealed record DefragOptions(long MinFileSizeBytes = 1_048_576, int MaxFilesPerMerge = 100, bool PreserveOriginals = false, System.IO.Compression.CompressionLevel TargetCompression = System.IO.Compression.CompressionLevel.Optimal, TimeSpan MaxFileAge = default, bool DryRun = false)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TimeSpan MaxFileAge { get; init; } = MaxFileAge == default? TimeSpan.FromDays(1) : MaxFileAge;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:954](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L954) |  |
+| <code>public DefragOptions() : this(1_048_576);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:956](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L956) |  |
+
 ## DefragResult
 
 Qualified name: <code>Meridian.Storage.Services.DefragResult</code>. Kind: `record`.
@@ -897,33 +924,3 @@ Declared public members:
 | <code>public async Task&lt;AccountSnapshotRecord?&gt; GetLatestSnapshotAsync(string runId, string accountId, PositionSnapshotOwnerScope ownerScope, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:126](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L126) |  |
 | <code>public async IAsyncEnumerable&lt;AccountSnapshotRecord&gt; GetSnapshotHistoryAsync(string runId, string accountId, DateTimeOffset from, DateTimeOffset to, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:149](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L149) |  |
 | <code>public async IAsyncEnumerable&lt;AccountSnapshotRecord&gt; GetSnapshotHistoryAsync(string runId, string accountId, PositionSnapshotOwnerScope ownerScope, DateTimeOffset from, DateTimeOffset to, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:180](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L180) |  |
-
-## LifecycleAction
-
-Qualified name: <code>Meridian.Storage.Services.LifecycleAction</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:453](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L453).
-
-```csharp
-public sealed record LifecycleAction(string FilePath, LifecycleActionType ActionType, StorageTier? CurrentTier, StorageTier? TargetTier, string Reason, long EstimatedSizeBytes, StoragePolicyConfig? Policy = null);
-```
-
-## LifecycleActionType
-
-Qualified name: <code>Meridian.Storage.Services.LifecycleActionType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:462](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L462).
-
-```csharp
-public enum LifecycleActionType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>TierMigration</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:464](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L464) |  |
-| <code>CompressionUpgrade</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:465](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L465) |  |
-| <code>Delete</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:466](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L466) |  |
-| <code>Archive</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:467](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L467) |  |
-| <code>FormatConversion</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:468](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L468) |  |

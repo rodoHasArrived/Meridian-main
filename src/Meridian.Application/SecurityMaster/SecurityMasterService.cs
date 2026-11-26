@@ -246,7 +246,11 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         var economic = assetClassOverride is null && assetTermsOverride is null
             ? SecurityEconomicDefinitionAdapter.ToEconomicRecord(result.Snapshot!.Record, projection)
             : SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
-        var amendmentGate = await AmendmentGates.AcquireAsync(request.SecurityId, ct).ConfigureAwait(false);
+        // A reviewed publication already owns the database stream lock and canonical row. Waiting
+        // for a process gate held by a direct writer waiting for those locks would deadlock across
+        // the semaphore/database boundary. Only that exact durable fenced session bypasses it.
+        KeyedGatePool<Guid>.Releaser? amendmentGate = PostgresSecurityMasterMutation.HasImpactCanonicalFence(_options, request.SecurityId)
+            ? null : await AmendmentGates.AcquireAsync(request.SecurityId, ct).ConfigureAwait(false);
         SecurityProjectionRecord? persistedProjection = null;
         try
         {
@@ -279,13 +283,11 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
                         changedGovernedFields, changedGovernedFields, projection, ct).ConfigureAwait(false);
                     return true;
                 }, ct).ConfigureAwait(false);
-                persistedProjection = await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
             }
             else
             {
                 await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
                 await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
-                persistedProjection = await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
                 // Without a shared transaction, attribution runs IMMEDIATELY after the projection
                 // write (before snapshots and identifier conflict detection) to minimize the window
                 // in which a concurrent reader sees the new value with the old field attribution.
@@ -296,45 +298,60 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         }
         finally
         {
-            amendmentGate.Dispose();
+            amendmentGate?.Dispose();
         }
-        // Open conflicts reconcile against the DURABLY persisted value only: superseding or
-        // refreshing them before AppendAsync's ExpectedVersion check could mutate the governed
-        // conflict queue for an amendment the event store then rejects. Best-effort — a failed
-        // sweep leaves conflicts Open, where the resolve-time guard reconciles them lazily.
-        if (persistedProjection is not null)
-            await TryReconcileOpenFieldConflictsAsync(persistedProjection, _serviceCts.Token).ConfigureAwait(false);
-        // The snapshot and identifier-conflict steps are post-commit too: the event append and
-        // projection upsert are durable, so a canceled request token must not surface a canceled
-        // amendment (the retry would fail concurrency on the advanced version). Local cache and
-        // registry coherence has already been scheduled at the projection commit boundary.
-        await SaveSnapshotIfNeededAsync(economic, _serviceCts.Token).ConfigureAwait(false);
-        if (persistedProjection is not null)
-            await TryRecordConflictsAsync(persistedProjection, request.SecurityId, _serviceCts.Token).ConfigureAwait(false);
-
-        // Enqueue a best-effort corporate action re-fetch so that updated identifiers
-        // (e.g. ticker changes after a merger rename) are reflected in the backfill history.
-        if (_corporateActionFetcher is not null)
+        async Task AfterCanonicalCommitAsync()
         {
-            var ticker = projection.PrimaryIdentifierValue;
-            var securityId = projection.SecurityId;
-            var ct2 = _serviceCts.Token;
-            _ = Task.Run(async () =>
+            persistedProjection = await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
+            // Open conflicts reconcile against the DURABLY persisted value only: superseding or
+            // refreshing them before AppendAsync's ExpectedVersion check could mutate the governed
+            // conflict queue for an amendment the event store then rejects. Best-effort — a failed
+            // sweep leaves conflicts Open, where the resolve-time guard reconciles them lazily.
+            if (persistedProjection is not null)
+                await TryReconcileOpenFieldConflictsAsync(persistedProjection, _serviceCts.Token).ConfigureAwait(false);
+            // The snapshot and identifier-conflict steps are post-commit too: the event append and
+            // projection upsert are durable, so a canceled request token must not surface a canceled
+            // amendment (the retry would fail concurrency on the advanced version). Local cache and
+            // registry coherence has already been scheduled at the projection commit boundary.
+            await SaveSnapshotIfNeededAsync(economic, _serviceCts.Token).ConfigureAwait(false);
+            if (persistedProjection is not null)
+                await TryRecordConflictsAsync(persistedProjection, request.SecurityId, _serviceCts.Token).ConfigureAwait(false);
+
+            // Enqueue a best-effort corporate action re-fetch so that updated identifiers
+            // (e.g. ticker changes after a merger rename) are reflected in the backfill history.
+            if (_corporateActionFetcher is not null)
+            {
+                var ticker = projection.PrimaryIdentifierValue;
+                var securityId = projection.SecurityId;
+                var ct2 = _serviceCts.Token;
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await _corporateActionFetcher.FetchAndPersistAsync(ticker, securityId, ct2)
+                            .ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException) { }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex,
+                            "Background corporate action sync failed after amendment for {Ticker} ({SecurityId})",
+                            ticker, securityId);
+                    }
+                }, ct2);
+            }
+        }
+        if (PostgresSecurityMasterMutation.IsActiveFor(request.SecurityId))
+        {
+            await PostgresSecurityMasterMutation.AfterCommitAsync(request.SecurityId, async () =>
             {
                 try
-                {
-                    await _corporateActionFetcher.FetchAndPersistAsync(ticker, securityId, ct2)
-                        .ConfigureAwait(false);
-                }
-                catch (OperationCanceledException) { }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex,
-                        "Background corporate action sync failed after amendment for {Ticker} ({SecurityId})",
-                        ticker, securityId);
-                }
-            }, ct2);
+                { await AfterCanonicalCommitAsync().ConfigureAwait(false); }
+                catch (Exception exception) { _logger.LogWarning(exception, "Post-commit Security Master coherence for {SecurityId} requires retry.", request.SecurityId); }
+            }).ConfigureAwait(false);
         }
+        else
+            await AfterCanonicalCommitAsync().ConfigureAwait(false);
 
         return SecurityMasterMapping.ToDetail(projection);
     }
@@ -433,27 +450,6 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         }
     }
 
-
-    public Task<SecurityAliasDto> UpsertAliasAsync(UpsertSecurityAliasRequest request, CancellationToken ct = default)
-    {
-        var alias = new SecurityAliasDto(
-            request.AliasId,
-            request.SecurityId,
-            request.AliasKind,
-            request.AliasValue,
-            request.Provider,
-            request.Scope,
-            request.Reason,
-            request.CreatedBy,
-            // Proposed creation stamp. It is applied only to a new alias. For an existing alias ID the
-            // store retains the original creation facts; a material correction appends an alias revision.
-            DateTimeOffset.UtcNow,
-            request.ValidFrom,
-            request.ValidTo,
-            true);
-
-        return UpsertAliasAsyncCore(alias, ct);
-    }
 
     /// <summary>
     /// A projection write may be superseded before it reaches the store. Publish only durable
@@ -1957,27 +1953,6 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == System.Text.Json.JsonValueKind.String
             ? value.GetString()
             : null;
-
-    private async Task<SecurityAliasDto> UpsertAliasAsyncCore(SecurityAliasDto alias, CancellationToken ct)
-    {
-        // The store retains the original created_at/created_by for an existing alias ID, appends an
-        // alias revision for a material correction, and rejects re-pointing an alias ID at another
-        // security. A null result cannot be treated as success because that would tell the caller a
-        // correction landed when no revision was recorded.
-        var persisted = await _store.UpsertAliasAsync(alias, ct).ConfigureAwait(false)
-            ?? throw new SecurityAliasHistoryConflictException(alias.AliasId);
-
-        // Aliases are part of the cached projection and seed the canonical registry, so a new or
-        // corrected alias refreshes both here; other nodes refresh from the store's notification.
-        TryReseedRegistryInBackground();
-        if (_projectionCache is not null
-            && !(await TryRefreshProjectionCacheAsync(alias.SecurityId).ConfigureAwait(false)).Succeeded)
-        {
-            RetryProjectionCacheRefreshInBackground(alias.SecurityId);
-        }
-
-        return persisted;
-    }
 
     private Task SaveSnapshotIfNeededAsync(SecurityEconomicDefinitionRecord definition, CancellationToken ct)
     {

@@ -37,6 +37,12 @@ public interface ISecurityMasterCashFlowService
     Task<SecurityCashFlowBlockerDto?> GetProjectionBlockerAsync(SecurityDetailDto security, BondCalculationContext context, CancellationToken ct = default)
         => throw new NotSupportedException("This cash-flow service does not support read-only capability evaluation.");
 
+    /// <summary>Evaluates selected terms against one frozen source without retaining calculation evidence.</summary>
+    Task<SecurityCashFlowCalculationReceipt> EvaluateProjectionAsync(SecurityDetailDto security,
+        SecurityCashFlowSourceDto source, StructuredCashFlowScenario scenario, BondCalculationContext context,
+        CancellationToken ct = default)
+        => throw new NotSupportedException("This cash-flow service does not support passive full projection evaluation.");
+
     /// <summary>Captures selected inputs for callers to retain with their calculation evidence.</summary>
     Task<SecurityCashFlowCalculationReceipt?> CaptureProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default)
         => Task.FromResult<SecurityCashFlowCalculationReceipt?>(null);

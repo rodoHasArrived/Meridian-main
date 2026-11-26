@@ -57,6 +57,11 @@ public sealed partial class SecurityMasterCashFlowService
             : null);
     }
 
+    public Task<SecurityCashFlowCalculationReceipt> EvaluateProjectionAsync(SecurityDetailDto security,
+        SecurityCashFlowSourceDto source, StructuredCashFlowScenario scenario, BondCalculationContext context,
+        CancellationToken ct = default)
+        => CaptureResolvedProjectionAsync(security, source, scenario, context, ct, retainReceipt: false);
+
     public async Task<SecurityCashFlowCalculationReceipt?> CaptureProjectionAsync(
         Guid securityId, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default)
     {

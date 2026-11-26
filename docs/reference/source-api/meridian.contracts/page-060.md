@@ -461,8 +461,14 @@ Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.c
 Approves a submitted revision through the operations-continuity approval gate.
 
 ```csharp
-public sealed record ApproveSecurityMasterRevisionRequest(Guid SecurityId, Guid RevisionId, Guid WorkflowId, long ExpectedWorkflowVersion, string Actor, string Reviewer, string Rationale, string ReportPackId, string? CorrelationId = null);
+public sealed record ApproveSecurityMasterRevisionRequest(Guid SecurityId, Guid RevisionId, Guid WorkflowId, long ExpectedWorkflowVersion, string Actor, string Reviewer, string Rationale, string ReportPackId, string? CorrelationId = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? ImpactReceiptId { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:109](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L109) |  |
 
 ## ApproveWorkflow
 

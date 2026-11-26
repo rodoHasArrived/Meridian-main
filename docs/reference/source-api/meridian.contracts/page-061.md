@@ -481,6 +481,16 @@ Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:21](../../../../sr
 public sealed record CreateOnboardingWorkspaceRequestDto(string Name, OnboardingScopeDto Scope, OnboardingCriteriaDto Criteria);
 ```
 
+## CreateSecurityMasterImpactPreviewRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.CreateSecurityMasterImpactPreviewRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterImpactPreviewDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/SecurityMasterImpactPreviewDtos.cs#L16).
+
+```csharp
+public sealed record CreateSecurityMasterImpactPreviewRequest(DateTimeOffset AsOf);
+```
+
 ## CrossFundReportingConsolidationDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.CrossFundReportingConsolidationDto</code>. Kind: `record`.
@@ -612,16 +622,4 @@ Upload-template catalog surfaced by the Data workspace before source files are a
 
 ```csharp
 public sealed record DataUploadTemplateCatalogDto(IReadOnlyList<DataUploadTemplateDto> Templates, IReadOnlyList<string> AcceptedFileExtensions, int MaxPreviewRows, long MaxFileBytes, string? WorkbookFileName = null, IReadOnlyList<string>? WorkbookAcceptedFileExtensions = null, long WorkbookMaxFileBytes = 0);
-```
-
-## DataUploadTemplateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.DataUploadTemplateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L24).
-
-A governed source-data template that operators can download and use for upload preview.
-
-```csharp
-public sealed record DataUploadTemplateDto(string TemplateId, string Label, string Description, string DataDomain, string TargetWorkflow, string FileName, string ContentType, string HeaderLine, IReadOnlyList<DataUploadTemplateFieldDto> Fields, IReadOnlyList<string> SampleRows, IReadOnlyList<string> ValidationNotes, IReadOnlyList<string>? SourceKinds = null, IReadOnlyList<string>? SetupChecklist = null, IReadOnlyList<string>? MappingGuidance = null);
 ```

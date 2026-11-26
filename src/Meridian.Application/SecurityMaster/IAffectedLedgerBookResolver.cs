@@ -24,6 +24,11 @@ public interface IAffectedLedgerBookResolver
     /// </summary>
     Task<IReadOnlyList<Guid>> ResolveAsync(
         SecurityMasterDownstreamImpactDto impact, CancellationToken ct = default);
+
+    async Task<SecurityAffectedLedgerBooksResult> ResolveWithEvidenceAsync(
+        SecurityMasterDownstreamImpactDto impact, CancellationToken ct = default)
+        => new(SecurityImpactCompleteness.Unavailable, await ResolveAsync(impact, ct).ConfigureAwait(false),
+            "Legacy resolver; completeness is unverified.", [new("BookCoverageUnknown", "The resolver does not provide authoritative coverage evidence.")]);
 }
 
 /// <summary>
@@ -109,6 +114,31 @@ public sealed class LedgerBookAffectedResolver : IAffectedLedgerBookResolver
                 "Failed to resolve affected ledger books for fund profile {FundProfileId}; period-aware routing will see no books for this publish.",
                 impact.FundProfileId);
             return [];
+        }
+    }
+
+    public async Task<SecurityAffectedLedgerBooksResult> ResolveWithEvidenceAsync(
+        SecurityMasterDownstreamImpactDto impact, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(impact);
+        if (_journalStore is null || !impact.IsScoped || string.IsNullOrWhiteSpace(impact.FundProfileId))
+            return new(SecurityImpactCompleteness.Unavailable, [], "Book coverage is unavailable.",
+                [new("BookCoverageUnavailable", "A durable ledger and an authorized fund scope are required; zero impact has not been established.")]);
+        try
+        {
+            // Enumerate the scoped fund even when workstation run summaries report no exposure.
+            var books = await _journalStore.ListLedgerBooksAsync(fundProfileId: impact.FundProfileId, ct: ct).ConfigureAwait(false);
+            if (books is null)
+                throw new InvalidDataException("The ledger book lookup returned no coverage result.");
+            return new(SecurityImpactCompleteness.Partial, books.Select(static book => book.LedgerBookId).Distinct().ToArray(),
+                "Conservative: all books in the selected fund; exact security and cross-fund exposure are unverified.",
+                [new("ConservativeFundBooks", "Book membership is authoritative; instrument exposure and other funds remain unverified.")]);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "Impact-preview ledger book lookup failed.");
+            return new(SecurityImpactCompleteness.Unavailable, [], "Book lookup failed.",
+                [new("BookLookupFailed", "Ledger book coverage could not be established; this is not zero impact.")]);
         }
     }
 }

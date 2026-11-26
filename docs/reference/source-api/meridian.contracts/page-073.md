@@ -6,6 +6,23 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingFinalityDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportingFinalityDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1298](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1298).
+
+```csharp
+public enum ReportingFinalityDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Draft = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1300](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1300) |  |
+| <code>Final = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1301](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1301) |  |
+
 ## ReportingLedgerBookSelectionDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingLedgerBookSelectionDto</code>. Kind: `record`.
@@ -591,14 +608,4 @@ Durable metadata captured when a published report pack is restated.
 
 ```csharp
 public sealed record ReportPackRestatementMetadataDto(string ReasonCode, string Approver, Guid PriorVersionReportId, IReadOnlyList<ReportPackChangedLineDto> ChangedLines, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
-```
-
-## ReportPackRestateRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackRestateRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1829](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1829).
-
-```csharp
-public sealed record ReportPackRestateRequestDto(string ReasonCode, Guid PriorVersionReportId, IReadOnlyList<ReportPackChangedLineDto> ChangedLines, string? Approver = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 ```
