@@ -125,6 +125,11 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   InvestmentFund is `Fund` / `PooledFund`. Every class except OtherSecurity declares a family.
   Classification is derived on read, so a revision of this table changes current projections
   without rewriting retained events (ADR-022 amendment 2026-11-18).
+  Its classification rows and `keyOf` arms, the `SecurityKind` cases and the
+  `Interop.SecurityMaster` flat-writer dispatch sit between `<generated:id>` markers and are
+  generated from the C# `SecurityAssetClassDeclarations` (W11-PACK-002). Edit the declaration and
+  regenerate with `SecurityClassPlumbingGenerationTests`; see
+  [Adding a Security Master asset class](../../docs/engineering/security-master-adding-an-asset-class.md).
 - `SecurityMasterLegacyUpgrade.proposeStructuredCreditReclassification` builds the report-first
   StructuredCredit proposal for a legacy securitised row (ADR-022): a Bond in a securitised
   subclass, a CustomAsset whose `category` names a securitised product, or an envelope-less legacy

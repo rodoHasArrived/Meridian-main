@@ -279,6 +279,6 @@ Use these documents together when planning or implementing new work:
 
 <!-- readme-tree start -->
 
-The full repository tree is generated in [docs/generated/repository-structure.md](docs/generated/repository-structure.md). For maintained ownership and dependency boundaries, use [docs/architecture/project-structure.md](docs/architecture/project-structure.md) and [docs/architecture/module-map.md](docs/architecture/module-map.md).
+The full repository tree is generated into `docs/generated/repository-structure.md` by CI and by `python build/python/cli/buildctl.py regen --fix --docs-only`; it is not committed. For maintained ownership and dependency boundaries, use [docs/architecture/project-structure.md](docs/architecture/project-structure.md) and [docs/architecture/module-map.md](docs/architecture/module-map.md).
 
 <!-- readme-tree end -->

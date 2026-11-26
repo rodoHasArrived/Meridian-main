@@ -21,7 +21,8 @@ OUTPUTS = (
     "docs/ai/generated/repo-navigation.json",
     "docs/ai/generated/repo-navigation.md",
     "docs/ai/generated/recent-changes.md",
-    "docs/generated/repository-structure.md",
+    # docs/generated/repository-structure.md is a CI-built output (delivery.ci_files), not a
+    # committed snapshot, so maintenance no longer refreshes it.
     "docs/generated/workflows-overview.md",
     "docs/status/doc-health-dashboard.json",
     "docs/status/doc-health-dashboard.md",
@@ -68,11 +69,12 @@ def generate(root: Path, output: Path) -> dict:
         if not git(root, "ls-tree", base, "--", path).startswith(b"100644 blob "):
             raise ValueError(f"Required maintenance output must already be a tracked regular file: {path}")
     commands = (
-        ("generate-ai-navigation.py", "--json-output", OUTPUTS[0], "--markdown-output", OUTPUTS[1],
-         "--recent-changes-output", OUTPUTS[2], "--summary"),
-        ("generate-structure-docs.py", "--output", OUTPUTS[3]),
-        ("generate-structure-docs.py", "--workflows-only", "--output", OUTPUTS[4]),
-        ("generate-health-dashboard.py", "--output", OUTPUTS[6], "--json-output", OUTPUTS[5]),
+        ("generate-ai-navigation.py", "--json-output", "docs/ai/generated/repo-navigation.json",
+         "--markdown-output", "docs/ai/generated/repo-navigation.md",
+         "--recent-changes-output", "docs/ai/generated/recent-changes.md", "--summary"),
+        ("generate-structure-docs.py", "--workflows-only", "--output", "docs/generated/workflows-overview.md"),
+        ("generate-health-dashboard.py", "--output", "docs/status/doc-health-dashboard.md",
+         "--json-output", "docs/status/doc-health-dashboard.json"),
         ("check-ai-navigation-freshness.py", "--max-age-days", "14"),
     )
     for script, *arguments in commands:
