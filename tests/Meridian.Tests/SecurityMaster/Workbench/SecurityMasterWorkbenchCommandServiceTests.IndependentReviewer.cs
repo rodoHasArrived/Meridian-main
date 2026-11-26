@@ -135,7 +135,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InstitutionalProfile_StillLetsAnIndependentReviewerApprove(bool byProductionComposition)
+    public async Task InstitutionalProfile_IndependentReviewerStillNeedsCurrentImpactEvidence(bool byProductionComposition)
     {
         var workflowId = Guid.NewGuid();
         var harness = new Harness(currentVersion: 4, governanceRequirements: GovernanceRequirementsFor.Institutional(byProductionComposition));
@@ -145,9 +145,12 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             .Setup(w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(SuccessTransition(newVersion: 5));
 
-        var result = await harness.Service.ApproveRevisionAsync(Approve(revisionId, workflowId, approver: "ops.reviewer"));
-
-        result.State.Should().Be(SecurityMasterRevisionStateDto.Approved, "the profile requires independence, not a dead end");
+        await harness.Service.Invoking(service => service.ApproveRevisionAsync(Approve(revisionId, workflowId, approver: "ops.reviewer")))
+            .Should().ThrowAsync<SecurityMasterImpactPreviewException>().Where(error => error.Code == "ImpactReceiptRequired");
+        harness.Workflow.Verify(workflow => workflow.ApproveWorkflowAsync(It.IsAny<Guid>(),
+            It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()), Times.Never,
+            "Institutional approval needs independence and reviewed evidence; the receipt-backed positive path is PostgreSQL-tested.");
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
     }
 
     [Fact]

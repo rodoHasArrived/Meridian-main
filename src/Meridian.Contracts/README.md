@@ -37,6 +37,15 @@ its default is omitted so retained legacy payloads remain unknown without rewrit
 `AdjustedHistoricalBar` declares primary and optional adjusted sets independently. Raw and exact-basis
 requests reject unavailable sets; partial adjusted OHLC never borrows primary components. See
 [historical provider price bases](../../docs/development/provider-implementation.md#historical-price-bases).
+
+`SecurityMasterImpactPreviewReceipt` and its companions describe retained edit-impact evidence:
+tenant/company scope, exact revision and canonical version, previous and proposed terms, book
+coverage with an explicit `Complete`/`Partial`/`Unavailable` completeness, periods, report impact,
+optional before/after calculation receipts and typed issues. Approve and publish requests accept an
+optional `ImpactReceiptId`; omitted requests keep their previous JSON shape.
+`ISecurityMasterCashFlowService.EvaluateProjectionAsync` evaluates selected terms against one frozen
+source without retaining calculation evidence. These contracts add no posting authority.
+
 `SecurityAssetClassModules` composes the 32 built-in `SecurityAssetClassModule` contributions under
 `SecurityMaster/AssetModules/`. Each class module owns its descriptor (including its terms-upgrade,
 term-role and accounting declarations), its root and nested term schema, its rate-field

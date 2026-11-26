@@ -126,12 +126,14 @@ export interface ApproveSecurityMasterRevisionInput {
   rationale: string;
   reportPackId: string;
   correlationId?: string | null;
+  impactReceiptId?: string | null;
 }
 
 /** Publish an approved revision. `actor` is server-derived. */
 export interface PublishSecurityMasterRevisionInput {
   revisionId: string;
   correlationId?: string | null;
+  impactReceiptId?: string | null;
 }
 
 export function updateSecurityField(
@@ -185,6 +187,7 @@ export function publishSecurityMasterRevision(
 export type WorkbenchWriteError =
   | { kind: "version-conflict"; currentVersion: number | null }
   | { kind: "revision-state-conflict"; message: string | null }
+  | { kind: "impact-review"; code: string; message: string | null }
   | { kind: "workflow-required" }
   | { kind: "unprocessable"; message: string | null }
   | { kind: "forbidden" }
@@ -193,6 +196,8 @@ export type WorkbenchWriteError =
 
 interface WorkbenchErrorBody {
   error?: unknown;
+  title?: unknown;
+  detail?: unknown;
   currentVersion?: unknown;
   message?: unknown;
 }
@@ -219,8 +224,9 @@ export function classifyWorkbenchWriteError(error: unknown): WorkbenchWriteError
   }
 
   const body = parseErrorBody(error.responseBody);
-  const code = typeof body.error === "string" ? body.error : null;
-  const message = typeof body.message === "string" ? body.message : error.detail;
+  const code = typeof body.error === "string" ? body.error : typeof body.title === "string" ? body.title : null;
+  const message = typeof body.message === "string" ? body.message : typeof body.detail === "string" ? body.detail : error.detail;
+  if (code?.startsWith("Impact")) return { kind: "impact-review", code, message };
 
   switch (error.status) {
     case 401:

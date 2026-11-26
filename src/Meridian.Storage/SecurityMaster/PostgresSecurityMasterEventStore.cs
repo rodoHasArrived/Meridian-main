@@ -123,8 +123,8 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
 
     public async Task<IReadOnlyList<SecurityMasterEventEnvelope>> LoadAsync(Guid securityId, CancellationToken ct = default)
     {
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await using var command = connection.CreateCommand();
+        await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
+        await using var command = lease.Connection.CreateCommand();
         command.CommandText =
             $"""
             select global_sequence,

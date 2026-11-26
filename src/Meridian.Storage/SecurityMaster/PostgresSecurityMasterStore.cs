@@ -266,6 +266,11 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
 
     public async Task<SecurityProjectionRecord?> GetProjectionAsync(Guid securityId, CancellationToken ct = default)
     {
+        if (PostgresSecurityMasterMutation.IsActiveFor(_options, securityId))
+        {
+            await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
+            return await GetProjectionCoreAsync(lease.Connection, securityId, ct).ConfigureAwait(false);
+        }
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         return await GetProjectionCoreAsync(connection, securityId, ct).ConfigureAwait(false);
     }

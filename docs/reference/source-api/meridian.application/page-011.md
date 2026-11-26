@@ -6,6 +6,220 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterWorkbenchOptions
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterWorkbenchOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:33](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L33).
+
+Runtime configuration for the Security Master Passport Workbench governed-write surface. Use Microsoft.Extensions.Options.IOptionsMonitor{TOptions} so the source-precedence ladder hot-reloads.
+
+```csharp
+public sealed class SecurityMasterWorkbenchOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SectionName = &quot;SecurityMasterWorkbench&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:35](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L35) |  |
+| <code>public List&lt;string&gt; SourcePrecedence { get; init; } = [];</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:44](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L44) | Source precedence ladder, highest authority first, using real source-system identifiers. The first non-operator entry is treated as the golden-copy source unless GoldenCopySource is set explicitly. Empty by default: until this is bound from configuration with the deployment&#x27;s real source systems, the policy applies no presumptive ranking and falls through to freshness then confidence, so a placeholder ladder can never reverse the actual golden copy. |
+| <code>public string? GoldenCopySource { get; init; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:47](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L47) | Explicit golden-copy source; when null it is derived from SourcePrecedence. |
+| <code>public SecurityMasterGovernanceProfile GovernanceProfile { get; init; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:74](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L74) | The governance profile this deployment declares. Default SecurityMasterGovernanceProfile.Standard. The effective profile is SecurityMasterGovernanceProfile.Institutional when this says so or when the host is a production composition (ProductionServiceRegistrationPolicy.IsProductionComposition). |
+| <code>public bool RequireIndependentReviewer { get; init; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:86](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L86) | When true, a governed field-edit revision cannot be reviewed by the actor who drafted it or approved by the actor who submitted it (submission already refuses a reviewer equal to the submitter). The code default stays false because the supported local workstation is single-operator and one actor could then never approve anything; the sample configuration turns it on, and the Institutional GovernanceProfile forces it on. Read at each submit and approve, so it hot-reloads. Revisions submitted before the drafter check existed are not rechecked against their drafter, whose identity a submitted revision no longer carries. |
+| <code>public bool RequireIndependentProfileApprover { get; init; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:95](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L95) | When true, approving an asset-profile version is refused if the approver is an actor who drafted it. The code default stays false for the same single-operator reason as RequireIndependentReviewer; the Institutional GovernanceProfile forces it on. Separate from RequireIndependentReviewer, which governs field-edit revisions. A legacy draft without a recorded drafter is checked against its recorded author. |
+| <code>public int MaxBulkResolveBatch { get; init; } = 200;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:98](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L98) | Maximum number of conflicts a single bulk-resolve request may carry. |
+| <code>public bool RequireGovernedTermAmendments { get; init; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:110](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L110) | When true, the DIRECT term-amendment endpoints — the generic amend route, the bespoke preferred/convertible equity PATCH routes, and the legacy /equities/{securityId}/preferred-terms alias — are refused with guidance to use the governed workbench Draft → Submitted → Approved → Published path, so every operator term correction passes maker-checker before it reaches the golden record. The code default stays false: the supported local workstation is single-operator, where a governed edit could never be approved. The Institutional GovernanceProfile forces it on. Governed publication and provider/system ingest use separate typed write paths this does not block. |
+
+## SecurityMasterWriteAuthority
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterWriteAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs:9](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs#L9).
+
+Source-system identifiers that name an operator surface rather than a provider or system feed. The system-ingest path (ISecurityMasterAmender) refuses them so operator edits stay on the operator-direct path (governed by SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments) or the governed publication path.
+
+```csharp
+public static class SecurityMasterWriteAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string WorkbenchSourceSystem = &quot;operator-workbench&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs#L12) | Source system the governed workbench publication stamps on its merged amendment. |
+| <code>public const string DesktopEditorSourceSystem = &quot;WPF-UI&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs#L15) | Source system the WPF Security Master editor stamps on a direct amendment. |
+| <code>public const string WorkstationHttpSourceSystem = &quot;workstation-http&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs#L18) | Source system the workstation HTTP surface stamps on writes it originates. |
+| <code>public static bool IsOperatorSourceSystem(string? sourceSystem) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs:28](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs#L28) | True when sourceSystem names an operator surface. |
+
+## SecurityMasterWriteRefusedException
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterWriteRefusedException</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs:19](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs#L19).
+
+A Security Master create or term amendment refused for what the request asked: terms this node reads but does not write (ADR-024), a missing or malformed term, a vocabulary value, an F# domain validation error, a profile failing catalog validation, or a round-trip guard whose reason names the repair. The message is written for the caller; the direct create and term-amendment routes return it as the 400 Problem Details detail.
+
+```csharp
+public sealed class SecurityMasterWriteRefusedException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterWriteRefusedException(string message) : base(message);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs:21](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs#L21) |  |
+| <code>public SecurityMasterWriteRefusedException(string message, Exception innerException) : base(message, innerException);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs:26](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs#L26) |  |
+
+## SecurityProjectionChangeOutcome
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityProjectionChangeOutcome</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:9](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L9).
+
+What SecurityMasterProjectionChangeHandler did with one notification.
+
+```csharp
+public enum SecurityProjectionChangeOutcome
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Malformed</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L12) | The payload could not be parsed; it was logged and ignored. |
+| <code>IgnoredOwnNode</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L15) | The notification came from this node, whose own write path already updated the cache. |
+| <code>Refreshed</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L18) | The security was re-read from the durable store and installed. |
+| <code>KeptNewer</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:21](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L21) | The durable re-read was older than the cached record, which was kept. |
+| <code>Evicted</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:24](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L24) | The security is gone from the durable store and was evicted (or was never cached). |
+| <code>Resynchronized</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:27](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L27) | The whole cache was re-synchronised from the durable store. |
+| <code>Failed</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:30](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L30) | The durable re-read failed; the listener schedules a full resynchronization retry. |
+
+## SecurityProjectionRefreshResult
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityProjectionRefreshResult</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:100](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L100).
+
+Outcome of SecurityMasterProjectionService.RefreshSecurityAsync.
+
+```csharp
+public enum SecurityProjectionRefreshResult
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Refreshed</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:103](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L103) | The durable record was installed in the cache. |
+| <code>KeptNewer</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:106](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L106) | The cache already held a newer version; the durable read did not downgrade it. |
+| <code>Evicted</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:109](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L109) | The durable store no longer holds the security; the cached entry was evicted. |
+| <code>NotFound</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:112](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L112) | Neither the durable store nor the cache holds the security. |
+
+## SecurityResolver
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:10](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L10).
+
+Resolves security identifiers against canonical Security Master records.
+
+```csharp
+public sealed class SecurityResolver : ISecurityResolver # pragma warning restore CS0618
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityResolver(ISecurityMasterStore store);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L15) |  |
+| <code>public async Task&lt;Guid?&gt; ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:20](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L20) |  |
+
+## StaleFieldProposalException
+
+Qualified name: <code>Meridian.Application.SecurityMaster.StaleFieldProposalException</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:9](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L9).
+
+An approved field-edit revision whose canonical field changed after the proposal was drafted. Publishing it would overwrite a newer value the reviewer never saw, so publication refuses it. The revision stays Approved, and retrying will not help. Discard it and stage the edit again against the current value. The workbench publish route answers 409.
+
+```csharp
+public sealed class StaleFieldProposalException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StaleFieldProposalException(Guid securityId, Guid revisionId, string fieldPath, long baseVersion, long currentVersion) : base($&quot;Revision &#x27;{revisionId:D}&#x27; proposes &#x27;{fieldPath}&#x27; against security &#x27;{securityId:D}&#x27; version {baseVersion}, &quot; + $&quot;but that field changed by version {currentVersion}. Publishing it would overwrite the newer value; &quot; + &quot;discard the revision and stage the edit again against the current value.&quot;);</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:11](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L11) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:23](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L23) |  |
+| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:25](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L25) |  |
+| <code>public string FieldPath { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:27](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L27) |  |
+| <code>public long BaseVersion { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:29](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L29) |  |
+| <code>public long CurrentVersion { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:31](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L31) |  |
+
+## SymbolResolutionMismatchTracker
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SymbolResolutionMismatchTracker</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:10](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L10).
+
+Process-local, bounded comparison evidence for the Legacy-to-Canonical migration. The durable registry remains the symbol source of truth; this tracker exposes only recent operational disagreements for rollout inspection.
+
+```csharp
+public sealed class SymbolResolutionMismatchTracker : ISymbolResolutionMismatchReader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolResolutionMismatchTracker(int capacity = DefaultCapacity);</code> | [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:18](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L18) |  |
+| <code>public long TotalCount =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:24](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L24) |  |
+| <code>public void Report(SymbolResolutionMismatch mismatch);</code> | [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:26](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L26) |  |
+| <code>public IReadOnlyList&lt;SymbolResolutionMismatch&gt; GetRecent();</code> | [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:39](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L39) |  |
+
+## AssetClassValidatorRegistry
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.AssetClassValidatorRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:24](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L24).
+
+Indexes asset-class validators and resolves the validator for a requested asset class.
+
+```csharp
+public sealed class AssetClassValidatorRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AssetClassValidatorRegistry(IEnumerable&lt;ISecurityAssetClassValidator&gt; validators);</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:28](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L28) |  |
+| <code>public IReadOnlyCollection&lt;string&gt; SupportedAssetClasses =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:38](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L38) |  |
+| <code>public bool TryGetValidator(string assetClass, out ISecurityAssetClassValidator validator) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:40](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L40) |  |
+| <code>public static AssetClassValidatorRegistry CreateDefault() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:43](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L43) |  |
+| <code>public static AssetClassValidatorRegistry CreateDefault(ISecurityAssetProfileCatalog assetProfileCatalog) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:50](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L50) | The default registry: every class&#x27;s hand-written semantic rules composed with the rules generated from its term schema (SchemaTermsAssetClassValidator). |
+
+## FileSecurityValidationSnapshotStore
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.FileSecurityValidationSnapshotStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:31](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L31).
+
+File-backed retention of security-master validation snapshots.
+
+```csharp
+public sealed class FileSecurityValidationSnapshotStore : ISecurityValidationSnapshotStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileSecurityValidationSnapshotStore(StorageOptions storageOptions);</code> | [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:35](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L35) |  |
+| <code>public async Task&lt;SecurityValidationSnapshotDto&gt; RecordAsync(SecurityValidationReportDto report, SecurityValidationSnapshotRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:45](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L45) |  |
+
 ## ISecurityAssetClassValidator
 
 Qualified name: <code>Meridian.Application.SecurityMaster.Validation.ISecurityAssetClassValidator</code>. Kind: `interface`.
@@ -788,187 +1002,3 @@ Source: [src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs:7]
 ```csharp
 public sealed record ExecutionSimulationRequest(IReadOnlyList<string> Symbols, DateOnly? FromDate, DateOnly? ToDate, TimeOnly? WindowStart, TimeOnly? WindowEnd, bool DryRun, string OutputDirectory);
 ```
-
-## ExecutionSimulationResult
-
-Qualified name: <code>Meridian.Application.Services.ExecutionSimulationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs:16](../../../../src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs#L16).
-
-```csharp
-public sealed record ExecutionSimulationResult(string OutputDirectory, int SymbolsProcessed, int EventCount, bool DryRun);
-```
-
-## FirstTimeConfigOptions
-
-Qualified name: <code>Meridian.Application.Services.FirstTimeConfigOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:955](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L955).
-
-Options for first-time configuration generation.
-
-```csharp
-public sealed record FirstTimeConfigOptions(UseCase UseCase = UseCase.Development, SymbolPreset SymbolPreset = SymbolPreset.USMajorIndices, bool EnableBackfill = true, bool EnableCompression = true);
-```
-
-## GcStats
-
-Qualified name: <code>Meridian.Application.Services.GcStats</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:750](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L750).
-
-Garbage collection statistics.
-
-```csharp
-public sealed class GcStats
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int Gen0 { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:752](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L752) |  |
-| <code>public int Gen1 { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:753](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L753) |  |
-| <code>public int Gen2 { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:754](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L754) |  |
-
-## IExecutionSimulationOrchestrator
-
-Qualified name: <code>Meridian.Application.Services.IExecutionSimulationOrchestrator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs:42](../../../../src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs#L42).
-
-Defines historical-data execution simulation for a supplied simulation request.
-
-```csharp
-public interface IExecutionSimulationOrchestrator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;ExecutionSimulationResult&gt; RunAsync(ExecutionSimulationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs:44](../../../../src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs#L44) |  |
-
-## PreflightChecker
-
-Qualified name: <code>Meridian.Application.Services.PreflightChecker</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/PreflightChecker.cs:19](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L19).
-
-Performs comprehensive pre-flight checks before starting data collection. Verifies disk space, network connectivity, file permissions, and system resources to catch issues early and provide actionable error messages.
-
-```csharp
-public sealed class PreflightChecker
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PreflightChecker(PreflightConfig? config = null);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:24](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L24) |  |
-| <code>public async Task&lt;PreflightResult&gt; RunChecksAsync(string dataRoot, CancellationToken ct = default, DataSourceKind? activeDataSource = null);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:36](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L36) | Runs all pre-flight checks and returns a comprehensive result. |
-| <code>public async Task&lt;PreflightResult&gt; RunChecksAsync(string dataRoot, string? activeDataSource, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:44](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L44) | Runs all pre-flight checks including provider credential validation. |
-| <code>public async Task EnsureReadyAsync(string dataRoot, CancellationToken ct = default, DataSourceKind? activeDataSource = null);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:112](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L112) | Runs checks and throws if any critical check fails. |
-| <code>public PreflightCheckResult ValidateProviderCredentials(string activeDataSource);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:552](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L552) | Validates that all enabled providers have their required credentials configured. Returns a detailed table of missing credentials with the exact env var names to set. |
-
-## PreflightCheckResult
-
-Qualified name: <code>Meridian.Application.Services.PreflightCheckResult</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Application/Services/PreflightChecker.cs:797](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L797).
-
-Result of a single pre-flight check.
-
-```csharp
-public readonly record struct PreflightCheckResult(string Name, PreflightCheckStatus Status, string Message, string? Remediation, IReadOnlyDictionary<string, object>? Details)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static PreflightCheckResult Passed(string name, string message, Dictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:805](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L805) |  |
-| <code>public static PreflightCheckResult Warning(string name, string message, string? remediation = null, Dictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:808](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L808) |  |
-| <code>public static PreflightCheckResult Failed(string name, string message, string? remediation = null, Dictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:811](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L811) |  |
-
-## PreflightCheckStatus
-
-Qualified name: <code>Meridian.Application.Services.PreflightCheckStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Services/PreflightChecker.cs:818](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L818).
-
-Status of a pre-flight check.
-
-```csharp
-public enum PreflightCheckStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Passed</code> | [src/Meridian.Application/Services/PreflightChecker.cs:820](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L820) |  |
-| <code>Warning</code> | [src/Meridian.Application/Services/PreflightChecker.cs:821](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L821) |  |
-| <code>Failed</code> | [src/Meridian.Application/Services/PreflightChecker.cs:822](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L822) |  |
-
-## PreflightConfig
-
-Qualified name: <code>Meridian.Application.Services.PreflightConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/PreflightChecker.cs:744](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L744).
-
-Configuration for pre-flight checks.
-
-```csharp
-public sealed record PreflightConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public double MinDiskSpaceGb { get; init; } = 1.0;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:747](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L747) | Minimum required disk space in GB. |
-| <code>public double WarnDiskSpaceGb { get; init; } = 5.0;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:750](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L750) | Disk space warning threshold in GB. |
-| <code>public double MinMemoryMb { get; init; } = 256;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:753](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L753) | Minimum required memory in MB. |
-| <code>public double WarnMemoryMb { get; init; } = 512;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:756](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L756) | Memory warning threshold in MB. |
-| <code>public int NetworkTimeoutMs { get; init; } = 5000;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:759](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L759) | Network connectivity check timeout in milliseconds. |
-| <code>public bool CheckNetworkConnectivity { get; init; } = true;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:762](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L762) | Whether to check basic network connectivity (DNS, HTTP endpoints). |
-| <code>public bool CheckProviderConnectivity { get; init; } = true;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:765](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L765) | Whether to check provider endpoint connectivity. |
-| <code>public static PreflightConfig Default =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:767](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L767) |  |
-
-## PreflightException
-
-Qualified name: <code>Meridian.Application.Services.PreflightException</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/PreflightChecker.cs:828](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L828).
-
-Exception thrown when pre-flight checks fail.
-
-```csharp
-public sealed class PreflightException : Exception
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PreflightResult Result { get; }</code> | [src/Meridian.Application/Services/PreflightChecker.cs:830](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L830) |  |
-| <code>public PreflightException(string message, PreflightResult result) : base(message);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:832](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L832) |  |
-
-## PreflightResult
-
-Qualified name: <code>Meridian.Application.Services.PreflightResult</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Application/Services/PreflightChecker.cs:773](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L773).
-
-Result of all pre-flight checks.
-
-```csharp
-public readonly record struct PreflightResult(bool AllChecksPassed, bool HasWarnings, IReadOnlyList<PreflightCheckResult> Checks, double TotalDurationMs, DateTimeOffset CheckedAt)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string GetSummary();</code> | [src/Meridian.Application/Services/PreflightChecker.cs:784](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L784) | Gets a summary string of the pre-flight results. |
