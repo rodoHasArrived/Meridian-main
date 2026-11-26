@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 8 of 8
 
-Objects 561-614 of 614. References crossing pages remain available in the dependency manifest.
+Objects 561-615 of 615. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -105,6 +105,8 @@ classDiagram
         +string ModelVersion
         +SecurityValuationObservability Observability
         +DateTimeOffset? ObservedAsOf
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityVanillaSwapProfile["SecurityVanillaSwapProfile"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityVersionedScalarTerms["SecurityVersionedScalarTerms"] {
     }

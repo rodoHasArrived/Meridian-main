@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MultiAssetEvidenceRequirementDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetEvidenceRequirementDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1016](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1016).
+
+Asset-class-specific evidence requirement rendered by Portfolio, Accounting, and desktop workstations.
+
+```csharp
+public sealed record MultiAssetEvidenceRequirementDto(string RequirementId, string Label, string Category, string Status, string EvidenceRoute, bool Required);
+```
+
 ## MultiAssetPackCoverageDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetPackCoverageDto</code>. Kind: `record`.
@@ -596,14 +608,4 @@ Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:748](../
 
 ```csharp
 public sealed record OperationsApprovalPolicyMatrixDto(string PolicyId, string Version, DateTimeOffset GeneratedAtUtc, IReadOnlyList<OperationsApprovalPolicyMatrixRowDto> Rows);
-```
-
-## OperationsApprovalPolicyMatrixRowDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalPolicyMatrixRowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:754](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L754).
-
-```csharp
-public sealed record OperationsApprovalPolicyMatrixRowDto(string PolicyKey, string WorkflowArea, string Action, OperationsGateKeyDto Gate, string Trigger, string RequiredPermission, string SubmitterRole, string ReviewerRole, int RequiredDistinctApprovals, bool RequiresIndependentReviewer, bool RequiresReportPack, bool RequiresChecklistControlApprovals, string EvidenceRequirement, string AuditEventType, string Route, string Severity);
 ```

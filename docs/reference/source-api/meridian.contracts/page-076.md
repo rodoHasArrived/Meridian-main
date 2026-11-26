@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterOperatorMetadataDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOperatorMetadataDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:557](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L557).
+
+```csharp
+public sealed record SecurityMasterOperatorMetadataDto(string MetadataId, string VendorName, DataVendorDataType DataType, string SourceCategory, string ExpectedRefreshCadence, int? DefaultMaxDaysStale, bool RequiresDirectClientContract, string? OperatorMetadata, string Summary);
+```
+
 ## SecurityMasterProviderSymbolMappingDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterProviderSymbolMappingDto</code>. Kind: `record`.
@@ -658,14 +668,4 @@ Per-kind record breakdown so operators importing a mixed statement see exactly w
 
 ```csharp
 public sealed record StatementKindSummaryDto(string Kind, int RecordCount, IReadOnlyList<StatementRecordPreviewDto> SampleRecords);
-```
-
-## StatementMappingProfileActivityCodeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementMappingProfileActivityCodeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L44).
-
-```csharp
-public sealed record StatementMappingProfileActivityCodeDto(string SourceCode, string CanonicalActivityType);
 ```
