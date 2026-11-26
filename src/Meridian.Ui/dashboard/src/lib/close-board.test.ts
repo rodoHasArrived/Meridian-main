@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { buildCloseBoard, closeOffsetLabel } from "@/lib/close-board";
 import type { CloseTask } from "@/types";

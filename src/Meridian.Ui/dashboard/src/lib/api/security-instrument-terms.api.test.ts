@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { apiGetJson } from "@/lib/api";
 import { getSecurityInstrumentTerms } from "./security-instrument-terms.api";
 import { instrumentTermField, instrumentTermsFixture } from "@/test/security-instrument-terms-fixtures";

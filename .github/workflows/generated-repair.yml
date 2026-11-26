@@ -1,13 +1,26 @@
 name: Generated Repair
 # Target events request a fresh default-branch dispatch. Only dispatch metadata
 # bound to its server-owned execution revision can authorize candidate publication.
-run-name: "generated-repair-v2 pr=${{ github.event.pull_request.number || inputs.pr_number }} head=${{ github.event.pull_request.head.sha || inputs.head_sha }} base=${{ github.event.pull_request.base.sha || inputs.base_sha }} attempt=${{ inputs.attempt || '0' }} root=${{ inputs.root_sha || github.event.pull_request.head.sha || inputs.head_sha }} workflow_sha=${{ github.workflow_sha }} ref=${{ github.ref }}"
+run-name: "generated-repair-v2 pr=${{ github.event.pull_request.number || github.event.workflow_run.pull_requests[0].number || inputs.pr_number }} head=${{ github.event.pull_request.head.sha || github.event.workflow_run.head_sha || inputs.head_sha }} base=${{ github.event.pull_request.base.sha || github.event.workflow_run.pull_requests[0].base.sha || inputs.base_sha }} attempt=${{ inputs.attempt || '0' }} root=${{ inputs.root_sha || github.event.pull_request.head.sha || github.event.workflow_run.head_sha || inputs.head_sha }} workflow_sha=${{ github.workflow_sha }} ref=${{ github.ref }}"
 
+# Runner demand (ci-health-013): a pull request update no longer starts a repair by itself.
+# A pull request is repaired when
+#   - it carries the generated-repair label (pull_request_target), or
+#   - its Meridian CI run failed because verify-docs found stale generated files
+#     (workflow_run; the verify-docs step "Flag stale generated files for Generated Repair"),
+# and never while it is a draft. Default-branch dispatches (publisher retries, main-advance
+# refresh, manual runs) are unchanged. The job condition below is evaluated without a
+# runner; the trusted publisher applies the same rules before it requests any dispatch.
 on:
   # Unlike pull_request, this starts even when generated files conflict. This
   # workflow never receives write permissions, environment secrets, or an App key.
   pull_request_target:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, ready_for_review, labeled]
+  workflow_run:
+    workflows: [Meridian CI]
+    types: [completed]
+    # Pull request runs only: main pushes and merge-queue groups never need a PR repair.
+    branches-ignore: [main, "gh-readonly-queue/**"]
   workflow_dispatch:
     inputs:
       pr_number:
@@ -32,13 +45,26 @@ permissions:
   actions: read
   pull-requests: read
 
-concurrency:
-  group: generated-repair-${{ github.event.pull_request.number || inputs.pr_number }}
-  cancel-in-progress: true
-
 jobs:
   generate:
     name: Prepare generated repair patch
+    # Keep in step with generated_repair.relay_skip_reason, which the publisher applies again.
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      || (github.event_name == 'pull_request_target'
+          && github.event.pull_request.draft != true
+          && contains(github.event.pull_request.labels.*.name, 'generated-repair')
+          && (github.event.action != 'labeled' || github.event.label.name == 'generated-repair'))
+      || (github.event_name == 'workflow_run'
+          && github.event.workflow_run.event == 'pull_request'
+          && github.event.workflow_run.conclusion == 'failure'
+          && github.event.workflow_run.head_repository.full_name == github.repository
+          && github.event.workflow_run.pull_requests[0].number != null)
+    # Job-level, so a run whose job is skipped never cancels an in-flight repair. CI-signal
+    # runs keep their own group: the label path may already be repairing the same PR.
+    concurrency:
+      group: generated-repair-${{ github.event_name == 'workflow_run' && 'ci-signal-' || '' }}${{ github.event.pull_request.number || github.event.workflow_run.pull_requests[0].number || inputs.pr_number }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:

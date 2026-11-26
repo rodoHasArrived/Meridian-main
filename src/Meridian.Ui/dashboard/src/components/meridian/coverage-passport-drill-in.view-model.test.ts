@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { buildCoverageSecurityDrillIns } from "@/components/meridian/coverage-passport-drill-in.view-model";
 import type { SecurityMasterEntry } from "@/types";

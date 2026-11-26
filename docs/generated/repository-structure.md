@@ -15424,6 +15424,8 @@ Meridian-main
 │   │   │   ├── RecordingLogger.cs
 │   │   │   ├── RepositoryFileWalker.cs
 │   │   │   ├── SecurityMasterTestCapabilityFloor.cs
+│   │   │   ├── SharedEndpointGraph.cs
+│   │   │   ├── SharedEndpointGraphTests.cs
 │   │   │   ├── SignalingMarketEventPublisher.cs
 │   │   │   ├── StubHttpMessageHandler.cs
 │   │   │   ├── TestMarketEventPublisher.cs
@@ -16483,6 +16485,7 @@ Meridian-main
 │   │   ├── test_generated_repair.py
 │   │   ├── test_generated_repair_outcomes.py
 │   │   ├── test_generated_repair_sandbox.py
+│   │   ├── test_generated_repair_triggers.py
 │   │   ├── test_git_hooks.py
 │   │   ├── test_golden_path_validation_workflow.py
 │   │   ├── test_ibapi_smoke_workflow.py
@@ -16561,6 +16564,7 @@ Meridian-main
 │   │   ├── test_task_context.py
 │   │   ├── test_temporary_directory_cleanup_tolerance.py
 │   │   ├── test_throughput_metrics.py
+│   │   ├── test_update_coverage_report.py
 │   │   ├── test_validate_agent_definitions.py
 │   │   ├── test_validate_design_document_adaptation.py
 │   │   ├── test_validate_doc_hashes.py

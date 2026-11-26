@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { apiPostJson } from "@/lib/api";
 import { createFactorPaydownDraft, prepareFactorPaydown } from "./factor-paydown.api";

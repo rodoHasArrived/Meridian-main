@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { findWorkflowActionForRoute } from "@/lib/workflow-route-match";
 import type { WorkflowAction, WorkflowLibrary } from "@/types";

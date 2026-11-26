@@ -18,6 +18,10 @@ from pathlib import Path, PurePosixPath
 
 # Reviewed fingerprints: one file per source module plus a shared header.
 REVIEWED_MANIFEST = "docs/source/generated/source-hashes"
+# The pre-#3778 single-file layout. A branch from before the split that refreshed a module's
+# reviewed hash conflicts (modify/delete) here; the reviewed-hash merger reads it as the same
+# evidence and retires it, so it is a reviewed-hashes conflict rather than a manual one.
+LEGACY_REVIEWED_MANIFEST = "docs/source/generated/source-hash-manifest.json"
 POLICY = Path(__file__).with_name("maintained-generation-outputs.json")
 
 
@@ -78,6 +82,8 @@ def load_conflict_policy(policy_path: Path = POLICY) -> dict:
 
 
 def conflict_strategy(path: str, policy: dict) -> str:
+    if path == LEGACY_REVIEWED_MANIFEST:
+        return "reviewed-hashes"
     recovery = policy["conflict_recovery"]
     if path in recovery["files"]:
         return recovery["files"][path]["strategy"]
