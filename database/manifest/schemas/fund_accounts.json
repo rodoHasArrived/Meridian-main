@@ -2,14 +2,14 @@
   "acl": [
     {
       "grantable": false,
-      "grantee": "meridian",
-      "grantor": "meridian",
+      "grantee": "postgres",
+      "grantor": "postgres",
       "privilege": "create"
     },
     {
       "grantable": false,
-      "grantee": "meridian",
-      "grantor": "meridian",
+      "grantee": "postgres",
+      "grantor": "postgres",
       "privilege": "usage"
     }
   ],
@@ -401,7 +401,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "aba5d08fb6eddf3918fe09173e330f6adbbda454e5972af83d26c14d8217e077",
+  "fingerprint": "17623a7ae6e3aaed29ddb3eaccade60d63825dce13654ad1abd59b4068064e93",
   "foreign_tables": [],
   "functions": [],
   "logical_modules": [
@@ -409,7 +409,7 @@
   ],
   "materialized_views": [],
   "name": "fund_accounts",
-  "owner": "meridian",
+  "owner": "postgres",
   "partitions": [],
   "policies": [],
   "procedures": [],
@@ -418,44 +418,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -732,7 +732,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "438224fca9ad4beb2abf0f56471c94c2cf41eac18f3b4512c822c79e88cc93dc",
+      "fingerprint": "2c53fa71bb2032ed708c7407f2690a7cd14682c31e1ed6681e7c8dac445957fb",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -740,7 +740,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX account_balance_snapshot_pkey ON fund_accounts.account_balance_snapshot USING btree (snapshot_id)",
           "expression": null,
-          "fingerprint": "6b73ac1cb5ea6bcec44a3e9ae169868e279f3613c4d2a623078a3bfc360fabaa",
+          "fingerprint": "88fe68de71f8c2ac5099bde566a3865b8317fa9bdede25deebaec0503ee3b771",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -750,7 +750,7 @@
           "method": "btree",
           "name": "account_balance_snapshot_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -762,7 +762,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_balance_snapshot_account_date ON fund_accounts.account_balance_snapshot USING btree (account_id, as_of_date DESC)",
           "expression": null,
-          "fingerprint": "4ef49ce3af1593cfc9d9165383dcffe891685a870b8d6a087014e0ae1c1c19a4",
+          "fingerprint": "0ddeed9124fd18795982ea9fb26fa1c097039b70d45548c1f5ebdbac85cc6a6f",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -773,7 +773,7 @@
           "method": "btree",
           "name": "ix_balance_snapshot_account_date",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -786,7 +786,7 @@
       "kind": "table",
       "name": "account_balance_snapshot",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -801,44 +801,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -1237,7 +1237,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "1aa9e095432a066e6ff7f7e6287c1a04a009db885f4f250b4081cc8878ae1cae",
+      "fingerprint": "0f078bbf21b13fe5e89b18c2c11228e37c8adf7dab8c04e44b569619c5fb05de",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -1245,7 +1245,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX account_definition_pkey ON fund_accounts.account_definition USING btree (account_id)",
           "expression": null,
-          "fingerprint": "f89013b87f4004206c2ccc0e2ac299f5a90ff0b538fe2ff9194cb1bf68f5f033",
+          "fingerprint": "45da5342af2536b36fbde616c281366e2677c2b4309d20ca7de10003eb91ec9e",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1255,7 +1255,7 @@
           "method": "btree",
           "name": "account_definition_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -1267,7 +1267,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_account_definition_tenant ON fund_accounts.account_definition USING btree (tenant_id) WHERE (tenant_id IS NOT NULL)",
           "expression": null,
-          "fingerprint": "028acd153e8ba45c7c54189062d4f9772fc036948fe5bd3b97af7485b7fbb76c",
+          "fingerprint": "566d7aea5c16ccb9af24bce703355219a236bd59719139c5a99d37b434280c00",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1277,7 +1277,7 @@
           "method": "btree",
           "name": "ix_account_definition_tenant",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "tenant_id IS NOT NULL",
           "primary": false,
           "ready": true,
@@ -1289,7 +1289,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_account_definition_tenant_lower ON fund_accounts.account_definition USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
           "expression": "lower(TRIM(BOTH FROM tenant_id))",
-          "fingerprint": "3d178ccd16a250ac4ffc34f2444721f233af970f42fd8a0ec5bb60ee3826d011",
+          "fingerprint": "669dc3f2666202b53bd4ccecf892a7b9393916ea6b519bd449789fd63c665ea8",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1299,7 +1299,7 @@
           "method": "btree",
           "name": "ix_account_definition_tenant_lower",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "tenant_id IS NOT NULL",
           "primary": false,
           "ready": true,
@@ -1311,7 +1311,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_account_entity ON fund_accounts.account_definition USING btree (entity_id) WHERE (entity_id IS NOT NULL)",
           "expression": null,
-          "fingerprint": "f118a3d627f30a25d07436c018835846f33c073b61c9989158081298a3e1274c",
+          "fingerprint": "1b9b8111ebdded4de5134a9bcd32fb415ce8973bfa33d4fd8e0b41c9e6e0d5e1",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1321,7 +1321,7 @@
           "method": "btree",
           "name": "ix_account_entity",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "entity_id IS NOT NULL",
           "primary": false,
           "ready": true,
@@ -1333,7 +1333,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_account_fund ON fund_accounts.account_definition USING btree (fund_id, account_type) WHERE (fund_id IS NOT NULL)",
           "expression": null,
-          "fingerprint": "0ac3cd2d7ab976a34b76fc36a31b77159435a215f35c6f315a97924aa4c706df",
+          "fingerprint": "4cdd20ed15a5e505984cc5b51bd7a84c7b9141a9843b5fec7882f61ddeb76376",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1344,7 +1344,7 @@
           "method": "btree",
           "name": "ix_account_fund",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "fund_id IS NOT NULL",
           "primary": false,
           "ready": true,
@@ -1356,7 +1356,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX ux_account_code_active ON fund_accounts.account_definition USING btree (account_code) WHERE (is_active = true)",
           "expression": null,
-          "fingerprint": "cbff499384631ba710198dad2d8886961eb729d83c8ee6d05c6786c5d1fc0385",
+          "fingerprint": "fd719fd105372ff3f7fabcb78e8c5b0242852d74821cecdf9b15f898533fe337",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1366,7 +1366,7 @@
           "method": "btree",
           "name": "ux_account_code_active",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "is_active = true",
           "primary": false,
           "ready": true,
@@ -1379,7 +1379,7 @@
       "kind": "table",
       "name": "account_definition",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -1394,44 +1394,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -1996,7 +1996,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "804070e037a738f9e93f43bd3e6a6dae4f4d705c2057c8f99a0af45a626553f7",
+      "fingerprint": "4233aa24936b7718708fc8a4dee43274054293b56c8fc4b1dd8e6f18caab7b19",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -2004,7 +2004,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX account_margin_snapshot_pkey ON fund_accounts.account_margin_snapshot USING btree (margin_snapshot_id)",
           "expression": null,
-          "fingerprint": "73f6dcde7b128b745b1af1bdb45bb1ca7edbfe595b1e0943682708bf3bcae2e9",
+          "fingerprint": "fe0e5376cccdc1552c12fd1dc84cce8e7fb81131562ee77f0440fa803fbc390f",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -2014,7 +2014,7 @@
           "method": "btree",
           "name": "account_margin_snapshot_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -2026,7 +2026,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_margin_snapshot_account ON fund_accounts.account_margin_snapshot USING btree (account_id, effective_at DESC)",
           "expression": null,
-          "fingerprint": "57e5ffe769189d5d6530009b00a294a4ffbcf07b8e84052619115a2bfbbb845e",
+          "fingerprint": "b9dd282429e15ab5e4e390166a0e28297270fdfba101338aaa1f48be8826a011",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -2037,7 +2037,7 @@
           "method": "btree",
           "name": "ix_margin_snapshot_account",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -2049,7 +2049,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX ux_margin_snapshot_account_effective ON fund_accounts.account_margin_snapshot USING btree (account_id, effective_at)",
           "expression": null,
-          "fingerprint": "d4e1965b1fc356a03ee3eaa5348bd76e916e9c44a39819c87c27aada97911aed",
+          "fingerprint": "17e37b99640a7899d39ac21f13807104050c4f3b3617b0949793ecfbf6de7842",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -2060,7 +2060,7 @@
           "method": "btree",
           "name": "ux_margin_snapshot_account_effective",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -2073,7 +2073,7 @@
       "kind": "table",
       "name": "account_margin_snapshot",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -2088,44 +2088,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -2408,7 +2408,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "5524bb319a7529e60c5f35bdc0c40d81cf76e6725cfec5c70eae793c2dfd4719",
+      "fingerprint": "695cd712a5c860100a1dd27d8812f587665222f9ac3a431e627e01e03bc70764",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -2416,7 +2416,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX account_reconciliation_breaks_pkey ON fund_accounts.account_reconciliation_breaks USING btree (result_id)",
           "expression": null,
-          "fingerprint": "ce4a64cf6f6826769436773d17d304957ab06726255a84c94b90c8277c865ae8",
+          "fingerprint": "79099e0d4c4a39e1777b56d20616c821528a2451c0af12f9354b9736c639fb28",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -2426,7 +2426,7 @@
           "method": "btree",
           "name": "account_reconciliation_breaks_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -2438,7 +2438,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_account_reconciliation_active ON fund_accounts.account_reconciliation_breaks USING btree (reconciliation_run_id) WHERE (superseded_by_result_id IS NULL)",
           "expression": null,
-          "fingerprint": "b500ab4600deaaf94b71f878da9a116e43d55ed1bc06bad4ba86f4acf608a032",
+          "fingerprint": "b871b1309dce335678f296df55aa7532315190bb18edf7a2f28ac188a5d0fdd3",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -2448,7 +2448,7 @@
           "method": "btree",
           "name": "ix_account_reconciliation_active",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "superseded_by_result_id IS NULL",
           "primary": false,
           "ready": true,
@@ -2460,7 +2460,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_recon_breaks_run ON fund_accounts.account_reconciliation_breaks USING btree (reconciliation_run_id)",
           "expression": null,
-          "fingerprint": "4296bdcdbf234d9322f3351f8e371f099eced308af837e92a7b686ad69265690",
+          "fingerprint": "cc30dea3f6e3f2f1f9e045d263bb8e0598de009d29cb7084002528ba52266f08",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -2470,7 +2470,7 @@
           "method": "btree",
           "name": "ix_recon_breaks_run",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -2483,7 +2483,7 @@
       "kind": "table",
       "name": "account_reconciliation_breaks",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -2498,44 +2498,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -2764,7 +2764,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "5519b41f4b088dcb9423c17bd46debc8e1d3a0a9db9a4802929700578e71bba6",
+      "fingerprint": "2254071c516c0b30ec0911e3171929bb5d4514e4344cb254d0a7d9dc25bebe85",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -2772,7 +2772,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX account_reconciliation_run_pkey ON fund_accounts.account_reconciliation_run USING btree (reconciliation_run_id)",
           "expression": null,
-          "fingerprint": "3f0f03c1e157202ea1fecc4045c7f628a1605d69d2b08035de35cc2c55006fed",
+          "fingerprint": "806b11d56eb4ca24a97cb9be656ebd1cce997c831e996fd0acf5218704f1973f",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -2782,7 +2782,7 @@
           "method": "btree",
           "name": "account_reconciliation_run_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -2794,7 +2794,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_recon_run_account ON fund_accounts.account_reconciliation_run USING btree (account_id, as_of_date DESC)",
           "expression": null,
-          "fingerprint": "9f2ccaeae2b183e0b1ca9b045b92ba4d2ae722269019221f9dd9875cc40f19c6",
+          "fingerprint": "48f0fc728608a618c3722fa7a2982f6c8bee20cf408d034ee17692f2b75dfb92",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -2805,7 +2805,7 @@
           "method": "btree",
           "name": "ix_recon_run_account",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -2818,7 +2818,7 @@
       "kind": "table",
       "name": "account_reconciliation_run",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -2833,44 +2833,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -3249,7 +3249,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "120037433f1c6c70fe29035592e86b50a7370d1f215745fa41bf47d1a7960c03",
+      "fingerprint": "7802ff95944ad66c77afeb12fb5dcd0a00ad25d72d59b6313fe35cf6ab8aba64",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -3257,7 +3257,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX account_sync_history_pkey ON fund_accounts.account_sync_history USING btree (sync_history_id)",
           "expression": null,
-          "fingerprint": "ab899bafad7475009cc61cb7ec970b025daa941ebef0627b69bb61ce4b1f8c32",
+          "fingerprint": "d922fccd2a46e8e19f8fbd502da8e974fd0312c309032b16dc9c295845365e08",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -3267,7 +3267,7 @@
           "method": "btree",
           "name": "account_sync_history_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -3279,7 +3279,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_sync_history_account ON fund_accounts.account_sync_history USING btree (account_id, attempted_at DESC)",
           "expression": null,
-          "fingerprint": "81b3e24e93e06365ee4cb52fcc444b80bba1634521f361953b1f4fffad5b70a6",
+          "fingerprint": "37650e7059e9651e5cfe614e3ed8ce094db3c43d80edf030fdad4f53231d0440",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -3290,7 +3290,7 @@
           "method": "btree",
           "name": "ix_sync_history_account",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -3302,7 +3302,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX ux_account_sync_history_correlation ON fund_accounts.account_sync_history USING btree (account_id, lower(TRIM(BOTH FROM capability)), lower(TRIM(BOTH FROM correlation_id))) WHERE ((correlation_id IS NOT NULL) AND (TRIM(BOTH FROM correlation_id) <> ''::text) AND (superseded_by_sync_history_id IS NULL))",
           "expression": "lower(TRIM(BOTH FROM capability)), lower(TRIM(BOTH FROM correlation_id))",
-          "fingerprint": "241f79760d8a3579bd16e245e93be6a470c07214b675527a2e9f5a5be8968c1e",
+          "fingerprint": "9c98776a270eb0592be991712f018ccbb918dea69642c60806379b39c3afcca9",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -3314,7 +3314,7 @@
           "method": "btree",
           "name": "ux_account_sync_history_correlation",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "correlation_id IS NOT NULL AND TRIM(BOTH FROM correlation_id) <> ''::text AND superseded_by_sync_history_id IS NULL",
           "primary": false,
           "ready": true,
@@ -3327,7 +3327,7 @@
       "kind": "table",
       "name": "account_sync_history",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -3342,44 +3342,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -3612,7 +3612,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "1d4e739701a4efe1144b920c85ee637a1f6b32fd9d0448851ecb0c23c6a497e6",
+      "fingerprint": "e2e031813d5a76ed7432c347b4680e9129db3ed5373fc97ef839f41a134174d8",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -3620,7 +3620,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX bank_statement_batch_pkey ON fund_accounts.bank_statement_batch USING btree (batch_id)",
           "expression": null,
-          "fingerprint": "e99b344d643ff67a295c96cc3c1f0445720e3b411e9f56a67d200028b5c391f3",
+          "fingerprint": "68995c3b0611ee8843958dbc33237d333fb465247d79e986950b291daf8cdf8d",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -3630,7 +3630,7 @@
           "method": "btree",
           "name": "bank_statement_batch_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -3643,7 +3643,7 @@
       "kind": "table",
       "name": "bank_statement_batch",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -3658,44 +3658,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -3982,7 +3982,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "9c9ec8674b55423f340afe13bc22874b1dbe7a6ae79d4974085e5b6053524af2",
+      "fingerprint": "c6b027de93e081fa844da9995756bec9ea2d4d674848ed1b0101db81eeb758e5",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -3990,7 +3990,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX bank_statement_line_pkey ON fund_accounts.bank_statement_line USING btree (statement_line_id)",
           "expression": null,
-          "fingerprint": "614cb70248d4b419a4555f41470ecfcbe7df852716ed56dcaaedce14ff6ca16d",
+          "fingerprint": "6ceef8d2b29e905551427f88aefaa3092be96a61583f35d558905072cc66966b",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -4000,7 +4000,7 @@
           "method": "btree",
           "name": "bank_statement_line_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -4012,7 +4012,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_bank_statement_account_date ON fund_accounts.bank_statement_line USING btree (account_id, statement_date DESC)",
           "expression": null,
-          "fingerprint": "1ce512cf3a8b1790084444cacaa419369f305dfa18bc4a28080c402035508bd4",
+          "fingerprint": "ae94c7bfab006bf9c5c1bde58c2ac7b649da8b243e20df6426ff26be7578f525",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -4023,7 +4023,7 @@
           "method": "btree",
           "name": "ix_bank_statement_account_date",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -4035,7 +4035,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX ux_bank_statement_source_sequence ON fund_accounts.bank_statement_line USING btree (batch_id, line_sequence) WHERE (line_sequence IS NOT NULL)",
           "expression": null,
-          "fingerprint": "dde18e3e632650199e7860f69fd8435c2c317f07c45372cc283761e054ac0658",
+          "fingerprint": "3b0ff1f1a9b9f1d33d6a88b8f2bb47d9700c9136f4892c2ce01eadce2bd5014e",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -4046,7 +4046,7 @@
           "method": "btree",
           "name": "ux_bank_statement_source_sequence",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "line_sequence IS NOT NULL",
           "primary": false,
           "ready": true,
@@ -4059,7 +4059,7 @@
       "kind": "table",
       "name": "bank_statement_line",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -4074,44 +4074,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -4394,7 +4394,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "16e96a4aa934931d14e4bca9b5f5f3a1e91d5f0591656bbd0ad4f866db9cec89",
+      "fingerprint": "0d83f9d1ccff9a324c79e00e50b63795c8d42ad378fb98d44e2cad1d3fc52a43",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -4402,7 +4402,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX custodian_position_line_pkey ON fund_accounts.custodian_position_line USING btree (position_line_id)",
           "expression": null,
-          "fingerprint": "c7bf67dd2cdce56c91b3f721b08327bd236b2234711e21d57d58b4817f37ddb7",
+          "fingerprint": "00fc4c42c6d2bc0bba1f1fb2de279334e01b525fa45cbc487b227dd48f101b50",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -4412,7 +4412,7 @@
           "method": "btree",
           "name": "custodian_position_line_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -4424,7 +4424,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_custodian_position_account_date ON fund_accounts.custodian_position_line USING btree (account_id, as_of_date DESC)",
           "expression": null,
-          "fingerprint": "d675a512ad89ab595bc6f971519c6f8701463bf12299122f3455184c67394652",
+          "fingerprint": "06ebe1f70c3f47e42c596f5552a46b8cd2fac687482ed762782b310c7e5e95f5",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -4435,7 +4435,7 @@
           "method": "btree",
           "name": "ix_custodian_position_account_date",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -4448,7 +4448,7 @@
       "kind": "table",
       "name": "custodian_position_line",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -4463,44 +4463,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -4729,7 +4729,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "2c7711b2c5c02828749074a6865b59a353e1d1c939b36b8f411c304751d19b72",
+      "fingerprint": "48adf7ac41610974f851a8a84ce851d59829eaf3a675a5f01e23c63bdba6c452",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -4737,7 +4737,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX custodian_statement_batch_pkey ON fund_accounts.custodian_statement_batch USING btree (batch_id)",
           "expression": null,
-          "fingerprint": "2fdcdc486fbce032d74f2e643ccb94cc0d12ecf70c81dc8a1adf7ffa6c7ef4da",
+          "fingerprint": "c967f0dafcf72d270298f5ca242a95886aacba522b4099f18e56a52f11f128b7",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -4747,7 +4747,7 @@
           "method": "btree",
           "name": "custodian_statement_batch_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -4759,7 +4759,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_custodian_snapshot_authority ON fund_accounts.custodian_statement_batch USING btree (account_id, as_of_date DESC, ingested_at DESC)",
           "expression": null,
-          "fingerprint": "f1400141e8579823ff3bffa68785f3db35c4b7ccae13e7c7c393753b6394a843",
+          "fingerprint": "6861e72f709dc953522297ce4b69b91afd2dee052d0d5ee85ea7bbe971479a33",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -4771,7 +4771,7 @@
           "method": "btree",
           "name": "ix_custodian_snapshot_authority",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -4784,7 +4784,7 @@
       "kind": "table",
       "name": "custodian_statement_batch",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -4799,44 +4799,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -4935,7 +4935,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "c3df375664be40c6bcd5bb334a765ab5bf88dd232451d105b6ec1ca948fed755",
+      "fingerprint": "fd317cb4e21baeaba0a36ee361cbbadd6db84460598af46d589a5a9cde932312",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -4943,7 +4943,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX fund_account_legacy_import_receipt_pkey ON fund_accounts.fund_account_legacy_import_receipt USING btree (source_hash)",
           "expression": null,
-          "fingerprint": "79a4c0b3b8b468bd110cd7b412f2aeea62c1dd7e0dc161ee6a8e4ec6f31199ba",
+          "fingerprint": "e02d926625bb0787904ebb79e50a063c03ab1e8a89bf04acefa1edf228104ecf",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -4953,7 +4953,7 @@
           "method": "btree",
           "name": "fund_account_legacy_import_receipt_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -4966,7 +4966,7 @@
       "kind": "table",
       "name": "fund_account_legacy_import_receipt",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -4981,44 +4981,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -5097,7 +5097,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "ceba0c76c05a3312451adafe241b679e6dbb732c691d06c5b83271591ccbbcb9",
+      "fingerprint": "ee85c79d8d7e6b7f2f97ea2507e33aa1bf60a14d0017bfd2943e93c4c9577996",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -5105,7 +5105,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX fund_account_schema_migrations_pkey ON fund_accounts.fund_account_schema_migrations USING btree (filename)",
           "expression": null,
-          "fingerprint": "3b343fadfc77d2bed92e618c033c056ca37872fe01685eb76a3822c9de90b91d",
+          "fingerprint": "79804b30b49b26a87bae6674e09eb7fba8ac0aa114b61e1ccf79c1b8585dd87f",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -5115,7 +5115,7 @@
           "method": "btree",
           "name": "fund_account_schema_migrations_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -5128,7 +5128,7 @@
       "kind": "table",
       "name": "fund_account_schema_migrations",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -5143,44 +5143,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -5331,7 +5331,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "2e8455c98639022826a1ae7278295ba5ccf35c806c2461199843ede8992bc6ac",
+      "fingerprint": "0173624c0b358db1ea27c5a0e66d711e79d1d65d0a1ace8381c79e75f43e79dc",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -5339,7 +5339,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX private_capital_record_pkey ON fund_accounts.private_capital_record USING btree (tenant_id, company_id, record_kind, record_id)",
           "expression": null,
-          "fingerprint": "7c5df30b8715a839b33a755f918b3c57dd11a1659bf1cff90dd61cef633d0f36",
+          "fingerprint": "997070117aee5b5de36f23b3ee0c654c90eed9ab3954a295cbdfef9707f44a1c",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -5352,7 +5352,7 @@
           "method": "btree",
           "name": "private_capital_record_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -5364,7 +5364,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX ux_private_capital_single_correction ON fund_accounts.private_capital_record USING btree (tenant_id, company_id, ((payload ->> 'supersedesSnapshotId'::text))) WHERE ((record_kind = 'snapshot'::text) AND ((payload ->> 'supersedesSnapshotId'::text) IS NOT NULL))",
           "expression": "payload ->> 'supersedesSnapshotId'::text",
-          "fingerprint": "70315c4215397c32b22018f169ddc6376b63e393797edcdf3ae8d4aa9d4c8707",
+          "fingerprint": "45d351d81cee0ccc13a10ce62a9bca67547502a3984c79f32d260ee450743116",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -5376,7 +5376,7 @@
           "method": "btree",
           "name": "ux_private_capital_single_correction",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "record_kind = 'snapshot'::text AND (payload ->> 'supersedesSnapshotId'::text) IS NOT NULL",
           "primary": false,
           "ready": true,
@@ -5389,7 +5389,7 @@
       "kind": "table",
       "name": "private_capital_record",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -5514,44 +5514,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -5828,7 +5828,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "438224fca9ad4beb2abf0f56471c94c2cf41eac18f3b4512c822c79e88cc93dc",
+      "fingerprint": "2c53fa71bb2032ed708c7407f2690a7cd14682c31e1ed6681e7c8dac445957fb",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -5836,7 +5836,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX account_balance_snapshot_pkey ON fund_accounts.account_balance_snapshot USING btree (snapshot_id)",
           "expression": null,
-          "fingerprint": "6b73ac1cb5ea6bcec44a3e9ae169868e279f3613c4d2a623078a3bfc360fabaa",
+          "fingerprint": "88fe68de71f8c2ac5099bde566a3865b8317fa9bdede25deebaec0503ee3b771",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -5846,7 +5846,7 @@
           "method": "btree",
           "name": "account_balance_snapshot_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -5858,7 +5858,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_balance_snapshot_account_date ON fund_accounts.account_balance_snapshot USING btree (account_id, as_of_date DESC)",
           "expression": null,
-          "fingerprint": "4ef49ce3af1593cfc9d9165383dcffe891685a870b8d6a087014e0ae1c1c19a4",
+          "fingerprint": "0ddeed9124fd18795982ea9fb26fa1c097039b70d45548c1f5ebdbac85cc6a6f",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -5869,7 +5869,7 @@
           "method": "btree",
           "name": "ix_balance_snapshot_account_date",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -5882,7 +5882,7 @@
       "kind": "table",
       "name": "account_balance_snapshot",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -5897,44 +5897,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -6333,7 +6333,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "1aa9e095432a066e6ff7f7e6287c1a04a009db885f4f250b4081cc8878ae1cae",
+      "fingerprint": "0f078bbf21b13fe5e89b18c2c11228e37c8adf7dab8c04e44b569619c5fb05de",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -6341,7 +6341,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX account_definition_pkey ON fund_accounts.account_definition USING btree (account_id)",
           "expression": null,
-          "fingerprint": "f89013b87f4004206c2ccc0e2ac299f5a90ff0b538fe2ff9194cb1bf68f5f033",
+          "fingerprint": "45da5342af2536b36fbde616c281366e2677c2b4309d20ca7de10003eb91ec9e",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -6351,7 +6351,7 @@
           "method": "btree",
           "name": "account_definition_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -6363,7 +6363,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_account_definition_tenant ON fund_accounts.account_definition USING btree (tenant_id) WHERE (tenant_id IS NOT NULL)",
           "expression": null,
-          "fingerprint": "028acd153e8ba45c7c54189062d4f9772fc036948fe5bd3b97af7485b7fbb76c",
+          "fingerprint": "566d7aea5c16ccb9af24bce703355219a236bd59719139c5a99d37b434280c00",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -6373,7 +6373,7 @@
           "method": "btree",
           "name": "ix_account_definition_tenant",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "tenant_id IS NOT NULL",
           "primary": false,
           "ready": true,
@@ -6385,7 +6385,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_account_definition_tenant_lower ON fund_accounts.account_definition USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
           "expression": "lower(TRIM(BOTH FROM tenant_id))",
-          "fingerprint": "3d178ccd16a250ac4ffc34f2444721f233af970f42fd8a0ec5bb60ee3826d011",
+          "fingerprint": "669dc3f2666202b53bd4ccecf892a7b9393916ea6b519bd449789fd63c665ea8",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -6395,7 +6395,7 @@
           "method": "btree",
           "name": "ix_account_definition_tenant_lower",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "tenant_id IS NOT NULL",
           "primary": false,
           "ready": true,
@@ -6407,7 +6407,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_account_entity ON fund_accounts.account_definition USING btree (entity_id) WHERE (entity_id IS NOT NULL)",
           "expression": null,
-          "fingerprint": "f118a3d627f30a25d07436c018835846f33c073b61c9989158081298a3e1274c",
+          "fingerprint": "1b9b8111ebdded4de5134a9bcd32fb415ce8973bfa33d4fd8e0b41c9e6e0d5e1",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -6417,7 +6417,7 @@
           "method": "btree",
           "name": "ix_account_entity",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "entity_id IS NOT NULL",
           "primary": false,
           "ready": true,
@@ -6429,7 +6429,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_account_fund ON fund_accounts.account_definition USING btree (fund_id, account_type) WHERE (fund_id IS NOT NULL)",
           "expression": null,
-          "fingerprint": "0ac3cd2d7ab976a34b76fc36a31b77159435a215f35c6f315a97924aa4c706df",
+          "fingerprint": "4cdd20ed15a5e505984cc5b51bd7a84c7b9141a9843b5fec7882f61ddeb76376",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -6440,7 +6440,7 @@
           "method": "btree",
           "name": "ix_account_fund",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "fund_id IS NOT NULL",
           "primary": false,
           "ready": true,
@@ -6452,7 +6452,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX ux_account_code_active ON fund_accounts.account_definition USING btree (account_code) WHERE (is_active = true)",
           "expression": null,
-          "fingerprint": "cbff499384631ba710198dad2d8886961eb729d83c8ee6d05c6786c5d1fc0385",
+          "fingerprint": "fd719fd105372ff3f7fabcb78e8c5b0242852d74821cecdf9b15f898533fe337",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -6462,7 +6462,7 @@
           "method": "btree",
           "name": "ux_account_code_active",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "is_active = true",
           "primary": false,
           "ready": true,
@@ -6475,7 +6475,7 @@
       "kind": "table",
       "name": "account_definition",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -6490,44 +6490,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -7092,7 +7092,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "804070e037a738f9e93f43bd3e6a6dae4f4d705c2057c8f99a0af45a626553f7",
+      "fingerprint": "4233aa24936b7718708fc8a4dee43274054293b56c8fc4b1dd8e6f18caab7b19",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -7100,7 +7100,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX account_margin_snapshot_pkey ON fund_accounts.account_margin_snapshot USING btree (margin_snapshot_id)",
           "expression": null,
-          "fingerprint": "73f6dcde7b128b745b1af1bdb45bb1ca7edbfe595b1e0943682708bf3bcae2e9",
+          "fingerprint": "fe0e5376cccdc1552c12fd1dc84cce8e7fb81131562ee77f0440fa803fbc390f",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -7110,7 +7110,7 @@
           "method": "btree",
           "name": "account_margin_snapshot_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -7122,7 +7122,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_margin_snapshot_account ON fund_accounts.account_margin_snapshot USING btree (account_id, effective_at DESC)",
           "expression": null,
-          "fingerprint": "57e5ffe769189d5d6530009b00a294a4ffbcf07b8e84052619115a2bfbbb845e",
+          "fingerprint": "b9dd282429e15ab5e4e390166a0e28297270fdfba101338aaa1f48be8826a011",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -7133,7 +7133,7 @@
           "method": "btree",
           "name": "ix_margin_snapshot_account",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -7145,7 +7145,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX ux_margin_snapshot_account_effective ON fund_accounts.account_margin_snapshot USING btree (account_id, effective_at)",
           "expression": null,
-          "fingerprint": "d4e1965b1fc356a03ee3eaa5348bd76e916e9c44a39819c87c27aada97911aed",
+          "fingerprint": "17e37b99640a7899d39ac21f13807104050c4f3b3617b0949793ecfbf6de7842",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -7156,7 +7156,7 @@
           "method": "btree",
           "name": "ux_margin_snapshot_account_effective",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -7169,7 +7169,7 @@
       "kind": "table",
       "name": "account_margin_snapshot",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -7184,44 +7184,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -7504,7 +7504,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "5524bb319a7529e60c5f35bdc0c40d81cf76e6725cfec5c70eae793c2dfd4719",
+      "fingerprint": "695cd712a5c860100a1dd27d8812f587665222f9ac3a431e627e01e03bc70764",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -7512,7 +7512,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX account_reconciliation_breaks_pkey ON fund_accounts.account_reconciliation_breaks USING btree (result_id)",
           "expression": null,
-          "fingerprint": "ce4a64cf6f6826769436773d17d304957ab06726255a84c94b90c8277c865ae8",
+          "fingerprint": "79099e0d4c4a39e1777b56d20616c821528a2451c0af12f9354b9736c639fb28",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -7522,7 +7522,7 @@
           "method": "btree",
           "name": "account_reconciliation_breaks_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -7534,7 +7534,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_account_reconciliation_active ON fund_accounts.account_reconciliation_breaks USING btree (reconciliation_run_id) WHERE (superseded_by_result_id IS NULL)",
           "expression": null,
-          "fingerprint": "b500ab4600deaaf94b71f878da9a116e43d55ed1bc06bad4ba86f4acf608a032",
+          "fingerprint": "b871b1309dce335678f296df55aa7532315190bb18edf7a2f28ac188a5d0fdd3",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -7544,7 +7544,7 @@
           "method": "btree",
           "name": "ix_account_reconciliation_active",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "superseded_by_result_id IS NULL",
           "primary": false,
           "ready": true,
@@ -7556,7 +7556,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_recon_breaks_run ON fund_accounts.account_reconciliation_breaks USING btree (reconciliation_run_id)",
           "expression": null,
-          "fingerprint": "4296bdcdbf234d9322f3351f8e371f099eced308af837e92a7b686ad69265690",
+          "fingerprint": "cc30dea3f6e3f2f1f9e045d263bb8e0598de009d29cb7084002528ba52266f08",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -7566,7 +7566,7 @@
           "method": "btree",
           "name": "ix_recon_breaks_run",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -7579,7 +7579,7 @@
       "kind": "table",
       "name": "account_reconciliation_breaks",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -7594,44 +7594,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -7860,7 +7860,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "5519b41f4b088dcb9423c17bd46debc8e1d3a0a9db9a4802929700578e71bba6",
+      "fingerprint": "2254071c516c0b30ec0911e3171929bb5d4514e4344cb254d0a7d9dc25bebe85",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -7868,7 +7868,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX account_reconciliation_run_pkey ON fund_accounts.account_reconciliation_run USING btree (reconciliation_run_id)",
           "expression": null,
-          "fingerprint": "3f0f03c1e157202ea1fecc4045c7f628a1605d69d2b08035de35cc2c55006fed",
+          "fingerprint": "806b11d56eb4ca24a97cb9be656ebd1cce997c831e996fd0acf5218704f1973f",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -7878,7 +7878,7 @@
           "method": "btree",
           "name": "account_reconciliation_run_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -7890,7 +7890,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_recon_run_account ON fund_accounts.account_reconciliation_run USING btree (account_id, as_of_date DESC)",
           "expression": null,
-          "fingerprint": "9f2ccaeae2b183e0b1ca9b045b92ba4d2ae722269019221f9dd9875cc40f19c6",
+          "fingerprint": "48f0fc728608a618c3722fa7a2982f6c8bee20cf408d034ee17692f2b75dfb92",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -7901,7 +7901,7 @@
           "method": "btree",
           "name": "ix_recon_run_account",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -7914,7 +7914,7 @@
       "kind": "table",
       "name": "account_reconciliation_run",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -7929,44 +7929,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -8345,7 +8345,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "120037433f1c6c70fe29035592e86b50a7370d1f215745fa41bf47d1a7960c03",
+      "fingerprint": "7802ff95944ad66c77afeb12fb5dcd0a00ad25d72d59b6313fe35cf6ab8aba64",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -8353,7 +8353,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX account_sync_history_pkey ON fund_accounts.account_sync_history USING btree (sync_history_id)",
           "expression": null,
-          "fingerprint": "ab899bafad7475009cc61cb7ec970b025daa941ebef0627b69bb61ce4b1f8c32",
+          "fingerprint": "d922fccd2a46e8e19f8fbd502da8e974fd0312c309032b16dc9c295845365e08",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -8363,7 +8363,7 @@
           "method": "btree",
           "name": "account_sync_history_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -8375,7 +8375,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_sync_history_account ON fund_accounts.account_sync_history USING btree (account_id, attempted_at DESC)",
           "expression": null,
-          "fingerprint": "81b3e24e93e06365ee4cb52fcc444b80bba1634521f361953b1f4fffad5b70a6",
+          "fingerprint": "37650e7059e9651e5cfe614e3ed8ce094db3c43d80edf030fdad4f53231d0440",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -8386,7 +8386,7 @@
           "method": "btree",
           "name": "ix_sync_history_account",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -8398,7 +8398,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX ux_account_sync_history_correlation ON fund_accounts.account_sync_history USING btree (account_id, lower(TRIM(BOTH FROM capability)), lower(TRIM(BOTH FROM correlation_id))) WHERE ((correlation_id IS NOT NULL) AND (TRIM(BOTH FROM correlation_id) <> ''::text) AND (superseded_by_sync_history_id IS NULL))",
           "expression": "lower(TRIM(BOTH FROM capability)), lower(TRIM(BOTH FROM correlation_id))",
-          "fingerprint": "241f79760d8a3579bd16e245e93be6a470c07214b675527a2e9f5a5be8968c1e",
+          "fingerprint": "9c98776a270eb0592be991712f018ccbb918dea69642c60806379b39c3afcca9",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -8410,7 +8410,7 @@
           "method": "btree",
           "name": "ux_account_sync_history_correlation",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "correlation_id IS NOT NULL AND TRIM(BOTH FROM correlation_id) <> ''::text AND superseded_by_sync_history_id IS NULL",
           "primary": false,
           "ready": true,
@@ -8423,7 +8423,7 @@
       "kind": "table",
       "name": "account_sync_history",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -8438,44 +8438,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -8708,7 +8708,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "1d4e739701a4efe1144b920c85ee637a1f6b32fd9d0448851ecb0c23c6a497e6",
+      "fingerprint": "e2e031813d5a76ed7432c347b4680e9129db3ed5373fc97ef839f41a134174d8",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -8716,7 +8716,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX bank_statement_batch_pkey ON fund_accounts.bank_statement_batch USING btree (batch_id)",
           "expression": null,
-          "fingerprint": "e99b344d643ff67a295c96cc3c1f0445720e3b411e9f56a67d200028b5c391f3",
+          "fingerprint": "68995c3b0611ee8843958dbc33237d333fb465247d79e986950b291daf8cdf8d",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -8726,7 +8726,7 @@
           "method": "btree",
           "name": "bank_statement_batch_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -8739,7 +8739,7 @@
       "kind": "table",
       "name": "bank_statement_batch",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -8754,44 +8754,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -9078,7 +9078,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "9c9ec8674b55423f340afe13bc22874b1dbe7a6ae79d4974085e5b6053524af2",
+      "fingerprint": "c6b027de93e081fa844da9995756bec9ea2d4d674848ed1b0101db81eeb758e5",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -9086,7 +9086,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX bank_statement_line_pkey ON fund_accounts.bank_statement_line USING btree (statement_line_id)",
           "expression": null,
-          "fingerprint": "614cb70248d4b419a4555f41470ecfcbe7df852716ed56dcaaedce14ff6ca16d",
+          "fingerprint": "6ceef8d2b29e905551427f88aefaa3092be96a61583f35d558905072cc66966b",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -9096,7 +9096,7 @@
           "method": "btree",
           "name": "bank_statement_line_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -9108,7 +9108,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_bank_statement_account_date ON fund_accounts.bank_statement_line USING btree (account_id, statement_date DESC)",
           "expression": null,
-          "fingerprint": "1ce512cf3a8b1790084444cacaa419369f305dfa18bc4a28080c402035508bd4",
+          "fingerprint": "ae94c7bfab006bf9c5c1bde58c2ac7b649da8b243e20df6426ff26be7578f525",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -9119,7 +9119,7 @@
           "method": "btree",
           "name": "ix_bank_statement_account_date",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -9131,7 +9131,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX ux_bank_statement_source_sequence ON fund_accounts.bank_statement_line USING btree (batch_id, line_sequence) WHERE (line_sequence IS NOT NULL)",
           "expression": null,
-          "fingerprint": "dde18e3e632650199e7860f69fd8435c2c317f07c45372cc283761e054ac0658",
+          "fingerprint": "3b0ff1f1a9b9f1d33d6a88b8f2bb47d9700c9136f4892c2ce01eadce2bd5014e",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -9142,7 +9142,7 @@
           "method": "btree",
           "name": "ux_bank_statement_source_sequence",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "line_sequence IS NOT NULL",
           "primary": false,
           "ready": true,
@@ -9155,7 +9155,7 @@
       "kind": "table",
       "name": "bank_statement_line",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -9170,44 +9170,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -9490,7 +9490,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "16e96a4aa934931d14e4bca9b5f5f3a1e91d5f0591656bbd0ad4f866db9cec89",
+      "fingerprint": "0d83f9d1ccff9a324c79e00e50b63795c8d42ad378fb98d44e2cad1d3fc52a43",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -9498,7 +9498,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX custodian_position_line_pkey ON fund_accounts.custodian_position_line USING btree (position_line_id)",
           "expression": null,
-          "fingerprint": "c7bf67dd2cdce56c91b3f721b08327bd236b2234711e21d57d58b4817f37ddb7",
+          "fingerprint": "00fc4c42c6d2bc0bba1f1fb2de279334e01b525fa45cbc487b227dd48f101b50",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -9508,7 +9508,7 @@
           "method": "btree",
           "name": "custodian_position_line_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -9520,7 +9520,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_custodian_position_account_date ON fund_accounts.custodian_position_line USING btree (account_id, as_of_date DESC)",
           "expression": null,
-          "fingerprint": "d675a512ad89ab595bc6f971519c6f8701463bf12299122f3455184c67394652",
+          "fingerprint": "06ebe1f70c3f47e42c596f5552a46b8cd2fac687482ed762782b310c7e5e95f5",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -9531,7 +9531,7 @@
           "method": "btree",
           "name": "ix_custodian_position_account_date",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -9544,7 +9544,7 @@
       "kind": "table",
       "name": "custodian_position_line",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -9559,44 +9559,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -9825,7 +9825,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "2c7711b2c5c02828749074a6865b59a353e1d1c939b36b8f411c304751d19b72",
+      "fingerprint": "48adf7ac41610974f851a8a84ce851d59829eaf3a675a5f01e23c63bdba6c452",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -9833,7 +9833,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX custodian_statement_batch_pkey ON fund_accounts.custodian_statement_batch USING btree (batch_id)",
           "expression": null,
-          "fingerprint": "2fdcdc486fbce032d74f2e643ccb94cc0d12ecf70c81dc8a1adf7ffa6c7ef4da",
+          "fingerprint": "c967f0dafcf72d270298f5ca242a95886aacba522b4099f18e56a52f11f128b7",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -9843,7 +9843,7 @@
           "method": "btree",
           "name": "custodian_statement_batch_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -9855,7 +9855,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_custodian_snapshot_authority ON fund_accounts.custodian_statement_batch USING btree (account_id, as_of_date DESC, ingested_at DESC)",
           "expression": null,
-          "fingerprint": "f1400141e8579823ff3bffa68785f3db35c4b7ccae13e7c7c393753b6394a843",
+          "fingerprint": "6861e72f709dc953522297ce4b69b91afd2dee052d0d5ee85ea7bbe971479a33",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -9867,7 +9867,7 @@
           "method": "btree",
           "name": "ix_custodian_snapshot_authority",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -9880,7 +9880,7 @@
       "kind": "table",
       "name": "custodian_statement_batch",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -9895,44 +9895,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -10031,7 +10031,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "c3df375664be40c6bcd5bb334a765ab5bf88dd232451d105b6ec1ca948fed755",
+      "fingerprint": "fd317cb4e21baeaba0a36ee361cbbadd6db84460598af46d589a5a9cde932312",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -10039,7 +10039,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX fund_account_legacy_import_receipt_pkey ON fund_accounts.fund_account_legacy_import_receipt USING btree (source_hash)",
           "expression": null,
-          "fingerprint": "79a4c0b3b8b468bd110cd7b412f2aeea62c1dd7e0dc161ee6a8e4ec6f31199ba",
+          "fingerprint": "e02d926625bb0787904ebb79e50a063c03ab1e8a89bf04acefa1edf228104ecf",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -10049,7 +10049,7 @@
           "method": "btree",
           "name": "fund_account_legacy_import_receipt_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -10062,7 +10062,7 @@
       "kind": "table",
       "name": "fund_account_legacy_import_receipt",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -10077,44 +10077,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -10193,7 +10193,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "ceba0c76c05a3312451adafe241b679e6dbb732c691d06c5b83271591ccbbcb9",
+      "fingerprint": "ee85c79d8d7e6b7f2f97ea2507e33aa1bf60a14d0017bfd2943e93c4c9577996",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -10201,7 +10201,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX fund_account_schema_migrations_pkey ON fund_accounts.fund_account_schema_migrations USING btree (filename)",
           "expression": null,
-          "fingerprint": "3b343fadfc77d2bed92e618c033c056ca37872fe01685eb76a3822c9de90b91d",
+          "fingerprint": "79804b30b49b26a87bae6674e09eb7fba8ac0aa114b61e1ccf79c1b8585dd87f",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -10211,7 +10211,7 @@
           "method": "btree",
           "name": "fund_account_schema_migrations_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -10224,7 +10224,7 @@
       "kind": "table",
       "name": "fund_account_schema_migrations",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -10239,44 +10239,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -10427,7 +10427,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "2e8455c98639022826a1ae7278295ba5ccf35c806c2461199843ede8992bc6ac",
+      "fingerprint": "0173624c0b358db1ea27c5a0e66d711e79d1d65d0a1ace8381c79e75f43e79dc",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -10435,7 +10435,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX private_capital_record_pkey ON fund_accounts.private_capital_record USING btree (tenant_id, company_id, record_kind, record_id)",
           "expression": null,
-          "fingerprint": "7c5df30b8715a839b33a755f918b3c57dd11a1659bf1cff90dd61cef633d0f36",
+          "fingerprint": "997070117aee5b5de36f23b3ee0c654c90eed9ab3954a295cbdfef9707f44a1c",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -10448,7 +10448,7 @@
           "method": "btree",
           "name": "private_capital_record_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -10460,7 +10460,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX ux_private_capital_single_correction ON fund_accounts.private_capital_record USING btree (tenant_id, company_id, ((payload ->> 'supersedesSnapshotId'::text))) WHERE ((record_kind = 'snapshot'::text) AND ((payload ->> 'supersedesSnapshotId'::text) IS NOT NULL))",
           "expression": "payload ->> 'supersedesSnapshotId'::text",
-          "fingerprint": "70315c4215397c32b22018f169ddc6376b63e393797edcdf3ae8d4aa9d4c8707",
+          "fingerprint": "45d351d81cee0ccc13a10ce62a9bca67547502a3984c79f32d260ee450743116",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -10472,7 +10472,7 @@
           "method": "btree",
           "name": "ux_private_capital_single_correction",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "record_kind = 'snapshot'::text AND (payload ->> 'supersedesSnapshotId'::text) IS NOT NULL",
           "primary": false,
           "ready": true,
@@ -10485,7 +10485,7 @@
       "kind": "table",
       "name": "private_capital_record",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",

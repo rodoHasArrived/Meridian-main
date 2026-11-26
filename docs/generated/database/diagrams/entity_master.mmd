@@ -1,0 +1,34 @@
+erDiagram
+    entity_master_entity_master_schema_migrations {
+        text filename PK
+        text checksum
+        timestamp_with_time_zone applied_at
+    }
+    entity_master_entity_parent_links {
+        uuid entity_id PK,FK
+        uuid parent_entity_id FK
+        date valid_from PK
+        date valid_to
+        timestamp_with_time_zone recorded_at
+        text recorded_by
+    }
+    entity_master_legal_entities {
+        uuid entity_id PK
+        text legal_name
+        text lei
+        text cik
+        text jurisdiction
+        timestamp_with_time_zone recorded_at
+        text recorded_by
+    }
+    entity_master_security_issuer_links {
+        uuid security_id PK
+        uuid issuer_entity_id FK
+        date valid_from PK
+        date valid_to
+        timestamp_with_time_zone recorded_at
+        text recorded_by
+    }
+    entity_master_legal_entities ||--o{ entity_master_entity_parent_links : "entity_parent_links_entity_id_fkey"
+    entity_master_legal_entities ||--o{ entity_master_entity_parent_links : "entity_parent_links_parent_entity_id_fkey"
+    entity_master_legal_entities ||--o{ entity_master_security_issuer_links : "security_issuer_links_issuer_entity_id_fkey"

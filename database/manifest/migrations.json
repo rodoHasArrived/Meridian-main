@@ -595,6 +595,69 @@
       "sha256": "54feb10eaf23439837a00c7c0bea029ffe990101e185b95596e52d6d13a00091"
     },
     {
+      "filename": "069_security_master_conflict_policy_decision.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 69,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/069_security_master_conflict_policy_decision.sql",
+      "schema": "security_master",
+      "sha256": "a8365e7029b0fc78ed685ad79266491bc1deb654dd6988c930c71d28cffebc0e"
+    },
+    {
+      "filename": "070_security_master_held_amendments.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 70,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/070_security_master_held_amendments.sql",
+      "schema": "security_master",
+      "sha256": "921193f375200ac26fb07aaff5ec9907ced1ea24428f4d82eb2dcca4a1655401"
+    },
+    {
+      "filename": "071_corporate_actions_append_only_guard.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 71,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/071_corporate_actions_append_only_guard.sql",
+      "schema": "security_master",
+      "sha256": "61cb7940b7c893c84d968ba3923151b2e5c8296211fde8a15eb0c8cbb5fb2ab2"
+    },
+    {
+      "filename": "072_security_master_change_outbox.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 72,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/072_security_master_change_outbox.sql",
+      "schema": "security_master",
+      "sha256": "77980a29a604dbed15ef10f41a6616f8070a386a9fe823806a58d6b3e5ebf44b"
+    },
+    {
+      "filename": "073_security_master_redirects.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 73,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/073_security_master_redirects.sql",
+      "schema": "security_master",
+      "sha256": "1e7d6a2181a0d69961b46d93ac3ac4fe9818b301bfad297cb3a409806a87dc50"
+    },
+    {
+      "filename": "074_security_master_exception_cases.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 74,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/074_security_master_exception_cases.sql",
+      "schema": "security_master",
+      "sha256": "fcfbf1b74dd1ff35dde66cef8061e9841403702cc2f98ee8ae68c9d1c8b3f873"
+    },
+    {
+      "filename": "075_security_factor_observations.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 75,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/075_security_factor_observations.sql",
+      "schema": "security_master",
+      "sha256": "eb831d19c76512f1100b6de26fb8947bf56bcf4247b82ee34b2bfb9d70b0f3b5"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1799,10 +1862,19 @@
       "path": "src/Meridian.Storage/Workstation/Migrations/001_operator_triage.sql",
       "schema": "operator_triage",
       "sha256": "45827327de6385564826a009bdfe7037fbd62b9d4f0ad9dd56b76dce11cad600"
+    },
+    {
+      "filename": "001_entity_master.sql",
+      "immutable": true,
+      "migration_set_id": "entity-master",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/EntityMaster/Migrations/001_entity_master.sql",
+      "schema": "entity_master",
+      "sha256": "629cf24e0dcf5607df9043491a9cada4fa6fcb1bd09666afaa6ba9c5e270c7c7"
     }
   ],
   "findings": [],
-  "fingerprint": "9e08c582e11edda1036a5ec6247e5bfca28c750a53d97751c00cc24ec6f42c47",
+  "fingerprint": "38861ef5e775fedb1885f27f2778933ba42b2c6597125b61acae3e8c30ec4aa2",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -2060,13 +2132,35 @@
       "quote_schema": false,
       "schema": "operator_triage",
       "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING"
+      ],
+      "directory": "src/Meridian.Storage/EntityMaster/Migrations",
+      "display_name": "Entity Master",
+      "drift_policy": "reapply",
+      "glob": "*.sql",
+      "id": "entity-master",
+      "immutable": true,
+      "ledger": {
+        "checksum_column": "checksum",
+        "checksum_required": false,
+        "key_column": "filename",
+        "ordinal_column": "ordinal",
+        "table": "entity_master_schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/EntityMaster",
+      "quote_schema": false,
+      "schema": "entity_master",
+      "track_ordinals": false
     }
   ],
   "summary": {
     "errors": 0,
-    "files": 200,
-    "migration_sets": 11,
-    "waivers": 59,
+    "files": 208,
+    "migration_sets": 12,
+    "waivers": 60,
     "warnings": 0
   },
   "waivers": [
@@ -2474,6 +2568,13 @@
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/066_corporate_action_cash_dividend_attestations.sql",
       "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers on the newly created bounded cash-dividend declaration history, reservations, event aliases, postings and attestation receipts. No TRUNCATE command or data removal is executed. UPDATE and DELETE guards remain intact. The real PostgreSQL native-post regression attempts UPDATE, DELETE and raw TRUNCATE CASCADE after a successful posting, requires SQLSTATE 55000 from the rejection triggers, and checks that every original row remains unchanged. This exception covers only this migration's truncation-rejection trigger declarations.",
       "review_after": "2027-05-12",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/071_corporate_actions_append_only_guard.sql",
+      "reason": "The lexical TRUNCATE match is the migration's own BEFORE TRUNCATE guard trigger, which rejects truncation of declared corporate actions (Security Master review A6). The migration truncates nothing; CorporateActionsAppendOnlyGuardPostgresTests attempts truncation and verifies refusal.",
+      "review_after": "2027-05-25",
       "rule_id": "migration-truncate"
     },
     {

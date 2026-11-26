@@ -2,14 +2,14 @@
   "acl": [
     {
       "grantable": false,
-      "grantee": "meridian",
-      "grantor": "meridian",
+      "grantee": "postgres",
+      "grantor": "postgres",
       "privilege": "create"
     },
     {
       "grantable": false,
-      "grantee": "meridian",
-      "grantor": "meridian",
+      "grantee": "postgres",
+      "grantor": "postgres",
       "privilege": "usage"
     }
   ],
@@ -154,7 +154,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "13eb851755849f99d829e419847342c0ee8065d83fcb48e16b188c7c1ea89b90",
+  "fingerprint": "8ff9bc4917596ef3080ac644dd256d9254e38806fef5924e5a4cfad94f8fb248",
   "foreign_tables": [],
   "functions": [],
   "logical_modules": [
@@ -162,7 +162,7 @@
   ],
   "materialized_views": [],
   "name": "banking",
-  "owner": "meridian",
+  "owner": "postgres",
   "partitions": [],
   "policies": [],
   "procedures": [],
@@ -171,44 +171,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -543,7 +543,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "8399679df82e7bbc0b3c6d62341ad97c04c6709b1364998da4ee485225fc4fbe",
+      "fingerprint": "9d8dbc8c21d2148033f812b9a0ff05f6e3e959d7dcd59e1b18efaa793460c001",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -551,7 +551,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX bank_transactions_pkey ON banking.bank_transactions USING btree (bank_transaction_id)",
           "expression": null,
-          "fingerprint": "21f82c2f9aa1a61e4441dec02d5678b2e3666368e7e37f2a798355808baab80c",
+          "fingerprint": "81672d95d8eecf64c3c72e7ebc196c7abc31da80e9bf21139f5e8fd85686e88d",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -561,7 +561,7 @@
           "method": "btree",
           "name": "bank_transactions_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -573,7 +573,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_bank_transactions_effective_date ON banking.bank_transactions USING btree (effective_date)",
           "expression": null,
-          "fingerprint": "1418bd2988b7ec3aa9ac24fd5a15241b25a11d5384b89c71e4d8c6c66b39d2a8",
+          "fingerprint": "cb8b10158ca43f29d539e120f86fe2de5ae21980e1a483f8f3917fdc087a55ac",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -583,7 +583,7 @@
           "method": "btree",
           "name": "ix_bank_transactions_effective_date",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -595,7 +595,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_bank_transactions_entity_id ON banking.bank_transactions USING btree (entity_id)",
           "expression": null,
-          "fingerprint": "07326700295484554958bc12be4296c6e349f9fa3605e25ec9a469e4201f44fe",
+          "fingerprint": "7ad0ab618b1431ac3f0eb26f4c970f9b20457b86caf332db6537ee066f4e8ea7",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -605,7 +605,7 @@
           "method": "btree",
           "name": "ix_bank_transactions_entity_id",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -617,7 +617,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_bank_transactions_pending_payment_id ON banking.bank_transactions USING btree (pending_payment_id) WHERE (pending_payment_id IS NOT NULL)",
           "expression": null,
-          "fingerprint": "da3b23b9b8a08fb1c3bd2343898e2c37545327d9d6a905b7e71810a625e05473",
+          "fingerprint": "76dc7fde1bdf9a93a0c7d5333a97be2bb303cc1b3649bb7ee59dbbc0df123b00",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -627,7 +627,7 @@
           "method": "btree",
           "name": "ix_bank_transactions_pending_payment_id",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "pending_payment_id IS NOT NULL",
           "primary": false,
           "ready": true,
@@ -639,7 +639,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX ux_bank_transactions_payment_evidence ON banking.bank_transactions USING btree (pending_payment_id, evidence_id)",
           "expression": null,
-          "fingerprint": "b517d425b444b76f571e40f6bc83a11ff3763c7f50218c6d3552baae6d9bdbc0",
+          "fingerprint": "3e07e5e4317655e0c4bc076d52dc132ff6b5c2bfc3be424656dd8d50191442e3",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -650,7 +650,7 @@
           "method": "btree",
           "name": "ux_bank_transactions_payment_evidence",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -663,7 +663,7 @@
       "kind": "table",
       "name": "bank_transactions",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -678,44 +678,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -1029,7 +1029,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "2ee6d7539cb127fd3267b26c497c546db925bab9a55a503e32d095eda995a103",
+      "fingerprint": "b7ccc39f264560f41e338917f5ab45e9d6500d2812109095db429aa26ab7dc4d",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -1037,7 +1037,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_pending_payments_entity_id ON banking.pending_payments USING btree (entity_id)",
           "expression": null,
-          "fingerprint": "d8ff81c37f99ca31dd2b439a9a2785b04dbbc7f573c99cadcab11c9d8d9062a1",
+          "fingerprint": "20772ea6c82f2acd98b1207693938814e437a3e2e9158fdef59b49a9897b2a4e",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1047,7 +1047,7 @@
           "method": "btree",
           "name": "ix_pending_payments_entity_id",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -1059,7 +1059,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_pending_payments_status ON banking.pending_payments USING btree (status)",
           "expression": null,
-          "fingerprint": "cdff6b1f17644d97dfdf99283a9a06ed6c62da30fd1009cfc4cf8691245caee4",
+          "fingerprint": "d3e8c475e24cb9d120d989407f2355b7868c9cc224a79c1714b3b9fcb57dee1f",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1069,7 +1069,7 @@
           "method": "btree",
           "name": "ix_pending_payments_status",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -1081,7 +1081,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX pending_payments_pkey ON banking.pending_payments USING btree (pending_payment_id)",
           "expression": null,
-          "fingerprint": "9d183e91c34f9a46632a6253594be22dc1291849fb3846e4d3ecf05ecc08e57a",
+          "fingerprint": "70c170e6cfe1fbda910af3e6bbdbd49ad58d7c61f889f59a48694b7c7d454975",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1091,7 +1091,7 @@
           "method": "btree",
           "name": "pending_payments_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -1104,7 +1104,7 @@
       "kind": "table",
       "name": "pending_payments",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -1119,44 +1119,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -1235,7 +1235,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "d74f73263bc9e930d261cc3d77c0ee25a8082a0e888fd58b7733f81a0c4b0de3",
+      "fingerprint": "0518acf1b539c812dcce0a813d6f611025ead688716235dfdb60baa70f0e13d9",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -1243,7 +1243,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX schema_migrations_pkey ON banking.schema_migrations USING btree (filename)",
           "expression": null,
-          "fingerprint": "3fd37d1a3ea61eedab447bd4292421a246b777ddfc029c7ec4ccd7ac4651c91a",
+          "fingerprint": "46112a570f12f600f0976a3740693d5eb33ba0ab598ff0564890bb3d55283cfa",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1253,7 +1253,7 @@
           "method": "btree",
           "name": "schema_migrations_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -1266,7 +1266,7 @@
       "kind": "table",
       "name": "schema_migrations",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -1311,44 +1311,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -1683,7 +1683,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "8399679df82e7bbc0b3c6d62341ad97c04c6709b1364998da4ee485225fc4fbe",
+      "fingerprint": "9d8dbc8c21d2148033f812b9a0ff05f6e3e959d7dcd59e1b18efaa793460c001",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -1691,7 +1691,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX bank_transactions_pkey ON banking.bank_transactions USING btree (bank_transaction_id)",
           "expression": null,
-          "fingerprint": "21f82c2f9aa1a61e4441dec02d5678b2e3666368e7e37f2a798355808baab80c",
+          "fingerprint": "81672d95d8eecf64c3c72e7ebc196c7abc31da80e9bf21139f5e8fd85686e88d",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1701,7 +1701,7 @@
           "method": "btree",
           "name": "bank_transactions_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -1713,7 +1713,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_bank_transactions_effective_date ON banking.bank_transactions USING btree (effective_date)",
           "expression": null,
-          "fingerprint": "1418bd2988b7ec3aa9ac24fd5a15241b25a11d5384b89c71e4d8c6c66b39d2a8",
+          "fingerprint": "cb8b10158ca43f29d539e120f86fe2de5ae21980e1a483f8f3917fdc087a55ac",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1723,7 +1723,7 @@
           "method": "btree",
           "name": "ix_bank_transactions_effective_date",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -1735,7 +1735,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_bank_transactions_entity_id ON banking.bank_transactions USING btree (entity_id)",
           "expression": null,
-          "fingerprint": "07326700295484554958bc12be4296c6e349f9fa3605e25ec9a469e4201f44fe",
+          "fingerprint": "7ad0ab618b1431ac3f0eb26f4c970f9b20457b86caf332db6537ee066f4e8ea7",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1745,7 +1745,7 @@
           "method": "btree",
           "name": "ix_bank_transactions_entity_id",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -1757,7 +1757,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_bank_transactions_pending_payment_id ON banking.bank_transactions USING btree (pending_payment_id) WHERE (pending_payment_id IS NOT NULL)",
           "expression": null,
-          "fingerprint": "da3b23b9b8a08fb1c3bd2343898e2c37545327d9d6a905b7e71810a625e05473",
+          "fingerprint": "76dc7fde1bdf9a93a0c7d5333a97be2bb303cc1b3649bb7ee59dbbc0df123b00",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1767,7 +1767,7 @@
           "method": "btree",
           "name": "ix_bank_transactions_pending_payment_id",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": "pending_payment_id IS NOT NULL",
           "primary": false,
           "ready": true,
@@ -1779,7 +1779,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX ux_bank_transactions_payment_evidence ON banking.bank_transactions USING btree (pending_payment_id, evidence_id)",
           "expression": null,
-          "fingerprint": "b517d425b444b76f571e40f6bc83a11ff3763c7f50218c6d3552baae6d9bdbc0",
+          "fingerprint": "3e07e5e4317655e0c4bc076d52dc132ff6b5c2bfc3be424656dd8d50191442e3",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1790,7 +1790,7 @@
           "method": "btree",
           "name": "ux_bank_transactions_payment_evidence",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -1803,7 +1803,7 @@
       "kind": "table",
       "name": "bank_transactions",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -1818,44 +1818,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -2169,7 +2169,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "2ee6d7539cb127fd3267b26c497c546db925bab9a55a503e32d095eda995a103",
+      "fingerprint": "b7ccc39f264560f41e338917f5ab45e9d6500d2812109095db429aa26ab7dc4d",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -2177,7 +2177,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_pending_payments_entity_id ON banking.pending_payments USING btree (entity_id)",
           "expression": null,
-          "fingerprint": "d8ff81c37f99ca31dd2b439a9a2785b04dbbc7f573c99cadcab11c9d8d9062a1",
+          "fingerprint": "20772ea6c82f2acd98b1207693938814e437a3e2e9158fdef59b49a9897b2a4e",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -2187,7 +2187,7 @@
           "method": "btree",
           "name": "ix_pending_payments_entity_id",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -2199,7 +2199,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_pending_payments_status ON banking.pending_payments USING btree (status)",
           "expression": null,
-          "fingerprint": "cdff6b1f17644d97dfdf99283a9a06ed6c62da30fd1009cfc4cf8691245caee4",
+          "fingerprint": "d3e8c475e24cb9d120d989407f2355b7868c9cc224a79c1714b3b9fcb57dee1f",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -2209,7 +2209,7 @@
           "method": "btree",
           "name": "ix_pending_payments_status",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -2221,7 +2221,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX pending_payments_pkey ON banking.pending_payments USING btree (pending_payment_id)",
           "expression": null,
-          "fingerprint": "9d183e91c34f9a46632a6253594be22dc1291849fb3846e4d3ecf05ecc08e57a",
+          "fingerprint": "70c170e6cfe1fbda910af3e6bbdbd49ad58d7c61f889f59a48694b7c7d454975",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -2231,7 +2231,7 @@
           "method": "btree",
           "name": "pending_payments_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -2244,7 +2244,7 @@
       "kind": "table",
       "name": "pending_payments",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -2259,44 +2259,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "meridian",
-          "grantor": "meridian",
+          "grantee": "postgres",
+          "grantor": "postgres",
           "privilege": "update"
         }
       ],
@@ -2375,7 +2375,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "d74f73263bc9e930d261cc3d77c0ee25a8082a0e888fd58b7733f81a0c4b0de3",
+      "fingerprint": "0518acf1b539c812dcce0a813d6f611025ead688716235dfdb60baa70f0e13d9",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -2383,7 +2383,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX schema_migrations_pkey ON banking.schema_migrations USING btree (filename)",
           "expression": null,
-          "fingerprint": "3fd37d1a3ea61eedab447bd4292421a246b777ddfc029c7ec4ccd7ac4651c91a",
+          "fingerprint": "46112a570f12f600f0976a3740693d5eb33ba0ab598ff0564890bb3d55283cfa",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -2393,7 +2393,7 @@
           "method": "btree",
           "name": "schema_migrations_pkey",
           "options": [],
-          "owner": "meridian",
+          "owner": "postgres",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -2406,7 +2406,7 @@
       "kind": "table",
       "name": "schema_migrations",
       "options": [],
-      "owner": "meridian",
+      "owner": "postgres",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
