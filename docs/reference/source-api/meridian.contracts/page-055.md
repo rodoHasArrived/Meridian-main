@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityCurvePointDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurvePointDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L46).
+
+One dated pillar. Value is a discount factor (Discount), an annual rate as a FRACTION (Forward: 0.04, never 4) or an index level (Inflation). Tenor is a label such as 3M; the date is authoritative.
+
+```csharp
+public sealed record SecurityCurvePointDto(DateOnly Date, decimal Value, string? Tenor = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityRatePointEvidenceDto? RateEvidence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L49) |  |
+
 ## SecurityCurveRatePolicy
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveRatePolicy</code>. Kind: `enum`.
@@ -853,27 +871,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public bool HasCanonicalLotType =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L31) | True when a typed lot aggregate owns this unit&#x27;s economics. |
-
-## SecurityLotUnitKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityLotUnitKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L9).
-
-What one unit of a position lot measures.
-
-```csharp
-public enum SecurityLotUnitKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Shares</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L12) | Equity shares. |
-| <code>Contracts</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L15) | Listed derivative contracts, scaled by the class&#x27;s contract multiplier. |
-| <code>FaceValue</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L18) | Par (face) amount of a debt instrument. |
-| <code>Notional</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L21) | Notional amount of an OTC derivative. |
-| <code>Units</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L24) | Fund, holding or other units with no par or notional meaning. |
-| <code>CurrencyAmount</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L27) | An amount of currency (FX spot, cash sweep balances). |
-| <code>Commitment</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L30) | A committed amount (fund commitments, guarantees). |

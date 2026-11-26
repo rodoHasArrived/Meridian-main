@@ -9,7 +9,8 @@ public static partial class ContractualCashFlowEngine
     private static void Walk(ContractualCashFlowContract contract, ContractualCashFlowStream stream,
         ContractualCashFlowRequest request, ScheduleGenerationResult schedule, IBusinessDayCalendar? calendar,
         IReadOnlyList<CashFlowCurveSnapshot> curves, IReadOnlyList<ResolvedExercise> exerciseEntries,
-        List<ContractualCashFlowEvent> output, List<CashFlowExerciseCalculation> calculations, bool continuation = false)
+        List<ContractualCashFlowEvent> output, List<CashFlowExerciseCalculation> calculations, bool continuation = false,
+        string prepaymentVersion = ContractualCashFlowVersions.Prepayment)
     {
         var periods = schedule.Periods;
         var selected = (request.Exercises ?? []).Where(e => e.StreamId == stream.StreamId).OrderBy(e => e.ExerciseDate).ToArray();
@@ -164,7 +165,7 @@ public static partial class ContractualCashFlowEngine
                     var survival = 1m;
                     foreach (var assumption in assumptions.Where(p => p.Method != CashFlowPrepaymentMethod.Amount && p.StartDate < date && p.EndDate > lastPrepay))
                     {
-                        survival *= 1m - PrepaymentFraction(assumption, lastPrepay, date);
+                        survival *= 1m - PrepaymentFraction(assumption, lastPrepay, date, prepaymentVersion);
                         policy = assumption.Policy;
                     }
                     prepayment += (balance - prepayment) * (1m - survival);

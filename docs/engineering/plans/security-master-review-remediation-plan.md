@@ -96,6 +96,35 @@ two may converge once canonical units are approved.
 conversions call it. Ranges, sign policy and error text stay per domain and still wait for the
 canonical-unit decision.
 
+**2026-11-19:** the Bond validator no longer refuses a negative `spreadBps`, which
+`SecurityRateFieldUnits` declares signed (a floating bond at index − 10bp now validates).
+`SecurityRateFieldUnitsValidatorParityTests` fails when a hand-written validator rule and the unit
+table disagree on a rate field's sign or fraction range. Four known disagreements are listed in that
+test, not fixed, pending the negative-rate ruling: `Deposit.interestRate`, `Repo.repoRate` and
+`CashSweep.yieldRate` are declared signed but validated as non-negative. A fourth waits on the
+canonical-range ruling: `StructuredNote.principalProtectionPct` is unbounded above in the unit table
+but capped at 1 by the validator.
+
+**2026-11-25 (review Priority 1, step 2):** DirectLoan and Swap gain economic consistency rules at
+Warning severity, so existing records can be counted before any rule is promoted to Error. Warnings do
+not block a write. DirectLoan: a spread with no reference index, principal-schedule dates that are not
+strictly increasing, a principal payment of zero or less, and a payment after maturity. Swap legs: a
+Floating leg with no index, a Fixed leg with no fixed rate, no day count or no payment frequency (unless
+the record declares one for the cash-flow fallback), and notional-schedule dates that are not strictly
+increasing. Leg currency and leg type were already required by the schema. The review's floor ≤ cap,
+commitment ≥ funded and schedule total ≤ principal checks are not possible: the DirectLoan schema has
+none of those fields. The write golden now records the two leg-convention warnings on its Swap fixture.
+
+**2026-11-25 (review Priority 1, step 3):** precision and currency cleanup.
+- `SM_CURRENCY_NOT_ISO4217` (Warning) reports record, pair, settlement, NAV and swap-leg currency
+  codes that are not ISO 4217 or an accepted market code (CNH, GBX); crypto pair tickers are skipped
+  through the catalog fact `PairCurrenciesAreAssetTickers`.
+- Migration 070 widens the OTC `numeric(28,10)` columns to unconstrained `numeric`, as 058 did for
+  the schedule projections. Ordinal 069 is left to open PR #3603, which must merge first or
+  renumber. Its `alter-column-type` waiver is proposed and awaits owner review. Other bounded
+  Security Master columns (for example the `numeric(12,6)` rate projections) are not changed.
+- Prepayment survival is decimal (`survival-cpr-smm-psa-v2`); v1 runs replay unchanged.
+
 ## Slice 5 — Audit evidence contracts before storage/serialization changes
 
 **Evidence:** D7. Classify each mutable row (cash-flow source, entitlement, field provenance and
@@ -196,6 +225,14 @@ descriptor declares `QuoteConvention` (defaulting from the lot unit so no price 
 Open from this slice: moving class-aware pricing callers onto the convention overload when a
 class first declares a non-default convention, and the quote-convention vocabulary decision
 above.
+
+**2026-11-25:** the owner chose a `Balance` convention for Deposit and Repo: valued at outstanding
+balance plus accrued interest, never from a quote. `LotQuantity.ValueAtPrice(price, Balance)`
+returns the balance, both classes declare it, and the asset-position market-value service blocks
+them (`BalanceValuationUnavailable`) until a balance adapter exists. The class-aware callers that
+exist today (fixed-income accrual, the amortization bridge, the structured-note template) never
+receive Deposit or Repo; the unit-kind overload used by backtesting lots still prices any
+face-value lot as a percent of par.
 
 ## Slice 9 — Measure the ADR-024 retirement gate; drain through stamped writes (2026-11-09)
 

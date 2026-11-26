@@ -5472,7 +5472,6 @@ Meridian-main
 │   │   │   │   └── SecurityValuationService.cs
 │   │   │   ├── AlternativeAssetLotExtensions.cs
 │   │   │   ├── ApprovedFieldEditCanonicalMergeHandler.cs
-│   │   │   ├── ApprovedHistoricalIdentifierWindowHandler.cs
 │   │   │   ├── CanonicalRegistryCoverageSource.cs
 │   │   │   ├── CanonicalSymbolRegistryMigrationService.cs
 │   │   │   ├── ConfiguredSymbolCoverageSource.cs
@@ -5535,7 +5534,6 @@ Meridian-main
 │   │   │   ├── SecurityMasterDataQualityService.cs
 │   │   │   ├── SecurityMasterDraftProposalService.cs
 │   │   │   ├── SecurityMasterGovernanceRequirements.cs
-│   │   │   ├── SecurityMasterHistoricalIdentifierWindow.cs
 │   │   │   ├── SecurityMasterHistoricalSymbolTimelineResolver.cs
 │   │   │   ├── SecurityMasterImportService.cs
 │   │   │   ├── SecurityMasterIngestFailureClassifier.cs
@@ -5568,7 +5566,6 @@ Meridian-main
 │   │   │   ├── SecurityMasterWorkbenchCommandService.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Discard.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.FieldBase.cs
-│   │   │   ├── SecurityMasterWorkbenchCommandService.HistoricalIdentifierWindow.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.IndependentReview.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Mutations.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Overrides.cs
@@ -5871,6 +5868,7 @@ Meridian-main
 │   │   │   ├── ContractualCashFlowJsonContext.cs
 │   │   │   ├── ContractualCashFlowRunComparer.cs
 │   │   │   ├── ContractualCashFlowSubjectKinds.cs
+│   │   │   ├── DecimalMath.cs
 │   │   │   └── SecurityContractualCashFlowTerms.cs
 │   │   ├── Catalog
 │   │   │   ├── DirectoryIndex.cs
@@ -6259,6 +6257,7 @@ Meridian-main
 │   │   │   ├── ISecurityMasterService.cs
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── ISecurityTradingParametersQueryService.cs
+│   │   │   ├── Iso4217Currencies.cs
 │   │   │   ├── IStructuredCashFlowProvider.cs
 │   │   │   ├── LotQuantity.cs
 │   │   │   ├── NotionalLot.cs
@@ -8786,7 +8785,8 @@ Meridian-main
 │   │   │   │   ├── 065_security_price_quotation_evidence.sql
 │   │   │   │   ├── 066_corporate_action_cash_dividend_attestations.sql
 │   │   │   │   ├── 067_security_curve_rate_policy.sql
-│   │   │   │   └── 068_security_master_terms_format_backfill.sql
+│   │   │   │   ├── 068_security_master_terms_format_backfill.sql
+│   │   │   │   └── 070_otc_decimal_precision.sql
 │   │   │   ├── CorporateActionCashDividendPostingLease.cs
 │   │   │   ├── CorporateActionInboxExportSource.cs
 │   │   │   ├── FileBondMarketDataStore.cs
@@ -9090,7 +9090,6 @@ Meridian-main
 │   │   │   │   ├── design-system-smoke-profile.mjs
 │   │   │   │   ├── design-system-smoke-runner.mjs
 │   │   │   │   ├── design-system-smoke.test.mjs
-│   │   │   │   ├── e2e-historical-identifier-window.mjs
 │   │   │   │   ├── generate-contracts.mjs
 │   │   │   │   ├── generate-contracts.test.mjs
 │   │   │   │   ├── merge-vitest-shards.mjs
@@ -9530,9 +9529,6 @@ Meridian-main
 │   │   │   │   │   │   ├── security-passport-editor.tsx
 │   │   │   │   │   │   ├── security-passport-editor.view-model.test.ts
 │   │   │   │   │   │   ├── security-passport-editor.view-model.ts
-│   │   │   │   │   │   ├── security-passport-historical-window.tsx
-│   │   │   │   │   │   ├── security-passport-historical-window.view-model.test.ts
-│   │   │   │   │   │   ├── security-passport-historical-window.view-model.ts
 │   │   │   │   │   │   ├── security-passport-schema-fields.parity.test.ts
 │   │   │   │   │   │   ├── security-passport-schema-fields.view-model.test.ts
 │   │   │   │   │   │   ├── security-passport-schema-fields.view-model.ts
@@ -12568,7 +12564,6 @@ Meridian-main
 │   │   │   ├── SecurityMasterViewModel.Services.cs
 │   │   │   ├── SecurityMasterViewModel.TextHelpers.cs
 │   │   │   ├── SecurityPassportEditorViewModel.cs
-│   │   │   ├── SecurityPassportEditorViewModel.HistoricalWindow.cs
 │   │   │   ├── ServiceManagerViewModel.cs
 │   │   │   ├── SettingsViewModel.AssetProfiles.cs
 │   │   │   ├── SettingsViewModel.cs
@@ -13136,6 +13131,7 @@ Meridian-main
 │   │   ├── ContractualCashFlowRunComparerTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Contracts.UnitTests.csproj
+│   │   ├── PrepaymentArithmeticV2Tests.cs
 │   │   └── README.md
 │   ├── Meridian.Core.UnitTests
 │   │   ├── Contracts
@@ -14723,7 +14719,6 @@ Meridian-main
 │   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.ScheduleAuthoring.cs
 │   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.StaleProposal.cs
 │   │   │   │   ├── BondWorkflowTermsAdmissionTests.cs
-│   │   │   │   ├── HistoricalIdentifierWindowGovernanceTests.cs
 │   │   │   │   ├── InMemorySecurityMasterRevisionStoreTests.cs
 │   │   │   │   ├── LedgerBookAffectedResolverTests.cs
 │   │   │   │   ├── LedgerPeriodLockReaderTests.cs
@@ -14782,6 +14777,7 @@ Meridian-main
 │   │   │   ├── CorporateActionTaxonomyPropertyTests.cs
 │   │   │   ├── CorporateActionTermsTests.cs
 │   │   │   ├── CorporateActionTypeDescriptorCatalogTests.cs
+│   │   │   ├── CurrencyCodeWarningTests.cs
 │   │   │   ├── CustomAssetProfileFieldProjectionPostgresTests.cs
 │   │   │   ├── CustomAssetProfileFieldProjectionTests.cs
 │   │   │   ├── CustomAssetPromotionReportTests.cs
@@ -14789,6 +14785,7 @@ Meridian-main
 │   │   │   ├── CustomAssetPromotionRoundTripTests.cs
 │   │   │   ├── DataVendorEntitlementServiceTests.cs
 │   │   │   ├── DayCountConventionsTests.cs
+│   │   │   ├── DirectLoanAndSwapEconomicRuleTests.cs
 │   │   │   ├── DiscountedCashFlowValuationModelTests.cs
 │   │   │   ├── ExerciseStyleStoredLabelTests.cs
 │   │   │   ├── FaceValueLotGoldenTests.cs
@@ -14816,6 +14813,7 @@ Meridian-main
 │   │   │   ├── OtcContractsMigrationTests.cs
 │   │   │   ├── OtcContractsPostgresTests.cs
 │   │   │   ├── OtcContractsPostgresTests.Lifecycle.cs
+│   │   │   ├── OtcDecimalPrecisionMigrationTests.cs
 │   │   │   ├── OtcExposureRulesTests.cs
 │   │   │   ├── OtcExposureServiceTests.cs
 │   │   │   ├── PostgresOperatorOverridesStoreTests.cs
@@ -14984,6 +14982,7 @@ Meridian-main
 │   │   │   ├── SecurityMaturityModuleContractionTests.cs
 │   │   │   ├── SecurityProjectionRecordTestExtensions.cs
 │   │   │   ├── SecurityQuoteConventionCoverageTests.cs
+│   │   │   ├── SecurityRateFieldUnitsValidatorParityTests.cs
 │   │   │   ├── SecurityRateIngestionRulesTests.cs
 │   │   │   ├── SecurityRateModuleContractionReplayTests.cs
 │   │   │   ├── SecurityRecordRateUnitTests.cs

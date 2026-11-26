@@ -2,11 +2,13 @@
 
 # `security-master-contracts` data objects - page 5 of 8
 
-Objects 321-400 of 615. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 616. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_ScheduleSpecFactory["ScheduleSpecFactory"] {
+    }
     class Meridian_Contracts_SecurityMaster_ScheduleTermsWriteRules["ScheduleTermsWriteRules"] {
     }
     class Meridian_Contracts_SecurityMaster_Schedules_ScheduleAnchorMode["ScheduleAnchorMode"] {
@@ -433,14 +435,6 @@ classDiagram
         +SecurityDetailDto Security
         +SecurityCashFlowSourceDto Source
     }
-    class Meridian_Contracts_SecurityMaster_SecurityCashFlowSourceDto["SecurityCashFlowSourceDto"] {
-        +DateTimeOffset? ClientConfirmedAt
-        +string? ClientConfirmedBy
-        +bool IsClientOverride
-        +DateTimeOffset? LastUpdatedUtc
-        +Guid SecurityId
-        +StructuredCashFlowSourceKind SourceKind
-    }
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarUsage --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarPurpose
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnostic --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnosticCode
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailure --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailureCode
@@ -499,5 +493,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetTermEditorKind
     Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetTermRole
     Meridian_Contracts_SecurityMaster_SecurityAssetTermUiHint --> Meridian_Contracts_SecurityMaster_SecurityAssetTermEditorKind
-    Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityCashFlowSourceDto
 ```

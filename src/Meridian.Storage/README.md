@@ -737,7 +737,10 @@ agreements, collateral agreements, netting sets, bilateral contracts) written by
 `(netting_set_id, as_of_date, version)`, and a trigger rejects update and delete),
 `otc_collateral_balances` and `otc_margin_calls` (partial unique indexes keep one open call per
 netting set, mover and movement kind, and one uncancelled call per snapshot movement); migration `055_security_governance_events_otc_collateral_stream.sql` admits
-the `OtcCollateral` governance stream. `PostgresOtcCollateralStore` serializes computations and
+the `OtcCollateral` governance stream. Migration `070_otc_decimal_precision.sql` removes the
+`numeric(28,10)` typmod from the OTC amount, quantity and exposure columns, as 058 did for the
+schedule projections, so values are no longer rounded past ten decimals (a proposed
+`alter-column-type` waiver awaits owner review). `PostgresOtcCollateralStore` serializes computations and
 calls per netting set with transaction-scoped advisory locks (`OtcAdvisoryLocks` states them and
 the one order they are taken in: an issue takes the netting set's snapshot, call and contracts
 locks and the collateral agreement's balances lock before any row lock, and every contract or

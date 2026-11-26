@@ -39,7 +39,9 @@ internal static class RepoAssetModule
                     new(SecurityCashFlowTermRole.CouponRate, "repoRate")
                 ],
                 StampFloor = 1,
-                AccountingOutsideSlice = true
+                AccountingOutsideSlice = true,
+                // A repo is a financing balance, not a quoted security (slice 8, decided 2026-11-25).
+                QuoteConvention = SecurityQuoteConvention.Balance
             },
             Fields: [
                 OptOneOf("rateUnit", "Fraction", "Percent", "BasisPoints").WithVerbatimUndeclaredValue().Since(2),

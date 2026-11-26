@@ -12,7 +12,7 @@ This is a source inventory of public DTOs and related contract objects. Database
 | Classification | Count |
 | --- | ---: |
 | `catalog` | 14 |
-| `class` | 406 |
+| `class` | 407 |
 | `configuration` | 21 |
 | `dto` | 1904 |
 | `enum` | 543 |
@@ -29,7 +29,7 @@ This is a source inventory of public DTOs and related contract objects. Database
 ## Database-adjacent diagrams
 
 - [`ledger-contracts`](contracts/ledger-contracts.md): 554 objects; mapped schemas: `ledger`.
-- [`security-master-contracts`](contracts/security-master-contracts.md): 615 objects; mapped schemas: `security_master`.
+- [`security-master-contracts`](contracts/security-master-contracts.md): 616 objects; mapped schemas: `security_master`.
 - [`direct-lending-contracts`](contracts/direct-lending-contracts.md): 124 objects; mapped schemas: `security_master`.
 - [`asset-operations-contracts`](contracts/asset-operations-contracts.md): 154 objects; mapped schemas: `asset_operations`.
 - [`fund-governance-contracts`](contracts/fund-governance-contracts.md): 246 objects; mapped schemas: `fund_accounts`, `fund_structure`.

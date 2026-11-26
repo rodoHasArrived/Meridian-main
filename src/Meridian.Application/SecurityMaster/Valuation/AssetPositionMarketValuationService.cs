@@ -100,6 +100,8 @@ public sealed class AssetPositionMarketValuationService(
         if (!SecurityAssetClassCatalog.TryGet(security.AssetClass, out var descriptor) || descriptor.LotMultiplierTermKey is not null
             || descriptor.LotUnit is not (SecurityLotUnitKind.Shares or SecurityLotUnitKind.Units or SecurityLotUnitKind.FaceValue))
         { Block("UnsupportedLotConvention", "The registered market-value kernel has no proven position adapter for this class's contract multiplier, notional, currency-amount or commitment convention."); return Result(); }
+        if (descriptor.QuoteConvention == SecurityQuoteConvention.Balance)
+        { Block("BalanceValuationUnavailable", "The class is valued at its outstanding balance plus accrued interest, not from a quote; the market-value kernel has no balance adapter, so a percent-of-par price is not substituted."); return Result(); }
         var face = descriptor.LotUnit == SecurityLotUnitKind.FaceValue;
         quantity = face ? state.OriginalFaceAmount : state.Quantity;
         if (quantity is null or <= 0 || state.CarryingAmount < 0)

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityRatePointEvidenceDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRatePointEvidenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L36).
+
+Raw observation and the explicit construction assumption retained with each immutable pillar.
+
+```csharp
+public sealed record SecurityRatePointEvidenceDto(SecurityRateObservationDto Observation, SecurityRateConstructionMethod ConstructionMethod, string MethodDescription, string ReviewedBy);
+```
+
 ## SecurityRateUnit
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRateUnit</code>. Kind: `enum`.
@@ -844,7 +856,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:773](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L773).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:778](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L778).
 
 The declared mark-based accounting treatment for an asset class.
 
@@ -856,8 +868,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:775](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L775) |  |
-| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:776](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L776) |  |
+| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:780](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L780) |  |
+| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:781](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L781) |  |
 
 ## SecurityValuationBlockerDto
 
@@ -894,22 +906,3 @@ One retained input a value was built from, so the value can be rebuilt from the 
 ```csharp
 public sealed record SecurityValuationInputDto(string Kind, string Reference, Guid? Id = null, long? Version = null, string? ContentSha256 = null, DateTimeOffset? AsOf = null, DateTimeOffset? RecordedAt = null);
 ```
-
-## SecurityValuationModelKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationModelKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L7).
-
-The model a security is valued with.
-
-```csharp
-public enum SecurityValuationModelKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>QuotedPrice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L10) | The golden-copy price selected through the pricing hierarchy. |
-| <code>DiscountedCashFlow</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L13) | The projected cash flows discounted on a stored discount curve. |

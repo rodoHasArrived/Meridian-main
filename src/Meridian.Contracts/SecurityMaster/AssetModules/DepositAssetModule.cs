@@ -39,7 +39,9 @@ internal static class DepositAssetModule
                     new(SecurityCashFlowTermRole.DayCount, "dayCount")
                 ],
                 StampFloor = 1,
-                AccountingOutsideSlice = true
+                AccountingOutsideSlice = true,
+                // A deposit is held at its balance, not quoted against par (slice 8, decided 2026-11-25).
+                QuoteConvention = SecurityQuoteConvention.Balance
             },
             Fields: [
                 OptOneOf("rateUnit", "Fraction", "Percent", "BasisPoints").WithVerbatimUndeclaredValue().Since(2),

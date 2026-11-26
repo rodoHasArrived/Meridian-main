@@ -152,7 +152,7 @@ public sealed class UiServerLoggingTests : IDisposable
             "Contractual cash-flow calculation capability: engine {Engine}, mapping {Mapping}, prepayment {Prepayment}; calculation-only, companion read-before-write");
         logEvent.Properties["Engine"].Should().Be(new ScalarValue("contractual-cashflow-v1"));
         logEvent.Properties["Mapping"].Should().Be(new ScalarValue("contractual-cashflow-mapping-v1"));
-        logEvent.Properties["Prepayment"].Should().Be(new ScalarValue("survival-cpr-smm-psa-v1"));
+        logEvent.Properties["Prepayment"].Should().Be(new ScalarValue("survival-cpr-smm-psa-v2"));
     }
 
     private ServiceProvider BuildHost(CollectingSink serilog, CapturingLoggerProvider defaults, IConfiguration? configuration)

@@ -2546,10 +2546,16 @@ let the leg scheduler accrue on the scheduled notional (paying step-downs as pri
 exchanges principal) and use a recorded fixing for a period that has already reset. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
 one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. How a raw quote scales into
 money is a declared catalog fact (remediation slice 8): `SecurityAssetClassDescriptor.QuoteConvention`
-(`PercentOfPar` for face-value paper, `PerUnit` otherwise, defaulting from the lot unit so no
-price changes), read by `LotQuantity.ValueAtPrice(price, convention)` and
-`LotQuantity.QuoteConventionFor(assetClass)`; the unit-kind overload keeps the legacy rule and
-`SecurityQuoteConventionCoverageTests` pins the two routes to agree for every catalogued class. `CommitmentLot` (commitment,
+(`PercentOfPar` for face-value paper, `PerUnit` otherwise, defaulting from the lot unit), read by
+`LotQuantity.ValueAtPrice(price, convention)` and `LotQuantity.QuoteConventionFor(assetClass)`.
+Deposit and Repo declare `Balance` (decided 2026-11-25): they are valued at their outstanding
+balance, a quote does not scale the value, and accrued interest stays on the accrual path. The
+unit-kind overload keeps the legacy rule, and `SecurityQuoteConventionCoverageTests` pins the two
+routes to agree for every other catalogued class. `Iso4217Currencies` lists the ISO 4217 codes
+(plus the CNH and GBX market codes) that Security Master validation recognises. Contractual
+cash-flow prepayment survival is computed in decimal (`survival-cpr-smm-psa-v2`); runs recorded
+under `-v1` replay with the original double arithmetic, and runs with no survival-rate assumption
+keep recording v1 so their evidence hashes are unchanged. `CommitmentLot` (commitment,
 funded and unfunded amounts, recallable distributions, `Draw`) and `FundUnitLot` (units at an
 acquisition NAV) are the `Commitment` and `Units` cases the registry assigns to private fund
 interests, guarantees and funds. `SecurityIdentifierKind` adds

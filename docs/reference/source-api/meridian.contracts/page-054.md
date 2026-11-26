@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityAssetProfileLineageDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileLineageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:161](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L161).
+
+```csharp
+public sealed record SecurityAssetProfileLineageDto(string ProfileId, IReadOnlyList<SecurityAssetProfileDefinitionDto> Versions, IReadOnlyList<SecurityAssetProfileGovernanceAuditEventDto> AuditEvents);
+```
+
 ## SecurityAssetProfilePromotionCandidateDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfilePromotionCandidateDto</code>. Kind: `record`.
@@ -849,21 +859,3 @@ Enum declarations:
 | <code>Discount</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L14) | Positive discount factors; legacy policy additionally requires (0, 1&#93; and nonincreasing pillars. At as-of the factor is 1. |
 | <code>Forward</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L17) | Projected annual fixings stored as fractions (0.04, never 4); signed values require an explicit SignedRates definition. |
 | <code>Inflation</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L20) | Projected levels of one inflation index; always positive. |
-
-## SecurityCurvePointDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurvePointDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L46).
-
-One dated pillar. Value is a discount factor (Discount), an annual rate as a FRACTION (Forward: 0.04, never 4) or an index level (Inflation). Tenor is a label such as 3M; the date is authoritative.
-
-```csharp
-public sealed record SecurityCurvePointDto(DateOnly Date, decimal Value, string? Tenor = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityRatePointEvidenceDto? RateEvidence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L49) |  |
