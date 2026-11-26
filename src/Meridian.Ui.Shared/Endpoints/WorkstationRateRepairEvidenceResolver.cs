@@ -2,12 +2,11 @@ using Meridian.Contracts.Integrity;
 using System.Text.Json;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Workstation;
-using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Evidence;
 
-namespace Meridian.Ui.Shared.Services;
+namespace Meridian.Ui.Shared.Endpoints;
 
-/// <summary>Resolves owned retained document bytes and derives their repair evidence identity on the server.</summary>
+/// <summary>HTTP tenant-scoped adapter: resolves owned retained document bytes and derives their repair evidence identity on the server.</summary>
 public sealed class WorkstationRateRepairEvidenceResolver(
     IEvidenceArtifactStore artifacts, IWorkstationTenantContextAccessor contextAccessor) : ISecurityRateRepairEvidenceResolver
 {

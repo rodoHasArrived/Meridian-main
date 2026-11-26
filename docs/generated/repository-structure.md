@@ -1968,6 +1968,7 @@ Meridian-main
 │   │   ├── security-master-custom-asset-promotion.md
 │   │   ├── security-master-governed-edit-rollout.md
 │   │   ├── security-master-normalized-identifier-migration.md
+│   │   ├── security-master-repairs-and-evidence.md
 │   │   ├── security-master-terms-contract-rollout.md
 │   │   ├── service-level-objectives.md
 │   │   ├── shadow-mode-onboarding.md
@@ -2128,7 +2129,8 @@ Meridian-main
 │   │   │   │   ├── page-079.md
 │   │   │   │   ├── page-080.md
 │   │   │   │   ├── page-081.md
-│   │   │   │   └── page-082.md
+│   │   │   │   ├── page-082.md
+│   │   │   │   └── page-083.md
 │   │   │   ├── meridian.core
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
@@ -5497,12 +5499,14 @@ Meridian-main
 │   │   │   ├── ISecurityMasterRevisionStore.cs
 │   │   │   ├── ISecurityMasterWorkbenchCommandService.cs
 │   │   │   ├── ISecurityMasterWorkbenchQueryService.cs
+│   │   │   ├── ISecurityRateRepairStore.cs
 │   │   │   ├── KeyedGatePool.cs
 │   │   │   ├── NullSecurityMasterReferenceServices.cs
 │   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── PostgresSecurityMasterConflictService.cs
 │   │   │   ├── PostgresSecurityMasterRevisionStore.cs
 │   │   │   ├── PostgresSecurityMasterRevisionStore.Impact.cs
+│   │   │   ├── PostgresSecurityRateRepairStore.cs
 │   │   │   ├── RetainedSecurityTermsReadBoundary.cs
 │   │   │   ├── SecurityAssetPackAdmission.cs
 │   │   │   ├── SecurityAssetProfileGovernanceService.cs
@@ -5582,6 +5586,10 @@ Meridian-main
 │   │   │   ├── SecurityMasterWorkbenchOptions.cs
 │   │   │   ├── SecurityMasterWriteAuthority.cs
 │   │   │   ├── SecurityMasterWriteRefusedException.cs
+│   │   │   ├── SecurityRateRepairService.Commands.cs
+│   │   │   ├── SecurityRateRepairService.cs
+│   │   │   ├── SecurityRateRepairService.Discovery.cs
+│   │   │   ├── SecurityRateRepairWorkflowAuthority.cs
 │   │   │   ├── SecurityResolver.cs
 │   │   │   ├── StaleFieldProposalException.cs
 │   │   │   └── SymbolResolutionMismatchTracker.cs
@@ -6451,6 +6459,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterTrustWorkbenchDtos.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandDtos.cs
 │   │   │   ├── SecurityMasterWorkstationDtos.cs
+│   │   │   ├── SecurityRateRepairDtos.cs
 │   │   │   ├── SinglePrincipalAttestationDtos.cs
 │   │   │   ├── StatementConnectorDtos.cs
 │   │   │   ├── StatementReconciliationDtos.cs
@@ -8797,7 +8806,8 @@ Meridian-main
 │   │   │   │   ├── 066_corporate_action_cash_dividend_attestations.sql
 │   │   │   │   ├── 067_security_curve_rate_policy.sql
 │   │   │   │   ├── 068_security_master_terms_format_backfill.sql
-│   │   │   │   └── 069_security_revision_review_context.sql
+│   │   │   │   ├── 069_security_revision_review_context.sql
+│   │   │   │   └── 070_rate_repair_governance.sql
 │   │   │   ├── CorporateActionCashDividendPostingLease.cs
 │   │   │   ├── CorporateActionInboxExportSource.cs
 │   │   │   ├── FileBondMarketDataStore.cs
@@ -9903,6 +9913,8 @@ Meridian-main
 │   │   │   │   │   │   ├── security-master-workbench.api.test.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.ts
 │   │   │   │   │   │   ├── security-master.api.ts
+│   │   │   │   │   │   ├── security-rate-repair.api.test.ts
+│   │   │   │   │   │   ├── security-rate-repair.api.ts
 │   │   │   │   │   │   ├── security-rates.api.ts
 │   │   │   │   │   │   ├── statement-connectors.api.ts
 │   │   │   │   │   │   ├── statement-run-detail.api.ts
@@ -10748,6 +10760,13 @@ Meridian-main
 │   │   │   │   │   ├── security-master-authoritative-detail.ts
 │   │   │   │   │   ├── security-master-policy-evidence.test.tsx
 │   │   │   │   │   ├── security-master-policy-evidence.ts
+│   │   │   │   │   ├── security-master-rate-repair-queue.test.tsx
+│   │   │   │   │   ├── security-master-rate-repair-queue.tsx
+│   │   │   │   │   ├── security-rate-repair-batch-review.tsx
+│   │   │   │   │   ├── security-rate-repair-discovery.test.ts
+│   │   │   │   │   ├── security-rate-repair-discovery.ts
+│   │   │   │   │   ├── security-rate-repair-selection.tsx
+│   │   │   │   │   ├── security-rate-repair.test-fixtures.ts
 │   │   │   │   │   ├── settings-change-impact.test.tsx
 │   │   │   │   │   ├── settings-change-impact.tsx
 │   │   │   │   │   ├── settings-mutation-confirm-dialog.tsx
@@ -11518,6 +11537,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.SecurityMasterImpact.cs
 │   │   │   ├── WorkstationEndpoints.SecurityMasterMapping.cs
 │   │   │   ├── WorkstationEndpoints.SecurityMasterWorkbench.cs
+│   │   │   ├── WorkstationEndpoints.SecurityRateRepairs.cs
 │   │   │   ├── WorkstationEndpoints.SecurityReadRegistration.cs
 │   │   │   ├── WorkstationEndpoints.Session.cs
 │   │   │   ├── WorkstationEndpoints.StatementCaseworkAuthority.cs
@@ -11531,6 +11551,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.StructuredReportingExport.cs
 │   │   │   ├── WorkstationEndpoints.TableViews.cs
 │   │   │   ├── WorkstationEndpoints.Trading.cs
+│   │   │   ├── WorkstationRateRepairEvidenceResolver.cs
 │   │   │   ├── WorkstationRiskEndpoints.cs
 │   │   │   └── WorkstationTenantContext.cs
 │   │   ├── Evidence
@@ -11918,6 +11939,7 @@ Meridian-main
 │   │   │   ├── RiskRuleRuntimeService.cs
 │   │   │   ├── SecurityInstrumentTermsReadService.cs
 │   │   │   ├── SecurityMasterExceptionCaseworkService.cs
+│   │   │   ├── SecurityMasterOperatorServiceRegistration.cs
 │   │   │   ├── SecurityMasterReconciliationSlaPolicyProvider.cs
 │   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
 │   │   │   ├── SecurityMasterSnapshotLotEconomics.cs
@@ -15003,6 +15025,10 @@ Meridian-main
 │   │   │   ├── SecurityQuoteConventionCoverageTests.cs
 │   │   │   ├── SecurityRateIngestionRulesTests.cs
 │   │   │   ├── SecurityRateModuleContractionReplayTests.cs
+│   │   │   ├── SecurityRateRepairDiscoveryTests.cs
+│   │   │   ├── SecurityRateRepairFinalizationTests.cs
+│   │   │   ├── SecurityRateRepairPersistenceTests.cs
+│   │   │   ├── SecurityRateRepairWorkflowPostgresTests.cs
 │   │   │   ├── SecurityRecordRateUnitTests.cs
 │   │   │   ├── SecurityRecurringAccrualPolicyTests.cs
 │   │   │   ├── SecurityReferenceModuleContractionReplayTests.cs
@@ -15810,6 +15836,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterWorkbenchScheduleBookGoldenTests.cs
 │   │   │   ├── SecurityMasterWorkbenchScheduleBookHarness.cs
 │   │   │   ├── SecurityMasterWriteRefusalEndpointsTests.cs
+│   │   │   ├── SecurityRateRepairEndpointsTests.cs
 │   │   │   ├── SinglePrincipalAttestationAdditionalTests.cs
 │   │   │   ├── SinglePrincipalAttestationEndpointTests.cs
 │   │   │   ├── SinglePrincipalAttestationStoreTests.cs

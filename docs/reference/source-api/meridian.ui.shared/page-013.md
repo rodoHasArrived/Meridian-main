@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IBookReceiptEvidenceSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IBookReceiptEvidenceSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.cs:20](../../../../src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.cs#L20).
+
+Supplies independently retained provider cash and posted journal evidence for an exact book.
+
+```csharp
+public interface IBookReceiptEvidenceSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BookReceiptSourceSnapshotDto&gt; LoadAsync(BookReceiptQueryDto query, IReadOnlyList&lt;BookReceiptExpectationDto&gt; expectations, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.cs:22](../../../../src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.cs#L22) |  |
+
 ## IBookReceiptRunStore
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IBookReceiptRunStore</code>. Kind: `interface`.
@@ -953,21 +971,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>ValueTask&lt;ReportingGovernedArtifactProduction&gt; ProduceAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:136](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L136) |  |
-
-## IReportingCertifiedLedgerPresentationSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IReportingCertifiedLedgerPresentationSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:98](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L98).
-
-Resolves the canonical ledger report pack whose accounting presentation was certified for an exact reporting checkpoint. Returning null means that no authoritative presentation is available and callers that require it must fail closed.
-
-```csharp
-public interface IReportingCertifiedLedgerPresentationSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ValueTask&lt;ReportingCertifiedLedgerPresentationInput?&gt; ResolveExactAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:100](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L100) |  |

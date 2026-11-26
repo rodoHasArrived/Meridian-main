@@ -2,6 +2,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.SecurityMaster;
+using Meridian.Ui.Shared.Endpoints;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SecurityQuery = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;

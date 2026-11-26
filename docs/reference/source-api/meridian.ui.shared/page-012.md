@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## Snapshot
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FileOnboardingWorkspaceStore.Snapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:14](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L14).
+
+```csharp
+public sealed record Snapshot(IReadOnlyList<OnboardingWorkspaceDto> Workspaces);
+```
+
 ## FilePrivateCapitalLifecycleSource
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FilePrivateCapitalLifecycleSource</code>. Kind: `class`.
@@ -1137,21 +1147,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>IReadOnlyList&lt;ProviderConfigAuditEntryDto&gt; GetAuditLog(int maxEntries = 100);</code> | [src/Meridian.Ui.Shared/Services/IBackfillProviderConfigAuditReader.cs:10](../../../../src/Meridian.Ui.Shared/Services/IBackfillProviderConfigAuditReader.cs#L10) |  |
-
-## IBookReceiptEvidenceSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IBookReceiptEvidenceSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.cs:20](../../../../src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.cs#L20).
-
-Supplies independently retained provider cash and posted journal evidence for an exact book.
-
-```csharp
-public interface IBookReceiptEvidenceSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;BookReceiptSourceSnapshotDto&gt; LoadAsync(BookReceiptQueryDto query, IReadOnlyList&lt;BookReceiptExpectationDto&gt; expectations, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.cs:22](../../../../src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.cs#L22) |  |
