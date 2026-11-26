@@ -10,70 +10,8 @@ namespace Meridian.Tests.Application.Config;
 public sealed class OAuthVaultRecoveryTests : IDisposable
 {
     private readonly string _root = Path.Combine(Path.GetTempPath(), "meridian-oauth-recovery", Guid.NewGuid().ToString("N"));
-    private string LegacyPath => Path.Combine(_root, ".mdc", "oauth_tokens.json");
     private static OAuthToken Token(string value = "imported-access") => new(value, "Bearer",
         DateTimeOffset.UtcNow.AddHours(1), "imported-refresh");
-
-    [Theory]
-    [InlineData(false, "")]
-    [InlineData(false, "   ")]
-    [InlineData(false, "corrupt")]
-    [InlineData(false, null)]
-    [InlineData(true, "")]
-    [InlineData(true, "   ")]
-    [InlineData(true, "corrupt")]
-    [InlineData(true, null)]
-    public async Task LegacyImport_RetainsImportedRecoveryGenerationBeforeErasingSource(bool existingVault, string? corruption)
-    {
-        var vault = new FileProviderCredentialStore(_root);
-        if (existingVault)
-            await vault.SaveOAuthTokenAsync("existing", Token("retained-access"));
-        Directory.CreateDirectory(Path.GetDirectoryName(LegacyPath)!);
-        await File.WriteAllTextAsync(LegacyPath, JsonSerializer.Serialize(new Dictionary<string, OAuthToken>
-        {
-            ["imported"] = Token()
-        }));
-
-        await using (var migrated = new OAuthTokenRefreshService(_root))
-            await migrated.InitializeAsync();
-        File.Exists(LegacyPath).Should().BeFalse();
-        File.Exists(vault.VaultPath + ".bak").Should().BeTrue();
-        if (corruption is null)
-            File.Delete(vault.VaultPath);
-        else
-            await File.WriteAllTextAsync(vault.VaultPath, corruption);
-
-        await using var recovered = new OAuthTokenRefreshService(_root);
-        await recovered.InitializeAsync();
-        recovered.GetToken("imported")!.AccessToken.Should().Be("imported-access");
-        recovered.GetToken("imported")!.RefreshToken.Should().Be("imported-refresh");
-        if (existingVault)
-            recovered.GetToken("existing")!.AccessToken.Should().Be("retained-access");
-    }
-
-    [Fact]
-    public async Task ConcurrentLegacyInitializers_CompleteCleanupAndReadRetainedTokens()
-    {
-        Directory.CreateDirectory(Path.GetDirectoryName(LegacyPath)!);
-        await File.WriteAllTextAsync(LegacyPath, JsonSerializer.Serialize(new Dictionary<string, OAuthToken>
-        {
-            ["provider"] = Token()
-        }));
-        var services = Enumerable.Range(0, 8).Select(_ => new OAuthTokenRefreshService(_root)).ToArray();
-        try
-        {
-            await Task.WhenAll(services.Select(service => service.InitializeAsync())).WaitAsync(TimeSpan.FromSeconds(15));
-            foreach (var service in services)
-                service.GetToken("provider")!.AccessToken.Should().Be("imported-access");
-            File.Exists(LegacyPath).Should().BeFalse();
-            File.Exists(LegacyPath + ".migrated").Should().BeFalse();
-        }
-        finally
-        {
-            foreach (var service in services)
-                await service.DisposeAsync();
-        }
-    }
 
     [Fact]
     public async Task InitializeAsync_StorageRecoveryRetriesTheSameService()
@@ -153,42 +91,6 @@ public sealed class OAuthVaultRecoveryTests : IDisposable
         tokens["provider"].AccessToken.Should().Be("imported-access");
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task ProviderLegacyImport_RetainsRecoveryBeforeErasingSource(bool existingVault)
-    {
-        var vault = new FileProviderCredentialStore(_root);
-        if (existingVault)
-            await vault.SaveOAuthTokenAsync("existing", Token("retained-access"));
-        Directory.CreateDirectory(_root);
-        var path = Path.Combine(_root, "provider-credentials.json");
-        await File.WriteAllTextAsync(path, """{"polygon":{"ApiKey":"provider-secret"}}""");
-        var adapter = new Meridian.Ui.Shared.Services.ProviderCredentialStore(_root);
-        (await adapter.GetCredentialsAsync("polygon"))["ApiKey"].Should().Be("provider-secret");
-        File.Exists(path).Should().BeFalse();
-        await File.WriteAllTextAsync(vault.VaultPath, "corrupt-primary");
-
-        (await new FileProviderCredentialStore(_root).ReadForProviderAsync("polygon"))!.Get("ApiKey").Should().Be("provider-secret");
-    }
-
-    [Fact]
-    public async Task ProviderLegacyImport_ConcurrentAdaptersFinishCleanup()
-    {
-        Directory.CreateDirectory(_root);
-        var path = Path.Combine(_root, "provider-credentials.json");
-        await File.WriteAllTextAsync(path, """{"polygon":{"ApiKey":"provider-secret"}}""");
-        var adapters = Enumerable.Range(0, 8).Select(_ => new Meridian.Ui.Shared.Services.ProviderCredentialStore(_root));
-
-        var results = await Task.WhenAll(adapters.Select(adapter => adapter.GetCredentialsAsync("polygon")))
-            .WaitAsync(TimeSpan.FromSeconds(15));
-
-        foreach (var result in results)
-            result["ApiKey"].Should().Be("provider-secret");
-        File.Exists(path).Should().BeFalse();
-        File.Exists(path + ".migrated").Should().BeFalse();
-    }
-
     private sealed class RecoverableReadVault : IOAuthTokenVault
     {
         public int Reads { get; private set; }
@@ -206,8 +108,6 @@ public sealed class OAuthVaultRecoveryTests : IDisposable
             return Task.FromResult<IReadOnlyDictionary<string, OAuthToken>>(new Dictionary<string, OAuthToken> { ["provider"] = Token() });
         }
 
-        public Task ImportOAuthTokensAsync(IReadOnlyDictionary<string, OAuthToken> tokens, CancellationToken ct = default)
-            => throw new NotSupportedException();
         public Task SaveOAuthTokenAsync(string providerName, OAuthToken? token, CancellationToken ct = default)
             => throw new NotSupportedException();
     }

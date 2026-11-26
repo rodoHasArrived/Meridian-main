@@ -35,64 +35,9 @@ public sealed partial class ReportingScheduleService
         new(ReportingScheduleIdentityComparer.Instance);
     private readonly object _gate = new();
 
-#pragma warning disable CS0618
-    [Obsolete(
-        "Use the constructor overload accepting Meridian.Reporting.IReportingScheduleStore.")]
     public ReportingScheduleService(
         IReportingOrchestrationService orchestrationService,
-        IReportingScheduleStore? store = null,
-        ReportPackDeliveryService? deliveryService = null,
-        GovernedReportingTemplateCatalog? governedTemplateCatalog = null,
-        ReportWriterDatasetSourceService? datasetSourceService = null,
-        ReportingRunReadinessService? readinessService = null,
-        ReportingRunCertificationService? certificationService = null,
-        IReportingGovernanceEndpointCoordinator? governanceCoordinator = null,
-        IReportingRecipientDestinationResolver? destinationResolver = null)
-        : this(
-            orchestrationService,
-            store,
-            deliveryService,
-            governedTemplateCatalog,
-            datasetSourceService,
-            readinessService,
-            certificationService,
-            governanceCoordinator,
-            destinationResolver,
-            deploymentReadinessService: null)
-    {
-    }
-
-    [Obsolete(
-        "Use the constructor overload accepting Meridian.Reporting.IReportingScheduleStore.")]
-    public ReportingScheduleService(
-        IReportingOrchestrationService orchestrationService,
-        IReportingScheduleStore? store,
-        ReportPackDeliveryService? deliveryService,
-        GovernedReportingTemplateCatalog? governedTemplateCatalog,
-        ReportWriterDatasetSourceService? datasetSourceService,
-        ReportingRunReadinessService? readinessService,
-        ReportingRunCertificationService? certificationService,
-        IReportingGovernanceEndpointCoordinator? governanceCoordinator,
-        IReportingRecipientDestinationResolver? destinationResolver,
-        IReportingDeploymentReadinessService? deploymentReadinessService)
-        : this(
-            orchestrationService,
-            (Meridian.Reporting.IReportingScheduleStore?)store,
-            deliveryService,
-            governedTemplateCatalog,
-            datasetSourceService,
-            readinessService,
-            certificationService,
-            governanceCoordinator,
-            destinationResolver,
-            deploymentReadinessService)
-    {
-    }
-#pragma warning restore CS0618
-
-    public ReportingScheduleService(
-        IReportingOrchestrationService orchestrationService,
-        Meridian.Reporting.IReportingScheduleStore? store,
+        Meridian.Reporting.IReportingScheduleStore? store = null,
         ReportPackDeliveryService? deliveryService = null,
         GovernedReportingTemplateCatalog? governedTemplateCatalog = null,
         ReportWriterDatasetSourceService? datasetSourceService = null,

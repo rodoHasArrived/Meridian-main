@@ -6,24 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## HistoricalBarPoint
-
-Qualified name: <code>Meridian.DataIntegration.Historical.HistoricalBarPoint</code>. Kind: `record`.
-
-Source: [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1084](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1084).
-
-A single OHLCV bar. Source is the provenance label of the stored events aggregated into the bucket: the vendor label when every contributing event carries the same one, the documented MixedSources sentinel when the bucket folds together more than one provenance state (two different vendors, or labeled plus unlabeled events), and null when no contributing event was labeled — provenance unknown. IsAdjusted is the price-adjustment regime (HistoricalBar.IsAdjusted semantics): true/false only when every contributing event declares that same regime; any mixing or undeclared regime collapses to the honest null (unknown). There is deliberately no &quot;mixed&quot; sentinel for the regime — a bool? cannot express one honestly, so unknown and mixed share null.
-
-```csharp
-public sealed record HistoricalBarPoint(DateTimeOffset Start, decimal Open, decimal High, decimal Low, decimal Close, long Volume, decimal Vwap, int TradeCount, string? Source = null, bool? IsAdjusted = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string MixedSources = &quot;mixed&quot;;</code> | [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1102](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1102) | Sentinel Source value for a bucket whose contributing events do not share a single provenance state (multiple vendors, or labeled mixed with unlabeled events). Distinct from null, which means no contributing event was labeled. |
-
 ## HistoricalBarsQuery
 
 Qualified name: <code>Meridian.DataIntegration.Historical.HistoricalBarsQuery</code>. Kind: `record`.
@@ -1082,3 +1064,32 @@ Declared public members:
 | <code>public long TotalGapsDetected =&gt; …;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:331](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L331) | Gets total gaps detected count. |
 | <code>public long TotalEventsProcessed =&gt; …;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:336](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L336) | Gets total events processed count. |
 | <code>public void Dispose();</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:451](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L451) |  |
+
+## GapAnalyzerConfig
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.GapAnalyzerConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:538](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L538).
+
+Configuration for gap analysis.
+
+```csharp
+public sealed record GapAnalyzerConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int GapThresholdSeconds { get; init; } = 60;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:543](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L543) | Minimum gap duration in seconds to be considered a gap. |
+| <code>public int TradingStartHour { get; init; } = 13;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:548](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L548) | Trading start hour (UTC). |
+| <code>public int TradingStartMinute { get; init; } = 30;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:553](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L553) | Trading start minute. |
+| <code>public int TradingEndHour { get; init; } = 20;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:558](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L558) | Trading end hour (UTC). |
+| <code>public int TradingEndMinute { get; init; } = 0;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:563](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L563) | Trading end minute. |
+| <code>public long ExpectedEventsPerHour { get; init; } = 1000;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:568](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L568) | Expected events per hour for estimation. |
+| <code>public bool IncludeExtendedHours { get; init; } = true;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:573](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L573) | Include pre-market and after-hours in timeline. |
+| <code>public double PreMarketHours { get; init; } = 5.5;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:578](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L578) | Pre-market hours before regular trading. |
+| <code>public double AfterHoursHours { get; init; } = 4.0;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:583](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L583) | After-hours duration after regular trading. |
+| <code>public int MaxGapsPerSymbol { get; init; } = 1000;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:588](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L588) | Maximum gaps to retain per symbol. |
+| <code>public int RetentionDays { get; init; } = 30;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:593](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L593) | Days to retain gap history. |
+| <code>public static GapAnalyzerConfig Default =&gt; …;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:595](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L595) |  |

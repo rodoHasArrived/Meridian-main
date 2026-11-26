@@ -1562,24 +1562,6 @@ public sealed class ReportingOperationalConcurrencyTests
         }
     }
 
-    [Fact]
-    public void FileScheduleStore_PreservesLegacyInterfaceCompatibility()
-    {
-#pragma warning disable CS0618
-        var legacyType = typeof(Meridian.Ui.Shared.Services.IReportingScheduleStore);
-        legacyType
-            .IsAssignableFrom(typeof(FileReportingScheduleStore))
-            .Should()
-            .BeTrue();
-        typeof(ReportingScheduleService)
-            .GetConstructors()
-            .Should()
-            .Contain(constructor =>
-                constructor.GetParameters().Length > 1
-                && constructor.GetParameters()[1].ParameterType == legacyType);
-#pragma warning restore CS0618
-    }
-
     private static ReportingScheduleService CreateScheduleService(
         IReportingScheduleStore store) =>
         new(

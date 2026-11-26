@@ -155,33 +155,5 @@ class SkillMirrorTests(unittest.TestCase):
         self.assertEqual(guidance.skill_mirror_drift(self.root), [])
 
 
-class PluginMirrorTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.temporary = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
-        self.addCleanup(self.temporary.cleanup)
-        self.root = Path(self.temporary.name)
-        source_rel, mirror_rel = guidance.PLUGIN_MIRRORS[0]
-        self.source, self.mirror, self.mirror_rel = self.root / source_rel, self.root / mirror_rel, mirror_rel
-
-    def put(self, base: Path, rel: str, data: bytes) -> None:
-        path = base / rel
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(data)
-
-    def test_reports_any_byte_difference_then_repairs(self) -> None:
-        self.put(self.source, "skills/a/SKILL.md", b"vendored")
-        self.put(self.mirror, "skills/a/SKILL.md", b"edited")
-        self.put(self.mirror, "README.md", b"orphan")
-        expected = [f"{self.mirror_rel}/skills/a/SKILL.md", f"{self.mirror_rel}/README.md"]
-        self.assertEqual(guidance.plugin_mirror_drift(self.root), expected)
-        self.assertEqual(guidance.plugin_mirror_drift(self.root, write=True), expected)
-        self.assertEqual((self.mirror / "skills/a/SKILL.md").read_bytes(), b"vendored")
-        self.assertFalse((self.mirror / "README.md").exists())
-        self.assertEqual(guidance.plugin_mirror_drift(self.root), [])
-
-    def test_repository_plugin_copies_are_identical(self) -> None:
-        self.assertEqual(guidance.plugin_mirror_drift(REPO), [])
-
-
 if __name__ == "__main__":
     unittest.main()

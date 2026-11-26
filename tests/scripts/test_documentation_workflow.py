@@ -216,7 +216,7 @@ class DocumentationWorkflowTests(unittest.TestCase):
         )
         event = workflow["on"]["pull_request"]
         self.assertEqual(
-            {"opened", "synchronize", "reopened", "edited", "labeled", "unlabeled"},
+            {"opened", "synchronize", "reopened", "ready_for_review", "edited", "labeled", "unlabeled"},
             set(event["types"]),
         )
         self.assertEqual(event["paths"], workflow["on"]["push"]["paths"])

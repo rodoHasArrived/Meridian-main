@@ -65,8 +65,7 @@ Non-trigger examples:
 - Prefer repository-grounded documents over memory.
 - Treat `docs/roadmap/data/*.yml` as the durable roadmap source of truth and
   `docs/roadmap/generated/ROADMAP_SUMMARY.md` plus `docs/roadmap/generated/roadmap-register.md`
-  as rendered views. Treat `docs/status/ROADMAP.md` as a migrated status stub unless archive
-  history is explicitly needed.
+  as rendered views.
 - Treat `docs/product/meridian-design-document.md` and `docs/architecture/desktop-layers.md` as the current operator-surface direction companions to the roadmap.
 - Cross-check roadmap claims against nearby status, plan, audit, and architecture documents before marking work complete.
 - Distinguish shipping work from aspirational ideas.

@@ -17,7 +17,6 @@ public sealed class ReportWriterMetricValidationException(string message) : Inva
 public interface IReportingOrchestrationService
 {
     Task<ReportingOutputManifest> ExecuteAsync(ReportingJobContract contract, CancellationToken cancellationToken);
-
     ReportingOutputManifest? GetManifest(string runId);
     ReportingOutputManifest? GetManifest(string tenantId, string runId) =>
         GetManifest(runId) is { OperationalScope: { } scope } manifest

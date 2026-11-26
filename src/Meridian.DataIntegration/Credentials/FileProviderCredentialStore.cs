@@ -13,7 +13,7 @@ using static Meridian.Contracts.Text.TextPrimitives;
 namespace Meridian.DataIntegration.Credentials;
 
 /// <summary>Persists protected provider credentials and scoped OAuth tokens in the local credential vault.</summary>
-public sealed partial class FileProviderCredentialStore : IScopedProviderCredentialStore, ILegacyProviderCredentialImporter, IScopedOAuthTokenVault, IProviderCredentialOwnershipMigration
+public sealed partial class FileProviderCredentialStore : IScopedProviderCredentialStore, IScopedOAuthTokenVault, IProviderCredentialOwnershipMigration
 {
     private static readonly ILogger Log = LoggingSetup.ForContext<FileProviderCredentialStore>();
 
@@ -289,82 +289,6 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
         };
     }
 
-    /// <summary>Imports one validated legacy snapshot without replacing retained vault records.</summary>
-    public async Task ImportLegacyAsync(IReadOnlyList<ProviderCredentialSaveRequest> requests, CancellationToken ct = default)
-    {
-        ArgumentNullException.ThrowIfNull(requests);
-        // Validate the entire input before any durable mutation, including providers already present.
-        var prepared = requests.Select(request =>
-        {
-            ArgumentNullException.ThrowIfNull(request);
-            var descriptor = RequireDescriptor(request.ProviderId);
-            return (Descriptor: descriptor, Request: request,
-                Fields: NormalizeCredentialFields(descriptor, request.Credentials));
-        }).GroupBy(item => item.Descriptor.ProviderId, StringComparer.OrdinalIgnoreCase)
-            .Select(group =>
-            {
-                var first = group.First();
-                var fields = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
-                string? environment = null;
-                foreach (var item in group)
-                {
-                    var candidateEnvironment = NormalizeOptional(item.Request.Environment);
-                    if (candidateEnvironment is not null)
-                    {
-                        candidateEnvironment = item.Descriptor.NormalizeEnvironment(candidateEnvironment);
-                        if (environment is not null && !environment.Equals(candidateEnvironment, StringComparison.OrdinalIgnoreCase))
-                            throw new InvalidOperationException("Legacy provider aliases contain conflicting environments.");
-                        environment = candidateEnvironment;
-                    }
-                    foreach (var (key, value) in item.Fields)
-                    {
-                        var normalized = NormalizeOptional(value);
-                        if (normalized is null)
-                            continue;
-                        if (fields.TryGetValue(key, out var existing) && !string.Equals(existing, normalized, StringComparison.Ordinal))
-                            throw new InvalidOperationException("Legacy provider aliases contain conflicting credential fields.");
-                        fields[key] = normalized;
-                    }
-                }
-                return (first.Descriptor, Request: first.Request with { Environment = environment }, Fields: fields);
-            }).ToArray();
-
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
-            var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
-            foreach (var item in prepared)
-            {
-                // The marker survives deletion and is committed with the first import. Audit
-                // retries must never interpret an operator deletion as a missing legacy import.
-                if (!vault.LegacyImportedProviderIds.Add(item.Descriptor.ProviderId))
-                    continue;
-                if (vault.Providers.ContainsKey(item.Descriptor.ProviderId))
-                    continue;
-                var record = CreateUpdatedRecord(item.Descriptor, item.Request, item.Fields, null, DateTimeOffset.UtcNow);
-                vault.Providers.Add(item.Descriptor.ProviderId, record);
-            }
-
-            // A successful import acknowledges that the plaintext source may be erased.
-            // Refresh both encrypted generations even on retry after an audit failure.
-            await WriteVaultAsync(vault, ct, retainCurrentGenerationAsBackup: true).ConfigureAwait(false);
-            // Record every attempted provider, including retries after an audit-write failure.
-            // The sidecar is retained until all these audit appends succeed.
-            foreach (var item in prepared)
-            {
-                vault.Providers.TryGetValue(item.Descriptor.ProviderId, out var record);
-                await AppendAuditAsync(item.Descriptor, "legacy-import-or-preserve", "credential-vault-migration",
-                    BuildStatus(item.Descriptor, record is null ? null : ToReadResult(item.Descriptor, record, ProviderCredentialSourceDto.LocalEncryptedStore)),
-                    record is null ? [] : record.Fields.Keys.OrderBy(static field => field, StringComparer.OrdinalIgnoreCase).ToArray(), ct).ConfigureAwait(false);
-            }
-        }
-        finally
-        {
-            _gate.Release();
-        }
-    }
-
     public async Task<IReadOnlyDictionary<string, OAuthToken>> ReadScopedOAuthTokensAsync(ProviderCredentialScope scope, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(scope);
@@ -461,43 +385,6 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
         finally { _gate.Release(); }
     }
 
-    public async Task ImportOAuthTokensAsync(IReadOnlyDictionary<string, OAuthToken> tokens, CancellationToken ct = default)
-    {
-        ArgumentNullException.ThrowIfNull(tokens);
-        foreach (var pair in tokens)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(pair.Key);
-            ArgumentNullException.ThrowIfNull(pair.Value);
-        }
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
-            var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
-            foreach (var pair in tokens)
-            {
-                if (!vault.LegacyImportedOAuthProviders.Add(pair.Key))
-                    continue;
-                if (IsOAuthTokenTransferred(vault, pair.Key))
-                {
-                    // The owned connection holds this provider's token; a legacy snapshot never republishes it provider-wide.
-                    Log.Warning("Skipped provider-wide OAuth token import for {Provider}: its token was transferred to an owned connection", pair.Key);
-                    continue;
-                }
-                vault.OAuthTokens.TryAdd(pair.Key, pair.Value);
-            }
-            // A successful import acknowledges that the plaintext source may be erased.
-            // Refresh both encrypted generations even on retry after an audit failure.
-            await WriteVaultAsync(vault, ct, retainCurrentGenerationAsBackup: true).ConfigureAwait(false);
-            foreach (var provider in tokens.Keys)
-                await AppendOAuthAuditAsync(provider, "oauth-import-or-preserve", ct).ConfigureAwait(false);
-        }
-        finally { _gate.Release(); }
-    }
-
-    private Task AppendOAuthAuditAsync(string providerName, string action, CancellationToken ct, ProviderCredentialScope? scope = null)
-        => AppendAuditLineAsync(BuildOAuthAuditLine(providerName, action, scope), ct);
-
     private static string BuildOAuthAuditLine(string providerName, string action, ProviderCredentialScope? scope)
         => JsonSerializer.Serialize(new { Timestamp = DateTimeOffset.UtcNow, ProviderId = providerName, Action = action, Scope = scope }, JsonOptions);
 
@@ -510,7 +397,7 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
     // the audit append is durable. An orphaned journal is therefore an unambiguous marker: the
     // mutation committed and its audit is owed. The journal is replayed by the next mutation and by
     // ReplayPendingAuditAsync at host start. Audit records never contain secrets, so neither does
-    // the journal. Legacy imports keep their own retry-by-sidecar contract and do not journal.
+    // the journal.
 
     /// <summary>
     /// Runs <paramref name="writeVault"/> with the audit record journaled ahead of it in two phases.
@@ -1876,16 +1763,6 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
             // Encryption still protects the vault payload; hiding the local key is best effort.
         }
     }
-
-    private Task AppendAuditAsync(
-        ProviderCredentialCatalogEntry descriptor,
-        string action,
-        string? actor,
-        ProviderCredentialStoreStatus status,
-        IReadOnlyList<string> fields,
-        CancellationToken ct,
-        ProviderCredentialScope? scope = null)
-        => AppendAuditLineAsync(BuildAuditLine(descriptor, action, actor, status, fields, scope), ct);
 
     private static string BuildAuditLine(
         ProviderCredentialCatalogEntry descriptor,
