@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Services.Services.Accounting;
 
@@ -164,8 +165,8 @@ public sealed class IntercompanyAgreementWorkQueueWorkspace : ObservableObject, 
         var scope = Scope();
         var request = new IntercompanyAgreementWorkQueueUpdateRequestDto(Guid.Empty, item.CaseId, Action,
             item.Version, item.RecordHash!, _queue!.SourceFingerprint, Reason.Trim(),
-            Action == IntercompanyAgreementWorkItemActionDto.AssignOwner ? Null(Owner) : null,
-            Null(Note), EvidenceReferences.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+            Action == IntercompanyAgreementWorkItemActionDto.AssignOwner ? NormalizeOptional(Owner) : null,
+            NormalizeOptional(Note), EvidenceReferences.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
         request = request with { CommandId = Identity("update", request) };
         var updated = Require(await _client.UpdateAgreementWorkQueueAsync(scope, request, token));
         token.ThrowIfCancellationRequested();
@@ -293,7 +294,6 @@ public sealed class IntercompanyAgreementWorkQueueWorkspace : ObservableObject, 
     private static T Require<T>(ApiResponse<T> response) where T : class => response.Success && response.Data is not null ? response.Data
         : throw new InvalidOperationException(response.StatusCode is 401 or 403 ? "Your signed-in account cannot access or manage this book and agreement."
             : response.ErrorMessage ?? "The lifecycle queue is unavailable.");
-    private static string? Null(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     private void NotifyObservation()
     {
         OnPropertyChanged(nameof(CanManage));
