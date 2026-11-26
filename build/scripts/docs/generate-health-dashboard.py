@@ -41,6 +41,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import functools
 import hashlib
 import json
 import os
@@ -237,12 +238,29 @@ def _repo_relative_path(path: Path, root: Path) -> str:
     return path.relative_to(root).as_posix()
 
 
+@functools.lru_cache(maxsize=None)
+def _ci_outputs(root: Path) -> tuple[frozenset[str], tuple[str, ...]]:
+    """CI-built outputs (``delivery`` in the generation policy) are not committed docs.
+
+    Whether one exists depends on whether generation ran locally, so scoring it would
+    make this reviewed baseline depend on the checkout rather than the commit.
+    """
+    policy = root / "build/scripts/maintained-generation-outputs.json"
+    if not policy.is_file():
+        return frozenset(), ()
+    config = json.loads(policy.read_text(encoding="utf-8")).get("delivery", {})
+    return frozenset(config.get("ci_files", [])), tuple(config.get("ci_trees", []))
+
+
 def _is_excluded_rel_path(path: Path, root: Path) -> bool:
     try:
         rel_path = _repo_relative_path(path, root)
     except ValueError:
         return False
-    return rel_path.startswith(EXCLUDE_REL_PREFIXES)
+    if rel_path.startswith(EXCLUDE_REL_PREFIXES):
+        return True
+    ci_files, ci_trees = _ci_outputs(root.resolve())
+    return rel_path in ci_files or any(rel_path == tree or rel_path.startswith(tree + "/") for tree in ci_trees)
 
 
 def _display_path(path: str) -> str:
