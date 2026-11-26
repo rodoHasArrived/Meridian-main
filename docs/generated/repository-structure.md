@@ -2283,10 +2283,12 @@ Meridian-main
 │   │   │   │   ├── page-016.md
 │   │   │   │   ├── page-017.md
 │   │   │   │   ├── page-018.md
-│   │   │   │   ├── page-019.md
-│   │   │   │   └── page-020.md
+│   │   │   │   └── page-019.md
 │   │   │   ├── meridian.workflow
 │   │   │   │   └── page-001.md
+│   │   │   ├── meridian.workstation.abstractions
+│   │   │   │   ├── page-001.md
+│   │   │   │   └── page-002.md
 │   │   │   ├── meridian.wpf
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
@@ -11227,14 +11229,6 @@ Meridian-main
 │   │   ├── Meridian.Ui.Services.csproj
 │   │   └── README.md
 │   ├── Meridian.Ui.Shared
-│   │   ├── Contracts
-│   │   │   ├── Integrations
-│   │   │   │   └── OmsIntegrationContracts.cs
-│   │   │   ├── Simulation
-│   │   │   │   └── ExecutionSimulationContracts.cs
-│   │   │   ├── CoveredCallContracts.cs
-│   │   │   ├── FamilyOfficeContracts.cs
-│   │   │   └── WorkstationOperationsContracts.cs
 │   │   ├── Endpoints
 │   │   │   ├── Compliance
 │   │   │   │   └── ComplianceEndpoints.cs
@@ -11550,13 +11544,8 @@ Meridian-main
 │   │   │   ├── ReportingTemplateExtensibilityCatalogProvider.cs
 │   │   │   └── WorkflowExtensibilityCatalogProvider.cs
 │   │   ├── Serialization
-│   │   │   ├── CoveredCallJsonContext.cs
-│   │   │   ├── DirectLendingJsonContext.cs
 │   │   │   ├── ExecutionWorkflowJsonContext.cs
-│   │   │   ├── FamilyOfficeJsonContext.cs
-│   │   │   ├── IntercompanyOperationsJsonContext.cs
 │   │   │   ├── PeriodAdjustmentJsonContext.cs
-│   │   │   ├── QualityApiJsonContext.cs
 │   │   │   ├── ReportingCertifiedArtifactJsonContext.cs
 │   │   │   ├── RunLedgerQueryJsonContext.cs
 │   │   │   └── WorkstationOperationsJsonContext.cs
@@ -11971,7 +11960,8 @@ Meridian-main
 │   │   ├── Meridian.Ui.Shared.csproj
 │   │   ├── README.md
 │   │   ├── ReportingReadModelForwarders.cs
-│   │   └── ScoreExplanationProjection.cs
+│   │   ├── ScoreExplanationProjection.cs
+│   │   └── WorkstationAbstractionsTypeForwarders.cs
 │   ├── Meridian.Workflow
 │   │   ├── EnvironmentDesign
 │   │   │   └── EnvironmentDesignerService.cs
@@ -11983,6 +11973,25 @@ Meridian-main
 │   │   │   └── FundWorkflowCommandHandler.cs
 │   │   ├── DesignModule.cs
 │   │   ├── Meridian.Workflow.csproj
+│   │   └── README.md
+│   ├── Meridian.Workstation.Abstractions
+│   │   ├── Contracts
+│   │   │   ├── Integrations
+│   │   │   │   └── OmsIntegrationContracts.cs
+│   │   │   ├── Simulation
+│   │   │   │   └── ExecutionSimulationContracts.cs
+│   │   │   ├── CoveredCallContracts.cs
+│   │   │   ├── FamilyOfficeContracts.cs
+│   │   │   └── WorkstationOperationsContracts.cs
+│   │   ├── Endpoints
+│   │   │   └── WorkstationTenantContextSeam.cs
+│   │   ├── Serialization
+│   │   │   ├── CoveredCallJsonContext.cs
+│   │   │   ├── DirectLendingJsonContext.cs
+│   │   │   ├── FamilyOfficeJsonContext.cs
+│   │   │   ├── IntercompanyOperationsJsonContext.cs
+│   │   │   └── QualityApiJsonContext.cs
+│   │   ├── Meridian.Workstation.Abstractions.csproj
 │   │   └── README.md
 │   ├── Meridian.Wpf
 │   │   ├── Assets
@@ -13658,7 +13667,8 @@ Meridian-main
 │   │   │   ├── SecurityMasterSchemaBoundDecodeRatchetTests.cs
 │   │   │   ├── UiSharedServiceGrowthRatchetTests.cs
 │   │   │   ├── VendorNeutralDomainTests.cs
-│   │   │   └── VersionedContainerKeyLiteralRatchetTests.cs
+│   │   │   ├── VersionedContainerKeyLiteralRatchetTests.cs
+│   │   │   └── WorkstationAbstractionsBoundaryTests.cs
 │   │   ├── AssetOperations
 │   │   │   ├── AccountCashForecastTests.cs
 │   │   │   ├── AcquisitionTermsCompletionTests.cs

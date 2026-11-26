@@ -1,11 +1,11 @@
 {
-  "total_files": 1292,
+  "total_files": 1294,
   "orphaned_count": 379,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 86,
-  "signal_digest": "sha256:ce9720d70024993b9511ab5d044ca08188ca3609872b174bb1d9ec44f04fe75d",
+  "signal_digest": "sha256:294084822f6f65c3b07411a42cd06c5478bc3dc1050fdec23cb9c258139eb3f4",
   "orphaned_files": [
     ".agents/skills/meridian-blueprint/SKILL.md",
     ".agents/skills/meridian-brainstorm/SKILL.md",
@@ -5635,14 +5635,21 @@
       "stale": false
     },
     {
-      "path": "docs/reference/source-api/meridian.ui.shared/page-020.md",
+      "path": "docs/reference/source-api/meridian.workflow/page-001.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
     {
-      "path": "docs/reference/source-api/meridian.workflow/page-001.md",
+      "path": "docs/reference/source-api/meridian.workstation.abstractions/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.workstation.abstractions/page-002.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -9516,6 +9523,13 @@
       "path": "src/Meridian.Workflow/README.md",
       "has_heading": true,
       "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "src/Meridian.Workstation.Abstractions/README.md",
+      "has_heading": true,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },

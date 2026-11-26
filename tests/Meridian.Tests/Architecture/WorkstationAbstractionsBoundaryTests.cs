@@ -21,6 +21,11 @@ public sealed class WorkstationAbstractionsBoundaryTests
         => AbstractionsAssembly.GetName().Name.Should().Be("Meridian.Workstation.Abstractions");
 
     [Fact]
+    public void TenantContextSeam_RetainsLegacyUiSharedIdentity()
+        => Type.GetType($"{typeof(IWorkstationTenantContextAccessor).FullName}, Meridian.Ui.Shared", throwOnError: true)
+            .Should().Be(typeof(IWorkstationTenantContextAccessor));
+
+    [Fact]
     public void Abstractions_DoesNotReference_AspNetCoreAssemblies()
     {
         var aspNet = AbstractionsAssembly
