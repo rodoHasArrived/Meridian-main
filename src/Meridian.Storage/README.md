@@ -22,6 +22,15 @@ keeps the legacy row digest. Parquet historical-bar v2 files retain readable `Pr
 legacy flag, while existing v1 files remain unchanged and discoverable. Catalog date parsing accepts
 both filename generations. Structured research exports retain basis companions with exported OHLC;
 legacy data is explicitly Unknown. See the [migration notes](../../docs/development/provider-implementation.md#historical-price-bases).
+
+Ledger migration `V_ledger_084__security_revision_workflow_scope.sql` replaces the open-workflow
+unique index in one transaction: a workflow whose `purpose` is absent or `Close` keeps account/period
+uniqueness, and each `SecurityMasterRevision` subject is unique by its revision UUID. A check refuses
+unknown or explicit-null purposes and incomplete subject authority, and a trigger keeps purpose,
+subject, evidence and a revision workflow's accounting scope immutable. No rows are deleted or
+rewritten. The scoped schema-control waiver explains the index replacement; it authorizes neither
+live execution nor data deletion.
+
 Security Master projection storage composes one `SecurityTermsStorageContribution` for each of
 the 32 asset classes through `SecurityTermsStorageModules` (`SecurityMaster/AssetPacks/`). A
 declarative class contributes its `SecurityTermsProjectionDescriptor`; Option and CustomAsset

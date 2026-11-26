@@ -20518,6 +20518,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsWorkflowPurposeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.OperationsWorkflowStatusDto"
     },
     {
@@ -56068,6 +56074,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OperationsContinuityWorkflowDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsWorkflowPurposeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperationsContinuityWorkflowDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsWorkflowStatusDto"
     },
     {
@@ -65576,6 +65588,12 @@
       "target": "database:ledger.operations_continuity_workflows_pkey"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.operations_workflow_purpose_check on ledger.operations_continuity_workflows",
+      "target": "database:ledger.operations_continuity_workflows.workflow_json"
+    },
+    {
       "constraint": "period_close_events_period_id_fkey",
       "kind": "foreign-key",
       "label": "period_id",
@@ -72592,7 +72610,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "0e78ecbf62d4d3b71e5dcbc823455e231ceb4fee222baeec1d3f3b6595df4373",
+  "fingerprint": "bf89ed06bc8c6cd517d94be7256eecd7aec321f5701261c6d73300c65ff430b5",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -93161,6 +93179,12 @@
     },
     {
       "classification": "enum",
+      "id": "contract:Meridian.Contracts.Workstation.OperationsWorkflowPurposeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperationsWorkflowPurposeDto"
+    },
+    {
+      "classification": "enum",
       "id": "contract:Meridian.Contracts.Workstation.OperationsWorkflowStatusDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.OperationsWorkflowStatusDto"
@@ -101059,9 +101083,19 @@
       "label": "ledger.operations_continuity_workflows.workflow_id"
     },
     {
+      "id": "database:ledger.operations_continuity_workflows.workflow_json",
+      "kind": "database-object",
+      "label": "ledger.operations_continuity_workflows.workflow_json"
+    },
+    {
       "id": "database:ledger.operations_continuity_workflows_pkey",
       "kind": "database-object",
       "label": "ledger.operations_continuity_workflows_pkey"
+    },
+    {
+      "id": "database:ledger.operations_workflow_purpose_check on ledger.operations_continuity_workflows",
+      "kind": "database-object",
+      "label": "ledger.operations_workflow_purpose_check on ledger.operations_continuity_workflows"
     },
     {
       "id": "database:ledger.period_close_events",
@@ -106619,11 +106653,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4445,
-    "contract_set_memberships": 5871,
-    "edges": 12059,
+    "contract_references": 4446,
+    "contract_set_memberships": 5872,
+    "edges": 12062,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5916
+    "nodes": 5919
   }
 }
