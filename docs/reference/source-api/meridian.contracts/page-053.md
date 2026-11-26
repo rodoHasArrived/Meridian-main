@@ -392,7 +392,7 @@ Source: [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:109](../..
 Maps a security&#x27;s declared scheduleConventions block (ADR-025) to a ScheduleSpec for the contractual schedule kernel, or says why it cannot. The block is read only where the mapping decodes it (SecurityVersionedTerms: the same predicate, the same read guard and the same leg selection), and the schedule anchors are read at the payload root by exact key, as the mapping reads them, so the factory cannot follow conventions the record does not declare.
 
 ```csharp
-public static class ScheduleSpecFactory
+public static partial class ScheduleSpecFactory
 ```
 
 Declared public members:
@@ -402,6 +402,12 @@ Declared public members:
 | <code>public const string DeclaredMappingVersion = SecurityVersionedTerms.DeclaredScheduleMappingVersion;</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:116](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L116) | The version of this mapping from a declared block to a schedule spec. It is SecurityVersionedTerms.DeclaredScheduleMappingVersion itself, so the startup capability line and the schedule evidence cannot name different mappings. |
 | <code>public static DeclaredScheduleResolution Resolve(SecurityDetailDto security, StructuredCashFlowTerms terms, IBusinessDayCalendarSource? calendars);</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:157](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L157) | Resolves the schedule security declares, with its payment calendars from calendars. DeclaredScheduleStatus.Undeclared means the record declares nothing this node decodes and its projection stays on the legacy path; DeclaredScheduleStatus.Refused carries the reason the projection is blocked. |
 | <code>public static DeclaredScheduleResolution ResolveShape(SecurityDetailDto security, StructuredCashFlowTerms terms) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:220](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L220) | The calendar-free check of what security declares: every rule of Resolve except calendar resolution, then the schedule kernel over the spec with no business-day adjustments and no payment lag. A kernel failure is DeclaredScheduleRefusalCode.KernelRefused, so a write rule that calls this refuses every block a factory rule or a calendar-free kernel failure would block. That is all it guarantees: every check that runs after the factory can still block a Declared result, among them calendar availability, the calendar-dependent kernel failures and the declared walk&#x27;s refusals (a contractual principal schedule, a missing or unrecognized dayCount, Level on a Term period, Act/Act ICMA on adjusted accrual dates, Business/252 without a calendar). A Declared result carries that calendar-free spec. |
+
+Source: [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.Legs.cs:3](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.Legs.cs#L3).
+
+```csharp
+public static partial class ScheduleSpecFactory
+```
 
 ## ScheduleTermsWriteRules
 
@@ -423,10 +429,16 @@ Declared public members:
 | <code>public static void Validate(string assetClass, JsonElement payload, JsonElement? retained) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs#L29) | Checks the complete effective payload of a write that replaces retained (the stored terms; null for a create). Containers unchanged from it are judged as retained declarations. |
 | <code>public static void ValidateDeclarations(string assetClass, JsonElement payload, int termsVersion) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs#L33) | Pure pre-rollout diagnostics through an explicit readable version, without changing the write version. |
 | <code>public static void ValidateDeclarations(string assetClass, JsonElement payload, int termsVersion, JsonElement? retained);</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs#L41) | Diagnostics through an explicit readable version for a payload that replaces retained; a stored row read back passes itself, so only the rules it was stored under apply. |
-| <code>public static void EnsureAmendmentDoesNotPromoteStrayContainers(string assetClass, JsonElement retained, JsonElement? replacement);</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs:106](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs#L106) | Prevents a write-version raise from turning retained, undeclared residue into a contract on an unrelated amendment. An explicit clear repairs it; an explicitly higher-stamped replacement states the new declaration and is subsequently checked by the ordinary write validator. |
-| <code>public static bool IsUnsetScheduleEntry(JsonElement row) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs:241](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs#L241) | Whether an element of a versioned callSchedule or putSchedule array is unset: JSON null, or an object with no populated member. ADR-024&#x27;s protocol-unset spellings are not entries and the tolerant codec drops them. This exception belongs only to the versioned call/put arrays, never ordinary item arrays. Readers that ask &quot;does this row declare a schedule&quot; use it so they agree with what a write admits as declaring nothing. |
+| <code>public static void EnsureAmendmentDoesNotPromoteStrayContainers(string assetClass, JsonElement retained, JsonElement? replacement);</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs:98](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs#L98) | Prevents a write-version raise from turning retained, undeclared residue into a contract on an unrelated amendment. An explicit clear repairs it; an explicitly higher-stamped replacement states the new declaration and is subsequently checked by the ordinary write validator. |
+| <code>public static bool IsUnsetScheduleEntry(JsonElement row) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs:234](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs#L234) | Whether an element of a versioned callSchedule or putSchedule array is unset: JSON null, or an object with no populated member. ADR-024&#x27;s protocol-unset spellings are not entries and the tolerant codec drops them. This exception belongs only to the versioned call/put arrays, never ordinary item arrays. Readers that ask &quot;does this row declare a schedule&quot; use it so they agree with what a write admits as declaring nothing. |
 
 Source: [src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.Gaps.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.Gaps.cs#L13).
+
+```csharp
+public static partial class ScheduleTermsWriteRules
+```
+
+Source: [src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.Legs.cs:5](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.Legs.cs#L5).
 
 ```csharp
 public static partial class ScheduleTermsWriteRules

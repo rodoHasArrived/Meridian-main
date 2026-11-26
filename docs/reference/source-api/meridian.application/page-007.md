@@ -824,9 +824,9 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;ContractualCashFlowResult?&gt; PreviewSecurityAsync(Guid securityId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:20](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L20) |  |
-| <code>public async Task&lt;ContractualCashFlowResult?&gt; PreviewLoanAsync(Guid loanId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:42](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L42) |  |
-| <code>public static ContractualCashFlowContract FromSecurity(SecurityDetailDto security);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:121](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L121) |  |
-| <code>public static ContractualCashFlowContract FromLoan(DirectLendingTermsDto terms, LoanServicingStateDto servicing);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:244](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L244) |  |
+| <code>public async Task&lt;ContractualCashFlowResult?&gt; PreviewLoanAsync(Guid loanId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:53](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L53) |  |
+| <code>public static ContractualCashFlowContract FromSecurity(SecurityDetailDto security);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:134](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L134) |  |
+| <code>public static ContractualCashFlowContract FromLoan(DirectLendingTermsDto terms, LoanServicingStateDto servicing);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:257](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L257) |  |
 
 ## FileBondExerciseNoticeStore
 

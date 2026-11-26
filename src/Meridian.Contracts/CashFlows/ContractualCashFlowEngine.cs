@@ -185,6 +185,12 @@ public static partial class ContractualCashFlowEngine
         }
         Require((request.CurvePins ?? []).All(p => p is not null && p.CurveId != Guid.Empty && p.CurveVersionId != Guid.Empty && !string.IsNullOrWhiteSpace(p.BenchmarkKey)), "Curve pins require a key and immutable identities.");
         Require((request.CurvePins ?? []).Select(p => p.BenchmarkKey).Distinct(StringComparer.Ordinal).Count() == (request.CurvePins?.Count ?? 0), "Duplicate curve benchmark key.");
+        if (request.CalculationProfile == SecurityVanillaSwapProfile.Id)
+        {
+            Require(request.Exercises is not { Count: > 0 } && request.Prepayments is not { Count: > 0 },
+                "Optional exercise and prepayment scenarios are outside the vanilla IRS profile.");
+            SecurityVanillaSwapProfile.ValidateContract(contract);
+        }
     }
 
     public static void ValidateRequest(ContractualCashFlowRequest request)
@@ -192,6 +198,8 @@ public static partial class ContractualCashFlowEngine
         ArgumentNullException.ThrowIfNull(request);
         if (request.ValuationDate == default || request.KnowledgeCutoff == default || request.EngineVersion != ContractualCashFlowVersions.Engine)
             throw new ArgumentException("A valuation date, knowledge cutoff and supported engine version are required.");
+        if (request.CalculationProfile is not null and not SecurityVanillaSwapProfile.Id)
+            throw new ArgumentException("Unsupported calculation profile.");
     }
 
     private static void Unique(IEnumerable<DateOnly>? dates, string name)
@@ -213,13 +221,34 @@ public static partial class ContractualCashFlowEngine
         return calendar;
     }
 
-    private static ScheduleGenerationResult BuildSchedule(ContractualCashFlowContract contract, ContractualCashFlowStream stream, IBusinessDayCalendar? calendar)
+    /// <summary>Validates the same schedule mapping used by calculations without resolving live calendars.</summary>
+    public static void ValidateScheduleShape(ContractualCashFlowContract contract, ContractualCashFlowStream stream)
+    {
+        var conventions = stream.Conventions ?? ScheduleConventionTerms.Empty;
+        if ((conventions.BusinessDayConvention is { } convention && convention != "Unadjusted"
+                || conventions.PaymentLagBusinessDays is > 0) && conventions.PaymentCalendars.Count == 0)
+            throw new ArgumentException("Adjustment and payment lag require declared calendars.");
+        var spec = BuildScheduleSpec(contract, stream, null, requireResolvedCalendar: false);
+        // Calendar contents belong to the retained run. Shape validation exercises the real kernel
+        // on unadjusted dates and never substitutes weekends for a declared calendar.
+        var generated = ScheduleGenerator.Generate(spec with
+        {
+            AccrualAdjustment = null,
+            PaymentAdjustment = BusinessDayAdjustment.Unadjusted,
+            PaymentLagBusinessDays = 0
+        });
+        if (!generated.Succeeded)
+            throw new ArgumentException(generated.Failure!.Message);
+    }
+
+    private static ScheduleSpec BuildScheduleSpec(ContractualCashFlowContract contract,
+        ContractualCashFlowStream stream, IBusinessDayCalendar? calendar, bool requireResolvedCalendar)
     {
         var c = stream.Conventions ?? ScheduleConventionTerms.Empty;
         T Parse<T>(string? raw, T fallback) where T : struct, Enum
             => raw is null ? fallback : Enum.TryParse<T>(raw, false, out var value) && Enum.IsDefined(value) ? value : throw new ArgumentException($"Unknown {typeof(T).Name}: {raw}.");
         var bdc = Parse(c.BusinessDayConvention, BusinessDayConvention.Unadjusted);
-        if ((bdc != BusinessDayConvention.Unadjusted || c.PaymentLagBusinessDays is > 0) && calendar is null)
+        if ((bdc != BusinessDayConvention.Unadjusted || c.PaymentLagBusinessDays is > 0) && calendar is null && requireResolvedCalendar)
             throw Refuse("CalendarRequired", "Adjustment and payment lag require declared calendars.");
         var adjustment = new BusinessDayAdjustment(bdc, calendar);
         var roll = c.RollConvention switch
@@ -231,12 +260,19 @@ public static partial class ContractualCashFlowEngine
         };
         if (c.EndOfMonthRule is { } eom && (eom != (roll == ScheduleRoll.EndOfMonth)))
             throw new ArgumentException("Roll and endOfMonthRule conflict.");
-        var spec = new ScheduleSpec(contract.IssueDate, contract.MaturityDate,
+        return new ScheduleSpec(contract.IssueDate, contract.MaturityDate,
             stream.PaymentMonths == 0 ? ScheduleTenor.Term : ScheduleTenor.Months(stream.PaymentMonths),
             Parse(c.Direction, ScheduleDirection.Forward), Roll: roll,
             StubPolicy: Parse(c.StubPolicy, ScheduleStubPolicy.Short), FirstRegularDate: c.FirstRegularDate,
             LastRegularDate: c.LastRegularDate, AccrualAdjustment: c.AccrualAdjusted == true ? adjustment : null,
             PaymentAdjustment: adjustment, PaymentLagBusinessDays: c.PaymentLagBusinessDays ?? 0);
+    }
+
+    private static ScheduleGenerationResult BuildSchedule(ContractualCashFlowContract contract, ContractualCashFlowStream stream, IBusinessDayCalendar? calendar)
+    {
+        var c = stream.Conventions ?? ScheduleConventionTerms.Empty;
+        var spec = BuildScheduleSpec(contract, stream, calendar, requireResolvedCalendar: true);
+        var adjustment = spec.PaymentAdjustment!;
         if (stream.CouponPeriods is not { } explicitPeriods)
         {
             var generated = ScheduleGenerator.Generate(spec);

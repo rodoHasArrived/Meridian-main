@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InstrumentPassportOperationsWorkbenchPanelDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.InstrumentPassportOperationsWorkbenchPanelDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:491](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L491).
+
+```csharp
+public sealed record InstrumentPassportOperationsWorkbenchPanelDto(string PanelId, string Title, string Status, string Summary, IReadOnlyList<InstrumentPassportOperationsWorkbenchItemDto> Items);
+```
+
 ## InstrumentPassportPricingDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.InstrumentPassportPricingDto</code>. Kind: `record`.
@@ -656,16 +666,4 @@ Shared drill-through target for one asset-class coverage row.
 
 ```csharp
 public sealed record MultiAssetDrillThroughTargetDto(string TargetId, string TargetType, string Label, string Route, string? EvidenceLink, string Status, string Source);
-```
-
-## MultiAssetEvidenceRequirementDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetEvidenceRequirementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1016](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1016).
-
-Asset-class-specific evidence requirement rendered by Portfolio, Accounting, and desktop workstations.
-
-```csharp
-public sealed record MultiAssetEvidenceRequirementDto(string RequirementId, string Label, string Category, string Status, string EvidenceRoute, bool Required);
 ```

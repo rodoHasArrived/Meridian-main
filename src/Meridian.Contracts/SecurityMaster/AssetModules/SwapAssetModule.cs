@@ -82,7 +82,7 @@ internal static class SwapAssetModule
                     Opt("resetSchedule", SecurityAssetTermFieldType.Array, "fixings"),
                     // The leg's own schedule conventions (asset-class terms version 2, readable before
                     // writable: ADR-024).
-                    Opt(SecurityVersionedTerms.ScheduleConventionsKey, SecurityAssetTermFieldType.Object).Since(2).ReadOnly()
+                    Opt(SecurityVersionedTerms.ScheduleConventionsKey, SecurityAssetTermFieldType.Object).Since(2)
                 ]),
                 new("legs.notionalSchedule", 1, [
                     Req("effectiveDate", SecurityAssetTermFieldType.Date, "date"),
