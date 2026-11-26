@@ -269,12 +269,19 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
 
             var fillQueueCapacity = Math.Max(1, _options.FillReportQueueCapacity);
             var restorePaused = run.TerminalStatus == Meridian.Contracts.Workstation.StrategyRunStatus.Paused;
-            // A fresh run trades against its own book: the capital it starts with (its own paper
-            // session's initial cash for a Designer paper run, otherwise the shared portfolio's
-            // value now) moved only by its own fills and charges. A restored paused run's earlier
-            // fills are not retained, so a new book would show it holding nothing it bought; it
-            // keeps the shared portfolio view, and its metrics book starts at restore.
-            var runBook = restorePaused ? null : new LiveRunBook(
+            // A run on its first activation trades against its own book: the capital it starts
+            // with (its own paper session's initial cash for a Designer paper run, otherwise the
+            // shared portfolio's value now) moved only by its own fills and charges. A run that has
+            // been active before (recovered after a host restart, or restored paused) may already
+            // hold positions, and its earlier fills are not retained, so a new book would show it
+            // holding nothing it bought and it could buy again. It keeps the shared portfolio view,
+            // and its metrics book starts at this activation.
+            var firstActivation = !restorePaused && run.LastLifecycleEvent is
+                StrategyRunLifecycleEventType.Started or
+                StrategyRunLifecycleEventType.StartRequested or
+                StrategyRunLifecycleEventType.StartFailed or
+                StrategyRunLifecycleEventType.ActivationDeferred;
+            var runBook = !firstActivation ? null : new LiveRunBook(
                 paperOrders?.Sessions.GetSession(paperOrders.Authority.PaperSessionId)?.Summary.InitialCash
                     ?? _portfolioState.PortfolioValue,
                 BacktestDefaults.DefaultBrokerageAccountId,
