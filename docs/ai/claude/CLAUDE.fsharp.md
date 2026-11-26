@@ -920,7 +920,7 @@ let validate trade =
 ## Related Documentation
 
 - [docs/integrations/fsharp-integration.md](../../integrations/fsharp-integration.md) - Full integration guide
-- [archive/docs/summaries/language-strategy.md](../../../archive/docs/summaries/language-strategy.md) - Language strategy
+- [archive/docs/summaries/language-strategy.md](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/summaries/language-strategy.md) - Language strategy
 - [F# for Fun and Profit](https://fsharpforfunandprofit.com/) - F# learning resource
 - [Railway-Oriented Programming](https://fsharpforfunandprofit.com/rop/) - Error handling pattern
 

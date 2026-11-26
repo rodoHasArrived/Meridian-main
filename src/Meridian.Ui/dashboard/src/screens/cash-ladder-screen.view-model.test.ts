@@ -14,7 +14,7 @@ import type { PortfolioCashLadder } from "@/types/portfolio-cash-ladder.types";
 
 function buildLadder(overrides: Partial<PortfolioCashLadder> = {}): PortfolioCashLadder {
   return {
-    engineVersion: "portfolio-cash-ladder-v1",
+    engineVersion: "portfolio-cash-ladder-v2",
     asOfDate: "2026-07-05",
     horizonDays: 14,
     baseCurrency: "USD",

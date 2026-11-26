@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
 using Xunit;
+using Meridian.Tests.TestHelpers;
 
 namespace Meridian.Tests.SecurityMaster;
 
@@ -814,7 +815,7 @@ public sealed class SecurityAssetClassTermsHistoryTests
     {
         var root = FindRepositoryRoot();
         var offenders = new List<string>();
-        foreach (var file in Directory.EnumerateFiles(Path.Combine(root, "src"), "*.*", SearchOption.AllDirectories))
+        foreach (var file in RepositoryFileWalker.EnumerateFiles(Path.Combine(root, "src"), "*.*"))
         {
             if (Path.GetExtension(file) is not (".cs" or ".fs"))
             {

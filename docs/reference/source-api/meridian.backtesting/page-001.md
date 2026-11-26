@@ -243,24 +243,25 @@ Declared public members:
 
 Qualified name: <code>Meridian.Backtesting.CorporateActionAdjustmentService</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:15](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L15).
+Source: [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:12](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L12).
+
+Adjusts historical bar prices and volumes for corporate actions (stock splits and dividends) using Security Master data.
 
 ```csharp
-public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmentService, LegacyAdjuster
+public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmentService, ILivePositionCorporateActionAdjuster
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CorporateActionAdjustmentService(ISecurityMasterQueryService queryService, Meridian.Application.SecurityMaster.ISecurityResolver resolver, ILogger&lt;CorporateActionAdjustmentService&gt; logger, IFactorPaydownProjectionService? factorPaydownProjector = null) : this((ISecurityCorporateActionsQueryService) queryService, (ISecurityResolver) resolver, logger, factorPaydownProjector);</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:23](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L23) | Retains the aggregate-query and resolver constructor used by compiled consumers. |
-| <code>public CorporateActionAdjustmentService(ISecurityCorporateActionsQueryService queryService, ISecurityResolver resolver, ILogger&lt;CorporateActionAdjustmentService&gt; logger, IFactorPaydownProjectionService? factorPaydownProjector = null);</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:32](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L32) |  |
-| <code>public async Task&lt;CorporateActionAdjustmentPlan&gt; PrepareAsync(IReadOnlyList&lt;HistoricalBar&gt; bars, string ticker, DateTimeOffset effectiveThroughUtc, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:48](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L48) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; AdjustAsync(IReadOnlyList&lt;HistoricalBar&gt; bars, string ticker, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:66](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L66) |  |
-| <code>public async Task&lt;HistoricalBar&gt; AdjustBarAsync(HistoricalBar bar, string ticker, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:86](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L86) |  |
-| <code>public async IAsyncEnumerable&lt;HistoricalBar&gt; AdjustAsync(IAsyncEnumerable&lt;HistoricalBar&gt; bars, string ticker, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:96](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L96) |  |
-| <code>public Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:284](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L284) |  |
-| <code>public Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, decimal totalCostBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:293](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L293) |  |
+| <code>public CorporateActionAdjustmentService(ISecurityCorporateActionsQueryService queryService, ISecurityResolver resolver, ILogger&lt;CorporateActionAdjustmentService&gt; logger, IFactorPaydownProjectionService? factorPaydownProjector = null);</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:19](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L19) |  |
+| <code>public async Task&lt;CorporateActionAdjustmentPlan&gt; PrepareAsync(IReadOnlyList&lt;HistoricalBar&gt; bars, string ticker, DateTimeOffset effectiveThroughUtc, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:35](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L35) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; AdjustAsync(IReadOnlyList&lt;HistoricalBar&gt; bars, string ticker, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:53](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L53) |  |
+| <code>public async Task&lt;HistoricalBar&gt; AdjustBarAsync(HistoricalBar bar, string ticker, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:73](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L73) |  |
+| <code>public async IAsyncEnumerable&lt;HistoricalBar&gt; AdjustAsync(IAsyncEnumerable&lt;HistoricalBar&gt; bars, string ticker, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:83](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L83) |  |
+| <code>public Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:271](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L271) |  |
+| <code>public Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, decimal totalCostBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:280](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L280) |  |
 
 ## BacktestEngine
 

@@ -6,106 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## AccountTypeDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountTypeDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:96](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L96).
-
-```csharp
-public enum AccountTypeDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Brokerage</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:98](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L98) |  |
-| <code>Custody</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:99](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L99) |  |
-| <code>Bank</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:100](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L100) |  |
-| <code>Margin</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:101](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L101) |  |
-| <code>PrimeBroker</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:102](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L102) |  |
-| <code>LedgerControl</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:103](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L103) |  |
-| <code>Other</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:104](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L104) |  |
-
-## AdvisoryClientViewDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AdvisoryClientViewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:373](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L373).
-
-```csharp
-public sealed record AdvisoryClientViewDto(ClientSummaryDto Client, IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios, IReadOnlyList<AccountSummaryDto> Accounts);
-```
-
-## AdvisoryStructureQuery
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AdvisoryStructureQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureQueries.cs:18](../../../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs#L18).
-
-```csharp
-public sealed record AdvisoryStructureQuery(Guid BusinessId, Guid? OrganizationId = null, Guid? ClientId = null, Guid? InvestmentPortfolioId = null, bool ActiveOnly = true, DateTimeOffset? AsOf = null);
-```
-
-## AdvisoryStructureViewDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AdvisoryStructureViewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:378](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L378).
-
-```csharp
-public sealed record AdvisoryStructureViewDto(OrganizationSummaryDto Organization, BusinessSummaryDto Business, IReadOnlyList<AdvisoryClientViewDto> Clients, IReadOnlyList<InvestmentPortfolioSummaryDto> UnassignedInvestmentPortfolios, IReadOnlyList<AccountSummaryDto> UnassignedAccounts, FundStructureSharedDataAccessDto? SharedDataAccess = null);
-```
-
-## AppendEntityLifecycleRevisionRequestDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AppendEntityLifecycleRevisionRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:56](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L56).
-
-```csharp
-public sealed record AppendEntityLifecycleRevisionRequestDto(Guid EntityId, long ExpectedRevision, IReadOnlyList<EntityLifecycleStateDto> Timeline, string Reason, string EvidenceReference)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyExternalReviewDto? ExternalReview { get; init; }</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:64](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L64) |  |
-
-## AssignFundStructureNodeRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:157](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L157).
-
-```csharp
-public sealed record AssignFundStructureNodeRequest(Guid AssignmentId, Guid NodeId, string AssignmentType, string AssignmentReference, DateTimeOffset EffectiveFrom, string CreatedBy, bool IsPrimary = false, DateTimeOffset? EffectiveTo = null);
-```
-
-## BackfillAccessSummaryDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.BackfillAccessSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:314](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L314).
-
-```csharp
-public sealed record BackfillAccessSummaryDto(bool IsAvailable, bool IsActive, int ProviderCount, string? LastProvider, DateOnly? LastFrom, DateOnly? LastTo, DateTimeOffset? LastCompletedUtc, bool? LastRunSucceeded, int SymbolCheckpointCount, int SymbolBarCountCount, string AvailabilityDescription);
-```
-
-## BankAccountDetailsDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.BankAccountDetailsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:499](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L499).
-
-Bank-specific account details.
-
-```csharp
-public sealed record BankAccountDetailsDto(string? AccountNumber, string? BankName, string? BranchName, string? Iban, string? BicSwift, string? RoutingNumber, string? SortCode, string? IntermediaryBankBic, string? IntermediaryBankName, string? BeneficiaryName, string? BeneficiaryAddress);
-```
-
 ## BankAccountDetailsEnvelopeDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.BankAccountDetailsEnvelopeDto</code>. Kind: `record`.
@@ -666,3 +566,105 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyExternalReviewAttestationDto? ExternalReview { get; init; }</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:45](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L45) |  |
+
+## EntityLifecycleRevisionIntegrity
+
+Qualified name: <code>Meridian.Contracts.FundStructure.EntityLifecycleRevisionIntegrity</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:7](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L7).
+
+Canonical immutable revision integrity shared by domain and storage boundaries.
+
+```csharp
+public static class EntityLifecycleRevisionIntegrity
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void ValidateTimeline(Guid entityId, IReadOnlyList&lt;EntityLifecycleStateDto&gt; timeline);</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:11](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L11) |  |
+| <code>public static EntityLifecycleRevisionDto Seal(EntityLifecycleRevisionDto revision);</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:34](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L34) |  |
+| <code>public static void ValidateRevision(EntityLifecycleRevisionDto revision, EntityLifecycleRevisionDto? previous, long expectedRevision);</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:70](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L70) |  |
+
+## EntityLifecycleStateDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.EntityLifecycleStateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:22](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L22).
+
+One non-overlapping, half-open effective status window.
+
+```csharp
+public sealed record EntityLifecycleStateDto(Guid TransitionId, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, LegalEntityLifecycleStatusDto Status, LegalEntityLifecycleEventKindDto EventKind, Guid? SuccessorEntityId = null);
+```
+
+## EntityTimelineDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.EntityTimelineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/EntityTimelineDto.cs:7](../../../../src/Meridian.Contracts/FundStructure/EntityTimelineDto.cs#L7).
+
+Shared authoritative entity inspection; clients render it without rebuilding business state.
+
+```csharp
+public sealed record EntityTimelineDto(Guid OrganizationId, LegalEntitySummaryDto Entity, DateTimeOffset AsOf, IReadOnlyList<EntityLifecycleRevisionDto> LifecycleRevisions, IReadOnlyList<OwnershipLinkDto> OwnershipLinks, IReadOnlyList<IntercompanyAgreementDetailDto> Agreements, IReadOnlyList<ResolvedIntercompanyAccountingArrangementDto> AccountingArrangements, IReadOnlyList<LedgerBookDto> Books, IReadOnlyList<string> Warnings)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool CanAttestExternalLifecycleReview { get; init; }</code> | [src/Meridian.Contracts/FundStructure/EntityTimelineDto.cs:14](../../../../src/Meridian.Contracts/FundStructure/EntityTimelineDto.cs#L14) |  |
+
+## EntityTimelineJsonContext
+
+Qualified name: <code>Meridian.Contracts.FundStructure.EntityTimelineJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/FundStructure/EntityTimelineDto.cs:22](../../../../src/Meridian.Contracts/FundStructure/EntityTimelineDto.cs#L22).
+
+```csharp
+public partial class EntityTimelineJsonContext : JsonSerializerContext;
+```
+
+## ExpireOwnershipLinkRequest
+
+Qualified name: <code>Meridian.Contracts.FundStructure.ExpireOwnershipLinkRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:134](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L134).
+
+```csharp
+public sealed record ExpireOwnershipLinkRequest(Guid OwnershipLinkId, DateTimeOffset EffectiveTo, string ExpiredBy, string? Notes = null);
+```
+
+## FundAccountsDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundAccountsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:554](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L554).
+
+Fund-level grouping of accounts by type.
+
+```csharp
+public sealed record FundAccountsDto(Guid FundId, IReadOnlyList<AccountSummaryDto> CustodianAccounts, IReadOnlyList<AccountSummaryDto> BankAccounts, IReadOnlyList<AccountSummaryDto> BrokerageAccounts, IReadOnlyList<AccountSummaryDto> OtherAccounts);
+```
+
+## FundOperatingSliceDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundOperatingSliceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:397](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L397).
+
+```csharp
+public sealed record FundOperatingSliceDto(FundSummaryDto Fund, IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios, IReadOnlyList<AccountSummaryDto> Accounts, IReadOnlyList<FundSleeveOperatingViewDto> Sleeves, IReadOnlyList<VehicleOperatingViewDto> Vehicles);
+```
+
+## FundOperatingStructureQuery
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundOperatingStructureQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureQueries.cs:26](../../../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs#L26).
+
+```csharp
+public sealed record FundOperatingStructureQuery(Guid BusinessId, Guid? OrganizationId = null, Guid? FundId = null, Guid? SleeveId = null, Guid? VehicleId = null, Guid? InvestmentPortfolioId = null, bool ActiveOnly = true, DateTimeOffset? AsOf = null);
+```
