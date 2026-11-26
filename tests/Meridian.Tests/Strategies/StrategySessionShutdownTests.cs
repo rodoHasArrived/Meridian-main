@@ -442,7 +442,10 @@ public sealed class StrategySessionShutdownTests
                 liveFeed: _cache);
             Engine = new LiveTradingEngine(
                 catalog, Feed, _cache, gateway, Orders,
-                new Meridian.Execution.Services.PaperTradingPortfolio(100_000m), Repository,
+                new Meridian.Execution.Services.PaperTradingPortfolio([
+                    new Meridian.Execution.Services.AccountDefinition(_fundAccountId.ToString("D"),
+                        "Shutdown test account", Meridian.Execution.Models.AccountKind.Brokerage, 100_000m)
+                ]), Repository,
                 options: new LiveTradingEngineOptions { AllowLiveRuns = true },
                 lifecycleManager: Manager,
                 brokerageConfiguration: new ExecutionSdk.BrokerageConfiguration { LiveExecutionEnabled = true });

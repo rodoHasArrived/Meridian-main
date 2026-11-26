@@ -81,6 +81,17 @@ JSONB snapshots without schema replacement or historical hash migration. Accepta
 this extension is separate from full W10/W12 completion; roadmap statuses are not promoted merely
 because the source exists. See the [domain extension](../../domain/intercompany-agreements-and-entity-lifecycle.md#obligation-monitoring-and-structured-legal-terms).
 
+### Durable lifecycle casework increment
+
+The obligation monitor now feeds a shared operator case queue with explicit tracking, assignment,
+notes, evidence, state history and case/source-version checks. It uses the existing append-only
+operational case-history store. Current findings and retained unresolved cases remain distinct;
+absence never clears a case. Guarantee disclosure retains the approved cap separately from
+unavailable measured exposure. See [the domain contract](../../domain/intercompany-agreements-and-entity-lifecycle.md#agreement-lifecycle-work-queue)
+and [operator procedure](../../operators/intercompany-entity-controls.md#tracking-agreement-lifecycle-work).
+This increment grants no maturity-repayment posting authority and changes no owner acceptance or
+confirmation-close policy decision.
+
 ## Governed loan-interest accrual extension
 
 `DEC-IC-ACCRUAL-001` and [ADR-028](../../adr/028-governed-intercompany-interest-accrual.md) bring one

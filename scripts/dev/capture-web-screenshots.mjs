@@ -6,6 +6,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
+import { runIntercompanyWorkQueueSmoke } from "../../src/Meridian.Ui/dashboard/scripts/smoke-intercompany-work-queue.mjs";
 import {
   createScreenshotApiResolver,
   loadScreenshotScenarioModule,
@@ -1918,6 +1919,29 @@ async function main() {
       launchOptions.executablePath = chromiumExecutablePath;
     }
     browser = await chromium.launch(launchOptions);
+
+    // This feature regression uses a separate synthetic scope and leaves the
+    // screenshot catalog, selected scenarios, and route counts unchanged.
+    const queueContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    try {
+      const queuePage = await queueContext.newPage();
+      queuePage.setDefaultTimeout(readinessTimeoutMs);
+      queuePage.setDefaultNavigationTimeout(timeoutMs);
+      const queueErrors = [];
+      const queueResolver = createScreenshotApiResolver(scenarioSource.module, fixtureRoutes);
+      await setupScenarioApiMocking(queuePage, queueResolver, error => queueErrors.push(error));
+      manifest.intercompanyWorkQueue = await runIntercompanyWorkQueueSmoke({
+        page: queuePage, baseUrl, apiResolver: queueResolver,
+        screenshotDir: path.dirname(manifestPath), errors: queueErrors
+      });
+      console.log("Intercompany lifecycle queue synthetic browser regression passed.");
+      await writeCaptureManifest(manifest, manifestPath, logs);
+    } catch (cause) {
+      manifest.intercompanyWorkQueue = { status: "failed", error: cause instanceof Error ? cause.message : String(cause) };
+      throw new Error(`Intercompany lifecycle queue browser regression failed: ${manifest.intercompanyWorkQueue.error}`, { cause });
+    } finally {
+      await queueContext.close();
+    }
 
     await runCaptureWorkers(captures, workers, async (capture) => {
       // Each capture renders in a fresh browser context so it shows the

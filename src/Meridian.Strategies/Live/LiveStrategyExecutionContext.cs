@@ -1,4 +1,5 @@
 using Meridian.Execution.Models;
+using Meridian.Execution.Interfaces;
 using Meridian.Ledger;
 using OrderRequest = Meridian.Backtesting.Sdk.OrderRequest;
 using OrderType = Meridian.Backtesting.Sdk.OrderType;
@@ -17,11 +18,14 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
 {
     private readonly ILiveFeedAdapter _feed;
     private readonly IPortfolioState _portfolio;
+    private readonly IPortfolioState _visiblePortfolio;
     private readonly Lock _orderLock = new();
     private readonly List<Order> _pendingOrders = [];
     private readonly List<Guid> _pendingCancellations = [];
     private readonly List<Guid> _locallyCancelledOrders = [];
     private readonly string _defaultAccountId;
+    private readonly string? _accountingFinancialAccountId;
+    private readonly string? _accountingStrategyRunId;
     private readonly Meridian.Ledger.Ledger _sessionLedger = new();
 
     /// <summary>A context whose strategy sees <paramref name="portfolio"/> directly.</summary>
@@ -30,19 +34,23 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
         ILiveFeedAdapter feed,
         IPortfolioState portfolio,
         IReadOnlySet<string> universe,
-        string defaultAccountId = BacktestDefaults.DefaultBrokerageAccountId)
-        : this(gateway, feed, portfolio, universe, defaultAccountId, runBook: null)
+        string defaultAccountId = BacktestDefaults.DefaultBrokerageAccountId,
+        string? accountingFinancialAccountId = null,
+        string? accountingStrategyRunId = null)
+        : this(gateway, feed, portfolio, universe, defaultAccountId, accountingFinancialAccountId,
+            accountingStrategyRunId, runBook: null)
     {
     }
 
     /// <param name="portfolio">
-    /// The portfolio the run trades against. Strategies see it only when no
-    /// <paramref name="runBook"/> is supplied.
+    /// The portfolio the run trades against. Strategies see it only when neither an accounting
+    /// account scope nor a <paramref name="runBook"/> is supplied.
     /// </param>
     /// <param name="runBook">
-    /// The run's own book. When supplied, strategies see the run's own cash, value, positions
-    /// and account (marked at the feed price) instead of the shared portfolio, which also holds
-    /// other runs' trades, manual orders and holdings that predate the run.
+    /// The run's own book, for a run without a scoped accounting account. When supplied,
+    /// strategies see the run's own cash, value, positions and account (marked at the feed
+    /// price) instead of the shared portfolio, which also holds other runs' trades, manual
+    /// orders and holdings that predate the run.
     /// </param>
     internal LiveStrategyExecutionContext(
         IOrderGateway gateway,
@@ -50,15 +58,22 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
         IPortfolioState portfolio,
         IReadOnlySet<string> universe,
         string defaultAccountId,
+        string? accountingFinancialAccountId,
+        string? accountingStrategyRunId,
         LiveRunBook? runBook)
     {
         Gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _feed = feed ?? throw new ArgumentNullException(nameof(feed));
         ArgumentNullException.ThrowIfNull(portfolio);
+        _accountingFinancialAccountId = string.IsNullOrWhiteSpace(accountingFinancialAccountId) ? null : accountingFinancialAccountId;
+        if (runBook is not null && _accountingFinancialAccountId is not null)
+            throw new ArgumentException("A run with a scoped accounting account observes that account, not a run book.", nameof(runBook));
         RunBook = runBook;
         _portfolio = runBook is null ? portfolio : runBook.AsPortfolioState(GetLastPrice);
         Universe = universe ?? throw new ArgumentNullException(nameof(universe));
         _defaultAccountId = defaultAccountId;
+        _accountingStrategyRunId = string.IsNullOrWhiteSpace(accountingStrategyRunId) ? null : accountingStrategyRunId;
+        _visiblePortfolio = _accountingFinancialAccountId is null ? _portfolio : new ScopedPortfolioView(this);
         CurrentTime = DateTimeOffset.UtcNow;
         CurrentDate = DateOnly.FromDateTime(CurrentTime.UtcDateTime);
     }
@@ -72,7 +87,7 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
     public ILiveFeedAdapter Feed => _feed;
 
     /// <inheritdoc/>
-    public IPortfolioState Portfolio => _portfolio;
+    public IPortfolioState Portfolio => _visiblePortfolio;
 
     /// <inheritdoc cref="IBacktestContext.Universe"/>
     public IReadOnlySet<string> Universe { get; }
@@ -89,25 +104,24 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
     public DateOnly CurrentDate { get; private set; }
 
     /// <inheritdoc/>
-    public decimal Cash => _portfolio.Cash;
+    public decimal Cash => _accountingFinancialAccountId is null ? _portfolio.Cash : ReadScopedAccountSnapshot().Cash;
 
     /// <inheritdoc/>
-    public decimal PortfolioValue => _portfolio.PortfolioValue;
+    public decimal PortfolioValue => _accountingFinancialAccountId is null ? _portfolio.PortfolioValue
+        : RequireEquity(ReadScopedAccountSnapshot());
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, Position> Positions =>
-        _portfolio.Positions.ToDictionary(
-            static pair => pair.Key,
-            static pair => new Position(
-                pair.Value.Symbol,
-                pair.Value.Quantity,
-                pair.Value.AverageCostBasis,
-                pair.Value.UnrealizedPnl,
-                pair.Value.RealizedPnl)
+    public IReadOnlyDictionary<string, Position> Positions => ToStrategyPositions(_accountingFinancialAccountId is null
+        ? _portfolio.Positions.Values : ReadScopedAccountSnapshot().Positions);
+
+    private static IReadOnlyDictionary<string, Position> ToStrategyPositions(IEnumerable<Meridian.Execution.Sdk.IPosition> positions) =>
+        positions.ToDictionary(
+            static item => item.Symbol,
+            static item => new Position(item.Symbol, item.Quantity, item.AverageCostBasis, item.UnrealizedPnl, item.RealizedPnl)
             {
                 // The unrounded size travels with the position: a strategy attributing ownership
                 // cannot tell a foreign fractional holding from no holding without it.
-                ExactQuantity = pair.Value.ExactQuantity
+                ExactQuantity = item.ExactQuantity
             },
             StringComparer.OrdinalIgnoreCase);
 
@@ -127,11 +141,16 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
     /// <summary>The run's own book, when strategies trade against it; otherwise null.</summary>
     internal LiveRunBook? RunBook { get; }
 
+    /// <summary>True when strategies observe a scoped accounting account rather than a run book or the shared portfolio.</summary>
+    internal bool HasScopedAccounting => _accountingFinancialAccountId is not null;
+
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, FinancialAccountSnapshot> Accounts
     {
         get
         {
+            if (_accountingFinancialAccountId is not null)
+                return ToStrategyAccount(ReadScopedAccountSnapshot());
             if (RunBook is { } book)
                 return book.Value(GetLastPrice).Accounts;
 
@@ -305,6 +324,98 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
     {
         CurrentTime = time;
         CurrentDate = DateOnly.FromDateTime(time.UtcDateTime);
+    }
+
+    /// <summary>Captures one native receipt for one authorized account without rebuilding money from quotes.</summary>
+    internal PositionAccountingEvidenceSnapshot? CapturePositionAccountingEvidence()
+    {
+        if (_accountingFinancialAccountId is null || _accountingStrategyRunId is null
+            || _portfolio is not IPositionAccountingEvidenceSource source)
+            return null;
+        var captured = source.CapturePositionAccountingEvidence();
+        if (!captured.CoveredFinancialAccountIds.Contains(_accountingFinancialAccountId, StringComparer.OrdinalIgnoreCase))
+            return null;
+        var positions = captured.Positions
+            .Where(position => string.Equals(position.FinancialAccountId, _accountingFinancialAccountId, StringComparison.OrdinalIgnoreCase))
+            .Where(position => position.StrategyRunId is null || position.StrategyRunId == _accountingStrategyRunId)
+            .Select(position => position with
+            {
+                Quantity = position.StrategyRunId is null ? null : position.Quantity,
+                MonetaryBasis = position.StrategyRunId is null ? null : position.MonetaryBasis,
+                CoverageFailure = position.StrategyRunId is null
+                    ? $"The captured account position has missing or mixed strategy-run acquisition history. {position.CoverageFailure}".TrimEnd()
+                    : position.CoverageFailure,
+                EvidenceReferences = position.EvidenceReferences is null ? null : Array.AsReadOnly(position.EvidenceReferences.ToArray())
+            }).ToArray();
+        return captured with
+        {
+            Positions = Array.AsReadOnly(positions),
+            CoveredFinancialAccountIds = Array.AsReadOnly(new[] { _accountingFinancialAccountId }),
+            Accounts = Array.AsReadOnly(captured.Accounts.Where(account =>
+                string.Equals(account.AccountId, _accountingFinancialAccountId, StringComparison.OrdinalIgnoreCase)).ToArray())
+        };
+    }
+
+    /// <summary>One native capture supplies every metric in this observation.</summary>
+    internal LivePortfolioObservation CapturePortfolioObservation()
+    {
+        if (_accountingFinancialAccountId is null)
+            return new(Cash, PortfolioValue, Positions, Accounts, null);
+        var captured = CapturePositionAccountingEvidence();
+        if (captured is null && _portfolio is IPositionAccountingEvidenceSource)
+            throw new InvalidOperationException("The native source does not cover the run's authorized financial-account observation.");
+        var account = captured is not null ? SelectCapturedAccount(captured)
+            : (_portfolio as IMultiAccountPortfolioState)?.GetAccount(_accountingFinancialAccountId)?.TakeSnapshot()
+                ?? throw new InvalidOperationException("The run's authorized financial-account partition is unavailable.");
+        return new(account.Cash, RequireEquity(account), ToStrategyPositions(account.Positions), ToStrategyAccount(account), captured);
+    }
+
+    private ExecutionAccountDetailSnapshot ReadScopedAccountSnapshot()
+    {
+        if (_portfolio is IPositionAccountingEvidenceSource source)
+            return SelectCapturedAccount(source.CapturePositionAccountingEvidence());
+        return (_portfolio as IMultiAccountPortfolioState)?.GetAccount(_accountingFinancialAccountId!)?.TakeSnapshot()
+            ?? throw new InvalidOperationException("The run's authorized financial-account partition is unavailable.");
+    }
+
+    private ExecutionAccountDetailSnapshot SelectCapturedAccount(PositionAccountingEvidenceSnapshot captured)
+    {
+        if (!captured.CoveredFinancialAccountIds.Contains(_accountingFinancialAccountId!, StringComparer.OrdinalIgnoreCase))
+            throw new InvalidOperationException("The native source does not cover the run's authorized financial account.");
+        var accounts = captured.Accounts.Where(account =>
+            string.Equals(account.AccountId, _accountingFinancialAccountId, StringComparison.OrdinalIgnoreCase)).ToArray();
+        return accounts.Length == 1 ? accounts[0]
+            : throw new InvalidOperationException("The native account observation is missing or ambiguous.");
+    }
+
+    private static decimal RequireEquity(ExecutionAccountDetailSnapshot account) => account.AccountingEquity
+        ?? throw new InvalidOperationException("The native account has no retained accounting equity measurement.");
+
+    private IReadOnlyDictionary<string, FinancialAccountSnapshot> ToStrategyAccount(ExecutionAccountDetailSnapshot account)
+    {
+        var snapshot = new FinancialAccountSnapshot(account.AccountId, account.DisplayName,
+            account.Kind == AccountKind.Bank ? FinancialAccountKind.Bank : FinancialAccountKind.Brokerage,
+            Gateway.BrokerName, account.Cash, -account.MarginBalance,
+            account.AccountingLongMarketValue ?? throw new InvalidOperationException("Native long carrying market value is unavailable."),
+            account.AccountingShortMarketValue ?? throw new InvalidOperationException("Native short carrying market value is unavailable."),
+            RequireEquity(account), ToStrategyPositions(account.Positions),
+            new FinancialAccountRules(AllowMargin: account.MarginType != Meridian.Execution.Margin.MarginAccountType.Cash
+                    || account.BuyingPower > account.Cash,
+                AllowShortSelling: account.Positions.Any(static position => position.ExactQuantity < 0m)))
+        { FunctionalCurrency = account.FunctionalCurrency };
+        return new Dictionary<string, FinancialAccountSnapshot>(StringComparer.OrdinalIgnoreCase) { [account.AccountId] = snapshot };
+    }
+
+    private sealed class ScopedPortfolioView(LiveStrategyExecutionContext context) : IPortfolioState
+    {
+        public decimal Cash => context.Cash;
+        public decimal PortfolioValue => context.PortfolioValue;
+        public decimal UnrealisedPnl => context.ReadScopedAccountSnapshot().UnrealisedPnl;
+        public decimal RealisedPnl => context.ReadScopedAccountSnapshot().RealisedPnl;
+        public decimal BuyingPower => context.ReadScopedAccountSnapshot().BuyingPower;
+        public IReadOnlyDictionary<string, Meridian.Execution.Sdk.IPosition> Positions => context.ReadScopedAccountSnapshot().Positions
+            .ToDictionary(static position => position.Symbol, static position => (Meridian.Execution.Sdk.IPosition)position,
+                StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>Returns and clears the orders queued by strategy callbacks since the last drain.</summary>

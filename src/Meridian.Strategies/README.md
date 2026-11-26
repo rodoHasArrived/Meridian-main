@@ -6,7 +6,7 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-20
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Strategies
@@ -21,6 +21,25 @@ approval, resolution and sign-off rules remain unchanged. See
 Scoped paper/live run ledger reads use an optional `IStrategyRunLedgerSource` to rebuild from
 posted journals with the exact retained run identity. The source authorizes the financial account
 and book independently; terminal metrics are not required. Backtests retain their recorded books.
+Scoped reconciliation creation and retained-result reads use that same request-scope reader,
+including the portfolio's economic cutoff. Unsupported legacy scoped implementations fail closed.
+An empty private paper/live context ledger does not establish an empty accounting book. Retained
+canonical trade-role and chart-reference evidence can register a custom carrying account for native
+comparisons without renaming posted lines or inferring roles from account codes.
+The attributed journal source establishes run-owned position activity, not complete account opening
+balances and every sibling cash flow. Cash and NAV comparisons therefore retain an explicit
+population-unavailable reason while exact run quantity and basis can match. Full account stock
+reconciliation stays with the existing three-way lane. A retained empty run-position receipt is
+distinct from legacy absence, so sibling account holdings never replace a proven empty population.
+Security validation, classification and expected corporate-action inputs use the same retained
+population and known identity. Unknown native identities cannot borrow the current ticker's identity;
+native event quantities never come from monetary ledger balances.
+Run ownership requires the server-retained execution attribution marker as well as the matching
+legacy run label. Old labels and private metrics journals remain inspectable audit history, but
+cannot certify scoped paper balances or native position measurements. Missing native event inputs
+produce explicit accounting coverage issues without querying or calculating from money as units.
+Duplicate account/security/direction rows produce unavailable quantity and basis checks; an empty
+expected population suppresses a closed actual row only when that actual row is unique.
 
 Run ledger read models support inclusive economic-time cuts without mutating retained journals.
 Scoped result reads reuse the tenant/company run-visibility guard for downstream accounting
@@ -38,21 +57,23 @@ cannot be read. No attestation grants waiver, supersession, material-break suppr
 `LiveRunMetricsTracker` uses the `BacktestMetricsEngine` formulas (geometric annualisation over the session's start-to-end interval, sample-deviation Sharpe, losing-day Sortino); a run with no losing day reports Sortino 0 so persisted metrics stay finite, and annualised return is capped at 1e12.
 Its daily snapshots take long and short market value (and margin balance) from the run's account snapshots, as the backtest engine does, so a long $100k / short $60k book reports $100k and -$60k rather than the $40k net that equity minus cash gave; the net figure is only a fallback when no account snapshot is supplied. The live account snapshot sorts positions by exact quantity, so a fractional short counts as short.
 
-Each live or paper run values itself from its own `LiveRunBook`, not from the portfolio it trades
-against, which the host shares with other runs, manual orders and holdings that predate the run.
-The book starts with the run's capital: the paper session's initial cash for a Designer paper run
-(which owns its session), otherwise the shared portfolio's value at launch. It then moves only with
-the run's fills (contract multiplier and percent-of-par sizing included), commissions and financing
-charges, and marks the run's positions at the feed price (the last fill price when the feed has
-none). Daily snapshots, positions, final equity and P&L come from the book. On its first
-activation, a run's strategy trades against the same book: `Cash`, `PortfolioValue`, `Positions`, `Accounts` and
+A paper run with a fund account observes that scoped account: a Designer paper run reads its own
+durable paper session, and other scoped paper runs read their account partition. Its strategy and
+metrics see that account's cash, accounting equity and positions, with native position evidence.
+Any other live or paper run values itself from its own `LiveRunBook`, not from the portfolio it
+trades against, which the host shares with other runs, manual orders and holdings that predate the
+run. The book starts with the shared portfolio's value at launch, then moves only with the run's
+fills (contract multiplier and percent-of-par sizing included), commissions and financing charges,
+and marks the run's positions at the feed price (the last fill price when the feed has none). Daily
+snapshots, positions, final equity and P&L come from the book. On its first activation, the run's
+strategy trades against the same book: `Cash`, `PortfolioValue`, `Positions`, `Accounts` and
 `IExecutionContext.Portfolio` report the run's own capital and holdings, so percent-of-capital
 sizing uses the run's capital and a holding that is not the run's is not visible to it. The run
 book's buying power is its cash; it has no margin model. A run that has been active before (an
 open run recovered after a host restart, or a paused run restored) keeps the shared-portfolio view:
 its earlier fills are not retained, so a new book would show it holding nothing it bought and it
-could buy again. Its metrics book starts at that activation. Order routing, pre-trade
-risk and the OMS still use the shared portfolio.
+could buy again. Its metrics book starts at that activation. Order routing, pre-trade risk and the
+OMS still use the shared portfolio.
 
 Live/paper finalization records financing as `Unavailable` until an explicit complete allocation
 ties account charges to the run. The context's private ledger and an account's expense balance do
@@ -65,8 +86,8 @@ pass that placeholder on: the run summaries' `TotalMarginInterest`, `PortfolioSu
 and the fund and accounting financing totals built from them are `null` when coverage is
 unavailable (a total is `null` if any contributing run is), and the WPF and browser workstations
 show "Unavailable" rather than $0. A Designer paper run is measured: every charge retained on its
-own paper session is the run's, so each is paid from the run book's cash, recorded as a
-`MarginInterestCashFlow`, and the total is reported as `Available` (zero when the session has none).
+own paper session is the run's: the session's cash pays it (so the observed equity includes it),
+and it is recorded as a `MarginInterestCashFlow`, and the total is reported as `Available` (zero when the session has none).
 The session is read at each day end and again when the run finishes; if it cannot be read then,
 coverage stays `Unavailable`. Runs without their own session (live broker runs, paper runs on the
 shared account) stay `Unavailable`. Continuity and comparison reads expose a financing review
@@ -184,6 +205,13 @@ append-only, so the promotion file is not re-read for every order. The active li
 binds the exact executable artifact, account, expiry, and exposure limits. Dispatch checks the
 grant and its withdrawal state. Scoped Designer paper review retains the saved version and
 backtest input hashes with a dedicated paper session.
+
+Reviewed Designer paper runs observe that prepared session's defensive native portfolio, not
+the host's aggregate paper book. Each metrics observation retains one atomic account receipt;
+accepted trade or quote marks apply only to its local replay copy. Missing or closed sessions
+fail observation rather than falling back to another book. Final metrics are captured after
+fill draining and before session closure, and successful completion still requires durable
+replay verification. Retained simulated fill handoffs remain distinct from canonical postings.
 
 New scoped Designer backtests retain a `sa1-` strategy artifact before their first run record.
 The artifact binds the tenant/company-scoped strategy identity, executable design and execution
@@ -481,3 +509,38 @@ legacy passthrough cannot supply classification, factors, or missing evidence. S
 without usable typed history remain subject to factor-coverage gates. Historical profile documents
 that never produced a structural economic module require governed recovery before factor-dependent
 accounting can proceed.
+
+## Run input-quality warnings
+
+The existing replay-provenance projection groups source evidence by exact fill identity, deduplicating trade/cost journals and retaining unknown coverage for an expected fill with missing journal attribution. It reports repaired, gap-filled, low-quality and unassessed dependencies, including paper or legacy runs without source-mix receipts. An assessed empty warning list differs from absent assessment. These warnings identify dependencies and do not invent a monetary P&L allocation.
+
+## Native accounting comparisons
+
+Strategy reconciliation compares the posted ledger at the portfolio snapshot's economic timestamp,
+using the existing retained-ledger reader. Account-level position evidence carries decimal native
+quantities, retained unit/multiplier, canonical security identity, functional currency and exact
+monetary lot basis. Symbols netted across different accounts do not erase long/short coverage.
+Current-ticker lookups enrich display references without relabeling retained accounting identity.
+
+`AmountTolerance` preserves its existing relative-fraction meaning (`0.01` means one percent).
+`QuantityTolerance` is an absolute native-unit tolerance (default zero); `BasisAmountTolerance` is
+absolute functional money (default `0.01`). Existing match/break `Measures` carry typed units,
+variance, tolerance and unavailable reasons. Portfolio unrealized P&L is removed from comparisons
+with historical-cost net assets. Valued journals without canonical historical cost support are
+reported as unavailable rather than compared directly with portfolio acquisition cost; the existing
+three-way reconciliation lane supplies atomic canonical lot evidence for its supported books.
+An absent account scope, differing identities, currency, native convention or economic cutoff
+suppresses both operands and the variance in the single-unit measure. Per-source evidence retains
+its original dimensions. Missing coverage cannot appear as a successful native comparison.
+
+Paper metrics capture the optional native accounting source once per observation, retain its
+economic cutoff and exact quantities/basis, and limit the receipt to the run's authorized financial
+account. The same capture supplies account cash, accounting equity, signed carrying market values
+and display positions. Scoped strategy callbacks also receive this account instead of the aggregate
+portfolio; a missing requested partition never falls back to another account. Existing broker-live
+contexts continue through their established account-validation path.
+Only retained same-run acquisition/relief history supplies strategy quantities and basis;
+mixed or missing run history stays unavailable. Clearly attributed sibling-run holdings are not
+relabeled as this run. Legacy snapshots keep their missing receipt, and no ticker lookup repairs
+missing accounting identity. A variation-margin future without a journal position footprint keeps
+its ledger-side native measurement unavailable; these reads never invent memo or money journals.

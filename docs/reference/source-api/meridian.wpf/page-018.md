@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataSourcesPage
+
+Qualified name: <code>Meridian.Wpf.Views.DataSourcesPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs#L13).
+
+Page for editing host data source settings and reviewing activation.
+
+```csharp
+public partial class DataSourcesPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DataSourcesPage(ProviderConfigurationApiClient client, WpfServices.FirstRunService firstRunService, ILogger&lt;DataSourcesViewModel&gt; logger);</code> | [src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs:18](../../../../src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs#L18) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:12](../../../../src/Meridian.Wpf/Views/Pages.cs#L12).
+
+```csharp
+public partial class DataSourcesPage : Page
+```
+
 ## DataWorkspaceShellPageBase
 
 Qualified name: <code>Meridian.Wpf.Views.DataWorkspaceShellPageBase</code>. Kind: `class`.
@@ -482,6 +506,22 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IntercompanyAgreementsControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs#L7) |  |
+
+## IntercompanyAgreementWorkQueueControl
+
+Qualified name: <code>Meridian.Wpf.Views.IntercompanyAgreementWorkQueueControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/IntercompanyAgreementWorkQueueControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyAgreementWorkQueueControl.xaml.cs#L5).
+
+```csharp
+public partial class IntercompanyAgreementWorkQueueControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyAgreementWorkQueueControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyAgreementWorkQueueControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyAgreementWorkQueueControl.xaml.cs#L7) |  |
 
 ## IntercompanyBalanceConfirmationControl
 
@@ -984,51 +1024,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public PageActionBarControl();</code> | [src/Meridian.Wpf/Views/PageActionBarControl.xaml.cs:9](../../../../src/Meridian.Wpf/Views/PageActionBarControl.xaml.cs#L9) |  |
-
-## PluginManagementPage
-
-Qualified name: <code>Meridian.Wpf.Views.PluginManagementPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:111](../../../../src/Meridian.Wpf/Views/Pages.cs#L111).
-
-```csharp
-public partial class PluginManagementPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs#L10).
-
-Code-behind for PluginManagementPage. Thin shell — all business logic is in PluginManagementViewModel.
-
-```csharp
-public partial class PluginManagementPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PluginManagementPage(PluginManagementViewModel viewModel);</code> | [src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs#L12) |  |
-
-## PortfolioImportPage
-
-Qualified name: <code>Meridian.Wpf.Views.PortfolioImportPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:21](../../../../src/Meridian.Wpf/Views/Pages.cs#L21).
-
-```csharp
-public partial class PortfolioImportPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/PortfolioImportPage.xaml.cs:9](../../../../src/Meridian.Wpf/Views/PortfolioImportPage.xaml.cs#L9).
-
-Provides the desktop page to import external portfolio snapshots for reconciliation.
-
-```csharp
-public partial class PortfolioImportPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PortfolioImportPage();</code> | [src/Meridian.Wpf/Views/PortfolioImportPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/PortfolioImportPage.xaml.cs#L13) |  |

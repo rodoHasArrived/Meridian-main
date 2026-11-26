@@ -75,6 +75,59 @@ public sealed class DesignerPaperRehearsalTests
     }
 
     [Theory]
+    [InlineData(HistoricalPriceBasis.Unknown, false)]
+    [InlineData(HistoricalPriceBasis.SplitAdjusted, null)]
+    [InlineData(HistoricalPriceBasis.DividendAdjusted, null)]
+    [InlineData(HistoricalPriceBasis.FullyAdjusted, null)]
+    public async Task DesignerReplay_RequiresExplicitRawPricesBeforeStartingTheEngine(
+        HistoricalPriceBasis priceBasis, bool? legacyAdjusted)
+    {
+        var root = Directory.CreateTempSubdirectory("meridian-designer-price-basis-");
+        try
+        {
+            var from = new DateOnly(2024, 1, 2);
+            await WriteBarsAsync(root.FullName, from, priceBasis, legacyAdjusted);
+            var history = new FileOperationalCaseHistoryStore(root.FullName);
+            var repository = new StrategyRunStore(history);
+            var designService = new StrategyDesignService();
+            var document = designService.GetTemplates().Single(item => item.TemplateId == "equity-price-filter")
+                .Document with
+            { Universe = [Symbol] };
+            var evidence = new FileEvidenceArtifactStore(root.FullName, NullLogger<FileEvidenceArtifactStore>.Instance);
+            var sourceEvidence = await evidence.WriteManifestAsync(
+                new EvidencePacketDto(new EvidenceSubjectDto(document.DocumentId, "strategy", document.Name, "Strategy", null, "Strategy"),
+                    DateTimeOffset.UtcNow, [], [],
+                    new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, [], [], [], [], []), [], []),
+                new EvidencePacketExportRequest("fixture-author", "Retained synthetic replay input")
+                {
+                    TenantId = Tenant,
+                    Scope = Company
+                });
+            var reference = EvidenceVaultReference.CanonicalPrefix + sourceEvidence.VaultIdentity!.VaultId;
+            var actions = Substitute.For<ISecurityCorporateActionsQueryService>();
+            actions.GetCorporateActionsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult<IReadOnlyList<CorporateActionDto>>([]));
+            var engineInvocations = 0;
+            var service = new DesignerBacktestService(root.FullName, _ =>
+            {
+                engineInvocations++;
+                throw new InvalidOperationException("Unverified raw data must be blocked before engine creation.");
+            }, repository, evidence, designService, new TradingCalendar(), BuildSecurities(), actions, new StrategyArtifactRegistry(root.FullName));
+
+            var run = () => service.RunAsync(document, new StrategyRunRepositoryScope(Tenant, Company),
+                "fixture-operator", AccountId, from, from.AddDays(3),
+                new StrategyRunEvidenceLoop(["Use explicitly raw historical prices."], [reference], [], [], [], []), default);
+
+            await run.Should().ThrowAsync<DesignerBacktestBlockedException>().WithMessage("*unadjusted daily bar*");
+            engineInvocations.Should().Be(0, "a legacy false adjustment flag cannot establish raw replay prices");
+        }
+        finally
+        {
+            root.Delete(recursive: true);
+        }
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ReviewedPaperIntent_RetryAfterRestartPreservesArtifactAndRefusesChangedAuthority(bool hasArtifact)
@@ -212,7 +265,20 @@ public sealed class DesignerPaperRehearsalTests
         var cache = new LiveCache();
         var hub = new LiveMarketEventHub();
         await using var gateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance, liveFeed: cache);
-        var portfolio = new PaperTradingPortfolio(100_000m);
+        // The OMS book is deliberately unrelated to the prepared per-run paper session.
+        var portfolio = new PaperTradingPortfolio(250_000m);
+        portfolio.ApplyFill(new ExecutionSdk.ExecutionReport
+        {
+            OrderId = "unrelated-global-holding",
+            ReportType = ExecutionSdk.ExecutionReportType.Fill,
+            OrderStatus = ExecutionSdk.OrderStatus.Filled,
+            Symbol = "FOREIGN",
+            Side = ExecutionSdk.OrderSide.Buy,
+            OrderQuantity = 7m,
+            FilledQuantity = 7m,
+            FillPrice = 3m,
+            Timestamp = DateTimeOffset.UtcNow
+        });
         var canonicalPublisher = Substitute.For<ITradeEventPublisher>();
         await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio, auditTrail: audit, sessionPersistence: sessions,
@@ -364,6 +430,34 @@ public sealed class DesignerPaperRehearsalTests
                 break;
             await Task.Delay(20, timeout.Token);
         }
+
+        var nativeReceipt = sessions.GetActivePortfolio(sessionId)!.CapturePositionAccountingEvidence();
+        nativeReceipt.CoveredFinancialAccountIds.Should().Equal(AccountId.ToString("D"));
+        var nativeAccount = nativeReceipt.Accounts.Should().ContainSingle().Subject;
+        nativeAccount.AccountId.Should().Be(AccountId.ToString("D"));
+        nativeAccount.FunctionalCurrency.Should().Be("USD");
+        nativeAccount.Cash.Should().Be(100_000m - 10m * 102m - 1m);
+        nativeAccount.Positions.Should().ContainSingle().Which.Symbol.Should().Be(Symbol);
+        nativeReceipt.Positions.Should().ContainSingle().Which.StrategyRunId.Should().Be(paper.RunId);
+
+        var paperObservationContext = new PaperRunOrderContext(Tenant, Company, AccountId,
+            new ExecutionSdk.StrategyOrderAuthority(paper.StrategyId, paper.RunId, outcome.StrategyVersionSha256!,
+                paper.AuditReference!, sessionId), sessions);
+        var quoteCache = new LiveCache();
+        var quoteSource = new DesignerPaperPortfolioState(paperObservationContext, quoteCache);
+        foreach (var (bid, ask) in new[] { (0m, 206m), (104m, 102m) })
+        {
+            quoteCache.RecordQuote(Symbol, new BboQuotePayload(DateTimeOffset.UtcNow, Symbol, bid, 1, ask, 1, null, null, ++tick));
+            quoteSource.CapturePositionAccountingEvidence().Accounts.Single().AccountingEquity.Should()
+                .Be(nativeAccount.AccountingEquity, "an incomplete or crossed quote cannot invent a positive midpoint mark");
+        }
+        quoteCache.RecordQuote(Symbol, new BboQuotePayload(DateTimeOffset.UtcNow, Symbol, 102m, 1, 104m, 1, null, null, ++tick));
+        quoteSource.CapturePositionAccountingEvidence().Accounts.Single().AccountingEquity.Should()
+            .Be(100_000m - 10m * 102m - 1m + 10m * 103m);
+
+        // A current accepted price marks the run's defensive projection, never the durable fill.
+        cache.RecordTrade(Symbol, new Trade(DateTimeOffset.UtcNow, Symbol, 103m, 1000, AggressorSide.Buy, ++tick));
+
         // A financing charge on the run's own session is the run's, so its metrics measure it.
         (await sessions.RecordFinancingAsync(new PaperFinancingCharge(sessionId, PaperTradingPortfolio.DefaultAccountId,
             DateOnly.FromDateTime(DateTime.UtcNow), 2.50m, "run-session-financing", "Assessed run charge", "operator"),
@@ -378,7 +472,6 @@ public sealed class DesignerPaperRehearsalTests
         session.Portfolio!.Cash.Should().Be(100_000m - 10m * 102m - 1m - 2.50m);
         var paperMetrics = (await repository.GetRunByIdAsync(paper.RunId))!.Metrics!;
         paperMetrics.Metrics.InitialCapital.Should().Be(100_000m, "the run is funded by its own session");
-        paperMetrics.Metrics.FinalEquity.Should().Be(100_000m - 1m - 2.50m, "bought and marked at 102, less commission and financing");
         paperMetrics.Metrics.TotalMarginInterest.Should().Be(2.50m);
         paperMetrics.EngineMetadata!.FinancingCoverageStatus.Should().Be(BacktestFinancingCoverageStatuses.Available);
         paperMetrics.EngineMetadata.RunAttributedMarginInterest.Should().Be(2.50m);
@@ -391,6 +484,32 @@ public sealed class DesignerPaperRehearsalTests
         var retainedOrder = retainedOrders.Should().ContainSingle().Which.Admission!;
         retainedOrder.AuthorityDecision!.Origin.Should().Be(ExecutionSdk.OrderCommandOrigin.StrategyRun);
         retainedOrder.OrderState!.StrategyArtifactId.Should().Be(sourceRun.StrategyArtifactId);
+        retainedOrder.OrderState.AccountingRunId.Should().Be(paper.RunId);
+        var handoff = retainedOrders.Single().Handoffs.Should().ContainSingle().Subject.Fill;
+        handoff.RunId.Should().Be(paper.RunId);
+        handoff.AccountingRunId.Should().Be(paper.RunId);
+        var completedPaper = (await repository.GetRunByIdAsync(paper.RunId, timeout.Token))!;
+        completedPaper.Metrics!.Request.InitialCash.Should().Be(sourceRun.Metrics.Request.InitialCash);
+        completedPaper.Metrics.Metrics.InitialCapital.Should().Be(100_000m);
+        completedPaper.Metrics.Metrics.FinalEquity.Should().Be(100_000m - 10m * 102m - 1m - 2.50m + 10m * 103m,
+            "bought at 102 and marked at 103, less commission and the session's financing charge");
+        completedPaper.Metrics.Fills.Should().ContainSingle().Which.FillId.Should().Be(handoff.FillId);
+        var paperSnapshot = completedPaper.Metrics.Snapshots.Should().ContainSingle().Subject;
+        paperSnapshot.Cash.Should().Be(nativeAccount.Cash - 2.50m, "the session paid the financing charge from its cash");
+        paperSnapshot.TotalEquity.Should().Be(completedPaper.Metrics.Metrics.FinalEquity);
+        paperSnapshot.FunctionalCurrency.Should().Be("USD");
+        paperSnapshot.Positions.Keys.Should().Equal(Symbol);
+        paperSnapshot.Accounts.Keys.Should().Equal(AccountId.ToString("D"));
+        var positionEvidence = paperSnapshot.AccountingPositions.Should().ContainSingle().Subject;
+        positionEvidence.StrategyRunId.Should().Be(paper.RunId);
+        positionEvidence.FinancialAccountId.Should().Be(AccountId.ToString("D"));
+        positionEvidence.Currency.Should().Be("USD");
+        positionEvidence.SecurityId.Should().BeNull("this fixture has no canonical security-admission gate");
+        positionEvidence.Quantity.Should().BeNull();
+        positionEvidence.MonetaryBasis.Should().BeNull();
+        positionEvidence.CoverageFailure.Should().Contain("identity");
+        Action observeClosedSession = () => quoteSource.CapturePositionAccountingEvidence();
+        observeClosedSession.Should().Throw<InvalidOperationException>();
         var claims = await history.ReadAsync(new OperationalCaseHistoryQuery { CaseType = "paper-order-intent" });
         claims.Should().Contain(record => record.EventType == "IntentClaimed" &&
             record.Data.GetValueOrDefault("runId") == paper.RunId &&
@@ -467,14 +586,15 @@ public sealed class DesignerPaperRehearsalTests
     private static async Task AssertSuccessAsync(HttpResponseMessage response) =>
         response.IsSuccessStatusCode.Should().BeTrue(await response.Content.ReadAsStringAsync());
 
-    private static async Task WriteBarsAsync(string root, DateOnly from)
+    private static async Task WriteBarsAsync(string root, DateOnly from,
+        HistoricalPriceBasis priceBasis = HistoricalPriceBasis.Raw, bool? legacyAdjusted = null)
     {
         var directory = Directory.CreateDirectory(Path.Combine(root, Symbol));
         var prices = new[] { 99m, 101m, 102m, 104m };
         var lines = prices.Select((price, index) =>
         {
             var bar = new HistoricalBar(Symbol, from.AddDays(index), price, price, price, price,
-                1_000_000, "synthetic-fixture", index + 1, IsAdjusted: false);
+                1_000_000, "synthetic-fixture", index + 1, IsAdjusted: legacyAdjusted, PriceBasis: priceBasis);
             return JsonSerializer.Serialize(MarketEvent.HistoricalBar(bar.ToTimestampUtc(), Symbol, bar,
                 "synthetic-fixture", index + 1), MarketDataJsonContext.HighPerformanceOptions);
         });

@@ -221,7 +221,8 @@ export interface CrossProviderTolerancePreviewRequest {
   comparisonProvider: string;
   days: number;
   policy: CrossProviderTolerancePolicy;
-  assetClass: string | null;
+  /** Optional assertion about the registry result. */
+  assetClass?: string | null;
 }
 
 export interface CrossProviderTolerancePreviewDay {
@@ -239,6 +240,8 @@ export interface CrossProviderTolerancePreviewResponse {
   to: string;
   baselineProvider: string;
   comparisonProvider: string;
+  resolvedAssetClass: string | null;
+  tolerances: Omit<CrossProviderTolerancePolicy, "backfillBarsToCompare" | "assetClassOverrides">;
   flaggedDays: number;
   flagged: CrossProviderTolerancePreviewDay[];
   informationalDays: number;

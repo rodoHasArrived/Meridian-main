@@ -90,23 +90,27 @@ classDiagram
     class Meridian_Contracts_DirectLending_ReconciliationResultDto["ReconciliationResultDto"] {
         +decimal? ActualAmount
         +DateOnly? ActualDate
+        +DateOnly? AsOfDate
         +Guid? CashTransactionId
         +DateTimeOffset CreatedAt
+        +string? Currency
         +decimal? ExpectedAmount
         +DateOnly? ExpectedDate
+        +IReadOnlyList~Guid~ JournalEntryIds
+        +Guid? LedgerBookId
         +Guid LoanId
         +string? MatchRule
-        +string MatchStatus
-        +IReadOnlyList~string~ Notes
-        +Guid? ProjectedCashFlowId
-        +Guid ReconciliationResultId
     }
     class Meridian_Contracts_DirectLending_ReconciliationRunDto["ReconciliationRunDto"] {
+        +decimal? AmountTolerance
+        +DateOnly? AsOfDate
         +DateTimeOffset? CompletedAt
+        +int? DateToleranceDays
         +Guid LoanId
         +Guid? ProjectionRunId
         +Guid ReconciliationRunId
         +DateTimeOffset RequestedAt
+        +string? RequestHash
         +string Status
     }
     class Meridian_Contracts_DirectLending_RecordIndexFixingRequest["RecordIndexFixingRequest"] {

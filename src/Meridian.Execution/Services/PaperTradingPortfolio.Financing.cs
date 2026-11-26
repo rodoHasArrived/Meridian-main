@@ -61,6 +61,7 @@ public sealed partial class PaperTradingPortfolio
 
                 // Paid from cash once; the loan principal stays where it is.
                 account.Cash -= accountInterest;
+                RetainAccountingEvidenceCutoff(ts);
 
                 _ledger?.PostLines(ts, $"Margin interest — {account.AccountId}",
                 [
@@ -99,6 +100,7 @@ public sealed partial class PaperTradingPortfolio
                 EffectiveDate: charge.AccrualDate, IdempotencyKey: $"paper-financing:{charge.SourceEventId:D}")));
             account.Cash = nextCash;
             _financingCharges.Add(charge.SourceEventId, charge);
+            RetainAccountingEvidenceCutoff(charge.OccurredAt);
             return true;
         }
     }

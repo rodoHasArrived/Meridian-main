@@ -94,7 +94,8 @@ public sealed partial class ParquetStorageSink : IStorageSink
         new DataField<string>("AsksJson")
     );
 
-    // Historical bar schema
+    // Historical bar schema v2. Separate file names preserve retained v1 files without
+    // quarantining them merely because they lack the new price-basis columns.
     private static readonly ParquetSchema BarSchema = new(
         new DataField<DateTime>("Timestamp"),
         new DataField<string>("Symbol"),
@@ -104,7 +105,9 @@ public sealed partial class ParquetStorageSink : IStorageSink
         new DataField<decimal>("Close"),
         new DataField<decimal>("Volume"),
         new DataField<long>("SequenceNumber"),
-        new DataField<string>("Source")
+        new DataField<string>("Source"),
+        new DataField<string>("PriceBasis"),
+        new DataField<bool?>("IsAdjusted")
     );
 
     public ParquetStorageSink(
@@ -480,6 +483,8 @@ public sealed partial class ParquetStorageSink : IStorageSink
         var volumes = new decimal[count];
         var sequences = new long[count];
         var sources = new string[count];
+        var priceBases = new string[count];
+        var isAdjusted = new bool?[count];
 
         var idx = 0;
         for (var i = 0; i < events.Count; i++)
@@ -496,6 +501,8 @@ public sealed partial class ParquetStorageSink : IStorageSink
             volumes[idx] = bar.Volume;
             sequences[idx] = bar.SequenceNumber;
             sources[idx] = evt.Source;
+            priceBases[idx] = bar.PriceBasis.ToString();
+            isAdjusted[idx] = bar.IsAdjusted;
             idx++;
         }
 
@@ -510,6 +517,8 @@ public sealed partial class ParquetStorageSink : IStorageSink
             new DataColumn(BarSchema.DataFields[6], volumes),
             new DataColumn(BarSchema.DataFields[7], sequences),
             new DataColumn(BarSchema.DataFields[8], sources),
+            new DataColumn(BarSchema.DataFields[9], priceBases),
+            new DataColumn(BarSchema.DataFields[10], isAdjusted),
         }, ct);
     }
 
@@ -676,7 +685,9 @@ public sealed partial class ParquetStorageSink : IStorageSink
     private string GetFilePath(MarketEvent evt)
     {
         var date = evt.Timestamp.UtcDateTime.Date;
-        var typeName = evt.Type.ToString().ToLowerInvariant();
+        var typeName = evt.Type == MarketEventType.HistoricalBar
+            ? "historicalbar_v2"
+            : evt.Type.ToString().ToLowerInvariant();
         // Encode the symbol as a single safe path segment: a raw "BRK/B" would create a
         // subfolder and "../" could escape the storage root. Plain ASCII symbols keep their
         // existing spelling; case is preserved so existing file names do not change.

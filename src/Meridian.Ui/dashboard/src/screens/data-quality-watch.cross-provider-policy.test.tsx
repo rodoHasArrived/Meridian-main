@@ -19,7 +19,7 @@ const liveImpact = {
   lastApply: { appliedAtUtc: "2026-11-18T10:05:00Z", entries: [{ path: "dataQuality.crossProvider.priceTolerancePercent", kind: "AppliedLive", detail: "Cross-provider comparisons now use the saved tolerances." }] }
 } as const;
 
-function makeApi() {
+function makeApi(resolvedAssetClass: string | null = "equity") {
   return {
     fetchPolicy: vi.fn().mockResolvedValue(response),
     savePolicy: vi.fn().mockImplementation(async (policy: CrossProviderTolerancePolicy, reason: string) => ({
@@ -28,6 +28,8 @@ function makeApi() {
     })),
     previewPolicy: vi.fn().mockResolvedValue({
       symbol: "SPY", from: "2026-10-19", to: "2026-11-17", baselineProvider: "stooq", comparisonProvider: "tiingo",
+      resolvedAssetClass,
+      tolerances: { priceTolerancePercent: 0.5, quoteTolerancePercent: 0.5, volumeTolerancePercent: 10, volumeMode: "Informational", backfillCloseTolerancePercent: 0.1 },
       flaggedDays: 3, flagged: [{ sessionDate: "2026-11-02", baselineClose: 500, comparisonClose: 500.75, closeDifferencePercent: 0.15, volumeDifferencePercent: null, flaggedBy: "Price" }],
       informationalDays: 1, missingSessions: 0, providerErrors: [], providerCallsUsed: 2
     })
@@ -89,12 +91,19 @@ describe("CrossProviderTolerancePanel", () => {
       expect.objectContaining({ assetClassOverrides: { preferred: { priceTolerancePercent: 2 } } }), "Illiquid preferreds", expect.anything());
   });
 
-  it("previews the draft against two providers and states the provider-call cost", async () => {
-    const { user, api } = await open();
+  it.each([
+    ["equity", "Registry asset class equity"],
+    [null, "Unknown asset class uses base tolerances"]
+  ])("previews the draft and shows the effective evidence for %s", async (assetClass, expectedClassLabel) => {
+    const { user, api } = await open(makeApi(assetClass));
     expect(screen.getByText(/about 2 rate-limited provider calls/)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Preview last 30 days" }));
-    expect(api.previewPolicy).toHaveBeenCalledWith(expect.objectContaining({ symbol: "SPY", baselineProvider: "stooq", comparisonProvider: "tiingo", days: 30 }), expect.anything());
+    const request = api.previewPolicy.mock.calls[0][0];
+    expect(request).toMatchObject({ symbol: "SPY", baselineProvider: "stooq", comparisonProvider: "tiingo", days: 30 });
+    expect(request).not.toHaveProperty("assetClass");
     expect(await screen.findByText(/Would have flagged 3 of the last 30 days for SPY/)).toBeInTheDocument();
+    expect(screen.getByText(expectedClassLabel)).toBeInTheDocument();
+    expect(screen.getByText(/Daily close tolerance 0.1% · Volume tolerance 10% \(informational\)/)).toBeInTheDocument();
     expect(screen.getByText(/1 more day\(s\) differ only in volume/)).toBeInTheDocument();
   });
 

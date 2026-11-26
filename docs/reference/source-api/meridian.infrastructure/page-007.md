@@ -6,6 +6,60 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## YahooFinanceHistoricalDataProvider
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:26](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L26).
+
+Retrieves historical OHLCV data from the Yahoo Finance chart API.
+
+```csharp
+public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvider, IHistoricalAggregateBarProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:40](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L40) |  |
+| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:41](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L41) |  |
+| <code>public override string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:42](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L42) |  |
+| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:44](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L44) |  |
+| <code>public override TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:45](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L45) |  |
+| <code>public override int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:48](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L48) |  |
+| <code>public override TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:49](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L49) |  |
+| <code>public override HistoricalDataCapabilities Capabilities { get; } = HistoricalDataCapabilities.BarsOnly with { Intraday = true, SupportedMarkets = [&quot;US&quot;, &quot;UK&quot;, &quot;DE&quot;, &quot;JP&quot;, &quot;CA&quot;, &quot;AU&quot;, &quot;HK&quot;, &quot;SG&quot;]};</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:52](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L52) |  |
+| <code>public IReadOnlyList&lt;DataGranularity&gt; SupportedGranularities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:59](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L59) |  |
+| <code>public YahooFinanceHistoricalDataProvider(HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(httpClient, log, runtimeOptions : runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:61](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L61) |  |
+| <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:70](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L70) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:83](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L83) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:93](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L93) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;AggregateBar&gt;&gt; GetAggregateBarsAsync(string symbol, DataGranularity granularity, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:123](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L123) |  |
+
+## YahooFinanceProviderModule
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceProviderModule</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:13](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L13).
+
+Owns Yahoo Finance&#x27;s historical factory and capability declaration. Registration does not contact Yahoo; availability is evaluated against the final host configuration.
+
+```csharp
+public sealed class YahooFinanceProviderModule : ConfigurableProviderModuleBase, IProviderModuleCapabilityAvailability
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public override string ModuleId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:16](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L16) |  |
+| <code>public override string ModuleDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:17](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L17) |  |
+| <code>public override ProviderCapabilities[] Capabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:18](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L18) |  |
+| <code>public static ProviderCapabilityDescriptor Descriptor { get; } = new (&quot;yahoo&quot;, Historical : typeof(YahooFinanceHistoricalDataProvider), InstrumentTypes :[InstrumentType.Equity, InstrumentType.Index, InstrumentType.Forex, InstrumentType.Crypto], HistoricalFactory : static factory =&gt; CreateHistorical(factory), FactoryOwner : ProviderCapabilityFactoryOwner.Module);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:20](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L20) |  |
+| <code>public override void Register(IServiceCollection services, DataSourceRegistry registry);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:26](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L26) |  |
+| <code>public bool IsCapabilityConfigured(Type contract, IServiceProvider services) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:33](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L33) |  |
+
 ## ContractVerificationExtensions
 
 Qualified name: <code>Meridian.Infrastructure.Contracts.ContractVerificationExtensions</code>. Kind: `class`.
@@ -1084,34 +1138,3 @@ Declared public members:
 | <code>public bool MarkConnectionLost(Exception? error = null) =&gt; …;</code> | [src/Meridian.Infrastructure/Resilience/ProviderConnectionSupervisor.cs:388](../../../../src/Meridian.Infrastructure/Resilience/ProviderConnectionSupervisor.cs#L388) | Marks a previously complete connection as degraded. Returns true only for the first active loss notification, allowing callers to suppress duplicate reconnects. |
 | <code>public void RecordFailure(Exception error);</code> | [src/Meridian.Infrastructure/Resilience/ProviderConnectionSupervisor.cs:446](../../../../src/Meridian.Infrastructure/Resilience/ProviderConnectionSupervisor.cs#L446) | Records a provider failure without changing a healthy lifecycle state. |
 | <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Resilience/ProviderConnectionSupervisor.cs:465](../../../../src/Meridian.Infrastructure/Resilience/ProviderConnectionSupervisor.cs#L465) |  |
-
-## ProviderConnectionSupervisorSnapshot
-
-Qualified name: <code>Meridian.Infrastructure.Resilience.ProviderConnectionSupervisorSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Resilience/ProviderConnectionSupervisor.cs:886](../../../../src/Meridian.Infrastructure/Resilience/ProviderConnectionSupervisor.cs#L886).
-
-Immutable, transport-neutral provider connection lifecycle diagnostics.
-
-```csharp
-public sealed record ProviderConnectionSupervisorSnapshot(ProviderConnectionLifecycleState LifecycleState, bool IsConnected, bool IsReconnecting, int ReconnectAttempts, DateTimeOffset? LastConnectedAt, DateTimeOffset? LastDisconnectedAt, DateTimeOffset? LastReconnectAttemptAt, string? LastError, ProviderFailureKind? LastFailureKind, TimeSpan? ConnectionAge);
-```
-
-## ProviderFailureClassifier
-
-Qualified name: <code>Meridian.Infrastructure.Resilience.ProviderFailureClassifier</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:1029](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L1029).
-
-Classifies provider failures so reconnection loops can distinguish transient errors from credential/configuration failures that need operator action.
-
-```csharp
-public static class ProviderFailureClassifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ProviderFailureKind Classify(Exception exception);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:1031](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L1031) |  |
-| <code>public static bool IsRetryable(ProviderFailureKind failureKind) =&gt; …;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:1054](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L1054) |  |

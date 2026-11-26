@@ -6,10 +6,30 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Infrastructure
+
+Historical adapters expose an optional `GetRawAccountingCloseAsync` capability whose default is
+unavailable. Alpaca implements it with a separate `adjustment=raw` request while retaining its
+configured research adjustment and existing HTTP/quota ownership. Complete pagination and valid
+source rows are required. `AccountingClosePrice` retains raw basis, provider, feed, symbol, session,
+price and the original record's SHA-256 in the accounting evidence reference. The adapter's focused
+fixtures are synthetic; this capability remains live-untested.
+
+`DataQualityMonitor` retains the date range and alert threshold with each cached symbol assessment.
+`GetCachedInputEvidence` snapshots the assessment already known when an observation is captured;
+it does not assess a historical fill later or claim that a symbol/range score is a per-row score.
+
+Historical providers declare each complete OHLC set's `HistoricalPriceBasis`. Polygon/Finnhub/
+Twelve Data return split-adjusted history, Yahoo exposes split-adjusted and fully adjusted sets,
+Tiingo/Alpha Vantage expose raw and fully adjusted sets, and Alpaca follows its exact requested mode.
+Unverified feeds and the synthetic model retain Unknown; field names and identical prices never
+establish raw availability. Base wrappers, composite alias binding and queued backfill preserve the
+basis. Polygon rejects contradictory response adjustment flags, while Nasdaq selects complete OHLC
+sets atomically. Synthetic fixtures cover these declarations; live provider compatibility remains
+live-untested. See the [basis contract and provider table](../../docs/development/provider-implementation.md#historical-price-bases).
 
 Host backfill routing retains throttle and rotation counts by provider and UTC date beneath
 `DataRoot/_meta`. It writes the last seven UTC dates atomically and keeps recent individual
@@ -111,7 +131,7 @@ Alpha Vantage history/search/corporate actions share five requests per minute an
 25-request rolling 24-hour cap by default; its published daily limit names no reset boundary.
 `ProviderQuotas:AlphaVantage` can declare the actual account limits and `NoDailyLimit`.
 Short and daily admission charge the full cost atomically; cancelled waits charge neither.
-A backfill waiting for capacity releases its admission slot so other calls can use reserved quota.
+A backfill using reserved headroom releases its admission slot while waiting for capacity so other calls can use the reserve.
 Pacing rounds positive waits up to milliseconds, including nonintegral paid-plan intervals.
 Effective account profiles cannot differ across capabilities sharing a credential and quota group.
 Registry state survives provider recreation/disposal within the process. It is not persisted across
@@ -788,9 +808,10 @@ Do not add an Infrastructure to Application dependency. Provider abstractions sh
 
 ## Related docs
 
-- `docs/providers/`
+- `docs/development/provider-implementation.md`
+- `docs/reference/provider-capability-matrix.md`
 - `docs/architecture/module-map.md`
-- `docs/status/provider-validation-matrix.md`
+- `docs/reference/provider-validation-matrix.md`
 
 Alpaca statement activity snapshots retain a completeness cursor after successful pagination,
 including newest activity ID, timestamp watermark, page count and retained record count. Failed or

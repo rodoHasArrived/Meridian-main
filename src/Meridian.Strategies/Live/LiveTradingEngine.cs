@@ -268,26 +268,29 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
             }
 
             var fillQueueCapacity = Math.Max(1, _options.FillReportQueueCapacity);
+            var runPortfolioState = paperOrders is null ? _portfolioState
+                : new DesignerPaperPortfolioState(paperOrders, _feedAdapter);
+            var accountingFinancialAccountId = run.RunType == RunType.Paper ? run.FundAccountId?.ToString("D") : null;
             var restorePaused = run.TerminalStatus == Meridian.Contracts.Workstation.StrategyRunStatus.Paused;
-            // A run on its first activation trades against its own book: the capital it starts
-            // with (its own paper session's initial cash for a Designer paper run, otherwise the
-            // shared portfolio's value now) moved only by its own fills and charges. A run that has
-            // been active before (recovered after a host restart, or restored paused) may already
-            // hold positions, and its earlier fills are not retained, so a new book would show it
-            // holding nothing it bought and it could buy again. It keeps the shared portfolio view,
-            // and its metrics book starts at this activation.
+            // A paper run with a fund account observes that scoped account (a Designer paper run,
+            // its own session). Any other run, on its first activation, trades against its own
+            // book: the shared portfolio's value now, moved only by its own fills and charges. A
+            // run that has been active before (recovered after a host restart, or restored paused)
+            // may already hold positions, and its earlier fills are not retained, so a new book
+            // would show it holding nothing it bought and it could buy again. It keeps the shared
+            // portfolio view, and its metrics book starts at this activation.
             var firstActivation = !restorePaused && run.LastLifecycleEvent is
                 StrategyRunLifecycleEventType.Started or
                 StrategyRunLifecycleEventType.StartRequested or
                 StrategyRunLifecycleEventType.StartFailed or
                 StrategyRunLifecycleEventType.ActivationDeferred;
-            var runBook = !firstActivation ? null : new LiveRunBook(
-                paperOrders?.Sessions.GetSession(paperOrders.Authority.PaperSessionId)?.Summary.InitialCash
-                    ?? _portfolioState.PortfolioValue,
+            var runBook = !firstActivation || accountingFinancialAccountId is not null ? null : new LiveRunBook(
+                _portfolioState.PortfolioValue,
                 BacktestDefaults.DefaultBrokerageAccountId,
                 _orderGateway.BrokerName);
-            var context = new LiveStrategyExecutionContext(
-                _orderGateway, _feedAdapter, _portfolioState, universe, BacktestDefaults.DefaultBrokerageAccountId, runBook);
+            var context = new LiveStrategyExecutionContext(_orderGateway, _feedAdapter, runPortfolioState, universe,
+                BacktestDefaults.DefaultBrokerageAccountId, accountingFinancialAccountId,
+                accountingStrategyRunId: accountingFinancialAccountId is null ? null : run.RunId, runBook);
             if (restorePaused)
             {
                 strategy = new RestoredPausedLiveStrategy(strategy, context);
@@ -362,7 +365,7 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                 });
 
                 if (_portfolioRegistry is not null &&
-                    _portfolioState is Meridian.Execution.Models.IMultiAccountPortfolioState runPortfolio)
+                    runPortfolioState is Meridian.Execution.Models.IMultiAccountPortfolioState runPortfolio)
                 {
                     _portfolioRegistry.Register(run.RunId, runPortfolio);
                 }

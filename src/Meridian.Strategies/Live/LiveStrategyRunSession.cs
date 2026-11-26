@@ -60,8 +60,9 @@ internal sealed class LiveStrategyRunSession
     private readonly ConcurrentDictionary<string, decimal> _receivedFillQuantities = new(StringComparer.Ordinal);
     private int _eventLoopExited;
     private readonly LiveRunMetricsTracker _metrics;
-    private readonly LiveRunBook _book;
+    private readonly LiveRunBook? _book;
     private readonly HashSet<Guid> _bookedFinancingCharges = [];
+    private decimal _runFinancingCharges;
     private bool _financingMeasured;
     private readonly string _clientOrderIdPrefix;
 
@@ -100,16 +101,16 @@ internal sealed class LiveStrategyRunSession
         _logger = logger;
         _useSynchronousFillFallback = useSynchronousFillFallback;
         _paperOrders = paperOrders;
-        // The run's own book, which its strategy trades against. A context without one (a
-        // restored paused run) still gets a metrics-only book: the run's own capital (a Designer
-        // paper run's session cash, otherwise the portfolio's value now) moved only by its own
-        // fills and charges.
-        _book = context.RunBook ?? new LiveRunBook(
-            paperOrders?.Sessions.GetSession(paperOrders.Authority.PaperSessionId)?.Summary.InitialCash
-                ?? context.PortfolioValue,
+        // A run observing a scoped accounting account (a paper run with a fund account, including
+        // a Designer paper run's own session) is measured from that account's observations.
+        // Otherwise the run's own book is the equity source: the book its strategy trades
+        // against, or, for a run that has been active before, a metrics-only book from the
+        // portfolio's value now, moved only by the run's own fills.
+        _book = context.HasScopedAccounting ? null : context.RunBook ?? new LiveRunBook(
+            context.PortfolioValue,
             BacktestDefaults.DefaultBrokerageAccountId,
             context.Gateway.BrokerName);
-        _metrics = new LiveRunMetricsTracker(_book.InitialCapital, DateTimeOffset.UtcNow);
+        _metrics = new LiveRunMetricsTracker(_book?.InitialCapital ?? context.PortfolioValue, DateTimeOffset.UtcNow);
         _clientOrderIdPrefix = BuildClientOrderIdPrefix(run.RunId);
         _fillReports = Channel.CreateBounded<ExecutionSdk.ExecutionReport>(new BoundedChannelOptions(fillReportQueueCapacity)
         {
@@ -501,19 +502,31 @@ internal sealed class LiveStrategyRunSession
         }
 
         SyncRunFinancing();
-        var valuation = _book.Value(_context.GetLastPrice);
+        LivePortfolioObservation observation;
+        if (_book is null)
+        {
+            observation = _context.CapturePortfolioObservation();
+        }
+        else
+        {
+            var valuation = _book.Value(_context.GetLastPrice);
+            observation = new(valuation.Cash, valuation.Equity, valuation.Positions, valuation.Accounts, null);
+        }
+
         _metrics.RecordDayEnd(
             date,
-            valuation.Cash,
-            valuation.Equity,
-            valuation.Positions,
-            valuation.Accounts);
+            observation.Cash,
+            observation.Equity,
+            observation.Positions,
+            observation.Accounts,
+            observation.AccountingEvidence);
     }
 
     /// <summary>
-    /// Books the financing charges retained on the run's own paper session into the run book.
-    /// Only a run that owns its session has charges that are its own; a charge on a shared
-    /// account cannot be allocated to one run, so other runs leave financing unmeasured.
+    /// Records the financing charges retained on the run's own paper session. Only a run that owns
+    /// its session has charges that are its own; a charge on a shared account cannot be allocated
+    /// to one run, so other runs leave financing unmeasured. The session's own cash already pays
+    /// each charge, so the observed equity includes it; a run book pays it from the book's cash.
     /// </summary>
     private void SyncRunFinancing()
     {
@@ -532,7 +545,8 @@ internal sealed class LiveStrategyRunSession
         {
             if (!_bookedFinancingCharges.Add(charge.SourceEventId))
                 continue;
-            _book.ApplyFinancingCharge(charge.Amount);
+            _book?.ApplyFinancingCharge(charge.Amount);
+            _runFinancingCharges += charge.Amount;
             _metrics.RecordFinancingCharge(charge.OccurredAt, charge.Amount, charge.AccountId);
         }
 
@@ -753,7 +767,7 @@ internal sealed class LiveStrategyRunSession
 
                 var signedQuantity = ConvertToBacktestFillQuantity(report);
                 var fill = new FillEvent(
-                    FillId: Guid.NewGuid(),
+                    FillId: report.AccountingFillId ?? Guid.NewGuid(),
                     OrderId: order.OrderId,
                     Symbol: report.Symbol,
                     FilledQuantity: signedQuantity,
@@ -770,7 +784,7 @@ internal sealed class LiveStrategyRunSession
                     report.Timestamp,
                     report.UsesFaceValuePercentageOfPar,
                     report.LotMultiplier ?? 1m);
-                _book.ApplyFill(fill, LiveRunMetricsTracker.ValueFactor(
+                _book?.ApplyFill(fill, LiveRunMetricsTracker.ValueFactor(
                     report.UsesFaceValuePercentageOfPar, report.LotMultiplier ?? 1m));
                 if (_strategy.Status != StrategyStatus.Stopped)
                 {
@@ -1210,11 +1224,12 @@ internal sealed class LiveStrategyRunSession
             }
         }
 
-        if (completeRun && faulted is null)
+        BacktestResult? metrics = null;
+        if (canBuildMetrics && (completeRun || faulted is not null))
         {
             try
             {
-                await ReconcilePaperSessionAsync().ConfigureAwait(false);
+                metrics = BuildMetrics();
             }
             catch (Exception ex)
             {
@@ -1222,12 +1237,14 @@ internal sealed class LiveStrategyRunSession
             }
         }
 
-        BacktestResult? metrics = null;
-        if (canBuildMetrics && (completeRun || faulted is not null))
+        if (completeRun && faulted is null)
         {
             try
             {
-                metrics = BuildMetrics();
+                // The prepared session is still active while final metrics observe it.
+                // Closing removes read authority; verified durable replay remains required
+                // before the completed run and its captured metrics can be retained.
+                await ReconcilePaperSessionAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1292,9 +1309,9 @@ internal sealed class LiveStrategyRunSession
 
         try
         {
+            metrics = BuildMetrics();
             if (faulted is null)
                 await ReconcilePaperSessionAsync().ConfigureAwait(false);
-            metrics = BuildMetrics();
         }
         catch (Exception ex)
         {
@@ -1326,12 +1343,12 @@ internal sealed class LiveStrategyRunSession
         return _metrics.Build(
             _run.Engine ?? (_run.RunType == RunType.Live ? "BrokerLive" : "BrokerPaper"),
             _context.Universe,
-            _book.Value(_context.GetLastPrice).Equity,
+            _book?.Value(_context.GetLastPrice).Equity ?? _context.PortfolioValue,
             _context.Ledger,
             DateTimeOffset.UtcNow,
-            // Measured only for a run that owns its paper session, read in full at the end of
-            // the run; financing on a shared account has no run allocation and stays unavailable.
-            runAttributedMarginInterest: _financingMeasured ? _book.FinancingCharges : null);
+            // Measured only for a run that owns its paper session, read in full while the session
+            // is still open; financing on a shared account has no run allocation and stays unavailable.
+            runAttributedMarginInterest: _financingMeasured ? _runFinancingCharges : null);
     }
 
     private static Exception? CombineFailures(Exception? first, Exception? second) =>

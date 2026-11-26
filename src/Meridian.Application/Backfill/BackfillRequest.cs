@@ -40,6 +40,10 @@ public sealed record BackfillRequest(
     bool ResumeFromCheckpoint = false
 )
 {
+    /// <summary>Trusted repair workflow identity; ordinary historical requests leave repair status unassessed.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? GapRepairReference { get; init; }
+
     public static BackfillRequest FromConfig(AppConfig cfg)
     {
         var defaults = cfg.Backfill;

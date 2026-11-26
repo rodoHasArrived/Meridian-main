@@ -185,7 +185,12 @@ public sealed record FundReconciliationItem(
     string? RunId = null,
     int SecurityIssueCount = 0,
     bool HasSecurityCoverageIssues = false,
-    string CoverageLabel = "n/a");
+    string CoverageLabel = "n/a")
+{
+    public decimal? ComparableBreakAmountTotal { get; init; }
+    public string? BreakAmountCurrency { get; init; }
+    public string? BreakAmountUnavailableReason { get; init; }
+}
 
 /// <summary>
 /// Summary of recent reconciliation posture for a fund.
@@ -198,7 +203,12 @@ public sealed record ReconciliationSummary(
     int SecurityCoverageIssueCount = 0,
     ReconciliationBreakQueueProjectionDto? BreakQueue = null,
     LedgerImpactPreviewDto? LedgerImpactPreview = null,
-    bool HasCriticalBreakOpen = false);
+    bool HasCriticalBreakOpen = false)
+{
+    public decimal? ComparableBreakAmountTotal { get; init; }
+    public string? BreakAmountCurrency { get; init; }
+    public string? BreakAmountUnavailableReason { get; init; }
+}
 
 /// <summary>
 /// Shared governed lifecycle projection composed from operations continuity,

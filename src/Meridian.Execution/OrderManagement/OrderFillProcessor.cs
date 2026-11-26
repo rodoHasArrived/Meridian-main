@@ -148,6 +148,25 @@ internal sealed class OrderFillProcessor(
             var fillIncrement = incrementQuantity == report.FilledQuantity
                 ? report
                 : report with { FilledQuantity = incrementQuantity };
+            // This is the accepted order's retained admission identity, never an assertion
+            // supplied by a gateway or a fresh ticker lookup after execution. Stamp before
+            // both the durable session record and the portfolio mutation consume the fill.
+            OrderState? admittedOrder = null;
+            if (!string.IsNullOrWhiteSpace(orderId) && _context.TryGetOrder(orderId, out var retainedOrder))
+                admittedOrder = retainedOrder;
+            var admittedSecurityId = admittedOrder?.AccountingSecurityId is { } securityId && securityId != Guid.Empty
+                    ? securityId : (Guid?)null;
+            var admittedRunId = admittedOrder?.AccountingRunId;
+            admittedRunId = string.IsNullOrWhiteSpace(admittedRunId) ? null : admittedRunId.Trim();
+            if (fillIncrement.AccountingSecurityId != admittedSecurityId
+                || !string.Equals(fillIncrement.AccountingRunId, admittedRunId, StringComparison.Ordinal))
+            {
+                fillIncrement = fillIncrement with
+                {
+                    AccountingSecurityId = admittedSecurityId,
+                    AccountingRunId = admittedRunId
+                };
+            }
             if (fillIncrement.ReportType is not (ExecutionReportType.Fill or ExecutionReportType.PartialFill))
             {
                 var isCompleteFill = report.OrderQuantity > 0m
@@ -275,6 +294,7 @@ internal sealed class OrderFillProcessor(
                         contractMultiplier: _context.GetContractMultiplier(fillOrderId),
                         usesFaceValuePercentageOfPar: usesFaceValuePercentageOfPar);
                     progress.AccountingEvidence = result.Evidence;
+                    progress.MarketDataEvidence = result.MarketDataEvidence;
                     progress.RealizedPnl = result.RealizedPnl;
                     progress.NewCash = result.NewCash;
                 }
@@ -318,7 +338,8 @@ internal sealed class OrderFillProcessor(
                                     ?? _context.GetContractMultiplier(fillIncrement.ClientOrderId ?? fillIncrement.OrderId)))) with
                     {
                         AccountingEvidenceVersion = 1,
-                        AccountingEvidence = progress.AccountingEvidence
+                        AccountingEvidence = progress.AccountingEvidence,
+                        MarketDataEvidence = progress.MarketDataEvidence ?? fillIncrement.MarketDataEvidence
                     };
                     if (_context.CaptureAccountingSource)
                     {
@@ -445,7 +466,8 @@ internal sealed class OrderFillProcessor(
         return tradeEvent with
         {
             StrategyId = string.IsNullOrWhiteSpace(order.StrategyId) ? null : order.StrategyId.Trim(),
-            RunId = string.IsNullOrWhiteSpace(order.RunId) ? null : order.RunId.Trim()
+            RunId = string.IsNullOrWhiteSpace(order.RunId) ? null : order.RunId.Trim(),
+            AccountingRunId = order.AccountingRunId
         };
     }
 
@@ -481,6 +503,7 @@ internal sealed class OrderFillProcessor(
         public decimal CumulativeFilledQuantity { get; } = cumulativeFilledQuantity;
         public bool IsTrackedOrder { get; } = isTrackedOrder;
         public TradeExecutedEvent? TradeEvent { get; set; }
+        public IReadOnlyList<Meridian.Contracts.Operations.MarketDataInputEvidence>? MarketDataEvidence { get; set; }
         public TradeFillAccountingEvidence? AccountingEvidence { get; set; }
         public decimal RealizedPnl { get; set; }
         public decimal NewCash { get; set; }

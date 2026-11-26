@@ -128,7 +128,7 @@ public sealed class LiveRunBookContextTests
         book.ApplyFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "AAPL", 10, 100m, 1m, DateTimeOffset.UtcNow, "acct"), 1m);
 
         var context = new LiveStrategyExecutionContext(gateway.Object, cache, shared,
-            new HashSet<string> { "AAPL" }, "acct", book);
+            new HashSet<string> { "AAPL" }, "acct", null, null, book);
 
         context.Cash.Should().Be(10_000m - 1_000m - 1m);
         context.PortfolioValue.Should().Be(10_000m - 1m + 10m * 10m);

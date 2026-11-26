@@ -510,7 +510,11 @@ public sealed record StrategyRunReplayProvenanceDto(
     IReadOnlyList<StrategyRunReplaySourceCountDto> SourceMix,
     IReadOnlyList<StrategyRunReplayRevisionDto> Revisions,
     string? SourceMixHash,
-    string? CompletedInputHashSha256);
+    string? CompletedInputHashSha256)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<Meridian.Contracts.Operations.MarketDataQualityWarningDto>? DataQualityWarnings { get; init; }
+}
 
 public sealed record StrategyRunReplaySourceCountDto(string Symbol, string Source, long Bars);
 
@@ -599,6 +603,11 @@ public sealed record PortfolioSummary(
     string? SourceEventId = null,
     Guid? SourceJournalEntryId = null)
 {
+    public IReadOnlyList<StrategyPositionAccountingEvidence> AccountingPositions { get; init; } = [];
+
+    /// <summary>An explicitly retained empty population is authoritative; legacy absence is not.</summary>
+    public bool HasRetainedAccountingPositionPopulation { get; init; }
+
     public string? FinancingCoverageStatus { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
     public decimal? RunAttributedMarginInterest { get; init; }
@@ -651,7 +660,15 @@ public sealed record LedgerSummary(
     [property: JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null,
     [property: JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null,
     [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null,
-    LedgerDimensionSetDto? Dimensions = null);
+    LedgerDimensionSetDto? Dimensions = null)
+{
+    public IReadOnlyList<StrategyPositionAccountingEvidence> AccountingPositions { get; init; } = [];
+    public bool HasUnresolvedValuation { get; init; }
+    public decimal? HistoricalCostNetAssets { get; init; }
+    /// <summary>Why a run activity population cannot prove complete financial-account cash or NAV.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? BalanceComparisonUnavailableReason { get; init; }
+}
 
 /// <summary>
 /// Shared trial-balance row for workstation ledger views.
