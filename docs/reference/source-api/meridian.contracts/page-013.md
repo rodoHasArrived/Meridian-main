@@ -700,7 +700,7 @@ public sealed record CashFlowBlockerDelta(string Side, string Code, string Messa
 
 Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowCalculationBlocker</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:126](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L126).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:131](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L131).
 
 ```csharp
 public sealed record CashFlowCalculationBlocker(string Code, string Message, string? StreamId = null);
@@ -710,7 +710,7 @@ public sealed record CashFlowCalculationBlocker(string Code, string Message, str
 
 Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowCalendarSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:148](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L148).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:153](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L153).
 
 ```csharp
 public sealed record CashFlowCalendarSnapshot(string CalendarId, string ContentHash, DateOnly CoverageStart, DateOnly CoverageEnd, IReadOnlyList<DateOnly> NonBusinessDays, DateOnly? SourceCoverageStart = null, DateOnly? SourceCoverageEnd = null);
@@ -730,7 +730,7 @@ public sealed record CashFlowCurvePin(string BenchmarkKey, Guid CurveId, Guid Cu
 
 Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowCurveSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:152](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L152).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:157](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L157).
 
 ```csharp
 public sealed record CashFlowCurveSnapshot(SecurityCurveDefinitionDto Definition, SecurityCurveVersionDto Version);
@@ -756,7 +756,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowExerciseCalculation</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:133](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L133).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:138](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L138).
 
 ```csharp
 public sealed record CashFlowExerciseCalculation(SelectedCashFlowExercise Selection, CashFlowNoticeWindow NoticeWindow, decimal DirtyPresentValue, decimal AccruedInterest, decimal CleanFloor, decimal DirtyConsideration, decimal Premium);
@@ -766,7 +766,7 @@ public sealed record CashFlowExerciseCalculation(SelectedCashFlowExercise Select
 
 Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowExerciseEligibility</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:129](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L129).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:134](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L134).
 
 American windows are represented as a predicate over the named calendar, not daily rows.
 
