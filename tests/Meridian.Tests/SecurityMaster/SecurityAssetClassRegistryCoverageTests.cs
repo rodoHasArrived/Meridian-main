@@ -240,10 +240,10 @@ public sealed class SecurityAssetClassRegistryCoverageTests
     }
 
     [Fact]
-    public void Swap_OffersItsLegsBlock_WhileLegConventionsAndTheCalculationCompanionStayReadOnly()
+    public void Swap_OffersGovernedLegConventions_WhileTheCalculationCompanionStaysReadOnly()
     {
-        // Swap writes version 1. Its version-2 leg conventions and version-3 calculation
-        // companion remain outside every write surface.
+        // The already-readable version-2 leg block is writable through bounded vanilla validation;
+        // the calculation-only version-3 companion keeps its independent authoring refusal.
         var definition = SecurityAssetClassRegistry.Get("Swap");
         definition.Fields.Select(static field => field.Key)
             .Should().Equal("rateUnit", "effectiveDate", "maturityDate", "legs");
@@ -254,6 +254,6 @@ public sealed class SecurityAssetClassRegistryCoverageTests
         SecurityAssetTermsSchema.ElementFields("Swap", "legs")
             .Should().ContainSingle(static field => field.Key == "scheduleConventions")
             .Which.SinceTermsVersion.Should().Be(2);
-        SecurityAssetTermsSchema.ElementFields("Swap", "legs").Single(field => field.Key == "scheduleConventions").AuthoringEnabled.Should().BeFalse();
+        SecurityAssetTermsSchema.ElementFields("Swap", "legs").Single(field => field.Key == "scheduleConventions").AuthoringEnabled.Should().BeTrue();
     }
 }
