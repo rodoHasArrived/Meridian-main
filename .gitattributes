@@ -16,7 +16,6 @@ src/Meridian.Ui/wwwroot/workstation/assets/*.css text eol=lf
 # generated merge resolver; it never accepts one parent's stale output silently.
 docs/roadmap/generated/* merge=binary
 docs/source/generated/* merge=binary
-docs/generated/repository-structure.md merge=binary
 docs/generated/workflow-command-reference.md merge=binary
 docs/generated/workflows-overview.md merge=binary
 # Accepted source/README review evidence, not a disposable hash cache. One file per

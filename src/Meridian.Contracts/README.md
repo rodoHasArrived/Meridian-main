@@ -2399,6 +2399,18 @@ sign, served from `UiApiRoutes.LedgerPeriodAccountRunningBalance`
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
 
+`Workstation/OperationsWorkflowPurposeDto.cs` scopes an operations-continuity workflow: `Close`
+(the default, omitted on write) or `SecurityMasterRevision`. `OperationsContinuityWorkflowDto` adds
+optional `Purpose`, `SubjectRevisionId`, `SubjectMaker`, `SubjectEvidenceId`,
+`SubjectEvidenceSha256` and `SubjectReviewState`; each is omitted when unset, so existing close
+workflow payloads serialize unchanged. The authority rules live in
+[Meridian.FinancialOperations](../Meridian.FinancialOperations/README.md).
+
+`SecurityAssetClassDeclarations` is the one authored row per class from which the
+`SecurityAssetClassNames` constants and the F# `SecurityKind`, `AssetClassRegistry` and flat-writer
+regions are generated (W11-PACK-002); see the
+[class-plumbing codegen plan](../../docs/engineering/plans/security-master-class-plumbing-codegen.md).
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
