@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AssignOnboardingDifferenceRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AssignOnboardingDifferenceRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:34](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L34).
+
+```csharp
+public sealed record AssignOnboardingDifferenceRequestDto(int ExpectedVersion, string OwnerId, string Notes, IReadOnlyList<string> EvidenceIds);
+```
+
+## AuditTrailExplorerQueryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailExplorerQueryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L8).
+
+Query contract for cross-object audit trail exploration.
+
+```csharp
+public sealed record AuditTrailExplorerQueryDto(string? SearchText = null, string? RunId = null, string? Category = null, string? Action = null, string? Outcome = null, string? Actor = null, string? Symbol = null, string? CorrelationId = null, string? ObjectKind = null, string? ObjectId = null, string? RelatedObjectId = null, DateTimeOffset? FromUtc = null, DateTimeOffset? ToUtc = null, int Limit = 100, string? OrderId = null);
+```
+
+## AuditTrailExplorerResultDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailExplorerResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L57).
+
+Result contract for cross-object audit trail search.
+
+```csharp
+public sealed record AuditTrailExplorerResultDto(DateTimeOffset AsOf, int TotalMatched, int Returned, IReadOnlyList<AuditTrailTimelineEntryDto> Entries, AuditTrailSourceAvailabilityDto? SourceAvailability = null, IReadOnlyList<AuditTrailSourceStatusDto>? Sources = null, string? CoverageNote = null, string? OrderIdentityStatus = null);
+```
+
 ## AuditTrailObjectKindDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailObjectKindDto</code>. Kind: `enum`.
@@ -600,36 +634,4 @@ Source: [src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:27](../../
 
 ```csharp
 public sealed record CollateralCallDto(string CallId, string Counterparty, decimal RequiredAmount, decimal PostedAmount, DateTimeOffset DueByUtc, string Status, string Reason);
-```
-
-## CompleteActivationOutcomeRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CompleteActivationOutcomeRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:93](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L93).
-
-```csharp
-public sealed record CompleteActivationOutcomeRequestDto(string Key);
-```
-
-## CompleteFirstRunRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CompleteFirstRunRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:87](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L87).
-
-```csharp
-public sealed record CompleteFirstRunRequestDto(string Goal, string StarterKitId, string DataChoice, bool UseSampleData);
-```
-
-## CorporateActionDescriptorDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CorporateActionDescriptorDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:96](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L96).
-
-Canonical-taxonomy projection of one effective corporate action for workbench surfaces: the chain tip&#x27;s catalog identity (canonical name, ISO 15022 CAEV alignment, display name), its lifecycle state resolved at the snapshot&#x27;s as-of time, and the amendment timeline (original announcement first, tip last). CorpActId joins the descriptor back to the raw row in SecurityMasterTrustSnapshotDto.CorporateActions.
-
-```csharp
-public sealed record CorporateActionDescriptorDto(Guid CorpActId, string CanonicalName, string? CaevCode, string DisplayName, string LifecycleState, bool IsCancelled, IReadOnlyList<CorporateActionTimelineEntryDto> Timeline);
 ```

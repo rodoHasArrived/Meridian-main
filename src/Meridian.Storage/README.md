@@ -6,10 +6,18 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-20
+last_reviewed: 2026-11-25
 ---
 
 # src/Meridian.Storage
+
+Security Master projection storage composes one `SecurityTermsStorageContribution` for each of
+the 32 asset classes through `SecurityTermsStorageModules` (`SecurityMaster/AssetPacks/`). A
+declarative class contributes its `SecurityTermsProjectionDescriptor`; Option and CustomAsset
+contribute their existing hand-written writers with a stated reason. `SecurityTermsProjectionRegistry` keeps its public members and fan-out
+order over these contributions. Composition refuses a catalog class without a contribution, a
+duplicate, or a disposition that differs from the catalog's `ProjectionKind`. Tables, columns and
+migrations are unchanged. `SecurityTermsStorageModuleTests` covers the composition.
 
 The backfill status store exposes a legacy summary only for a raw snapshot written without a
 provenance receipt. Reads of retained results continue to enforce tenant visibility.
