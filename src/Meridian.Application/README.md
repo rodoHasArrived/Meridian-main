@@ -1885,6 +1885,11 @@ The 2026-11-24 Security Master review backlog (PR #3736) added these Application
   historical fixing is absent, instead of projecting a zero. The new cash-flow engine is
   shadow-compared against the existing one (`CashFlowEngineShadowComparer`) and does not replace it.
 
+To keep each file under the 2,000-line ratchet, the bond coupon round-trip guards live in
+`SecurityMasterService.BondCouponRoundTrip.cs` and the principal-schedule checks live in
+`SecurityMasterWorkbenchCommandService.PrincipalSchedule.cs`; both are partial-class splits with no
+behavior change.
+
 ## TODO checklist
 
 <!-- source-todos:begin module=SRC-APP -->

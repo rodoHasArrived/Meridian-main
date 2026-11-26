@@ -438,7 +438,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.FieldAlreadyStagedException</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2142](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2142).
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1922](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1922).
 
 A field edit was refused because another open revision already stages the same field (review P5/D1). Mapped to HTTP 409 with the first stager&#x27;s identity.
 
@@ -450,12 +450,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FieldAlreadyStagedException(Guid securityId, string fieldPath, Guid revisionId, string stagedBy, SecurityMasterRevisionStateDto state) : base($&quot;Field &#x27;{fieldPath}&#x27; of security &#x27;{securityId:D}&#x27; is already staged by {stagedBy} in revision &#x27;{revisionId:D}&#x27; ({state}). &quot; + &quot;Publish or discard that revision before staging the field again.&quot;);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2144](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2144) |  |
-| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2155](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2155) |  |
-| <code>public string FieldPath { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2157](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2157) |  |
-| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2159](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2159) |  |
-| <code>public string StagedBy { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2161](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2161) |  |
-| <code>public SecurityMasterRevisionStateDto State { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:2163](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L2163) |  |
+| <code>public FieldAlreadyStagedException(Guid securityId, string fieldPath, Guid revisionId, string stagedBy, SecurityMasterRevisionStateDto state) : base($&quot;Field &#x27;{fieldPath}&#x27; of security &#x27;{securityId:D}&#x27; is already staged by {stagedBy} in revision &#x27;{revisionId:D}&#x27; ({state}). &quot; + &quot;Publish or discard that revision before staging the field again.&quot;);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1924](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1924) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1935](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1935) |  |
+| <code>public string FieldPath { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1937](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1937) |  |
+| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1939](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1939) |  |
+| <code>public string StagedBy { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1941](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1941) |  |
+| <code>public SecurityMasterRevisionStateDto State { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1943](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1943) |  |
 
 ## FileSecurityCashFlowReceiptStore
 

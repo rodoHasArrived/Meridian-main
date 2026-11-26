@@ -4344,6 +4344,10 @@ access.
   endpoint names prefixed `EntityMaster`.
 - **Status codes:** DirectLending maps `NegativeInterestUnsupported` to 422.
 
+The pricing-hierarchy and entitlement route mappings moved to
+`SecurityMasterEndpoints.PricingEntitlements.cs` (a partial-class split under the 2,000-line ratchet;
+routes and filters are unchanged).
+
 ## TODO checklist
 
 <!-- source-todos:begin module=SRC-UI-SHARED -->
