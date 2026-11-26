@@ -63,6 +63,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
         var evidence = RecurringJournalEvidenceGuard.Deserialize(draft.RecurringJournalEvidenceJson!)!;
         var claim = session.Occurrences.SingleOrDefault(item => item.OccurrenceKey == evidence.OccurrenceKey)
             ?? throw new InvalidOperationException("The retained recurring occurrence is unavailable.");
+        RecurringJournalEconomicObligationGuard.RequireMatch(claim, evidence);
         var scope = claim.ScheduleDefinition.Scope;
         if (claim.DraftId != evidence.JournalEntryId || claim.EffectiveDate != evidence.EffectiveDate ||
             claim.ScheduleDefinition.ScheduleId != evidence.ScheduleId ||

@@ -1253,6 +1253,7 @@ Meridian-main
 │       ├── resolve-generated-merge-conflicts.py
 │       ├── run-maintained-generation.py
 │       ├── schema-control.py
+│       ├── ui-shared-inventory.py
 │       ├── validate-tooling-metadata.py
 │       └── validate_budget.py
 ├── config
@@ -1771,6 +1772,7 @@ Meridian-main
 │   │   │   ├── review-remediation-2026-11-12.md
 │   │   │   ├── security-master-integrity-implementation-plan.md
 │   │   │   ├── security-master-review-remediation-plan.md
+│   │   │   ├── ui-shared-decomposition-inventory.md
 │   │   │   ├── ui-shared-decomposition-plan.md
 │   │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
 │   │   │   ├── web-workstation-ux-review-plan-2026-11.md
@@ -5494,6 +5496,7 @@ Meridian-main
 │   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── PostgresSecurityMasterConflictService.cs
 │   │   │   ├── PostgresSecurityMasterRevisionStore.cs
+│   │   │   ├── RetainedSecurityTermsReadBoundary.cs
 │   │   │   ├── SecurityAssetPackAdmission.cs
 │   │   │   ├── SecurityAssetProfileGovernanceService.cs
 │   │   │   ├── SecurityAssetTermsFieldSnapshot.cs
@@ -6264,6 +6267,7 @@ Meridian-main
 │   │   │   ├── ScheduleSpecFactory.cs
 │   │   │   ├── ScheduleTermsWriteRules.cs
 │   │   │   ├── ScheduleTermsWriteRules.Gaps.cs
+│   │   │   ├── ScheduleTermsWriteRules.Scalars.cs
 │   │   │   ├── SecurityAssetClassCatalog.cs
 │   │   │   ├── SecurityAssetClassModules.cs
 │   │   │   ├── SecurityAssetClassRegistry.cs
@@ -6282,6 +6286,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetTermsCodecBindings.cs
 │   │   │   ├── SecurityAssetTermsFieldEditValidator.cs
 │   │   │   ├── SecurityAssetTermsSchema.cs
+│   │   │   ├── SecurityBoundedProfileCommonTerms.cs
 │   │   │   ├── SecurityCanonicalAssetHomes.cs
 │   │   │   ├── SecurityCashFlowCalculationReceipt.cs
 │   │   │   ├── SecurityCashFlowTermRoles.cs
@@ -6324,6 +6329,7 @@ Meridian-main
 │   │   │   ├── SecurityRateFieldUnits.cs
 │   │   │   ├── SecurityRateObservations.cs
 │   │   │   ├── SecurityRecordRateUnit.cs
+│   │   │   ├── SecurityRecurringAccrualPolicies.cs
 │   │   │   ├── SecurityScheduleDecimal.cs
 │   │   │   ├── SecurityTermBlocks.cs
 │   │   │   ├── SecurityTermConventions.cs
@@ -6334,6 +6340,7 @@ Meridian-main
 │   │   │   ├── SecurityUnderlyingGraph.cs
 │   │   │   ├── SecurityValidationDtos.cs
 │   │   │   ├── SecurityValuation.cs
+│   │   │   ├── SecurityVersionedScalarTerms.cs
 │   │   │   ├── SecurityVersionedTerms.cs
 │   │   │   ├── StructuredCashFlowTerms.cs
 │   │   │   └── StructuredCashFlowTermsResolver.cs
@@ -11819,7 +11826,9 @@ Meridian-main
 │   │   │   ├── ProviderReadinessService.cs
 │   │   │   ├── ReconciliationApiService.cs
 │   │   │   ├── ReconciliationBreakQueueProjection.cs
+│   │   │   ├── RecurringFixedIncomeAccrualEligibility.cs
 │   │   │   ├── RecurringJournalCalculations.cs
+│   │   │   ├── RecurringJournalEconomicObligationGuard.cs
 │   │   │   ├── RecurringJournalPeriodAuthority.cs
 │   │   │   ├── RecurringJournalRunner.cs
 │   │   │   ├── RecurringJournalSubjectAuthority.cs
@@ -13106,6 +13115,7 @@ Meridian-main
 │   │   │   ├── SecurityListingIdentityTests.cs
 │   │   │   ├── SecurityMasterConflictFieldCategoriesTests.cs
 │   │   │   ├── SecurityMasterConflictRoutingTests.cs
+│   │   │   ├── SecurityVersionedScalarTermsTests.cs
 │   │   │   └── StructuredCashFlowTermsResolverIntegrationTests.cs
 │   │   ├── ContractualCashFlowEngineTests.cs
 │   │   ├── ContractualCashFlowRunComparerTests.cs
@@ -13247,7 +13257,8 @@ Meridian-main
 │   │   ├── Program.Etl.cs
 │   │   ├── Program.EvidenceQuota.cs
 │   │   ├── Program.Identity.cs
-│   │   └── Program.ManifestLock.cs
+│   │   ├── Program.ManifestLock.cs
+│   │   └── Program.Recurring.cs
 │   ├── Meridian.QuantScript.Tests
 │   │   ├── Helpers
 │   │   │   ├── FakeQuantDataContext.cs
@@ -13654,6 +13665,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterContractAdapterTests.cs
 │   │   │   ├── SecurityMasterContractOwnershipTests.cs
 │   │   │   ├── SecurityMasterSchemaBoundDecodeRatchetTests.cs
+│   │   │   ├── UiSharedServiceGrowthRatchetTests.cs
 │   │   │   ├── VendorNeutralDomainTests.cs
 │   │   │   └── VersionedContainerKeyLiteralRatchetTests.cs
 │   │   ├── AssetOperations
@@ -14094,7 +14106,9 @@ Meridian-main
 │   │   │   ├── IntercompanyLedgerPostingAuthorityTests.cs
 │   │   │   ├── MiddleOfficeOperationsServiceTests.cs
 │   │   │   ├── RecurringJournalEvidencePinStoreTests.cs
-│   │   │   └── RecurringJournalStoreTests.cs
+│   │   │   ├── RecurringJournalStoreTests.cs
+│   │   │   ├── RecurringJournalStoreTests.EconomicObligations.cs
+│   │   │   └── RecurringJournalStoreTests.EconomicObligations.Process.cs
 │   │   ├── FixedIncome
 │   │   │   ├── AccountBondIncomePlanningEntitlementTests.cs
 │   │   │   ├── AccountBondIncomePlanningTests.cs
@@ -14684,7 +14698,8 @@ Meridian-main
 │   │   │   │   ├── ScheduleKernelLegacyParityTests.cs
 │   │   │   │   ├── ScheduleParityGrids.cs
 │   │   │   │   ├── SchedulePeriodIdTests.cs
-│   │   │   │   └── ScheduleSpecFactoryTests.cs
+│   │   │   │   ├── ScheduleSpecFactoryTests.cs
+│   │   │   │   └── ScheduleSpecFactoryVersionedAnchorTests.cs
 │   │   │   ├── Workbench
 │   │   │   │   ├── AheadOfWriteWorkbenchFixtures.cs
 │   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.AheadOfWrite.cs
@@ -14717,6 +14732,7 @@ Meridian-main
 │   │   │   ├── BondSecurityTermsDigestPostgresTests.cs
 │   │   │   ├── BondWorkflowCanonicalModuleTests.cs
 │   │   │   ├── CanonicalRegistryCoverageSourceTests.cs
+│   │   │   ├── CertificateOfDepositCalculationProfileTests.cs
 │   │   │   ├── ClassificationLabelReaderTests.cs
 │   │   │   ├── ContractualCashFlowCompanionPostgresTests.cs
 │   │   │   ├── CorporateActionAccountingMigrationTests.cs
@@ -14942,6 +14958,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterServiceSnapshotTests.DayCount.cs
 │   │   │   ├── SecurityMasterServiceSnapshotTests.RetainedScheduleGaps.cs
 │   │   │   ├── SecurityMasterServiceSnapshotTests.StrayScheduleAmendment.cs
+│   │   │   ├── SecurityMasterServiceSnapshotTests.VersionedScalars.cs
 │   │   │   ├── SecurityMasterSnapshotStoreTests.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationServiceTests.cs
 │   │   │   ├── SecurityMasterTermsCapabilityPostgresTests.cs
@@ -14954,6 +14971,7 @@ Meridian-main
 │   │   │   ├── SecurityRateIngestionRulesTests.cs
 │   │   │   ├── SecurityRateModuleContractionReplayTests.cs
 │   │   │   ├── SecurityRecordRateUnitTests.cs
+│   │   │   ├── SecurityRecurringAccrualPolicyTests.cs
 │   │   │   ├── SecurityReferenceModuleContractionReplayTests.cs
 │   │   │   ├── SecurityReferenceTaxonomyCatalogTests.cs
 │   │   │   ├── SecurityRequiredModuleValueTests.cs
@@ -14977,6 +14995,7 @@ Meridian-main
 │   │   │   ├── SecurityValidationGateServiceTests.cs
 │   │   │   ├── SecurityValidationServiceTests.cs
 │   │   │   ├── SecurityValuationServiceTests.cs
+│   │   │   ├── SecurityVersionedScalarCodecCompatibilityTests.cs
 │   │   │   ├── SecurityVersionedTermsTests.cs
 │   │   │   ├── SpecializedProjectionGoldenTests.cs
 │   │   │   ├── StructuredCashFlowScheduleRowVersionTests.cs
@@ -15677,6 +15696,8 @@ Meridian-main
 │   │   │   ├── ReconciliationBreakQueueProjectionTests.cs
 │   │   │   ├── ReconciliationLegacyBulkActionTests.cs
 │   │   │   ├── RecurringJournalCalculationTests.BondCouponIncome.cs
+│   │   │   ├── RecurringJournalCalculationTests.CertificateOfDeposit.cs
+│   │   │   ├── RecurringJournalCalculationTests.CertificateOfDepositObligations.cs
 │   │   │   ├── RecurringJournalCalculationTests.cs
 │   │   │   ├── RecurringJournalCalculationTests.EvidencePins.cs
 │   │   │   ├── RecurringJournalCalculationTests.FactoredAccrual.cs

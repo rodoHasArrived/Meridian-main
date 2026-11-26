@@ -479,7 +479,7 @@ public sealed class SecurityAssetClassTermsUpgraderTests
     {
         SecurityAssetClassCatalog.GetReadsTermsThrough("StructuredCredit").Should().Be(6);
         SecurityAssetClassCatalog.GetReadsTermsThrough("Bond").Should().Be(5);
-        SecurityAssetClassCatalog.GetReadsTermsThrough("CertificateOfDeposit").Should().Be(5);
+        SecurityAssetClassCatalog.GetReadsTermsThrough("CertificateOfDeposit").Should().Be(6);
         SecurityAssetClassCatalog.GetReadsTermsThrough("Swap").Should().Be(4);
         SecurityAssetClassCatalog.GetReadsTermsThrough("DirectLoan").Should().Be(3);
         SecurityAssetClassCatalog.GetReadsTermsThrough("Equity").Should().Be(1);

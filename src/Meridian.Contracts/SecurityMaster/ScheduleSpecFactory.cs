@@ -218,10 +218,20 @@ public static class ScheduleSpecFactory
     /// </summary>
     /// <exception cref="ArgumentNullException"><paramref name="security"/> or <paramref name="terms"/> is null.</exception>
     public static DeclaredScheduleResolution ResolveShape(SecurityDetailDto security, StructuredCashFlowTerms terms)
+        => ResolveShapeCore(security, terms, anchorTermsVersion: null);
+
+    // Write validation's twin exposes the selected container contract without granting newly
+    // introduced scalar anchors to a record that never declared their terms version.
+    internal static DeclaredScheduleResolution ResolveWriteShape(SecurityDetailDto security,
+        StructuredCashFlowTerms terms, int anchorTermsVersion)
+        => ResolveShapeCore(security, terms, anchorTermsVersion);
+
+    private static DeclaredScheduleResolution ResolveShapeCore(SecurityDetailDto security,
+        StructuredCashFlowTerms terms, int? anchorTermsVersion)
     {
         ArgumentNullException.ThrowIfNull(security);
         ArgumentNullException.ThrowIfNull(terms);
-        if (!TryReadShape(security, terms, out var shape, out var resolution))
+        if (!TryReadShape(security, terms, out var shape, out var resolution, anchorTermsVersion))
         {
             return resolution;
         }
@@ -239,7 +249,8 @@ public static class ScheduleSpecFactory
         SecurityDetailDto security,
         StructuredCashFlowTerms terms,
         out DeclaredShape shape,
-        [NotNullWhen(false)] out DeclaredScheduleResolution? resolution)
+        [NotNullWhen(false)] out DeclaredScheduleResolution? resolution,
+        int? anchorTermsVersion = null)
     {
         shape = default;
 
@@ -294,7 +305,9 @@ public static class ScheduleSpecFactory
         }
 
         // 3. Anchors, by schema fact, read at the root exactly as the mapping reads them.
-        if (!TryReadAnchors(assetClass, SecurityAssetClassTermsUpgrader.UpgradeForRead(assetClass, stored), terms, block, out var anchors, out resolution))
+        var anchorThrough = anchorTermsVersion ?? SecurityTermsEnvelope.ResolveAssetClassTermsVersion(stored);
+        if (!TryReadAnchors(assetClass, SecurityAssetClassTermsUpgrader.UpgradeForRead(assetClass, stored),
+                anchorThrough, terms, block, out var anchors, out resolution))
         {
             return false;
         }
@@ -374,6 +387,7 @@ public static class ScheduleSpecFactory
     private static bool TryReadAnchors(
         string assetClass,
         JsonElement root,
+        int termsVersion,
         StructuredCashFlowTerms terms,
         ScheduleConventionTerms block,
         out DeclaredAnchors anchors,
@@ -381,7 +395,7 @@ public static class ScheduleSpecFactory
     {
         anchors = default;
         resolution = null;
-        if (AnchorField(assetClass, IssueDateKey, SecurityAssetTermFieldType.Date) is not { } issueField)
+        if (AnchorField(assetClass, IssueDateKey, SecurityAssetTermFieldType.Date, termsVersion) is not { } issueField)
         {
             resolution = Refuse(
                 DeclaredScheduleRefusalCode.EffectiveDateMissing,
@@ -413,9 +427,9 @@ public static class ScheduleSpecFactory
             return false;
         }
 
-        var maturityField = AnchorField(assetClass, MaturityKey, SecurityAssetTermFieldType.Date);
+        var maturityField = AnchorField(assetClass, MaturityKey, SecurityAssetTermFieldType.Date, termsVersion);
         var maturity = maturityField is null ? null : SecurityVersionedTerms.ReadOptionalDate(root, maturityField.Key);
-        var frequencyField = AnchorField(assetClass, PaymentFrequencyKey, SecurityAssetTermFieldType.String);
+        var frequencyField = AnchorField(assetClass, PaymentFrequencyKey, SecurityAssetTermFieldType.String, termsVersion);
         var frequency = frequencyField is null ? null : SecurityVersionedTerms.ReadOptionalString(root, frequencyField.Key);
 
         string? ambiguity = null;
@@ -605,9 +619,10 @@ public static class ScheduleSpecFactory
         return null;
     }
 
-    // The top-level anchor field a class schema declares under exactly this key and type, or null.
-    private static SecurityAssetTermField? AnchorField(string assetClass, string key, SecurityAssetTermFieldType type)
+    // The exact top-level anchor declared at the record's selected terms version, or null.
+    private static SecurityAssetTermField? AnchorField(string assetClass, string key, SecurityAssetTermFieldType type, int termsVersion)
         => SecurityAssetTermsSchema.Field(assetClass, key) is { } field && field.Key == key && field.Type == type
+            && field.SinceTermsVersion <= termsVersion
             ? field
             : null;
 

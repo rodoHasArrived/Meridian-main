@@ -6,6 +6,92 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TenantReadPredicate
+
+Qualified name: <code>Meridian.Contracts.Tenancy.TenantReadPredicate</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:31](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L31).
+
+SEC-005 slice 4c-ii read-predicate decision, extended for W9-GOV-008 criterion 2. Centralizes whether a fund-scoped read filters by the stamped tenant_id column and the SQL fragment that does so, so the decision is unit-testable without a database and is shared across every fund-scoped store (ledger, fund accounts, operations-continuity) rather than re-derived per store.
+
+```csharp
+public static class TenantReadPredicate
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ParameterName = &quot;caller_tenant&quot;;</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:34](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L34) | The conventional bind-parameter name for the caller&#x27;s tenant. |
+| <code>public static bool IsResolvedTenant(string? tenantId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:37](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L37) | A concrete tenant excludes the legacy unscoped all sentinel. |
+| <code>public static bool ShouldFilter(string? callerTenantId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:51](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L51) | True when the caller has a resolved tenant and the read must be scoped to it. |
+| <code>public static bool ShouldRejectRead(string? callerTenantId, TenantScopeEnforcementMode mode) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:64](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L64) | True when the read must be refused outright rather than served. |
+| <code>public static string NormalizeParameter(string callerTenantId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:71](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L71) | The normalized tenant value to bind as the predicate parameter, trimmed to match the write-side stamp. Only meaningful when ShouldFilter is true. |
+| <code>public static string FilterClause(string tenantColumnExpression, TenantScopeEnforcementMode mode);</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:79](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L79) | The tenant predicate for a row whose tenant column is given by tenantColumnExpression (e.g. tenant_id or p.tenant_id). Prefixed with and for direct concatenation onto a where 1 = 1 clause. |
+| <code>public static string PeriodExistsClause(string periodsTable, string periodIdColumnExpression, TenantScopeEnforcementMode mode);</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:93](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L93) | The tenant predicate for a journal-entry read with no period join in its main query: scopes the entry by the tenant stamped on its accounting period via an EXISTS subquery. |
+
+## TenantScopeEnforcementMode
+
+Qualified name: <code>Meridian.Contracts.Tenancy.TenantScopeEnforcementMode</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:6](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L6).
+
+How strictly tenant scope is enforced on fund-partitioned reads.
+
+```csharp
+public enum TenantScopeEnforcementMode
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>DeploymentBoundary = 0</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:17](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L17) | The historical SEC-005 posture: unattributed rows stay visible and a caller with no resolved tenant reads unfiltered, with one-company-per-deployment as the actual control. |
+| <code>FailClosed = 1</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:24](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L24) | Cross-tenant reads fail closed: a scoped caller sees only rows their tenant owns, unattributed rows excluded, and a caller whose tenant cannot be resolved is refused rather than defaulted to an unfiltered read. |
+
+## TenantScopeEnforcementOptions
+
+Qualified name: <code>Meridian.Contracts.Tenancy.TenantScopeEnforcementOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:37](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L37).
+
+Deployment switch for TenantScopeEnforcementMode, read once at startup so changing it requires a restart.
+
+```csharp
+public sealed record TenantScopeEnforcementOptions(TenantScopeEnforcementMode Mode)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string EnvironmentVariable = &quot;MERIDIAN_TENANT_SCOPE_ENFORCEMENT&quot;;</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:40](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L40) | Environment variable naming the posture, e.g. deployment-boundary. |
+| <code>public const string ConfigurationKey = &quot;TenantScopeEnforcement&quot;;</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:43](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L43) | Supported appsettings key. The environment override takes precedence. |
+| <code>public static readonly TenantScopeEnforcementOptions DeploymentBoundary = new (TenantScopeEnforcementMode.DeploymentBoundary);</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:45](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L45) |  |
+| <code>public static readonly TenantScopeEnforcementOptions FailClosed = new (TenantScopeEnforcementMode.FailClosed);</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:48](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L48) |  |
+| <code>public bool IsFailClosed =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:51](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L51) |  |
+| <code>public static TenantScopeEnforcementOptions FromConfigurationValue(string? value) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:58](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L58) | Parses the supported appsettings values exactly. Omission selects strict enforcement; compatibility aliases are accepted only by FromEnvironmentValue. |
+| <code>public static TenantScopeEnforcementOptions FromEnvironmentValue(string? value, TenantScopeEnforcementOptions fallback);</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:82](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L82) | Parses the deployment switch. An absent value keeps the current default; a value that is present but unrecognised is refused. |
+
+## TenantScopeRejectedException
+
+Qualified name: <code>Meridian.Contracts.Tenancy.TenantScopeRejectedException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:118](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L118).
+
+Raised when a fund-scoped read is refused because the caller&#x27;s tenant could not be resolved.
+
+```csharp
+public sealed class TenantScopeRejectedException : Exception
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TenantScopeRejectedException(string readDescription) : base($&quot;A tenant-scoped caller is required to read {readDescription}.&quot;);</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:120](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L120) |  |
+| <code>public string ReadDescription { get; }</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:127](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L127) | What the caller was trying to read, for the operator-facing message. |
+
 ## TextPrimitives
 
 Qualified name: <code>Meridian.Contracts.Text.TextPrimitives</code>. Kind: `class`.
@@ -616,43 +702,3 @@ Enum declarations:
 | <code>TaxableBrokerage = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L21) |  |
 | <code>RothIra = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L22) |  |
 | <code>TraditionalIra = 3</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L23) |  |
-
-## BrokerageAccountLinkRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageAccountLinkRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L62).
-
-```csharp
-public sealed record BrokerageAccountLinkRequestDto(string ProviderId, string ExternalAccountId, string? DisplayName = null, string? LinkedBy = null, BrokerageAccountKindDto AccountKind = BrokerageAccountKindDto.Unknown);
-```
-
-## BrokerageAmountPassportSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageAmountPassportSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:308](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L308).
-
-```csharp
-public sealed record BrokerageAmountPassportSnapshotDto(AmountPassportScopeDto Scope, DateTimeOffset CapturedAt, DateTimeOffset AsOf, string ContentHash, bool IsComplete);
-```
-
-## BrokerageCashFlowEntryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageCashFlowEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:135](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L135).
-
-```csharp
-public sealed record BrokerageCashFlowEntryDto(string TransactionId, string TransactionType, string Category, decimal Amount, string Currency, DateTimeOffset PostedAt, string? Symbol = null, string? Description = null);
-```
-
-## BrokerageCashFlowSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageCashFlowSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:145](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L145).
-
-```csharp
-public sealed record BrokerageCashFlowSummaryDto(Guid FundAccountId, string? ProviderId, string? ExternalAccountId, BrokerageAccountKindDto AccountKind, DateOnly? From, DateOnly? To, decimal TotalInflows, decimal TotalOutflows, decimal NetCashFlow, string Currency, int TransactionCount, IReadOnlyList<BrokerageCashFlowEntryDto> Entries, IReadOnlyList<string> Warnings);
-```
