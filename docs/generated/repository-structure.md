@@ -8916,7 +8916,6 @@ Meridian-main
 │   │   │   ├── CatalogSyncSink.cs
 │   │   │   ├── CompositeSink.cs
 │   │   │   ├── JsonlStorageSink.cs
-│   │   │   ├── ParquetStorageSink.Compaction.cs
 │   │   │   └── ParquetStorageSink.cs
 │   │   ├── Store
 │   │   │   ├── CompositeMarketDataStore.cs
@@ -8982,7 +8981,6 @@ Meridian-main
 │   │   │   ├── IBacktestStrategyLiveSource.cs
 │   │   │   ├── ILiveOrderOutcomeObserver.cs
 │   │   │   ├── LivePortfolioObservation.cs
-│   │   │   ├── LiveRunBook.cs
 │   │   │   ├── LiveRunMetricsTracker.cs
 │   │   │   ├── LiveStrategyBase.cs
 │   │   │   ├── LiveStrategyCatalog.cs
@@ -13608,7 +13606,6 @@ Meridian-main
 │   │   │   │   ├── QuickSetupAtomicSaveTests.cs
 │   │   │   │   └── RuntimeDiagnosticRedactorTests.cs
 │   │   │   ├── Subscriptions
-│   │   │   │   ├── DepthAutoResubscribeTests.cs
 │   │   │   │   ├── PortfolioImportReliabilityTests.cs
 │   │   │   │   ├── PortfolioImportRunTests.cs
 │   │   │   │   ├── SchedulingServiceReliabilityTests.cs
@@ -13840,7 +13837,6 @@ Meridian-main
 │   │   │   │   ├── OptionDataCollectorTests.cs
 │   │   │   │   ├── QuoteCollectorTests.cs
 │   │   │   │   ├── SessionStatsCollectorTests.cs
-│   │   │   │   ├── TradeAggressorInferenceTests.cs
 │   │   │   │   └── TradeDataCollectorTests.cs
 │   │   │   ├── Models
 │   │   │   │   ├── AdjustedHistoricalBarTests.cs
@@ -13988,7 +13984,6 @@ Meridian-main
 │   │   │   ├── PaperTradingPortfolioLotSelectionTests.cs
 │   │   │   ├── PaperTradingPortfolioLotSnapshotTests.cs
 │   │   │   ├── PaperTradingPortfolioMultiplierTests.cs
-│   │   │   ├── PaperTradingPortfolioPositionPnlTests.cs
 │   │   │   ├── PaperTradingPortfolioTests.cs
 │   │   │   ├── PaperTradingPortfolioVariationMarginTests.cs
 │   │   │   ├── PortfolioStatePositionTrackerTests.cs
@@ -14288,7 +14283,6 @@ Meridian-main
 │   │   │   │   ├── IBBrokerageGatewayTests.RecoveryScope.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.SessionFences.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.SessionRaces.cs
-│   │   │   │   ├── IBCallbackRouterTickerLifecycleTests.cs
 │   │   │   │   ├── IBDataServicesTests.cs
 │   │   │   │   ├── IBHistoricalProviderContractTests.cs
 │   │   │   │   ├── IBMarketDataClientContractTests.cs
@@ -15322,7 +15316,6 @@ Meridian-main
 │   │   │   ├── FileReconciliationBreakQueueRepository.BookReceiptReversalTests.cs
 │   │   │   ├── GovernanceExceptionServiceTests.cs
 │   │   │   ├── LedgerReadServiceTests.cs
-│   │   │   ├── LiveRunBookTests.cs
 │   │   │   ├── LiveRunMetricsTrackerTests.cs
 │   │   │   ├── LiveStrategyBaseTests.cs
 │   │   │   ├── LiveStrategyCatalogFallbackTests.cs
@@ -15334,7 +15327,6 @@ Meridian-main
 │   │   │   ├── LiveTradingEngineTests.FinancingCoverage.cs
 │   │   │   ├── LiveTradingEngineTests.GovernedRehearsal.cs
 │   │   │   ├── LiveTradingEngineTests.PromotionLedgerPosting.cs
-│   │   │   ├── LiveTradingEngineTests.RunEquity.cs
 │   │   │   ├── LiveTradingEngineTests.StopFillDrain.cs
 │   │   │   ├── MovingAverageParityTests.cs
 │   │   │   ├── PaperStrategyAccountingSnapshotTests.cs
@@ -15423,6 +15415,8 @@ Meridian-main
 │   │   │   ├── RecordingLogger.cs
 │   │   │   ├── RepositoryFileWalker.cs
 │   │   │   ├── SecurityMasterTestCapabilityFloor.cs
+│   │   │   ├── SharedEndpointGraph.cs
+│   │   │   ├── SharedEndpointGraphTests.cs
 │   │   │   ├── SignalingMarketEventPublisher.cs
 │   │   │   ├── StubHttpMessageHandler.cs
 │   │   │   ├── TestMarketEventPublisher.cs
@@ -16109,7 +16103,6 @@ Meridian-main
 │   │   │   ├── AdminMaintenanceServiceTests.cs
 │   │   │   ├── AppLifecycleDataRootTests.cs
 │   │   │   ├── AppServiceRegistrationTests.cs
-│   │   │   ├── ArchiveHealthServiceTests.cs
 │   │   │   ├── AsyncHandlerGuardTests.cs
 │   │   │   ├── BackendServiceManagerTests.cs
 │   │   │   ├── BackfillPresentationServiceTests.cs
@@ -16481,6 +16474,7 @@ Meridian-main
 │   │   ├── test_generated_repair.py
 │   │   ├── test_generated_repair_outcomes.py
 │   │   ├── test_generated_repair_sandbox.py
+│   │   ├── test_generated_repair_triggers.py
 │   │   ├── test_git_hooks.py
 │   │   ├── test_golden_path_validation_workflow.py
 │   │   ├── test_ibapi_smoke_workflow.py
@@ -16559,6 +16553,7 @@ Meridian-main
 │   │   ├── test_task_context.py
 │   │   ├── test_temporary_directory_cleanup_tolerance.py
 │   │   ├── test_throughput_metrics.py
+│   │   ├── test_update_coverage_report.py
 │   │   ├── test_validate_agent_definitions.py
 │   │   ├── test_validate_design_document_adaptation.py
 │   │   ├── test_validate_doc_hashes.py

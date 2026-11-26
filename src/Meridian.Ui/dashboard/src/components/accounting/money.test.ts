@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { currencySymbol, formatMoney, sumAmounts, toNumber } from "./money";
 
 // Currency codes without a mapped glyph render as "CODE" + a narrow no-break space (U+202F),

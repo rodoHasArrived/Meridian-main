@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { capitalCallIsOverdue } from "@/screens/private-capital-presenters";
 import { capitalCall } from "@/screens/private-capital.test-fixtures";

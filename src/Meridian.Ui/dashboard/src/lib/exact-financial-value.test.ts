@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { currencyMinorUnits, equalExactDecimals, formatExactDecimal, parseExactDecimal, readLegacyFinancialText, subtractExactDecimals, sumExactDecimals } from "./exact-financial-value";
 
 describe("exact financial values", () => {

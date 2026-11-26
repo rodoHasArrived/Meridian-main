@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { vi } from "vitest";
 import { apiGetJson } from "@/lib/api";
 import { getCloseChecklistHistory } from "./close-checklist-history.api";

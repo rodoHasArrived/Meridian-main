@@ -462,6 +462,55 @@ minutes. Three changes reduce demand without changing any check identity:
 Confirm with: a completed `quality-gate` for every merge to `main`, runner waits under five
 minutes, and successful-run wall-clock back in the 30–40 minute range.
 
+### Runner demand and hand-off cuts — November 26, 2026 (ci-health-013, -014, -019, -020, -021)
+
+The November 25 relief did not clear the queue. Every queued job waited 20 minutes to 3 hours,
+the two post-fix `main` runs took 7.2 h and 2.6 h for about 23 minutes of work, and 4 of 6 `main`
+merges went unchecked. The working hypothesis (medium confidence) is that PR fan-out saturates
+the account's concurrent-job limit: Generated Repair ran about 100 times in 9 hours and Meridian
+CI ran 341 PR runs on November 25. Each dependent-job hand-off adds a full queue wait.
+
+- *Generated Repair runs on request only (ci-health-013).* A PR update no longer starts it. It runs
+  for a ready PR labelled `generated-repair`, or when a PR's Meridian CI run fails because
+  `verify-docs` found stale generated files. The new `verify-docs` step
+  `Flag stale generated files for Generated Repair` fails only in that case, and Generated Repair's
+  `workflow_run` trigger reads it through the API. Drafts are skipped, extending #3781's draft skip.
+  The job condition is evaluated without a runner. The publisher ignores skipped runs and reapplies
+  the same rules (`generated_repair.relay_skip_reason`) before requesting a trusted dispatch, which
+  previously happened for every PR update. The main-advance refresh also skips drafts.
+- *One fewer integration hand-off (ci-health-013).* `integration-gate` verifies the fresh
+  integration job's completion (`fresh-succeeded`, set by a final implicit-success step, since
+  reusable-workflow outputs cannot expose a job result) and evidence outputs itself
+  (`caller-verifies-evidence: true`), so
+  `service-backed-integrations / require verified integration evidence` skips in Meridian CI.
+  The integration path goes from three serial runner waits to two. No check is renamed.
+- *`review_required` is neutral (ci-health-019).* About 35% of Generated Repair runs failed on the
+  sandbox's own `review_required` status, and every failure re-queued work. The sandbox now
+  reports it in the job summary and exits 0. The publisher records a `review-required` outcome and
+  publishes nothing. The cause was confirmed: a branch created before #3778 (9293ac60) keeps
+  reviewed hashes in `source-hash-manifest.json`, which the merger did not read. Such a branch
+  that refreshed a module's hash also hit a modify/delete conflict outside the per-module
+  directory. The merger now reads the legacy file as the same evidence and retires it when the
+  incoming branch has the per-module layout. A combination that matches neither reviewed parent
+  still requires review.
+- *Nightly secret scan covers `main` only (ci-health-014).* Scheduled runs use
+  `scan-commit-secrets.py` on the checked-out `main` tip
+  (`--log-opts=--full-history -m <sha>`) instead of the action's all-refs scan. The fixture
+  finding from an unmerged branch is addressed in its own PR (#3807).
+- *No single-package Microsoft.Extensions/AspNetCore majors (ci-health-020).* Every NuGet
+  Dependabot entry ignores `version-update:semver-major` for `Microsoft.Extensions.*` and
+  `Microsoft.AspNetCore.*` until the planned .NET 11 move.
+- *Testing-group update (ci-health-021).* #3795 bumps Moq 4.20.72 to 4.21.0. Moq 4.21 annotates
+  `IInvocation.Arguments` as nullable, so one test's `Arguments[2].ToString()!` became CS8602 and
+  the whole default roster failed to build (no test started). That line is now null-safe at the
+  source. Runtime results for the Castle.Core 5.2 proxy change are tracked on the PR; the
+  version is not pinned back.
+
+Confirm with: `main` runs finishing in 30–40 minutes, job creation-to-start gaps under five
+minutes, a `quality-gate` for every `main` merge, a Generated Repair failure rate near 0% with
+`review_required` only in run summaries, a passing nightly `Secret Scan`, and no new
+single-package Microsoft.Extensions 11 PRs.
+
 ### Critical-path restructuring — November 25, 2026
 
 Job timings from pull-request run
@@ -691,9 +740,11 @@ administrator policy; the default-branch deployment restriction is required.
 Do not use a default `GITHUB_TOKEN` push as a fallback: its commits do not trigger the fresh checks
 required on repaired revisions. No App permission allows a workflow to bypass branch protections.
 
-`generated-repair.yml` accepts read-only requests on PR open, synchronize and reopen, including
-conflicted PRs. With the repository App variable configured, an eligible same-repository target
-event requests generation dispatched on the default branch. Forks and unconfigured requests
+`generated-repair.yml` accepts read-only requests from ready (non-draft) PRs labelled
+`generated-repair` on open, synchronize, reopen, ready-for-review and labelling, including
+conflicted PRs, and from completed Meridian CI PR runs whose `verify-docs` flagged stale generated
+files. With the repository App variable configured, an eligible same-repository request event
+requests generation dispatched on the default branch. Forks and unconfigured requests
 still produce artifact-only candidates. The publisher never publishes a target-event candidate.
 Only a default-branch dispatch whose server-owned execution SHA/repository/ref match the version 2
 run metadata and trusted workflow bytes can authorize publication. PR head/base inputs remain
