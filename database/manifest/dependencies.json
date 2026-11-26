@@ -65648,6 +65648,12 @@
       "target": "database:ledger.operations_continuity_workflows_pkey"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.operations_workflow_purpose_check on ledger.operations_continuity_workflows",
+      "target": "database:ledger.operations_continuity_workflows.workflow_json"
+    },
+    {
       "constraint": "period_close_events_period_id_fkey",
       "kind": "foreign-key",
       "label": "period_id",
@@ -72664,7 +72670,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "7b2aa094e81de54df1503fa6396a46d64699e9c46b4c3a16ac750ab75be4af4c",
+  "fingerprint": "2ae07a9c1084d1008d3a6ea1a044c5cd1b0dcb503392785ae0052bbd2e1c10ef",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -101175,9 +101181,19 @@
       "label": "ledger.operations_continuity_workflows.workflow_id"
     },
     {
+      "id": "database:ledger.operations_continuity_workflows.workflow_json",
+      "kind": "database-object",
+      "label": "ledger.operations_continuity_workflows.workflow_json"
+    },
+    {
       "id": "database:ledger.operations_continuity_workflows_pkey",
       "kind": "database-object",
       "label": "ledger.operations_continuity_workflows_pkey"
+    },
+    {
+      "id": "database:ledger.operations_workflow_purpose_check on ledger.operations_continuity_workflows",
+      "kind": "database-object",
+      "label": "ledger.operations_workflow_purpose_check on ledger.operations_continuity_workflows"
     },
     {
       "id": "database:ledger.period_close_events",
@@ -106737,9 +106753,9 @@
   "summary": {
     "contract_references": 4449,
     "contract_set_memberships": 5876,
-    "edges": 12071,
+    "edges": 12072,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5924
+    "nodes": 5926
   }
 }

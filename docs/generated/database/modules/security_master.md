@@ -967,11 +967,11 @@ erDiagram
         uuid collateral_agreement_id PK
         uuid master_agreement_id FK
         text currency
-        numeric_28_10_ threshold_ours
-        numeric_28_10_ threshold_theirs
-        numeric_28_10_ minimum_transfer_amount
-        numeric_28_10_ independent_amount
-        numeric_28_10_ rounding_amount
+        numeric threshold_ours
+        numeric threshold_theirs
+        numeric minimum_transfer_amount
+        numeric independent_amount
+        numeric rounding_amount
         text valuation_frequency
         jsonb eligible_collateral
         date effective_date
@@ -989,10 +989,10 @@ erDiagram
         text eligible_collateral_description
         uuid security_id FK
         text currency
-        numeric_28_10_ quantity
-        numeric_28_10_ unit_value
-        numeric_28_10_ valued_amount
-        numeric_28_10_ haircut_percent
+        numeric quantity
+        numeric unit_value
+        numeric valued_amount
+        numeric haircut_percent
         date valued_as_of
         text reference
         text notes
@@ -1017,7 +1017,7 @@ erDiagram
         uuid netting_set_id FK
         text external_trade_id
         text direction
-        numeric_28_10_ notional
+        numeric notional
         text notional_currency
         date trade_date
         date effective_date
@@ -1040,9 +1040,9 @@ erDiagram
         text netting_basis
         text status
         text provenance
-        numeric_28_10_ net_exposure
-        numeric_28_10_ gross_positive
-        numeric_28_10_ gross_negative
+        numeric net_exposure
+        numeric gross_positive
+        numeric gross_negative
         jsonb payload
         integer payload_version
         text payload_sha256
@@ -1057,14 +1057,14 @@ erDiagram
         text movement_kind
         text mover
         text currency
-        numeric_28_10_ amount_called
-        numeric_28_10_ amount_agreed
+        numeric amount_called
+        numeric amount_agreed
         text status
         date issued_on
         date due_on
         text dispute_reason
         date settled_on
-        numeric_28_10_ settled_amount
+        numeric settled_amount
         text notes
         bigint version
         text updated_by
@@ -1246,6 +1246,7 @@ erDiagram
         text[] notes
         timestamp_with_time_zone created_at
         uuid projected_cash_flow_id
+        jsonb evidence_json
     }
     security_master_reconciliation_run {
         uuid reconciliation_run_id PK
@@ -1254,6 +1255,7 @@ erDiagram
         timestamp_with_time_zone requested_at
         timestamp_with_time_zone completed_at
         text status
+        jsonb evidence_json
     }
     security_master_repo_projection {
         uuid security_id PK
@@ -2038,8 +2040,8 @@ erDiagram
 | `read_model_checkpoint` | table | 6 | `projection_name` | 0 | 1 | - |
 | `real_estate_holding_projection` | table | 12 | `security_id` | 0 | 2 | Relational projection of RealEstateHolding terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `reconciliation_exception` | table | 9 | `exception_id` | 1 | 2 | - |
-| `reconciliation_result` | table | 16 | `reconciliation_result_id` | 4 | 2 | - |
-| `reconciliation_run` | table | 6 | `reconciliation_run_id` | 2 | 1 | - |
+| `reconciliation_result` | table | 17 | `reconciliation_result_id` | 4 | 2 | - |
+| `reconciliation_run` | table | 7 | `reconciliation_run_id` | 2 | 1 | - |
 | `repo_projection` | table | 11 | `security_id` | 0 | 3 | Relational projection of Repo asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `schema_migrations` | table | 4 | `filename` | 0 | 1 | - |
 | `securities` | table | 23 | `security_id` | 0 | 6 | - |
