@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementValidationResultDto
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementValidationResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:436](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L436).
+
+```csharp
+public sealed record StatementValidationResultDto(string SourcePath, string AccountId, string ImportFingerprint, bool IsBlocked, IReadOnlyList<StatementValidationIssueDto> Issues);
+```
+
+## StatementValidationService
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementValidationService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L9).
+
+Validates statement entities against configured rules and reference-data checks.
+
+```csharp
+public sealed class StatementValidationService(IStatementValidationReferenceData referenceData)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;StatementValidationResultDto&gt; ValidateAsync(StatementValidationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:54](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L54) |  |
+
 ## TableReconciliationFxRateProvider
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.TableReconciliationFxRateProvider</code>. Kind: `class`.

@@ -938,15 +938,49 @@ public static partial class AtomicFileWriter
         fs.Flush(flushToDisk: true);
     }
 
+    // A failed directory fsync used to log a Warning and return as if it succeeded. These make
+    // every failure visible (Error log + counter) even where the caller must not throw.
+    private static readonly Prometheus.Counter DirectorySyncFailuresTotal = Prometheus.Metrics.CreateCounter(
+        "mdc_storage_directory_fsync_failures_total",
+        "Directory open/fsync failures; the durability of renames, creates or deletes in that directory is unconfirmed",
+        new Prometheus.CounterConfiguration { LabelNames = ["operation"] });
+
+    private static long _directorySyncFailureCount;
+
+    // Test seam: returns (operation, errno) to simulate a failure for a directory. Flows with the
+    // async context, so a test's injection never leaks into concurrently running tests.
+    internal static readonly AsyncLocal<Func<string, (string Operation, int Errno)?>?> DirectorySyncFaultInjector = new();
+
+    /// <summary>Directory open/fsync failures observed by this process.</summary>
+    public static long DirectorySyncFailureCount => Interlocked.Read(ref _directorySyncFailureCount);
+
     /// <summary>
     /// Fsyncs a directory so that prior rename/link operations within it are durable after a crash
     /// or power loss. No-op on platforms where directory metadata is journaled automatically.
     /// </summary>
+    /// <remarks>
+    /// Best effort for callers whose operation has already committed: a failure is retried once
+    /// for transient errors, then logged at Error and counted in
+    /// <c>mdc_storage_directory_fsync_failures_total</c>, but not thrown. Use
+    /// <see cref="SyncDirectoryOrThrowAsync"/> where the sync precedes an acknowledgement or the
+    /// removal of the only other copy, so the failure aborts that step instead.
+    /// </remarks>
     public static Task SyncDirectoryAsync(string directory, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         SyncDirectory(directory);
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Fsyncs a directory and throws <see cref="DirectorySyncException"/> when it cannot be
+    /// confirmed durable. Use before acknowledging data or deleting the only other copy.
+    /// </summary>
+    public static Task SyncDirectoryOrThrowAsync(string directory, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        var failure = TrySyncDirectoryCore(directory);
+        return failure is null ? Task.CompletedTask : Task.FromException(failure);
     }
 
     /// <summary>
@@ -958,7 +992,9 @@ public static partial class AtomicFileWriter
     private static Task SyncCommittedDirectoryAsync(string directory)
         => SyncDirectoryAsync(directory, CancellationToken.None);
 
-    private static void SyncDirectory(string directory)
+    private static void SyncDirectory(string directory) => TrySyncDirectoryCore(directory);
+
+    private static DirectorySyncException? TrySyncDirectoryCore(string directory)
     {
         // A bare relative path (e.g. "file.txt") yields an empty directory; treat it as the
         // current directory rather than faulting.
@@ -972,32 +1008,73 @@ public static partial class AtomicFileWriter
             Directory.CreateDirectory(directory);
         }
 
+        if (DirectorySyncFaultInjector.Value?.Invoke(directory) is { } injected)
+        {
+            return RecordDirectorySyncFailure(directory, injected.Operation, injected.Errno);
+        }
+
         if (!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS())
         {
             // On Windows, NTFS journals directory metadata changes automatically.
-            return;
+            return null;
         }
 
         // On POSIX systems, fsync the directory file descriptor to ensure
         // that rename/link operations are durable after a crash or power loss.
-        int fd = PosixInterop.open(directory, PosixInterop.O_RDONLY);
-        if (fd < 0)
+        int fd = -1;
+        for (var attempt = 1; fd < 0; attempt++)
         {
-            Log.Warning("Unable to open directory for fsync (errno {Errno})", Marshal.GetLastPInvokeError());
-            return;
+            fd = PosixInterop.open(directory, PosixInterop.O_RDONLY);
+            if (fd >= 0)
+                break;
+
+            var errno = Marshal.GetLastPInvokeError();
+            if (attempt == 1 && PosixInterop.IsTransientOpenError(errno))
+                continue;
+            return RecordDirectorySyncFailure(directory, "open", errno);
         }
 
         try
         {
-            if (PosixInterop.fsync(fd) < 0)
+            for (var attempt = 1; ; attempt++)
             {
-                Log.Warning("Directory fsync failed (errno {Errno})", Marshal.GetLastPInvokeError());
+                if (PosixInterop.fsync(fd) == 0)
+                    return null;
+
+                var errno = Marshal.GetLastPInvokeError();
+                if (attempt == 1 && errno == PosixInterop.EINTR)
+                    continue;
+                if (PosixInterop.IsDirectoryFsyncUnsupported(errno))
+                {
+                    // Some filesystems (procfs, several FUSE/9p mounts) cannot fsync a directory
+                    // at all. Failing would make the store unusable there without making it any
+                    // more durable, so, like PostgreSQL, this is reported but not thrown.
+                    DirectorySyncFailuresTotal.WithLabels("fsync_unsupported").Inc();
+                    Log.Warning("Directory fsync failed (errno {Errno})", errno);
+                    return null;
+                }
+
+                return RecordDirectorySyncFailure(directory, "fsync", errno);
             }
         }
         finally
         {
             PosixInterop.close(fd);
         }
+    }
+
+    private static DirectorySyncException RecordDirectorySyncFailure(string directory, string operation, int errno)
+    {
+        Interlocked.Increment(ref _directorySyncFailureCount);
+        DirectorySyncFailuresTotal.WithLabels(operation).Inc();
+        var failure = new DirectorySyncException(directory, operation, errno);
+        // The path and exception are deliberately not logged (they can name private account
+        // directories); AtomicFileWriterLogPrivacyTests pins these templates.
+        if (operation == "open")
+            Log.Error("Unable to open directory for fsync (errno {Errno})", errno);
+        else
+            Log.Error("Directory fsync failed (errno {Errno})", errno);
+        return failure;
     }
 
     private static partial class PosixInterop
@@ -1012,6 +1089,24 @@ public static partial class AtomicFileWriter
 
         [LibraryImport("libc", SetLastError = true)]
         internal static partial int close(int fd);
+
+        // Same values on Linux and macOS.
+        internal const int EINTR = 4;
+        internal const int ENFILE = 23;
+        internal const int EMFILE = 24;
+
+        // EINTR, and running out of descriptors (EMFILE per process, ENFILE system-wide), can
+        // clear on an immediate retry; other errors will not.
+        internal static bool IsTransientOpenError(int errno) => errno is EINTR or EMFILE or ENFILE;
+
+        internal const int EBADF = 9;
+        internal const int EINVAL = 22;
+
+        // The filesystem does not support fsync on directories: EINVAL/EBADF (as PostgreSQL
+        // treats them) and ENOTSUP/EOPNOTSUPP (95 on Linux; 45 and 102 on macOS).
+        internal static bool IsDirectoryFsyncUnsupported(int errno) =>
+            errno is EINVAL or EBADF ||
+            (OperatingSystem.IsMacOS() ? errno is 45 or 102 : errno == 95);
     }
 
     private static void TryDeleteFile(string path)
@@ -1028,4 +1123,28 @@ public static partial class AtomicFileWriter
             Log.Warning("Failed to delete temporary file ({FailureType})", ex.GetType().Name);
         }
     }
+}
+
+/// <summary>
+/// A directory could not be fsynced, so renames, creates or deletes in it are not confirmed
+/// durable. Thrown by <see cref="AtomicFileWriter.SyncDirectoryOrThrowAsync"/>.
+/// </summary>
+public sealed class DirectorySyncException : IOException
+{
+    public DirectorySyncException(string directory, string operation, int errno)
+        : base($"Directory {operation} for fsync failed (errno {errno}); its entries are not confirmed durable.")
+    {
+        Directory = directory;
+        Operation = operation;
+        Errno = errno;
+    }
+
+    /// <summary>The directory that could not be synced.</summary>
+    public string Directory { get; }
+
+    /// <summary><c>open</c> or <c>fsync</c>.</summary>
+    public string Operation { get; }
+
+    /// <summary>The POSIX error number, or the value a test injected.</summary>
+    public int Errno { get; }
 }

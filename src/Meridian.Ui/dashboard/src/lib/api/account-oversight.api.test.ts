@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { apiGetJson, apiPostJson } from "@/lib/api";
 import * as api from "@/lib/api/account-oversight.api";

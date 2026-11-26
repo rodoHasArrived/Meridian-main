@@ -58,11 +58,17 @@ class DraftPullRequestGatingTests(unittest.TestCase):
             with self.subTest(workflow=name):
                 self.assertTrue(DRAFT_GUARD.startswith("github.event_name != 'pull_request' ||"))
 
-    def test_meridian_ci_and_generated_repair_still_run_on_drafts(self) -> None:
-        for name in ("meridian-ci.yml", "generated-repair.yml"):
-            with self.subTest(workflow=name):
-                text = (WORKFLOWS / name).read_text(encoding="utf-8")
-                self.assertNotIn("pull_request.draft", text)
+    def test_meridian_ci_still_runs_on_drafts(self) -> None:
+        text = (WORKFLOWS / "meridian-ci.yml").read_text(encoding="utf-8")
+        self.assertNotIn("pull_request.draft", text)
+
+    def test_generated_repair_skips_drafts_and_runs_when_ready(self) -> None:
+        # ci-health-013 extends the draft skip to Generated Repair. Its pull_request_target
+        # job condition skips drafts without a runner; Meridian CI's workflow_run payload has
+        # no draft flag, so the trusted script rechecks the PR (generated_repair.relay_skip_reason).
+        workflow = load("generated-repair.yml")
+        self.assertIn("ready_for_review", workflow["on"]["pull_request_target"]["types"])
+        self.assertIn("github.event.pull_request.draft != true", workflow["jobs"]["generate"]["if"])
 
 
 if __name__ == "__main__":

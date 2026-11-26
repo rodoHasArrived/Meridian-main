@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EvidenceSlaPolicyDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.EvidenceSlaPolicyDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:326](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L326).
+
+```csharp
+public sealed record EvidenceSlaPolicyDto(string PolicyId, string EvidenceKind, string WorkflowKind, int FreshnessMinutes, EvidenceValidationSeverityDto BreachSeverity, bool RequiredForAssurance, string Description);
+```
+
 ## EvidenceStatusDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.EvidenceStatusDto</code>. Kind: `enum`.
@@ -644,14 +654,4 @@ Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:37](.
 
 ```csharp
 public sealed record FinancialRecordExplorerScopeItemDto(string Label, string Value, FinancialRecordExplorerTone Tone = FinancialRecordExplorerTone.Default);
-```
-
-## FinancialRecordExplorerSelectedRecordDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerSelectedRecordDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:100](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L100).
-
-```csharp
-public sealed record FinancialRecordExplorerSelectedRecordDto(string RecordId, string RecordType, string Title, string Subtitle, string Description, FinancialRecordExplorerTone Tone, IReadOnlyList<FinancialRecordExplorerSummaryItemDto> Fields, IReadOnlyList<FinancialRecordExplorerProofActionDto> ProofActions, IReadOnlyList<FinancialRecordExplorerRelationshipDto> UsedIn, IReadOnlyList<FinancialRecordExplorerRelationshipDto> Impacts, string FullRecordHref = "");
 ```

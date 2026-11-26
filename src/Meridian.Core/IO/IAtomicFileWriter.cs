@@ -15,5 +15,15 @@ public interface IAtomicFileWriter
 
     Task AppendLinesAsync(string destinationPath, IEnumerable<string> lines, CancellationToken ct = default);
 
+    /// <summary>
+    /// Best-effort directory fsync for an operation that has already committed: a failure is
+    /// recorded but not thrown, so a committed write is never reported as failed.
+    /// </summary>
     Task SyncDirectoryAsync(string directory, CancellationToken ct = default);
+
+    /// <summary>
+    /// Directory fsync that throws when durability cannot be confirmed. Use before an
+    /// acknowledgement or before removing the only other copy, where a retry is idempotent.
+    /// </summary>
+    Task SyncDirectoryOrThrowAsync(string directory, CancellationToken ct = default);
 }

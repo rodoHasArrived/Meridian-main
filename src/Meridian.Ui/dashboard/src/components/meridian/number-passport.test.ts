@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { buildNumberPassportItems } from "@/components/meridian/number-passport";
 import type { FinancialRecordExplorerDto, FinancialRecordExplorerSelectedRecordDto } from "@/types";

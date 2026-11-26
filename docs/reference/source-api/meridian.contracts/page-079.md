@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunPaperStatus
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunPaperStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:93](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L93).
+
+Paper-execution status fields attached to a running or recently completed paper run. Surfaced on StrategyRunSummary and StrategyRunDetail when StrategyRunMode is Paper.
+
+```csharp
+public sealed record StrategyRunPaperStatus(string SimulationFeedId, bool IsActive, int FillCount, int OpenOrderCount, decimal? RealizedPnl, decimal? UnrealizedPnl, DateTimeOffset? LastMarketEventAt, bool HasLedgerCoverage = false);
+```
+
+## StrategyRunPromotionState
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunPromotionState</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:50](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L50).
+
+Promotion-oriented readiness signal derived from the current run state.
+
+```csharp
+public enum StrategyRunPromotionState : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:52](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L52) |  |
+| <code>RequiresCompletion</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:53](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L53) |  |
+| <code>CandidateForPaper</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:54](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L54) |  |
+| <code>CandidateForLive</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:55](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L55) |  |
+| <code>LiveManaged</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:56](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L56) |  |
+
 ## StrategyRunPromotionSummary
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunPromotionSummary</code>. Kind: `record`.
@@ -608,42 +642,3 @@ Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:129]
 ```csharp
 public sealed record TradingExecutionReconciliationReadinessDto(TradingAcceptanceGateStatusDto Status, string GatewayId, string BrokerDisplayName, bool BrokerHealthy, bool BrokerConnected, int MatchedOpenOrderCount, int BreakCount, DateTimeOffset ReconciledAt, string Detail, IReadOnlyList<TradingExecutionReconciliationBreakDto> Breaks);
 ```
-
-## TradingLiveOperationRequirementDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.TradingLiveOperationRequirementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:141](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L141).
-
-```csharp
-public sealed record TradingLiveOperationRequirementDto(string RequirementId, string Label, TradingAcceptanceGateStatusDto Status, string Detail, string ChecklistItem, string? EvidenceReference, bool ChecklistSatisfied, bool EvidenceSatisfied, string? BlockerCode = null);
-```
-
-## TradingOperatorReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.TradingOperatorReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:347](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L347).
-
-```csharp
-public sealed record TradingOperatorReadinessDto(DateTimeOffset AsOf, TradingPaperSessionReadinessDto? ActiveSession, IReadOnlyList<TradingPaperSessionReadinessDto> Sessions, TradingReplayReadinessDto? Replay, TradingControlReadinessDto Controls, TradingPromotionReadinessDto? Promotion, TradingTrustGateReadinessDto TrustGate, WorkstationBrokerageSyncStatusDto? BrokerageSync, IReadOnlyList<OperatorWorkItemDto> WorkItems, IReadOnlyList<string> Warnings)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TradingAcceptanceGateStatusDto OverallStatus { get; init; } = TradingAcceptanceGateStatusDto.ReviewRequired;</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:359](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L359) |  |
-| <code>public bool ReadyForPaperOperation { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:361](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L361) |  |
-| <code>public bool ReadyForLiveOperation { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:363](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L363) |  |
-| <code>public IReadOnlyList&lt;string&gt; LiveOperationBlockers { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:365](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L365) |  |
-| <code>public IReadOnlyList&lt;TradingLiveOperationRequirementDto&gt; LiveOperationRequirements { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:367](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L367) |  |
-| <code>public IReadOnlyList&lt;TradingAcceptanceGateDto&gt; AcceptanceGates { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:369](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L369) |  |
-| <code>public TradingReportPackReadinessDto? ReportPack { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:371](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L371) |  |
-| <code>public EvidenceCompletenessSummaryDto? EvidenceCompleteness { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:373](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L373) |  |
-| <code>public DateTimeOffset SnapshotMaterializedAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:375](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L375) |  |
-| <code>public string SnapshotVersion { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:377](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L377) |  |
-| <code>public ProviderPromotionChecklistDto? ProviderPromotionChecklist { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:379](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L379) |  |
-| <code>public PortfolioLedgerWorkflowStatusSnapshotDto? PortfolioLedgerWorkflowStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:381](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L381) |  |
-| <code>public TradingExecutionReconciliationReadinessDto? ExecutionReconciliation { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:383](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L383) |  |
-| <code>public TradingBrokerageRecoveryDto? BrokerageRecovery { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:385](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L385) |  |

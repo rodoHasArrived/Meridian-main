@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { prepareBondSettlement } from "./bond-settlement.api";
 import type { BondSettlementRequest } from "@/types/bond-settlement.types";
 

@@ -46,6 +46,12 @@ public sealed partial class SecurityMasterCashFlowService
             return null;
         var calculation = await CaptureResolvedProjectionAsync(security, source, StructuredCashFlowScenario.Base,
             context, ct, retainReceipt: false).ConfigureAwait(false);
+        if (calculation.Projection.BlockedReason is { } legReason
+            && SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CashFlowBehavior == SecurityCashFlowBehavior.SwapLegs
+            && SecurityVersionedTerms.ReadDeclaredLegScheduleConventions(security.AssetClass, security.AssetSpecificTerms).Status
+                == SecurityDeclaredConventionsStatus.Declared)
+            return new("LegConventionsNotFollowed", legReason
+                + $" Use /api/security-master/{security.SecurityId:D}/cashflow-projections/preview with calculationProfile='{SecurityVanillaSwapProfile.Id}' for supported vanilla IRS analytics; this route never posts.");
         return calculation.Projection.Blocker ?? (calculation.Projection.BlockedReason is { } reason
             ? new SecurityCashFlowBlockerDto("CashFlowProjectionBlocked", reason)
             : null);

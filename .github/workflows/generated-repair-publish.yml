@@ -28,7 +28,10 @@ concurrency:
 
 jobs:
   publish:
-    if: github.event_name == 'workflow_run'
+    # A skipped source run means Generated Repair's own job condition declined the event
+    # (unlabeled or draft PR update, or a CI run without stale generated files). Without this
+    # guard the publisher would still request a trusted dispatch for every pull request update.
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'skipped'
     name: Validate and publish generated repair
     runs-on: ubuntu-latest
     timeout-minutes: 20

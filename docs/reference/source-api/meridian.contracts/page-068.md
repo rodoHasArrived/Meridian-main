@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsApprovalPolicyMatrixRowDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalPolicyMatrixRowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:754](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L754).
+
+```csharp
+public sealed record OperationsApprovalPolicyMatrixRowDto(string PolicyKey, string WorkflowArea, string Action, OperationsGateKeyDto Gate, string Trigger, string RequiredPermission, string SubmitterRole, string ReviewerRole, int RequiredDistinctApprovals, bool RequiresIndependentReviewer, bool RequiresReportPack, bool RequiresChecklistControlApprovals, string EvidenceRequirement, string AuditEventType, string Route, string Severity);
+```
+
 ## OperationsApprovalPolicyRuleAuditEventDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalPolicyRuleAuditEventDto</code>. Kind: `record`.
@@ -80,7 +90,7 @@ public sealed record OperationsAssignBreakCaseRequestDto(long ExpectedVersion, s
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsBreakCaseDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1274](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1274).
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1287](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1287).
 
 ```csharp
 public sealed record OperationsBreakCaseDto(string BreakId, string CheckId, string Category, string Severity, string Status, string? Owner, DateOnly? DueDate, string? ExpectedSource, string? ActualSource, decimal? ExpectedAmount, decimal? ActualAmount, decimal? Variance, string? SecurityId, string? Symbol, string? SuggestedAction, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, OperationsContinuityCorrelationKeysDto? CorrelationKeys = null, string? EscalationLevel = null, string? EscalationReason = null, DateTimeOffset? EscalatedAtUtc = null, string? SlaState = null, DateTimeOffset? SlaDueAtUtc = null, decimal? Materiality = null, string? RootCauseCode = null, string? ApprovalState = null, IReadOnlyList<string>? BlockedOutputs = null, IReadOnlyList<ReconciliationBreakMeasureDto>? Measures = null, ReconciliationBreakDispositionDto? Disposition = null, string? DispositionReason = null, string? SupersedingBreakId = null, string? DispositionApprovedBy = null, string? DispositionApprovalReference = null, string? DispositionEvidenceHash = null, DateTimeOffset? DisposedAtUtc = null);
@@ -110,7 +120,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsChecklistAcknowledgeRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1207](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1207).
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1220](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1220).
 
 ```csharp
 public sealed record OperationsChecklistAcknowledgeRequestDto(long ExpectedVersion, string Actor, string Rationale, string? CorrelationId = null);
@@ -228,7 +238,7 @@ public sealed record OperationsCloseChecklistSnapshotDto(int SchemaVersion, long
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseChecklistTaskDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1172](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1172).
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1185](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1185).
 
 ```csharp
 public sealed record OperationsCloseChecklistTaskDto(string TaskId, OperationsGateKeyDto Gate, string Label, string Owner, string RequiredEvidence, int RequiredApprovalCount, DateOnly? ExpiresOn, DateOnly? DueDate, string Status, string? BlockingReason, string? EvidencePointer, string? RemediationRoute, bool CanAcknowledge, DateTimeOffset? AcknowledgedAtUtc, string? AcknowledgedBy);
@@ -248,7 +258,7 @@ public sealed record OperationsCloseChecklistVersionGapDto(long AfterVersion, lo
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsClosePackagePublicationDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1189](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1189).
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1202](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1202).
 
 ```csharp
 public sealed record OperationsClosePackagePublicationDto(string ClosePackageId, string ReportPackId, string RetainedManifestId, string RetainedManifestRoute, string EvidenceHash, DateTimeOffset PublishedAtUtc, string PublishedBy, string SignOffRationale, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<OperationsChecklistControlApprovalDto> ChecklistControlApprovals, IReadOnlyList<EvidenceDocumentDto>? DocumentSnapshots = null, EvidenceManifestDto? ManifestSnapshot = null)
@@ -258,13 +268,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;EvidenceDocumentDto&gt; DocumentSnapshots { get; init; } = DocumentSnapshots??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1203](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1203) |  |
+| <code>public IReadOnlyList&lt;EvidenceDocumentDto&gt; DocumentSnapshots { get; init; } = DocumentSnapshots??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1216](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1216) |  |
 
 ## OperationsCloseReadinessBlockerDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseReadinessBlockerDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1361](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1361).
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1374](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1374).
 
 ```csharp
 public sealed record OperationsCloseReadinessBlockerDto(string Code, string Category, string Severity, string Message, OperationsGateKeyDto? Gate, string? RouteHint);
@@ -274,7 +284,7 @@ public sealed record OperationsCloseReadinessBlockerDto(string Code, string Cate
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseReadinessComponentDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1350](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1350).
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1363](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1363).
 
 ```csharp
 public sealed record OperationsCloseReadinessComponentDto(string Key, string Label, int Score, int Weight, bool IsReady, string Severity, string? BlockingReason, OperationsGateKeyDto? Gate, string? RouteHint);
@@ -284,7 +294,7 @@ public sealed record OperationsCloseReadinessComponentDto(string Key, string Lab
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseReadinessDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1342](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1342).
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1355](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1355).
 
 ```csharp
 public sealed record OperationsCloseReadinessDto(bool IsReadyToClose, string Severity, int Score, IReadOnlyList<OperationsCloseReadinessComponentDto> Components, IReadOnlyList<OperationsCloseReadinessBlockerDto> Blockers, IReadOnlyList<OperationsNextActionDto> NextActions);
@@ -310,7 +320,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsContinuityCorrelationKeysDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1310](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1310).
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1323](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1323).
 
 ```csharp
 public sealed record OperationsContinuityCorrelationKeysDto(string? RunId = null, Guid? FundAccountId = null, string? PortfolioSnapshotId = null, string? LedgerBatchId = null, string? LedgerPostingGroupId = null, string? ReconciliationCaseId = null);
@@ -330,7 +340,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;OperationsEvidencePackageSummaryDto&gt; EvidencePackages { get; init; } = EvidencePackages??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1090](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1090) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public OperationsWorkflowPurposeDto Purpose { get; init; }</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1091](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1091) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Guid? SubjectRevisionId { get; init; }</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1093](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1093) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SubjectMaker { get; init; }</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1095](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1095) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SubjectEvidenceId { get; init; }</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1097](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1097) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SubjectEvidenceSha256 { get; init; }</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1099](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1099) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SubjectReviewState { get; init; }</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1101](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1101) |  |
+| <code>public IReadOnlyList&lt;OperationsEvidencePackageSummaryDto&gt; EvidencePackages { get; init; } = EvidencePackages??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1103](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1103) |  |
 
 ## OperationsContinuityWorkflowSummaryDto
 
@@ -346,7 +362,7 @@ public sealed record OperationsContinuityWorkflowSummaryDto(Guid WorkflowId, Gui
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsDashboardMetricDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1110](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1110).
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1123](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1123).
 
 ```csharp
 public sealed record OperationsDashboardMetricDto(string MetricId, string Label, string Value, EvidenceStatusDto Status, string Detail, string? RouteHint, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string>? RequiredActions = null)
@@ -356,13 +372,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1120](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1120) |  |
+| <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1133](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1133) |  |
 
 ## OperationsDashboardSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsDashboardSummaryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1094](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1094).
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1107](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1107).
 
 ```csharp
 public sealed record OperationsDashboardSummaryDto(string DashboardId, string Stage, EvidenceStatusDto Status, bool IsReady, int ReadyMetricCount, int TotalMetricCount, string Summary, IReadOnlyList<OperationsDashboardMetricDto> Metrics, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string>? RequiredActions = null)
@@ -372,13 +388,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1106](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1106) |  |
+| <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1119](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1119) |  |
 
 ## OperationsEvidenceLinkDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsEvidenceLinkDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1386](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1386).
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1399](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1399).
 
 ```csharp
 public sealed record OperationsEvidenceLinkDto(string EvidenceId, string Label, string? Route, string? Source, DateTimeOffset? CapturedAtUtc);
@@ -388,7 +404,7 @@ public sealed record OperationsEvidenceLinkDto(string EvidenceId, string Label, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsEvidencePackageSummaryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1124](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1124).
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1137](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1137).
 
 ```csharp
 public sealed record OperationsEvidencePackageSummaryDto(string PackageId, string Label, EvidenceStatusDto Status, bool IsReady, string Summary, string? RouteHint, int CompleteCategoryCount, int RequiredCategoryCount, int EvidenceLinkCount, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string>? RequiredActions = null, bool RequiredForClose = true)
@@ -398,13 +414,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1138](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1138) |  |
+| <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1151](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1151) |  |
 
 ## OperationsGateDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsGateDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1213](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1213).
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1226](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1226).
 
 ```csharp
 public sealed record OperationsGateDto(OperationsGateKeyDto GateKey, string DisplayName, OperationsGateStatusDto Status, bool IsRequired, string Description, IReadOnlyList<OperationsWorkflowBlockerDto> Blockers, IReadOnlyList<OperationsNextActionDto> NextActions, DateTimeOffset? CompletedAtUtc, string? CompletedBy);
@@ -576,7 +592,7 @@ public sealed record OperationsLedgerPostRequestDto(long ExpectedVersion, string
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsLedgerPreviewDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1328](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1328).
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1341](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1341).
 
 ```csharp
 public sealed record OperationsLedgerPreviewDto(string PreviewId, string Status, string? LedgerBatchId, DateTimeOffset? GeneratedAtUtc, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
@@ -596,7 +612,7 @@ public sealed record OperationsLedgerValidationRequestDto(long ExpectedVersion, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsNextActionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1377](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1377).
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1390](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1390).
 
 ```csharp
 public sealed record OperationsNextActionDto(string Code, string Label, string? Route, OperationsGateKeyDto? Gate)
@@ -606,7 +622,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? RouteHint { get; init; } = Route;</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1383](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1383) |  |
+| <code>public string? RouteHint { get; init; } = Route;</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1396](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1396) |  |
 
 ## OperationsReconciliationLaneStatusDto
 
@@ -631,18 +647,8 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsReconciliationLaneSummaryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1142](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1142).
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1155](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1155).
 
 ```csharp
 public sealed record OperationsReconciliationLaneSummaryDto(string LaneId, string Label, OperationsReconciliationLaneStatusDto Status, bool IsReady, int BreakCount, string Summary, string? RouteHint, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string>? RequiredActions = null);
-```
-
-## OperationsReconciliationRunRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsReconciliationRunRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:635](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L635).
-
-```csharp
-public sealed record OperationsReconciliationRunRequestDto(long ExpectedVersion, string Actor, string? Rationale = null, string? CorrelationId = null, IReadOnlyList<OperationsBreakCaseDto>? BreakCases = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, int? SecurityCoverageIssueCount = null, int? SecurityAccountingIssueCount = null, int? ExpectedAccountingEventCount = null, int? ExpectedJournalPreviewCount = null, string? SourceRunId = null, string? ReconciliationRunId = null, Guid? BankEntityId = null, decimal? AmountTolerance = null, int? MaxAsOfDriftMinutes = null, IReadOnlyList<OperationsReconciliationLaneSummaryDto>? ReconciliationLanes = null);
 ```

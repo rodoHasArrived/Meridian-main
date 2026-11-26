@@ -1,4 +1,7 @@
+using System.Text;
 using FluentAssertions;
+using Meridian.Storage.Archival;
+using Meridian.Tests.Infrastructure;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -61,6 +64,41 @@ public sealed class ReportingPersistenceFailClosedTests
 
         act.Should().Throw<ReportingStateCorruptionException>()
             .Which.StatePath.Should().Be(fixture.SnapshotPath);
+    }
+
+    [Fact]
+    public void DeliveryStore_BlobDirectorySyncFails_WritesNoSnapshotAndRetrySucceeds()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-delivery-dirsync", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var snapshotPath = Path.Combine(root, "report-pack-deliveries.json");
+            var store = new FileReportPackDeliveryRecordStore(
+                new ReportPackDeliveryStoreOptions(snapshotPath),
+                NullLogger<FileReportPackDeliveryRecordStore>.Instance);
+            var contents = new Dictionary<string, byte[]> { ["packs/pack-1/report.csv"] = Encoding.UTF8.GetBytes("a,b\n1,2\n") };
+            var blobDirectory = $"{snapshotPath}.artifacts";
+
+            using (DirectorySyncFaults.FailIn(blobDirectory))
+            {
+                var save = () => store.Save([], contents);
+                save.Should().Throw<DirectorySyncException>();
+                File.Exists(snapshotPath).Should().BeFalse("delivery metadata must not reference a blob that is not durable");
+
+                // The retained blob is reused on retry, and that path must not skip the sync.
+                save.Should().Throw<DirectorySyncException>();
+                File.Exists(snapshotPath).Should().BeFalse();
+            }
+
+            store.Save([], contents);
+            File.Exists(snapshotPath).Should().BeTrue();
+            Directory.GetFiles(blobDirectory, "*.blob").Should().ContainSingle();
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
     }
 
     private sealed class CorruptSnapshotFixture : IDisposable

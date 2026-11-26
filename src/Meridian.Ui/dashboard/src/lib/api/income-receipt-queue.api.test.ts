@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { receiptRun } from "@/test/book-receipt-fixture";
 import { getBookReceiptRun, getBookReceiptRuns, runBookReceiptQueue } from "./income-receipt-queue.api";

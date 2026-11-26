@@ -1,11 +1,11 @@
 {
-  "total_files": 1294,
+  "total_files": 1293,
   "orphaned_count": 379,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 86,
-  "signal_digest": "sha256:294084822f6f65c3b07411a42cd06c5478bc3dc1050fdec23cb9c258139eb3f4",
+  "signal_digest": "sha256:7d3fb2ddc0a5debb95c79bdf9cb2e4a41ac2c94bb6da99e9e9a795d3aa0d5278",
   "orphaned_files": [
     ".agents/skills/meridian-blueprint/SKILL.md",
     ".agents/skills/meridian-brainstorm/SKILL.md",
@@ -2696,6 +2696,13 @@
     },
     {
       "path": "docs/engineering/plans/review-remediation-2026-11-12.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/security-master-class-plumbing-codegen.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5635,21 +5642,14 @@
       "stale": false
     },
     {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-020.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/reference/source-api/meridian.workflow/page-001.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/reference/source-api/meridian.workstation.abstractions/page-001.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/reference/source-api/meridian.workstation.abstractions/page-002.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -9523,13 +9523,6 @@
       "path": "src/Meridian.Workflow/README.md",
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "src/Meridian.Workstation.Abstractions/README.md",
-      "has_heading": true,
-      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },

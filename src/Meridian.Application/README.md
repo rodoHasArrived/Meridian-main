@@ -391,6 +391,20 @@ Backfill resume depends on verified date coverage: `HistoricalBackfillService` s
 
 Backfill resume checkpoints are written only after the final pipeline flush succeeds, and a flush failure fails the run, so a crash or flush error can no longer skip dates on resume that never reached disk. `PersistentDedupLedger` rolls its cache entry back when the ledger write fails or is cancelled (a retry is no longer dropped as a duplicate) and fsyncs compacted ledgers before the rename. Scheduled catch-up skips an empty window instead of queueing From > To.
 
+`PersistentDedupLedger.CommitDurableAsync` fsyncs committed (version-2) lines before publishing
+them, and syncs the ledger directory on first commit and after each compaction rename, because WAL
+recovery trusts those lines to suppress replay. A failed fsync or directory sync fails the commit
+and leaves the claims pending, so the caller retries instead of publishing unconfirmed entries.
+`BackfillScheduleManager.DeleteScheduleAsync` acknowledges a deletion only once the tombstone rename
+is synced; on a sync failure it renames the schedule back and rethrows, so a retry starts clean.
+Pipeline durability state is split per `PipelineWorkload`: `CompositionOptions.PipelineWorkload` (`Collector` by default, `Backfill` for
+`CompositionOptions.BackfillOnly`) selects `_wal/{collector|backfill}` and
+`_dedup/{collector|backfill}` through `PipelineDurabilityPaths`, so a collector and a backfill can
+share a data root while a second instance of the same workload is refused by the WAL owner lock.
+The collector adopts segments and the ledger left in the legacy shared `_wal/` and `_dedup/`
+locations. `--wal-repair` visits every workload directory (`--workload` selects one) and refuses a
+directory a running process owns.
+
 Backfill runs publish into an `EventPipeline` with `BoundedChannelFullMode.Wait`, so a
 provider that outpaces the JSONL sink is back-pressured instead of silently evicting queued bars.
 
@@ -1936,6 +1950,16 @@ historical residue into a new accrual-profile declaration. An unreadable live in
 typed blocked audit receipt with empty resolved terms and no cash events. It records unavailable
 calculation evidence, never an inferred format or zero-flow economic result. See
 [recurring journals](../../docs/domain/recurring-journal.md#declared-certificateofdeposit-accrual-profile).
+
+## Vanilla interest-rate swap preview (2026-11-25)
+
+`ContractualCashFlowPreviewService` routes a security preview that names
+`calculationProfile = vanilla-irs-v1` through `SecurityVanillaSwapProfile`; it refuses contract
+overrides and loan subjects for that profile and reports unsupported shapes as
+`VanillaIrsProfileUnsupported`. Asset-pack admission requires a swap that declares leg conventions
+to satisfy the complete profile before it persists. The ordinary cash-flow capability check points a
+blocked swap with declared leg conventions at the preview route. The route is analytical and never
+posts. See [contractual projections](../../docs/domain/contractual-cash-flow-projection.md).
 
 ## Roadmap traceability
 

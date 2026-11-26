@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MultiAssetEvidenceRequirementDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetEvidenceRequirementDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1016](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1016).
+
+Asset-class-specific evidence requirement rendered by Portfolio, Accounting, and desktop workstations.
+
+```csharp
+public sealed record MultiAssetEvidenceRequirementDto(string RequirementId, string Label, string Category, string Status, string EvidenceRoute, bool Required);
+```
+
 ## MultiAssetPackCoverageDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetPackCoverageDto</code>. Kind: `record`.
@@ -490,7 +502,7 @@ public sealed record OperatingScopeValuesDto(string? Symbol = null, string? Fund
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsAccountingRecordEvidenceCategoryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1163](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1163).
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1176](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1176).
 
 ```csharp
 public sealed record OperationsAccountingRecordEvidenceCategoryDto(string Key, string Label, bool IsComplete, string Status, string? RouteHint, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string>? RequiredEvidence = null);
@@ -500,7 +512,7 @@ public sealed record OperationsAccountingRecordEvidenceCategoryDto(string Key, s
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsAccountingRecordSummaryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1153](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1153).
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1166](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1166).
 
 ```csharp
 public sealed record OperationsAccountingRecordSummaryDto(string RecordId, bool IsAuditReady, int CompleteCategoryCount, int RequiredCategoryCount, string Summary, IReadOnlyList<OperationsAccountingRecordEvidenceCategoryDto> EvidenceCategories, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, FundAuditPackReadinessDto? AuditPackReadiness = null);
@@ -582,7 +594,7 @@ public sealed record OperationsApprovalDecisionRequestDto(long ExpectedVersion, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1318](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1318).
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1331](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1331).
 
 ```csharp
 public sealed record OperationsApprovalDto(string ApprovalId, OperationsApprovalStateDto Status, string? Operator, string? Reviewer, string? Rationale, DateTimeOffset? SubmittedAtUtc, DateTimeOffset? DecidedAtUtc, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
@@ -596,14 +608,4 @@ Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:748](../
 
 ```csharp
 public sealed record OperationsApprovalPolicyMatrixDto(string PolicyId, string Version, DateTimeOffset GeneratedAtUtc, IReadOnlyList<OperationsApprovalPolicyMatrixRowDto> Rows);
-```
-
-## OperationsApprovalPolicyMatrixRowDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalPolicyMatrixRowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:754](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L754).
-
-```csharp
-public sealed record OperationsApprovalPolicyMatrixRowDto(string PolicyKey, string WorkflowArea, string Action, OperationsGateKeyDto Gate, string Trigger, string RequiredPermission, string SubmitterRole, string ReviewerRole, int RequiredDistinctApprovals, bool RequiresIndependentReviewer, bool RequiresReportPack, bool RequiresChecklistControlApprovals, string EvidenceRequirement, string AuditEventType, string Route, string Severity);
 ```

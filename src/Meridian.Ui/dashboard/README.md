@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-23
+last_reviewed: 2026-11-25
 ---
 
 # src/Meridian.Ui/dashboard
@@ -1357,6 +1357,12 @@ durations and stable test identity digests support the manual CI concurrency ben
 test-file roster and of how files are dealt to shards, and `scripts/merge-vitest-shards.mjs`
 is the lane's verdict: it rejects a run unless the shard(s) together ran every test file in the
 checkout exactly once with no failure.
+
+Tests run under jsdom by default. A test file that needs no DOM (view models, API clients,
+formatters, and other pure modules) starts with `// @vitest-environment node`, which skips
+building a jsdom window for that file; 181 files carry the marker, and the full suite fell from
+550 to 486 seconds locally with the same 7,219 tests passing. Remove the marker when a file starts
+to render components or read `window`, `document`, or browser storage.
 
 `AmountPassportTrigger` opens the shared Amount passport rail from Ledger Explorer, posted journal
 detail, retained brokerage positions, and retained trial-balance amounts in governed reports. Each
@@ -3609,6 +3615,13 @@ The private-capital retained source and election-calendar companion formats are 
 
 See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 `docs/source/data/diagram-index.yml`.
+
+## Vanilla interest-rate swap preview
+
+`previewVanillaInterestRateSwap` in `src/lib/api/contractual-cash-flow.api.ts` calls the existing
+Security contractual cash-flow preview with `calculationProfile: "vanilla-irs-v1"`. It is an
+analytical read with no development fallback and no posting action. See
+[contractual projections](../../../docs/domain/contractual-cash-flow-projection.md).
 
 ## Roadmap traceability
 

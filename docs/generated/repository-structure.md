@@ -133,6 +133,8 @@ Meridian-main
 │   │   ├── meridian-roadmap-strategist.md
 │   │   ├── meridian-simulated-user-panel.md
 │   │   └── meridian-test-writer.md
+│   ├── hooks
+│   │   └── format-csharp.sh
 │   ├── skills
 │   │   ├── _shared
 │   │   │   └── project-context.md
@@ -741,7 +743,8 @@ Meridian-main
 │   └── Dockerfile
 ├── .githooks
 │   ├── post-merge
-│   └── pre-commit
+│   ├── pre-commit
+│   └── pre-push
 ├── .github
 │   ├── actions
 │   │   ├── close-superseded-refresh-prs
@@ -1770,6 +1773,7 @@ Meridian-main
 │   │   │   ├── intercompany-entity-controls.md
 │   │   │   ├── README.md
 │   │   │   ├── review-remediation-2026-11-12.md
+│   │   │   ├── security-master-class-plumbing-codegen.md
 │   │   │   ├── security-master-integrity-implementation-plan.md
 │   │   │   ├── security-master-review-remediation-plan.md
 │   │   │   ├── ui-shared-decomposition-inventory.md
@@ -2283,12 +2287,10 @@ Meridian-main
 │   │   │   │   ├── page-016.md
 │   │   │   │   ├── page-017.md
 │   │   │   │   ├── page-018.md
-│   │   │   │   └── page-019.md
+│   │   │   │   ├── page-019.md
+│   │   │   │   └── page-020.md
 │   │   │   ├── meridian.workflow
 │   │   │   │   └── page-001.md
-│   │   │   ├── meridian.workstation.abstractions
-│   │   │   │   ├── page-001.md
-│   │   │   │   └── page-002.md
 │   │   │   ├── meridian.wpf
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
@@ -5205,6 +5207,7 @@ Meridian-main
 │   │   │   ├── MeridianDeploymentPosture.cs
 │   │   │   ├── MoneyMarketStartup.cs
 │   │   │   ├── PersistenceConfigurationStatus.cs
+│   │   │   ├── PipelineWorkload.cs
 │   │   │   ├── PortfolioRecordsServiceRegistration.cs
 │   │   │   ├── ProductionRegistrationGuardService.cs
 │   │   │   ├── ProductionServiceRegistrationPolicy.cs
@@ -6266,10 +6269,13 @@ Meridian-main
 │   │   │   ├── RateUnitNormalizer.cs
 │   │   │   ├── ScheduleConventionTerms.cs
 │   │   │   ├── ScheduleSpecFactory.cs
+│   │   │   ├── ScheduleSpecFactory.Legs.cs
 │   │   │   ├── ScheduleTermsWriteRules.cs
 │   │   │   ├── ScheduleTermsWriteRules.Gaps.cs
+│   │   │   ├── ScheduleTermsWriteRules.Legs.cs
 │   │   │   ├── ScheduleTermsWriteRules.Scalars.cs
 │   │   │   ├── SecurityAssetClassCatalog.cs
+│   │   │   ├── SecurityAssetClassDeclarations.cs
 │   │   │   ├── SecurityAssetClassModules.cs
 │   │   │   ├── SecurityAssetClassRegistry.cs
 │   │   │   ├── SecurityAssetClassTermsUpgrade.cs
@@ -6341,6 +6347,7 @@ Meridian-main
 │   │   │   ├── SecurityUnderlyingGraph.cs
 │   │   │   ├── SecurityValidationDtos.cs
 │   │   │   ├── SecurityValuation.cs
+│   │   │   ├── SecurityVanillaSwapProfile.cs
 │   │   │   ├── SecurityVersionedScalarTerms.cs
 │   │   │   ├── SecurityVersionedTerms.cs
 │   │   │   ├── StructuredCashFlowTerms.cs
@@ -6415,6 +6422,7 @@ Meridian-main
 │   │   │   ├── OperationsApprovalCollaborationDtos.cs
 │   │   │   ├── OperationsCloseChecklistHistoryDtos.cs
 │   │   │   ├── OperationsContinuityDtos.cs
+│   │   │   ├── OperationsWorkflowPurposeDto.cs
 │   │   │   ├── OperatorPreferencesDtos.cs
 │   │   │   ├── OperatorScopePreferenceDtos.cs
 │   │   │   ├── OperatorSurfaceVisitDtos.cs
@@ -7111,11 +7119,13 @@ Meridian-main
 │   │   │   ├── OperationsContinuityWorkflow.cs
 │   │   │   ├── OperationsContinuityWorkflow.Reconciliation.cs
 │   │   │   ├── OperationsContinuityWorkflow.ReopenGovernance.cs
+│   │   │   ├── OperationsContinuityWorkflow.RevisionPurpose.cs
 │   │   │   ├── OperationsContinuityWorkflowService.ApprovalCollaboration.cs
 │   │   │   ├── OperationsContinuityWorkflowService.ChecklistControls.cs
 │   │   │   ├── OperationsContinuityWorkflowService.CloseReadiness.cs
 │   │   │   ├── OperationsContinuityWorkflowService.cs
 │   │   │   ├── OperationsContinuityWorkflowService.PreparedStart.cs
+│   │   │   ├── OperationsContinuityWorkflowService.RevisionPurpose.cs
 │   │   │   ├── OperationsContinuityWorkflowService.Transitions.cs
 │   │   │   ├── OperationsContinuityWorkflowText.cs
 │   │   │   ├── OperationsLedgerPostingService.cs
@@ -7125,7 +7135,8 @@ Meridian-main
 │   │   │   ├── OperationsWorkflowAuditHashJsonContext.cs
 │   │   │   ├── OperationsWorkflowChecklistSnapshots.cs
 │   │   │   ├── OperationsWorkflowReadModelBuilder.cs
-│   │   │   └── PostgresOperationsContinuityStore.cs
+│   │   │   ├── PostgresOperationsContinuityStore.cs
+│   │   │   └── SecurityMasterRevisionWorkflowAuthority.cs
 │   │   ├── PrivateCapital
 │   │   │   ├── CommitmentRollForwardCalculator.cs
 │   │   │   ├── DefaultInterestCalculator.cs
@@ -8454,7 +8465,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_080__fiscal_year_close_receipts.sql
 │   │   │   │   ├── V_ledger_081__book_fx_settlement_receipts.sql
 │   │   │   │   ├── V_ledger_082__external_gl_posting.sql
-│   │   │   │   └── V_ledger_083__external_gl_evidence_truncate_guards.sql
+│   │   │   │   ├── V_ledger_083__external_gl_evidence_truncate_guards.sql
+│   │   │   │   └── V_ledger_084__security_revision_workflow_scope.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -11229,6 +11241,14 @@ Meridian-main
 │   │   ├── Meridian.Ui.Services.csproj
 │   │   └── README.md
 │   ├── Meridian.Ui.Shared
+│   │   ├── Contracts
+│   │   │   ├── Integrations
+│   │   │   │   └── OmsIntegrationContracts.cs
+│   │   │   ├── Simulation
+│   │   │   │   └── ExecutionSimulationContracts.cs
+│   │   │   ├── CoveredCallContracts.cs
+│   │   │   ├── FamilyOfficeContracts.cs
+│   │   │   └── WorkstationOperationsContracts.cs
 │   │   ├── Endpoints
 │   │   │   ├── Compliance
 │   │   │   │   └── ComplianceEndpoints.cs
@@ -11544,8 +11564,13 @@ Meridian-main
 │   │   │   ├── ReportingTemplateExtensibilityCatalogProvider.cs
 │   │   │   └── WorkflowExtensibilityCatalogProvider.cs
 │   │   ├── Serialization
+│   │   │   ├── CoveredCallJsonContext.cs
+│   │   │   ├── DirectLendingJsonContext.cs
 │   │   │   ├── ExecutionWorkflowJsonContext.cs
+│   │   │   ├── FamilyOfficeJsonContext.cs
+│   │   │   ├── IntercompanyOperationsJsonContext.cs
 │   │   │   ├── PeriodAdjustmentJsonContext.cs
+│   │   │   ├── QualityApiJsonContext.cs
 │   │   │   ├── ReportingCertifiedArtifactJsonContext.cs
 │   │   │   ├── RunLedgerQueryJsonContext.cs
 │   │   │   └── WorkstationOperationsJsonContext.cs
@@ -11960,8 +11985,7 @@ Meridian-main
 │   │   ├── Meridian.Ui.Shared.csproj
 │   │   ├── README.md
 │   │   ├── ReportingReadModelForwarders.cs
-│   │   ├── ScoreExplanationProjection.cs
-│   │   └── WorkstationAbstractionsTypeForwarders.cs
+│   │   └── ScoreExplanationProjection.cs
 │   ├── Meridian.Workflow
 │   │   ├── EnvironmentDesign
 │   │   │   └── EnvironmentDesignerService.cs
@@ -11973,25 +11997,6 @@ Meridian-main
 │   │   │   └── FundWorkflowCommandHandler.cs
 │   │   ├── DesignModule.cs
 │   │   ├── Meridian.Workflow.csproj
-│   │   └── README.md
-│   ├── Meridian.Workstation.Abstractions
-│   │   ├── Contracts
-│   │   │   ├── Integrations
-│   │   │   │   └── OmsIntegrationContracts.cs
-│   │   │   ├── Simulation
-│   │   │   │   └── ExecutionSimulationContracts.cs
-│   │   │   ├── CoveredCallContracts.cs
-│   │   │   ├── FamilyOfficeContracts.cs
-│   │   │   └── WorkstationOperationsContracts.cs
-│   │   ├── Endpoints
-│   │   │   └── WorkstationTenantContextSeam.cs
-│   │   ├── Serialization
-│   │   │   ├── CoveredCallJsonContext.cs
-│   │   │   ├── DirectLendingJsonContext.cs
-│   │   │   ├── FamilyOfficeJsonContext.cs
-│   │   │   ├── IntercompanyOperationsJsonContext.cs
-│   │   │   └── QualityApiJsonContext.cs
-│   │   ├── Meridian.Workstation.Abstractions.csproj
 │   │   └── README.md
 │   ├── Meridian.Wpf
 │   │   ├── Assets
@@ -13360,7 +13365,8 @@ Meridian-main
 │   │   │   │   ├── SimulationCommandsTests.cs
 │   │   │   │   ├── StatementImportCommandsTests.cs
 │   │   │   │   ├── SymbolCommandsTests.cs
-│   │   │   │   └── ValidateConfigCommandTests.cs
+│   │   │   │   ├── ValidateConfigCommandTests.cs
+│   │   │   │   └── WalRepairCommandTests.cs
 │   │   │   ├── Composition
 │   │   │   │   ├── Startup
 │   │   │   │   │   ├── ModeRunners
@@ -13646,6 +13652,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterCashFlowServiceTests.ScheduleCharacterization.cs
 │   │   │   ├── SecurityMasterFactorAccrualProjectionTests.cs
 │   │   │   ├── SecurityMasterScheduleCompatibilityTests.cs
+│   │   │   ├── SecurityRevisionWorkflowPurposeTests.cs
 │   │   │   ├── StructuredCashFlowLedgerGateTests.cs
 │   │   │   ├── StructuredCashFlowScheduleEntryEqualityTests.cs
 │   │   │   └── StructuredCashFlowTermsResolverTests.cs
@@ -13667,8 +13674,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterSchemaBoundDecodeRatchetTests.cs
 │   │   │   ├── UiSharedServiceGrowthRatchetTests.cs
 │   │   │   ├── VendorNeutralDomainTests.cs
-│   │   │   ├── VersionedContainerKeyLiteralRatchetTests.cs
-│   │   │   └── WorkstationAbstractionsBoundaryTests.cs
+│   │   │   └── VersionedContainerKeyLiteralRatchetTests.cs
 │   │   ├── AssetOperations
 │   │   │   ├── AccountCashForecastTests.cs
 │   │   │   ├── AcquisitionTermsCompletionTests.cs
@@ -13749,6 +13755,7 @@ Meridian-main
 │   │   │   │   ├── QuickBooks
 │   │   │   │   │   ├── QuickBooksCredentialLifecycleTests.cs
 │   │   │   │   │   └── QuickBooksOnlineProviderCredentialConnectionStoreTests.cs
+│   │   │   │   ├── CredentialDirectorySyncTests.cs
 │   │   │   │   ├── ExternalGlConnectionLifecycleTests.cs
 │   │   │   │   ├── ExternalGlCredentialConcurrencyTests.cs
 │   │   │   │   ├── ExternalGlCredentialRecoveryTests.cs
@@ -14356,6 +14363,7 @@ Meridian-main
 │   │   │   │   ├── WebSocketResiliencePolicyTests.cs
 │   │   │   │   └── WebSocketSendSessionTests.cs
 │   │   │   └── Shared
+│   │   │       ├── DirectorySyncFaults.cs
 │   │   │       ├── SymbolNormalizationTests.cs
 │   │   │       └── TempDirectoryFixture.cs
 │   │   ├── Instruments
@@ -14855,6 +14863,8 @@ Meridian-main
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.ReadableTwins.cs
 │   │   │   ├── SecurityAssetTermsSchemaTests.cs
 │   │   │   ├── SecurityAssetValidationModuleTests.cs
+│   │   │   ├── SecurityClassPlumbingGenerationTests.cs
+│   │   │   ├── SecurityClassPlumbingGenerator.cs
 │   │   │   ├── SecurityCodecRecordContractionTests.cs
 │   │   │   ├── SecurityCurveRulesTests.cs
 │   │   │   ├── SecurityCurvesMigrationTests.cs
@@ -14996,6 +15006,7 @@ Meridian-main
 │   │   │   ├── SecurityValidationGateServiceTests.cs
 │   │   │   ├── SecurityValidationServiceTests.cs
 │   │   │   ├── SecurityValuationServiceTests.cs
+│   │   │   ├── SecurityVanillaSwapProfileTests.cs
 │   │   │   ├── SecurityVersionedScalarCodecCompatibilityTests.cs
 │   │   │   ├── SecurityVersionedTermsTests.cs
 │   │   │   ├── SpecializedProjectionGoldenTests.cs
@@ -15061,6 +15072,7 @@ Meridian-main
 │   │   │   ├── ArchiveCompressionCrashTests.cs
 │   │   │   ├── ArchiveMaintenanceScheduleManagerDurabilityTests.cs
 │   │   │   ├── AssetAccountingPostingEvidenceValidatorTests.cs
+│   │   │   ├── AtomicFileWriterDirectorySyncTests.cs
 │   │   │   ├── AtomicFileWriterLogPrivacyTests.cs
 │   │   │   ├── AtomicFileWriterTests.cs
 │   │   │   ├── AtomicSnapshotTestWriter.cs
@@ -15259,6 +15271,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterCanonicalMovePlanTests.cs
 │   │   │   ├── SecurityMasterCanonicalWithdrawalDefinitionTests.cs
 │   │   │   ├── SecurityMasterSymbolReconciliationTests.cs
+│   │   │   ├── SecurityRevisionWorkflowPostgresTests.cs
 │   │   │   ├── SourceRegistryPersistenceTests.cs
 │   │   │   ├── StorageCatalogServiceTests.cs
 │   │   │   ├── StorageCatalogServiceTests.Snapshots.cs
@@ -15281,8 +15294,10 @@ Meridian-main
 │   │   │   ├── WriteAheadLogChecksumTests.cs
 │   │   │   ├── WriteAheadLogChecksumVersionTests.cs
 │   │   │   ├── WriteAheadLogCorruptionModeTests.cs
+│   │   │   ├── WriteAheadLogDirectorySyncTests.cs
 │   │   │   ├── WriteAheadLogFlushFaultTests.cs
 │   │   │   ├── WriteAheadLogFuzzTests.cs
+│   │   │   ├── WriteAheadLogOwnershipTests.cs
 │   │   │   ├── WriteAheadLogProcessTests.cs
 │   │   │   ├── WriteAheadLogTests.cs
 │   │   │   └── XlsxWorkbookWriterTests.cs
@@ -15400,6 +15415,8 @@ Meridian-main
 │   │   │   ├── RecordingLogger.cs
 │   │   │   ├── RepositoryFileWalker.cs
 │   │   │   ├── SecurityMasterTestCapabilityFloor.cs
+│   │   │   ├── SharedEndpointGraph.cs
+│   │   │   ├── SharedEndpointGraphTests.cs
 │   │   │   ├── SignalingMarketEventPublisher.cs
 │   │   │   ├── StubHttpMessageHandler.cs
 │   │   │   ├── TestMarketEventPublisher.cs
@@ -16457,6 +16474,7 @@ Meridian-main
 │   │   ├── test_generated_repair.py
 │   │   ├── test_generated_repair_outcomes.py
 │   │   ├── test_generated_repair_sandbox.py
+│   │   ├── test_generated_repair_triggers.py
 │   │   ├── test_git_hooks.py
 │   │   ├── test_golden_path_validation_workflow.py
 │   │   ├── test_ibapi_smoke_workflow.py
@@ -16535,6 +16553,7 @@ Meridian-main
 │   │   ├── test_task_context.py
 │   │   ├── test_temporary_directory_cleanup_tolerance.py
 │   │   ├── test_throughput_metrics.py
+│   │   ├── test_update_coverage_report.py
 │   │   ├── test_validate_agent_definitions.py
 │   │   ├── test_validate_design_document_adaptation.py
 │   │   ├── test_validate_doc_hashes.py

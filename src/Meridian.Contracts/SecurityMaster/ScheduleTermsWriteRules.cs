@@ -87,15 +87,7 @@ public static partial class ScheduleTermsWriteRules
                 new GapScope(changes.Changed(SecurityVersionedTerms.PutScheduleKey), changes.Changed(IssueDateKey), issue,
                     RetainedMemberNames(retained, SecurityVersionedTerms.PutScheduleKey)));
 
-        // Swap's write version remains 1: no per-leg declaration is admitted by this contract step.
-        // If a later step makes that field writable, ResolveShape must support it before admission.
-        if (SecurityAssetTermsSchema.ElementFields(canonical, "legs").Any(field => field.Key == SecurityVersionedTerms.ScheduleConventionsKey && field.SinceTermsVersion <= termsVersion)
-            && Member(payload, "legs") is { ValueKind: JsonValueKind.Array } legs)
-        {
-            foreach (var leg in legs.EnumerateArray())
-                if (Container(leg, SecurityVersionedTerms.ScheduleConventionsKey) is { } legBlock && SecurityAssetTermsSchema.IsPopulatedTermValue(legBlock))
-                    Refuse("Declared leg schedule conventions require a later per-leg contract step.");
-        }
+        ValidateLegDeclarations(canonical, payload, termsVersion);
     }
 
     /// <summary>
@@ -119,6 +111,7 @@ public static partial class ScheduleTermsWriteRules
                 continue;
             Refuse($"Retained undeclared '{field.Key}' cannot be promoted by an unrelated amendment; explicitly clear it or submit a fully validated replacement stamped at version {field.SinceTermsVersion} or later.");
         }
+        EnsureAmendmentDoesNotPromoteStrayLegs(assetClass, retained, replacement);
         EnsureAmendmentDoesNotPromoteStrayScalars(assetClass, retained, replacement);
     }
 
@@ -243,7 +236,8 @@ public static partial class ScheduleTermsWriteRules
             || row.ValueKind == JsonValueKind.Object && !SecurityAssetTermsSchema.IsPopulatedTermValue(row);
 
     // fresh: the container is introduced or changed, so the gap rules (blank values) apply too.
-    private static void ValidateMembers(JsonElement value, IReadOnlyList<SecurityAssetTermField> fields, string path, bool fresh)
+    private static void ValidateMembers(JsonElement value, IReadOnlyList<SecurityAssetTermField> fields, string path, bool fresh,
+        IReadOnlySet<string>? separatelyCheckedContainers = null)
     {
         if (value.ValueKind != JsonValueKind.Object)
             Refuse($"{path} must be an object.");
@@ -253,6 +247,13 @@ public static partial class ScheduleTermsWriteRules
             var field = fields.First(field => field.Key == property.Name);
             if (property.Value.ValueKind == JsonValueKind.Null)
                 continue;
+            if (separatelyCheckedContainers?.Contains(field.Key) == true
+                && field.Type is SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array)
+            {
+                if (property.Value.ValueKind != (field.Type == SecurityAssetTermFieldType.Object ? JsonValueKind.Object : JsonValueKind.Array))
+                    Refuse($"{path}.{field.Key} has the wrong JSON type or literal.");
+                continue; // The bounded leg adapter checks these exact nested declarations.
+            }
             // A member type the walk has no check for fails closed rather than passing unchecked.
             if (!IsCheckedMemberType(field.Type))
                 Refuse($"Property '{path}.{field.Key}' is declared as {field.Type}, which a write cannot check inside a versioned container; the write is refused.");

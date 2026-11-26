@@ -9,6 +9,7 @@ using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Integrity;
 using Meridian.Domain.Events;
+using Meridian.Storage.Archival;
 using Meridian.Storage.Backfill;
 using Serilog;
 
@@ -37,7 +38,9 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     internal const byte EntryVersionSinkDurable = 2;
 
     private readonly ILogger _log = LoggingSetup.ForContext<PersistentDedupLedger>();
+    private readonly string _ledgerDirectory;
     private readonly string _ledgerPath;
+    private readonly string? _legacyLedgerDirectory;
     private readonly TimeSpan _entryTtl;
     private readonly TimeProvider _timeProvider;
     private readonly int _maxInMemoryEntries;
@@ -60,6 +63,22 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
 
     private readonly SemaphoreSlim _writeLock = new(1, 1);
     private StreamWriter? _writer;
+
+    // Whether this process has fsynced the ledger directory since it last could have changed the
+    // ledger's directory entry (first creation or a compaction rename). Written under _writeLock.
+    private bool _ledgerDirectoryEntrySynced;
+
+    /// <summary>
+    /// Forces flushed ledger bytes to stable storage. Commits of durability-confirmed entries are
+    /// only published after this returns. Replaceable by tests to inject failures or record ordering.
+    /// </summary>
+    internal Action<FileStream> FlushToDisk { get; set; } = static stream => stream.Flush(flushToDisk: true);
+
+    /// <summary>
+    /// Fsyncs the ledger directory so a newly created or renamed ledger file survives power loss.
+    /// Replaceable by tests to inject failures or record ordering.
+    /// </summary>
+    internal Func<string, CancellationToken, Task> SyncLedgerDirectory { get; set; } = AtomicFileWriter.SyncDirectoryOrThrowAsync;
 
     // Automatic compaction. Every admitted identity appends a line, so without compaction the
     // file grows for the life of the deployment and each startup re-reads all of it. The fields
@@ -84,6 +103,9 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     /// <summary>Default number of ledger lines below which the file is never compacted.</summary>
     internal const int DefaultCompactionMinLines = 100_000;
 
+    /// <summary>Full path of the ledger file this instance reads and appends.</summary>
+    internal string LedgerPath => _ledgerPath;
+
     /// <summary>Lines currently in the ledger file, as far as this instance has read or written it.</summary>
     internal long DiskLineCount => Interlocked.Read(ref _diskLineCount);
 
@@ -103,14 +125,17 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         TimeSpan? entryTtl = null,
         int maxInMemoryEntries = 500_000,
         int compactionMinLines = DefaultCompactionMinLines,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        string? legacyLedgerDirectory = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(compactionMinLines);
+        _ledgerDirectory = ledgerDirectory;
         _ledgerPath = Path.Combine(ledgerDirectory, "dedup_ledger.jsonl");
         _entryTtl = entryTtl ?? TimeSpan.FromHours(24);
         _timeProvider = timeProvider ?? TimeProvider.System;
         _maxInMemoryEntries = maxInMemoryEntries;
         _compactionMinLines = compactionMinLines;
+        _legacyLedgerDirectory = legacyLedgerDirectory;
         Directory.CreateDirectory(ledgerDirectory);
         WarmHashPath();
         WarmPrefixCache();
@@ -162,6 +187,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         var cutoff = _timeProvider.GetUtcNow().Ticks - _entryTtl.Ticks;
         var loadedCleanly = true;
         _diskLineCount = 0;
+        AdoptLegacyLedger();
 
         if (File.Exists(_ledgerPath))
         {
@@ -202,6 +228,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         var cutoff = _timeProvider.GetUtcNow().Ticks - _entryTtl.Ticks;
         var loadedCleanly = true;
         _diskLineCount = 0;
+        AdoptLegacyLedger();
 
         if (File.Exists(_ledgerPath))
         {
@@ -226,6 +253,40 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         }
 
         EnableAutoCompactionAfterLoad(loadedCleanly);
+    }
+
+    /// <summary>
+    /// Moves a ledger left in the shared pre-workload directory into this ledger's directory, once,
+    /// before the first load. Skipped when this directory already has a ledger. The rename is
+    /// atomic, so two adopters racing cannot both take it or tear it.
+    /// </summary>
+    private void AdoptLegacyLedger()
+    {
+        if (string.IsNullOrWhiteSpace(_legacyLedgerDirectory) || File.Exists(_ledgerPath))
+            return;
+
+        var legacyPath = Path.Combine(_legacyLedgerDirectory, Path.GetFileName(_ledgerPath));
+        if (string.Equals(Path.GetFullPath(legacyPath), Path.GetFullPath(_ledgerPath), StringComparison.Ordinal) ||
+            !File.Exists(legacyPath))
+        {
+            return;
+        }
+
+        try
+        {
+            File.Move(legacyPath, _ledgerPath, overwrite: false);
+        }
+        catch (IOException ex) when (File.Exists(_ledgerPath) || !File.Exists(legacyPath))
+        {
+            // Another adopter won the rename; load whatever it moved.
+            _log.Debug(ex, "Legacy dedup ledger {LegacyPath} was adopted concurrently", legacyPath);
+            return;
+        }
+
+        // The SyncDirectoryAsync helper completes synchronously; this load path cannot await.
+        AtomicFileWriter.SyncDirectoryOrThrowAsync(_ledgerDirectory).GetAwaiter().GetResult();
+        AtomicFileWriter.SyncDirectoryOrThrowAsync(_legacyLedgerDirectory).GetAwaiter().GetResult();
+        _log.Information("Adopted legacy dedup ledger {LegacyPath} into {LedgerPath}", legacyPath, _ledgerPath);
     }
 
     /// <summary>
@@ -518,8 +579,17 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
                 validatedIndexes.Add(i);
             }
 
-            // Stage 2: make the committed identities durable before publishing them.
+            // Stage 2: make the committed identities durable before publishing them. The
+            // StreamWriter flush only reaches the OS page cache, which a power loss discards;
+            // WAL recovery trusts these version-2 lines to suppress replay, so they must be
+            // fsynced (and the file's directory entry made durable) before stage 3 runs.
             await _writer!.FlushAsync(ct).ConfigureAwait(false);
+            FlushToDisk((FileStream)_writer.BaseStream);
+            if (!_ledgerDirectoryEntrySynced)
+            {
+                await SyncLedgerDirectory(_ledgerDirectory, ct).ConfigureAwait(false);
+                _ledgerDirectoryEntrySynced = true;
+            }
 
             // Stage 3: post-durability bookkeeping. Publish each committed entry BEFORE dropping
             // its pending claim: a concurrent TryReserveAsync that wins the freed slot re-checks
@@ -1061,6 +1131,20 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             File.Move(tempPath, _ledgerPath, overwrite: true);
             _diskLineCount = kept;
             _compactionDueAtLineCount = NextCompactionDueAt(kept);
+
+            // The rename has committed; make it durable so a power loss cannot revert the
+            // ledger to its pre-compaction file. Not cancellable, and a failure only means the
+            // next durable commit must sync the directory again.
+            _ledgerDirectoryEntrySynced = false;
+            try
+            {
+                await SyncLedgerDirectory(_ledgerDirectory, CancellationToken.None).ConfigureAwait(false);
+                _ledgerDirectoryEntrySynced = true;
+            }
+            catch (Exception ex)
+            {
+                _log.Warning(ex, "Dedup ledger directory fsync after compaction failed; the next durable commit retries it");
+            }
             _log.Information("Compacted dedup ledger: {KeptCount} entries retained", kept);
             return true;
         }

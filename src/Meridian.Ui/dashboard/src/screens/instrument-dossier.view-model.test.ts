@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { instrumentCases, instrumentPositions, isLedgerInstrumentId, readInstrumentDossierTab } from "./instrument-dossier.view-model";
 import { ledgerPeriodJournalEntriesEndpoint } from "@/lib/workstation-endpoints";
