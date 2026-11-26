@@ -154,7 +154,8 @@ public sealed class ShortCarryIntakeTests
             100m, openQuantity, 50m, "USD", Now, Now, Version: 1,
             OriginatingMutationBatchId: batch, LastMutationBatchId: batch, SecurityId: SecurityId, BookPositionId: Guid.NewGuid(),
             Acquisition: new OpenLotAcquisitionDto(LotQuantityBasis.Units, "USD", "USD", 1m, 5_000m, 5_000m,
-                new DateOnly(2026, 10, 1), null, [evidence]) { Direction = direction });
+                new DateOnly(2026, 10, 1), null, [evidence])
+            { Direction = direction });
     }
 
     private static async Task<Fixture> CreateFixtureAsync(
