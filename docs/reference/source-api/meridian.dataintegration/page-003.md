@@ -399,6 +399,26 @@ Declared public members:
 | <code>public void Dispose();</code> | [src/Meridian.DataIntegration/Monitoring/ConnectionHealthMonitor.cs:919](../../../../src/Meridian.DataIntegration/Monitoring/ConnectionHealthMonitor.cs#L919) |  |
 | <code>public ValueTask DisposeAsync();</code> | [src/Meridian.DataIntegration/Monitoring/ConnectionHealthMonitor.cs:926](../../../../src/Meridian.DataIntegration/Monitoring/ConnectionHealthMonitor.cs#L926) |  |
 
+## ConnectionHealthRegistry
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.ConnectionHealthRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/ConnectionHealthRegistry.cs:13](../../../../src/Meridian.DataIntegration/Monitoring/ConnectionHealthRegistry.cs#L13).
+
+Process-wide hand-off of the running collector&#x27;s ConnectionHealthMonitor to the API host.
+
+```csharp
+public sealed class ConnectionHealthRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ConnectionHealthRegistry Process { get; } = new ();</code> | [src/Meridian.DataIntegration/Monitoring/ConnectionHealthRegistry.cs:18](../../../../src/Meridian.DataIntegration/Monitoring/ConnectionHealthRegistry.cs#L18) | The registry shared by everything in this process. |
+| <code>public ConnectionHealthMonitor? Monitor =&gt; …;</code> | [src/Meridian.DataIntegration/Monitoring/ConnectionHealthRegistry.cs:21](../../../../src/Meridian.DataIntegration/Monitoring/ConnectionHealthRegistry.cs#L21) | The monitor of the collector streaming in this process, if any. |
+| <code>public IDisposable Publish(ConnectionHealthMonitor monitor);</code> | [src/Meridian.DataIntegration/Monitoring/ConnectionHealthRegistry.cs:27](../../../../src/Meridian.DataIntegration/Monitoring/ConnectionHealthRegistry.cs#L27) | Publishes monitor until the returned handle is disposed. Disposing clears the registry only if it still holds this monitor. |
+
 ## ConnectionHealthSnapshot
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.ConnectionHealthSnapshot</code>. Kind: `record struct`.

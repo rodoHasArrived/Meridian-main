@@ -33,7 +33,7 @@ public sealed class StatusEndpointHandlers
     private Func<Task<DetailedHealthReport>>? _detailedHealthProvider;
     private Func<BackpressureStatus>? _backpressureProvider;
     private Func<ProviderLatencySummary>? _providerLatencyProvider;
-    private Func<ConnectionHealthSnapshot>? _connectionHealthProvider;
+    private Func<ConnectionHealthSnapshot?>? _connectionHealthProvider;
     private Func<IReadOnlyList<DiskSpaceInfo>>? _diskSpaceProvider;
 
     // Health check thresholds
@@ -64,7 +64,7 @@ public sealed class StatusEndpointHandlers
         Func<Task<DetailedHealthReport>>? detailedHealth = null,
         Func<BackpressureStatus>? backpressure = null,
         Func<ProviderLatencySummary>? providerLatency = null,
-        Func<ConnectionHealthSnapshot>? connectionHealth = null,
+        Func<ConnectionHealthSnapshot?>? connectionHealth = null,
         Func<IReadOnlyList<DiskSpaceInfo>>? diskSpace = null)
     {
         _diskSpaceProvider = diskSpace;
@@ -541,12 +541,13 @@ public sealed class StatusEndpointHandlers
     /// </summary>
     public (ConnectionHealthSnapshotDto? Snapshot, string? Error) GetConnectionHealth()
     {
-        if (_connectionHealthProvider == null)
+        // A provider that returns null has no monitor to read right now (for example the API host
+        // while no collector streams in its process), which is the same as not configured.
+        if (_connectionHealthProvider?.Invoke() is not { } snapshot)
         {
             return (null, "Connection health monitoring not configured");
         }
 
-        var snapshot = _connectionHealthProvider();
         return (new ConnectionHealthSnapshotDto
         {
             Timestamp = snapshot.Timestamp,

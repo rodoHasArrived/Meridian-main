@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.WeeklyQualityReport</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:337](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L337).
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:334](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L334).
 
 Weekly data quality report.
 
@@ -22,7 +22,7 @@ public sealed record WeeklyQualityReport(DateOnly WeekStart, DateOnly WeekEnd, D
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.WeeklyStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:384](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L384).
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:381](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L381).
 
 Weekly statistics.
 

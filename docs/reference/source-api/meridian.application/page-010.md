@@ -6,60 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## SecurityMasterContractRegistrationExtensions
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterContractRegistrationExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs:8](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs#L8).
-
-Bridges existing host registrations to the canonical Security Master contracts.
-
-```csharp
-public static class SecurityMasterContractRegistrationExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddSecurityMasterContractAdapters(this IServiceCollection services);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs:14](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs#L14) | Shares the registered query service through its narrow contracts. Explicit host registrations are preserved. |
-
-## SecurityMasterCostBasisAdjustmentService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterCostBasisAdjustmentService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs:48](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs#L48).
-
-```csharp
-public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCostBasisAdjustmentService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterCostBasisAdjustmentService(ISecurityMasterQueryService queryService, ILogger&lt;SecurityMasterCostBasisAdjustmentService&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs:53](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs#L53) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerTaxLotBasisAdjustment&gt;&gt; BuildAdjustmentsAsync(Guid securityId, IReadOnlyList&lt;LedgerTaxLot&gt; openLots, DateOnly asOf, decimal priorFactor = 1m, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs:62](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs#L62) |  |
-| <code>public async Task&lt;LedgerTaxLotReliefProjection&gt; ProjectReliefAsync(LedgerTaxLotReliefInput baseInput, Guid securityId, decimal priorFactor = 1m, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs:88](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs#L88) |  |
-
-## SecurityMasterCsvParser
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterCsvParser</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs:20](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs#L20).
-
-Parses CSV files for Security Master bulk import. Expected header columns (case-insensitive): Ticker, Name, AssetClass, Currency, Exchange, ISIN, CUSIP, FIGI The accepted asset classes are DERIVED from SecurityAssetClassCatalog.IdentifierOnlyImportableAssetClasses rather than kept in a private table here: a CSV row carries identity only, so it can create exactly the classes whose asset-specific terms are all optional. A class with a required term (an option&#x27;s strike, a bond&#x27;s maturity) is refused with a message that says so, because the alternative — defaulting the term — would mint a governed record on an economic fact nobody supplied.
-
-```csharp
-public sealed class SecurityMasterCsvParser
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;CreateSecurityRequest&gt; Parse(string csvContent, out IReadOnlyList&lt;string&gt; errors, string actor, DateTimeOffset? ingestedAtUtc = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs:41](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs#L41) | Parses CSV content and returns a list of CreateSecurityRequest objects. Errors during parsing are collected in the out parameter. |
-
 ## SecurityMasterDataQualityService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterDataQualityService</code>. Kind: `class`.
@@ -976,6 +922,23 @@ Declared public members:
 | <code>public SecurityResolver(ISecurityMasterStore store);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L15) |  |
 | <code>public async Task&lt;Guid?&gt; ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:20](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L20) |  |
 
+## SecurityResolverCompatibilityAdapter
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityResolverCompatibilityAdapter</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs:5](../../../../src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs#L5).
+
+```csharp
+public sealed class SecurityResolverCompatibilityAdapter : ISecurityResolver # pragma warning restore CS0618
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityResolverCompatibilityAdapter(Meridian.Contracts.SecurityMaster.ISecurityResolver resolver);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs:10](../../../../src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs#L10) |  |
+| <code>public Task&lt;Guid?&gt; ResolveAsync(Meridian.Contracts.SecurityMaster.ResolveSecurityRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs#L15) |  |
+
 ## StaleFieldProposalException
 
 Qualified name: <code>Meridian.Application.SecurityMaster.StaleFieldProposalException</code>. Kind: `class`.
@@ -1060,3 +1023,41 @@ Declared public members:
 | --- | --- | --- |
 | <code>public FileSecurityValidationSnapshotStore(StorageOptions storageOptions);</code> | [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:35](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L35) |  |
 | <code>public async Task&lt;SecurityValidationSnapshotDto&gt; RecordAsync(SecurityValidationReportDto report, SecurityValidationSnapshotRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:45](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L45) |  |
+
+## ISecurityAssetClassValidator
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.ISecurityAssetClassValidator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:15](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L15).
+
+Defines validation rules for one supported Security Master asset class.
+
+```csharp
+public interface ISecurityAssetClassValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string AssetClass { get; }</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:17](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L17) |  |
+| <code>IReadOnlyList&lt;SecurityValidationIssueDto&gt; Validate(SecurityValidationContext context);</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:18](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L18) |  |
+
+## ISecurityValidationService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.ISecurityValidationService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:11](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L11).
+
+Validates individual security records and the Security Master universe.
+
+```csharp
+public interface ISecurityValidationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityValidationReportDto&gt; ValidateSecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:13](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L13) |  |
+| <code>Task&lt;SecurityValidationReportDto&gt; ValidateUniverseAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:14](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L14) |  |
