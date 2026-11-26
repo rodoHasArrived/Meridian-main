@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunDiff</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:867](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L867).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:879](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L879).
 
 Result of a run-vs-run diff showing position, parameter, and metric changes.
 

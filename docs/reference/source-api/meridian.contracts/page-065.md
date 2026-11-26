@@ -615,7 +615,7 @@ public sealed record LedgerAmountStrategyRunLinkDto(string RunId, string? Displa
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerImpactPreviewDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:292](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L292).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:296](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L296).
 
 Preview of accounting impact if current breaks are submitted/closed with draft ledger entries.
 
@@ -627,7 +627,7 @@ public sealed record LedgerImpactPreviewDto(int DraftEntryCount, decimal NetDebi
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerJournalLine</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:675](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L675).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:683](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L683).
 
 Shared journal row for workstation audit surfaces.
 

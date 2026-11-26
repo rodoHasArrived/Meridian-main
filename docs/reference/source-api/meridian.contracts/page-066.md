@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:623](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L623).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:631](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L631).
 
 Shared ledger rollup for workstation Accounting and audit surfaces.
 
@@ -22,7 +22,7 @@ public sealed record LedgerSummary(string LedgerReference, string RunId, DateTim
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerTrialBalanceLine</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:651](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L651).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:659](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L659).
 
 Shared trial-balance row for workstation ledger views.
 
@@ -34,7 +34,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string BalanceExact =&gt; …;</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:669](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L669) |  |
+| <code>public string BalanceExact =&gt; …;</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:677](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L677) |  |
 
 ## MarginCertificationRequestDto
 

@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPortfolioSummaryPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1003](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1003).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1008](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1008).
 
 ```csharp
 public sealed record WorkstationPortfolioSummaryPayload(string FundAccountId, string StrategyId, string Entity, IReadOnlyList<WorkstationMetricCard> ConsolidatedCards, IReadOnlyList<WorkstationTradingPositionRow> Positions, WorkstationTradingRiskState Risk, WorkstationPortfolioSummaryTelemetry Telemetry, IReadOnlyDictionary<string, string> DrillThroughRoutes);
@@ -20,7 +20,7 @@ public sealed record WorkstationPortfolioSummaryPayload(string FundAccountId, st
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPortfolioSummaryTelemetry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:996](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L996).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1001](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1001).
 
 ```csharp
 public sealed record WorkstationPortfolioSummaryTelemetry(long RefreshLatencyMs, int PayloadSizeBytes, bool IsStale, string? StaleReason, string AsOfUtc);
