@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import {
   WORKSTATION_SCREEN_VIEW_STATE_SCREENS,

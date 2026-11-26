@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { UI_API_ROUTES } from "@/lib/ui-api-routes.generated";
 import {

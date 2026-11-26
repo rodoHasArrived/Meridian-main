@@ -211,6 +211,14 @@ processes the lane's test time is unchanged. The shorter longest shard is what l
 process count help, and that promotion still follows the
 [benchmark criteria](../../docs/engineering/ci-cd-optimization.md#benchmark-promotion-criteria).
 
+Those tests no longer compile the workstation routes once per test. `SharedEndpointGraph`
+(`tests/Meridian.Tests/TestHelpers/`) compiles them once per set of registered service types in a
+process, and each test keeps its own services and caller identity; a local run of the whole class
+fell from 12 m 55 s to 2 m 59 s with the same results. The three shards and their duration hints
+are unchanged until hosted runs are observed, so the hints overstate those shards for now. Set
+`MERIDIAN_ENDPOINT_GRAPH_SHARING=off` to give every test its own host again when ruling sharing
+out of a failure.
+
 `make test` and `make pre-pr` restore the solution and use the same default test-project/shard
 roster as `run-dotnet-ci-tests.py`. `test-unit` remains the focused C# iteration command.
 

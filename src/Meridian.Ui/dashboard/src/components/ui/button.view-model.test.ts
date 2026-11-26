@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { buildButtonCommandViewModel } from "@/components/ui/button.view-model";
 
 describe("button command view model", () => {

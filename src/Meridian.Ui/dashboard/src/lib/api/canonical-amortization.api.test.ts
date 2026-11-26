@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { apiPostJson } from "@/lib/api";
 import { createCanonicalAmortizationDraft, prepareCanonicalAmortization, type CanonicalAmortizationRequest } from "./canonical-amortization.api";

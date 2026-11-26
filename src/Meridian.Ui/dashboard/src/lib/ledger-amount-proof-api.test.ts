@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { apiGetJson } from "@/lib/api";
 import { getLedgerAmountProof } from "@/lib/ledger-amount-proof-api";
 

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { buildWorkspaceNavViewModel } from "@/components/meridian/workspace-nav.view-model";
 import { encodeViewStateEnvelope } from "@/lib/view-state-envelope";

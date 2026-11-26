@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { createProviderModulesApi } from "@/lib/api/provider-modules.api";
 import type { UpsertProviderModuleRequest } from "@/types/provider-setup";
 

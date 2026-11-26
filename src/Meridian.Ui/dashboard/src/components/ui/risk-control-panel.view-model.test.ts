@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { buildRiskControlPanelViewModel } from "@/components/ui/risk-control-panel.view-model";
 import type { RiskRuleStatus } from "@/types";

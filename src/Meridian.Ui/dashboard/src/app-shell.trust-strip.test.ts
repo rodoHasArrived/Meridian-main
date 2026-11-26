@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { buildTrustStripState, resolveDataSourceTone, resolveShellFreshness } from "@/app-shell.trust-strip";
 import type { DataWorkspaceResponse, SessionInfo } from "@/types";

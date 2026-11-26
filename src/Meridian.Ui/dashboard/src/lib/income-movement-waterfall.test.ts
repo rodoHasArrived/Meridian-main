@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { buildIncomeWaterfall, formatIncomeAmount } from "@/lib/income-movement-waterfall";
 import { buildIncomeComparison } from "@/test/reporting-income-comparison-fixtures";

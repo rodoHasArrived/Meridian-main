@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { collectScopeFundAccounts } from "@/lib/operating-scope/fund-accounts";
 import type { BrokerageHouseholdPortfolio } from "@/types";

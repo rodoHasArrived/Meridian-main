@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import {
   DATA_WORKSTATION_SCREEN_ROUTES,

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { buildRouteFocusState } from "@/app-shell.route-focus";
 import { workspaceForPath } from "@/lib/workspace";
