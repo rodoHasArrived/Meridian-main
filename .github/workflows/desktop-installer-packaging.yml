@@ -167,7 +167,10 @@ jobs:
 
   build-msix:
     name: package-desktop-msix (${{ matrix.runtime }})
-    needs: [eligibility, ci, secrets, codeql, production, smoke, release-preflight]
+    # Signing waits for the scans and Windows preflight, not for the full CI re-run or
+    # production certification (and its owner approval). Nothing here publishes: `release`
+    # still needs every gate, and eligibility already requires the commit to be on main.
+    needs: [eligibility, secrets, codeql, smoke, release-preflight]
     runs-on: windows-latest
     timeout-minutes: 75
     environment:
@@ -347,7 +350,10 @@ jobs:
 
   build-consumer-setup:
     name: package-consumer-setup
-    needs: [eligibility, ci, secrets, codeql, production, smoke, release-preflight]
+    # Signing waits for the scans and Windows preflight, not for the full CI re-run or
+    # production certification (and its owner approval). Nothing here publishes: `release`
+    # still needs every gate, and eligibility already requires the commit to be on main.
+    needs: [eligibility, secrets, codeql, smoke, release-preflight]
     runs-on: windows-2025
     timeout-minutes: 120
     environment:
