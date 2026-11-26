@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageCapacitySummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StorageCapacitySummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:128](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L128).
+
+```csharp
+public sealed record StorageCapacitySummaryDto(long UsedBytes, long AvailableBytes, double UsedPercent, int? EstimatedDaysRemaining, string Status);
+```
+
+## StorageHealthSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StorageHealthSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:91](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L91).
+
+```csharp
+public sealed record StorageHealthSummaryDto(string Status, string RootLabel, long TotalBytes, int FileCount, bool Readable, bool Writable, int OrphanCount, int TemporaryFileCount, string? Message);
+```
+
+## StorageMaintenanceActionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StorageMaintenanceActionDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:154](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L154).
+
+```csharp
+public enum StorageMaintenanceActionDto : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>QualityCheck</code> | [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:156](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L156) |  |
+| <code>Cleanup</code> | [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:157](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L157) |  |
+| <code>TierMigration</code> | [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:158](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L158) |  |
+
 ## StorageMaintenanceCandidateDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StorageMaintenanceCandidateDto</code>. Kind: `record`.
@@ -617,49 +655,3 @@ Declared public members:
 | <code>public StrategyRunEvidenceLoop? EvidenceLoop { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:488](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L488) | Optional W6 evidence-loop projection. Kept outside the primary constructor so the established CLR constructor and deconstruction signatures remain compatible. |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:491](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L491) |  |
 | <code>public IReadOnlyList&lt;StrategyRunAcceptanceChecklistItemDto&gt; AcceptanceChecklist { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:498](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L498) | Read-only canonical promotion requirements and their durable decision posture. Kept outside the primary constructor so established CLR constructor and deconstruction signatures remain compatible. |
-
-## StrategyRunDiff
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunDiff</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:867](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L867).
-
-Result of a run-vs-run diff showing position, parameter, and metric changes.
-
-```csharp
-public sealed record StrategyRunDiff(string BaseRunId, string TargetRunId, string BaseStrategyName, string TargetStrategyName, IReadOnlyList<PositionDiffEntry> AddedPositions, IReadOnlyList<PositionDiffEntry> RemovedPositions, IReadOnlyList<PositionDiffEntry> ModifiedPositions, IReadOnlyList<ParameterDiff> ParameterChanges, MetricsDiff Metrics, IReadOnlyList<string>? CompatibilityWarnings = null, StrategyRunArtifactCompleteness? BaseArtifactCompleteness = null, StrategyRunArtifactCompleteness? TargetArtifactCompleteness = null, StrategyRunMode? BaseMode = null, StrategyRunMode? TargetMode = null, StrategyRunEngine? BaseEngine = null, StrategyRunEngine? TargetEngine = null, string? BaseStrategyId = null, string? TargetStrategyId = null, string? BaseStrategyVersion = null, string? TargetStrategyVersion = null, string LineageRelation = "Unrelated", string CompatibilityLevel = "Compatible");
-```
-
-## StrategyRunDrillInLinks
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunDrillInLinks</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs#L6).
-
-Drill-in links attached to strategy run cards and comparisons.
-
-```csharp
-public sealed record StrategyRunDrillInLinks(string EquityCurve, string Fills, string Attribution, string? Ledger, string CashFlows, string? Continuity);
-```
-
-## StrategyRunEngine
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunEngine</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:22](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L22).
-
-Shared workstation-facing execution engine for a strategy run.
-
-```csharp
-public enum StrategyRunEngine : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:24](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L24) |  |
-| <code>MeridianNative</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:25](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L25) |  |
-| <code>Lean</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:26](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L26) |  |
-| <code>BrokerPaper</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:27](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L27) |  |
-| <code>BrokerLive</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:28](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L28) |  |
