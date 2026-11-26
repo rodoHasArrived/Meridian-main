@@ -116,7 +116,7 @@ Each phase is one or more PRs, and each must leave `Meridian CI / quality-gate` 
   [inventory snapshot](ui-shared-decomposition-inventory.md). Findings are summarized above.
 - Done: `tests/Meridian.Tests/Architecture/UiSharedServiceGrowthRatchetTests.cs`. It caps the
   number of distinct service-like type names (`*Service`, `*Store`, `*Coordinator` and so on) in
-  `Ui.Shared/Services/` (225) and `Evidence/` (16). It counts type names rather than files or
+  `Ui.Shared/Services/` (226) and `Evidence/` (16). It counts type names rather than files or
   lines, so bug fixes and the god-file plan's partial-class splits aren't blocked. Each move PR
   lowers the ceilings.
 - Open: sign off on project names and the revised cluster boundaries.

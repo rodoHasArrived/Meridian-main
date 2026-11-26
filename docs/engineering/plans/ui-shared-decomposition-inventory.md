@@ -19,11 +19,11 @@ authority when a move is made.
 
 | Cluster | Files | Lines |
 | --- | ---: | ---: |
-| Adapter | 292 | 82663 |
-| Accounting | 94 | 41105 |
+| Adapter | 293 | 82926 |
+| Accounting | 94 | 41149 |
 | Reporting | 63 | 35608 |
-| Workstation | 130 | 28355 |
-| Operations | 60 | 21749 |
+| Workstation | 132 | 28975 |
+| Operations | 60 | 21745 |
 | Evidence | 38 | 15762 |
 | SecurityMaster | 20 | 6108 |
 | Other | 27 | 3693 |
@@ -33,13 +33,13 @@ authority when a move is made.
 | Source | Target | Type uses |
 | --- | --- | ---: |
 | Workstation | Adapter | 89 |
-| Workstation | Accounting | 84 |
+| Workstation | Accounting | 85 |
 | Workstation | Reporting | 66 |
-| Workstation | Operations | 56 |
-| Accounting | Workstation | 43 |
+| Workstation | Operations | 57 |
+| Accounting | Workstation | 44 |
 | Reporting | Accounting | 35 |
+| Operations | Workstation | 33 |
 | Accounting | Reporting | 31 |
-| Operations | Workstation | 29 |
 | Operations | Adapter | 24 |
 | Reporting | Evidence | 21 |
 | Workstation | Evidence | 21 |
@@ -52,9 +52,9 @@ authority when a move is made.
 | Evidence | Accounting | 8 |
 | Operations | Accounting | 8 |
 | Accounting | Evidence | 7 |
+| Evidence | Workstation | 5 |
 | Workstation | Other | 5 |
 | Workstation | SecurityMaster | 5 |
-| Evidence | Workstation | 4 |
 | Other | Operations | 3 |
 | Accounting | Operations | 3 |
 | Evidence | Operations | 2 |
@@ -120,7 +120,7 @@ These must have the adapter dependency moved down before the file can leave Ui.S
 - `src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs`: EndpointAuthorization
 - `src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs`: ApprovalState, BrokerIntakeState, LedgerPostingState, OperationsContinuityWorkflowDto, ReconciliationState
 
-### Internal types used outside their own cluster (42)
+### Internal types used outside their own cluster (45)
 
 - `AccountingPreparerAttestationDisclosure` (Accounting) used by: Reporting
 - `AlpacaFeedConfiguration` (Operations) used by: Workstation
@@ -128,6 +128,7 @@ These must have the adapter dependency moved down before the file can leave Ui.S
 - `AmountPassportScopeMismatchException` (Accounting) used by: Operations, Reporting
 - `ApprovalDecision` (Workstation) used by: Accounting
 - `AutomatedJournalScheduleJsonContext` (Adapter) used by: Accounting
+- `Basis` (Workstation) used by: Accounting, Operations
 - `CapitalCallDefaultInterestDraftProducer` (Workstation) used by: Accounting
 - `CapitalCallFundingDraftProducer` (Reporting) used by: Accounting
 - `CapitalCallIssuanceDraftProducer` (Reporting) used by: Accounting
@@ -142,6 +143,7 @@ These must have the adapter dependency moved down before the file can leave Ui.S
 - `ExecutionWorkflowJsonContext` (Adapter) used by: Operations
 - `FamilyOfficeJsonContext` (Adapter) used by: Workstation
 - `ManualJournalMutationJsonContext` (Accounting) used by: Workstation
+- `Observation` (Workstation) used by: Evidence, Operations
 - `PaperSessionDailyReconciliation` (Workstation) used by: Operations
 - `Payload` (Accounting) used by: Evidence, Reporting, SecurityMaster, Workstation
 - `PeriodAdjustmentJsonContext` (Adapter) used by: Accounting, Workstation
@@ -160,6 +162,7 @@ These must have the adapter dependency moved down before the file can leave Ui.S
 - `ReportingRetainedGridRow` (Adapter) used by: Reporting
 - `ReportingRetainedPreviewDocument` (Adapter) used by: Reporting
 - `ReportingRetainedPreviewPrimaryArtifact` (Adapter) used by: Reporting
+- `SeriesKey` (Workstation) used by: Operations
 - `ServiceProviderReportingAuthoritativeSource` (Workstation) used by: Reporting
 - `Session` (Accounting) used by: Operations, Workstation
 - `Snapshot` (Evidence) used by: Accounting, Operations, Reporting, Workstation

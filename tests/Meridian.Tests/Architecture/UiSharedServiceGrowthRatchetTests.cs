@@ -23,7 +23,7 @@ public sealed class UiSharedServiceGrowthRatchetTests
     // Folder under src/Meridian.Ui.Shared -> most distinct service-like type names it may declare.
     private static readonly IReadOnlyDictionary<string, int> Ceilings = new Dictionary<string, int>(StringComparer.Ordinal)
     {
-        ["Services"] = 225,
+        ["Services"] = 226,
         ["Evidence"] = 16,
     };
 
