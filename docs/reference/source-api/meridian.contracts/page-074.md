@@ -470,7 +470,7 @@ public sealed record ReportWriterMetricDefinitionDto(string Name, string SourceF
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterMetricLineageDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1554](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1554).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1558](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1558).
 
 ```csharp
 public sealed record ReportWriterMetricLineageDto(string Name, string SourceField, string Function);

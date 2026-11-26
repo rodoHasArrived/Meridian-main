@@ -61,4 +61,10 @@ describe("isReportWriterFormulaFunction", () => {
     }
     expect(isReportWriterFormulaFunction("case")).toBe(false);
   });
+
+  it("recognises the median and stdev statistics functions", () => {
+    for (const name of ["median", "MEDIAN", "stdev", "StDev"]) {
+      expect(isReportWriterFormulaFunction(name)).toBe(true);
+    }
+  });
 });

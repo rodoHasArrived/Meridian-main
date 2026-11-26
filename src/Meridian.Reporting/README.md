@@ -354,13 +354,15 @@ lineage, filter lineage, data-dictionary fields, and validation checks so report
 and downstream exports can retain a source-backed audit trace without relying on UI-local proof
 synthesis. Formula lineage includes brace references, bare identifier references, and `total(...)`
 references, while the evaluator supports nested `abs(...)`, `min(...)`, `max(...)`,
+`median(...)`, `stdev(...)` (sample standard deviation over at least two listed values),
 `safeDivide(numerator, denominator[, fallback])`, `percent(numerator, denominator[, fallback])`,
 `basisPoints(numerator, denominator[, fallback])`, `round(value[, decimals])`, and
 `if(condition, whenTrue, whenFalse)` expressions for guarded P&L, exposure, contribution, return,
 and basis-point calculations. Comparisons (`=`, `<>`, `<`, `<=`, `>`, `>=`) yield 1 or 0 and are
-numeric only; `if` evaluates just the selected branch, so `if({mv} = 0, 0, {pnl} / {mv})` cannot
+numeric only. Pivot columns are ordered alphabetically by label with blank labels last, and grids
+with no metric to rank by order rows by their dimension values. `if` evaluates just the selected branch, so `if({mv} = 0, 0, {pnl} / {mv})` cannot
 raise a division-by-zero warning. The same function list is mirrored by hand in
-`ReportingWorkflowService.IsFormulaFunctionIdentifier` and the dashboard's
+`ReportingTemplateRegistryService.IsFormulaFunctionIdentifier` and the dashboard's
 `isReportWriterFormulaFunction`; update all three together. Custom formula grids
 therefore retain the same source evidence that was used for evaluation, and formula data-dictionary
 rows retain those source-field pointers while still marking the column as generated.

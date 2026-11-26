@@ -323,7 +323,8 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     moveWriterZoneToken,
     resetWriterGrid,
     saveWriterGridDraft,
-    previewWriterGrid
+    previewWriterGrid,
+    getWriterAutoPreviewView
   } = useReportingReportWriter({
     datasetSources: reportWriterDatasetSources,
     buildDraftRequest: buildReportTemplateDraftRequest,
@@ -661,7 +662,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
         || field === "periodFrequency" || field === "dueDaysAfterPeriodEnd"
       ) {
         next.dueAtUtc = next.periodFrequency
-          ? resolveReportingSchedulePeriodDueAtUtc(next.nextAsOfDate, next.cronExpression, next.dueDaysAfterPeriodEnd, current.dueAtUtc, next.timeZoneId)
+          ? resolveReportingSchedulePeriodDueAtUtc(next.nextAsOfDate, next.cronExpression, next.dueDaysAfterPeriodEnd, current.dueAtUtc, next.timeZoneId, next.periodFrequency)
           : resolveReportingScheduleDueAtUtc(next.nextAsOfDate, next.cronExpression, current.dueAtUtc, next.timeZoneId);
       }
       if (field === "nextAsOfDate") {
@@ -1568,6 +1569,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
               onFormatRuleChange={updateWriterFormatRule}
               onPreview={previewWriterGrid}
               onSave={saveWriterGridDraft}
+              autoPreview={getWriterAutoPreviewView(grid)}
             />
           ))}
           {writerPreviewStatus ? (
@@ -2753,7 +2755,7 @@ function buildReportingScheduleUpsertRequest(
       ? {
           periodCadence: {
             frequency: draft.periodFrequency,
-            dueDaysAfterPeriodEnd: parseReportingScheduleDueDays(draft.dueDaysAfterPeriodEnd)
+            dueDaysAfterPeriodEnd: parseReportingScheduleDueDays(draft.dueDaysAfterPeriodEnd, draft.periodFrequency)
           }
         }
       : {}),

@@ -137,10 +137,10 @@ public sealed class ReportWriterGridEngineTests
 
         rendered.Columns.Select(column => column.Key).Should().Equal(
             "sector",
-            "US:marketValue",
-            "US:pnl",
             "EU:marketValue",
             "EU:pnl",
+            "US:marketValue",
+            "US:pnl",
             "returnPct");
         rendered.Rows.Should().HaveCount(2);
         rendered.Rows.Should().Contain(row =>
@@ -987,6 +987,121 @@ public sealed class ReportWriterGridEngineTests
                 warning.StartsWith("Formula 'result' could not be evaluated:") && warning.Contains(expectedWarning));
             rendered.Rows.Single().Values["result"].Should().BeEmpty();
         }
+    }
+
+    [Fact]
+    public void RenderGrids_PivotColumnsSortAlphabeticallyWithBlankLast()
+    {
+        var rows = new[]
+        {
+            Row(("fund", "FundA"), ("region", "us"), ("marketValue", "1")),
+            Row(("fund", "FundA"), ("region", ""), ("marketValue", "2")),
+            Row(("fund", "FundA"), ("region", "Asia"), ("marketValue", "3")),
+            Row(("fund", "FundA"), ("region", "EU"), ("marketValue", "4"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "region-pivot",
+                "Region Pivot",
+                ReportWriterGridKindDto.Pivot,
+                RowFields: ["fund"],
+                ColumnFields: ["region"],
+                Metrics: [new ReportWriterMetricDefinitionDto("marketValue", "marketValue")])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Columns.Select(column => column.Key).Should().Equal(
+            "fund",
+            "Asia:marketValue",
+            "EU:marketValue",
+            "us:marketValue",
+            "(blank):marketValue");
+    }
+
+    [Fact]
+    public void RenderGrids_WithoutMetricsOrdersRowsByDimensionValues()
+    {
+        var rows = new[]
+        {
+            Row(("fund", "FundA")),
+            Row(("fund", "FundC")),
+            Row(("fund", "FundB")),
+            Row(("fund", "FundA"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "fund-list",
+                "Fund List",
+                ReportWriterGridKindDto.Pivot,
+                RowFields: ["fund"])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Rows.Select(row => row.Values["fund"]).Should().Equal("FundA", "FundB", "FundC");
+    }
+
+    [Theory]
+    [InlineData("median(5, 1, 3)", "3")]
+    [InlineData("median(4, 1, 3, 2)", "2.5")]
+    [InlineData("median({marketValue})", "7")]
+    public void RenderGrids_MedianEvaluatesListedValues(string expression, string expected)
+    {
+        var rendered = RenderSingleFormula(expression);
+
+        rendered.Warnings.Should().BeEmpty();
+        decimal.Parse(rendered.Rows.Single().Values["result"], CultureInfo.InvariantCulture)
+            .Should().Be(decimal.Parse(expected, CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public void RenderGrids_StdevComputesSampleStandardDeviation()
+    {
+        var rendered = RenderSingleFormula("round(stdev(2, 4, 4, 4, 5, 5, 7, 9), 4)");
+
+        rendered.Warnings.Should().BeEmpty();
+        decimal.Parse(rendered.Rows.Single().Values["result"], CultureInfo.InvariantCulture)
+            .Should().Be(2.1381m);
+    }
+
+    [Fact]
+    public void RenderGrids_StdevWithOneValueWarnsAndBlanksCell()
+    {
+        var rendered = RenderSingleFormula("stdev({marketValue})");
+
+        rendered.Warnings.Should().Contain(warning =>
+            warning.StartsWith("Formula 'result' could not be evaluated:") &&
+            warning.Contains("stdev requires at least two values"));
+        rendered.Rows.Single().Values["result"].Should().BeEmpty();
+    }
+
+    [Fact]
+    public void RenderGrids_StdevInUnselectedIfBranchDoesNotWarn()
+    {
+        var rendered = RenderSingleFormula("if(1, median(1, 2, 3), stdev({marketValue}))");
+
+        rendered.Warnings.Should().BeEmpty();
+        rendered.Rows.Single().Values["result"].Should().Be("2");
+    }
+
+    private static ReportWriterGridRenderDto RenderSingleFormula(string expression)
+    {
+        var rows = new[] { Row(("fund", "FundA"), ("marketValue", "7")) };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "formula",
+                "Formula",
+                ReportWriterGridKindDto.Pivot,
+                RowFields: ["fund"],
+                Metrics: [new ReportWriterMetricDefinitionDto("marketValue", "marketValue")],
+                Formulas: [new ReportWriterFormulaDefinitionDto("result", expression)])
+        };
+
+        return ReportWriterGridEngine.RenderGrids(grids, rows).Single();
     }
 
     private static IReadOnlyDictionary<string, string> Row(params (string Key, string Value)[] values) =>

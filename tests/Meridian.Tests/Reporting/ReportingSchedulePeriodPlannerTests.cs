@@ -111,4 +111,54 @@ public sealed class ReportingSchedulePeriodPlannerTests
                 new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Monthly, dueDays))
             .Should().BeFalse();
     }
+
+    [Theory]
+    // Thursday 2026-12-31 closes into the week ending Sunday 2027-01-03, which is ISO 2026-W53.
+    [InlineData(2026, 12, 31, "2026-W53", 2027, 1, 3)]
+    // A Sunday period end advances a full week.
+    [InlineData(2027, 1, 3, "2027-W01", 2027, 1, 10)]
+    public void Next_WeeklyPeriodEndsOnTheFollowingSundayWithIsoWeekId(
+        int year, int month, int day, string periodId, int endYear, int endMonth, int endDay)
+    {
+        var next = ReportingSchedulePeriodPlanner.Next(
+            new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Weekly, 1),
+            currentPeriodEnd: new DateOnly(year, month, day),
+            currentDueAtUtc: new DateTimeOffset(year, month, day, 9, 0, 0, TimeSpan.Zero),
+            TimeZoneInfo.Utc);
+
+        next.PeriodId.Should().Be(periodId);
+        next.PeriodEnd.Should().Be(new DateOnly(endYear, endMonth, endDay));
+        next.DueAtUtc.Should().Be(new DateTimeOffset(new DateOnly(endYear, endMonth, endDay).AddDays(1), new TimeOnly(9, 0), TimeSpan.Zero));
+    }
+
+    [Fact]
+    public void Next_DailyPeriodKeepsLocalDueTimeAcrossDaylightSavingChange()
+    {
+        var newYork = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
+
+        // 7 March 2026 is EST; 8 March is the spring-forward day, so 18:00 local becomes 22:00 UTC.
+        var next = ReportingSchedulePeriodPlanner.Next(
+            new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Daily),
+            currentPeriodEnd: new DateOnly(2026, 3, 7),
+            currentDueAtUtc: new DateTimeOffset(2026, 3, 7, 23, 0, 0, TimeSpan.Zero),
+            newYork,
+            new TimeOnly(18, 0));
+
+        next.PeriodId.Should().Be("2026-03-08");
+        next.PeriodEnd.Should().Be(new DateOnly(2026, 3, 8));
+        next.DueAtUtc.Should().Be(new DateTimeOffset(2026, 3, 8, 22, 0, 0, TimeSpan.Zero));
+    }
+
+    [Theory]
+    [InlineData(ReportingSchedulePeriodFrequencyDto.Weekly, 6, true)]
+    [InlineData(ReportingSchedulePeriodFrequencyDto.Weekly, 7, false)]
+    [InlineData(ReportingSchedulePeriodFrequencyDto.Daily, 1, true)]
+    [InlineData(ReportingSchedulePeriodFrequencyDto.Daily, 2, false)]
+    [InlineData(ReportingSchedulePeriodFrequencyDto.Monthly, 366, true)]
+    public void IsValid_AppliesPerFrequencyDueDayLimits(
+        ReportingSchedulePeriodFrequencyDto frequency, int dueDays, bool expected)
+    {
+        ReportingSchedulePeriodPlanner.IsValid(new ReportingSchedulePeriodCadenceDto(frequency, dueDays))
+            .Should().Be(expected);
+    }
 }

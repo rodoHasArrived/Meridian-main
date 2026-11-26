@@ -10,7 +10,7 @@ import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { safeReportingHref } from "@/lib/reporting-link-safety";
 import { listTimeZoneOptions, UTC_TIME_ZONE } from "@/lib/time-zone";
-import { parseDueDays } from "@/lib/reporting-schedule-due";
+import { maxDueDaysFor, parseDueDays } from "@/lib/reporting-schedule-due";
 import {
   ReportingCommandStatusView,
   ReportingScheduleField,
@@ -107,7 +107,7 @@ export const reportingScheduleCadences = [
 
 export const REPORTING_SCHEDULE_UTC_TIME_ZONE = UTC_TIME_ZONE;
 
-export const reportingSchedulePeriodFrequencies: ReportingSchedulePeriodFrequency[] = ["Monthly", "Quarterly", "Annually"];
+export const reportingSchedulePeriodFrequencies: ReportingSchedulePeriodFrequency[] = ["Monthly", "Quarterly", "Annually", "Weekly", "Daily"];
 
 export function normalizeReportingSchedulePeriodFrequency(value: string | null | undefined): ReportingSchedulePeriodFrequency | "" {
   return reportingSchedulePeriodFrequencies.find((frequency) => frequency === value) ?? "";
@@ -121,6 +121,14 @@ export function buildReportingScheduleTemplateOptions(templates: readonly Report
     .sort((left, right) => left.name.localeCompare(right.name) || right.versionNumber - left.versionNumber);
 }
 
+const reportingSchedulePeriodNouns: Record<ReportingSchedulePeriodFrequency, string> = {
+  Monthly: "month",
+  Quarterly: "quarter",
+  Annually: "year",
+  Weekly: "week (Monday to Sunday)",
+  Daily: "day"
+};
+
 function buildScheduleTimingGuidance(
   cronExpression: string,
   timeZoneId: string,
@@ -132,8 +140,8 @@ function buildScheduleTimingGuidance(
     ? "Run times are in UTC."
     : `Run times follow ${zone} local time, including daylight-saving changes.`;
   if (periodFrequency) {
-    const days = parseDueDays(dueDaysAfterPeriodEnd);
-    const period = periodFrequency === "Monthly" ? "month" : periodFrequency === "Quarterly" ? "quarter" : "year";
+    const days = parseDueDays(dueDaysAfterPeriodEnd, periodFrequency);
+    const period = reportingSchedulePeriodNouns[periodFrequency];
     const dueNote = days === 0 ? "on the period-end date" : `${days} day${days === 1 ? "" : "s"} after the period end`;
     return `Runs once per ${period}, as of each period end and due ${dueNote}. After each run the report period moves to the next ${period}. ${zoneNote}`;
   }
@@ -290,6 +298,8 @@ export function ReportingScheduleManagementPanel({
                 <option value="Monthly">Monthly close</option>
                 <option value="Quarterly">Quarterly close</option>
                 <option value="Annually">Annual close</option>
+                <option value="Weekly">Weekly close (calendar week)</option>
+                <option value="Daily">Daily close</option>
               </Select>
             </label>
             {scheduleDraft.periodFrequency ? (
@@ -298,7 +308,7 @@ export function ReportingScheduleManagementPanel({
                 <Input
                   type="number"
                   min={0}
-                  max={366}
+                  max={maxDueDaysFor(scheduleDraft.periodFrequency)}
                   value={scheduleDraft.dueDaysAfterPeriodEnd}
                   onChange={(event) => onDraftChange("dueDaysAfterPeriodEnd", event.target.value)}
                   aria-label="Reporting schedule due days after period end"
