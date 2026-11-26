@@ -10,7 +10,7 @@ namespace Meridian.Backtesting.Tests;
 /// <summary>
 /// Unit tests for <see cref="CorporateActionAdjustmentService"/>.
 /// </summary>
-public sealed class CorporateActionAdjustmentServiceTests
+public sealed partial class CorporateActionAdjustmentServiceTests
 {
     private readonly CorporateActionAdjustmentService _service;
     private readonly MockSecurityResolver _mockResolver;
@@ -535,7 +535,9 @@ public sealed class CorporateActionAdjustmentServiceTests
         first.Apply(bars[0]).Close.Should().Be(88.2m,
             "the combined dividend uses one factor based on the immediate pre-ex close");
         first.Apply(bars[1]).Close.Should().Be(98m);
-        first.Apply(bars[2]).Should().Be(bars[2]);
+        first.Apply(bars[2]).Close.Should().Be(bars[2].Close);
+        first.Apply(bars[2]).PriceBasis.Should().Be(HistoricalPriceBasis.DividendAdjusted,
+            "the ex-date row retains the history's adjustment regime even when its factor is one");
     }
 
     private static HistoricalBar CreateBar(
@@ -547,7 +549,7 @@ public sealed class CorporateActionAdjustmentServiceTests
         decimal close,
         long volume = 1000000)
     {
-        return new HistoricalBar(symbol, date, open, high, low, close, volume);
+        return new HistoricalBar(symbol, date, open, high, low, close, volume, PriceBasis: HistoricalPriceBasis.Raw);
     }
 
 

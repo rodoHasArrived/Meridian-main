@@ -178,22 +178,17 @@ public sealed partial class PortfolioCashLadderReadService : IPortfolioCashLadde
     private static readonly LadderEngine CurrentEngine =
         new(PortfolioCashLadderEngine.GetContributionCurrencies, PortfolioCashLadderEngine.Build);
 
-    private static readonly LadderEngine LegacyEngine =
-        new(LegacyPortfolioCashLadderEngine.GetContributionCurrencies, LegacyPortfolioCashLadderEngine.Build);
-
     /// <summary>
-    /// Explicit historical replay selects the retained v1 engine by its exact version string. An
-    /// unknown version never silently falls back: the response is blocked, carries no contributions,
-    /// and names the unsupported version alongside the versions that are retained.
+    /// Only the current engine version is retained. An unknown version never silently falls back:
+    /// the response is blocked, carries no contributions, and names the unsupported version
+    /// alongside the version that is retained.
     /// </summary>
     private static LadderEngine ResolveEngine(string? engineVersion, List<string> decisionBlockers)
     {
         if (engineVersion is null || string.Equals(engineVersion, PortfolioCashLadderEngine.EngineVersion, StringComparison.Ordinal))
             return CurrentEngine;
-        if (string.Equals(engineVersion, LegacyPortfolioCashLadderEngine.EngineVersion, StringComparison.Ordinal))
-            return LegacyEngine;
         decisionBlockers.Add(
-            $"Cash ladder engine version '{engineVersion}' is not retained; use '{PortfolioCashLadderEngine.EngineVersion}' or replay '{LegacyPortfolioCashLadderEngine.EngineVersion}'.");
+            $"Cash ladder engine version '{engineVersion}' is not retained; use '{PortfolioCashLadderEngine.EngineVersion}'.");
         return CurrentEngine;
     }
 

@@ -6,7 +6,7 @@ module_id: SRC-LEDGER
 path: src/Meridian.Ledger
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-25
 ---
 
 # src/Meridian.Ledger
@@ -29,6 +29,7 @@ from authority to approve or post journals.
 - `LedgerAccounts.cs` and `ChartOfAccounts.cs` define shared posting accounts and report hierarchies.
 - `LedgerFinancialStatementBuilder.cs` and `LedgerReportPackBuilder.cs` derive accounting reports and retained evidence.
 - `LedgerInventoryAccountRoleClassifier.cs` distinguishes source-backed non-lot assets from instrument inventory.
+- `LedgerRunAttribution.cs` requires retained typed execution ownership and its exact matching run label; historical strategy labels alone provide no ownership proof.
 
 ## Important workflows
 
@@ -110,6 +111,15 @@ exact decimal digits and preventing source descriptions from becoming spreadshee
 
 See `DIA-ASSURANCE-LOOP` in the [diagram index](../../docs/source/data/diagram-index.yml).
 
+## Recurring economic-obligation evidence (2026-11-25)
+
+Recurring provenance can retain an independent digest of the CD daily-lot economic-obligation claim.
+Recovery and lifecycle checks bind that digest to the existing occurrence; schedule/template/model
+version changes cannot create a new owner for the same economic day. The optional companion is
+omitted from historical evidence, preserving old Bond receipt bytes. This adds no automatic journal
+submission, posting, period reopen or reinterpretation of accounting template declarations. See
+[recurring journal](../../docs/domain/recurring-journal.md#declared-certificateofdeposit-accrual-profile).
+
 ## Roadmap traceability
 
 <!-- source-roadmap-traceability:begin module=SRC-LEDGER -->
@@ -152,3 +162,10 @@ classification or preparer attestation into approval or posting authority.
 - [Account and book scopes](../../docs/domain/account-and-book-scopes.md)
 - [Governed reporting operations](../../docs/operators/governed-reporting-operations.md)
 - [Module map](../../docs/architecture/module-map.md)
+
+`SecurityTradePositionEvidence` retains version-one native position deltas from the existing
+`SecurityTradePosting` legs. Long quantities and outstanding short quantities have separate deltas;
+exact basis changes must agree with the journal's registered carrying accounts. Native units and
+multipliers are retained facts, never calculated by dividing money by a quote. Reversals negate the
+retained effect sign while preserving currency and chart references. Fees and financing journals
+carry no invented position units, and legacy absent evidence remains explicitly unavailable.

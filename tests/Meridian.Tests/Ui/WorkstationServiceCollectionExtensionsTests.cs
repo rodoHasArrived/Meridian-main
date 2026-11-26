@@ -23,9 +23,6 @@ using Microsoft.Extensions.Hosting;
 using NSubstitute;
 using CoreConfigStore = Meridian.Application.UI.ConfigStore;
 using IReportingScheduleStore = Meridian.Reporting.IReportingScheduleStore;
-#pragma warning disable CS0618
-using LegacyReportingScheduleStore = Meridian.Ui.Shared.Services.IReportingScheduleStore;
-#pragma warning restore CS0618
 
 namespace Meridian.Tests.Ui;
 
@@ -392,11 +389,6 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         var canonicalScheduleStore = provider.GetRequiredService<IReportingScheduleStore>();
         canonicalScheduleStore
             .Should().BeOfType<PostgresReportingScheduleStore>();
-#pragma warning disable CS0618
-        var legacyScheduleStore = provider.GetRequiredService<LegacyReportingScheduleStore>();
-#pragma warning restore CS0618
-        legacyScheduleStore.Should().NotBeSameAs(canonicalScheduleStore);
-        legacyScheduleStore.Should().BeAssignableTo<IReportingScheduleStore>();
         provider.GetService<IReportPackWorkflowRecordStore>().Should().BeNull();
         provider.GetService<IReportPackDeliveryRecordStore>().Should().BeNull();
         var capability = provider.GetRequiredService<IReportingDeploymentReadinessService>()

@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DedupLookupScope
+
+Qualified name: <code>Meridian.Application.Pipeline.DedupLookupScope</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Pipeline/DedupReservation.cs:17](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L17).
+
+Trust scope for a dedup identity lookup.
+
+```csharp
+public enum DedupLookupScope
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>LiveIngress = 0</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:23](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L23) | Live-ingress admission. Any unexpired committed entry (version 1 or version 2) suppresses the event as a duplicate. |
+| <code>WalRecovery = 1</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:30](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L30) | WAL recovery replay. Only durability-confirmed (version 2) entries suppress the replay. Legacy version-1 entries are untrusted here: the WAL record must be replayed to the sink, after which committing the reservation upgrades the identity to version 2. |
+
 ## DedupReservation
 
 Qualified name: <code>Meridian.Application.Pipeline.DedupReservation</code>. Kind: `record struct`.
@@ -376,7 +395,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Pipeline.PersistentDedupLedger</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:32](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L32).
+Source: [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:31](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L31).
 
 Persistent deduplication ledger that survives restarts. Uses a JSONL-backed rolling log with in-memory bloom-filter-like cache. Keyed by (provider, symbol, eventIdentity) with configurable TTL.
 
@@ -388,18 +407,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public long TotalChecked =&gt; …;</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:115](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L115) | Total events checked for duplicates. |
-| <code>public long TotalDuplicates =&gt; …;</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:121](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L121) | Total deliveries suppressed by a committed ledger entry. Unresolved pending claims are deferrals, not detections, and are never counted here. |
-| <code>public PersistentDedupLedger(string ledgerDirectory, TimeSpan? entryTtl = null, int maxInMemoryEntries = 500_000, int compactionMinLines = DefaultCompactionMinLines, TimeProvider? timeProvider = null, string? legacyLedgerDirectory = null);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:123](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L123) |  |
-| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:185](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L185) | Loads persisted dedup state from disk on startup. |
-| <code>public void Initialize();</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:226](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L226) | Synchronous counterpart of InitializeAsync for composition code that cannot await, such as a dependency-injection factory. It reads the ledger with synchronous file I/O instead of blocking on the asynchronous load. Loads exactly the same state. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public async ValueTask&lt;bool&gt; IsDuplicateAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:368](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L368) | Checks whether an event is a duplicate and records it if new. Returns true if the event is a DUPLICATE (should be skipped). |
-| <code>public ValueTask&lt;DedupReservationResult&gt; TryReserveAsync(MarketEvent evt, DedupLookupScope scope, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:487](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L487) |  |
-| <code>public async Task CommitDurableAsync(IReadOnlyList&lt;DedupReservation&gt; reservations, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:545](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L545) |  |
-| <code>public bool Release(in DedupReservation reservation);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:617](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L617) |  |
-| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:1024](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L1024) | Flushes the ledger to disk. |
-| <code>public async Task CompactAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:1046](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L1046) | Compacts the ledger file by rewriting only non-expired entries. The ledger also does this itself as the file grows; see CompactIfDueLockedAsync. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:1161](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L1161) |  |
+| <code>public long TotalChecked =&gt; …;</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:93](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L93) | Total events checked for duplicates. |
+| <code>public long TotalDuplicates =&gt; …;</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:99](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L99) | Total deliveries suppressed by a committed ledger entry. Unresolved pending claims are deferrals, not detections, and are never counted here. |
+| <code>public PersistentDedupLedger(string ledgerDirectory, TimeSpan? entryTtl = null, int maxInMemoryEntries = 500_000, int compactionMinLines = DefaultCompactionMinLines, TimeProvider? timeProvider = null);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:101](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L101) |  |
+| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:160](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L160) | Loads persisted dedup state from disk on startup. |
+| <code>public void Initialize();</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:200](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L200) | Synchronous counterpart of InitializeAsync for composition code that cannot await, such as a dependency-injection factory. It reads the ledger with synchronous file I/O instead of blocking on the asynchronous load. Loads exactly the same state. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public async ValueTask&lt;bool&gt; IsDuplicateAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:307](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L307) | Checks whether an event is a duplicate and records it if new. Returns true if the event is a DUPLICATE (should be skipped). |
+| <code>public ValueTask&lt;DedupReservationResult&gt; TryReserveAsync(MarketEvent evt, DedupLookupScope scope, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:426](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L426) |  |
+| <code>public async Task CommitDurableAsync(IReadOnlyList&lt;DedupReservation&gt; reservations, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:484](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L484) |  |
+| <code>public bool Release(in DedupReservation reservation);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:547](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L547) |  |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:954](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L954) | Flushes the ledger to disk. |
+| <code>public async Task CompactAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:976](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L976) | Compacts the ledger file by rewriting only non-expired entries. The ledger also does this itself as the file grows; see CompactIfDueLockedAsync. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:1077](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L1077) |  |
 
 ## ValidationResult
 
@@ -599,7 +618,7 @@ Source: [src/Meridian.Application/ProviderRouting/LegacyProviderRuntimeCredentia
 Contains runtimes that do not yet carry authenticated connection ownership. Every vault access rechecks that the provider family is entirely legacy while holding the configuration lease.
 
 ```csharp
-public sealed class LegacyProviderRuntimeCredentialStore(ConfigStore configStore, IProviderCredentialStore credentialStore, ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : IProviderCredentialStore, ILegacyProviderCredentialImporter
+public sealed class LegacyProviderRuntimeCredentialStore(ConfigStore configStore, IProviderCredentialStore credentialStore, ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : IProviderCredentialStore
 ```
 
 Declared public members:
@@ -614,7 +633,6 @@ Declared public members:
 | <code>public Task&lt;string&gt; SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request, ProviderCredentialReadResult expectedConnection, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/LegacyProviderRuntimeCredentialStore.cs:29](../../../../src/Meridian.Application/ProviderRouting/LegacyProviderRuntimeCredentialStore.cs#L29) |  |
 | <code>public Task DeleteAsync(string providerId, string? actor = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/LegacyProviderRuntimeCredentialStore.cs:33](../../../../src/Meridian.Application/ProviderRouting/LegacyProviderRuntimeCredentialStore.cs#L33) |  |
 | <code>public Task RecordVerificationAsync(ProviderCredentialVerificationUpdate update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/LegacyProviderRuntimeCredentialStore.cs:36](../../../../src/Meridian.Application/ProviderRouting/LegacyProviderRuntimeCredentialStore.cs#L36) |  |
-| <code>public async Task ImportLegacyAsync(IReadOnlyList&lt;ProviderCredentialSaveRequest&gt; requests, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/LegacyProviderRuntimeCredentialStore.cs:39](../../../../src/Meridian.Application/ProviderRouting/LegacyProviderRuntimeCredentialStore.cs#L39) |  |
 
 ## NoInProcessProviderRecycleApplier
 
@@ -1015,21 +1033,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public void ReleaseConfigurationLease() =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:119](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L119) |  |
 | <code>public void Dispose();</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:120](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L120) |  |
-
-## ProviderRuntimeCredentialQuiescenceException
-
-Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialQuiescenceException</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:135](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L135).
-
-A bound secret cannot change until its running instances are proven stopped and drained.
-
-```csharp
-public sealed class ProviderRuntimeCredentialQuiescenceException : InvalidOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderRuntimeCredentialQuiescenceException() : base(&quot;Running provider instances cannot be stopped and drained by this host. Stop the host and perform credential maintenance offline before restarting; the requested change was refused.&quot;);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:137](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L137) |  |

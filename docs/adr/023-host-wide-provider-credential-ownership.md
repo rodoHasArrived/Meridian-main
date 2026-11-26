@@ -150,9 +150,10 @@ whole host use?** Facts in the current code shape the answer:
        - the unscoped reads (`ReadForProviderAsync`, `ReadOAuthTokensAsync`) return nothing for
          those families, and `GetStatusAsync` reports them as not configured, with no key preview,
          field list, environment or verification metadata;
-       - every operation that writes or deletes an unscoped record is refused, including the
-         migration imports. That covers `SaveAsync`, `SaveRotatedCredentialsAsync`,
-         `SaveOAuthTokenAsync`, `DeleteAsync`, `ImportLegacyAsync` and `ImportOAuthTokensAsync`. A
+       - every operation that writes or deletes an unscoped record is refused. That covers
+         `SaveAsync`, `SaveRotatedCredentialsAsync`, `SaveOAuthTokenAsync` and `DeleteAsync`
+         (the migration imports `ImportLegacyAsync` and `ImportOAuthTokensAsync` were removed on
+         2026-11-25). A
          reflection test fails if any unscoped write method of the store interfaces lacks the
          guard, so a new one cannot slip past it;
        - the module credential store's reads, writes and deletes are refused for those families;
@@ -894,7 +895,7 @@ implemented yet.
 | Host execution composition | `src/Meridian/UiServer.cs` (`usesPaperGateway`), `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` | Live execution refused under `FailClosed`; paper execution stays |
 | Polygon corporate-action ingestion | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs`, `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Process-wide hosted fetcher that reads Polygon keys directly; moves to the per-family selection |
 | Retained ownership | `src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs` | `GetCredentialScopeForTenantAsync` resolves the bound scope |
-| Credential verification and vault lock | `src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs` | Per-generation verification state; `provider-credentials.vault.lock`, held through binding validation and commit; stores each record's bound marks and refuses a scoped write while any are present; `ImportLegacyAsync` and `ImportOAuthTokensAsync` guarded |
+| Credential verification and vault lock | `src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs` | Per-generation verification state; `provider-credentials.vault.lock`, held through binding validation and commit; stores each record's bound marks and refuses a scoped write while any are present |
 | Configuration credential and storage writers | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs` (`ConfigAlpaca`, `UpdateStorage`), `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs` (`ConfigDataSources`) | Refused at the `ConfigStore` boundary for credential keys under `FailClosed`, and for `DataRoot` while bindings exist |
 | Lenient configuration load | `src/Meridian.Application/Http/ConfigStore.cs` | `LoadConfig` substitutes defaults; the binding file must not use it |
 | Account permission overrides | `src/Meridian.Identity/Infrastructure/UserAccountStore.cs` | Why no user permission can carry host authority |
@@ -1326,8 +1327,7 @@ The implementation PR must add tests that:
 - refuse a `DataRoot` change while bindings exist, and refuse bound families when the configured
   vault differs from the one recorded at binding time;
 - refuse writes of provider credential configuration keys through `ConfigStore`, including
-  `ConfigEndpoints.ConfigAlpaca` and `ProviderEndpoints.ConfigDataSources`, and refuse
-  `ImportLegacyAsync` and `ImportOAuthTokensAsync` for market-data families; the reflection test
+  `ConfigEndpoints.ConfigAlpaca` and `ProviderEndpoints.ConfigDataSources`; the reflection test
   covers every unscoped write method;
 - audit plugin credential-free changes with the actor, plugin ID, and previous and new classification;
 - serialize a `set` with a concurrent save or rotation of the same scope: if `set` takes the vault lock

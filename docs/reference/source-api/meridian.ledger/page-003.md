@@ -857,7 +857,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string StrategyRunIdTag = &quot;strategy.runId&quot;;</code> | [src/Meridian.Ledger/LedgerQuery.cs:41](../../../../src/Meridian.Ledger/LedgerQuery.cs#L41) | Journal tag carrying the strategy run that produced an entry. Trade-fill posting stamps it on attributed fills; RunId filters on it. The run stays a tag rather than a metadata field so retained journals keep comparing equal on replay. |
+| <code>public const string StrategyRunIdTag = &quot;strategy.runId&quot;;</code> | [src/Meridian.Ledger/LedgerQuery.cs:42](../../../../src/Meridian.Ledger/LedgerQuery.cs#L42) | Journal tag carrying the strategy run that produced an entry. Trade-fill posting stamps it on attributed fills; RunId filters on it. The run stays a tag rather than a metadata field so retained journals keep comparing equal on replay. This label alone is not trusted execution ownership; use LedgerRunAttribution for proof. |
+| <code>public const string AccountingRunIdTag = &quot;execution.accountingRunId.v1&quot;;</code> | [src/Meridian.Ledger/LedgerQuery.cs:45](../../../../src/Meridian.Ledger/LedgerQuery.cs#L45) | New typed, admitted strategy-run ownership retained by the execution posting boundary. |
 
 ## LedgerReportExportFormat
 

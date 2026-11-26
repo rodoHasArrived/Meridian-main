@@ -20,11 +20,14 @@ internal sealed partial class SimulatedPortfolio
     private readonly List<CashFlowEntry> _cashFlows = [];
     private decimal _prevEquity;
     private readonly List<LedgerIntegrityBreak> _ledgerIntegrityBreaks = [];
+    private readonly Dictionary<(string Account, string Symbol), IReadOnlyList<Meridian.Contracts.Operations.MarketDataInputEvidence>?> _positionInputs = new();
 
     public bool FailOnLedgerIntegrityBreak { get; init; }
     public IReadOnlyList<LedgerIntegrityBreak> LedgerIntegrityBreaks => _ledgerIntegrityBreaks.AsReadOnly();
 
     internal Func<string, DateTimeOffset, IReadOnlyList<JournalEvidenceReference>>? MarketDataEvidence { get; set; }
+    internal Func<string, Guid?>? SecurityIdentity { get; set; }
+    internal Func<string, DateTimeOffset, IReadOnlyList<Meridian.Contracts.Operations.MarketDataInputEvidence>>? MarketDataInputEvidence { get; set; }
 
     // Rebuilding the aggregate views walks every account, every position, and every lot. The
     // engine reads them through IBacktestContext.PortfolioValue / .Positions, so a strategy that
@@ -196,6 +199,8 @@ internal sealed partial class SimulatedPortfolio
                 {
                     UnitKind = lotUnit,
                     Multiplier = lotMultiplier,
+                    FunctionalCurrency = _ledger?.Policy?.FunctionalCurrency,
+                    SecurityId = SecurityIdentity?.Invoke(symbol),
                     EntryCommission = existingQty >= 0 ? commission
                         : commission - commission * Math.Min(qty, -existingQty) / qty
                 });
@@ -237,6 +242,8 @@ internal sealed partial class SimulatedPortfolio
             {
                 UnitKind = lotUnit,
                 Multiplier = lotMultiplier,
+                FunctionalCurrency = _ledger?.Policy?.FunctionalCurrency,
+                SecurityId = SecurityIdentity?.Invoke(symbol),
                 IsShort = true,
                 EntryCommission = existingQty <= 0 ? commission
                     : commission - commission * Math.Min(-qty, existingQty) / -qty
@@ -343,6 +350,14 @@ internal sealed partial class SimulatedPortfolio
         {
             var account = impacted.Account;
             var existingQty = impacted.ExistingQuantity;
+            if (assetEvent.HasPositionTransformation && !targetSymbol.Equals(symbol, StringComparison.OrdinalIgnoreCase))
+            {
+                var from = (account.Account.AccountId.ToUpperInvariant(), symbol.ToUpperInvariant());
+                var to = (account.Account.AccountId.ToUpperInvariant(), targetSymbol.ToUpperInvariant());
+                if (_positionInputs.Remove(from, out var prior))
+                    _positionInputs[to] = !_positionInputs.TryGetValue(to, out var target) ? prior
+                        : prior is null || target is null ? null : prior.Concat(target).Distinct().ToArray();
+            }
 
             decimal totalCashImpact = 0m;
             decimal basisReturned = 0m;
@@ -375,6 +390,10 @@ internal sealed partial class SimulatedPortfolio
                 assetEvent.Description)
             {
                 AccountId = account.Account.AccountId,
+                PositionEvidenceVersion = 1,
+                QuantityUnit = _lotConventions.TryGetValue(symbol, out var effectUnit) ? effectUnit.UnitKind : SecurityLotUnitKind.Shares,
+                LotMultiplier = _lotConventions.TryGetValue(symbol, out var effectMultiplier) ? effectMultiplier.Multiplier : 1m,
+                FunctionalCurrency = _ledger?.Policy?.FunctionalCurrency,
                 BasisReturned = basisReturned,
                 FractionalUnits = transformation.FractionalUnits,
                 BasisDisposed = transformation.BasisDisposed,
@@ -498,6 +517,7 @@ internal sealed partial class SimulatedPortfolio
 
         var snapshot = new PortfolioSnapshot(timestamp, date, Cash, MarginBalance, longMv, shortMv, equity, dailyReturn, positions, accountSnapshots, dayCashFlows)
         {
+            FunctionalCurrency = _ledger?.Policy?.FunctionalCurrency,
             DividendReceivable = accountSnapshots.Values.Sum(static account => account.DividendReceivable)
         };
         if (_ledger is not null)
@@ -650,6 +670,11 @@ internal sealed partial class SimulatedPortfolio
             factor,
             transformedLotQuantity,
             targetSymbol);
+        if (!targetSymbol.Equals(assetEvent.Symbol, StringComparison.OrdinalIgnoreCase))
+        {
+            transformedLongLots = new LinkedList<OpenLot>(transformedLongLots.Select(lot => lot with { SecurityId = SecurityIdentity?.Invoke(targetSymbol) }));
+            transformedShortLots = new LinkedList<OpenLot>(transformedShortLots.Select(lot => lot with { SecurityId = SecurityIdentity?.Invoke(targetSymbol) }));
+        }
         var sourceBasis = existingQty < 0 ? sourceShortBasis : sourceLongBasis;
         var retainedBasis = existingQty < 0
             ? ComputeLotBasis(transformedShortLots)
@@ -1327,6 +1352,21 @@ internal sealed partial class SimulatedPortfolio
             EvidenceReferences = MarketDataEvidence?.Invoke(symbol, ts) ?? []
         };
 
+        var currentInputs = Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Freeze(MarketDataInputEvidence?.Invoke(symbol, ts));
+        if (currentInputs is null || currentInputs.Count == 0)
+            currentInputs = [new(EvidenceIssue: "The current fill has no assessed market-input coverage.")];
+        var sourceKey = (accountId.ToUpperInvariant(), symbol.ToUpperInvariant());
+        if (!_positionInputs.TryGetValue(sourceKey, out var priorInputs) || priorInputs is null)
+            priorInputs = [new(EvidenceIssue: "The opening position has no retained market-input coverage.")];
+        var retainedInputs = existingQty == 0 ? currentInputs : priorInputs.Concat(currentInputs).Distinct().ToArray();
+        var inputTags = Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Create(currentInputs);
+        var retainedTags = new Dictionary<string, string>(fillMetadata.Tags ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
+        foreach (var tag in inputTags)
+            retainedTags[tag.Key] = tag.Value;
+        fillMetadata = fillMetadata with { Tags = retainedTags };
+        var (unit, multiplier) = _lotConventions.TryGetValue(symbol, out var convention)
+            ? convention : (SecurityLotUnitKind.Shares, 1m);
+
         var longBuyQty = qty > 0
             ? (existingQty >= 0 ? qty : Math.Max(qty + existingQty, 0L))
             : 0L;
@@ -1339,7 +1379,7 @@ internal sealed partial class SimulatedPortfolio
                 SecurityTradePostingProjector.Project(
                     new(SecurityTradePostingKind.OpenLong, longBuyQty, Money(symbol, longBuyQty, price)),
                     symbol, accountId, _chart),
-                fillMetadata with { ActivityType = "buy" });
+                PositionMetadata(new(SecurityTradePostingKind.OpenLong, longBuyQty, Money(symbol, longBuyQty, price)), "buy"));
         }
         else if (qty < 0 && existingQty > 0 && realised.HasValue)
         {
@@ -1350,7 +1390,7 @@ internal sealed partial class SimulatedPortfolio
                 SecurityTradePostingProjector.Project(
                     new(SecurityTradePostingKind.CloseLong, closeQty, Money(symbol, closeQty, price), CarryingValue: costBasisRemoved),
                     symbol, accountId, _chart),
-                fillMetadata with { ActivityType = "sell" });
+                PositionMetadata(new(SecurityTradePostingKind.CloseLong, closeQty, Money(symbol, closeQty, price), CarryingValue: costBasisRemoved), "sell"));
         }
 
         if (shortOpenQty > 0)
@@ -1361,7 +1401,7 @@ internal sealed partial class SimulatedPortfolio
                 SecurityTradePostingProjector.Project(
                     new(SecurityTradePostingKind.OpenShort, shortOpenQty, Money(symbol, shortOpenQty, price)),
                     symbol, accountId, _chart),
-                fillMetadata with { ActivityType = "short_sell" });
+                PositionMetadata(new(SecurityTradePostingKind.OpenShort, shortOpenQty, Money(symbol, shortOpenQty, price)), "short_sell"));
         }
 
         if (qty > 0 && existingQty < 0 && shortRealised.HasValue)
@@ -1373,7 +1413,7 @@ internal sealed partial class SimulatedPortfolio
                 SecurityTradePostingProjector.Project(
                     new(SecurityTradePostingKind.CoverShort, coverQty, Money(symbol, coverQty, price), CarryingValue: shortOriginalProceeds),
                     symbol, accountId, _chart),
-                fillMetadata with { ActivityType = "cover_short" });
+                PositionMetadata(new(SecurityTradePostingKind.CoverShort, coverQty, Money(symbol, coverQty, price), CarryingValue: shortOriginalProceeds), "cover_short"));
         }
 
         if (commission > 0)
@@ -1383,6 +1423,27 @@ internal sealed partial class SimulatedPortfolio
                 $"Commission – {symbol} order {fill.OrderId} – {account.Account.DisplayName}",
                 SecurityTradePostingProjector.Commission(commission, accountId, _chart),
                 fillMetadata with { ActivityType = "commission" });
+        }
+
+        var remaining = existingQty + qty;
+        if (remaining == 0)
+            _positionInputs.Remove(sourceKey);
+        else
+            _positionInputs[sourceKey] = existingQty == 0 || Math.Sign(existingQty) != Math.Sign(remaining)
+                ? currentInputs : retainedInputs;
+
+        JournalEntryMetadata PositionMetadata(SecurityTradePosting posting, string activity)
+        {
+            var metadata = fillMetadata with { ActivityType = activity };
+            if (posting.Kind is SecurityTradePostingKind.CloseLong or SecurityTradePostingKind.CoverShort)
+            {
+                var tags = new Dictionary<string, string>(metadata.Tags ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
+                foreach (var tag in Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Create(retainedInputs))
+                    tags[tag.Key] = tag.Value;
+                tags["marketData.coverage"] = "conservative-position-history";
+                metadata = metadata with { Tags = tags };
+            }
+            return SecurityTradePositionEvidence.WithPostings(metadata, [posting], unit, multiplier);
         }
     }
 
@@ -1410,6 +1471,7 @@ internal sealed partial class SimulatedPortfolio
         => new(
             ActivityType: activityType,
             Symbol: symbol,
+            SecurityId: symbol is null ? null : SecurityIdentity?.Invoke(symbol),
             OrderId: orderId,
             FillId: fillId,
             FinancialAccountId: account.Account.AccountId,
@@ -1526,6 +1588,7 @@ internal sealed partial class SimulatedPortfolio
                     openLots,
                     account.ClosedLots.ToList())
                 {
+                    FunctionalCurrency = _ledger?.Policy?.FunctionalCurrency,
                     DividendReceivable = receivable
                 };
             },

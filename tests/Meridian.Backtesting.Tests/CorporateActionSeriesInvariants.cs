@@ -16,7 +16,8 @@ internal static class CorporateActionSeriesInvariants
     private const decimal FactorTolerance = 0.000001m;
 
     internal static HistoricalBar ToHistoricalBar(GoldenBar bar, string symbol)
-        => new(symbol, bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume, Source: "golden-fixture");
+        => new(symbol, bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume,
+            Source: "golden-fixture", PriceBasis: HistoricalPriceBasis.Raw);
 
     internal static IReadOnlyList<HistoricalBar> ToHistoricalBars(GoldenCorporateActionScenario scenario)
         => scenario.Bars

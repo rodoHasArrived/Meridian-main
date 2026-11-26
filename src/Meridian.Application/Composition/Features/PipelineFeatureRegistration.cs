@@ -58,9 +58,7 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
                 {
                     ReportOutputDirectory = reportOutputDirectory,
                     CrossProviderPolicy = ResolveCrossProviderPolicy(appConfig),
-                    AssetClassResolver = symbolRegistry is null
-                        ? null
-                        : symbol => symbolRegistry.LookupSymbol(symbol).Entry?.AssetClass
+                    AssetClassResolver = CrossProviderToleranceResolver.FromSymbolRegistry(symbolRegistry)
                 },
                 eventMetrics);
 

@@ -72,6 +72,8 @@ internal sealed class PaperSessionJournalProjection
                 tags.Add("runId", runId);
             if (fill is not null)
             {
+                foreach (var pair in Meridian.Contracts.Operations.MarketDataInputEvidenceTags.ToTags(fill.Fill.MarketDataEvidence))
+                    tags[pair.Key] = pair.Value;
                 tags.Add("orderId", fill.Fill.ClientOrderId ?? fill.Fill.OrderId);
                 if (fill.FinancialAccountId is { } owner)
                     tags.Add("executionAccountId", owner);

@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderRuntimeCredentialQuiescenceException
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialQuiescenceException</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:135](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L135).
+
+A bound secret cannot change until its running instances are proven stopped and drained.
+
+```csharp
+public sealed class ProviderRuntimeCredentialQuiescenceException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderRuntimeCredentialQuiescenceException() : base(&quot;Running provider instances cannot be stopped and drained by this host. Stop the host and perform credential maintenance offline before restarting; the requested change was refused.&quot;);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:137](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L137) |  |
+
 ## ProviderRuntimeCredentialService
 
 Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialService</code>. Kind: `class`.
@@ -308,17 +326,17 @@ Declared public members:
 | <code>public async Task&lt;BackfillSchedule&gt; UpdateScheduleAsync(BackfillSchedule schedule, CancellationToken ct = default);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:222](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L222) | Update an existing schedule. |
 | <code>public async Task&lt;BackfillSchedule?&gt; SetPreferredProvidersAsync(string scheduleId, IReadOnlyList&lt;string&gt; preferredProviders, CancellationToken ct = default);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:256](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L256) | Edits ordered preferences without replacing schedule timing or execution state. |
 | <code>public async Task&lt;bool&gt; DeleteScheduleAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:307](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L307) | Delete a schedule. |
-| <code>public BackfillSchedule? GetSchedule(string scheduleId);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:385](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L385) | Get a schedule by ID. |
-| <code>public IReadOnlyList&lt;BackfillSchedule&gt; GetAllSchedules();</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:395](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L395) | Get all schedules. |
-| <code>public IReadOnlyList&lt;BackfillSchedule&gt; GetEnabledSchedules();</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:406](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L406) | Get enabled schedules. |
-| <code>public IReadOnlyList&lt;BackfillSchedule&gt; GetDueSchedules(DateTimeOffset? asOf = null);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:418](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L418) | Get schedules due for execution. |
-| <code>public BackfillSchedule? GetNextDueSchedule(DateTimeOffset? asOf = null);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:431](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L431) | Get next schedule to execute. |
-| <code>public async Task&lt;bool&gt; SetScheduleEnabledAsync(string scheduleId, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:439](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L439) | Enable or disable a schedule. |
-| <code>public async Task RecordExecutionAsync(BackfillSchedule schedule, BackfillExecutionLog execution, CancellationToken ct = default);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:478](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L478) | Record that a schedule has been executed. |
-| <code>public BackfillExecutionLog CreateManualExecution(BackfillSchedule schedule);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:554](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L554) | Trigger a manual execution of a schedule. |
-| <code>public IReadOnlyList&lt;BackfillSchedule&gt; GetSchedulesByTag(string tag);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:571](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L571) | Get schedules by tag. |
-| <code>public bool HasRunningSchedules();</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:583](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L583) | Check if any schedules are currently running. |
-| <code>public ScheduleStatusSummary GetStatusSummary();</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:592](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L592) | Get schedule status summary. |
+| <code>public BackfillSchedule? GetSchedule(string scheduleId);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:381](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L381) | Get a schedule by ID. |
+| <code>public IReadOnlyList&lt;BackfillSchedule&gt; GetAllSchedules();</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:391](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L391) | Get all schedules. |
+| <code>public IReadOnlyList&lt;BackfillSchedule&gt; GetEnabledSchedules();</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:402](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L402) | Get enabled schedules. |
+| <code>public IReadOnlyList&lt;BackfillSchedule&gt; GetDueSchedules(DateTimeOffset? asOf = null);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:414](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L414) | Get schedules due for execution. |
+| <code>public BackfillSchedule? GetNextDueSchedule(DateTimeOffset? asOf = null);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:427](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L427) | Get next schedule to execute. |
+| <code>public async Task&lt;bool&gt; SetScheduleEnabledAsync(string scheduleId, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:435](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L435) | Enable or disable a schedule. |
+| <code>public async Task RecordExecutionAsync(BackfillSchedule schedule, BackfillExecutionLog execution, CancellationToken ct = default);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:474](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L474) | Record that a schedule has been executed. |
+| <code>public BackfillExecutionLog CreateManualExecution(BackfillSchedule schedule);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:550](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L550) | Trigger a manual execution of a schedule. |
+| <code>public IReadOnlyList&lt;BackfillSchedule&gt; GetSchedulesByTag(string tag);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:567](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L567) | Get schedules by tag. |
+| <code>public bool HasRunningSchedules();</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:579](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L579) | Check if any schedules are currently running. |
+| <code>public ScheduleStatusSummary GetStatusSummary();</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:588](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L588) | Get schedule status summary. |
 
 ## BackfillSchedulePresets
 
@@ -552,7 +570,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Scheduling.ScheduleStatusSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:721](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L721).
+Source: [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:716](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L716).
 
 Summary of all schedule statuses.
 
@@ -564,15 +582,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int TotalSchedules { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:723](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L723) |  |
-| <code>public int EnabledSchedules { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:724](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L724) |  |
-| <code>public int DisabledSchedules { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:725](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L725) |  |
-| <code>public int SchedulesDueNow { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:726](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L726) |  |
-| <code>public DateTimeOffset NextScheduledExecution { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:727](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L727) |  |
-| <code>public int TotalExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:728](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L728) |  |
-| <code>public int TotalSuccesses { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:729](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L729) |  |
-| <code>public int TotalFailures { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:730](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L730) |  |
-| <code>public double OverallSuccessRate =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:731](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L731) |  |
+| <code>public int TotalSchedules { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:718](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L718) |  |
+| <code>public int EnabledSchedules { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:719](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L719) |  |
+| <code>public int DisabledSchedules { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:720](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L720) |  |
+| <code>public int SchedulesDueNow { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:721](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L721) |  |
+| <code>public DateTimeOffset NextScheduledExecution { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:722](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L722) |  |
+| <code>public int TotalExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:723](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L723) |  |
+| <code>public int TotalSuccesses { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:724](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L724) |  |
+| <code>public int TotalFailures { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:725](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L725) |  |
+| <code>public double OverallSuccessRate =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:726](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L726) |  |
 
 ## SymbolExecutionResult
 
@@ -768,9 +786,9 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;ContractualCashFlowResult?&gt; PreviewSecurityAsync(Guid securityId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:20](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L20) |  |
-| <code>public async Task&lt;ContractualCashFlowResult?&gt; PreviewLoanAsync(Guid loanId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:42](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L42) |  |
-| <code>public static ContractualCashFlowContract FromSecurity(SecurityDetailDto security);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:121](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L121) |  |
-| <code>public static ContractualCashFlowContract FromLoan(DirectLendingTermsDto terms, LoanServicingStateDto servicing);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:244](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L244) |  |
+| <code>public async Task&lt;ContractualCashFlowResult?&gt; PreviewLoanAsync(Guid loanId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:53](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L53) |  |
+| <code>public static ContractualCashFlowContract FromSecurity(SecurityDetailDto security);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:134](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L134) |  |
+| <code>public static ContractualCashFlowContract FromLoan(DirectLendingTermsDto terms, LoanServicingStateDto servicing);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:257](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L257) |  |
 
 ## FileBondExerciseNoticeStore
 
@@ -1120,24 +1138,3 @@ Declared public members:
 | <code>public async Task&lt;CorporateActionConflictResolutionResultDto&gt; ResolveConflictAsync(ResolveCorporateActionConflictRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:591](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L591) |  |
 | <code>public async Task&lt;CorporateActionProcessingOptionMutationResultDto&gt; UpsertOptionAsync(UpsertCorporateActionProcessingOptionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:634](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L634) |  |
 | <code>public async Task&lt;CorporateActionCaseTransitionResultDto&gt; TransitionCaseAsync(TransitionCorporateActionCaseRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:674](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L674) |  |
-
-## CorporateActionProposal
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionProposal</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:27](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L27).
-
-One normalized corporate-action announcement with its cross-provider consensus evidence.
-
-```csharp
-public sealed record CorporateActionProposal(Guid SecurityId, string Ticker, string ActionType, DateOnly ExDate, DateOnly? RecordDate, DateOnly? PayableDate, decimal? Amount, string? Currency, decimal? SplitFromFactor, decimal? SplitToFactor, string WinningSource, IReadOnlyList<string> AgreeingSources, IReadOnlyList<string> DissentingSources, bool AutoApplied, Guid? ProposalId = null, long? Version = null, string? ProposalState = null, CorporateActionSourceProposalActionAvailabilityDto? ActionAvailability = null, string? ObservationSource = null, string? ObservationDescription = null, string? SourceEventId = null, string? SourceEventVersion = null, DateTimeOffset? ObservationObservedAtUtc = null, string? EvidenceHash = null, string? EvidenceReference = null, IReadOnlyList<CorporateActionDissentFieldDto>? DissentingFields = null, CorporateActionProviderReleaseStatusDto ProviderReleaseStatus = CorporateActionProviderReleaseStatusDto.ReviewOnly)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public JsonElement? Payload { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:56](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L56) |  |
-| <code>public decimal? DistributionRatio { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:58](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L58) |  |
-| <code>public decimal? ExchangeRatio { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:60](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L60) |  |
-| <code>public CorporateActionRetainedSourceEvidenceDto? SourceEvidence { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:62](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L62) |  |

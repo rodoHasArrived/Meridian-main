@@ -215,7 +215,9 @@ public sealed class BacktestEngine(
         var portfolio = new SimulatedPortfolio(accounts, request.DefaultBrokerageAccountId, commissionModel, ledger, startTimestamp, lotConventions)
         {
             FailOnLedgerIntegrityBreak = request.FailOnLedgerIntegrityBreak,
-            MarketDataEvidence = inputEvidence.PriceEvidence
+            MarketDataEvidence = inputEvidence.PriceEvidence,
+            MarketDataInputEvidence = inputEvidence.PriceInputEvidence,
+            SecurityIdentity = symbol => resolvedIdentities.GetValueOrDefault(symbol)?.SecurityId
         };
         if (canonicalActions is not null)
             portfolio.ConfigureCanonicalActions(canonicalActions);
@@ -265,17 +267,24 @@ public sealed class BacktestEngine(
         var totalDays = (request.To.ToDateTime(TimeOnly.MinValue) - request.From.ToDateTime(TimeOnly.MinValue)).Days + 1;
         var rollingState = new RollingMetricsState(portfolio.ComputeCurrentEquity());
         var lastEventTimestamps = new Dictionary<string, DateTimeOffset>(StringComparer.OrdinalIgnoreCase);
+        var historicalPriceBases = new Dictionary<string, HistoricalPriceBasis>(StringComparer.OrdinalIgnoreCase);
 
         await foreach (var evt in MultiSymbolMergeEnumerator.MergeAsync(streams, ct, symbolOrder))
         {
             ct.ThrowIfCancellationRequested();
 
             if (portfolioActionAccounting && resolvedAssetEvents is { Count: > 0 } &&
-                evt.Payload is HistoricalBar { IsAdjusted: true })
-                throw new InvalidOperationException("Stored corporate-action portfolio accounting requires unadjusted historical bars; adjusted prices would count the same action twice.");
-            if (storedActionSource is not null && resolvedAssetEvents is { Count: > 0 } &&
-                evt.Payload is HistoricalBar { IsAdjusted: null })
-                throw new InvalidOperationException("Automatic corporate-action accounting requires bars explicitly marked IsAdjusted=false; the stored data's adjustment regime is unknown.");
+                evt.Payload is HistoricalBar { PriceBasis: not HistoricalPriceBasis.Raw })
+                throw new InvalidOperationException("Corporate-action portfolio accounting requires explicitly raw historical bars with PriceBasis.Raw; adjusted or unknown price bases cannot establish the action's cash and position economics.");
+
+            if (evt.Payload is HistoricalBar historicalBar)
+            {
+                if (historicalPriceBases.TryGetValue(evt.EffectiveSymbol, out var previousBasis) &&
+                    previousBasis != historicalBar.PriceBasis)
+                    throw new InvalidOperationException($"Historical replay for {evt.EffectiveSymbol} cannot mix {previousBasis} and {historicalBar.PriceBasis} price bases.");
+
+                historicalPriceBases[evt.EffectiveSymbol] = historicalBar.PriceBasis;
+            }
 
             var evtDate = DateOnly.FromDateTime(evt.Timestamp.UtcDateTime);
 

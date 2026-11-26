@@ -869,9 +869,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static BackfillBatchRevision Create(string provider, string? servingProvider, string feed, string instrument, string granularity, DateOnly? from, DateOnly? to, string? calendar, IReadOnlyList&lt;DateOnly&gt;? expected, IEnumerable&lt;DateOnly&gt; received, IEnumerable&lt;string&gt; rowHashes);</code> | [src/Meridian.Storage/Backfill/BackfillBatchStore.cs:67](../../../../src/Meridian.Storage/Backfill/BackfillBatchStore.cs#L67) |  |
-| <code>public static string HashRow(MarketEvent item) =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillBatchStore.cs:84](../../../../src/Meridian.Storage/Backfill/BackfillBatchStore.cs#L84) |  |
-| <code>public void Validate();</code> | [src/Meridian.Storage/Backfill/BackfillBatchStore.cs:93](../../../../src/Meridian.Storage/Backfill/BackfillBatchStore.cs#L93) |  |
+| <code>public BackfillBatchRevision WithInputEvidence(Meridian.Contracts.Operations.MarketDataInputEvidence input);</code> | [src/Meridian.Storage/Backfill/BackfillBatchStore.cs:68](../../../../src/Meridian.Storage/Backfill/BackfillBatchStore.cs#L68) | Binds optional source quality facts before rows are stamped with this content address. |
+| <code>public static BackfillBatchRevision Create(string provider, string? servingProvider, string feed, string instrument, string granularity, DateOnly? from, DateOnly? to, string? calendar, IReadOnlyList&lt;DateOnly&gt;? expected, IEnumerable&lt;DateOnly&gt; received, IEnumerable&lt;string&gt; rowHashes);</code> | [src/Meridian.Storage/Backfill/BackfillBatchStore.cs:75](../../../../src/Meridian.Storage/Backfill/BackfillBatchStore.cs#L75) |  |
+| <code>public static string HashRow(MarketEvent item) =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillBatchStore.cs:92](../../../../src/Meridian.Storage/Backfill/BackfillBatchStore.cs#L92) |  |
+| <code>public void Validate();</code> | [src/Meridian.Storage/Backfill/BackfillBatchStore.cs:114](../../../../src/Meridian.Storage/Backfill/BackfillBatchStore.cs#L114) |  |
 
 ## BackfillBatchStore
 

@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAgreementTimeline
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAgreementTimeline</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs:9](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs#L9).
+
+Effective chronology takes precedence over approval order; approved history is never rewritten.
+
+```csharp
+public static class IntercompanyAgreementTimeline
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IntercompanyAgreementTimelineResult Resolve(IEnumerable&lt;IntercompanyAgreementRevisionDto&gt; revisions, DateOnly asOf, DateTimeOffset? knownAtUtc = null);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs:11](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs#L11) |  |
+| <code>public static int? SemanticBase(IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt; revisions, IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs:29](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs#L29) |  |
+
 ## IntercompanyAgreementTimelineResult
 
 Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAgreementTimelineResult</code>. Kind: `record`.
@@ -977,22 +996,3 @@ Declared public members:
 | <code>public long TotalPersisted { get; init; }</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:270](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L270) | Rejected events durably written to the dead-letter file. |
 | <code>public long PendingRetry { get; init; }</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:273](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L273) | Rejected events held in memory awaiting a successful write. |
 | <code>public long TotalLost { get; init; }</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:276](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L276) | Rejected events that could not be written and were discarded. |
-
-## DedupLookupScope
-
-Qualified name: <code>Meridian.Application.Pipeline.DedupLookupScope</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Pipeline/DedupReservation.cs:17](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L17).
-
-Trust scope for a dedup identity lookup.
-
-```csharp
-public enum DedupLookupScope
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>LiveIngress = 0</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:23](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L23) | Live-ingress admission. Any unexpired committed entry (version 1 or version 2) suppresses the event as a duplicate. |
-| <code>WalRecovery = 1</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:30](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L30) | WAL recovery replay. Only durability-confirmed (version 2) entries suppress the replay. Legacy version-1 entries are untrusted here: the WAL record must be replayed to the sink, after which committing the reservation upgrades the identity to version 2. |

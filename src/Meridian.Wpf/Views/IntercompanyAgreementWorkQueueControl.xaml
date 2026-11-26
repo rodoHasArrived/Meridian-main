@@ -1,0 +1,93 @@
+<UserControl x:Class="Meridian.Wpf.Views.IntercompanyAgreementWorkQueueControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.Name="Agreement lifecycle work queue">
+    <UserControl.Resources>
+        <Style TargetType="TextBox" BasedOn="{StaticResource FormTextBoxStyle}">
+            <Setter Property="Margin" Value="0,3,12,10" />
+            <Setter Property="MinWidth" Value="160" />
+            <Setter Property="Padding" Value="6" />
+        </Style>
+        <Style TargetType="Button" BasedOn="{StaticResource ConsoleButtonStyle}">
+            <Setter Property="Margin" Value="0,4,8,4" />
+            <Setter Property="Padding" Value="10,5" />
+        </Style>
+        <Style TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="CanUserDeleteRows" Value="False" />
+            <Setter Property="Margin" Value="0,8,0,12" />
+        </Style>
+    </UserControl.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16">
+            <TextBlock Text="Agreement lifecycle work queue" FontSize="20" FontWeight="SemiBold" />
+            <TextBlock Text="Track follow-up work on agreements using retained case history. Assignments and case decisions do not amend agreements, settle balances or post journals."
+                       Margin="0,5,0,12" TextWrapping="Wrap" />
+            <WrapPanel>
+                <Button Content="Load books" Command="{Binding LoadBooksCommand}" VerticalAlignment="Center" />
+                <StackPanel><TextBlock Text="Ledger book" />
+                    <ComboBox ItemsSource="{Binding BookChoices}" DisplayMemberPath="Label" SelectedValuePath="Id"
+                              SelectedValue="{Binding LedgerBook}" Style="{StaticResource FormComboBoxStyle}"
+                              Width="420" Margin="0,3,12,10" AutomationProperties.Name="Lifecycle ledger book" />
+                </StackPanel>
+                <StackPanel><TextBlock Text="As of (yyyy-MM-dd)" /><TextBox Text="{Binding AsOf, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Lifecycle as-of date" /></StackPanel>
+                <StackPanel><TextBlock Text="Expiry horizon (calendar days)" /><TextBox Text="{Binding ExpiryHorizonDays, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Lifecycle expiry horizon" /></StackPanel>
+                <Button Content="Load lifecycle queue" Command="{Binding LoadCommand}" VerticalAlignment="Center" />
+            </WrapPanel>
+            <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" AutomationProperties.Name="Lifecycle queue status" AutomationProperties.LiveSetting="Polite" />
+            <TextBlock Text="{Binding ObservationText}" TextWrapping="Wrap" Margin="0,8,0,0" AutomationProperties.Name="Lifecycle observation" />
+            <TextBlock Text="{Binding PermissionText}" TextWrapping="Wrap" Margin="0,4,0,0" AutomationProperties.Name="Lifecycle queue permission" />
+            <DataGrid ItemsSource="{Binding Cases}" SelectedItem="{Binding SelectedCase}" MaxHeight="280" AutomationProperties.Name="Agreement lifecycle cases">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Finding" Binding="{Binding Message}" Width="360" />
+                    <DataGridTextColumn Header="Case state" Binding="{Binding State}" Width="140" />
+                    <DataGridTextColumn Header="Current observation" Binding="{Binding Observation}" Width="220" />
+                    <DataGridTextColumn Header="Owner" Binding="{Binding Owner}" Width="140" />
+                    <DataGridTextColumn Header="First seen" Binding="{Binding FirstSeen}" Width="180" />
+                    <DataGridTextColumn Header="Age" Binding="{Binding Age}" Width="140" />
+                    <DataGridTextColumn Header="Obligation boundary" Binding="{Binding Due}" Width="160" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <TextBlock Text="{Binding SelectedGuidance}" TextWrapping="Wrap" AutomationProperties.Name="Selected lifecycle guidance" />
+            <Button Content="Open agreement workflow" Command="{Binding OpenAgreementCommand}" HorizontalAlignment="Left" />
+            <WrapPanel>
+                <StackPanel><TextBlock Text="Action reason" /><TextBox Text="{Binding Reason, UpdateSourceTrigger=PropertyChanged}" Width="420" AutomationProperties.Name="Lifecycle action reason" /></StackPanel>
+                <StackPanel><TextBlock Text="Owner (blank clears assignment)" /><TextBox Text="{Binding Owner, UpdateSourceTrigger=PropertyChanged}" Width="300" AutomationProperties.Name="Lifecycle owner" /></StackPanel>
+                <Button Content="{Binding ObserveLabel}" Command="{Binding ObserveCommand}" VerticalAlignment="Center" AutomationProperties.Name="Retain lifecycle observation" />
+            </WrapPanel>
+            <WrapPanel>
+                <StackPanel><TextBlock Text="Case action" />
+                    <ComboBox ItemsSource="{Binding Actions}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding Action}"
+                              Width="280" Margin="0,3,12,10" Style="{StaticResource FormComboBoxStyle}" AutomationProperties.Name="Lifecycle case action" />
+                </StackPanel>
+                <StackPanel><TextBlock Text="Case note" /><TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" Width="420" AutomationProperties.Name="Lifecycle case note" /></StackPanel>
+            </WrapPanel>
+            <TextBlock Text="Evidence references (one per line; required to resolve)" />
+            <TextBox Text="{Binding EvidenceReferences, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="66" AutomationProperties.Name="Lifecycle evidence references" />
+            <Button Content="Retain case action" Command="{Binding UpdateCommand}" HorizontalAlignment="Left" />
+            <Expander Header="Case history and source evidence" Margin="0,8,0,12">
+                <StackPanel>
+                    <TextBlock Text="Current source fingerprint" />
+                    <TextBox Text="{Binding ObservationFingerprint, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" AutomationProperties.Name="Lifecycle source fingerprint" />
+                    <TextBox Text="{Binding SelectedHistory, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" AutomationProperties.Name="Lifecycle case history" />
+                </StackPanel>
+            </Expander>
+            <TextBlock Text="Guarantee register" FontSize="18" FontWeight="SemiBold" />
+            <TextBlock Text="Disclosure only. Declared caps are separate from measured exposure. No reviewed underlying exposure mapping is available; a cap is not a balance or liability."
+                       Margin="0,5,0,5" TextWrapping="Wrap" />
+            <DataGrid ItemsSource="{Binding Guarantees}" MaxHeight="280" AutomationProperties.Name="Approved guarantee disclosures">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Agreement" Binding="{Binding Agreement}" Width="240" />
+                    <DataGridTextColumn Header="Legal parties" Binding="{Binding Parties}" Width="320" />
+                    <DataGridTextColumn Header="Declared cap" Binding="{Binding Cap}" Width="240" />
+                    <DataGridTextColumn Header="Measured exposure" Binding="{Binding Exposure}" Width="180" />
+                    <DataGridTextColumn Header="Exposure evidence" Binding="{Binding ExposureReason}" Width="300" />
+                    <DataGridTextColumn Header="Legal coverage" Binding="{Binding Coverage}" Width="320" />
+                    <DataGridTextColumn Header="Approved evidence" Binding="{Binding Evidence}" Width="400" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

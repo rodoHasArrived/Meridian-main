@@ -173,8 +173,6 @@ public sealed class BondConsistencyTests
         ladder.Contributions.Single(row => row.FlowType == flowType).Amount.Should().Be(price);
         ladder.Contributions.Single(row => row.FlowType == "Coupon").Amount.Should().Be(2.5m);
         ladder.Contributions.Should().NotContain(row => row.DueDate > new DateOnly(2026, 7, 1));
-        var legacy = LegacyPortfolioCashLadderEngine.Build(inputs, scenario);
-        legacy.EngineVersion.Should().Be("portfolio-cash-ladder-v1");
     }
 
     [Fact]
@@ -479,6 +477,7 @@ public sealed class BondConsistencyTests
     {
         var payload = new Dictionary<string, object?>
         {
+            ["termsFormat"] = "flat",
             ["assetClassTermsVersion"] = 3,
             ["issueDate"] = "2026-01-01",
             ["maturity"] = "2027-01-01",

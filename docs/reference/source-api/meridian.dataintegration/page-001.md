@@ -861,7 +861,7 @@ Source: [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs
 Persists protected provider credentials and scoped OAuth tokens in the local credential vault.
 
 ```csharp
-public sealed partial class FileProviderCredentialStore : IScopedProviderCredentialStore, ILegacyProviderCredentialImporter, IScopedOAuthTokenVault, IProviderCredentialOwnershipMigration
+public sealed partial class FileProviderCredentialStore : IScopedProviderCredentialStore, IScopedOAuthTokenVault, IProviderCredentialOwnershipMigration
 ```
 
 Declared public members:
@@ -879,17 +879,15 @@ Declared public members:
 | <code>public Task SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:150](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L150) |  |
 | <code>public Task&lt;string&gt; SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request, ProviderCredentialReadResult expectedConnection, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:153](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L153) |  |
 | <code>public Task&lt;string&gt; SaveScopedRotatedCredentialsAsync(ProviderCredentialSaveRequest request, ProviderCredentialScope scope, ProviderCredentialReadResult expectedConnection, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:157](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L157) |  |
-| <code>public async Task ImportLegacyAsync(IReadOnlyList&lt;ProviderCredentialSaveRequest&gt; requests, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:293](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L293) | Imports one validated legacy snapshot without replacing retained vault records. |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;string, OAuthToken&gt;&gt; ReadScopedOAuthTokensAsync(ProviderCredentialScope scope, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:368](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L368) |  |
-| <code>public async Task SaveScopedOAuthTokenAsync(string providerName, OAuthToken? token, ProviderCredentialScope scope, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:390](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L390) |  |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;string, OAuthToken&gt;&gt; ReadOAuthTokensAsync(CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:421](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L421) |  |
-| <code>public async Task SaveOAuthTokenAsync(string providerName, OAuthToken? token, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:432](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L432) |  |
-| <code>public async Task ImportOAuthTokensAsync(IReadOnlyDictionary&lt;string, OAuthToken&gt; tokens, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:464](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L464) |  |
-| <code>public async Task&lt;int&gt; ReplayPendingAuditAsync(CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:643](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L643) | Appends every journaled audit record that a committed mutation still owes to the audit log, then removes the journal. Intents whose vault write cannot be proven are discarded with a warning. Idempotent and safe at host start; the next mutation also replays. Returns the number of records appended. |
-| <code>public Task DeleteAsync(string providerId, string? actor = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:1074](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L1074) |  |
-| <code>public Task DeleteScopedAsync(string providerId, ProviderCredentialScope scope, string? actor = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:1077](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L1077) |  |
-| <code>public Task RecordVerificationAsync(ProviderCredentialVerificationUpdate update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:1109](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L1109) |  |
-| <code>public Task RecordScopedVerificationAsync(ProviderCredentialVerificationUpdate update, ProviderCredentialScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:1112](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L1112) |  |
+| <code>public async Task&lt;IReadOnlyDictionary&lt;string, OAuthToken&gt;&gt; ReadScopedOAuthTokensAsync(ProviderCredentialScope scope, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:292](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L292) |  |
+| <code>public async Task SaveScopedOAuthTokenAsync(string providerName, OAuthToken? token, ProviderCredentialScope scope, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:314](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L314) |  |
+| <code>public async Task&lt;IReadOnlyDictionary&lt;string, OAuthToken&gt;&gt; ReadOAuthTokensAsync(CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:345](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L345) |  |
+| <code>public async Task SaveOAuthTokenAsync(string providerName, OAuthToken? token, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:356](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L356) |  |
+| <code>public async Task&lt;int&gt; ReplayPendingAuditAsync(CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:530](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L530) | Appends every journaled audit record that a committed mutation still owes to the audit log, then removes the journal. Intents whose vault write cannot be proven are discarded with a warning. Idempotent and safe at host start; the next mutation also replays. Returns the number of records appended. |
+| <code>public Task DeleteAsync(string providerId, string? actor = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:954](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L954) |  |
+| <code>public Task DeleteScopedAsync(string providerId, ProviderCredentialScope scope, string? actor = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:957](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L957) |  |
+| <code>public Task RecordVerificationAsync(ProviderCredentialVerificationUpdate update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:989](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L989) |  |
+| <code>public Task RecordScopedVerificationAsync(ProviderCredentialVerificationUpdate update, ProviderCredentialScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs:992](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs#L992) |  |
 
 Source: [src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.OwnershipMigration.cs:7](../../../../src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.OwnershipMigration.cs#L7).
 
@@ -967,24 +965,6 @@ Declared public members:
 | <code>void RegisterCredential(CredentialMetadata metadata);</code> | [src/Meridian.DataIntegration/Credentials/ICredentialStore.cs:183](../../../../src/Meridian.DataIntegration/Credentials/ICredentialStore.cs#L183) | Registers credential metadata for a provider. |
 | <code>void ClearCache(string? provider = null);</code> | [src/Meridian.DataIntegration/Credentials/ICredentialStore.cs:189](../../../../src/Meridian.DataIntegration/Credentials/ICredentialStore.cs#L189) | Clears cached credentials (forces reload on next access). |
 
-## ILegacyProviderCredentialImporter
-
-Qualified name: <code>Meridian.DataIntegration.Credentials.ILegacyProviderCredentialImporter</code>. Kind: `interface`.
-
-Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:31](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L31).
-
-Atomic, insert-only import of a complete historical credential sidecar.
-
-```csharp
-public interface ILegacyProviderCredentialImporter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task ImportLegacyAsync(IReadOnlyList&lt;ProviderCredentialSaveRequest&gt; requests, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:33](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L33) |  |
-
 ## IOAuthTokenVault
 
 Qualified name: <code>Meridian.DataIntegration.Credentials.IOAuthTokenVault</code>. Kind: `interface`.
@@ -1003,7 +983,6 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;IReadOnlyDictionary&lt;string, OAuthToken&gt;&gt; ReadOAuthTokensAsync(CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/OAuthToken.cs:113](../../../../src/Meridian.DataIntegration/Credentials/OAuthToken.cs#L113) |  |
 | <code>Task SaveOAuthTokenAsync(string providerName, OAuthToken? token, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/OAuthToken.cs:114](../../../../src/Meridian.DataIntegration/Credentials/OAuthToken.cs#L114) |  |
-| <code>Task ImportOAuthTokensAsync(IReadOnlyDictionary&lt;string, OAuthToken&gt; tokens, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/OAuthToken.cs:115](../../../../src/Meridian.DataIntegration/Credentials/OAuthToken.cs#L115) |  |
 
 ## IProviderCredentialOwnershipMigration
 
@@ -1024,3 +1003,28 @@ Declared public members:
 | <code>Task&lt;ProviderCredentialMigrationReceipt&gt; MigrateToScopeAsync(string providerId, ProviderCredentialScope scope, string migrationId, string expectedGeneration, string actor, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialOwnershipMigration.cs:6](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialOwnershipMigration.cs#L6) |  |
 | <code>Task&lt;ProviderCredentialMigrationReceipt&gt; RollbackMigrationAsync(string providerId, ProviderCredentialScope scope, string migrationId, string actor, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialOwnershipMigration.cs:8](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialOwnershipMigration.cs#L8) |  |
 | <code>Task&lt;ProviderCredentialMigrationReceipt&gt; FinalizeMigrationAsync(string providerId, ProviderCredentialScope scope, string migrationId, string actor, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialOwnershipMigration.cs:15](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialOwnershipMigration.cs#L15) | Retires a completed migration after the owned record has been verified under its new ownership: the receipt stays in the audit trail, rollback is no longer available, and the provider-wide record is no longer blocked by the migration. Idempotent for an already finalized receipt. |
+
+## IProviderCredentialStore
+
+Qualified name: <code>Meridian.DataIntegration.Credentials.IProviderCredentialStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:6](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L6).
+
+Reads provider credential status and manages saved credentials through a credential vault.
+
+```csharp
+public interface IProviderCredentialStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string VaultPath { get; }</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:8](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L8) |  |
+| <code>Task&lt;ProviderCredentialStoreStatus&gt; GetStatusAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:10](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L10) |  |
+| <code>Task SaveAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:12](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L12) |  |
+| <code>Task SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:15](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L15) | Save a complete rotated credential snapshot in both current and recovery generations. |
+| <code>Task&lt;string&gt; SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request, ProviderCredentialReadResult expectedConnection, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:19](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L19) | Atomically replace the expected connection and return its new credential generation. |
+| <code>Task&lt;ProviderCredentialReadResult?&gt; ReadForProviderAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:23](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L23) |  |
+| <code>Task DeleteAsync(string providerId, string? actor = null, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:25](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L25) |  |
+| <code>Task RecordVerificationAsync(ProviderCredentialVerificationUpdate update, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:27](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L27) |  |

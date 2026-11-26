@@ -103,7 +103,7 @@ public static class FailoverEndpoints
 
             return await EndpointHelpers.GuardAsync(async () =>
             {
-                await store.UpdateAsync(cfg =>
+                var changeImpact = await store.UpdateWithChangeStatusAsync(cfg =>
                 {
                     var dataSources = cfg.DataSources ?? new DataSourcesConfig();
 
@@ -119,7 +119,7 @@ public static class FailoverEndpoints
                     };
                 }, ct).ConfigureAwait(false);
 
-                return Results.Ok(new { changeImpact = store.GetChangeStatus() });
+                return Results.Ok(new { changeImpact });
             },
             "The failover configuration could not be saved.",
             loggerFactory.CreateLogger(nameof(FailoverEndpoints)),
@@ -213,7 +213,7 @@ public static class FailoverEndpoints
                     MaxLatencyMs: req.MaxLatencyMs
                 );
 
-                var rejection = await store.UpdateAsync<IResult?>(cfg =>
+                var (rejection, changeImpact) = await store.UpdateWithChangeStatusAsync<IResult?>(cfg =>
                 {
                     var dataSources = cfg.DataSources ?? new DataSourcesConfig();
                     var rules = (dataSources.FailoverRules ?? Array.Empty<FailoverRuleConfig>()).ToList();
@@ -255,7 +255,7 @@ public static class FailoverEndpoints
                 loggerFactory.CreateLogger(nameof(FailoverEndpoints)).LogInformation(
                     "Failover rule {RuleId} saved by {Actor}; reason {Reason}; quality {DataQualityThreshold}; latency {MaxLatencyMs}",
                     id, HttpContextWorkstationTenantContextAccessor.Resolve(context).Actor, req.Reason, req.DataQualityThreshold, req.MaxLatencyMs);
-                return Results.Ok(new { id, changeImpact = store.GetChangeStatus() });
+                return Results.Ok(new { id, changeImpact });
             },
             "The failover rule could not be saved.",
             loggerFactory.CreateLogger(nameof(FailoverEndpoints)),
@@ -279,7 +279,7 @@ public static class FailoverEndpoints
         {
             return await EndpointHelpers.GuardAsync(async () =>
             {
-                var outcome = await store.UpdateAsync<IResult?>(cfg =>
+                var (outcome, changeImpact) = await store.UpdateWithChangeStatusAsync<IResult?>(cfg =>
                 {
                     var dataSources = cfg.DataSources ?? new DataSourcesConfig();
                     var rules = (dataSources.FailoverRules ?? Array.Empty<FailoverRuleConfig>()).ToList();
@@ -311,7 +311,7 @@ public static class FailoverEndpoints
                     loggerFactory.CreateLogger(nameof(FailoverEndpoints)).LogInformation(
                         "Failover rule {RuleId} deleted by {Actor}; reason {Reason}", id,
                         HttpContextWorkstationTenantContextAccessor.Resolve(context).Actor, req?.Reason);
-                return outcome ?? Results.Ok(new { changeImpact = store.GetChangeStatus() });
+                return outcome ?? Results.Ok(new { changeImpact });
             },
             "The failover rule could not be deleted.",
             loggerFactory.CreateLogger(nameof(FailoverEndpoints)),

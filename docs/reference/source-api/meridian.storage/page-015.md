@@ -6,137 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## RebuildOptions
-
-Qualified name: <code>Meridian.Storage.Services.RebuildOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:865](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L865).
-
-```csharp
-public sealed record RebuildOptions(int ParallelIndexers = 4);
-```
-
-## RepairOptions
-
-Qualified name: <code>Meridian.Storage.Services.RepairOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:910](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L910).
-
-```csharp
-public sealed record RepairOptions(RepairStrategy Strategy, bool DryRun = false, bool BackupBeforeRepair = true, string? BackupPath = null, RepairScope Scope = RepairScope.All, string? ScopeTarget = null);
-```
-
-## RepairResult
-
-Qualified name: <code>Meridian.Storage.Services.RepairResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:931](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L931).
-
-```csharp
-public sealed record RepairResult(int FilesProcessed, int FilesRepaired, IReadOnlyList<string> Errors, bool DryRun, IReadOnlyList<string>? PlannedActions)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; RecoveryCopies { get; init; } = [];</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:939](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L939) |  |
-| <code>public int FilesChanged { get; init; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:940](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L940) |  |
-| <code>public int FilesUnresolved =&gt; …;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:941](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L941) |  |
-
-## RepairScope
-
-Qualified name: <code>Meridian.Storage.Services.RepairScope</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:929](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L929).
-
-```csharp
-public enum RepairScope : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>SingleFile</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:929](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L929) |  |
-| <code>Directory</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:929](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L929) |  |
-| <code>Symbol</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:929](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L929) |  |
-| <code>DateRange</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:929](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L929) |  |
-| <code>EventType</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:929](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L929) |  |
-| <code>All</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:929](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L929) |  |
-
-## RepairStrategy
-
-Qualified name: <code>Meridian.Storage.Services.RepairStrategy</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:919](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L919).
-
-```csharp
-public enum RepairStrategy : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>RestoreFromBackup</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:921](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L921) |  |
-| <code>BackfillFromSource</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:922](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L922) |  |
-| <code>TruncateCorrupted</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:923](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L923) |  |
-| <code>RebuildIndex</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:924](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L924) |  |
-| <code>MergeFragments</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:925](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L925) |  |
-| <code>RecompressOptimal</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:926](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L926) |  |
-
-## ResourceLimits
-
-Qualified name: <code>Meridian.Storage.Services.ResourceLimits</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1583](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1583).
-
-```csharp
-public sealed record ResourceLimits(int MaxCpuPct = 80, int MaxMemoryPct = 70, int MaxDiskIoMbps = 500);
-```
-
-## ResourceRequirements
-
-Qualified name: <code>Meridian.Storage.Services.ResourceRequirements</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1618](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1618).
-
-```csharp
-public sealed record ResourceRequirements(int CpuCores = 1, long MemoryBytes = 1_073_741_824, long DiskIoMbps = 100, long NetworkIoMbps = 0, bool RequiresExclusiveLock = false, string[]? ExclusivePaths = null);
-```
-
-## RetentionComplianceReport
-
-Qualified name: <code>Meridian.Storage.Services.RetentionComplianceReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:184](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L184).
-
-Retention compliance report.
-
-```csharp
-public sealed record RetentionComplianceReport(DateTimeOffset GeneratedAt, string RootPath, int? RetentionPolicyDays, bool IsCompliant, long TotalFiles, long TotalSizeBytes, IReadOnlyList<RetentionEntry> Entries, IReadOnlyList<RetentionViolation> Violations, string Summary);
-```
-
-## RetentionComplianceReporter
-
-Qualified name: <code>Meridian.Storage.Services.RetentionComplianceReporter</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:10](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L10).
-
-Generates retention compliance reports by scanning stored data against configured retention policies. Outputs machine-readable and human-readable reports suitable for regulatory audits.
-
-```csharp
-public sealed class RetentionComplianceReporter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RetentionComplianceReporter(StorageOptions options, ILogger&lt;RetentionComplianceReporter&gt; logger);</code> | [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:17](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L17) |  |
-| <code>public Task&lt;RetentionComplianceReport&gt; GenerateReportAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:28](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L28) | Generates a retention compliance report. |
-
 ## RetentionEntry
 
 Qualified name: <code>Meridian.Storage.Services.RetentionEntry</code>. Kind: `record`.
@@ -321,7 +190,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Storage.Services.StorageCatalogService</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Services/StorageCatalogService.cs:19](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L19).
+Source: [src/Meridian.Storage/Services/StorageCatalogService.cs:20](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L20).
 
 Service for managing the storage catalog and manifest system. Provides comprehensive indexing, integrity verification, and metadata management.
 
@@ -333,22 +202,22 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public StorageCatalogService(string rootPath, StorageOptions options) : this(rootPath, options, static (path, content, ct) =&gt; AtomicFileWriter.WriteAsync(path, content, ct));</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:38](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L38) |  |
-| <code>public StorageCatalog GetCatalog() =&gt; …;</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:52](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L52) |  |
-| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:54](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L54) |  |
-| <code>public async Task&lt;CatalogRebuildResult&gt; RebuildCatalogAsync(CatalogRebuildOptions? options = null, IProgress&lt;CatalogRebuildProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:96](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L96) |  |
-| <code>public Task UpdateFileEntryAsync(IndexedFileEntry entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:275](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L275) |  |
-| <code>public Task RemoveFileEntryAsync(string relativePath, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:291](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L291) |  |
-| <code>public Task&lt;DirectoryIndex?&gt; GetDirectoryIndexAsync(string relativePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:305](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L305) |  |
-| <code>public Task UpdateDirectoryIndexAsync(DirectoryIndex index, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:312](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L312) |  |
-| <code>public async Task&lt;DirectoryScanResult&gt; ScanDirectoryAsync(string path, bool recursive = false, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:322](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L322) |  |
-| <code>public CatalogStatistics GetStatistics() =&gt; …;</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:422](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L422) |  |
-| <code>public async Task&lt;CatalogVerificationResult&gt; VerifyIntegrityAsync(CatalogVerificationOptions? options = null, IProgress&lt;CatalogVerificationProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:424](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L424) |  |
-| <code>public IEnumerable&lt;IndexedFileEntry&gt; GetFilesForSymbol(string symbol);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:540](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L540) |  |
-| <code>public IEnumerable&lt;IndexedFileEntry&gt; GetFilesForDateRange(DateTime start, DateTime end);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:546](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L546) |  |
-| <code>public IEnumerable&lt;IndexedFileEntry&gt; GetFilesForEventType(string eventType);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:552](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L552) |  |
-| <code>public IEnumerable&lt;IndexedFileEntry&gt; SearchFiles(CatalogSearchCriteria criteria);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:558](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L558) |  |
-| <code>public async Task ExportCatalogAsync(string outputPath, CatalogExportFormat format = CatalogExportFormat.Json, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:608](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L608) |  |
+| <code>public StorageCatalogService(string rootPath, StorageOptions options) : this(rootPath, options, static (path, content, ct) =&gt; AtomicFileWriter.WriteAsync(path, content, ct));</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:39](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L39) |  |
+| <code>public StorageCatalog GetCatalog() =&gt; …;</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:53](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L53) |  |
+| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:55](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L55) |  |
+| <code>public async Task&lt;CatalogRebuildResult&gt; RebuildCatalogAsync(CatalogRebuildOptions? options = null, IProgress&lt;CatalogRebuildProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:97](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L97) |  |
+| <code>public Task UpdateFileEntryAsync(IndexedFileEntry entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:276](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L276) |  |
+| <code>public Task RemoveFileEntryAsync(string relativePath, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:292](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L292) |  |
+| <code>public Task&lt;DirectoryIndex?&gt; GetDirectoryIndexAsync(string relativePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:306](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L306) |  |
+| <code>public Task UpdateDirectoryIndexAsync(DirectoryIndex index, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:313](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L313) |  |
+| <code>public async Task&lt;DirectoryScanResult&gt; ScanDirectoryAsync(string path, bool recursive = false, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:323](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L323) |  |
+| <code>public CatalogStatistics GetStatistics() =&gt; …;</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:423](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L423) |  |
+| <code>public async Task&lt;CatalogVerificationResult&gt; VerifyIntegrityAsync(CatalogVerificationOptions? options = null, IProgress&lt;CatalogVerificationProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:425](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L425) |  |
+| <code>public IEnumerable&lt;IndexedFileEntry&gt; GetFilesForSymbol(string symbol);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:541](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L541) |  |
+| <code>public IEnumerable&lt;IndexedFileEntry&gt; GetFilesForDateRange(DateTime start, DateTime end);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:547](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L547) |  |
+| <code>public IEnumerable&lt;IndexedFileEntry&gt; GetFilesForEventType(string eventType);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:553](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L553) |  |
+| <code>public IEnumerable&lt;IndexedFileEntry&gt; SearchFiles(CatalogSearchCriteria criteria);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:559](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L559) |  |
+| <code>public async Task ExportCatalogAsync(string outputPath, CatalogExportFormat format = CatalogExportFormat.Json, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:609](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L609) |  |
 
 Source: [src/Meridian.Storage/Services/StorageCatalogService.Persistence.cs:12](../../../../src/Meridian.Storage/Services/StorageCatalogService.Persistence.cs#L12).
 
@@ -505,20 +374,6 @@ Declared public members:
 | <code>public async Task&lt;int&gt; ImportSymbolsAsync(IEnumerable&lt;SymbolRegistryEntry&gt; symbols, bool merge = true, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:440](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L440) |  |
 | <code>public async Task&lt;int&gt; ApplyMigrationAsync(string migrationId, string fingerprint, IEnumerable&lt;SymbolRegistryEntry&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:472](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L472) |  |
 
-Source: [src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs:9](../../../../src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs#L9).
-
-```csharp
-public sealed partial class SymbolRegistryService : ISecurityMasterLegacyIdentifierCleanupWriter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;string&gt; GetLegacyIdentifierCleanupFingerprintAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs:12](../../../../src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs#L12) |  |
-| <code>public async Task&lt;SecurityMasterLegacyIdentifierCleanupValidation&gt; ValidateLegacyIdentifierCleanupAsync(SecurityMasterLegacyIdentifierCleanupManifest manifest, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs:26](../../../../src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs#L26) |  |
-| <code>public async Task&lt;SecurityMasterLegacyIdentifierCleanupReceipt&gt; ApplyLegacyIdentifierCleanupAsync(SecurityMasterLegacyIdentifierCleanupValidation validation, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs:51](../../../../src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs#L51) |  |
-
 Source: [src/Meridian.Storage/Services/SymbolRegistryService.OperatorMappings.cs:7](../../../../src/Meridian.Storage/Services/SymbolRegistryService.OperatorMappings.cs#L7).
 
 ```csharp
@@ -541,7 +396,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.TierInfo</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:646](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L646).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:645](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L645).
 
 ```csharp
 public sealed record TierInfo(int FileCount, long TotalBytes, DateTime? OldestFile, DateTime? NewestFile);
@@ -573,7 +428,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.TierStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:641](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L641).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:640](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L640).
 
 ```csharp
 public sealed record TierStatistics(DateTimeOffset GeneratedAt, Dictionary<StorageTier, TierInfo> TierInfo);
@@ -726,7 +581,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Sinks.JsonlStorageSinkStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:1221](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L1221).
+Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:1219](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L1219).
 
 ```csharp
 public sealed record JsonlStorageSinkStatistics(bool IsBatchingEnabled, int BatchSize, TimeSpan FlushInterval, long EventsBuffered, long EventsWritten, long BatchesWritten, int WriterCount, int BufferCount, DateTimeOffset Timestamp, long FsyncCount = 0, int OpenWriterHandles = 0);
@@ -755,7 +610,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Storage.Sinks.ParquetStorageOptions</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:732](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L732).
+Source: [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:743](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L743).
 
 Configuration options for Parquet storage.
 
@@ -767,12 +622,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int BufferSize { get; init; } = 10000;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:737](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L737) | Number of events to buffer before writing to disk. |
-| <code>public TimeSpan FlushInterval { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:742](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L742) | Maximum time between flushes. |
-| <code>public CompressionMethod CompressionMethod { get; init; } = CompressionMethod.Snappy;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:747](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L747) | Compression method for Parquet files. |
-| <code>public static ParquetStorageOptions Default =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:749](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L749) |  |
-| <code>public static ParquetStorageOptions HighCompression =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:751](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L751) |  |
-| <code>public static ParquetStorageOptions LowLatency =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:757](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L757) |  |
+| <code>public int BufferSize { get; init; } = 10000;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:748](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L748) | Number of events to buffer before writing to disk. |
+| <code>public TimeSpan FlushInterval { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:753](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L753) | Maximum time between flushes. |
+| <code>public CompressionMethod CompressionMethod { get; init; } = CompressionMethod.Snappy;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:758](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L758) | Compression method for Parquet files. |
+| <code>public static ParquetStorageOptions Default =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:760](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L760) |  |
+| <code>public static ParquetStorageOptions HighCompression =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:762](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L762) |  |
+| <code>public static ParquetStorageOptions LowLatency =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:768](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L768) |  |
 
 ## ParquetStorageSink
 
@@ -790,10 +645,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ParquetStorageSink(StorageOptions options, ParquetStorageOptions? parquetOptions = null, IStoragePolicy? policy = null) : this(options, parquetOptions, WriteAtomicallyAsync, policy);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:106](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L106) |  |
-| <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:134](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L134) |  |
-| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:156](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L156) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:686](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L686) |  |
+| <code>public ParquetStorageSink(StorageOptions options, ParquetStorageOptions? parquetOptions = null, IStoragePolicy? policy = null) : this(options, parquetOptions, WriteAtomicallyAsync, policy);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:109](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L109) |  |
+| <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:137](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L137) |  |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:159](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L159) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:697](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L697) |  |
 
 ## SinkHealth
 
@@ -923,3 +778,179 @@ Enum declarations:
 | <code>Research</code> | [src/Meridian.Storage/StorageProfiles.cs:10](../../../../src/Meridian.Storage/StorageProfiles.cs#L10) |  |
 | <code>LowLatency</code> | [src/Meridian.Storage/StorageProfiles.cs:11](../../../../src/Meridian.Storage/StorageProfiles.cs#L11) |  |
 | <code>Archival</code> | [src/Meridian.Storage/StorageProfiles.cs:12](../../../../src/Meridian.Storage/StorageProfiles.cs#L12) |  |
+
+## StorageProfilePreset
+
+Qualified name: <code>Meridian.Storage.StorageProfilePreset</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/StorageProfiles.cs:15](../../../../src/Meridian.Storage/StorageProfiles.cs#L15).
+
+```csharp
+public sealed record StorageProfilePreset(string Id, string Label, string Description, Func<StorageOptions, StorageOptions> Apply);
+```
+
+## StorageProfilePresets
+
+Qualified name: <code>Meridian.Storage.StorageProfilePresets</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/StorageProfiles.cs:24](../../../../src/Meridian.Storage/StorageProfiles.cs#L24).
+
+Defines the default storage profile and the available preset storage configurations.
+
+```csharp
+public static class StorageProfilePresets
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string DefaultProfile = &quot;Research&quot;;</code> | [src/Meridian.Storage/StorageProfiles.cs:30](../../../../src/Meridian.Storage/StorageProfiles.cs#L30) | Default storage profile when none is specified. The retained Research profile ID provides balanced defaults for strategy use cases. |
+| <code>public static StorageOptions ApplyProfile(string? profile, StorageOptions options, bool useDefaultIfEmpty = true);</code> | [src/Meridian.Storage/StorageProfiles.cs:120](../../../../src/Meridian.Storage/StorageProfiles.cs#L120) | Applies a storage profile to the given options. If no profile is specified, applies the default strategy profile. |
+| <code>public static StorageProfilePreset? GetProfile(string id);</code> | [src/Meridian.Storage/StorageProfiles.cs:138](../../../../src/Meridian.Storage/StorageProfiles.cs#L138) | Gets a profile preset by ID. |
+| <code>public static StorageOptions CreateFromProfile(string? profile, string rootPath, bool? compress = null);</code> | [src/Meridian.Storage/StorageProfiles.cs:147](../../../../src/Meridian.Storage/StorageProfiles.cs#L147) | Creates storage options from a profile without requiring a base options object. Uses default profile if none specified. |
+| <code>public static IReadOnlyList&lt;StorageProfilePreset&gt; GetPresets() =&gt; …;</code> | [src/Meridian.Storage/StorageProfiles.cs:158](../../../../src/Meridian.Storage/StorageProfiles.cs#L158) |  |
+
+## StorageQuota
+
+Qualified name: <code>Meridian.Storage.StorageQuota</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/StorageOptions.cs:405](../../../../src/Meridian.Storage/StorageOptions.cs#L405).
+
+Storage quota specification.
+
+```csharp
+public sealed class StorageQuota
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public long MaxBytes { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:408](../../../../src/Meridian.Storage/StorageOptions.cs#L408) | Maximum bytes for this quota. |
+| <code>public long? MaxFiles { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:411](../../../../src/Meridian.Storage/StorageOptions.cs#L411) | Maximum number of files. |
+| <code>public long? MaxEventsPerDay { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:414](../../../../src/Meridian.Storage/StorageOptions.cs#L414) | Maximum events per day. |
+| <code>public QuotaEnforcementPolicy Enforcement { get; init; } = QuotaEnforcementPolicy.SoftLimit;</code> | [src/Meridian.Storage/StorageOptions.cs:417](../../../../src/Meridian.Storage/StorageOptions.cs#L417) | Enforcement policy when quota is exceeded. |
+
+## StorageSinkAttribute
+
+Qualified name: <code>Meridian.Storage.StorageSinkAttribute</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/StorageSinkAttribute.cs:36](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L36).
+
+Marks a class as a storage sink plugin for automatic discovery and registration. Classes decorated with this attribute will be discovered by StorageSinkRegistry at startup when their assembly is scanned.
+
+```csharp
+public sealed class StorageSinkAttribute : Attribute
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; }</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:42](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L42) | Unique identifier for this sink (e.g., &quot;jsonl&quot;, &quot;parquet&quot;, &quot;clickhouse&quot;). Used in the Storage.Sinks configuration list to activate the sink. |
+| <code>public string DisplayName { get; }</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:47](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L47) | Human-readable display name (e.g., &quot;JSONL Storage&quot;, &quot;Apache Parquet Storage&quot;). |
+| <code>public string? Description { get; set; }</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:52](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L52) | Optional description of the sink and its use case. |
+| <code>public bool EnabledByDefault { get; set; } = false;</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:58](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L58) | Whether this sink is included in the default composition when no explicit Sinks list is provided. Default is false. |
+| <code>public StorageSinkAttribute(string id, string displayName);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:65](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L65) | Creates a new StorageSinkAttribute. |
+
+## StorageSinkAttributeExtensions
+
+Qualified name: <code>Meridian.Storage.StorageSinkAttributeExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/StorageSinkAttribute.cs:102](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L102).
+
+Extension methods for StorageSinkAttribute discovery on Type.
+
+```csharp
+public static class StorageSinkAttributeExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static StorageSinkAttribute? GetStorageSinkAttribute(this Type type);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:107](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L107) | Gets the StorageSinkAttribute from a type, if present. |
+| <code>public static StorageSinkMetadata? GetStorageSinkMetadata(this Type type);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:116](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L116) | Gets the StorageSinkMetadata from a type decorated with StorageSinkAttribute, or null if not decorated. |
+| <code>public static bool IsStorageSinkPlugin(this Type type);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:126](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L126) | Returns true when the type is a concrete class that implements IStorageSink and is decorated with StorageSinkAttribute. |
+
+## StorageSinkMetadata
+
+Qualified name: <code>Meridian.Storage.StorageSinkMetadata</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/StorageSinkAttribute.cs:76](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L76).
+
+Metadata extracted from a StorageSinkAttribute for use by the StorageSinkRegistry and composition root.
+
+```csharp
+public sealed record StorageSinkMetadata(string Id, string DisplayName, string? Description, bool EnabledByDefault, Type ImplementationType)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static StorageSinkMetadata FromAttribute(StorageSinkAttribute attr, Type implementationType);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:87](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L87) | Creates metadata from a StorageSinkAttribute and its implementation type. |
+
+## StorageSinkRegistry
+
+Qualified name: <code>Meridian.Storage.StorageSinkRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/StorageSinkRegistry.cs:20](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L20).
+
+Registry for discovering and registering IStorageSink plugins that are decorated with StorageSinkAttribute.
+
+```csharp
+public sealed class StorageSinkRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;StorageSinkMetadata&gt; Sinks =&gt; …;</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:27](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L27) | Gets the discovered storage sink metadata entries, in the order they were found. |
+| <code>public void DiscoverFromAssemblies(params Assembly[] assemblies);</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:40](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L40) | Scans the provided assemblies for concrete types decorated with StorageSinkAttribute that implement IStorageSink, and adds their metadata to the registry. |
+| <code>public void RegisterServices(IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton);</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:77](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L77) | Registers all discovered sink implementation types into the service collection so that they can be resolved by IServiceProvider during composition. |
+| <code>public bool TryGetSink(string id, out StorageSinkMetadata? metadata);</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:103](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L103) | Attempts to find a registered sink by its identifier (case-insensitive). |
+
+## StorageTier
+
+Qualified name: <code>Meridian.Storage.StorageTier</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/StorageOptions.cs:242](../../../../src/Meridian.Storage/StorageOptions.cs#L242).
+
+Storage tier designation.
+
+```csharp
+public enum StorageTier : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Hot</code> | [src/Meridian.Storage/StorageOptions.cs:245](../../../../src/Meridian.Storage/StorageOptions.cs#L245) | Hot tier - real-time access, NVMe SSD. |
+| <code>Warm</code> | [src/Meridian.Storage/StorageOptions.cs:247](../../../../src/Meridian.Storage/StorageOptions.cs#L247) | Warm tier - daily batch access, SSD/HDD. |
+| <code>Cold</code> | [src/Meridian.Storage/StorageOptions.cs:249](../../../../src/Meridian.Storage/StorageOptions.cs#L249) | Cold tier - weekly/monthly access, HDD/NAS. |
+| <code>Archive</code> | [src/Meridian.Storage/StorageOptions.cs:251](../../../../src/Meridian.Storage/StorageOptions.cs#L251) | Archive tier - rare bulk access, object storage. |
+| <code>Glacier</code> | [src/Meridian.Storage/StorageOptions.cs:253](../../../../src/Meridian.Storage/StorageOptions.cs#L253) | Glacier tier - emergency only, tape/deep archive. |
+
+## CompositeMarketDataStore
+
+Qualified name: <code>Meridian.Storage.Store.CompositeMarketDataStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Store/CompositeMarketDataStore.cs:23](../../../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs#L23).
+
+IMarketDataStore that aggregates results from multiple underlying stores and merges them in ascending MarketEvent.Timestamp order.
+
+```csharp
+public sealed class CompositeMarketDataStore : IMarketDataStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CompositeMarketDataStore(IEnumerable&lt;IMarketDataStore&gt; stores);</code> | [src/Meridian.Storage/Store/CompositeMarketDataStore.cs:34](../../../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs#L34) | Initialises a composite store that fans out queries to stores and merges results by timestamp. |
+| <code>public CompositeMarketDataStore(IMarketDataStore first, IMarketDataStore second) : this(new[] { first, second });</code> | [src/Meridian.Storage/Store/CompositeMarketDataStore.cs:43](../../../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs#L43) | Convenience constructor for two stores (e.g. JSONL + Parquet). |
+| <code>public async IAsyncEnumerable&lt;MarketEvent&gt; QueryAsync(MarketDataQuery query, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Store/CompositeMarketDataStore.cs:47](../../../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs#L47) |  |

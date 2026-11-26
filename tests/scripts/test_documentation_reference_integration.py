@@ -64,7 +64,7 @@ public static class ExampleEndpoints
 }
 ''')
         self.write("docs/reference/api-reference.md", f"# API Reference\n\nHandwritten guidance.\n\n{BEGIN}\n{END}\n")
-        self.write("archive/docs/adr/001-example.md", "# Historical example decision\n\nStatus: accepted\n")
+        self.write("docs/adr/historical/001-example.md", "# Historical example decision\n\nStatus: accepted\n")
 
     def write(self, path: str, content: str):
         target = self.root / path

@@ -18,85 +18,6 @@ namespace Meridian.Ui.Shared.Services;
 
 public sealed record ReportingScheduleStoreOptions(string SnapshotPath);
 
-/// <summary>
-/// Stores reporting schedules and coordinates execution claims and leases.
-/// </summary>
-[Obsolete(
-    "Use Meridian.Reporting.IReportingScheduleStore. This compatibility interface will be removed after legacy UI Shared callers migrate.")]
-public interface IReportingScheduleStore : Meridian.Reporting.IReportingScheduleStore
-{
-}
-
-#pragma warning disable CS0618
-internal sealed class ReportingScheduleStoreCompatibilityAdapter(
-    Meridian.Reporting.IReportingScheduleStore inner)
-    : IReportingScheduleStore
-{
-    private readonly Meridian.Reporting.IReportingScheduleStore _inner =
-        inner ?? throw new ArgumentNullException(nameof(inner));
-
-    public bool IsDurableAuthority => _inner.IsDurableAuthority;
-
-    public IReadOnlyList<ReportingScheduleRecordDto> Load() => _inner.Load();
-
-    public void Save(IReadOnlyList<ReportingScheduleRecordDto> schedules) =>
-        _inner.Save(schedules);
-
-    public void Upsert(ReportingScheduleRecordDto schedule) =>
-        _inner.Upsert(schedule);
-
-    public void Upsert(
-        ReportingScheduleRecordDto schedule,
-        DateTimeOffset? expectedUpdatedAtUtc) =>
-        _inner.Upsert(schedule, expectedUpdatedAtUtc);
-
-    public ReportingScheduleExecutionLease? TryClaimExecution(
-        ReportingScheduleRecordDto schedule,
-        string leaseOwner,
-        DateTimeOffset nowUtc,
-        TimeSpan leaseDuration) =>
-        _inner.TryClaimExecution(schedule, leaseOwner, nowUtc, leaseDuration);
-
-    public ReportingScheduleExecutionLease? RenewExecutionLease(
-        ReportingScheduleRecordDto schedule,
-        ReportingScheduleExecutionLease lease,
-        DateTimeOffset nowUtc,
-        TimeSpan leaseDuration) =>
-        _inner.RenewExecutionLease(schedule, lease, nowUtc, leaseDuration);
-
-    public void ReleaseExecutionLease(
-        string tenantId,
-        string companyId,
-        string scheduleId,
-        ReportingScheduleExecutionLease lease) =>
-        _inner.ReleaseExecutionLease(
-            tenantId,
-            companyId,
-            scheduleId,
-            lease);
-
-    public void UpsertClaimedExecution(
-        ReportingScheduleRecordDto schedule,
-        DateTimeOffset expectedUpdatedAtUtc,
-        ReportingScheduleExecutionLease lease) =>
-        _inner.UpsertClaimedExecution(
-            schedule,
-            expectedUpdatedAtUtc,
-            lease);
-
-    public bool Delete(
-        string tenantId,
-        string companyId,
-        string scheduleId,
-        DateTimeOffset expectedUpdatedAtUtc) =>
-        _inner.Delete(
-            tenantId,
-            companyId,
-            scheduleId,
-            expectedUpdatedAtUtc);
-}
-#pragma warning restore CS0618
-
 internal readonly record struct ReportingScheduleIdentity(
     string TenantId,
     string CompanyId,
@@ -156,11 +77,10 @@ internal sealed class ReportingScheduleIdentityComparer : IEqualityComparer<Repo
     }
 }
 
-#pragma warning disable CS0618
 /// <summary>
 /// Persists reporting schedules, execution authority, and legacy schedule recovery evidence.
 /// </summary>
-public sealed partial class FileReportingScheduleStore : IReportingScheduleStore, INonProductionOnlyService
+public sealed partial class FileReportingScheduleStore : Meridian.Reporting.IReportingScheduleStore, INonProductionOnlyService
 {
     private const string SchemaVersion = "meridian.reporting.schedule-store.v2";
     private const string EntrySchemaVersion = "meridian.reporting.schedule-entry.v2";
@@ -1041,4 +961,3 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
         string CanonicalPayloadHashSha256,
         string Remediation);
 }
-#pragma warning restore CS0618

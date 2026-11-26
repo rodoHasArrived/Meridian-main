@@ -6,31 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## IProviderCredentialStore
-
-Qualified name: <code>Meridian.DataIntegration.Credentials.IProviderCredentialStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:6](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L6).
-
-Reads provider credential status and manages saved credentials through a credential vault.
-
-```csharp
-public interface IProviderCredentialStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string VaultPath { get; }</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:8](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L8) |  |
-| <code>Task&lt;ProviderCredentialStoreStatus&gt; GetStatusAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:10](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L10) |  |
-| <code>Task SaveAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:12](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L12) |  |
-| <code>Task SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:15](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L15) | Save a complete rotated credential snapshot in both current and recovery generations. |
-| <code>Task&lt;string&gt; SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request, ProviderCredentialReadResult expectedConnection, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:19](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L19) | Atomically replace the expected connection and return its new credential generation. |
-| <code>Task&lt;ProviderCredentialReadResult?&gt; ReadForProviderAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:23](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L23) |  |
-| <code>Task DeleteAsync(string providerId, string? actor = null, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:25](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L25) |  |
-| <code>Task RecordVerificationAsync(ProviderCredentialVerificationUpdate update, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:27](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L27) |  |
-
 ## IProviderSetupHandler
 
 Qualified name: <code>Meridian.DataIntegration.Credentials.IProviderSetupHandler</code>. Kind: `interface`.
@@ -91,7 +66,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.DataIntegration.Credentials.IScopedOAuthTokenVault</code>. Kind: `interface`.
 
-Source: [src/Meridian.DataIntegration/Credentials/OAuthToken.cs:119](../../../../src/Meridian.DataIntegration/Credentials/OAuthToken.cs#L119).
+Source: [src/Meridian.DataIntegration/Credentials/OAuthToken.cs:118](../../../../src/Meridian.DataIntegration/Credentials/OAuthToken.cs#L118).
 
 OAuth token persistence isolated by trusted credential ownership context.
 
@@ -103,14 +78,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IReadOnlyDictionary&lt;string, OAuthToken&gt;&gt; ReadScopedOAuthTokensAsync(ProviderCredentialScope scope, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/OAuthToken.cs:121](../../../../src/Meridian.DataIntegration/Credentials/OAuthToken.cs#L121) |  |
-| <code>Task SaveScopedOAuthTokenAsync(string providerName, OAuthToken? token, ProviderCredentialScope scope, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/OAuthToken.cs:122](../../../../src/Meridian.DataIntegration/Credentials/OAuthToken.cs#L122) |  |
+| <code>Task&lt;IReadOnlyDictionary&lt;string, OAuthToken&gt;&gt; ReadScopedOAuthTokensAsync(ProviderCredentialScope scope, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/OAuthToken.cs:120](../../../../src/Meridian.DataIntegration/Credentials/OAuthToken.cs#L120) |  |
+| <code>Task SaveScopedOAuthTokenAsync(string providerName, OAuthToken? token, ProviderCredentialScope scope, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/OAuthToken.cs:121](../../../../src/Meridian.DataIntegration/Credentials/OAuthToken.cs#L121) |  |
 
 ## IScopedProviderCredentialStore
 
 Qualified name: <code>Meridian.DataIntegration.Credentials.IScopedProviderCredentialStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:157](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L157).
+Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:151](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L151).
 
 Scope-bound access never falls back to an unscoped record or process environment.
 
@@ -122,31 +97,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;ProviderCredentialStoreStatus&gt; GetScopedStatusAsync(string providerId, ProviderCredentialScope scope, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:159](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L159) |  |
-| <code>Task&lt;ProviderCredentialReadResult?&gt; ReadScopedAsync(string providerId, ProviderCredentialScope scope, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:160](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L160) |  |
-| <code>Task SaveScopedAsync(ProviderCredentialSaveRequest request, ProviderCredentialScope scope, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:161](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L161) |  |
-| <code>Task&lt;string&gt; SaveScopedRotatedCredentialsAsync(ProviderCredentialSaveRequest request, ProviderCredentialScope scope, ProviderCredentialReadResult expectedConnection, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:163](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L163) | Conditionally rotate only the selected connection and retain the replacement in recovery storage. |
-| <code>Task DeleteScopedAsync(string providerId, ProviderCredentialScope scope, string? actor = null, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:166](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L166) |  |
-| <code>Task RecordScopedVerificationAsync(ProviderCredentialVerificationUpdate update, ProviderCredentialScope scope, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:168](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L168) | Records a result only for the nonblank expected credential generation that was tested. |
-
-## LegacyCredentialFileMigration
-
-Qualified name: <code>Meridian.DataIntegration.Credentials.LegacyCredentialFileMigration</code>. Kind: `class`.
-
-Source: [src/Meridian.DataIntegration/Credentials/LegacyCredentialFileMigration.cs:8](../../../../src/Meridian.DataIntegration/Credentials/LegacyCredentialFileMigration.cs#L8).
-
-Serializes legacy secret import and restartable plaintext cleanup across processes.
-
-```csharp
-public static class LegacyCredentialFileMigration
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static async Task MigrateAsync(string sourcePath, Func&lt;string, CancellationToken, Task&gt; importSnapshot, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/LegacyCredentialFileMigration.cs:19](../../../../src/Meridian.DataIntegration/Credentials/LegacyCredentialFileMigration.cs#L19) | Imports a legacy JSON snapshot once it has been exclusively claimed. The callback must retain the imported data in both encrypted generations and finish its audit before returning. Completed imports move out of the discovery path before erasure, so cleanup can resume after interruption without parsing an erased or partially erased source. |
-| <code>public static void RestrictAccess(string sourcePath);</code> | [src/Meridian.DataIntegration/Credentials/LegacyCredentialFileMigration.cs:61](../../../../src/Meridian.DataIntegration/Credentials/LegacyCredentialFileMigration.cs#L61) | Restricts retained legacy credential and interrupted-migration snapshots without claiming their unassigned contents. Permission failures propagate to the scoped startup boundary. |
+| <code>Task&lt;ProviderCredentialStoreStatus&gt; GetScopedStatusAsync(string providerId, ProviderCredentialScope scope, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:153](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L153) |  |
+| <code>Task&lt;ProviderCredentialReadResult?&gt; ReadScopedAsync(string providerId, ProviderCredentialScope scope, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:154](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L154) |  |
+| <code>Task SaveScopedAsync(ProviderCredentialSaveRequest request, ProviderCredentialScope scope, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:155](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L155) |  |
+| <code>Task&lt;string&gt; SaveScopedRotatedCredentialsAsync(ProviderCredentialSaveRequest request, ProviderCredentialScope scope, ProviderCredentialReadResult expectedConnection, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:157](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L157) | Conditionally rotate only the selected connection and retain the replacement in recovery storage. |
+| <code>Task DeleteScopedAsync(string providerId, ProviderCredentialScope scope, string? actor = null, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:160](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L160) |  |
+| <code>Task RecordScopedVerificationAsync(ProviderCredentialVerificationUpdate update, ProviderCredentialScope scope, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:162](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L162) | Records a result only for the nonblank expected credential generation that was tested. |
 
 ## OAuthProviderConfig
 
@@ -296,7 +252,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.DataIntegration.Credentials.ProviderCredentialConflictException</code>. Kind: `class`.
 
-Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:75](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L75).
+Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:69](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L69).
 
 Indicates that credentials changed concurrently and the operation must use the current connection.
 
@@ -308,8 +264,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ProviderCredentialConflictException() : base(&quot;Provider credentials changed during the operation. Retry using the current connection.&quot;);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:77](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L77) |  |
-| <code>public ProviderCredentialConflictException(string message) : base(message);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:80](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L80) |  |
+| <code>public ProviderCredentialConflictException() : base(&quot;Provider credentials changed during the operation. Retry using the current connection.&quot;);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:71](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L71) |  |
+| <code>public ProviderCredentialConflictException(string message) : base(message);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:74](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L74) |  |
 
 ## ProviderCredentialFieldDefinition
 
@@ -355,7 +311,7 @@ public sealed class ProviderCredentialOwnershipRequiredException() : InvalidOper
 
 Qualified name: <code>Meridian.DataIntegration.Credentials.ProviderCredentialReadResult</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:102](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L102).
+Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:96](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L96).
 
 ```csharp
 public sealed record ProviderCredentialReadResult(string ProviderId, ProviderCredentialSourceDto Source, IReadOnlyDictionary<string, string> Credentials, string? Environment, string? ExternalAccountId, DateTimeOffset? SavedAt, DateTimeOffset? LastVerifiedAt, DateTimeOffset? LastSuccessfulAt, DateTimeOffset? LastFailureAt, string? LastError, IReadOnlyDictionary<string, string> AuditMetadata)
@@ -365,14 +321,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string CredentialGeneration =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:115](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L115) |  |
-| <code>public string? Get(string fieldName) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:117](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L117) |  |
+| <code>public string CredentialGeneration =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:109](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L109) |  |
+| <code>public string? Get(string fieldName) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:111](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L111) |  |
 
 ## ProviderCredentialSaveRequest
 
 Qualified name: <code>Meridian.DataIntegration.Credentials.ProviderCredentialSaveRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:36](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L36).
+Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:30](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L30).
 
 ```csharp
 public sealed record ProviderCredentialSaveRequest(string ProviderId, IReadOnlyDictionary<string, string?> Credentials, string? Environment = null, string? Actor = null, IReadOnlyDictionary<string, string>? Metadata = null);
@@ -382,7 +338,7 @@ public sealed record ProviderCredentialSaveRequest(string ProviderId, IReadOnlyD
 
 Qualified name: <code>Meridian.DataIntegration.Credentials.ProviderCredentialScope</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:123](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L123).
+Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:117](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L117).
 
 Explicit ownership boundary for provider secrets; values must come from trusted routing context.
 
@@ -394,11 +350,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ProviderCredentialScope(string tenantId, string connectionId, string externalAccountId, string environment);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:125](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L125) |  |
-| <code>public string TenantId { get; }</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:132](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L132) |  |
-| <code>public string ConnectionId { get; }</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:133](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L133) |  |
-| <code>public string ExternalAccountId { get; }</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:134](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L134) |  |
-| <code>public string Environment { get; }</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:135](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L135) |  |
+| <code>public ProviderCredentialScope(string tenantId, string connectionId, string externalAccountId, string environment);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:119](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L119) |  |
+| <code>public string TenantId { get; }</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:126](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L126) |  |
+| <code>public string ConnectionId { get; }</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:127](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L127) |  |
+| <code>public string ExternalAccountId { get; }</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:128](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L128) |  |
+| <code>public string Environment { get; }</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:129](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L129) |  |
 
 ## ProviderCredentialStoreServiceKeys
 
@@ -422,7 +378,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.DataIntegration.Credentials.ProviderCredentialStoreStatus</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:83](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L83).
+Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:77](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L77).
 
 ```csharp
 public sealed record ProviderCredentialStoreStatus(string ProviderId, string DisplayName, ProviderCredentialStateDto CredentialState, ProviderCredentialSourceDto CredentialSource, ProviderVerificationStateDto VerificationState, DateTimeOffset? SavedAt, DateTimeOffset? UpdatedAt, DateTimeOffset? LastVerifiedAt, DateTimeOffset? LastSuccessfulAt, DateTimeOffset? LastFailureAt, string? LastError, string? MaskedKeyPreview, string? Environment, string? ExternalAccountId, IReadOnlyList<string> MissingFields, IReadOnlyList<string> PresentFields, IReadOnlyDictionary<string, string> AuditMetadata);
@@ -432,7 +388,7 @@ public sealed record ProviderCredentialStoreStatus(string ProviderId, string Dis
 
 Qualified name: <code>Meridian.DataIntegration.Credentials.ProviderCredentialValidationException</code>. Kind: `class`.
 
-Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:44](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L44).
+Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:38](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L38).
 
 Reports credential field names that are not accepted for the selected provider.
 
@@ -444,15 +400,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ProviderCredentialValidationException(string providerId, IReadOnlyList&lt;string&gt; unknownFields) : base(BuildMessage(providerId, unknownFields));</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:46](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L46) |  |
-| <code>public string ProviderId { get; }</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:53](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L53) |  |
-| <code>public IReadOnlyList&lt;string&gt; UnknownFields { get; }</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:55](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L55) |  |
+| <code>public ProviderCredentialValidationException(string providerId, IReadOnlyList&lt;string&gt; unknownFields) : base(BuildMessage(providerId, unknownFields));</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:40](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L40) |  |
+| <code>public string ProviderId { get; }</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:47](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L47) |  |
+| <code>public IReadOnlyList&lt;string&gt; UnknownFields { get; }</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:49](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L49) |  |
 
 ## ProviderCredentialVerificationUpdate
 
 Qualified name: <code>Meridian.DataIntegration.Credentials.ProviderCredentialVerificationUpdate</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:63](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L63).
+Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:57](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L57).
 
 ```csharp
 public sealed record ProviderCredentialVerificationUpdate(string ProviderId, bool Success, string? ErrorMessage = null, string? ExternalAccountId = null, DateTimeOffset? VerifiedAt = null, string? Actor = null)
@@ -462,7 +418,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? ExpectedCredentialGeneration { get; init; }</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:71](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L71) |  |
+| <code>public string? ExpectedCredentialGeneration { get; init; }</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:65](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L65) |  |
 
 ## ProviderSetupContext
 
@@ -568,6 +524,24 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public QuickBooksProviderSetupHandler() : base(&quot;quickbooks&quot;, [&quot;qbo&quot;, &quot;quickbooks-online&quot;], true, ProviderConnectionMode.ReadOnly, false, credentialOnly : true);</code> | [src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs:231](../../../../src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs#L231) |  |
+
+## RetainedCredentialFileAccess
+
+Qualified name: <code>Meridian.DataIntegration.Credentials.RetainedCredentialFileAccess</code>. Kind: `class`.
+
+Source: [src/Meridian.DataIntegration/Credentials/RetainedCredentialFileAccess.cs:10](../../../../src/Meridian.DataIntegration/Credentials/RetainedCredentialFileAccess.cs#L10).
+
+Keeps plaintext credential files left behind by earlier releases owner-only. Their contents are never read, imported or erased; an operator removes them after rotating the credentials.
+
+```csharp
+public static class RetainedCredentialFileAccess
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void RestrictAccess(string sourcePath);</code> | [src/Meridian.DataIntegration/Credentials/RetainedCredentialFileAccess.cs:19](../../../../src/Meridian.DataIntegration/Credentials/RetainedCredentialFileAccess.cs#L19) | Restricts a retained plaintext credential file and its interrupted-import snapshot without claiming their contents. Permission failures propagate to the caller&#x27;s startup boundary. |
 
 ## StoredCredentialStatus
 
@@ -915,3 +889,21 @@ Declared public members:
 | <code>public MarketEventTier? Tier { get; init; }</code> | [src/Meridian.DataIntegration/Filters/MarketEventFilter.cs:11](../../../../src/Meridian.DataIntegration/Filters/MarketEventFilter.cs#L11) |  |
 | <code>public bool Matches(in MarketEvent evt);</code> | [src/Meridian.DataIntegration/Filters/MarketEventFilter.cs:13](../../../../src/Meridian.DataIntegration/Filters/MarketEventFilter.cs#L13) |  |
 | <code>public static MarketEventFilter All =&gt; …;</code> | [src/Meridian.DataIntegration/Filters/MarketEventFilter.cs:27](../../../../src/Meridian.DataIntegration/Filters/MarketEventFilter.cs#L27) |  |
+
+## HistoricalBarPoint
+
+Qualified name: <code>Meridian.DataIntegration.Historical.HistoricalBarPoint</code>. Kind: `record`.
+
+Source: [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1084](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1084).
+
+A single OHLCV bar. Source is the provenance label of the stored events aggregated into the bucket: the vendor label when every contributing event carries the same one, the documented MixedSources sentinel when the bucket folds together more than one provenance state (two different vendors, or labeled plus unlabeled events), and null when no contributing event was labeled — provenance unknown. IsAdjusted is the price-adjustment regime (HistoricalBar.IsAdjusted semantics): true/false only when every contributing event declares that same regime; any mixing or undeclared regime collapses to the honest null (unknown). There is deliberately no &quot;mixed&quot; sentinel for the regime — a bool? cannot express one honestly, so unknown and mixed share null.
+
+```csharp
+public sealed record HistoricalBarPoint(DateTimeOffset Start, decimal Open, decimal High, decimal Low, decimal Close, long Volume, decimal Vwap, int TradeCount, string? Source = null, bool? IsAdjusted = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string MixedSources = &quot;mixed&quot;;</code> | [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1102](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1102) | Sentinel Source value for a bucket whose contributing events do not share a single provenance state (multiple vendors, or labeled mixed with unlabeled events). Distinct from null, which means no contributing event was labeled. |

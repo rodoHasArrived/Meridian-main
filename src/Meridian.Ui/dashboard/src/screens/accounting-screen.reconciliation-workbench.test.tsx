@@ -3,6 +3,7 @@ import { MemoryRouter } from "react-router-dom";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { backToBreakQueue, expectNarrowWorkbenchViewport, inspectReconciliationBreak as inspectSelectedBreak } from "@/test/narrow-workbench";
 import { resetSinceLastVisitCache, type RecordSurfaceVisit, type SurfaceVisitServices } from "@/lib/since-last-visit";
 import { ReconciliationWorkbench } from "./accounting-screen.reconciliation-workbench";
 import { buildReconciliationBreakQueueState, useReconciliationResolveDialogViewModel } from "./accounting-screen.view-model";
@@ -83,7 +84,11 @@ function inspector() { return screen.getByRole("region", { name: /^Reconciliatio
 function bulkBar() { return screen.getByRole("region", { name: "Bulk break actions" }); }
 function queueRows() { return within(breakTable()).getAllByRole("row").slice(1); }
 
+// The test viewport is the constrained layout (see @/test/narrow-workbench): the break queue
+// and the inspector are shown one at a time.
+
 beforeEach(() => {
+  expectNarrowWorkbenchViewport();
   resetSinceLastVisitCache();
   window.sessionStorage.clear();
 });
@@ -95,9 +100,9 @@ describe("Reconciliation workbench", () => {
     await user.type(screen.getByRole("textbox", { name: "Search breaks" }), "Fee review");
     expect(within(breakTable()).queryByText("Cash review")).not.toBeInTheDocument();
     expect(within(breakTable()).getByText("Fee review")).toBeInTheDocument();
-    expect(within(inspector()).getByRole("heading", { name: /Cash review/ })).toBeInTheDocument();
     expect(screen.getByText("The selected break is outside these filters. Its evidence remains in the inspector.")).toBeInTheDocument();
     expect(screen.getByText("1 of 2 loaded breaks")).toBeInTheDocument();
+    expect(within(await inspectSelectedBreak(user)).getByRole("heading", { name: /Cash review/ })).toBeInTheDocument();
   });
 
   it("keeps controls available for no matches and clears filters without losing the sort", async () => {
@@ -120,7 +125,7 @@ describe("Reconciliation workbench", () => {
     const user = userEvent.setup();
     const { assignBreak } = renderWorkbench();
     expect(within(breakTable()).queryByRole("button", { name: /assign/i })).not.toBeInTheDocument();
-    await user.click(within(inspector()).getByRole("button", { name: /assign/i }));
+    await user.click(within(await inspectSelectedBreak(user)).getByRole("button", { name: /assign/i }));
     expect(assignBreak).toHaveBeenCalledExactlyOnceWith("cash-1");
   });
 
@@ -202,8 +207,10 @@ describe("Reconciliation workbench", () => {
     const readResult = vi.fn(async (): Promise<ReconciliationBulkCaseworkResult> => {
       const result = bulkResult(services.execute.mock.calls[0][0], () => true);
       return { ...result, results: result.results.map((entry) => {
-        if (!entry.item) throw new Error("The retained fixture result must include its case.");
-        return { ...entry, item: { ...entry.item, sourceType: "statement", evidenceLinks: ["urn:meridian:statement-casework-handoff:pending:fixture"] } };
+        if (!entry.item) throw new Error(`The bulk fixture has no retained queue item for ${entry.breakId}.`);
+        return { ...entry,
+          item: { ...entry.item, sourceType: "statement", evidenceLinks: ["urn:meridian:statement-casework-handoff:pending:fixture"] }
+        };
       }) };
     });
     renderWorkbench(undefined, { ...services, readResult });
@@ -231,8 +238,10 @@ describe("Reconciliation workbench", () => {
   it("discards an open rationale when selection moves to another break", async () => {
     const user = userEvent.setup();
     renderWorkbench();
-    await user.click(within(inspector()).getByRole("button", { name: /resolve/i }));
+    await user.click(within(await inspectSelectedBreak(user)).getByRole("button", { name: /resolve/i }));
     await user.type(screen.getByRole("textbox", { name: "Resolve rationale" }), "Review in progress");
+    await backToBreakQueue(user);
+    // Activating another row opens the inspector on that break.
     await user.click(within(breakTable()).getAllByRole("row")[2]);
     await waitFor(() => expect(screen.queryByRole("textbox", { name: "Resolve rationale" })).not.toBeInTheDocument());
     await user.click(within(inspector()).getByRole("button", { name: /resolve/i }));
@@ -444,7 +453,8 @@ describe("ReconciliationWorkbench lifecycle (Phase 1)", () => {
       sourceRows: breaks.map((item) => ({ ...item, version: 3, lifecycleState: "Investigating" as const })),
       props: { lifecycleServices, auditLoader }
     });
-    const rail = inspector();
+    const user = userEvent.setup();
+    const rail = await inspectSelectedBreak(user);
     const lifecycle = within(rail).getByRole("region", { name: "Break lifecycle" });
     expect(lifecycle).toHaveTextContent("State: Investigating");
     expect(within(lifecycle).getByRole("button", { name: "Waive" })).toBeEnabled();
@@ -455,8 +465,9 @@ describe("ReconciliationWorkbench lifecycle (Phase 1)", () => {
     expect(auditLoader).toHaveBeenCalledWith("cash-1");
   });
 
-  it("offers no lifecycle decisions when the queue payload has no lifecycle state", () => {
+  it("offers no lifecycle decisions when the queue payload has no lifecycle state", async () => {
     renderWorkbench(undefined, fakeBulkServices(), offlineVisits, { sourceRows: breaks });
-    expect(within(inspector()).queryByRole("region", { name: "Break lifecycle" })).not.toBeInTheDocument();
+    const rail = await inspectSelectedBreak(userEvent.setup());
+    expect(within(rail).queryByRole("region", { name: "Break lifecycle" })).not.toBeInTheDocument();
   });
 });

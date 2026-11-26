@@ -92,6 +92,177 @@ public sealed class TrialBalanceAmountProvenanceTests
             .Should().OnlyContain(row => row.BalanceProofSubjectId == null);
     }
 
+    [Theory]
+    [InlineData("empty")]
+    [InlineData("wrong-kind")]
+    [InlineData("missing-part")]
+    [InlineData("extra-part")]
+    [InlineData("invalid-sequence")]
+    [InlineData("zero-sequence")]
+    [InlineData("negative-sequence")]
+    [InlineData("overflow-sequence")]
+    [InlineData("invalid-row-hash")]
+    [InlineData("invalid-population-hash")]
+    [InlineData("uppercase-row-hash")]
+    [InlineData("uppercase-population-hash")]
+    public async Task MalformedSubject_StillChecksScopeWithoutReadingJournalPopulation(string condition)
+    {
+        using var fixture = new Fixture();
+        var parts = Fixture.SyntacticallyValidSubject.Split(':');
+        var subject = condition switch
+        {
+            "empty" => string.Empty,
+            "wrong-kind" => $"other:{parts[1]}:{parts[2]}:{parts[3]}",
+            "missing-part" => $"trial-balance:{parts[1]}:{parts[2]}",
+            "extra-part" => Fixture.SyntacticallyValidSubject + ":extra",
+            "invalid-sequence" => $"trial-balance:invalid:{parts[2]}:{parts[3]}",
+            "zero-sequence" => $"trial-balance:0:{parts[2]}:{parts[3]}",
+            "negative-sequence" => $"trial-balance:-1:{parts[2]}:{parts[3]}",
+            "overflow-sequence" => $"trial-balance:9223372036854775808:{parts[2]}:{parts[3]}",
+            "invalid-row-hash" => $"trial-balance:1:invalid:{parts[3]}",
+            "invalid-population-hash" => $"trial-balance:1:{parts[2]}:invalid",
+            "uppercase-row-hash" => $"trial-balance:1:{parts[2].ToUpperInvariant()}:{parts[3]}",
+            "uppercase-population-hash" => $"trial-balance:1:{parts[2]}:{parts[3].ToUpperInvariant()}",
+            _ => throw new ArgumentOutOfRangeException(nameof(condition))
+        };
+
+        (await fixture.Service.GetPacketAsync(subject, fixture.Scope)).Should().BeNull();
+
+        fixture.VerifyScopeWasResolved();
+        fixture.VerifyNoPopulationRead();
+    }
+
+    [Theory]
+    [InlineData("tenant")]
+    [InlineData("company")]
+    [InlineData("fund")]
+    [InlineData("book")]
+    [InlineData("period")]
+    [InlineData("missing-tenant")]
+    [InlineData("missing-company")]
+    [InlineData("missing-fund")]
+    [InlineData("missing-book")]
+    [InlineData("missing-period")]
+    public async Task ExactScope_IsRequiredBeforeReadingJournalPopulation(string dimension)
+    {
+        using var fixture = new Fixture();
+        var scope = dimension switch
+        {
+            "tenant" => fixture.Scope with { TenantId = "other-tenant" },
+            "company" => fixture.Scope with { CompanyId = "other-company" },
+            "fund" => fixture.Scope with { FundProfileId = "other-fund" },
+            "book" => fixture.Scope with { LedgerBookId = Guid.NewGuid() },
+            "period" => fixture.Scope with { PeriodId = Guid.NewGuid() },
+            "missing-tenant" => fixture.Scope with { TenantId = " " },
+            "missing-company" => fixture.Scope with { CompanyId = " " },
+            "missing-fund" => fixture.Scope with { FundProfileId = " " },
+            "missing-book" => fixture.Scope with { LedgerBookId = Guid.Empty },
+            "missing-period" => fixture.Scope with { PeriodId = Guid.Empty },
+            _ => throw new ArgumentOutOfRangeException(nameof(dimension))
+        };
+
+        (await fixture.Service.GetPacketAsync(Fixture.SyntacticallyValidSubject, scope)).Should().BeNull();
+
+        fixture.VerifyNoPopulationRead();
+    }
+
+    [Theory]
+    [InlineData("missing-owner")]
+    [InlineData("owner-tenant")]
+    [InlineData("owner-company")]
+    [InlineData("owner-fund")]
+    [InlineData("missing-book")]
+    [InlineData("book-fund")]
+    [InlineData("book-identity")]
+    [InlineData("missing-period")]
+    [InlineData("period-book")]
+    [InlineData("period-identity")]
+    public async Task RetainedScopeMismatch_DeniesBeforeReadingJournalPopulation(string condition)
+    {
+        using var fixture = new Fixture();
+        fixture.ChangeAuthority(condition);
+
+        (await fixture.Service.GetPacketAsync(Fixture.SyntacticallyValidSubject, fixture.Scope)).Should().BeNull();
+
+        fixture.VerifyNoPopulationRead();
+    }
+
+    [Fact]
+    public async Task Binding_UsesAuthorizedCurrencyWhenTheDiscoveryBookIsStale()
+    {
+        using var fixture = new Fixture();
+        await fixture.AddJournalAsync(125m, retainSources: true);
+        fixture.ReturnCanonicalBookAfterStaleDiscovery();
+
+        var row = (await fixture.BindAsync()).Single(value => value.AccountName == "Cash");
+
+        row.BalanceProofCurrency.Should().Be("USD");
+        row.BalanceProofScope.Should().Be(fixture.Scope);
+        fixture.VerifyScopeWasResolved(bookReads: 2);
+        fixture.ResetCalls();
+
+        var packet = await fixture.Service.GetPacketAsync(row.BalanceProofSubjectId!, fixture.Scope);
+
+        packet!.LedgerAmount!.Status.Should().Be(EvidenceStatusDto.Ready);
+        packet.LedgerAmount.Amount.Should().Be(125m);
+        packet.LedgerAmount.Currency.Should().Be("USD");
+        fixture.VerifyScopeWasResolved();
+    }
+
+    [Fact]
+    public async Task Packet_UsesTheAuthorizedBookSnapshotWithoutASecondUnvalidatedRead()
+    {
+        using var fixture = new Fixture();
+        await fixture.AddJournalAsync(125m, retainSources: true);
+        var row = (await fixture.BindAsync()).Single(value => value.AccountName == "Cash");
+        fixture.ResetCalls();
+        fixture.ReturnForeignBookOnSecondRead();
+
+        var packet = await fixture.Service.GetPacketAsync(row.BalanceProofSubjectId!, fixture.Scope);
+
+        packet!.LedgerAmount!.Status.Should().Be(EvidenceStatusDto.Ready);
+        packet.LedgerAmount.Amount.Should().Be(125m);
+        packet.LedgerAmount.Currency.Should().Be("USD");
+        packet.LedgerAmount.Scope.Should().Be(fixture.Scope);
+        fixture.VerifyScopeWasResolved();
+    }
+
+    [Theory]
+    [InlineData("row")]
+    [InlineData("population")]
+    [InlineData("sequence")]
+    public async Task ChangedCheckpointIdentity_CannotBorrowAnAuthorizedPopulation(string component)
+    {
+        using var fixture = new Fixture();
+        await fixture.AddJournalAsync(125m, retainSources: true);
+        var row = (await fixture.BindAsync()).Single(value => value.AccountName == "Cash");
+        var parts = row.BalanceProofSubjectId!.Split(':');
+        var index = component switch { "row" => 2, "population" => 3, _ => 1 };
+        parts[index] = index == 1 ? "2" : (parts[index][0] == 'a' ? "b" : "a") + parts[index][1..];
+
+        (await fixture.Service.GetPacketAsync(string.Join(':', parts), fixture.Scope)).Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("duplicate-sequence")]
+    [InlineData("zero-sequence")]
+    [InlineData("foreign-period")]
+    public async Task InvalidRetainedPopulation_DoesNotReturnAPacket(string condition)
+    {
+        using var fixture = new Fixture();
+        await fixture.AddJournalAsync(125m, retainSources: true);
+        var row = (await fixture.BindAsync()).Single(value => value.AccountName == "Cash");
+        var original = fixture.Records[0];
+        if (condition == "duplicate-sequence")
+            fixture.Records.Add(original);
+        else
+            fixture.Records[0] = condition == "zero-sequence"
+                ? original with { GlobalSequence = 0 }
+                : original with { PeriodId = Guid.NewGuid() };
+
+        (await fixture.Service.GetPacketAsync(row.BalanceProofSubjectId!, fixture.Scope)).Should().BeNull();
+    }
+
     private sealed class Fixture : IDisposable
     {
         private readonly string _root = Path.Combine(Path.GetTempPath(), "trial-balance-proof-" + Guid.NewGuid().ToString("N"));
@@ -99,6 +270,10 @@ public sealed class TrialBalanceAmountProvenanceTests
         private readonly Mock<ILedgerBookService> _books = new();
         private readonly Mock<IFundProfileTenancyRegistry> _tenancy = new();
         private readonly FileEvidenceArtifactStore _artifacts;
+        private readonly FundProfileOwnership _owner;
+        private readonly LedgerBookDto _book;
+        private readonly LedgerAccountingPeriod _period;
+        public static string SyntacticallyValidSubject => $"trial-balance:1:{new string('a', 64)}:{new string('b', 64)}";
         public LedgerAmountScopeDto Scope { get; } = new("tenant", "company", "fund", Guid.NewGuid(), Guid.NewGuid());
         public List<LedgerJournalEntryRecord> Records { get; } = [];
         public TrialBalanceAmountProvenanceService Service { get; }
@@ -107,17 +282,77 @@ public sealed class TrialBalanceAmountProvenanceTests
         {
             _artifacts = new FileEvidenceArtifactStore(_root, NullLogger<FileEvidenceArtifactStore>.Instance);
             var now = DateTimeOffset.UtcNow;
+            _owner = new FundProfileOwnership(Scope.FundProfileId, Scope.TenantId, Scope.CompanyId);
+            _book = new LedgerBookDto(Scope.LedgerBookId, Scope.FundProfileId, Guid.NewGuid(), FundStructureNodeKindDto.Fund, "Fund", "USD", now, now);
+            _period = new LedgerAccountingPeriod(Scope.PeriodId, Scope.LedgerBookId, 2026, 10, "October", new(2026, 10, 1), new(2026, 10, 31), "HardClosed", now, now, 1);
             _tenancy.Setup(service => service.ResolveAsync(Scope.FundProfileId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new FundProfileOwnership(Scope.FundProfileId, Scope.TenantId, Scope.CompanyId));
+                .ReturnsAsync(_owner);
             _books.Setup(service => service.GetBookAsync(Scope.LedgerBookId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new LedgerBookDto(Scope.LedgerBookId, Scope.FundProfileId, Guid.NewGuid(), FundStructureNodeKindDto.Fund, "Fund", "USD", now, now));
+                .ReturnsAsync(_book);
             _journals.Setup(store => store.GetPeriodAsync(Scope.PeriodId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new LedgerAccountingPeriod(Scope.PeriodId, Scope.LedgerBookId, 2026, 10, "October", new(2026, 10, 1), new(2026, 10, 31), "HardClosed", now, now, 1));
+                .ReturnsAsync(_period);
             _journals.Setup(store => store.QueryAsync(It.Is<LedgerJournalEntryQuery>(query => query.LedgerBookId == Scope.LedgerBookId && query.PeriodId == Scope.PeriodId), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(() => Records);
             var posted = new PostedLedgerAmountProvenanceService(_journals.Object, _books.Object, _tenancy.Object, _artifacts);
             Service = new TrialBalanceAmountProvenanceService(_journals.Object, _books.Object, _tenancy.Object, posted);
         }
+
+        public void ChangeAuthority(string condition)
+        {
+            if (condition.StartsWith("owner-", StringComparison.Ordinal) || condition == "missing-owner")
+                _tenancy.Setup(service => service.ResolveAsync(Scope.FundProfileId, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(condition switch
+                    {
+                        "owner-tenant" => _owner with { TenantId = "other-tenant" },
+                        "owner-company" => _owner with { CompanyId = "other-company" },
+                        "owner-fund" => _owner with { FundProfileId = "other-fund" },
+                        _ => null
+                    });
+            else if (condition.StartsWith("book-", StringComparison.Ordinal) || condition == "missing-book")
+                _books.Setup(service => service.GetBookAsync(Scope.LedgerBookId, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(condition switch
+                    {
+                        "book-fund" => _book with { FundProfileId = "other-fund" },
+                        "book-identity" => _book with { LedgerBookId = Guid.NewGuid() },
+                        _ => null
+                    });
+            else
+                _journals.Setup(store => store.GetPeriodAsync(Scope.PeriodId, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(condition switch
+                    {
+                        "period-book" => _period with { LedgerBookId = Guid.NewGuid() },
+                        "period-identity" => _period with { PeriodId = Guid.NewGuid() },
+                        _ => null
+                    });
+        }
+
+        public void ResetCalls()
+        {
+            _tenancy.Invocations.Clear();
+            _books.Invocations.Clear();
+            _journals.Invocations.Clear();
+        }
+
+        public void ReturnForeignBookOnSecondRead()
+            => _books.SetupSequence(service => service.GetBookAsync(Scope.LedgerBookId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(_book)
+                .ReturnsAsync(_book with { LedgerBookId = Guid.NewGuid(), FundProfileId = "other-fund", BaseCurrency = "EUR" });
+
+        public void ReturnCanonicalBookAfterStaleDiscovery()
+            => _books.SetupSequence(service => service.GetBookAsync(Scope.LedgerBookId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(_book with { BaseCurrency = "EUR" })
+                .ReturnsAsync(_book)
+                .ReturnsAsync(_book);
+
+        public void VerifyScopeWasResolved(int bookReads = 1)
+        {
+            _tenancy.Verify(service => service.ResolveAsync(Scope.FundProfileId, It.IsAny<CancellationToken>()), Times.Once);
+            _books.Verify(service => service.GetBookAsync(Scope.LedgerBookId, It.IsAny<CancellationToken>()), Times.Exactly(bookReads));
+            _journals.Verify(store => store.GetPeriodAsync(Scope.PeriodId, It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        public void VerifyNoPopulationRead()
+            => _journals.Verify(store => store.QueryAsync(It.IsAny<LedgerJournalEntryQuery>(), It.IsAny<CancellationToken>()), Times.Never);
 
         public LedgerPeriodSummaryDto Summary() => new(Scope.PeriodId, Scope.LedgerBookId, 2026, 10, "October",
             PostgresLedgerBookService.ProjectTrialBalanceCheckpoint(Records), 0m, 0m, 0m, null, 0, LedgerPeriodSignoffStatusDto.Pending, DateTimeOffset.UtcNow);

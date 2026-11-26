@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RegisterFixedAssetRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.RegisterFixedAssetRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs#L21).
+
+Registers or replaces one fixed asset on a fund book&#x27;s depreciation register.
+
+```csharp
+public sealed record RegisterFixedAssetRequest(string FundProfileId, Guid LedgerBookId, FixedAssetRecord Asset, string EvidenceUri, DateOnly? RetiredOn = null);
+```
+
 ## ReplayEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ReplayEndpoints</code>. Kind: `class`.
@@ -1230,15 +1242,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task VerifyMonitoringAsync(BondMonitoringCaptureRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:47](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L47) |  |
 | <code>public async Task VerifyAsync(AccountCashForecastRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:71](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L71) |  |
-
-## AccountCashForecastSourceAuthorityException
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashForecastSourceAuthorityException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:34](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L34).
-
-Indicates that cash-forecast source evidence could not satisfy its authority requirements.
-
-```csharp
-public sealed class AccountCashForecastSourceAuthorityException(string message) : MeridianException(message);
-```

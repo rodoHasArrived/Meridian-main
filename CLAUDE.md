@@ -33,6 +33,8 @@ Meridian is a .NET 10 trading and operational-finance platform with fund operati
     use a `codex/<short-task-name>` or `claude/<short-task-name>` branch (either agent prefix is
     accepted), open a PR to `main`, and treat GitHub Actions `Meridian CI / quality-gate` as the
     authoritative merge gate.
+11. Before opening a PR, list open PRs touching the same `src/<Project>/` directory; if one exists,
+    build on its branch or name it in the body under `Overlaps`.
 
 ## Current Product Direction
 
@@ -58,6 +60,11 @@ Meridian is a .NET 10 trading and operational-finance platform with fund operati
   `Strategy`, `Data`, and `Settings`.
 
 ## Quick Commands
+
+**Before every push:** `dotnet format whitespace Meridian.sln --verify-no-changes`,
+`python build/python/cli/buildctl.py regen --fix`, then `make verify-fast` (or the touched lane).
+Commit the regenerated reviewed files in the same push. The `.githooks/pre-push` hook installed by
+`bash scripts/dev/install-git-hooks.sh` enforces the whitespace part for pushed C#/VB files.
 
 Use the narrowest relevant command:
 
@@ -129,7 +136,6 @@ gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotn
 - `.claude/settings.local.json` - tracked repo-local allowlist used by this project.
 - `.claude/agents/` - lightweight Claude agent entrypoints that route to shared skills and docs.
 - `.claude/skills/` - portable Agent Skill packages for Claude-compatible hosts.
-- `.claude/plugins/` - checked-in Claude plugin packages with plugin manifests, agents, and skills.
 - `.claude/skills/_shared/project-context.md` - canonical Claude-side project grounding.
 
 Keep Claude-specific files focused on host mechanics and discovery. Shared policy belongs in

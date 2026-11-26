@@ -1299,7 +1299,7 @@
     },
     {
       "assetClass": "CertificateOfDeposit",
-      "termsVersion": 5,
+      "termsVersion": 6,
       "lotUnit": "FaceValue",
       "cashFlowBehavior": "ContractualSchedule",
       "fields": [
@@ -1403,13 +1403,62 @@
           "role": "Economic"
         },
         {
+          "key": "issueDate",
+          "fieldPath": "assetSpecificTerms.issueDate",
+          "label": "Issue date",
+          "type": "Date",
+          "editor": "Date",
+          "group": "Dates",
+          "order": 6,
+          "required": false,
+          "scalarEditable": true,
+          "choices": [],
+          "aliases": [],
+          "role": "Economic"
+        },
+        {
+          "key": "principal",
+          "fieldPath": "assetSpecificTerms.principal",
+          "label": "Principal",
+          "type": "Decimal",
+          "editor": "Decimal",
+          "group": "Additional terms",
+          "order": 7,
+          "required": false,
+          "scalarEditable": true,
+          "choices": [],
+          "aliases": [],
+          "role": "Economic"
+        },
+        {
+          "key": "paymentFrequency",
+          "fieldPath": "assetSpecificTerms.paymentFrequency",
+          "label": "Payment frequency",
+          "type": "String",
+          "editor": "Convention",
+          "group": "Rates and accrual",
+          "order": 8,
+          "required": false,
+          "scalarEditable": true,
+          "choices": [
+            "Monthly",
+            "BiMonthly",
+            "Quarterly",
+            "SemiAnnual",
+            "Annual",
+            "AtMaturity"
+          ],
+          "aliases": [],
+          "role": "Economic"
+        },
+        {
           "key": "scheduleConventions",
           "fieldPath": "assetSpecificTerms.scheduleConventions",
           "label": "Schedule conventions",
           "type": "Object",
           "editor": "Json",
           "group": "Schedules and structure",
-          "order": 6,
+          "order": 9,
           "required": false,
           "scalarEditable": false,
           "choices": [],
@@ -1423,7 +1472,7 @@
           "type": "Array",
           "editor": "Json",
           "group": "Schedules and structure",
-          "order": 7,
+          "order": 10,
           "required": false,
           "scalarEditable": false,
           "choices": [],
@@ -1437,7 +1486,7 @@
           "type": "Array",
           "editor": "Json",
           "group": "Schedules and structure",
-          "order": 8,
+          "order": 11,
           "required": false,
           "scalarEditable": false,
           "choices": [],
@@ -1451,7 +1500,10 @@
         "maturity",
         "couponRate",
         "callableDate",
-        "dayCount"
+        "dayCount",
+        "issueDate",
+        "principal",
+        "paymentFrequency"
       ],
       "valueChoicesByKey": {
         "rateUnit": [
@@ -1474,6 +1526,16 @@
           "ActualActualIcma",
           "Nl365",
           "Actual36525"
+        ],
+        "issueDate": [],
+        "principal": [],
+        "paymentFrequency": [
+          "Monthly",
+          "BiMonthly",
+          "Quarterly",
+          "SemiAnnual",
+          "Annual",
+          "AtMaturity"
         ]
       }
     },
