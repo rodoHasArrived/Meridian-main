@@ -770,6 +770,12 @@ packaging jobs through the read-only Actions API. Historical runner assignment i
 recent capability, not a reservation or proof of current spare capacity. Missing, stale or
 inaccessible evidence is `unknown`, not a success.
 
+The same read-only job also reports release blockers that fail outside a tag run: the newest
+scheduled or manual `main` result of Production Certification (with its failed job names), of the
+nightly `verify-full` job in `ci.yml`, and of a signed coordinator rehearsal. A failure is
+`blocked`; certification older than 14 days or nightly verification older than 3 days is
+`unknown`. No completed rehearsal is a `warning`, because rehearsals are opt-in.
+
 Set `MDC_SIGNING_CERT_WARNING_DAYS` to a value from 1 to 365 to change the default 30-day renewal
 warning. Invalid, expired or missing signing evidence blocks readiness; an approaching-expiry
 warning remains visible without failing otherwise valid prerequisites. No private key or password
@@ -783,8 +789,11 @@ diagnostic evidence, not a replacement for the existing promotion and package-di
 
 The release coordinator must bind CI, security, deterministic production certification and
 web-workstation/win-x64 installed-startup proof to the tag's exact commit. Publication depends
-on those checks plus packaging and native x64/ARM64 lifecycle evidence. Packages are promoted
-without rebuilding; family/runtime-qualified evidence names prevent release asset collisions.
+on those checks plus packaging and native x64/ARM64 lifecycle evidence. Signed MSIX and consumer
+packaging start once eligibility, secret scan, CodeQL, publish smoke and the Windows preflight
+pass; they do not wait for the coordinated Meridian CI run or production certification (including
+its owner recovery approval). Those packages stay run artifacts until `release`, which still needs
+every gate. Packages are promoted without rebuilding; family/runtime-qualified evidence names prevent release asset collisions.
 Evaluation prereleases remain separate and do not establish production certification.
 
 The coordinator is `desktop-installer-packaging.yml`. Same-repository reusable workflow
