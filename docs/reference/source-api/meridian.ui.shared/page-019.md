@@ -6,92 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## SecureReportingGrantIssueResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingGrantIssueResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:56](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L56).
-
-The bearer is returned exactly once inside RecipientAccessUri&#x27;s fragment and is not duplicated into a second result property or persisted by the service.
-
-```csharp
-public sealed record SecureReportingGrantIssueResult(string GrantId, string RecipientAccessUri, DateTimeOffset ExpiresAtUtc, string Audience, string RunId, string PackageId, IReadOnlyList<string> ArtifactIds, ReportingAccessPrincipalKind AudienceKind = ReportingAccessPrincipalKind.User);
-```
-
-## SecureReportingTransportCapability
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingTransportCapability</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:88](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L88).
-
-Credential-free transport readiness exposed to authenticated reporting operators.
-
-```csharp
-public sealed record SecureReportingTransportCapability(string TransportId, string DisplayName, string DeliveryMode, bool IsExternal, bool RequiresDestination, bool UsesGovernedRecipientScope, bool IssuesAccessGrant, bool SupportsProviderReceipts, bool IsConfigured, bool IsInfrastructureReady, string? InfrastructureDisabledReasonCode, bool IsReady, string? DisabledReasonCode);
-```
-
-## SecurityInstrumentTermsReadService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SecurityInstrumentTermsReadService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs:14](../../../../src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs#L14).
-
-Projects retained Security Master terms for inspection without running a codec, upgrading a payload, choosing between aliases or calculating economics. All such decisions stay with their canonical owners. Even unsupported payloads remain available as exact JSON text.
-
-```csharp
-public sealed class SecurityInstrumentTermsReadService(ISecurityMasterQueryService query, ISecurityAssetProfileCatalog? profiles = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;SecurityInstrumentTermsDto?&gt; ReadAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs:18](../../../../src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs#L18) |  |
-| <code>public static SecurityInstrumentTermsDto Project(SecurityDetailDto detail, SecurityEconomicDefinitionRecord? economic, ISecurityAssetProfileCatalog? profiles, DateTimeOffset retrievedAtUtc);</code> | [src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs:32](../../../../src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs#L32) |  |
-
-## SecurityMasterExceptionCaseworkService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterExceptionCaseworkService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:42](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L42).
-
-Reads Security Master-tagged cases from the authoritative reconciliation queue.
-
-```csharp
-public sealed class SecurityMasterExceptionCaseworkService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string QualityRunId = &quot;security-master-quality&quot;;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:47](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L47) | Canonical run identifier used by genuinely owner-scoped Security Master quality cases. |
-| <code>public SecurityMasterExceptionCaseworkService(IReconciliationBreakQueueRepository? breakQueueRepository, ILogger&lt;SecurityMasterExceptionCaseworkService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:51](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L51) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueItem&gt;&gt; GetAgingExceptionsAsync(ReconciliationBreakQueueScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:62](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L62) | Returns exact-scope open Security Master cases whose SLA deadline has elapsed. |
-
-## SecurityMasterExceptionSlaConfig
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterExceptionSlaConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:10](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L10).
-
-Per-category SLA configuration for Security Master exceptions.
-
-```csharp
-public sealed record SecurityMasterExceptionSlaConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int IdentifierConflictDays { get; init; } = 5;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:13](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L13) | Days to resolve an identifier conflict before SLA breach. |
-| <code>public int IncompleteRecordDays { get; init; } = 3;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:16](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L16) | Days to resolve an incomplete security record before SLA breach. |
-| <code>public int NewSecurityUnresolvedDays { get; init; } = 1;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:19](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L19) | Days to create a new unresolved security before SLA breach. |
-| <code>public int QualityHardBlockDays { get; init; } = 1;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:22](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L22) | Days to resolve a HardBlock data quality violation before SLA breach. |
-| <code>public int QualityErrorDays { get; init; } = 3;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:25](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L25) | Days to resolve an Error data quality violation before SLA breach. |
-| <code>public int QualityWarningDays { get; init; } = 5;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:28](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L28) | Days to resolve a Warning data quality violation before SLA breach. |
-
 ## SecurityMasterReconciliationSlaPolicyProvider
 
 Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterReconciliationSlaPolicyProvider</code>. Kind: `class`.
@@ -944,3 +858,87 @@ Request body for creating or updating a provider module configuration. Credentia
 ```csharp
 public sealed record UpsertProviderModuleRequest(string ModuleId, bool Enabled = true, int Priority = 100, Dictionary<string, string?>? CredentialValues = null, Dictionary<string, string?>? Settings = null);
 ```
+
+## WorkstationEntityLifecycleExternalReviewEvidenceAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationEntityLifecycleExternalReviewEvidenceAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/EntityLifecycleExternalReviewEvidenceAuthority.cs:11](../../../../src/Meridian.Ui.Shared/Services/EntityLifecycleExternalReviewEvidenceAuthority.cs#L11).
+
+Resolves the accepted immutable source document supporting an externally reviewed entity fact.
+
+```csharp
+public sealed class WorkstationEntityLifecycleExternalReviewEvidenceAuthority(IHttpContextAccessor accessor, IEvidenceArtifactStore evidenceStore) : IEntityLifecycleExternalReviewEvidenceAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IntercompanyAgreementEvidenceDto&gt; ResolveAsync(string tenantId, string actor, Guid entityId, IntercompanyAgreementEvidenceDto evidence, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/EntityLifecycleExternalReviewEvidenceAuthority.cs:14](../../../../src/Meridian.Ui.Shared/Services/EntityLifecycleExternalReviewEvidenceAuthority.cs#L14) |  |
+
+## WorkstationIntercompanyAgreementEvidenceAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationIntercompanyAgreementEvidenceAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:78](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L78).
+
+Resolves accepted, scoped Evidence Vault documents and verifies their retained bytes.
+
+```csharp
+public sealed class WorkstationIntercompanyAgreementEvidenceAuthority(IHttpContextAccessor accessor, IEvidenceArtifactStore evidenceStore) : IIntercompanyAgreementEvidenceAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt;&gt; ResolveAsync(IntercompanyAgreementCallContext context, Guid agreementId, Guid proposalId, IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; evidence, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:81](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L81) |  |
+
+## WorkstationKpiDefinitions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationKpiDefinitions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs:11](../../../../src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs#L11).
+
+The one catalog of workstation headline figures (UX Phase A). Each figure has a fixed label, the population it counts and its comparison basis; the browser&#x27;s lib/kpi-registry.ts mirrors it and tests/fixtures/kpi-definitions/kpi-definitions.json holds both to the same values. Served at /api/workstation/kpi-definitions for the WPF desktop.
+
+```csharp
+public static class WorkstationKpiDefinitions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;WorkstationKpiDefinitionDto&gt; All { get; } = [new (&quot;accounting.audit-ready&quot;, &quot;Audit ready&quot;, AccountingWorkspace, null), new (&quot;accounting.kernel-critical-jumps&quot;, &quot;Kernel jump alerts&quot;, AccountingWorkspace, null), new (&quot;accounting.open-breaks&quot;, &quot;Open breaks&quot;, &quot;Unresolved reconciliation breaks&quot;, &quot;Your last visit&quot;), new (&quot;accounting.security-gaps&quot;, &quot;Security gaps&quot;, AccountingWorkspace, null), new (&quot;accounting.timing-drift&quot;, &quot;Timing drift&quot;, AccountingWorkspace, null), new (&quot;data.backfills-running&quot;, &quot;Backfills running&quot;, DataOperations, null), new (&quot;data.exports-ready&quot;, &quot;Exports ready&quot;, DataOperations, null), new (&quot;data.kernel-critical-jumps&quot;, &quot;Kernel jump alerts&quot;, DataOperations, null), new (&quot;data.ops-review&quot;, &quot;Needs review&quot;, DataOperations, null), new (&quot;data.providers-healthy&quot;, &quot;Providers healthy&quot;, ProvidersInUse, null), new (&quot;data.replacement-cost&quot;, &quot;Est. replacement cost&quot;, DataOperations, null), new (&quot;portfolio.cash&quot;, &quot;Cash&quot;, LiveHoldings, null), new (&quot;portfolio.open-positions&quot;, &quot;Open positions&quot;, LiveHoldings, null), new (&quot;portfolio.retained-market-value&quot;, &quot;Market value&quot;, RetainedRecords, null), new (&quot;portfolio.retained-records&quot;, &quot;Retained positions&quot;, RetainedRecords, null), new (&quot;portfolio.total-exposure&quot;, &quot;Total exposure&quot;, LiveHoldings, null), new (&quot;portfolio.unrealized-pnl&quot;, &quot;Unrealized P&amp;L&quot;, LiveHoldings, null), new (&quot;strategy.active-runs&quot;, &quot;Active recent runs&quot;, RecentRuns, null), new (&quot;strategy.promotions&quot;, &quot;Promotions&quot;, RecentRuns, null), new (&quot;strategy.queued&quot;, &quot;Queued&quot;, RecentRuns, null), new (&quot;strategy.queued-runs&quot;, &quot;Queued promotions&quot;, RecentRuns, null), new (&quot;strategy.review-runs&quot;, &quot;Needs review&quot;, RecentRuns, null), new (&quot;strategy.winning-runs&quot;, &quot;Positive P&amp;L&quot;, RecentRuns, null), new (&quot;system.active-runs&quot;, &quot;Active runs&quot;, &quot;All strategy runs · system&quot;, null), new (&quot;system.providers-online&quot;, &quot;Providers healthy&quot;, ProvidersInUse, null), new (&quot;system.storage-health&quot;, &quot;Storage health&quot;, &quot;Storage · system&quot;, null), new (&quot;trading.cash&quot;, &quot;Cash&quot;, BrokerageSession, null), new (&quot;trading.fills&quot;, &quot;Fills&quot;, BrokerageSession, null), new (&quot;trading.net-pnl&quot;, &quot;Net P&amp;L&quot;, BrokerageSession, &quot;Session open&quot;), new (&quot;trading.open-orders&quot;, &quot;Open orders&quot;, &quot;Open orders · selected account&quot;, null), new (&quot;trading.portfolio-value&quot;, &quot;Portfolio value&quot;, BrokerageSession, null), new (&quot;trading.risk&quot;, &quot;Risk&quot;, BrokerageSession, null)];</code> | [src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs:21](../../../../src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs#L21) |  |
+| <code>public static WorkstationKpiDefinitionsDto Catalog { get; } = new (All);</code> | [src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs:57](../../../../src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs#L57) |  |
+
+## WorkstationPersonalTableViewRecord
+
+Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationPersonalTableViewRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:232](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L232).
+
+```csharp
+public sealed record WorkstationPersonalTableViewRecord(string TenantId, string OperatorId, string TableId, WorkstationTableViewDto View);
+```
+
+## WorkstationServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:89](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L89).
+
+Registers the shared web-workstation service graph consumed by endpoint and host surfaces.
+
+```csharp
+public static class WorkstationServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:91](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L91) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1666](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1666) |  |

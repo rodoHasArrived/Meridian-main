@@ -150,7 +150,7 @@ output/
 logs/
 _logs/
 diagnostic-logs/
-/Meridian Design System (3)/uploads/
+.playwright-cli/
 .build-system/
 .artifacts/
 external/IBApi/
@@ -326,3 +326,10 @@ provider-credentials.json
 /src/Meridian.Ui/dashboard/src/lib/ui-api-routes.generated.ts
 /src/Meridian.Ui/dashboard/src/lib/workspace-catalog.generated.ts
 /src/Meridian.Ui/wwwroot/workstation
+
+# ============================================
+# Local tool scratch output
+# ============================================
+# Why: Playwright MCP sessions write page snapshots and screenshots here
+# (.playwright-cli/ is ignored above). They are local scratch, not repo evidence.
+.playwright-mcp/

@@ -419,6 +419,12 @@ Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.c
 public static partial class SecurityMasterEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.PricingEntitlements.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.PricingEntitlements.cs#L19).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Rates.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Rates.cs#L13).
 
 ```csharp

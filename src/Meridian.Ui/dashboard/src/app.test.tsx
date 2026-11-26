@@ -1566,7 +1566,12 @@ describe("App", () => {
 
     expect(screen.queryByRole("dialog", { name: "Workspace navigation" })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Open workspace navigation" }));
+    // jsdom 31+ applies @media rules at its fixed 1024px viewport, where the desktop rail
+    // replaces this toggle (display: none above 981px), so role queries see no accessible
+    // name. Reach the narrow-layout control by its label; the drawer behaviour is under test.
+    const toggle = screen.getByLabelText("Open workspace navigation", { selector: "button" });
+    expect(toggle).toHaveAttribute("aria-haspopup", "dialog");
+    await user.click(toggle);
     const navigationDialog = screen.getByRole("dialog", { name: "Workspace navigation" });
     expect(navigationDialog).toBeInTheDocument();
     expect(within(navigationDialog).getByLabelText("Meridian navigation")).toHaveAttribute("data-design-system-component", "NavRail");

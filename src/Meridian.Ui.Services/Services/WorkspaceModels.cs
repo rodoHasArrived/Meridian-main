@@ -33,7 +33,6 @@ public sealed class WorkspaceTemplate
 /// <summary>
 /// Persisted workspace category.
 /// Numeric values are stable because saved workspace state may contain them.
-/// Legacy member names remain as aliases for source and persisted-state compatibility.
 /// </summary>
 public enum WorkspaceCategory : byte
 {
@@ -41,13 +40,7 @@ public enum WorkspaceCategory : byte
     Trading,
     Data,
     Accounting,
-    Custom,
-    [Obsolete("Use Strategy. Research is retained only as a compatibility alias.")]
-    Research = Strategy,
-    [Obsolete("Use Data. DataOperations is retained only as a compatibility alias.")]
-    DataOperations = Data,
-    [Obsolete("Use Accounting. Governance is retained only as a compatibility alias.")]
-    Governance = Accounting
+    Custom
 }
 
 /// <summary>

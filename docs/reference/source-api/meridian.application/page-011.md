@@ -6,18 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## SecurityMasterRevisionFieldBase
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionFieldBase</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:100](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L100).
-
-The canonical state a field-edit proposal was drafted against: the security version the edit was staged at and a canonical snapshot of every stored key the approved merge would overwrite for that field (SecurityAssetTermsFieldSnapshot).
-
-```csharp
-public sealed record SecurityMasterRevisionFieldBase(long BaseVersion, string FieldSnapshot);
-```
-
 ## SecurityMasterRevisionFieldValue
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionFieldValue</code>. Kind: `record`.
@@ -74,6 +62,12 @@ Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterService<
 Source: [src/Meridian.Application/SecurityMaster/SecurityMasterService.AheadOfWriteTerms.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.AheadOfWriteTerms.cs#L12).
 
 The round-trip guard for rows stamped above their class&#x27;s S2 document floor (ADR-024): a deactivation or patch-less amend re-serializes such a row only when every versioned term survives.
+
+```csharp
+public sealed partial class SecurityMasterService
+```
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterService.BondCouponRoundTrip.cs:10](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.BondCouponRoundTrip.cs#L10).
 
 ```csharp
 public sealed partial class SecurityMasterService
@@ -289,6 +283,12 @@ Declared public members:
 | <code>public async Task&lt;OperatorOverridesDto&gt; PatchOperatorOverridesAsync(Guid securityId, OperatorOverridesPatchRequest request, string updatedBy, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Overrides.cs:139](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Overrides.cs#L139) |  |
 | <code>public async Task&lt;OperatorOverridesDto&gt; RecordOperatorOverrideDecisionAsync(Guid securityId, OperatorOverrideDecision decision, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Overrides.cs:182](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Overrides.cs#L182) |  |
 
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.PrincipalSchedule.cs:11](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.PrincipalSchedule.cs#L11).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchCommandService
+```
+
 Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.ProfileFieldValidation.cs:13](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.ProfileFieldValidation.cs#L13).
 
 Static profile-field validation and effective-overlay layering helpers for SecurityMasterWorkbenchCommandService: resolving EFFECTIVE profile dates across staged override layers, reconstructing the post-approval profileFields object, coercing string-staged overrides to declared field types, and enforcing pinned-profile type/range rules.
@@ -426,24 +426,6 @@ Declared public members:
 | <code>public SecurityResolver(ISecurityMasterStore store, ISecurityMasterRedirectStore? redirects = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:23](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L23) |  |
 | <code>public async Task&lt;Guid?&gt; ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:29](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L29) |  |
 | <code>public async Task&lt;SecurityCanonicalResolution&gt; ResolveCanonicalAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:49](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L49) |  |
-
-## SecurityResolverCompatibilityAdapter
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityResolverCompatibilityAdapter</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs:5](../../../../src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs#L5).
-
-```csharp
-public sealed class SecurityResolverCompatibilityAdapter : ISecurityResolver # pragma warning restore CS0618
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityResolverCompatibilityAdapter(Meridian.Contracts.SecurityMaster.ISecurityResolver resolver);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs:10](../../../../src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs#L10) |  |
-| <code>public Task&lt;Guid?&gt; ResolveAsync(Meridian.Contracts.SecurityMaster.ResolveSecurityRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs#L15) |  |
-| <code>public Task&lt;Meridian.Contracts.SecurityMaster.SecurityCanonicalResolution&gt; ResolveCanonicalAsync(Meridian.Contracts.SecurityMaster.ResolveSecurityRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs:19](../../../../src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs#L19) |  |
 
 ## SecurityTermsAsOf
 
@@ -912,7 +894,7 @@ public sealed record ConfigPresetInfo(ConfigPreset Preset, string Name, string D
 
 Qualified name: <code>Meridian.Application.Services.ConfigurationPresets</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:992](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L992).
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:990](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L990).
 
 Role-based configuration presets that configure ~15 settings at once. Reduces time-to-value from 30+ minutes of manual config to a single --preset flag.
 
@@ -924,9 +906,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IReadOnlyList&lt;string&gt; AvailablePresets =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:997](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L997) | Available preset names. |
-| <code>public static IReadOnlyDictionary&lt;string, string&gt; PresetDescriptions =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1005](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1005) | Gets the preset description for display. |
-| <code>public static AppConfig ApplyPreset(string presetName, AppConfig config);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1016](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1016) | Applies a named preset to the given config, returning a new config with preset values. |
+| <code>public static IReadOnlyList&lt;string&gt; AvailablePresets =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:995](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L995) | Available preset names. |
+| <code>public static IReadOnlyDictionary&lt;string, string&gt; PresetDescriptions =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1003](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1003) | Gets the preset description for display. |
+| <code>public static AppConfig ApplyPreset(string presetName, AppConfig config);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1014](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1014) | Applies a named preset to the given config, returning a new config with preset values. |
 
 ## ConfigurationService
 
@@ -1088,4 +1070,44 @@ Result of a connectivity test.
 
 ```csharp
 public sealed record ConnectivityTestResult(string Provider, bool IsReachable, TimeSpan ResponseTime, string? Error, string? Suggestion);
+```
+
+## CredentialValidationService
+
+Qualified name: <code>Meridian.Application.Services.CredentialValidationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/CredentialValidationService.cs:14](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L14).
+
+Service for validating API credentials at startup. Performs lightweight validation calls to verify credentials are valid.
+
+```csharp
+public sealed class CredentialValidationService : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CredentialValidationService();</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:20](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L20) |  |
+| <code>public async Task&lt;ValidationSummary&gt; ValidateAllAsync(AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:49](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L49) | Validates all configured credentials. |
+| <code>public async Task&lt;ValidationResult&gt; ValidateAlpacaAsync(AlpacaOptions options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:148](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L148) | Validates Alpaca credentials by calling the account endpoint. |
+| <code>public async Task&lt;ValidationResult&gt; ValidatePolygonAsync(PolygonOptions options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:220](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L220) | Validates Polygon credentials by calling the ticker details endpoint. |
+| <code>public async Task&lt;ValidationResult&gt; ValidateTiingoAsync(TiingoConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:277](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L277) | Validates Tiingo credentials by calling the meta endpoint. |
+| <code>public async Task&lt;ValidationResult&gt; ValidateFinnhubAsync(FinnhubConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:333](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L333) | Validates Finnhub credentials by calling the profile endpoint. |
+| <code>public async Task&lt;ValidationResult&gt; ValidatePolygonBackfillAsync(PolygonConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:394](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L394) | Validates Polygon backfill credentials. |
+| <code>public async Task&lt;ValidationResult&gt; ValidateAlphaVantageAsync(AlphaVantageConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:450](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L450) | Validates Alpha Vantage credentials. |
+| <code>public async Task&lt;ValidationResult&gt; ValidateFredAsync(FredConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:531](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L531) | Validates FRED credentials. |
+| <code>public void PrintSummary(ValidationSummary summary, TextWriter? output = null);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:598](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L598) | Prints a summary of validation results to the console. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:652](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L652) |  |
+
+## ValidationResult
+
+Qualified name: <code>Meridian.Application.Services.CredentialValidationService.ValidationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/CredentialValidationService.cs:29](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L29).
+
+Result of credential validation.
+
+```csharp
+public sealed record ValidationResult(string Provider, bool IsValid, string? Message, string? AccountInfo, TimeSpan ResponseTime);
 ```
