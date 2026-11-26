@@ -428,6 +428,42 @@ Retains the first completed comparison for each paper session, account, and cuto
 public sealed class PaperSessionDailyReconciliationStore(string root)
 ```
 
+## PartnershipWaterfallInvestorRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PartnershipWaterfallInvestorRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PartnershipWaterfall.cs:7](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PartnershipWaterfall.cs#L7).
+
+One partner taking part in a tiered waterfall allocation.
+
+```csharp
+public sealed record PartnershipWaterfallInvestorRequest(string InvestorId, string DisplayName, decimal AllocationPercent);
+```
+
+## PartnershipWaterfallRuleRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PartnershipWaterfallRuleRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PartnershipWaterfall.cs:10](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PartnershipWaterfall.cs#L10).
+
+One investor&#x27;s share of a waterfall tier, as a fraction of the tier (0 &lt; percent ≤ 1).
+
+```csharp
+public sealed record PartnershipWaterfallRuleRequest(string InvestorId, decimal AllocationPercent);
+```
+
+## PartnershipWaterfallTierRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PartnershipWaterfallTierRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PartnershipWaterfall.cs:13](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PartnershipWaterfall.cs#L13).
+
+One ordered waterfall tier with an optional cap on the profit it absorbs.
+
+```csharp
+public sealed record PartnershipWaterfallTierRequest(string TierId, string Description, IReadOnlyList<PartnershipWaterfallRuleRequest> AllocationRules, decimal? CapAmount = null);
+```
+
 ## PaymentInstruction
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PaymentInstruction</code>. Kind: `record`.
@@ -859,47 +895,3 @@ Declared public members:
 | <code>public async Task&lt;PrivateCapitalChoices&gt; ChoicesAsync(PrivateCapitalScope scope, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs:18](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs#L18) |  |
 | <code>public async Task&lt;PrivateCapitalVehicle&gt; ValidateRegisterAsync(PrivateCapitalScope scope, Guid entityId, Guid securityId, string currency, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs:38](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs#L38) |  |
 | <code>public async Task ValidateEvidenceAsync(PrivateCapitalScope scope, PrivateCapitalEvidence evidence, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs:58](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs#L58) |  |
-
-## PrivateCapitalRecordServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalRecordServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordServiceCollectionExtensions.cs:9](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordServiceCollectionExtensions.cs#L9).
-
-```csharp
-public static class PrivateCapitalRecordServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddPrivateCapitalRecords(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordServiceCollectionExtensions.cs:12](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordServiceCollectionExtensions.cs#L12) | Uses the existing account database or durable, partitioned local record authority. |
-
-## ProductExposure
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProductExposure</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:25](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L25).
-
-```csharp
-public sealed record ProductExposure(string ProductType, decimal NetExposure, decimal GrossExposure);
-```
-
-## PromotionTrustEvidenceServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PromotionTrustEvidenceServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs:10](../../../../src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs#L10).
-
-Registers promotion trust evidence services in the dependency injection container.
-
-```csharp
-public static class PromotionTrustEvidenceServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddPromotionTrustEvidenceServices(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs:13](../../../../src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs#L13) | Registers the same source-backed promotion trust provider for browser and desktop hosts. |

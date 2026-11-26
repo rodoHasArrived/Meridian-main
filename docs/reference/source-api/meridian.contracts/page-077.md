@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementRunValidationDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:339](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L339).
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:349](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L349).
 
 Validation envelope for a statement reconciliation run.
 

@@ -78,6 +78,7 @@ Declared public members:
 | <code>public IReadOnlyList&lt;PartnershipInvestor&gt; Investors { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs:47](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs#L47) |  |
 | <code>public IReadOnlyList&lt;PartnershipWaterfallTier&gt; Tiers { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs:49](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs#L49) |  |
 | <code>public string? Description { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs:51](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs#L51) |  |
+| <code>public LedgerAccount? RetainedEarningsAccount { get; init; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs:58](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs#L58) | The retained-earnings account the allocated profit is taken from. Defaults to the fund-scoped retained earnings for FundId; a governed caller sets the account the book&#x27;s period close actually credits, so the allocation draws on the profit that close moved into equity. |
 
 ## PartnershipWaterfallAllocationProjection
 
@@ -119,6 +120,27 @@ Declared public members:
 | <code>public PartnershipWaterfallAllocationRule(string investorId, decimal allocationPercent);</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs:8](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs#L8) |  |
 | <code>public string InvestorId { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs:19](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs#L19) |  |
 | <code>public decimal AllocationPercent { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs:21](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs#L21) |  |
+
+## PartnershipWaterfallDraftBuilder
+
+Qualified name: <code>Meridian.Ledger.PartnershipWaterfallDraftBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs:14](../../../../src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs#L14).
+
+Converts a PartnershipWaterfallAllocationProjection into a governed AutomatedJournalDraft (kind AutomatedJournalEventKind.PartnershipProfitAllocated), so tiered profit allocations reach partners&#x27; capital only through workbench review, approval and posting. The journal debits retained earnings and credits each investor&#x27;s capital account; the partners&#x27; capital statement reports those credits as each investor&#x27;s allocated result.
+
+```csharp
+public static class PartnershipWaterfallDraftBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ActivityType = &quot;partnership-waterfall-allocation&quot;;</code> | [src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs:16](../../../../src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs#L16) |  |
+| <code>public const string IdempotencyPrefix = &quot;partnership-waterfall&#124;&quot;;</code> | [src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs:17](../../../../src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs#L17) |  |
+| <code>public static AutomatedJournalDraft BuildDraft(PartnershipWaterfallAllocationProjection projection, DateOnly effectiveDate, DateTimeOffset preparedAtUtc, string preparedBy);</code> | [src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs:19](../../../../src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs#L19) |  |
+| <code>public static string Fingerprint(PartnershipWaterfallAllocationInput input);</code> | [src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs:79](../../../../src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs#L79) | Digest of the waterfall inputs, so a changed term or amount is a different allocation identity. |
 
 ## PartnershipWaterfallProjector
 
@@ -295,7 +317,6 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static PeriodCloseProjection Project(PeriodCloseInput input);</code> | [src/Meridian.Ledger/PeriodCloseProjector.cs:11](../../../../src/Meridian.Ledger/PeriodCloseProjector.cs#L11) |  |
-| <code>public static PeriodCloseProjection ProjectFrom(Ledger ledger, string periodId, DateTimeOffset closedAtUtc, string closedBy);</code> | [src/Meridian.Ledger/PeriodCloseProjector.cs:89](../../../../src/Meridian.Ledger/PeriodCloseProjector.cs#L89) | Convenience overload that snapshots the ledger&#x27;s trial balance as of the close time. The in-memory trial balance is dimension-flat, so the projected closing entries carry no dimensional scope. |
 
 ## PeriodReopenEvidence
 
@@ -925,16 +946,4 @@ Governance handoff record for a material shadow-NAV variance that needs review.
 
 ```csharp
 public sealed record ShadowNavOverrideDraft(Guid OverrideDraftId, DateTimeOffset CreatedAtUtc, string CreatedBy, string Reason, string PolicyId, string? ReviewerGroup, LedgerBookKey ActualLedgerKey, LedgerBookKey ShadowLedgerKey, DateTimeOffset AsOf, decimal ActualNav, decimal ShadowNav, decimal NavVariance, IReadOnlyList<ShadowNavValidationFinding> Findings);
-```
-
-## ShadowNavValidationFinding
-
-Qualified name: <code>Meridian.Ledger.ShadowNavValidationFinding</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/ShadowNavValidationFinding.cs:6](../../../../src/Meridian.Ledger/ShadowNavValidationFinding.cs#L6).
-
-Account-level variance between the actual ledger and an independent shadow-NAV ledger.
-
-```csharp
-public sealed record ShadowNavValidationFinding(LedgerAccount Account, decimal ActualBalance, decimal ShadowBalance, decimal Variance, decimal AbsoluteVariance, bool RequiresOverride);
 ```
